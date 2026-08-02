@@ -28,7 +28,9 @@ class SearchController extends YesWikiController
         // forceLinkTracking is false: a search result list is not the page linking to those
         // pages, and recording it as such would fill `links` with edges that vanish on the
         // next query
-        $content = $this->getService(ActionRunner::class)->action('search', false);
+        // autofocus is the route's to ask for, not the action's to assume: on /search the
+        // box is the page, while an embedded {{search}} must leave the reader's focus alone
+        $content = $this->getService(ActionRunner::class)->action('search', false, ['autofocus' => '1']);
 
         return new Response(
             $this->getService(TemplateEngine::class)->renderPage('<div class="page">' . $content . '</div>')

@@ -68,6 +68,18 @@
   function focusNewContent() {
     const main = document.getElementById('yw-main')
     if (!main) return
+
+    // A page that names the element it wants focused wins over the rule below. /search is
+    // the case: it exists to be typed into, and announcing its heading instead would leave a
+    // keyboard user tabbing past the one control the whole page is for. `autofocus` cannot
+    // do this job here -- it only fires when a document is parsed, and a boosted navigation
+    // swaps markup into a document that already was.
+    const requested = main.querySelector('[data-yw-autofocus]')
+    if (requested) {
+      requested.focus({ preventScroll: true })
+      return
+    }
+
     // the heading, not the container: focusing the container makes some screen readers read
     // the whole region, while the heading announces the page name and stops
     const target = main.querySelector('h1') || main

@@ -1,0 +1,23 @@
+{# One accordion panel, everywhere in the wiki.
+
+   `<details>`/`<summary>`, not a button plus a JS-toggled div. The browser already has a
+   disclosure widget: it is keyboard operable, it announces its state to a screen reader, the
+   browser's own find-in-page opens it to reveal a match, and it needs no JavaScript at all --
+   which is what ADR-0005's "vanilla JS and htmx only" is asking for. The markup it replaces
+   needed `data-toggle="collapse"`, matching ids on two elements, `aria-expanded`,
+   `aria-controls`, `role="region"` and a listener in yw-core.js to keep them in step.
+
+   Four surfaces used to spell that out separately -- the bazar entry list, the syndication
+   list, the pages accordion and the {{panel}} action -- with the ids built differently in
+   each. They share this now, so an accordion looks and behaves the same wherever it appears.
+
+   Parameters:
+     summary   markup for the closed state (raw)
+     body      markup revealed when open (raw)
+     open      start open (the first panel of an {{accordion}}, say)
+     class     extra classes on the <details>
+     attrs     raw attribute string, for callers that carry data attributes (entry html_data) #}
+<details class="yw-accordion__item {{ class|default('') }}"{{ open|default(false) ? ' open' : '' }} {{ attrs|default('')|raw }}>
+    <summary class="yw-accordion__summary">{{ summary|raw }}</summary>
+    <div class="yw-accordion__body">{{ body|raw }}</div>
+</details>

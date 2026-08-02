@@ -539,6 +539,11 @@ return [
     // ticket 18: the full-text index matches whole words and prefixes, so the old
     // ?/* wildcards no longer mean anything -- `atelier` already finds `ateliers`
     'NEWTEXTSEARCH_HINT' => 'Words are matched from their beginning: atelier also finds ateliers',
+    'SEARCH_DISPLAY' => 'Display results as',
+    'SEARCH_DISPLAY_LIST' => 'List',
+    'SEARCH_DISPLAY_ACCORDION' => 'Accordion',
+    'SEARCH_DISPLAY_CARDS' => 'Cards',
+    'SEARCH_OPEN_RESULT' => 'Open',
     'SEARCH_FILTER_TYPE' => 'Filter by content type',
     'SEARCH_TYPE_ALL' => 'Everything',
     'SEARCH_TYPE_PAGE' => 'Page',
@@ -547,7 +552,7 @@ return [
     'SEARCH_TYPE_FILE' => 'File',
     'SEARCH_TYPE_USER' => 'Account',
     'SEARCH_TYPE_FORM' => 'Form',
-    'SEARCH_TYPE_SOMETHING' => 'Type something to search for.',
+    'SEARCH_TYPE_SOMETHING' => '☝️ Type something to search for.',
     'SEARCH_N_RESULTS' => '%{total} result(s)',
     'SEARCH_N_OR_MORE_RESULTS' => 'more than %{total} results — narrow your search',
     'SEARCH_PAGE_N_OF_M' => 'page %{page} of %{pages}',

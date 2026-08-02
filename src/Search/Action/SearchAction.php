@@ -26,13 +26,21 @@ use YesWiki\Search\Service\SearchResultPresenter;
  * second rendering path.
  *
  * Parameters, all optional:
- *   phrase=        what to search for (also read from ?phrase= so a link can carry it)
+ *   q=             what to search for. Also read from `?q=` -- the field is named `q` so a
+ *                  shared search URL stays short and looks like every other search on the web
  *   type=          restrict to one content type: page, entry, comment, file, user, form
+ *   display=       list (default), accordion or cards
  *   limit=         results per page
  *   filters="0"    hide the content-type filter, for an embedded box that only searches
+ *   autofocus="1"  put the cursor in the box on arrival. Off by default and deliberately so:
+ *                  {{search}} embedded in a page of prose must not steal focus from the
+ *                  reader. The /search route turns it on, because there the box IS the page.
  */
 class SearchAction extends YesWikiAction implements RegisteredAction
 {
+    /** The layouts the results fragment knows how to render. */
+    public const DISPLAY_MODES = ['list', 'accordion', 'cards'];
+
     public static function performableName(): string
     {
         return 'search';
@@ -74,14 +82,18 @@ class SearchAction extends YesWikiAction implements RegisteredAction
             ]);
         }
 
-        $phrase = trim((string)($arguments->get('phrase', '') ?: ($_GET['phrase'] ?? '')));
+        $phrase = trim((string)($arguments->get('q', '') ?: ($_GET['q'] ?? '')));
         $type = trim((string)($arguments->get('type', '') ?: ($_GET['type'] ?? '')));
+        $display = trim((string)($arguments->get('display', '') ?: ($_GET['display'] ?? 'list')));
 
         return $templateEngine->render('@core/search-action.twig', [
             'phrase' => $phrase,
             'type' => $type,
+            // validated here as well as in the fragment: it reaches a class name either way
+            'display' => in_array($display, self::DISPLAY_MODES, true) ? $display : 'list',
             'limit' => (int)$arguments->get('limit', SearchIndexQuery::DEFAULT_LIMIT),
             'showFilters' => (string)$arguments->get('filters', '1') !== '0',
+            'autofocus' => (string)$arguments->get('autofocus', '0') === '1',
             'types' => SearchResultPresenter::filterableTypes(),
             'apiUrl' => $this->getService(UrlFormatter::class)->href('', 'api/search', null, false),
         ]);

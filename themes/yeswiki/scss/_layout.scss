@@ -1,5 +1,10 @@
 /* ---- page layout ---- */
 .container {
+  /* `width: 100%` plus horizontal padding, with the default content-box sizing, is 100% + 30px
+     -- so on any viewport narrower than the 1170px cap the navbar's container stuck 30px out
+     of the window and the whole document got a horizontal scrollbar. There is no global
+     box-sizing reset to lean on here, so it is stated where the width is. */
+  box-sizing: border-box;
   width: 100%;
   max-width: 1170px;
   margin: 0 auto;

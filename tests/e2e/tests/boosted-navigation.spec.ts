@@ -60,6 +60,34 @@ const navigateByLink = async (page: Page, tag: string) => {
   await page.waitForTimeout(500)
 }
 
+test('the navbar keeps its height from page to page', async({ page }) => {
+  // The reported symptom -- the bar appearing to change height as you navigate -- turned out
+  // to be the browser's default 8px body margin, fixed with `body { margin: 0 }`. This guards
+  // the navbar's own half: `li.active a` adds a 2px bottom border, so without the transparent
+  // border every link reserves, the current page's link would be 2px taller than its
+  // neighbours and the bar would grow by 2px on exactly the pages that have one.
+  await page.setViewportSize({ width: 1000, height: 500 })
+
+  const heights: number[] = []
+  for (const url of ['/', '/?BacASable', '/?search', '/?PageInexistante']) {
+    await page.goto(url)
+    heights.push(await page.evaluate(() =>
+      (document.querySelector('#yw-topnav') as HTMLElement).getBoundingClientRect().height))
+  }
+
+  // and with a link marked current, which is the state the border reservation is for
+  await page.goto('/')
+  heights.push(await page.evaluate(() => {
+    const nav = document.querySelector('#yw-topnav') as HTMLElement
+    const link = document.querySelector('#yw-topnav .topnavpage a') as HTMLElement
+    link.classList.add('active-link')
+    link.parentElement?.classList.add('active-list', 'active')
+    return nav.getBoundingClientRect().height
+  }))
+
+  expect(new Set(heights).size, `navbar heights differed: ${heights.join(', ')}`).toBe(1)
+})
+
 test.describe('boosted navigation', () => {
   test('the skeleton opts in to htmx navigation', async ({ page }) => {
     await page.goto(`/?${PAGE_WITH_LIST}`)

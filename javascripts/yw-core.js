@@ -223,6 +223,30 @@
     }
   })
 
+  // A field asking for focus on arrival -- the /search page's search box, today.
+  //
+  // The `autofocus` attribute alone is not enough and the reason is ticket 16: an internal
+  // link is htmx-boosted, so reaching /search from the top bar SWAPS the body rather than
+  // parsing a new document, and `autofocus` only fires on parse. The button that exists to
+  // reach the search page is exactly the path where the attribute does nothing.
+  //
+  // Marked with an attribute rather than by selecting the search box directly, so that
+  // "focus me on arrival" stays a property a template can ask for rather than a list of
+  // selectors kept in step here. ywInitEach marks each element once, so a later swap
+  // elsewhere on the page does not yank focus back out of whatever the visitor moved to.
+  ywInitEach('[data-yw-autofocus]', (field) => {
+    // never steal focus from something the visitor is already using: an embedded {{search}}
+    // lower down a page can arrive while they are typing somewhere else
+    const active = document.activeElement
+    if (active && active !== document.body && active !== field) return
+    field.focus({ preventScroll: true })
+    // caret after any prefilled phrase rather than selecting it, so typing extends the
+    // query someone arrived with instead of wiping it
+    if (typeof field.setSelectionRange === 'function' && field.value) {
+      field.setSelectionRange(field.value.length, field.value.length)
+    }
+  })
+
   // Open: click on any [data-yw-modal-target="#id"] / legacy [data-toggle="modal"],
   // or a remote-loading "a.modalbox"-style link
   document.addEventListener('click', (e) => {
@@ -375,6 +399,26 @@
     // Click anywhere else closes any open dropdown
     closeDropdowns()
   })
+
+  // ---------------------------------------------------------------- viewport width
+
+  // The width a full-width block may actually use, which is NOT 100vw: `vw` includes the
+  // vertical scrollbar's gutter, so a 100vw block on a scrolling page overhangs the visible
+  // area by the scrollbar's width and gives the document a horizontal scrollbar of its own.
+  // documentElement.clientWidth is the same measurement with the gutter taken off. See
+  // .full-width in yw-core.css, which falls back to 100vw when this never runs.
+  function publishViewportWidth() {
+    document.documentElement.style.setProperty(
+      '--yw-viewport-width',
+      document.documentElement.clientWidth + 'px'
+    )
+  }
+
+  publishViewportWidth()
+  window.addEventListener('resize', publishViewportWidth)
+  // a swap can add or remove enough content to gain or lose the scrollbar, which changes the
+  // answer without the window ever being resized
+  document.addEventListener('htmx:afterSettle', publishViewportWidth)
 
   // Escape closes the top-most open modal, or any open dropdown
   document.addEventListener('keydown', (e) => {

@@ -4,53 +4,155 @@
    filter are all in the SQL, so nothing is dropped after the fact. `capped` says the count
    stopped at SearchIndexQuery::COUNT_CAP -- counting every match of a very broad query costs
    a full pass over the match set, and "1000+" is what a visitor needs anyway. Paging past the
-   cap still works. #}
+   cap still works.
+
+   The facet row and the display switcher both live here rather than beside the search box,
+   for the same reason: neither means anything until there is something to narrow or to lay
+   out. Both are radios, so the selection is form state that travels on `hx-include` -- no JS
+   holds it, and each comes back checked after the swap that rendered it. #}
+{# the switcher itself lives in the form (see search-action.twig); the fragment only has to
+   honour the mode, and to refuse one it does not know rather than put a visitor's string
+   into a class name #}
+{% set display = display in ['list', 'accordion', 'cards'] ? display : 'list' %}
 {% if prompt %}
     <p class="yw-search-prompt">{{ _t('SEARCH_TYPE_SOMETHING') }}</p>
-{% elseif results is empty %}
+{% elseif results is empty and type is empty %}
     <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
 {% else %}
-    <p class="yw-search-count">
-        {%- if capped -%}
-            {{ _t('SEARCH_N_OR_MORE_RESULTS', {total: total}) }}
-        {%- else -%}
-            {{ _t('SEARCH_N_RESULTS', {total: total}) }}
-        {%- endif -%}
-    </p>
-
-    <ol class="yw-search-results" start="{{ (page - 1) * limit + 1 }}">
-        {% for result in results %}
-            <li class="yw-search-result yw-search-result--{{ result.content_type }}">
-                <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
-                <h3 class="yw-search-result-title">
-                    <a href="{{ result.url }}">{{ result.title }}</a>
-                </h3>
-                {% if result.excerpt is not empty %}
-                    <p class="yw-search-result-excerpt">{{ result.excerpt }}</p>
-                {% endif %}
+    {% if facets|length > 1 %}
+        {% set allCount = 0 %}
+        {% for count in facets %}{% set allCount = allCount + count %}{% endfor %}
+        <ul class="yw-facets" id="yw-search-facets">
+            <li class="yw-facet">
+                <input type="radio" name="type" value="" id="yw-facet-all"
+                       {{ type is empty ? 'checked' : '' }}
+                       hx-get="{{ url({tag: 'api/search'}) }}"
+                       hx-target="#yw-search-results"
+                       hx-include="#yw-search-form, #yw-search-facets"
+                       hx-indicator="#yw-search-spinner"
+                       hx-trigger="change" />
+                <label class="yw-facet__label" for="yw-facet-all">
+                    {{ _t('SEARCH_TYPE_ALL') }}
+                    <span class="yw-facet__count">{{ allCount }}{{ capped ? '+' : '' }}</span>
+                </label>
             </li>
-        {% endfor %}
-    </ol>
+            {% for facetType, count in facets %}
+                <li class="yw-facet">
+                    <input type="radio" name="type" value="{{ facetType }}" id="yw-facet-{{ facetType }}"
+                           {{ type == facetType ? 'checked' : '' }}
+                           hx-get="{{ url({tag: 'api/search'}) }}"
+                           hx-target="#yw-search-results"
+                           hx-include="#yw-search-form, #yw-search-facets"
+                           hx-indicator="#yw-search-spinner"
+                           hx-trigger="change" />
+                    <label class="yw-facet__label" for="yw-facet-{{ facetType }}">
+                        {{ _t('SEARCH_TYPE_' ~ facetType|upper) }}
+                        <span class="yw-facet__count">{{ count }}</span>
+                    </label>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-    {% if pages > 1 %}
-        {# Paging re-requests the same fragment; the form supplies phrase/type/limit through
-           hx-include, so a page link only has to carry the page number. #}
-        <nav class="yw-search-pagination" aria-label="{{ _t('SEARCH_PAGINATION') }}">
-            {% if page > 1 %}
-                <button type="button" class="yw-btn yw-btn--sm"
-                        hx-get="{{ url({tag: 'api/search'}) }}"
-                        hx-target="#yw-search-results"
-                        hx-include="#yw-search-form"
-                        hx-vals='{"page": {{ page - 1 }}}'>{{ _t('PREVIOUS') }}</button>
-            {% endif %}
-            <span class="yw-search-page">{{ _t('SEARCH_PAGE_N_OF_M', {page: page, pages: pages}) }}</span>
-            {% if page < pages %}
-                <button type="button" class="yw-btn yw-btn--sm"
-                        hx-get="{{ url({tag: 'api/search'}) }}"
-                        hx-target="#yw-search-results"
-                        hx-include="#yw-search-form"
-                        hx-vals='{"page": {{ page + 1 }}}'>{{ _t('NEXT') }}</button>
-            {% endif %}
-        </nav>
+    {% if results is empty %}
+        <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
+    {% else %}
+        <p class="yw-search-count">
+            {%- if capped -%}
+                {{ _t('SEARCH_N_OR_MORE_RESULTS', {total: total}) }}
+            {%- else -%}
+                {{ _t('SEARCH_N_RESULTS', {total: total}) }}
+            {%- endif -%}
+        </p>
+
+        {% if display == 'accordion' %}
+            {# the wiki's one accordion -- see templates/_accordion-item.twig #}
+            <div class="yw-accordion yw-search-results yw-search-results--accordion">
+                {% for result in results %}
+                    {% include '@core/_accordion-item.twig' with {
+                        class: 'yw-search-result yw-search-result--' ~ result.content_type,
+                        summary: '<span class="yw-search-result-title">' ~ result.title|e ~ '</span>'
+                            ~ '<span class="yw-search-result-type">' ~ _t('SEARCH_TYPE_' ~ result.content_type|upper)|e ~ '</span>',
+                        body: (result.excerpt is not empty
+                                ? '<p class="yw-search-result-excerpt">' ~ result.excerpt|e ~ '</p>'
+                                : '')
+                            ~ '<p><a href="' ~ result.url|e('html_attr') ~ '">' ~ _t('SEARCH_OPEN_RESULT')|e ~ '</a></p>'
+                    } only %}
+                {% endfor %}
+            </div>
+        {% elseif display == 'cards' %}
+            {# The wiki's card design, not a second one: `.bazar-cards-container` /
+               `.bazar-card` / `.area` come from styles/bazar/card.css, which is what an
+               entry list draws its cards with.
+
+               The entry list's card *template* cannot be reused as-is -- it is a Vue
+               template rendered client-side from `entriesToDisplay`, while search results
+               are server-rendered and are not all entries (a page, an account and a file
+               have no fields to lay out). Sharing the stylesheet is what makes them look
+               like the same wiki; sharing the template would mean giving search a Vue app
+               to render six content types it does not have field data for.
+
+               card.css is declared by search-action.twig, not here: this template is served
+               as an htmx fragment, and a fragment response has no <head> for include_css to
+               write into -- the cards came out unstyled, one full-width row each. It also has
+               to be there rather than here because the display switcher changes mode without
+               reloading the page. #}
+            <div class="bazar-cards-container yw-search-results--cards">
+                {% for result in results %}
+                    <a class="bazar-card yw-search-result yw-search-result--{{ result.content_type }}"
+                       href="{{ result.url }}"
+                       title="{{ result.title }}">
+                        <div class="content">
+                            <h3 class="area title-area yw-search-result-title">
+                                {{ result.title }}
+                                <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
+                            </h3>
+                            {% if result.excerpt is not empty %}
+                                <p class="area yw-search-result-excerpt">{{ result.excerpt }}</p>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <ol class="yw-search-results" start="{{ (page - 1) * limit + 1 }}">
+                {% for result in results %}
+                    <li class="yw-search-result yw-search-result--{{ result.content_type }}">
+                        <h3 class="yw-search-result-title">
+                            <a href="{{ result.url }}">{{ result.title }}</a>
+                            <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
+                        </h3>
+                        {% if result.excerpt is not empty %}
+                            <p class="yw-search-result-excerpt">{{ result.excerpt }}</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+
+        {% if pages > 1 %}
+            {# Paging re-requests the same fragment; the form, the facets and the display
+               switcher supply everything else through hx-include, so a page link only
+               carries the number. #}
+            <nav class="yw-search-pagination" aria-label="{{ _t('SEARCH_PAGINATION') }}">
+                {% if page > 1 %}
+                    <button type="button" class="yw-btn yw-btn--sm"
+                            hx-get="{{ url({tag: 'api/search'}) }}"
+                            hx-target="#yw-search-results"
+                            hx-include="#yw-search-form, #yw-search-facets"
+                            hx-indicator="#yw-search-spinner"
+                            hx-vals='{"page": {{ page - 1 }}}'>{{ _t('PREVIOUS') }}</button>
+                {% endif %}
+                <span class="yw-search-page">{{ _t('SEARCH_PAGE_N_OF_M', {page: page, pages: pages}) }}</span>
+                {% if page < pages %}
+                    <button type="button" class="yw-btn yw-btn--sm"
+                            hx-get="{{ url({tag: 'api/search'}) }}"
+                            hx-target="#yw-search-results"
+                            hx-include="#yw-search-form, #yw-search-facets"
+                            hx-indicator="#yw-search-spinner"
+                            hx-vals='{"page": {{ page + 1 }}}'>{{ _t('NEXT') }}</button>
+                {% endif %}
+            </nav>
+        {% endif %}
     {% endif %}
 {% endif %}

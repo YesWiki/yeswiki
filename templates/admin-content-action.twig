@@ -21,8 +21,15 @@
 
             <div class="yw-form-group">
                 <label for="acf-search">{{ _t('TEMPLATE_SEARCH') }}</label>
-                <input id="acf-search" type="search" name="search" class="yw-input"
-                       placeholder="{{ _t('TEMPLATE_SEARCH_PLACEHOLDER') }}">
+                {# the shared box in its inline form: same component as {{search}} and the
+                   entry lists, sized for a filter bar rather than for a page that is about
+                   searching. No button -- this bar filters as you type. #}
+                {% include '@core/_searchbox.twig' with {
+                    name: 'search',
+                    id: 'acf-search',
+                    button: '',
+                    modifier: 'yw-searchbox--inline'
+                } only %}
             </div>
 
             <div class="yw-form-group">

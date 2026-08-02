@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -50,6 +51,19 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
+        // A routed name is not a page, so none of the page actions below mean anything on
+        // one: `/search` and `/doc` were offering "edit this page", a file manager, duplicate
+        // and share for a tag no Content can ever occupy -- clicking edit opened an editor
+        // for a page that ReservedTags refuses to let anyone save (ticket 20).
+        //
+        // An explicit {{editbar page="..."}} still renders: naming a page is asking for that
+        // page's bar, and a route is free to show one for something else.
+        // empty(), not === null: get() defaults to '' when the parameter is absent
+        if (empty($this->getService(PerformableArguments::class)->get('page'))
+            && ReservedTags::isReserved($this->getService(PageContext::class)->getTag())) {
+            return;
+        }
+
         $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         if ((!empty($user) || $this->getService(AclService::class)->hasAccess('write')) && $this->getService(PageContext::class)->getRawMethod() != 'revisions') {
             // on récupére la page et ses valeurs associées

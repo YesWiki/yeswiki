@@ -2,31 +2,31 @@
 {{ resultsInfo|raw }}
 {% if entries|length > 0 %}
     {{ pager_links|raw }}
-    <div class="panel-group accordion-group no-dblclick" id="accordion{{ params.listindex }}">
+    {# the wiki's one accordion -- see templates/_accordion-item.twig. This used to build its
+       own out of a button, matching collapse ids and yw-core.js's toggle listener. #}
+    <div class="yw-accordion bazar-list no-dblclick" id="accordion{{ params.listindex }}">
     {% for vIndex, entry in entries %}
-        <div class="bazar-entry panel panel-default collapsed" {{ entry.html_data|raw }}>
-          <button class="panel-heading collapsed" aria-expanded="false"
-            data-target="#collapse{{ params.listindex }}_{{ vIndex }}"           
-            data-toggle="collapse">
-            <h4 class="panel-title">
-              {{ decoration.pellet(params, entry) }}{{ decoration.icon(params, entry) }}
-              {{ entry.title|raw }} </h4>
-              {% if entry.soustitre is defined and entry.soustitre is not empty %}
-                  {# format the text but remove tags except <br>; collapse consecutive <br> #}
-                  {% set soustitre = format(entry.soustitre)|striptags('<br>') %}
-                  {% set soustitre = soustitre|preg_replace('!^\\s*<br */?>!i', '') %}
-                  {% set soustitre = soustitre|preg_replace('#(<br */?>\\s*)+#i', '<br />') %}
-                  <small class='accordion-subtitle'>
+        {% set summary %}
+            <span class="bazar-entry-title">
+                {{ decoration.pellet(params, entry) }}{{ decoration.icon(params, entry) }}
+                {{ entry.title|raw }}
+            </span>
+            {% if entry.soustitre is defined and entry.soustitre is not empty %}
+                {# format the text but remove tags except <br>; collapse consecutive <br> #}
+                {% set soustitre = format(entry.soustitre)|striptags('<br>') %}
+                {% set soustitre = soustitre|preg_replace('!^\\s*<br */?>!i', '') %}
+                {% set soustitre = soustitre|preg_replace('#(<br */?>\\s*)+#i', '<br />') %}
+                <small class="accordion-subtitle">
                     {{ (soustitre|slice(0, 280) ~ (soustitre|length > 280 ? '...' : ''))|raw }}
-                  </small>
-              {% endif %}
-          </button>
-          <div id="collapse{{ params.listindex }}_{{ vIndex }}" class="panel-collapse collapse">
-            <div class="panel-body">            
-              {{ renderEntry(params.managementbar, entry, forms[entry.form_id]|default(null))|raw }}
-            </div>
-          </div>
-        </div>
+                </small>
+            {% endif %}
+        {% endset %}
+        {% include '@core/_accordion-item.twig' with {
+            class: 'bazar-entry',
+            attrs: entry.html_data|default(''),
+            summary: summary,
+            body: renderEntry(params.managementbar, entry, forms[entry.form_id]|default(null))
+        } only %}
     {% endfor %}
     </div>
     {{ pager_links|raw }}

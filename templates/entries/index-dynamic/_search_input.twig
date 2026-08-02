@@ -1,26 +1,32 @@
+{# The dynamic (Vue) entry list's search box.
+
+   Same component as everywhere else -- see @core/_searchbox.twig. What differs here is only
+   that the field is Vue-bound rather than submitted, so the binding travels as an ordinary
+   attribute and no button is offered: the list filters as you type, and a button that
+   pressed nothing would be a lie.
+
+   It used to assemble its own from the Bootstrap 3 markup ticket 16 removed the CSS for
+   (`input-group`, `add-on`, `input-prepend`, `input-lg`), so it rendered unstyled. #}
 <div class="bazar-search yw-form-group">
-  <div class="input-group input-prepend">
-    {# Icon #}
-    <span class="add-on input-group-addon">
-      <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
-    </span>
+    {% include '@core/_searchbox.twig' with {
+        name: 'search',
+        placeholder: _t('BAZ_RECHERCHER'),
+        button: '',
+        attrs: {'v-model': 'search'}
+    } only %}
 
-    {# Input #}
-    <input type="text" v-model="search" placeholder="{{ _t('BAZ_RECHERCHER') }}" 
-           class="search-input yw-input input-lg">
-
-    {# Form selector, when no form is specified in the action (used in admin section for example) #}
+    {# Form selector, when no form is specified in the action (used in the admin section) #}
     {% if forms|length > 1 %}
-      <span class="input-group-btn search-filter" style="width:auto;max-width:240px;">
-        <select v-model="searchFormId" class="yw-input input-lg">
-          <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
-          {% for form in forms %}
-            <option value="{{ form.id }}">
-              {{ form.label }}
-            </option>
-          {% endfor %}
-        </select>
-      </span>
+        <div class="yw-searchbox-aside">
+            <label class="sr-only" for="bazar-dynamic-search-form">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</label>
+            <select v-model="searchFormId" id="bazar-dynamic-search-form" class="yw-input">
+                <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
+                {% for form in forms %}
+                    <option value="{{ form.id }}">
+                        {{ form.label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
     {% endif %}
-  </div>
 </div>

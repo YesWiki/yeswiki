@@ -14,7 +14,16 @@ import { fileURLToPath } from 'node:url'
 const srcDir = dirname(fileURLToPath(import.meta.url))
 const map = JSON.parse(readFileSync(join(srcDir, 'icon-map.json'), 'utf8'))
 // icons needed beyond the legacy map (filled variants render as `${name}-filled`)
-const EXTRAS = ['filled:star', 'cursor-text']
+const EXTRAS = [
+  'filled:star',
+  'cursor-text',
+  // the search results' display switcher (list / accordion / cards). Named for the layout
+  // they produce rather than for a FontAwesome class, which is why they are extras: nothing
+  // legacy maps onto them.
+  'layout-list',
+  'layout-rows',
+  'layout-grid'
+]
 // sprite ids whose Tabler source icon has a different name — e.g. the magnifier
 // ships as "loupe" because adblock cosmetic filters hide elements whose
 // attributes mention "#search"

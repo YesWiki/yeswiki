@@ -1,54 +1,58 @@
+{# The entry list's search box.
+
+   Uses @core/_searchbox.twig, like {{search}} and everything else that offers a search
+   field. It used to assemble its own out of Bootstrap 3 markup -- `input-group`,
+   `add-on`, `input-prepend`, `btn btn-primary`, `input-lg` -- whose stylesheet ticket 16
+   removed, so it rendered as three loose unstyled controls. One component, one look, one
+   place to change it. #}
 <div id="bazar-search-{{ listId }}">
     <form action=""
           method="get"
           name="search-form"
           id="search-form"
-          class="">
+          class="bazar-search yw-form-group">
         {% set handler = url({tag:pageTag})|slice(url({tag:pageTag,handler:' '})|length-1) %}
         <input type="hidden"
                name="wiki"
                value="{{ pageTag ~ (handler ? '/' ~ handler : '') }}">
         <input type="hidden" name="view" value="consulter">
         <input type="hidden" name="action" value="recherche">
-        <div class="bazar-search yw-form-group">
-            <div class="input-group input-prepend input-append">
-                <span class="add-on input-group-addon"><svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg></span>
-                <input type="text"
-                       value="{{ params.keywords }}"
-                       name="keywords"
-                       placeholder="{{ _t("BAZ_MOT_CLE") }}"
-                       class="search-input yw-input input-lg">
-                {% if forms|length > 1 %}
-                    <span class="input-group-btn search-filter"
-                          style="width:auto;
-                                 max-width:240px">
-                        <select onchange="javascript:this.form.submit();"
-                                class="yw-input input-lg"
-                                name="selectedID">
-                            <option value="">{{ _t("BAZ_TOUS_TYPES_FICHES") }}</option>
-                            {% for form in forms %}
-                                <option value="{{ form.id }}"
-                                        {% if form.id == selectedID %}selected{% endif %}>
-                                    {{ form.label }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </span>
-                {% else %}
-                    <input type="hidden" name="id" value="{{ formId }}">
-                {% endif %}
-                {% if params.query %}
-                    <input type="hidden"
-                           name="query"
-                           value="{{ params.query is iterable ? params.query|map(p => p.name ~ p.operator ~ p.value) |join(', ') : params.query }}">
-                {% endif %}
-                <input type="hidden" name="facet" value="{{ facet }}">
-                <span class="input-group-btn search-button-container">
-                    <input value="{{ _t("BAZ_RECHERCHER") }}"
-                           class="btn btn-primary"
-                           type="submit" />
-                </span>
+
+        {% include '@core/_searchbox.twig' with {
+            name: 'keywords',
+            value: params.keywords,
+            placeholder: _t('BAZ_MOT_CLE'),
+            button: _t('BAZ_RECHERCHER')
+        } only %}
+
+        {% if forms|length > 1 %}
+            {# the form chooser stays a select rather than becoming facet chips: these are a
+               webmaster's forms, there can be dozens of them, and unlike the search
+               surface's content types they carry no counts worth showing #}
+            <div class="yw-searchbox-aside">
+                <label class="sr-only" for="bazar-search-form-{{ listId }}">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</label>
+                <select onchange="javascript:this.form.submit();"
+                        id="bazar-search-form-{{ listId }}"
+                        class="yw-input"
+                        name="selectedID">
+                    <option value="">{{ _t("BAZ_TOUS_TYPES_FICHES") }}</option>
+                    {% for form in forms %}
+                        <option value="{{ form.id }}"
+                                {% if form.id == selectedID %}selected{% endif %}>
+                            {{ form.label }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
-        </div>
+        {% else %}
+            <input type="hidden" name="id" value="{{ formId }}">
+        {% endif %}
+
+        {% if params.query %}
+            <input type="hidden"
+                   name="query"
+                   value="{{ params.query is iterable ? params.query|map(p => p.name ~ p.operator ~ p.value) |join(', ') : params.query }}">
+        {% endif %}
+        <input type="hidden" name="facet" value="{{ facet }}">
     </form>
 </div>

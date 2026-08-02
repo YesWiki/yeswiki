@@ -361,18 +361,26 @@ span.missingpage,
   column-count: 4;
 }
 
+/* Break out of #yw-main's max-width and run edge to edge.
+   --yw-viewport-width, not 100vw: `vw` counts the vertical scrollbar's gutter, so on any page
+   long enough to scroll -- which is every page this class is used on -- a 100vw block is about
+   15px wider than what is actually visible, and the document gets a horizontal scrollbar it
+   never asked for. yw-core.js keeps the variable equal to documentElement.clientWidth, which
+   is the same measurement minus the gutter; 100vw is the no-JS fallback, i.e. today's
+   behaviour. */
 .full-width {
-  width: 100vw !important;
+  width: var(--yw-viewport-width, 100vw) !important;
   position: relative;
   left: 50%;
   right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  margin-left: calc(var(--yw-viewport-width, 100vw) / -2);
+  margin-right: calc(var(--yw-viewport-width, 100vw) / -2);
 }
 
 body {
-  overflow-x: hidden;
-} /* hack pour cacher l'ascenseur horizontal */
+  padding: 0;
+  margin: 0;
+}
 
 .popover .page {
   /* gestion des popup au survol modalbox-hover */
@@ -966,6 +974,454 @@ td.users-table-break-word {
   background: var(--success-color);
   border-color: var(--success-color);
   color: #fff;
+}
+
+/* ---- Search box ------------------------------------------------
+   ONE search box for the whole wiki: {{search}}, the entry lists, the admin
+   content screen. It is a component rather than a set of per-surface rules
+   because they had drifted into three different boxes -- {{search}} shipped
+   with a `yw-input-group` class that was never styled at all (the icon stacked
+   above the field), while the entry list still wore Bootstrap 3 leftovers
+   (`input-group`, `add-on`, `input-prepend`) that ticket 16 removed the CSS for.
+   Markup lives in templates/_searchbox.twig; change it there, once.          */
+.yw-searchbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 42rem;
+  /* centred: this is the primary control on a search page, not a form row */
+  margin: 0 auto 1rem;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 999px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.yw-searchbox:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+/* the icon sits INSIDE the field: absolutely positioned and click-through, so
+   the whole width stays a text target */
+.yw-searchbox__icon {
+  position: absolute;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: var(--neutral-soft-color);
+}
+.yw-searchbox__icon .yw-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.yw-searchbox__input.yw-input,
+.yw-searchbox__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* .yw-input caps every field at 350px, which is right for a form row and
+     wrong for the one control a search page is about */
+  max-width: none;
+  margin: 0;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--neutral-color);
+  background: transparent;
+  border: 0;
+  border-radius: 999px 0 0 999px;
+}
+.yw-searchbox__input:focus {
+  outline: none;
+}
+/* the browser's own clear affordance duplicates the one in the box */
+.yw-searchbox__input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+.yw-searchbox__button {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0.3rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #fff;
+  white-space: nowrap;
+  background: var(--primary-color);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.yw-searchbox__button:hover {
+  filter: brightness(1.15);
+}
+.yw-searchbox__button .yw-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  vertical-align: -0.2em;
+}
+@media (max-width: 30rem) {
+  /* the label is the first thing to go; the icon still says what the box is */
+  .yw-searchbox__button-label {
+    display: none;
+  }
+  .yw-searchbox__button {
+    padding: 0.5rem 0.8rem;
+  }
+}
+
+/* A search box that is one control among several in a filter bar, rather than
+   the thing a page is about: same component, not centred, not oversized. The
+   alternative -- a hero pill inside a row of six filters -- would be uniform in
+   the letter and wrong in the eye. */
+.yw-searchbox--inline {
+  max-width: 24rem;
+  margin: 0;
+}
+.yw-searchbox--inline .yw-searchbox__input {
+  padding: 0.45rem 0.75rem 0.45rem 2.5rem;
+  font-size: 0.95rem;
+}
+.yw-searchbox--inline .yw-searchbox__icon {
+  left: 0.75rem;
+}
+.yw-searchbox--inline .yw-searchbox__icon .yw-icon {
+  width: 1rem;
+  height: 1rem;
+}
+.yw-searchbox--inline .yw-searchbox__button {
+  margin: 0.2rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* the entry list keeps a form chooser beside its box */
+.yw-searchbox-aside {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.yw-searchbox-aside .yw-input {
+  max-width: 24rem;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+}
+
+/* ---- Result display switcher and layouts -----------------------
+   Three ways to read the same results: a list (dense, scannable), an accordion
+   (titles only until asked), and cards (roomy, for browsing). Radios like the
+   facets, so the choice is form state that survives a swap on its own. */
+/* Box and switcher on one row: the switcher says how to read the results, so it belongs
+   with the control that produces them rather than with the results themselves.
+   The row carries the max-width the box used to carry and the box grows into whatever the
+   switcher leaves -- otherwise the two together overflow and the switcher wraps onto its own
+   line, aligned left, which is neither where it was nor where it was asked to be. */
+.yw-search-form {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  align-items: center;
+  max-width: 46rem;
+  margin: 0 auto 0.5rem;
+}
+.yw-search-form .yw-searchbox {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+.yw-search-form .yw-display-switch {
+  flex: 0 0 auto;
+}
+@media (max-width: 34rem) {
+  /* below this the two stop fitting side by side; the switcher goes under, centred */
+  .yw-search-form {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+.yw-display-switch {
+  display: inline-flex;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 999px;
+}
+.yw-display-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.yw-display-switch__option {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  color: var(--neutral-color);
+  cursor: pointer;
+  border-radius: 999px;
+}
+.yw-display-switch__option .yw-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.yw-display-switch__option:hover {
+  filter: brightness(0.95);
+}
+.yw-display-switch input:checked + .yw-display-switch__option {
+  color: #fff;
+  background: var(--primary-color);
+}
+.yw-display-switch input:focus-visible + .yw-display-switch__option {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* ---- Accordion --------------------------------------------------
+   One accordion for the whole wiki: <details>/<summary>, rendered by
+   templates/_accordion-item.twig. Used by the {{accordion}}/{{panel}} pair, the
+   bazar entry list, the syndication list, the pages accordion and search.
+   <details> does the work, so all that is left here is the affordance. */
+.yw-accordion__item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.yw-accordion__item:last-child {
+  border-bottom: 0;
+}
+.yw-accordion__summary {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  cursor: pointer;
+  /* the default triangle is replaced by the chevron below, which can be animated */
+  list-style: none;
+}
+.yw-accordion__summary::-webkit-details-marker {
+  display: none;
+}
+.yw-accordion__summary::before {
+  flex: 0 0 auto;
+  content: '›';
+  transition: transform 0.15s ease;
+}
+.yw-accordion__item[open] > .yw-accordion__summary::before {
+  transform: rotate(90deg);
+}
+/* A <summary> that also carries panel classes -- a standalone collapsible {{panel}} -- must
+   still lay out as a row: `.yw-panel__heading` is `display: block`, which dropped the title
+   onto the line below the chevron. `summary.yw-accordion__summary` outranks it. */
+summary.yw-accordion__summary {
+  display: flex;
+}
+/* headings keep their level (a panel title is an <h4>) but not their looks: inside a summary
+   they are the summary's text, and the theme's h4 colour made them orange */
+.yw-accordion__summary > * {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+.yw-accordion__body {
+  padding: 0 0 1rem 1.25rem;
+}
+/* the summary is the control, so it takes the focus ring rather than the whole panel */
+.yw-accordion__item:focus-within {
+  outline: none;
+}
+.yw-accordion__summary:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+/* Cards reuse styles/bazar/card.css (.bazar-cards-container / .bazar-card / .area), so a
+   search result card and an entry card are the same object. Two things that stylesheet
+   leaves to its caller: the column count, which the entry list sets inline from Vue, and a
+   card outline, which an entry card gets from its image. */
+.yw-search-results--cards {
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+.yw-search-results--cards .bazar-card {
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+}
+.yw-search-results--cards .bazar-card:hover {
+  border-color: var(--primary-color);
+}
+.yw-search-results--cards .yw-search-result-title {
+  margin-bottom: 0.5rem;
+}
+
+/* ---- Facets ----------------------------------------------------
+   The content-type filter, shown only ONCE A SEARCH HAS RESULTS: before that
+   there is nothing to narrow, and a dropdown of six types next to an empty box
+   is a question nobody has asked yet. Radios rather than buttons so the state
+   is the form's and travels with hx-include -- no JS holds it.            */
+.yw-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+.yw-facet {
+  margin: 0;
+}
+.yw-facet input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.yw-facet__label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--neutral-color);
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 999px;
+}
+.yw-facet__label:hover {
+  filter: brightness(0.97);
+}
+.yw-facet input:checked + .yw-facet__label {
+  color: #fff;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.yw-facet input:focus-visible + .yw-facet__label {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+.yw-facet__count {
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+/* ---- Search results --------------------------------------------
+   The classic list keeps its numbers: the order is meaningful (it is a ranking,
+   and `start` continues the count across pages), and "the third result" is how
+   people refer to one. The accordion and card layouts are not <ol> -- a number
+   beside a disclosure triangle or inside a card would be noise. */
+ol.yw-search-results {
+  margin: 0;
+  padding-left: 2.5rem;
+  list-style: decimal;
+}
+ol.yw-search-results > li::marker {
+  color: var(--neutral-color);
+}
+ul.yw-search-results,
+div.yw-search-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Row spacing belongs to the LIST layout, not to a result as such. The accordion and card
+   layouts bring their own -- .yw-accordion__item has its own separator and .bazar-card its
+   own padding -- so applying this to every result gave accordion rows a double border and a
+   visible gap between them. */
+ol.yw-search-results > .yw-search-result {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--neutral-soft-color);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+ol.yw-search-results > .yw-search-result:last-child {
+  border-bottom: 0;
+}
+.yw-search-result-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  /* A page's title is very often its tag, and a tag is one unbroken word -- so
+     `LogDesActionsAdministratives20260802` has nowhere to wrap and simply ran out of its
+     card and over the one beside it. `anywhere` rather than `break-word` because it also
+     lowers the element's min-content width, which is what stops one long tag widening the
+     whole grid column. */
+  overflow-wrap: anywhere;
+}
+/* the type follows the title: the title is what a visitor scans for, and a badge in front
+   of it makes every row start with the same handful of words */
+.yw-search-result-type {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: var(--neutral-color);
+  vertical-align: 0.1em;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+}
+.yw-search-result-excerpt {
+  margin: 0;
+  color: var(--neutral-color);
+  opacity: 0.85;
+}
+.yw-search-count,
+.yw-search-empty,
+.yw-search-prompt {
+  margin: 0 0 1rem;
+  text-align: center;
+  color: var(--neutral-color);
+  opacity: 0.8;
+}
+.yw-search-pagination {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.yw-search-body {
+  min-height: 2.5rem;
+}
+/* The indicator lives inside the search button, overlaying its label. The button is the one
+   part of the box whose size never changes, so a request cannot move anything below it --
+   an indicator in normal flow pushed every result down when a request started and pulled
+   them back when it ended, so the list jittered on every keystroke. */
+.yw-searchbox__spinner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.yw-searchbox__spinner .yw-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  /* the same keyframes the yw-icon--spin utility uses, not a second copy of them */
+  animation: yw-icon-spin 0.8s linear infinite;
+}
+/* the label dims for the spinner rather than being removed, so the button keeps its width */
+.yw-searchbox__spinner.htmx-request ~ .yw-searchbox__button-label {
+  opacity: 0;
 }
 
 /* ---- Form controls -------------------------------------------- */
@@ -1621,6 +2077,10 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   padding: 8px 12px;
   text-decoration: none;
   color: var(--neutral-color);
+  /* transparent, not absent: the active state below adds a 2px bottom border, and without
+     a placeholder here the active link is 2px taller than its neighbours -- which makes the
+     whole navbar change height depending on which page you are on */
+  border-bottom: 2px solid transparent;
 }
 .yw-nav li.active a {
   color: var(--primary-color);
@@ -1689,13 +2149,22 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 [data-toggle='tooltip'][title]::before,
 [data-tooltip='tooltip'][title]::after,
 [data-tooltip='tooltip'][title]::before {
+  /* `display: none`, not `visibility: hidden` alone: a hidden-but-laid-out box still counts
+     towards the document's scrollable overflow, and this one is `width: max-content` hanging
+     off the middle of its button. The rightmost button in the top bar is a 39px icon carrying
+     a "Se connecter" tooltip, so every page in the wiki was ~13px wider than its window and
+     had a horizontal scrollbar nobody could see the cause of. A tooltip nobody is pointing at
+     should take no space at all.
+
+     It costs the fade-in -- a transition cannot run from `display: none` without
+     @starting-style -- which is a fair trade for a scrollbar on every page. */
+  display: none;
   opacity: 0;
   visibility: hidden;
   position: absolute;
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  transition: opacity 0.15s ease;
   pointer-events: none;
   z-index: 20;
 }
@@ -1741,6 +2210,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 [data-tooltip='tooltip'][title]:hover::before,
 [data-tooltip='tooltip'][title]:focus-visible::after,
 [data-tooltip='tooltip'][title]:focus-visible::before {
+  display: block;
   opacity: 1;
   visibility: visible;
 }
@@ -2341,6 +2811,8 @@ ul.nav-tabs li a {
   padding: 8px 12px;
   text-decoration: none;
   color: var(--neutral-color);
+  /* see .yw-nav li a: reserves the active state's border so the bar keeps its height */
+  border-bottom: 2px solid transparent;
 }
 ul.nav li.active a,
 ul.nav-tabs li.active a {
@@ -2390,6 +2862,27 @@ ul.nav-tabs li.active a {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ------------------------------------------------------------------ htmx indicators
+   htmx ships no CSS: `.htmx-indicator` is a class it *toggles*, and styling it is the
+   application's job. Nothing here did, so every indicator in the wiki was permanently
+   visible AND permanently occupying a row -- which is what made the search spinner look
+   like a loading bar shoving the results down.
+
+   Hidden by visibility rather than by `display: none`, so an indicator that reserves its
+   own space (a fixed bar, an inline dot) keeps it and does not reflow on every request.
+   Indicators that must not affect layout at all are positioned out of flow instead -- see
+   .yw-search-spinner. */
+.htmx-indicator {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+.htmx-request .htmx-indicator,
+.htmx-indicator.htmx-request {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ------------------------------------------------------------------ boosted navigation

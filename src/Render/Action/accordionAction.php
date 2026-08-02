@@ -25,6 +25,9 @@ class AccordionAction extends YesWikiAction implements RegisteredAction
                 $accordionID = uniqid('accordion_');
                 $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
             }
+            // The id is still emitted so a page can link or style one accordion, but the
+            // panels no longer read it: <details> needs no coordination to open and close
+            // (see PanelAction). Its one cost is that panels no longer close each other.
             echo '<!-- start of accordion -->' . "\n" .
             "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
         } else {

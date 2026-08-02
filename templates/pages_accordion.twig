@@ -1,16 +1,10 @@
 {% if elements|length > 0 %}
 {# the historical nb_accordion counter never actually incremented (post-increment
    self-assignment), so the id was always accordion1 — kept as-is #}
-<div class="panel-group accordion-group no-dblclick" id="accordion1">
+{# the wiki's one accordion -- see templates/_accordion-item.twig #}
+<div class="yw-accordion no-dblclick" id="accordion1">
 {% for tag, element in elements %}
-  <div class="panel panel-default">
-    <button class="panel-heading collapsed" data-target="#collapse{{ tag }}" data-toggle="collapse" aria-expanded="false">
-      <h4 class="panel-title">
-        {{ element.title|raw }}
-      </h4>
-    </button>
-    <div id="collapse{{ tag }}" class="panel-collapse collapse">
-      <div class="panel-body">
+  {% set body %}
         {{ format('{{include page="' ~ tag ~ '"}}')|raw }}
         <div class="footer-buttons">
           <a href="{{ url({tag: tag}) }}" class="btn btn-primary"><i class="icon-eye-open icon-white"></i>&nbsp;{{ _t('TEMPLATE_VIEW_PAGE') }}</a>
@@ -24,9 +18,11 @@
           </div>
           <div class="clearfix"></div>
         </div> <!-- /.footer-buttons -->
-      </div>
-    </div>
-  </div>
+  {% endset %}
+  {% include '@core/_accordion-item.twig' with {
+      summary: element.title,
+      body: body
+  } only %}
 {% endfor %}
 </div>
 {% endif %}

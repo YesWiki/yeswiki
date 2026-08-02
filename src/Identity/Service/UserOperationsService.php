@@ -15,7 +15,7 @@ use YesWiki\Kernel\Service\HibernationService;
 
 class UserOperationsService extends YesWikiController
 {
-    use LimitationsTrait; // can be used here because included via AuthenticationService
+    use LimitationsTrait;
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
@@ -326,9 +326,9 @@ class UserOperationsService extends YesWikiController
     private function removeOwnership(User $user)
     {
         $pagesWhereOwner = $this->dbService->loadAll("
-            SELECT `tag` FROM {$this->dbService->prefixTable('pages')}
-            WHERE `owner` = '{$this->dbService->escape($user['name'])}'
-            AND `latest` = 'Y' ;
+            SELECT tag FROM {$this->dbService->prefixTable('pages')}
+            WHERE owner = '{$this->dbService->escape($user['name'])}'
+            AND latest = 'Y' ;
         ");
         $pagesWhereOwner = array_map(function ($page) {
             return $page['tag'];

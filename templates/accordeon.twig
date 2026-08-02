@@ -3,15 +3,10 @@
 {% if title is not empty %}
 <h2>{{ title }}</h2>
 {% endif %}
-<div class="bazar-list panel-group accordion-group no-dblclick {{ class }}" id="accordion{{ urlHash }}">
-{% set i = 0 %}
+{# the wiki's one accordion -- see templates/_accordion-item.twig #}
+<div class="yw-accordion bazar-list no-dblclick {{ class }}" id="accordion{{ urlHash }}">
 {% for page in syndication.pages %}
-  {% set i = i + 1 %}
-  <div class="bazar-entry panel panel-default collapsed">
-    <button class="panel-heading collapsed"
-       data-target="#collapse{{ urlHash }}_{{ i }}"
-       data-toggle="collapse">
-      <h4 class="panel-title">
+  {% set summary %}
         {% if page.date is not empty %}
         <small class="date_rss">{{ page.date }}</small>
         {% endif %}
@@ -30,19 +25,20 @@
         {% if page.mappingInput is not empty %}
           <a class="bazar-actions" onclick="event.stopPropagation();" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg></a>
         {% endif %}
-      </h4>
-    </button>
-    <div id="collapse{{ urlHash }}_{{ i }}" class="panel-collapse collapse">
-      <div class="panel-body">
+  {% endset %}
+  {% set body %}
         <div class="feed-description">
           {{ page.description|raw }}
         </div>
         <a class="btn btn-default" href="{{ page.url }}" {% if ext == true %}target="_blank"{% endif %}>
           {{ _t('SYNDICATION_SEE_ALL_CONTENT') }}
         </a>
-      </div>
-    </div>
-  </div>
+  {% endset %}
+  {% include '@core/_accordion-item.twig' with {
+      class: 'bazar-entry',
+      summary: summary,
+      body: body
+  } only %}
 {% endfor %}
 </div>
 <!-- SYNDICATION accordeon end -->

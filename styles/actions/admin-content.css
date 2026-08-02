@@ -71,6 +71,14 @@
 
 .admin-content-table-wrap {
   position: relative;
+  /* The table is as wide as its widest page name, and page names have no limit -- so without
+     this it pushes the *document* sideways and the whole window gets a horizontal scrollbar.
+     That is not just untidy: the filter bar above is a wrapping flex row, so every time the
+     table is swapped (which is every keystroke in the filter box) the page's width changes,
+     the row crosses its wrap threshold, and the search box jumps between sharing a line and
+     taking one of its own. Scrolling the table inside its own box keeps the page's width a
+     constant. */
+  overflow-x: auto;
 }
 .admin-content-spinner {
   display: none;

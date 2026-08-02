@@ -442,7 +442,7 @@ class PageManager
         $sql = 'SELECT time FROM ' . $this->dbService->prefixTable('pages')
             . " WHERE tag = '" . $this->dbService->escape($pageTag) . "'"
             . " AND comment_on = ''"
-            . ' ORDER BY `time` ASC LIMIT 1';
+            . ' ORDER BY time ASC LIMIT 1';
         $page = $this->dbService->loadSingle($sql);
         if ($page) {
             return $page['time'];
@@ -642,7 +642,7 @@ class PageManager
             } else {
                 $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
-                    "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
+                    "SELECT owner FROM {$this->dbService->prefixTable('pages')} " .
                         "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
                         'LIMIT 1'
                 );

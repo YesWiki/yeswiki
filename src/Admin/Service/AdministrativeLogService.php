@@ -61,7 +61,7 @@ class AdministrativeLogService
                     // there are some versions to remove from DB
                     // let's build one big request, that's better...
                     $sql = <<<SQL
-                    DELETE FROM {$this->dbService->prefixTable('pages')} WHERE `id` IN ($formattedIds);
+                    DELETE FROM {$this->dbService->prefixTable('pages')} WHERE id IN ($formattedIds);
                     SQL;
 
                     // ... and send it !

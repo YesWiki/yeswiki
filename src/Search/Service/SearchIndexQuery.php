@@ -180,6 +180,46 @@ class SearchIndexQuery
     }
 
     /**
+     * How many Contents of each type the query matches, for the facet row.
+     *
+     * Deliberately **not** filtered by the currently selected type: the point of a facet is
+     * to show what else is there, so it counts across every type and the surface highlights
+     * the chosen one.
+     *
+     * Capped like the total, and for the same reason -- these counts cannot stop early
+     * either, and on a very broad query they would pay a second full pass over the match set
+     * to produce numbers nobody reads past "lots".
+     *
+     * @return array<string, int> content type => count, only types with a match, biggest first
+     */
+    public function facets(string $query): array
+    {
+        $groups = $this->parseQuery($query);
+        if ($groups === [] || !$this->schema->exists()) {
+            return [];
+        }
+
+        $table = $this->schema->table();
+        $where = $this->where($groups, null);
+        $cap = self::COUNT_CAP + 1;
+
+        // DISTINCT tag inside, so a Content with several ACL-bucket rows counts once
+        $rows = $this->dbService->loadAll(
+            'SELECT content_type, COUNT(*) AS total FROM ('
+            . "SELECT DISTINCT tag, content_type FROM {$table} WHERE {$where} LIMIT {$cap}"
+            . ') yw_facets GROUP BY content_type'
+        );
+
+        $facets = [];
+        foreach ($rows as $row) {
+            $facets[(string)$row['content_type']] = (int)$row['total'];
+        }
+        arsort($facets);
+
+        return $facets;
+    }
+
+    /**
      * The text of one Content as the index holds it, for building an excerpt.
      *
      * Only the buckets this user may read, so an excerpt can never quote a restricted field

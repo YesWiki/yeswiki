@@ -1,0 +1,60 @@
+{# The wiki's one search box. Used by {{search}}, the entry lists and the admin content
+   screen; styles live under `.yw-searchbox` in yw-core.css.
+
+   It exists because the three of them had drifted apart: {{search}} shipped a class that was
+   never styled (the icon stacked above the field), and the entry list still wore the
+   Bootstrap 3 `input-group`/`add-on` markup whose CSS ticket 16 removed. Anything that wants
+   a search field includes this rather than assembling its own.
+
+   Parameters (all optional except `name`):
+     name          the field name -- `phrase` for {{search}}, `keywords` for an entry list
+     value         current value
+     placeholder   defaults to the generic search placeholder
+     button        submit label; pass '' for a box with no button (htmx-driven surfaces
+                   still get one by default -- the user expects something to press)
+     attrs         map of extra attributes for the input, e.g. htmx wiring:
+                   {'hx-get': url, 'hx-target': '#results', 'hx-trigger': 'input changed delay:300ms'}
+     button_attrs  same, for the submit button -- an htmx-driven surface needs it wired too,
+                   since a form that never submits leaves the button inert otherwise
+     id            id for the input, when a caller needs to address it
+     modifier      extra class on the wrapper, e.g. 'yw-searchbox--inline' for a box that is
+                   one filter among several rather than the point of the page
+     spinner_id    id for a loading indicator rendered INSIDE the button. Point an
+                   `hx-indicator` at it: the button is the one element on the box whose size
+                   never changes, so an indicator there cannot move anything below it
+     autofocus     take focus on arrival. Only for a surface whose whole purpose is the
+                   search -- doing it for a box embedded in a page of prose would yank the
+                   reader out of what they came to read. Emits BOTH the native attribute (for
+                   a directly loaded document) and data-yw-autofocus (for an htmx-boosted
+                   arrival, where the attribute never fires because nothing was parsed) #}
+{% set name = name|default('phrase') %}
+{% set placeholder = placeholder|default(_t('TEMPLATE_SEARCH_PLACEHOLDER')) %}
+{% set button = button is defined ? button : _t('SEARCH') %}
+<div class="yw-searchbox {{ modifier|default('') }}">
+    <span class="yw-searchbox__icon">{{ icon('loupe') }}</span>
+    <input type="search"
+           name="{{ name }}"
+           {% if id is defined and id %}id="{{ id }}"{% endif %}
+           class="yw-searchbox__input"
+           value="{{ value|default('') }}"
+           placeholder="{{ placeholder }}"
+           aria-label="{{ placeholder }}"
+           autocomplete="off"
+           accesskey="C"
+           {% if autofocus|default(false) %}autofocus data-yw-autofocus{% endif %}
+           {% for attribute, attributeValue in attrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %} />
+    {% if button is not empty %}
+        <button type="submit"
+                class="yw-searchbox__button"
+                {% for attribute, attributeValue in button_attrs|default({}) %}{{ attribute }}="{{ attributeValue }}" {% endfor %}>
+            {% if spinner_id is defined and spinner_id %}
+                {# before the label, so the label can be dimmed by a sibling selector when
+                   htmx marks this .htmx-request -- no JS, and the button keeps its width #}
+                <span id="{{ spinner_id }}" class="htmx-indicator yw-searchbox__spinner" aria-hidden="true">
+                    {{ icon('loader-2') }}
+                </span>
+            {% endif %}
+            <span class="yw-searchbox__button-label">{{ button }}</span>
+        </button>
+    {% endif %}
+</div>

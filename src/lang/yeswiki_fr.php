@@ -162,6 +162,11 @@ return [
     // ticket 18 : l'index plein texte cherche par mots et par début de mot, les anciens
     // jokers ?/* n'ont plus de sens -- « atelier » trouve déjà « ateliers »
     'NEWTEXTSEARCH_HINT' => 'La recherche se fait par début de mot : « atelier » trouve aussi « ateliers »',
+    'SEARCH_DISPLAY' => 'Afficher les résultats en',
+    'SEARCH_DISPLAY_LIST' => 'Liste',
+    'SEARCH_DISPLAY_ACCORDION' => 'Accordéon',
+    'SEARCH_DISPLAY_CARDS' => 'Cartes',
+    'SEARCH_OPEN_RESULT' => 'Ouvrir',
     'SEARCH_FILTER_TYPE' => 'Filtrer par type de contenu',
     'SEARCH_TYPE_ALL' => 'Tout',
     'SEARCH_TYPE_PAGE' => 'Page',
@@ -170,7 +175,7 @@ return [
     'SEARCH_TYPE_FILE' => 'Fichier',
     'SEARCH_TYPE_USER' => 'Compte',
     'SEARCH_TYPE_FORM' => 'Formulaire',
-    'SEARCH_TYPE_SOMETHING' => 'Saisissez ce que vous cherchez.',
+    'SEARCH_TYPE_SOMETHING' => '☝️ Saisissez ce que vous cherchez.',
     'SEARCH_N_RESULTS' => '%{total} résultat(s)',
     'SEARCH_N_OR_MORE_RESULTS' => 'plus de %{total} résultats — affinez votre recherche',
     'SEARCH_PAGE_N_OF_M' => 'page %{page} sur %{pages}',

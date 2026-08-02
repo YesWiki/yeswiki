@@ -1,70 +1,95 @@
 {# {{search}} (ticket 26).
 
-   Shaped after admin-content-action.twig: the form is never submitted, it is `hx-include`d
-   into a GET of the results fragment. Filtering, paging and narrowing by content type are
-   then the same request with different parameters, and there is exactly one place that knows
-   how to render a result.
+   The form is never submitted: it is `hx-include`d into a GET of the results fragment, so
+   filtering, narrowing by type and paging are all the same request with different
+   parameters, and exactly one place knows how to render a result.
 
-   The container loads on `revealed` as well as `load` so an embedded {{search}} far down a
+   The content-type filter is NOT here. It lives in the results fragment, because a filter is
+   only meaningful once there is something to narrow -- offering six types beside an empty box
+   asks a question nobody has yet. The facets arrive with the first results, carrying counts,
+   and `hx-include` reaches into the fragment to pick up the chosen one.
+
+   The container loads on `revealed` as well as `load`, so an embedded {{search}} far down a
    long page does not query before anyone has looked at it. #}
+{# Declared by the page, not by the results fragment that uses it. The results arrive as an
+   htmx fragment, and a fragment has no <head> for include_css to write into; and the display
+   switcher moves between list, accordion and cards without a page load, so every mode's
+   styling has to already be here by the time the visitor picks one. #}
+{{ include_css('styles/bazar/card.css') }}
 <div class="yw-search" id="yw-search">
     <form id="yw-search-form" class="yw-search-form" onsubmit="return false;">
-        <div class="yw-input-group">
-            <span class="yw-input-group-addon">{{ icon('loupe') }}</span>
-            <input type="search"
-                   name="phrase"
-                   id="yw-search-phrase"
-                   class="yw-input"
-                   value="{{ phrase }}"
-                   placeholder="{{ _t('TEMPLATE_SEARCH_PLACEHOLDER') }}"
-                   autocomplete="off"
-                   accesskey="C"
-                   hx-get="{{ apiUrl }}"
-                   hx-target="#yw-search-results"
-                   hx-include="#yw-search-form"
-                   hx-indicator="#yw-search-spinner"
-                   {# `input`, not `keyup`: keyup misses a paste, misses the search field's
-                      native clear button, and misses anything setting the value
-                      programmatically. `changed` keeps arrow keys and modifiers from
-                      re-querying, and the delay debounces typing. #}
-                   hx-trigger="input changed delay:300ms, search" />
-        </div>
+        {# Both the field and the button fetch the fragment themselves. The button, because a
+           form that never submits leaves it inert otherwise -- and a search box needs
+           something pressable for anyone who does not trust a debounce they cannot see.
 
-        {% if showFilters %}
-            <div class="yw-search-filters">
-                <label class="yw-search-filter">
-                    <span class="sr-only">{{ _t('SEARCH_FILTER_TYPE') }}</span>
-                    <select name="type"
-                            class="yw-input"
-                            hx-get="{{ apiUrl }}"
-                            hx-target="#yw-search-results"
-                            hx-include="#yw-search-form"
-                            hx-indicator="#yw-search-spinner"
-                            hx-trigger="change">
-                        <option value="">{{ _t('SEARCH_TYPE_ALL') }}</option>
-                        {% for t in types %}
-                            <option value="{{ t }}"{{ t == type ? ' selected' : '' }}>{{ _t('SEARCH_TYPE_' ~ t|upper) }}</option>
-                        {% endfor %}
-                    </select>
+           `input`, not `keyup`: keyup misses a paste, misses the search field's native clear
+           button, and misses anything setting the value programmatically. `changed` keeps
+           arrow keys and modifiers from re-querying; the delay debounces typing. #}
+        {% set htmxTarget = {
+            'hx-get': apiUrl,
+            'hx-target': '#yw-search-results',
+            'hx-include': '#yw-search-form, #yw-search-facets',
+            'hx-indicator': '#yw-search-spinner'
+        } %}
+        {% include '@core/_searchbox.twig' with {
+            name: 'q',
+            id: 'yw-search-phrase',
+            value: phrase,
+            autofocus: autofocus,
+            spinner_id: 'yw-search-spinner',
+            attrs: htmxTarget|merge({'hx-trigger': 'input changed delay:300ms, search'}),
+            button_attrs: htmxTarget
+        } only %}
+
+        {# The layout switcher belongs to the FORM, beside the box, not to the results: it
+           says how to read whatever comes back, so it should not appear and disappear with
+           the results themselves. It is still a radio group, so it travels with hx-include
+           exactly as the facets do. #}
+        <fieldset class="yw-display-switch" id="yw-search-display">
+            <legend class="sr-only">{{ _t('SEARCH_DISPLAY') }}</legend>
+            {% for mode, modeIcon in {'list': 'layout-list', 'accordion': 'layout-rows', 'cards': 'layout-grid'} %}
+                <input type="radio" name="display" value="{{ mode }}" id="yw-display-{{ mode }}"
+                       {{ display == mode ? 'checked' : '' }}
+                       hx-get="{{ apiUrl }}"
+                       hx-target="#yw-search-results"
+                       hx-include="#yw-search-form, #yw-search-facets"
+                       hx-indicator="#yw-search-spinner"
+                       hx-trigger="change" />
+                <label class="yw-display-switch__option"
+                       for="yw-display-{{ mode }}"
+                       title="{{ _t('SEARCH_DISPLAY_' ~ mode|upper) }}">
+                    {{ icon(modeIcon) }}
+                    <span class="sr-only">{{ _t('SEARCH_DISPLAY_' ~ mode|upper) }}</span>
                 </label>
-            </div>
-        {% else %}
-            <input type="hidden" name="type" value="{{ type }}" />
-        {% endif %}
+            {% endfor %}
+        </fieldset>
 
         <input type="hidden" name="limit" value="{{ limit }}" />
+        {% if not showFilters %}
+            {# an embedded box scoped to one type: the type is fixed and the facet row would
+               only offer to widen past what the webmaster asked for #}
+            <input type="hidden" name="type" value="{{ type }}" />
+            <input type="hidden" name="facets" value="0" />
+        {% endif %}
     </form>
 
-    <div id="yw-search-spinner" class="htmx-indicator yw-search-spinner" aria-hidden="true">
-        {{ icon('loader-2') }}
-    </div>
-
-    <div id="yw-search-results"
-         class="yw-search-results-container"
-         aria-live="polite"
-         hx-get="{{ apiUrl }}"
-         hx-include="#yw-search-form"
-         hx-indicator="#yw-search-spinner"
-         hx-trigger="load, revealed">
+    {# no separate spinner element: it lives inside the search button, which is the one part
+       of the box whose size never changes, so a request cannot move the results at all #}
+    <div class="yw-search-body">
+        {# hx-disinherit: htmx attributes are inherited by descendants, and the results are
+           full of links. Without this, clicking a result issued its (boosted) GET with this
+           element's `hx-include` applied -- so the whole search form rode along and the
+           visitor landed on `?ThePage&q=…&display=list&limit=20`, carrying a search they had
+           already left into every page they went to next. These attributes describe how *this
+           container* loads itself; nothing inside it should be answering to them. #}
+        <div id="yw-search-results"
+             class="yw-search-results-container"
+             aria-live="polite"
+             hx-get="{{ apiUrl }}"
+             hx-include="#yw-search-form, #yw-search-facets"
+             hx-indicator="#yw-search-spinner"
+             hx-disinherit="*"
+             hx-trigger="load, revealed">
+        </div>
     </div>
 </div>

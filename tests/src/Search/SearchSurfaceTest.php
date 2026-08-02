@@ -96,26 +96,51 @@ class SearchSurfaceTest extends YesWikiTestCase
         // the container fetches the fragment rather than the action rendering results itself,
         // so filtering and paging are one endpoint rather than two rendering paths
         $this->assertStringContainsString('hx-get=', $html);
-        $this->assertStringContainsString('name="phrase"', $html);
+        // the field is named `q`, so a shared search URL stays short
+        $this->assertStringContainsString('name="q"', $html);
     }
 
-    public function testTheTypeFilterCanBeTurnedOffForAnEmbeddedBox(): void
+    public function testTheActionUsesTheSharedSearchBox(): void
     {
-        $withFilters = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
-        $this->assertStringContainsString('name="type"', $withFilters);
-        $this->assertStringContainsString('<select', $withFilters);
+        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
 
-        $without = $this->getWiki()->services->get(ActionRunner::class)->action('search', false, ['filters' => '0']);
-        $this->assertStringNotContainsString('<select', $without);
-        // the parameter still travels, so an embedded box can be scoped to one type
-        $this->assertStringContainsString('name="type"', $without);
+        // one component for every search field in the wiki -- the surface must not grow its
+        // own markup again, which is how it ended up with a class that had no CSS at all
+        $this->assertStringContainsString('yw-searchbox', $html);
+        $this->assertStringContainsString('yw-searchbox__icon', $html);
+        $this->assertStringContainsString('yw-searchbox__button', $html);
+    }
+
+    /**
+     * The content-type filter is not beside the box; it arrives with the results, because a
+     * filter is only meaningful once there is something to narrow.
+     */
+    public function testTheTypeFilterIsNotOfferedBeforeAnySearch(): void
+    {
+        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+
+        $this->assertStringNotContainsString('yw-facets', $html);
+        $this->assertStringNotContainsString('<select', $html);
+    }
+
+    public function testAnEmbeddedBoxCanBeScopedToOneTypeAndSuppressItsFacets(): void
+    {
+        $scoped = $this->getWiki()->services->get(ActionRunner::class)
+            ->action('search', false, ['filters' => '0', 'type' => 'entry']);
+
+        // the type travels so the embedded box stays scoped ...
+        $this->assertStringContainsString('name="type"', $scoped);
+        $this->assertStringContainsString('value="entry"', $scoped);
+        // ... and the facet row is suppressed, since it would only offer to widen past what
+        // the webmaster asked for
+        $this->assertStringContainsString('name="facets"', $scoped);
     }
 
     // ------------------------------------------------------------------ the fragment
 
     public function testAnEmptyPhrasePromptsRatherThanListingTheWholeWiki(): void
     {
-        $html = $this->fragment(['phrase' => '']);
+        $html = $this->fragment(['q' => '']);
 
         $this->assertStringContainsString(_t('SEARCH_TYPE_SOMETHING'), $html);
         $this->assertStringNotContainsString('yw-search-result ', $html);
@@ -125,7 +150,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
-        $html = $this->fragment(['phrase' => 'ciboulette']);
+        $html = $this->fragment(['q' => 'ciboulette']);
 
         $this->assertStringContainsString('Le potager', $html);
         $this->assertStringContainsString(self::PAGE_TAG, $html);
@@ -135,7 +160,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
     public function testNoMatchSaysSoRatherThanRenderingAnEmptyList(): void
     {
-        $html = $this->fragment(['phrase' => 'zzzzaucunresultatzzzz']);
+        $html = $this->fragment(['q' => 'zzzzaucunresultatzzzz']);
 
         // the message is Twig-escaped in the fragment, so compare against the escaped form
         $this->assertStringContainsString(htmlspecialchars(_t('NO_SEARCH_RESULT'), ENT_QUOTES), $html);
@@ -145,8 +170,84 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
-        $this->assertStringContainsString(self::PAGE_TAG, $this->fragment(['phrase' => 'ciboulette', 'type' => 'page']));
-        $this->assertStringNotContainsString(self::PAGE_TAG, $this->fragment(['phrase' => 'ciboulette', 'type' => 'entry']));
+        $this->assertStringContainsString(self::PAGE_TAG, $this->fragment(['q' => 'ciboulette', 'type' => 'page']));
+        $this->assertStringNotContainsString(self::PAGE_TAG, $this->fragment(['q' => 'ciboulette', 'type' => 'entry']));
+    }
+
+    /**
+     * Facets arrive WITH the results, carry counts, and cover every type the query matches --
+     * not just the selected one, since the point of a facet is to show what else is there.
+     */
+    public function testTheFacetRowArrivesWithTheResultsAndCarriesCounts(): void
+    {
+        $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
+
+        $html = $this->fragment(['q' => 'wiki']);
+
+        if (!str_contains($html, 'yw-facets')) {
+            $this->markTestSkipped('this wiki matches only one content type for that phrase');
+        }
+        $this->assertStringContainsString('yw-facet__count', $html);
+        $this->assertStringContainsString('name="type"', $html, 'a facet is form state, not a JS toggle');
+        $this->assertStringContainsString('type="radio"', $html);
+    }
+
+    /** Selecting a facet keeps it checked, so the choice survives the swap that renders it. */
+    public function testTheSelectedFacetComesBackChecked(): void
+    {
+        // a phrase spanning more than one content type: with only one there is nothing to
+        // narrow and the row is deliberately not rendered at all
+        $html = $this->fragment(['q' => 'wiki', 'type' => 'page']);
+        if (!str_contains($html, 'yw-facets')) {
+            $this->markTestSkipped('this wiki matches only one content type for that phrase');
+        }
+
+        $this->assertMatchesRegularExpression(
+            '/value="page"[^>]*\n?\s*checked|checked[^>]*value="page"/',
+            $html,
+            'the chosen facet must render checked -- nothing else remembers it'
+        );
+    }
+
+    /**
+     * Three ways to read the same results. The mode is a *radio*, so it is form state that
+     * travels with the query -- switching layout must not re-run a different search.
+     */
+    public function testResultsCanBeRenderedAsAListAccordionOrCards(): void
+    {
+        $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
+
+        // the switcher itself lives in the FORM, not in the fragment: it says how to read
+        // whatever comes back, so it must not appear and disappear with the results
+        $action = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+        $this->assertStringContainsString('yw-display-switch', $action);
+
+        $list = $this->fragment(['q' => 'ciboulette']);
+        $this->assertStringNotContainsString('yw-display-switch', $list);
+        $this->assertStringNotContainsString('yw-search-results--', $list, 'list is the unmodified default');
+
+        $accordion = $this->fragment(['q' => 'ciboulette', 'display' => 'accordion']);
+        $this->assertStringContainsString('yw-search-results--accordion', $accordion);
+        // <details>, not a JS widget: the browser already has an accessible one -- and it is
+        // the wiki's ONE accordion partial, shared with the entry list, the syndication list,
+        // the pages accordion and the {{panel}} action
+        $this->assertStringContainsString('<details', $accordion);
+        $this->assertStringContainsString('yw-accordion__item', $accordion);
+        $this->assertStringContainsString('yw-accordion__summary', $accordion);
+
+        $cards = $this->fragment(['q' => 'ciboulette', 'display' => 'cards']);
+        $this->assertStringContainsString('yw-search-results--cards', $cards);
+    }
+
+    /** A display mode is a visitor-supplied string that reaches a class name. */
+    public function testAnUnknownDisplayModeFallsBackToTheListRatherThanReachingTheMarkup(): void
+    {
+        $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
+
+        $html = $this->fragment(['q' => 'ciboulette', 'display' => 'evil"><script>']);
+
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('yw-search-results--evil', $html);
     }
 
     /**
@@ -158,7 +259,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $this->savePage(self::PRIVATE_TAG, 'Secret', 'un texte sur le topinambour', '@admins');
 
-        $anonymous = $this->fragment(['phrase' => 'topinambour']);
+        $anonymous = $this->fragment(['q' => 'topinambour']);
         $this->assertStringNotContainsString(self::PRIVATE_TAG, $anonymous);
         $this->assertStringNotContainsString('Secret', $anonymous);
 
@@ -166,7 +267,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
         $this->assertStringContainsString(
             self::PRIVATE_TAG,
-            $this->fragment(['phrase' => 'topinambour']),
+            $this->fragment(['q' => 'topinambour']),
             'an entitled reader must still find it -- the filter is per-visitor, not a blanket hide'
         );
     }
@@ -175,11 +276,11 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
-        $onePage = $this->fragment(['phrase' => 'ciboulette', 'limit' => 20]);
+        $onePage = $this->fragment(['q' => 'ciboulette', 'limit' => 20]);
         $this->assertStringNotContainsString('yw-search-pagination', $onePage);
 
         // force several pages out of the seeded corpus rather than inventing one
-        $manyPages = $this->fragment(['phrase' => 'wiki', 'limit' => 1]);
+        $manyPages = $this->fragment(['q' => 'wiki', 'limit' => 1]);
         if (!str_contains($manyPages, htmlspecialchars(_t('NO_SEARCH_RESULT'), ENT_QUOTES))) {
             $this->assertStringContainsString('yw-search-pagination', $manyPages);
         }
