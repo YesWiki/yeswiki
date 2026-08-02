@@ -1,0 +1,153 @@
+<?php
+
+namespace YesWiki\Search\Command;
+
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Search\Service\SearchIndexer;
+use YesWiki\Search\Service\SearchIndexSchema;
+
+/**
+ * `./yeswicli search:reindex` -- the one way the search index is (re)built (ticket 18).
+ *
+ * It serves three jobs that are the same job:
+ *
+ *     ./yeswicli search:reindex --drain      # work off whatever is queued
+ *     ./yeswicli search:reindex --all        # queue every Content, then work it off
+ *     ./yeswicli search:reindex --rebuild    # drop the tables, recreate, queue everything
+ *     ./yeswicli search:reindex --form=3     # queue one form's entries, then work them off
+ *
+ * `--drain` is what the subscriber spawns after a form change, and what an operator runs on
+ * a host where that spawn cannot happen. `--rebuild` is the disaster recovery path: the
+ * index is a cache of what Content says, so throwing it away is always safe.
+ *
+ * Only one of these runs at a time. The lock is a file rather than a table row so that a
+ * process killed mid-run releases it -- a stale row would need a timeout, and a timeout
+ * long enough to be safe is long enough to block the next legitimate run for hours.
+ */
+class ReindexCommand extends Command
+{
+    private const LOCK_FILE = 'cache/search-reindex.lock';
+    private const LOCK_HELD_ELSEWHERE = 'held';
+    private const LOCK_UNAVAILABLE = 'unavailable';
+
+    private ContainerInterface $services;
+
+    public function __construct(ContainerInterface $services)
+    {
+        parent::__construct();
+        $this->services = $services;
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->setName('search:reindex')
+            ->setDescription('Build or repair the search index (ticket 18)')
+            ->addOption('drain', null, InputOption::VALUE_NONE, 'Reindex whatever is queued and stop')
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Queue every Content first')
+            ->addOption('rebuild', null, InputOption::VALUE_NONE, 'Drop and recreate the index tables, then queue everything')
+            ->addOption('form', null, InputOption::VALUE_REQUIRED, 'Queue one form\'s entries first')
+            ->addOption('batch', null, InputOption::VALUE_REQUIRED, 'Contents per pass', '500')
+            ->addOption('status', null, InputOption::VALUE_NONE, 'Report how much is outstanding and exit');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $schema = $this->services->get(SearchIndexSchema::class);
+        $indexer = $this->services->get(SearchIndexer::class);
+
+        if ($input->getOption('status')) {
+            if (!$schema->exists()) {
+                $output->writeln('<comment>The search index does not exist. Run ./yeswicli migrate, or search:reindex --rebuild.</comment>');
+
+                return Command::FAILURE;
+            }
+            $output->writeln($indexer->pending() . ' Content(s) queued for reindexing.');
+
+            return Command::SUCCESS;
+        }
+
+        $lock = $this->acquireLock();
+        if ($lock === self::LOCK_HELD_ELSEWHERE) {
+            // not a failure: this is the spawn-on-every-form-save case, where the second
+            // process has nothing to add because the first is already draining the queue
+            $output->writeln('<comment>Another reindex is already running; leaving the queue to it.</comment>');
+
+            return Command::SUCCESS;
+        }
+
+        try {
+            if ($input->getOption('rebuild')) {
+                $output->writeln('Dropping and recreating the index tables...');
+                $schema->recreate();
+            } elseif (!$schema->exists()) {
+                $output->writeln('Creating the index tables...');
+                $schema->create();
+            }
+
+            if ($input->getOption('rebuild') || $input->getOption('all')) {
+                $output->writeln($indexer->enqueueEverything() . ' Content(s) queued.');
+            }
+
+            $form = (string)$input->getOption('form');
+            if ($form !== '') {
+                $output->writeln($indexer->enqueueForm($form) . " entrie(s) of form {$form} queued.");
+            }
+
+            $batch = max(1, (int)$input->getOption('batch'));
+            $total = 0;
+            $remaining = $indexer->pending();
+            while (true) {
+                $done = $indexer->drain($batch);
+                if ($done === 0) {
+                    break;
+                }
+                $total += $done;
+                $remaining = $indexer->pending();
+                $output->writeln("  ... {$total} reindexed, {$remaining} to go");
+            }
+
+            $output->writeln("<info>Reindexed {$total} Content(s). Queue is " . ($remaining === 0 ? 'empty' : "at {$remaining}") . '.</info>');
+
+            return Command::SUCCESS;
+        } finally {
+            $this->releaseLock($lock);
+        }
+    }
+
+    /**
+     * @return resource|string the held lock; LOCK_HELD_ELSEWHERE if another run has it;
+     *                         LOCK_UNAVAILABLE to proceed without one
+     */
+    private function acquireLock()
+    {
+        $handle = @fopen(self::LOCK_FILE, 'c');
+        if ($handle === false) {
+            // An unwritable cache dir must not stop an operator reindexing by hand -- and it
+            // cannot be a race either, since a process that cannot create the file is not
+            // competing with one that did. Proceed unlocked and say so.
+            return self::LOCK_UNAVAILABLE;
+        }
+        if (!flock($handle, LOCK_EX | LOCK_NB)) {
+            fclose($handle);
+
+            return self::LOCK_HELD_ELSEWHERE;
+        }
+
+        return $handle;
+    }
+
+    /** @param resource|string $handle */
+    private function releaseLock($handle): void
+    {
+        if (!is_resource($handle)) {
+            return;
+        }
+        flock($handle, LOCK_UN);
+        fclose($handle);
+    }
+}

@@ -5,6 +5,8 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Service\FileBrowser;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -214,18 +216,18 @@ class ImageField extends FileField
 
                     // Generate thumbnails to speedup loading of bazar templates
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
-                        $attach = $this->getAttach();
-                        $filePathResized = $attach->getResizedFilename($filePath, $this->thumbnailWidth, $this->thumbnailHeight);
+                        $resizer = $this->getService(ImageResizer::class);
+                        $filePathResized = $resizer->resizedFilename($filePath, (string)$this->thumbnailWidth, (string)$this->thumbnailHeight);
                         if (!file_exists($filePathResized)) {
-                            $attach->resizeImage($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
+                            $resizer->resize($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
                         }
                     }
                     // Adapt image dimensions
                     if (!empty($this->imageWidth) && !empty($this->imageHeight)) {
-                        $attach = $this->getAttach();
-                        $filePathResized = $attach->getResizedFilename($filePath, $this->imageWidth, $this->imageHeight);
+                        $resizer = $this->getService(ImageResizer::class);
+                        $filePathResized = $resizer->resizedFilename($filePath, (string)$this->imageWidth, (string)$this->imageHeight);
                         if (!file_exists($filePathResized)) {
-                            $attach->resizeImage($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
+                            $resizer->resize($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
                         }
                     }
                 } else {
@@ -293,8 +295,7 @@ class ImageField extends FileField
     {
         if ($this->isAllowedToDeleteFile($entry, $filename)) {
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
-                $attach = $this->getAttach();
-                $attach->fmDelete($filename);
+                $this->getService(FileBrowser::class)->moveToTrash($filename);
             }
             // do not delete file if not same entry name (only remove from this entry)
 

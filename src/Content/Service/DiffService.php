@@ -64,14 +64,14 @@ class DiffService
     {
         $actionsToKeep = [
             'grid', 'section', 'col', 'button', 'configuration', 'end', 'label', 'nav', 'panel',
-            'progressbar', 'accordion', 'currentpage', 'titrepage', 'valeur', 'lang',
+            'progressbar', 'accordion', 'currentpage', 'pagetitle', 'value', 'lang',
         ];
         $regexpr = "/(\{\{";
         foreach ($actionsToKeep as $action) {
             $regexpr .= "(?!$action)";
         }
         $regexpr .= ".*?\}\})/s";
-        // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
+        // move all complex actions (entrylist etc...) into pre html so they are not fomatted
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', PageBody::content($page['body'] ?? []));
 
         return $this->container->get(MarkdownFormatterService::class)->format($code);

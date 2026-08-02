@@ -37,7 +37,7 @@ actions:
         advanced: true
         label: _t(AB_syndication_action_title_label)
         type: text
-      nouvellefenetre:
+      newwindow:
         advanced: true
         label: _t(AB_syndication_action_nouvellefenetre_label)
         type: checkbox

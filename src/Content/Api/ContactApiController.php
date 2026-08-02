@@ -28,7 +28,7 @@ class ContactApiController extends YesWikiController
      *
      * Handles the same three request shapes the old handler multiplexed onto one
      * route, distinguished by which POST fields are present: a plain contact/
-     * abonnement/desabonnement form (mail=), a per-field "contact via this entry
+     * subscribe/unsubscribe form (mail=), a per-field "contact via this entry
      * field" link (field=, reading the entry's own value for that field), and
      * "send this wiki page by email" (type=mail). $pageTag is new: the old handler
      * read its ACL/page-body context implicitly from the page it was dispatched on;
@@ -115,11 +115,11 @@ class ContactApiController extends YesWikiController
                 $messageHtml = html_entity_decode($renderedPage);
                 $messageTxt = strip_tags($messageHtml);
             }
-        } elseif ($type == 'abonnement' || $type == 'desabonnement') {
+        } elseif ($type == 'subscribe' || $type == 'unsubscribe') {
             $messageHtml = $messageTxt = 'Mailinglist : ' . $type;
         } else {
-            $entete = (string)$request->request->get('entete', '');
-            $subject = (!empty($entete) ? '[' . trim($entete) . '] ' : '') . (string)$request->request->get('subject', '');
+            $subjectprefix = (string)$request->request->get('subjectprefix', '');
+            $subject = (!empty($subjectprefix) ? '[' . trim($subjectprefix) . '] ' : '') . (string)$request->request->get('subject', '');
             $rawMessage = (string)$request->request->get('message', '');
             $messageTxt = trim(strip_tags($rawMessage));
             $messageHtml = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($rawMessage, ENT_COMPAT, YW_CHARSET))));
@@ -127,7 +127,7 @@ class ContactApiController extends YesWikiController
 
         if ($hasReadAccess) {
             $message = check_parameters_mail($type, $mailSender, $nameSender, $mailReceiver ?? '', $subject ?? '', $messageTxt ?? '');
-            if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
+            if ($type != 'subscribe' && $type != 'unsubscribe' && !empty($infomsg)) {
                 $messageTxt = strip_tags($infomsg) . '\n\n' . ($messageTxt ?? '');
                 $messageHtml = $infomsg . ($messageHtml ?? '');
             }
@@ -149,9 +149,9 @@ class ContactApiController extends YesWikiController
                     $listname = $tabmail[0];
                     $listdomain = $tabmail[1];
                     $mailReceiver = 'sympa@' . $listdomain;
-                    if ($type == 'abonnement') {
+                    if ($type == 'subscribe') {
                         $subject = 'subscribe ' . $listname;
-                    } elseif ($type == 'desabonnement') {
+                    } elseif ($type == 'unsubscribe') {
                         $subject = 'unsubscribe ' . $listname;
                     }
                 }
@@ -162,9 +162,9 @@ class ContactApiController extends YesWikiController
             if ($this->getService(Mailer::class)->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml)) {
                 if (empty($type) || $type == 'contact' || $type == 'mail') {
                     $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
-                } elseif ($type == 'abonnement') {
+                } elseif ($type == 'subscribe') {
                     $message['message'] = _t('CONTACT_SUBSCRIBE_ORDER_SENT');
-                } elseif ($type == 'desabonnement') {
+                } elseif ($type == 'unsubscribe') {
                     $message['message'] = _t('CONTACT_UNSUBSCRIBE_ORDER_SENT');
                 }
             } else {

@@ -9,6 +9,7 @@ namespace YesWiki;
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Route;
 use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 
@@ -80,17 +81,24 @@ class Init
             }
             if (empty($wiki)) {
                 // this will be redirected to install or to homepage later
-            } elseif (preg_match('`^api`', $wiki)) {
-                // for api split into api/end of route, checking wiki name & method name (XSS proof)
-                $this->page = 'api';
+            } elseif (ReservedTags::isReserved(explode('/', $wiki)[0])) {
+                // A routed name (`api`, `doc`, ...) takes the whole rest of the path as its
+                // method, because an API route has more segments than WN_TAG_HANDLER_CAPTURE's
+                // single Tag/handler split can carry.
+                //
+                // Matching the FIRST SEGMENT is the point. This used to be `preg_match('^api')`
+                // -- a bare prefix match, so a page tagged `apiculture` was parsed as the API
+                // with method `culture` and was unreachable. Any tag merely starting with a
+                // reserved name is an ordinary tag and falls through to the branches below.
+                $this->page = ReservedTags::canonical(explode('/', $wiki)[0]);
                 if (strpos($wiki, '/') !== false) {
                     // $wiki already contains the full path (e.g. 'api/ferme/wikis/upgrade' from $_REQUEST['wiki'])
                     $wikiParts = explode('/', $wiki);
-                    array_shift($wikiParts); // remove 'api'
+                    array_shift($wikiParts); // remove the reserved name
                     $this->method = rtrim(implode('/', $wikiParts), '=');
                 } else {
-                    // $wiki is just 'api', extract method from URL path segments
-                    array_shift($args); // remove api from the args
+                    // $wiki is just the reserved name, extract method from URL path segments
+                    array_shift($args); // remove the reserved name from the args
                     $this->method = rtrim(implode('/', $args), '=');
                 }
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
@@ -472,9 +480,9 @@ class Init
             'BAZ_ENVOI_MAIL_ADMIN' => false,
             'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
             // liste_accordeon.tpl.html and its sibling legacy display modes (agenda, blog,
-            // carousel, damier, gogocarto, tableau, timeline, trombinoscope, etc.) are NOT
-            // dead: the actions-builder wizard's bazarliste/bazaragenda/bazartableau/...
-            // entries (docs/actions/bazarliste.yaml and friends) still default-select these
+            // carousel, gogocarto, tableau, timeline, trombinoscope, etc.) are NOT
+            // dead: the actions-builder wizard's entrylist/bazaragenda/bazartableau/...
+            // entries (docs/actions/entrylist.yaml and friends) still default-select these
             // exact template names, so they're relocated as-is rather than dropped.
             'default_bazar_template' => 'liste_accordeon.twig',
             'baz_semantic_types_mapping' => [

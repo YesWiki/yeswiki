@@ -129,7 +129,7 @@ class CSVManager
 
         $vID = $vBazarListService->getTheID($pFormID);
 
-        $vForms = $pOptions['forms'] ?? $vBazarListService->getForms(array_merge($pParams, ['idtypeannonce' => $pFormID]));
+        $vForms = $pOptions['forms'] ?? $vBazarListService->getForms(array_merge($pParams, ['id' => $pFormID]));
 
         $vForm = $vForms[$vID['key']];
 
@@ -166,7 +166,7 @@ class CSVManager
 
             // get lines for each entry
             $vEntries = $vBazarListService->getEntries(array_merge($pParams, [
-                'idtypeannonce' => $pFormID,
+                'id' => $pFormID,
                 'keywords' => $vKeywords,
                 'queries' => $vQuery,
                 'forms' => $vForms,
@@ -912,7 +912,7 @@ class CSVManager
      * send CSV file or archive.
      *
      * @params $pFormIDs : forms ids
-     * @params <array> $pParams for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
+     * @params <array> $pParams for search. ex : [ "query" => ..., "keywords" => ..., "field" => ..., "order" => ... ]
      *
      * @return string $csvToDisplay
      */

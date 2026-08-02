@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Service\ImageResizer;
 
 #[\Field(['externalimagefield'])]
 class ExternalImageField extends ImageField
@@ -37,7 +38,7 @@ class ExternalImageField extends ImageField
 
         if (isset($value) && $value != '') {
             return $this->render('@core/fields/external-image.twig', [
-                'attachClass' => $this->getAttach(),
+                'resizer' => $this->getService(ImageResizer::class),
                 'baseUrl' => $entry['external-data']['baseUrl'],
                 'imageFullPath' => $this->getBasePath() . $value,
                 'fieldName' => $this->name,

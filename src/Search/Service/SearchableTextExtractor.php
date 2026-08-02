@@ -1,0 +1,257 @@
+<?php
+
+namespace YesWiki\Search\Service;
+
+use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Field\TextareaField;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\TripleStore;
+use YesWiki\Identity\Service\UserManager;
+use YesWiki\Search\Entity\IndexedContent;
+
+/**
+ * Turns a `pages` row into the rows the search index holds (ticket 18 / ADR-0015).
+ *
+ * The rule it implements, and the reason it is a class rather than a loop over a body: the
+ * index is built by **asking each field what is searchable about it**, never by walking the
+ * body's values. Some values are envelope as surely as the keys are -- `form_id`, a
+ * timestamp, a `stored_filename` UUID -- and indexing those reproduces the defect this
+ * ticket exists to fix ("search 2026, match everything edited this year") one layer down.
+ *
+ * Fields are grouped by the Field ACL guarding them, so a Content becomes one index row per
+ * distinct ACL rather than one document with a single visibility. See IndexedContent.
+ */
+class SearchableTextExtractor
+{
+    /** A form is Content too, and searchable, but it is not a ContentTypeSchema type. */
+    public const TYPE_FORM = 'form';
+
+    /** Not a triple at all -- a comment is a `pages` row with `comment_on` set. */
+    public const TYPE_COMMENT = 'comment';
+
+    /**
+     * `TYPE_URI` triple value => the `content_type` the index stores.
+     *
+     * The stored triple values are user data and stay as they are (`fiche_bazar`), but the
+     * index is core's own and uses the English names the rest of the rewrite settled on, so
+     * that a content-type filter reads `entry` rather than `fiche_bazar`. A triple this map
+     * does not know is stored verbatim -- `liste` arrives that way -- rather than dropped,
+     * because an unknown type is still a type and a filter can still offer it.
+     */
+    private const TYPE_BY_TRIPLE = [
+        '' => ContentTypeSchema::TYPE_PAGE,
+        EntryManager::TRIPLES_ENTRY_ID => ContentTypeSchema::TYPE_ENTRY,
+        UserManager::TRIPLES_USER_TYPE => ContentTypeSchema::TYPE_USER,
+        FileManager::TRIPLES_FILE_TYPE => ContentTypeSchema::TYPE_FILE,
+        FormManager::TRIPLES_FORM_TYPE => self::TYPE_FORM,
+    ];
+
+    private ContainerInterface $container;
+    private ParameterBagInterface $params;
+
+    public function __construct(ContainerInterface $container, ParameterBagInterface $params)
+    {
+        $this->container = $container;
+        $this->params = $params;
+    }
+
+    /**
+     * @param array<string, mixed> $row        a raw `pages` row: tag, body, owner, time, metadata, comment_on
+     * @param string|null          $typeTriple the row's TYPE_URI triple value when the caller
+     *                                         already has it (the bulk reindex joins it in);
+     *                                         looked up per row otherwise
+     *
+     * @return IndexedContent|null null when the row contributes nothing at all
+     */
+    public function extract(array $row, ?string $typeTriple = null): ?IndexedContent
+    {
+        $tag = (string)($row['tag'] ?? '');
+        if ($tag === '') {
+            return null;
+        }
+
+        $body = is_array($row['body'] ?? null) ? $row['body'] : PageBody::decode($row['body'] ?? null);
+        $typeTriple ??= $this->tripleOf($tag);
+        $contentType = trim((string)($row['comment_on'] ?? '')) !== ''
+            ? self::TYPE_COMMENT
+            : (self::TYPE_BY_TRIPLE[(string)$typeTriple] ?? (string)$typeTriple);
+
+        $buckets = $this->bucketsFor($contentType, $body);
+
+        $content = new IndexedContent(
+            tag: $tag,
+            contentType: $contentType,
+            // a form has no `form_id` -- it has an `id`, and that is what a result needs in
+            // order to link to the form's entry list rather than to the form's own page
+            formId: $contentType === self::TYPE_FORM
+                ? (string)($body['id'] ?? '')
+                : (string)($body['form_id'] ?? ''),
+            title: $this->titleOf($contentType, $body, $tag),
+            pageReadAcl: $this->readAclOf($row),
+            owner: (string)($row['owner'] ?? ''),
+            updatedAt: (string)($row['time'] ?? date('Y-m-d H:i:s')),
+            buckets: $buckets,
+        );
+
+        return $content->isEmpty() ? null : $content;
+    }
+
+    /**
+     * Field ACL expression => the text of the fields it guards.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, string>
+     */
+    private function bucketsFor(string $contentType, array $body): array
+    {
+        $form = $this->formFor($contentType, $body);
+        if ($form === null) {
+            return $this->bucketsWithoutAForm($contentType, $body);
+        }
+
+        $buckets = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            $text = trim($field->searchableText($body));
+            if ($text === '') {
+                continue;
+            }
+            $acl = self::bucketKeyFor((string)$field->getReadAccess());
+            $buckets[$acl] = trim(($buckets[$acl] ?? '') . ' ' . $text);
+        }
+
+        return $buckets;
+    }
+
+    /**
+     * The ACL bucket a field's `read_access` belongs in.
+     *
+     * `''` and `'*'` mean the same thing -- `BazarField::canRead()` grants both to everyone --
+     * so they must land in the *same* bucket. Storing them apart looks harmless and is not:
+     * it splits a Content's text across two rows for no reason, and it defeats the
+     * single-bucket fast path in SearchIndexQuery on essentially every real wiki, because the
+     * seeded Annuaire and Agenda forms ship `"read_access":"*"` on every field. That showed
+     * up as a 500k-row benchmark taking the expensive GROUP BY path when it had no restricted
+     * field anywhere.
+     */
+    private static function bucketKeyFor(string $readAccess): string
+    {
+        $entries = array_filter(array_map('trim', preg_split('/[\n,]+/', $readAccess) ?: []));
+
+        return $entries === [] || $entries === ['*'] || array_values($entries) === ['*'] ? '' : trim($readAccess);
+    }
+
+    /**
+     * Rows no form describes: a form itself, a list, or a legacy row whose form has gone.
+     *
+     * A form is indexed by what a webmaster would look for it under -- its label and
+     * description -- and deliberately **not** by its template: matching a form on its field
+     * labels means searching the schema, and would put every form in the results for the
+     * word "Description".
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, string>
+     */
+    private function bucketsWithoutAForm(string $contentType, array $body): array
+    {
+        if ($contentType === self::TYPE_FORM) {
+            $text = trim((string)($body['label'] ?? '') . ' ' . (string)($body['description'] ?? ''));
+
+            return $text === '' ? [] : ['' => $text];
+        }
+
+        // last resort: the prose, stripped the way the field would have stripped it
+        $text = TextareaField::stripMarkupForIndex(PageBody::content($body));
+        $keywords = $body[PageBody::KEYWORDS] ?? null;
+        if (is_array($keywords)) {
+            $text = trim($text . ' ' . implode(' ', array_map('strval', $keywords)));
+        }
+
+        return $text === '' ? [] : ['' => $text];
+    }
+
+    /**
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>|null
+     */
+    private function formFor(string $contentType, array $body): ?array
+    {
+        $formManager = $this->container->get(FormManager::class);
+
+        if ($contentType === ContentTypeSchema::TYPE_ENTRY) {
+            $formId = (string)($body['form_id'] ?? '');
+
+            return $formId === '' ? null : $formManager->getOne($formId);
+        }
+
+        // a comment is a page in every way that matters here: prose under `content`
+        if ($contentType === self::TYPE_COMMENT) {
+            $contentType = ContentTypeSchema::TYPE_PAGE;
+        }
+
+        return ContentTypeSchema::isBuiltIn($contentType)
+            ? $formManager->getByContentType($contentType)
+            : null;
+    }
+
+    /**
+     * What the Content goes by in a result list.
+     *
+     * Read from the body rather than recomputed: the title is already computed at save from
+     * the form's `entry_title_template` (ADR-0010) and stored there, and recomputing it here
+     * would mean resolving a template per row on a reindex of millions.
+     *
+     * @param array<string, mixed> $body
+     */
+    private function titleOf(string $contentType, array $body, string $tag): string
+    {
+        if ($contentType === self::TYPE_FORM) {
+            $title = (string)($body['label'] ?? '');
+        } else {
+            $title = (string)($body[PageBody::TITLE] ?? '');
+        }
+
+        // every Content has a name, and an untitled one goes by its tag (see CONTEXT's
+        // "Content title") -- which is also what a visitor typed if they are looking for it
+        return trim($title) === '' ? $tag : trim($title);
+    }
+
+    /**
+     * The row's **effective** read ACL, defaults already resolved.
+     *
+     * Resolved at index time rather than left absent, so the query's predicate has no
+     * "no explicit ACL means the configured default" branch to get wrong -- the index is
+     * rewritten whenever an ACL changes anyway, because an ACL write creates a revision.
+     *
+     * @param array<string, mixed> $row
+     */
+    private function readAclOf(array $row): string
+    {
+        $metadata = $row['metadatas'] ?? null;
+        if (!is_array($metadata)) {
+            $decoded = json_decode((string)($row['metadata'] ?? ''), true);
+            $metadata = is_array($decoded) ? $decoded : [];
+        }
+
+        $acl = $metadata['acls']['read'] ?? '';
+        if (trim((string)$acl) !== '') {
+            return (string)$acl;
+        }
+
+        $default = $this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*';
+
+        return is_scalar($default) ? (string)$default : '*';
+    }
+
+    private function tripleOf(string $tag): string
+    {
+        return (string)$this->container->get(TripleStore::class)->getOne($tag, TripleStore::TYPE_URI, '', '');
+    }
+}

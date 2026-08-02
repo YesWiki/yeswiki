@@ -14,7 +14,7 @@
             {% if form.description %}<br />{{ form.description }}{% endif %}
           </td>
           <td>
-            <a class="btn btn-mini btn-xs btn-primary" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: form.id }}) }}">
+            <a class="btn btn-mini btn-xs btn-primary" href="{{ url({ params: { view: 'saisir', action: 'saisir_fiche', id: form.id }}) }}">
               <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
               {{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}
             </a>

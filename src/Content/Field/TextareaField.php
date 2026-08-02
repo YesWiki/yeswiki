@@ -4,8 +4,8 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -54,6 +54,58 @@ class TextareaField extends BazarField
         'fr' => 'fr_FR',
         'pt' => 'pt_BR',
     ];
+
+    /**
+     * The prose, with markup and `{{action}}` calls taken out (ticket 18 / ADR-0015).
+     *
+     * This is the field a wiki page's `content` is, so it is also how a page gets indexed.
+     *
+     * The calls are **stripped, not run**. Rendering first would look more thorough and is
+     * wrong in three ways: it folds every entry an `{{entrylist}}` returns into the page's
+     * own document, so one edit to an entry would make a dozen pages stale; it makes what a
+     * page indexes depend on who rendered it, since actions honour ACLs; and it is arbitrary
+     * code execution on a background reindex -- a wiki-syntax textelong in a list really
+     * does run its actions.
+     */
+    public function searchableText($entry): string
+    {
+        return self::stripMarkupForIndex(parent::searchableText($entry));
+    }
+
+    /**
+     * Wiki/HTML markup reduced to the words in it. Link labels and targets are both kept --
+     * a page name is often the most searchable thing in a sentence.
+     *
+     * Shared with the indexer, which needs the same treatment for a legacy body whose form
+     * has gone missing.
+     */
+    public static function stripMarkupForIndex(string $text): string
+    {
+        if (trim($text) === '') {
+            return '';
+        }
+
+        // action calls first: everything else here would otherwise chew on their arguments.
+        // `s` so a multi-line {{action ...}} goes in one bite, non-greedy so two calls on
+        // one line do not swallow the words between them
+        $text = (string)preg_replace('/\{\{.*?\}\}/su', ' ', $text);
+
+        // wiki links `[[Tag label]]` and markdown `[label](url)`: keep the words, drop the
+        // punctuation and the URL
+        $text = (string)preg_replace('/\[\[\s*([^\s\]]+)\s*([^\]]*)\]\]/u', ' $2 $1 ', $text);
+        $text = (string)preg_replace('/\[([^\]]*)\]\([^)]*\)/u', ' $1 ', $text);
+
+        // `""..."" ` is the wiki's raw-HTML escape
+        $text = str_replace('""', ' ', $text);
+        $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // emphasis, headings, rules, table pipes, leftover brackets
+        $text = (string)preg_replace('/[*_#|=~\[\]{}`>]+/u', ' ', $text);
+        $text = (string)preg_replace('/(^|\s)-{2,}(\s|$)/u', ' ', $text);
+
+        return trim((string)preg_replace('/\s+/u', ' ', $text));
+    }
 
     protected function renderInput($entry)
     {
@@ -175,8 +227,8 @@ class TextareaField extends BazarField
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
-                $attach = new Attach($this->services);
-                $attach->file = $matches[2][$key];
+                $paths = $this->getService(AttachedFilePaths::class);
+                $previousFile = $matches[2][$key];
                 $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
                 $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($matches[3][$key]);
@@ -187,8 +239,8 @@ class TextareaField extends BazarField
                     'owner' => '',
                     'user' => '',
                 ]);
-                $previousFileName = $attach->GetFullFilename();
-                $attach->file = $matches[4][$key];
+                $previousFileName = $paths->fullFilename($previousFile);
+                $newFile = $matches[4][$key];
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $entry['tag'],
@@ -197,7 +249,7 @@ class TextareaField extends BazarField
                     'owner' => '',
                     'user' => '',
                 ]);
-                $newFileName = $attach->GetFullFilename(true);
+                $newFileName = $paths->fullFilename($newFile, true);
                 $dirRealPath = realpath(dirname($previousFileName));
                 if (rename(
                     $dirRealPath . DIRECTORY_SEPARATOR . basename($previousFileName),
@@ -205,7 +257,6 @@ class TextareaField extends BazarField
                 )) {
                     $text = str_replace($matches[0][$key], $matches[1][$key] . $matches[4][$key] . $matches[5][$key], $text);
                 }
-                unset($attach);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
             }
@@ -236,8 +287,7 @@ class TextareaField extends BazarField
                     $fileName = $this->sanitizeFileName($fileName);
                 }
 
-                $attach = new Attach($this->services);
-                $attach->file = $fileName;
+                $paths = $this->getService(AttachedFilePaths::class);
 
                 // fake page
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
@@ -248,7 +298,7 @@ class TextareaField extends BazarField
                     'owner' => '',
                     'user' => '',
                 ]);
-                $newFilePath = $attach->GetFullFilename(true);
+                $newFilePath = $paths->fullFilename($fileName, true);
 
                 if (!empty($newFilePath)) {
                     // save file
@@ -259,7 +309,6 @@ class TextareaField extends BazarField
 
                     $text = str_replace($textToReplace, $newText, $text);
                 }
-                unset($attach);
             }
             $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
             $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);

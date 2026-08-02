@@ -7,6 +7,9 @@ use Psr\Container\ContainerInterface;
 #[\Field(['lien_internet'])]
 class LinkField extends BazarField
 {
+    // ticket 18: a URL is mostly scheme and host, which every other link shares
+    use ContributesNoSearchableText;
+
     protected const FIELD_DISPLAYVIDEO = 3;
     protected const FIELD_OPTIONS = 6;
     protected const FIELD_CLASS = 7;

@@ -1,15 +1,16 @@
 <?php
 
 namespace YesWiki\Render\Action;
-/**
+
+/*
  * Action to display a responsive Vimeo video.
  *
  * @param id    the video id, for vimeo it's a series of figures whereas for youtube it's a series of letters
- * @param serveur  the serveur used, only 'peertube', 'vimeo' and 'youtube' are allowed
- * @param peertubeinstance  Instance of the serveur for PeerTube
- * @param ratio  the ratio to display the video. By defaut, it's a 16/9 ration, if '4par3' is specified a 4/3 ration
- * @param largeurmax  the maximum wanted width ; number without "px"
- * @param hauteurmax  the maximum wanted heigth ; number without "px"
+ * @param server  the video service used, only 'peertube', 'vimeo' and 'youtube' are allowed
+ * @param peertubeinstance  Instance of the server for PeerTube
+ * @param ratio  the ratio to display the video. By default, it's a 16/9 ratio, if '4par3' is specified a 4/3 ration
+ * @param maxwidth  the maximum wanted width ; number without "px"
+ * @param maxheight  the maximum wanted heigth ; number without "px"
  * @param class class add class to the container : use "pull-right" and "pull-left" for position
  * is applied
  *
@@ -37,10 +38,10 @@ class VideoAction extends YesWikiAction implements RegisteredAction
 
     public function formatArguments($arg)
     {
-        $serveur = $arg['serveur'] ?? '';
+        $server = $arg['server'] ?? '';
         $attachVideoConfig = $this->params->get('attach-video-config');
-        if (empty($serveur)) {
-            $serveur = $attachVideoConfig['default_video_service'];
+        if (empty($server)) {
+            $server = $attachVideoConfig['default_video_service'];
         }
 
         $url = (!empty($arg['url']) && is_string($arg['url'])) ? $arg['url'] : '';
@@ -62,19 +63,19 @@ class VideoAction extends YesWikiAction implements RegisteredAction
                 . '|(?:\/videos\/embed\/|\/w\/)(.+)' // peertube
             . ')/', $url, $matches)) {
             if (!empty($matches[2])) {
-                $serveur = 'youtube';
+                $server = 'youtube';
                 $id = $matches[2];
             } elseif (!empty($matches[3])) {
-                $serveur = 'youtube';
+                $server = 'youtube';
                 $id = $matches[3];
             } elseif (!empty($matches[4])) {
-                $serveur = 'vimeo';
+                $server = 'vimeo';
                 $id = $matches[4];
             } elseif (!empty($matches[5])) {
-                $serveur = 'dailymotion';
+                $server = 'dailymotion';
                 $id = $matches[5];
             } elseif (!empty($matches[6])) {
-                $serveur = 'peertube';
+                $server = 'peertube';
                 $id = $matches[6];
                 $peertubeinstance = $matches[1] . '/';
             }
@@ -82,11 +83,11 @@ class VideoAction extends YesWikiAction implements RegisteredAction
 
         return [
             'id' => $id,
-            'serveur' => $serveur,
+            'server' => $server,
             'peertubeinstance' => $peertubeinstance,
             'ratio' => $arg['ratio'] ?? '',
-            'largeurmax' => $arg['largeurmax'] ?? '',
-            'hauteurmax' => $arg['hauteurmax'] ?? '',
+            'maxwidth' => $arg['maxwidth'] ?? '',
+            'maxheight' => $arg['maxheight'] ?? '',
             'class' => str_replace('attached_file', '', $arg['class'] ?? ''), // to prevent errors
         ];
     }
@@ -94,8 +95,8 @@ class VideoAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         if (empty($this->arguments['id'])
-            || empty($this->arguments['serveur'])
-            || !in_array(strtolower($this->arguments['serveur']), self::ALLOWED_SERVERS)) {
+            || empty($this->arguments['server'])
+            || !in_array(strtolower($this->arguments['server']), self::ALLOWED_SERVERS)) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ATTACH_ACTION_VIDEO_PARAM_ERROR'),
@@ -107,8 +108,8 @@ class VideoAction extends YesWikiAction implements RegisteredAction
             $shape = 'embed-responsive-16by9 ratio ratio-16x9';
         }
 
-        $maxWidth = $this->arguments['largeurmax'];
-        $maxHeight = $this->arguments['hauteurmax'];
+        $maxWidth = $this->arguments['maxwidth'];
+        $maxHeight = $this->arguments['maxheight'];
         $manageSize = false;
         if (!empty($maxWidth) && is_numeric($maxWidth)) {
             $manageSize = true;
@@ -130,7 +131,7 @@ class VideoAction extends YesWikiAction implements RegisteredAction
 
         return $this->render('@core/actions/video.twig', [
             'class' => $this->arguments['class'],
-            'serveur' => $this->arguments['serveur'],
+            'server' => $this->arguments['server'],
             'id' => $this->arguments['id'],
             'peertubeinstance' => $this->arguments['peertubeinstance'],
             'manageSize' => $manageSize,

@@ -49,10 +49,10 @@ class EntryApiController extends YesWikiController
         $vKeywords = $vSearchManager->aggregateKeywords($get->get('keywords', ''), $get->get('q', ''));
 
         $vSearchFields = $get->has('searchfields') ? urldecode($get->get('searchfields')) : null;
-        $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
+        $vFieldMapping = $get->has('fieldmapping') ? urldecode($get->get('fieldmapping')) : null;
         $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
-        $vOrdre = $get->get('ordre', 'asc');
-        $vField = $get->get('champ', 'title');
+        $vOrdre = $get->get('order', 'asc');
+        $vField = $get->get('field', 'title');
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
@@ -63,9 +63,9 @@ class EntryApiController extends YesWikiController
                 'keywords' => $vKeywords,
                 'searchfields' => $vSearchFields,
                 'datefilter' => $vDateFilter,
-                'correspondance' => $vCorrespondance,
-                'ordre' => $vOrdre,
-                'champ' => $vField,
+                'fieldmapping' => $vFieldMapping,
+                'order' => $vOrdre,
+                'field' => $vField,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
             ]);
@@ -73,14 +73,14 @@ class EntryApiController extends YesWikiController
             $vBazarListService = $this->getService(BazarListService::class);
 
             $entries = $vBazarListService->getEntries([
-                'idtypeannonce' => $vFormID,
+                'id' => $vFormID,
                 'queries' => $vQuery,
                 'keywords' => $vKeywords,
                 'searchfields' => $vSearchFields,
                 'datefilter' => $vDateFilter,
-                'correspondance' => $vCorrespondance,
-                'ordre' => $vOrdre,
-                'champ' => $vField,
+                'fieldmapping' => $vFieldMapping,
+                'order' => $vOrdre,
+                'field' => $vField,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
             ]);
@@ -276,7 +276,7 @@ class EntryApiController extends YesWikiController
 
         $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
-        $formattedGet['idtypeannonce'] = $queryAll['idtypeannonce'] ?? $queryAll['id'] ?? null;
+        $formattedGet['id'] = $queryAll['id'] ?? null;
 
         /* ------------------------------------ */
         /*               Get Data */

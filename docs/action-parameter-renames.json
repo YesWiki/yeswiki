@@ -1,0 +1,109 @@
+{
+  "ticket": 22,
+  "date": "2026-08-01",
+  "purpose": "Every French action/handler parameter renamed to English, keyed by the action name as it is written in wiki syntax. This file is the input to the later migration that rewrites {{action param=\"...\"}} in stored page bodies -- that migration is deliberately NOT part of ticket 22 (decided 2026-07-31: documented breaking changes now, migration magic later).",
+  "actionNamesHereAreTheOLDones": "Ticket 23 subsequently renamed the actions themselves (bazarliste -> entrylist, calendrier -> calendar, ...; see docs/action-name-renames.json). The `action` keys below are deliberately NOT updated: an unmigrated page body still spells the action the old way, so this is the spelling the migration will actually encounter. Apply action-name-renames.json first, then this file.",
+  "conventions": {
+    "case": "All-lowercase with no separators, matching the existing user-typed parameters these sit beside (template, filtertext, shownumentries, showexportbuttons, nocontainer). camelCase appears in the codebase only on parameters passed programmatically, never on ones a page author types.",
+    "userTyped": "true when the name appears in wiki page bodies and a migration must rewrite it. false when the action normalises it internally and no stored content can contain it.",
+    "values": "Parameter VALUES are out of scope and unchanged -- template filenames, page tags, field names, and magic keywords such as valeur's texte=\"lien\" or carousel's oui/non."
+  },
+  "renames": [
+    {"action": "bazar", "old": "voirmenu", "new": "showmenu", "userTyped": true},
+    {"action": "bazar", "old": "idtypeannonce", "new": "id", "userTyped": true,
+     "note": "the action already accepted `id` as the primary spelling; the French alias is dropped rather than translated"},
+
+    {"action": "bazarcarto", "old": "zoommolette", "new": "scrollwheelzoom", "userTyped": true},
+
+    {"action": "bazarliste", "old": "champ", "new": "field", "userTyped": true},
+    {"action": "bazarliste", "old": "ordre", "new": "order", "userTyped": true},
+    {"action": "bazarliste", "old": "nbcol", "new": "columns", "userTyped": true},
+    {"action": "bazarliste", "old": "correspondance", "new": "fieldmapping", "userTyped": true,
+     "note": "not `mapping` -- that name is already taken by another action's parameter"},
+    {"action": "bazarliste", "old": "barregestion", "new": "managementbar", "userTyped": true},
+    {"action": "bazarliste", "old": "avecpage", "new": "withpage", "userTyped": true,
+     "note": "read only by carousel.twig via params.*"},
+    {"action": "bazarliste", "old": "sanstitre", "new": "notitle", "userTyped": true,
+     "note": "read only by carousel.twig via params.*"},
+    {"action": "bazarliste", "old": "nbcols", "new": "columns", "userTyped": true,
+     "note": "read only by blog.twig; the same concept as nbcol, which is why both land on `columns`"},
+    {"action": "bazarliste", "old": "nblines", "new": "lines", "userTyped": true,
+     "note": "read only by the dynamic card template via params.*"},
+    {"action": "bazarliste", "old": "idtypeannonce", "new": "id", "userTyped": true},
+    {"action": "bazarliste", "old": "nbbazarliste", "new": "listindex", "userTyped": false,
+     "note": "internal counter the action injects into its own arguments; never present in stored content"},
+
+    {"action": "bazarexport", "old": "idtypeannonce", "new": "id", "userTyped": true},
+    {"action": "bazarimport", "old": "idtypeannonce", "new": "id", "userTyped": true},
+
+    {"action": "calendrier", "old": "minical", "new": "minicalendar", "userTyped": true},
+
+    {"action": "contact", "old": "entete", "new": "subjectprefix", "userTyped": true,
+     "note": "not `header` -- that name is already taken, and the value is specifically the mail subject prefix"},
+    {"action": "contact", "old": "correspondance", "new": "fieldmapping", "userTyped": true},
+
+    {"action": "pdf", "old": "largeurmax", "new": "maxwidth", "userTyped": true},
+    {"action": "pdf", "old": "hauteurmax", "new": "maxheight", "userTyped": true},
+
+    {"action": "attach", "old": "largeurmax", "new": "maxwidth", "userTyped": true},
+    {"action": "attach", "old": "hauteurmax", "new": "maxheight", "userTyped": true},
+
+    {"action": "syndication", "old": "nbchar", "new": "maxchars", "userTyped": true},
+    {"action": "syndication", "old": "nouvellefenetre", "new": "newwindow", "userTyped": true},
+
+    {"action": "nuagetag", "old": "nbclasses", "new": "classcount", "userTyped": true},
+    {"action": "nuagetag", "old": "tri", "new": "sort", "userTyped": true},
+
+    {"action": "valeur", "old": "champ", "new": "field", "userTyped": true},
+    {"action": "valeur", "old": "texte", "new": "text", "userTyped": true},
+    {"action": "valeur", "old": "defaut", "new": "default", "userTyped": true},
+
+    {"action": "video", "old": "serveur", "new": "server", "userTyped": true},
+    {"action": "video", "old": "largeurmax", "new": "maxwidth", "userTyped": true},
+    {"action": "video", "old": "hauteurmax", "new": "maxheight", "userTyped": true},
+
+    {"handler": "listpages", "old": "tri", "new": "sort", "userTyped": true,
+     "note": "a URL query parameter (?tri=), not an action argument -- a migration cannot rewrite links people have already shared"},
+
+    {"action": "listpagestag", "old": "tri", "new": "sort", "userTyped": true,
+     "note": "same word as the listpages handler above, but here it really is an action argument -- the yaml had already been renamed to `sort` while the action still read `tri`"},
+
+    {"action": "bazar", "old": "vue", "new": "view", "userTyped": true,
+     "note": "BazarAction::URL_VIEW_PARAM. Both an action argument ({{bazar vue=\"saisir\"}}) and the URL query parameter every BazaR admin link carries (?BazaR&vue=formulaire&action=modif) -- so stored bodies AND bookmarked links break. The VALUES (saisir, consulter, formulaire, listes, importer, exporter, abonnements) are unchanged: they are BazaR's URL vocabulary, and vocabulary is ticket 23's problem at most"},
+
+    {"action": "bazar", "old": "idformulaire", "new": "formid", "userTyped": false,
+     "note": "URL query parameter only -- the form-CRUD links in forms_table_row.twig / abonnements.twig write it, nothing in a page body does. Deliberately not `form_id`: the lowercase-no-separator convention wins over matching the neighbouring `form_id` that BazarAction already accepts for entry creation"},
+    {"action": "bazar", "old": "idliste", "new": "listid", "userTyped": false,
+     "note": "URL query parameter only, written by list_table.twig and by the form-builder's list-editing iframe URL"},
+
+    {"action": "bazarliste", "old": "facette", "new": "facet", "userTyped": false,
+     "note": "URL query parameter holding the non-dynamic list's filter state (?Page&facette=field1=3,4|field2=web). Written by _search_input.twig and bazar.js, read by BazarListService. The `.facette-container` CSS classes keep their name -- class names are styling hooks, out of scope like every other CSS name"},
+
+    {"action": "include", "old": "actif", "new": "active", "userTyped": true},
+    {"action": "include", "old": "doubleclic", "new": "doubleclick", "userTyped": true,
+     "note": "the parameter of {{include}}, not the {{doubleclic}} action of the same name -- that is ticket 23. The `allow_doubleclic` config key is stored data and unchanged"},
+
+    {"action": "bazarimport", "old": "importfiche", "new": "importentries", "userTyped": false,
+     "note": "a POST field name of bazar-import.twig's own form, read back by BazarImportAction and by bazar-import.js. Now spelled like the mode it selects"},
+
+    {"handler": "rss", "old": "utilisateur", "new": "user", "userTyped": true,
+     "note": "URL query parameter (?PageName/rss&utilisateur=…)"},
+
+    {"action": "gererdroits", "old": "typemaj", "new": "updatetype", "userTyped": false,
+     "note": "POST field of the ACL admin form; also used by gererthemes. The VALUES stay French (default, ajouter, remplacer, reinitialiser, modifier) -- values are out of scope"},
+
+    {"action": "gererthemes", "old": "typemaj", "new": "updatetype", "userTyped": false}
+  ],
+  "deliberatelyLeftAlone": [
+    {"name": "squelette", "where": "the `squelette_select` POST field of the theme forms",
+     "why": "`squelette` is a stored Metadata key (ADR-0002 lists it beside theme, style, bgimg). Renaming the form field without the column would be a half-rename; renaming the column is a data migration, not this ticket"},
+    {"name": "minical", "where": "{{calendrier class=\"minical\"}} and the .minical CSS class",
+     "why": "a parameter VALUE and a CSS class name, not a parameter name. The parameter itself is `minicalendar`"},
+    {"name": "soustitre", "where": "fieldmapping=\"soustitre=bf_description\"",
+     "why": "the left-hand side of a fieldmapping is chosen by the page author, so it is user data -- see ticket 21's outcome"},
+    {"name": "allow_doubleclic", "where": "wakka.config.php",
+     "why": "a config key, i.e. stored data"},
+    {"name": "AB_*_tri_*, AB_bazar_facettes_*", "where": "docs/actions/lang/actionsbuilder_*.inc.php",
+     "why": "translation keys, not parameter names. They now read oddly beside the renamed properties; renaming them is a mechanical follow-up across 10 languages"}
+  ]
+}

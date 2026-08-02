@@ -1,7 +1,7 @@
 {% set formMethod = (formMethod == 'get') ? 'get' : 'post' %}
 {% set tag = (tag is empty) ? '' : tag %}
 <form {% if method == 'edit' or method == 'editiframe' -%}
-        id="ACEditor" name="ACEditor" enctype="multipart/form-data"
+        id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
     {%- endif %}action="{{ url({tag:tag,handler:method}) }}" method="{{ formMethod }}"
     {%- if class is not empty %} class="{{ class }}"{% endif -%}
     >

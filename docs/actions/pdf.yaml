@@ -21,11 +21,11 @@ actions:
           portrait: _t(AB_attach_pdf_ratio_option_portrait)
           paysage: _t(AB_attach_pdf_ratio_option_paysage)
           carre: _t(AB_attach_pdf_ratio_option_carre)
-      largeurmax:
+      maxwidth:
         label: _t(AB_attach_pdf_largeur_max_label)
         type: number
         advanced: true
-      hauteurmax:
+      maxheight:
         label: _t(AB_attach_pdf_hauteur_max_label)
         type: number
         advanced: true

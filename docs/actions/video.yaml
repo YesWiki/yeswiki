@@ -10,7 +10,7 @@ actions:
         label: Url
         type: url
         hint: _t(AB_attach_video_url_hint)
-      serveur:
+      server:
         label: _t(AB_attach_video_serveur_label)
         type: list
         required: true
@@ -23,7 +23,7 @@ actions:
       peertubeinstance:
         label: _t(AB_attach_video_peertubeinstance_label)
         showif:
-          serveur: peertube
+          server: peertube
         type: url
         advanced: true
       id:
@@ -39,11 +39,11 @@ actions:
         options:
           '': 16/9
           4par3: 4/3
-      largeurmax:
+      maxwidth:
         label: _t(AB_attach_video_largeur_max_label)
         type: number
         advanced: true
-      hauteurmax:
+      maxheight:
         label: _t(AB_attach_video_hauteur_max_label)
         type: number
         advanced: true

@@ -121,10 +121,32 @@ mkdir -p javascripts/vendor/iframe-resizer &&
 	copy_js node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js
 
 # opening_hours
-mkdir -p javascripts/vendor/opening_hours &&
-	curl -s https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js \
+#
+# The one asset here fetched from the open internet rather than from node_modules, and the
+# only reason this script can hang. It had no timeout at all: when openingh.openstreetmap.de
+# is slow, down or behind a proxy, `curl` waits forever, `yarn postinstall` never returns and
+# the docker entrypoint never reaches php-fpm -- so nginx serves 502 to the e2e reset and the
+# whole browser suite is unrunnable. Ticket 25 recorded that as the reason the suite went
+# unrun for three tickets; this is that single line.
+#
+# Bounded now, and non-fatal: a build that cannot reach the host keeps whatever copy is
+# already vendored and says so, rather than truncating the file to nothing (`>` opens the
+# target before curl runs, so a failed fetch used to leave an empty file behind).
+mkdir -p javascripts/vendor/opening_hours
+opening_hours_target=javascripts/vendor/opening_hours/opening_hours.js
+if curl -sS --connect-timeout 5 --max-time 30 \
+		https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js \
 		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
-		> javascripts/vendor/opening_hours/opening_hours.js
+		> "${opening_hours_target}.tmp" && [ -s "${opening_hours_target}.tmp" ]; then
+	mv "${opening_hours_target}.tmp" "${opening_hours_target}"
+else
+	rm -f "${opening_hours_target}.tmp"
+	if [ -s "${opening_hours_target}" ]; then
+		echo "warning: could not fetch opening_hours.js; keeping the vendored copy" >&2
+	else
+		echo "warning: could not fetch opening_hours.js and none is vendored; the opening-hours field will not work" >&2
+	fi
+fi
 
 # htmx
 mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.js javascripts/vendor/htmx/htmx.min.js

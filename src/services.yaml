@@ -56,6 +56,9 @@ services:
   YesWiki\Search\Action\:
     resource: 'Search/Action/*'
 
+  YesWiki\Search\Controller\:
+    resource: 'Search/Controller/*'
+
   YesWiki\Render\Service\:
     resource: 'Render/Service/*'
 
@@ -134,5 +137,9 @@ services:
       - { name: yeswiki.event_subscriber }
   # outgoing webhooks on comment/entry events (ticket 20)
   YesWiki\Admin\Controller\WebhooksController:
+    tags:
+      - { name: yeswiki.event_subscriber }
+  # keeps the search index in step with Content and form changes (ticket 18)
+  YesWiki\Search\Service\SearchIndexSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }

@@ -104,14 +104,14 @@
     <p><b>{{ _t('ACLS_FOR_SELECTED_PAGES') }} :</b></p>
 
     <p class="type-modif-container">
-        <label for="typemajdefault">
-            <input type=radio name="typemaj" value="default" id="typemajdefault"
+        <label for="updatetypedefault">
+            <input type=radio name="updatetype" value="default" id="updatetypedefault"
                     onClick="document.querySelector('.edit-acl-container').style.display='none'">
             <span>{{ _t('ACLS_RESET_SELECTED_PAGES') }} <em>yeswiki.config.php</em>)</span>
         </label>
 
         <label for="typemalremplacer">
-            <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
+            <input type=radio name="updatetype" value="remplacer" id="typemalremplacer" checked
                     onClick="document.querySelector('.edit-acl-container').style.display=''">
             <span>{{ _t('ACLS_REPLACE_SELECTED_PAGES') }}</span>
         </label>

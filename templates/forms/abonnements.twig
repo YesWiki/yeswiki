@@ -40,14 +40,14 @@
 			<td>
 				<a
 					class="btn btn-default btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.id }}) }}"
+					href="{{ url({ params: { view: 'abonnements', action: 'sync', actor: actorUri, formid: form.id }}) }}"
 					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#repeat"/></svg>
 				</a>
 				<a
 					class="btn btn-danger btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
+					href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
@@ -75,7 +75,7 @@
 				{% if actorUri not in following %}
 				<a
 					class="btn btn-default btn-mini btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
+					href="{{ url({ params: { view: 'abonnements', action: 'add', actor: actorUri, type: 'following', formid: form.id }}) }}"
 					title="{{ _t('BAZ_FOLLOW_BACK') }}"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
@@ -83,7 +83,7 @@
 				{% endif %}
 				<a
 					class="btn btn-danger btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.id }}) }}"
+					href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>

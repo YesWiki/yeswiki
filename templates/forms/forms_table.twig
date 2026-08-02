@@ -52,7 +52,7 @@
 {% endif %}
 
 {% if userIsAdmin and not isWikiHibernated %}
-  <a class="yw-btn yw-btn--primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+  <a class="yw-btn yw-btn--primary" href="{{ url({ params: { view: 'formulaire', action: 'new' }}) }}">
     {% block createformbutton %}
       <svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
       {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}

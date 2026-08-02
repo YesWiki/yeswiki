@@ -151,7 +151,7 @@ peu de travail)
 
 ## Actions
 
-### `bazarfollow`
+### `entryfollow`
 
 Si vous avez activés ActivityPub pour un formulaire Bazar, vous pouvez utiliser
 cette action pour permettre à n'importe qui de suivre l'acteur avec un compte
@@ -160,7 +160,7 @@ ActivityPub (par exemple Mastodon).
 Elle prend comme unique paramètre l'ID du formulaire:
 
 ```text
-{{bazarfollow id="3"}}
+{{entryfollow id="3"}}
 ```
 
 Cela affiche un champ comme ça:

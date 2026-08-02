@@ -2,7 +2,7 @@
   <ul class="yw-nav">
     {% for menuItem in menuItems %}
       <li {% if menuItem == view %}class="active"{% endif %}>
-        <a href="{{ url({ params: { vue: menuItem } }) }}">
+        <a href="{{ url({ params: { view: menuItem } }) }}">
           {{ _t('BAZ_' ~ menuItem|upper) }}
         </a>
       </li>

@@ -5,8 +5,8 @@ namespace YesWiki\Render\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
@@ -209,14 +209,14 @@ class TemplateEngine
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
             $basePath = $this->urlFormatter->getBaseUrl() . '/';
-            $attach = new Attach($this->container);
-            $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
+            $resizer = $this->container->get(ImageResizer::class);
+            $image_dest = $resizer->resizedFilename($options['fileName'], (string)$options['width'], (string)$options['height'], $options['mode']);
             $safeRefresh = !$this->container->get(HibernationService::class)->isWikiHibernated()
                 && file_exists($image_dest)
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
                 && $this->container->get(AclService::class)->isAdmin();
             if (!file_exists($image_dest) || $safeRefresh) {
-                $result = $attach->resizeImage($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
+                $result = $resizer->resize($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
                     // do nothing : error
                     return $basePath . $options['fileName'];
@@ -513,7 +513,7 @@ class TemplateEngine
     }
 
     /**
-     * Template names are stored data ({{bazarliste template="X.tpl.html"}} in page
+     * Template names are stored data ({{entrylist template="X.tpl.html"}} in page
      * bodies, per-page metadata): historical .tpl.html names resolve to their Twig
      * successors since the tpl.html engine died (ticket 07).
      */

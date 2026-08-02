@@ -6,7 +6,6 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Identity\Service\InputFilter;
 
 class CsrfTokenChecker extends YesWikiController
 {

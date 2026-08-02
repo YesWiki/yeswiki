@@ -2,23 +2,23 @@
 {% set entityType = params.entity|default('') is empty ? config.qrcode_config.default_entity_type : params.entity %}
 {% set entityForm = params.entityform|default('') is empty ? config.qrcode_config.default_entity_form : params.entityform %}
 {% set logo = params.logo|default('') is empty ? 'themes/margot/images/favicon.png' : params.logo %}
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 <div class="badge-container">
-    {% for fiche in fiches %}
-          <div class="qrbadge bazar-entry" {{ fiche.html_data|raw }}>
-            {% set qrcodeContent = url({tag: 'QRcodeScan'}) ~ '&id=' ~ entityForm ~ '&' ~ entityType ~ '=' ~ fiche.tag|trim %}
+    {% for entry in entries %}
+          <div class="qrbadge bazar-entry" {{ entry.html_data|raw }}>
+            {% set qrcodeContent = url({tag: 'QRcodeScan'}) ~ '&id=' ~ entityForm ~ '&' ~ entityType ~ '=' ~ entry.tag|trim %}
             {% set cacheImage = qrCode(qrcodeContent, 'qrcodebadge') %}
           <div class="badge-info">
             <img class="badge-logo" src="{{ logo }}" alt="badge logo" />
-            <h4 class="badge-title">{{ fiche.title|trim|raw }}</h4>
+            <h4 class="badge-title">{{ entry.title|trim|raw }}</h4>
 
-            {% if fiche.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ fiche.bf_structure|trim|raw }}</div>{% endif %}
+            {% if entry.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ entry.bf_structure|trim|raw }}</div>{% endif %}
           </div>
           <img class="img-qrcode" src="{{ cacheImage }}" alt="qrcode" />
         </div>
         {% if loop.index % nbcardsperpage == 0 %}</div><div class="badge-container">{% endif %}
     {% endfor %}
-    {% if fiches|length % nbcardsperpage == 0 %}</div>{% endif %}
+    {% if entries|length % nbcardsperpage == 0 %}</div>{% endif %}
   </div>
   <style>
   .badge-container {width:210mm;height:297mm;margin:0 auto;

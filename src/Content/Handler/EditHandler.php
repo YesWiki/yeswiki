@@ -93,23 +93,28 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 $js = "// par défaut, pas de popup d'alerte pour quitter la page
                 var showPopup = false;
 
-                // on demande a faire apparaitre la popup si la page a été modifiée
-                var bodyField = document.getElementById('body');
-                if (bodyField) {
-                    bodyField.addEventListener('input', function() {
-                        showPopup = true;
-                    });
-                }
+                // Delegated on document, NOT bound to the elements directly: this script is
+                // an declared asset and so runs well before the form it guards exists in the
+                // DOM (script ~line 121, <form id=\"ACEditor\"> ~line 353). getElementById()
+                // returned null, the listener was silently never attached, and saving a page
+                // therefore always raised the \"leave without saving?\" dialog it was meant to
+                // suppress. Delegation also survives an htmx body swap, the way ticket 16
+                // had to relearn for every other initialiser.
 
-                // on annule la popup si l'on sauve la page
-                ['ACEditor', 'formulaire'].forEach(function(id) {
-                    var formEl = document.getElementById(id);
-                    if (formEl) {
-                        formEl.addEventListener('submit', function() {
-                            showPopup = false;
-                        });
+                // on demande a faire apparaitre la popup si la page a été modifiée
+                // (the ACeditor sets showPopup itself; this covers a plain textarea)
+                document.addEventListener('input', function(e) {
+                    if (e.target && e.target.id === 'body') {
+                        showPopup = true;
                     }
                 });
+
+                // on annule la popup si l'on sauve la page
+                document.addEventListener('submit', function(e) {
+                    if (e.target && (e.target.id === 'ACEditor' || e.target.id === 'formulaire')) {
+                        showPopup = false;
+                    }
+                }, true);
 
                 // si l'on quitte la page, on affiche la popup si besoin
                 window.addEventListener('beforeunload', function(e) {
@@ -276,6 +281,17 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 continue;
             }
             foreach ($field->formatValuesBeforeSaveIfEditable($posted) as $key => $value) {
+                // An empty value for a key the body does not have yet writes nothing:
+                // the form posts every field on every save, so a page seeded without a
+                // `title` would otherwise gain `title => ''` the first time it is saved.
+                // That is a difference, so PageBody::equals() below never matched and
+                // "saved with no change" could not be detected -- every resubmit created
+                // a revision instead of warning. Clearing a key that DOES exist still
+                // records the empty string, which is a real edit. Same rule keywords
+                // already follow above.
+                if ($value === '' && !array_key_exists($key, $body)) {
+                    continue;
+                }
                 $body[$key] = $value;
             }
         }

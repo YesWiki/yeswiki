@@ -1,23 +1,23 @@
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 <div class="badge-container">
-    {% for fiche in fiches %}
-          <div class="qrbadge bazar-entry" {{ fiche.html_data|raw }}>
-            {% set titre = fiche.title|trim %}
+    {% for entry in entries %}
+          <div class="qrbadge bazar-entry" {{ entry.html_data|raw }}>
+            {% set title = entry.title|trim %}
             {% set vcard = 'BEGIN:VCARD\nVERSION:2.1\n'
-                ~ 'FN:' ~ titre ~ '\n'
-                ~ 'N:' ~ titre ~ '\n'
-                ~ (fiche.bf_telephone|default('')|trim is not empty ? 'TEL;HOME;VOICE:' ~ fiche.bf_telephone|trim ~ '\n' : '')
-                ~ (fiche.bf_mail|default('')|trim is not empty ? 'EMAIL;HOME;INTERNET:' ~ fiche.bf_mail|trim ~ '\n' : '')
-                ~ 'URL:' ~ url({tag: fiche.tag}) ~ '\n'
-                ~ 'ADR:;;' ~ fiche.bf_adresse|default('')|trim ~ ';' ~ fiche.bf_ville|default('')|trim ~ ';;' ~ fiche.bf_code_postal|default('')|trim ~ '\n'
-                ~ (fiche.bf_structure|default('')|trim is not empty ? 'ORG:' ~ fiche.bf_structure|trim ~ '\n' : '')
+                ~ 'FN:' ~ title ~ '\n'
+                ~ 'N:' ~ title ~ '\n'
+                ~ (entry.bf_telephone|default('')|trim is not empty ? 'TEL;HOME;VOICE:' ~ entry.bf_telephone|trim ~ '\n' : '')
+                ~ (entry.bf_mail|default('')|trim is not empty ? 'EMAIL;HOME;INTERNET:' ~ entry.bf_mail|trim ~ '\n' : '')
+                ~ 'URL:' ~ url({tag: entry.tag}) ~ '\n'
+                ~ 'ADR:;;' ~ entry.bf_adresse|default('')|trim ~ ';' ~ entry.bf_ville|default('')|trim ~ ';;' ~ entry.bf_code_postal|default('')|trim ~ '\n'
+                ~ (entry.bf_structure|default('')|trim is not empty ? 'ORG:' ~ entry.bf_structure|trim ~ '\n' : '')
                 ~ 'END:VCARD\n' %}
             {% set cacheImage = qrCode(vcard) %}
           <div class="badge-info">
-            <h4 class="badge-title">{{ titre|raw }}</h4>
+            <h4 class="badge-title">{{ title|raw }}</h4>
 
-            {% if fiche.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ fiche.bf_structure|trim|raw }}</div>{% endif %}
-            {% if fiche.bf_fonction|default('')|trim is not empty %}<div class="badge-occupation">{{ fiche.bf_fonction|trim|raw }}</div>{% endif %}
+            {% if entry.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ entry.bf_structure|trim|raw }}</div>{% endif %}
+            {% if entry.bf_fonction|default('')|trim is not empty %}<div class="badge-occupation">{{ entry.bf_fonction|trim|raw }}</div>{% endif %}
           </div>
           <img class="img-qrcode" src="{{ cacheImage }}" alt="qrcode" />
         </div>

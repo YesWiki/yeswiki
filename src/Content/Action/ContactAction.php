@@ -28,9 +28,9 @@ class ContactAction extends YesWikiAction implements RegisteredAction
         }
 
         return [
-            'correspondance' => $arg['correspondance'] ?? null,
+            'fieldmapping' => $arg['fieldmapping'] ?? null,
             'mail' => $mailList,
-            'entete' => $arg['entete'] ?? $this->getService(RuntimeConfig::class)['yeswiki_name'],
+            'subjectprefix' => $arg['subjectprefix'] ?? $this->getService(RuntimeConfig::class)['yeswiki_name'],
             'template' => $arg['template'] ?? 'complete-contact-form.twig',
             'class' => (!empty($arg['class']) ? 'form-contact ' . $arg['class'] : 'form-contact'),
         ];

@@ -8,7 +8,7 @@ use YesWiki\Kernel\Service\Mailer;
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {
-    preg_match_all('/{{(contact|abonnement|desabonnement).*mail=\"(.*)\".*}}/U', $wikipage, $matches);
+    preg_match_all('/{{(contact|subscribe|unsubscribe).*mail=\"(.*)\".*}}/U', $wikipage, $matches);
 
     return $matches[2][$nbactionmail - 1];
 }
@@ -73,7 +73,7 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
     }
 
     // Check message (length)
-    if ($type != 'abonnement' && $type != 'desabonnement' && (!$messagebody || strlen($messagebody) < 10)) {
+    if ($type != 'subscribe' && $type != 'unsubscribe' && (!$messagebody || strlen($messagebody) < 10)) {
         $message['message'] .= _t('CONTACT_ENTER_MESSAGE') . '<br />';
     }
 

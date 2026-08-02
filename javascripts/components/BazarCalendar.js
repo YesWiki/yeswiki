@@ -116,7 +116,7 @@ const BazarCalendar = {
     },
     mountCalendar() {
       if (!this.mounted) {
-        if (this.params.minical) {
+        if (this.params.minicalendar) {
           this.$el.classList.add('minical')
         }
         const calendarEl = document.createElement('div')

@@ -2,15 +2,15 @@
 {{ infoRes|raw }} {# affiche le nombre de résultats #}
 
 {# l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
-, on utilise $params['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
+, on utilise $params['listindex'] qui s'incrémente à chaque fois qu'on appelle entrylist
 pour différencier les différents tableaux table_1 table_2 #}
 
-<table id="table_{{ params.nbbazarliste}}" class="yw-table in-tableau-template" data-yw-datatable>
+<table id="table_{{ params.listindex}}" class="yw-table in-tableau-template" data-yw-datatable>
   <thead>
     <tr>
       {# Column titles #}
           {% if displayadmincol %}
-            {{ multidelete.insertSelectAll('bazar-list-'~ params.nbbazarliste,'top') }}
+            {{ multidelete.insertSelectAll('bazar-list-'~ params.listindex,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
         <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}
@@ -33,7 +33,7 @@ pour différencier les différents tableaux table_1 table_2 #}
       <tr {{ entry.html_data|raw }}>
         {% if displayadmincol %}
           {{ multidelete.insertSelectLine(
-              'bazar-list-'~ params.nbbazarliste,
+              'bazar-list-'~ params.listindex,
               entry.tag,
               entry.external-data is not empty or not(
                 userIsAdmin() or userIsOwner(entry.tag))) }}
@@ -153,7 +153,7 @@ pour différencier les différents tableaux table_1 table_2 #}
       <tfoot>
         <tr>
           {% if displayadmincol %}
-            {{ multidelete.insertSelectAll('bazar-list-'~ params.nbbazarliste,'bottom') }}
+            {{ multidelete.insertSelectAll('bazar-list-'~ params.listindex,'bottom') }}
           {% endif %}
           {% for index,info in columnsInfo %}
             <th>
@@ -171,7 +171,7 @@ pour différencier les différents tableaux table_1 table_2 #}
   </tbody>
 </table>
 {% if displayadmincol %}
-            {{ multidelete.insertButton('bazar-list-'~ params.nbbazarliste,'pages') }}
+            {{ multidelete.insertButton('bazar-list-'~ params.listindex,'pages') }}
 {% endif %}
 
 {{ include_javascript('javascripts/tableau.js') }}

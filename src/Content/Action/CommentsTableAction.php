@@ -1,6 +1,7 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;

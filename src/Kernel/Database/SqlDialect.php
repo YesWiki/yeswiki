@@ -48,6 +48,17 @@ interface SqlDialect
     /** SQL testing whether $needle appears in the comma-separated list $haystack. */
     public function findInSet(string $needle, string $haystack, bool $not = false): string;
 
+    /**
+     * SQL reading a text expression as an integer, for ordering by it.
+     *
+     * MySQL coerces silently -- `substring(tag, 8) + 0` sorts comment tags numerically and
+     * has done for years. PostgreSQL refuses outright ("operator does not exist: text +
+     * integer") and takes the whole page down with it, which is how this arrived: the
+     * comment list ran on MySQL and SQLite forever and had simply never met a third driver.
+     * The three spellings of the cast are different enough to need a dialect.
+     */
+    public function castToInteger(string $expression): string;
+
     // ---------------------------------------------------------------- dump / restore
     //
     // Ticket 17: archive restore used to be a raw `mysqli_multi_query()`, so it only ever
@@ -72,4 +83,62 @@ interface SqlDialect
 
     /** Whether a dump produced by this dialect can be generated at all (see ticket 17). */
     public function supportsDump(): bool;
+
+    // ---------------------------------------------------------------- search index
+    //
+    // Ticket 18 / ADR-0015. Text search reads a derived index table, and the full-text
+    // index over it is the one part of that table whose *shape* differs per driver:
+    // MySQL adds a FULLTEXT KEY to the ordinary table, PostgreSQL a generated tsvector
+    // with a GIN index, SQLite a separate FTS5 virtual table kept in sync by triggers.
+    //
+    // Still string generation only -- the statements are executed by the migration and by
+    // the reindex command, both of which hold the PDO link.
+
+    /**
+     * Every statement needed to create the search index table, its ordinary indexes, its
+     * full-text index and the queue of Contents awaiting reindexing, in execution order.
+     *
+     * The queue lives here rather than in a driver-neutral CREATE because its column types
+     * differ like every other table's, and because a schema half-declared in the dialect and
+     * half in a service is how the two drift apart.
+     *
+     * @param string $table      already prefixed, unquoted
+     * @param string $queueTable already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function searchIndexDdl(string $table, string $queueTable): array;
+
+    /**
+     * Every statement needed to remove what searchIndexDdl() created, in execution order.
+     * Used by the reindex command's full rebuild and by an uninstall.
+     *
+     * @return list<string>
+     */
+    public function searchIndexDropDdl(string $table, string $queueTable): array;
+
+    /**
+     * A boolean SQL expression selecting the index rows that match the query, each term
+     * matched as a prefix (`atelier` matches `ateliers`).
+     *
+     * The query arrives as **groups**: every group must match (AND), and within a group any
+     * alternative will do (OR). That shape exists for one reason -- a searched word can also
+     * be an enum option's *label*, and the index stores that option's key. So the word and
+     * the keys it names travel together as alternatives, and a search for "Atelier" finds
+     * entries storing `3`. See FormOptionTranslator.
+     *
+     * The expression references the index table by name rather than by alias, so callers
+     * must not alias it.
+     *
+     * **Terms are interpolated, not bound.** Every dialect here builds a search-engine query
+     * string rather than an SQL scalar, and none of MySQL's boolean mode, PostgreSQL's
+     * `to_tsquery` or FTS5's grammar can be parameterised safely from a caller's raw input.
+     * The contract is therefore that callers pass terms already reduced to `[\p{L}\p{N}_]+`
+     * -- see SearchIndexQuery::parseQuery(), which is the only thing that should ever build
+     * them. Anything else is an injection.
+     *
+     * @param list<list<string>> $termGroups non-empty; every group non-empty; every term
+     *                                       already sanitised as above
+     */
+    public function searchMatchExpression(string $table, array $termGroups): string;
 }

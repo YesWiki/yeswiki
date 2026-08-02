@@ -4,11 +4,13 @@ namespace YesWiki\Admin\Controller;
 
 use PDO;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
+use YesWiki\Core\YesWikiLoader;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Core\YesWikiLoader;
-use YesWiki\Identity\Entity\User;
+use YesWiki\Search\Service\SearchIndexSchema;
 
 /**
  * Web installer, run by Init::doInstall() when the configuration file does not exist
@@ -55,6 +57,8 @@ class InstallationController
 
     /** @var \PDO|null */
     protected $dbLink;
+    /** The driver's own message for the last failed execSqlTemplate(), for the error page. */
+    private ?string $lastSqlError = null;
     /** @var array[] every check already passed, ['result' => 'success'|'warning', 'output' => text] */
     protected $messages = [];
 
@@ -391,20 +395,74 @@ class InstallationController
             'adminUserMetadata' => json_encode(['acls' => ['write' => "%\n@admins"]]),
         ];
 
-        $this->dbLink->beginTransaction();
+        // Table creation runs OUTSIDE any transaction: MySQL and MariaDB implicitly commit
+        // on every DDL statement, so a transaction opened around CREATE TABLE is already
+        // gone by the time we reach commit() -- which then throws "There is no active
+        // transaction" and fails the whole install. SQLite has transactional DDL and hides
+        // this, which is why the phpunit suite never caught it. Failed table creation is
+        // undone by dropEmptyTables() instead, the same way a failed content insert is.
         if (!$this->execSqlTemplate('installation-create-tables.sql.twig', $replacements)) {
-            $this->dbLink->rollBack();
-            throw new \Exception(_t('CREATION_OF_TABLES') . ' :<br />' . _t('NOT_POSSIBLE_TO_CREATE_SQL_TABLES'));
+            $this->dropEmptyTables();
+            throw new \Exception(_t('CREATION_OF_TABLES') . ' :<br />' . _t('NOT_POSSIBLE_TO_CREATE_SQL_TABLES') . $this->sqlErrorDetail());
         }
         $this->pass(_t('CREATION_OF_TABLES'));
 
+        // The seed content is all INSERTs -- nothing here implicitly commits on any
+        // dialect, so the transaction is still open when we reach commit().
+        $this->dbLink->beginTransaction();
         if (!$this->execSqlTemplate('installation-default-content.sql.twig', $replacements)) {
             $this->dbLink->rollBack();
             $this->dropEmptyTables();
-            throw new \Exception(_t('INSERTION_OF_PAGES') . ' :<br />' . _t('ALREADY_CREATED') . ' ?');
+            throw new \Exception(_t('INSERTION_OF_PAGES') . ' :<br />' . _t('ALREADY_CREATED') . ' ?' . $this->sqlErrorDetail());
         }
         $this->dbLink->commit();
         $this->pass(_t('INSERTION_OF_PAGES'));
+
+        $this->installSearchIndex();
+    }
+
+    /**
+     * Create the search index and queue the seeded content for it (ticket 18 / ADR-0015).
+     *
+     * A fresh install cannot get this from the migration that creates it on an *existing*
+     * wiki: new installs seed their migrations as already-run, so anything only a migration
+     * does simply never happens here. That is not a hypothetical -- it is defect 4 of ticket
+     * 25, where fresh installs shipped a Pages form with no `syntax` for exactly this
+     * reason, and every page rendered its own markup verbatim.
+     *
+     * The DDL comes from the dialect rather than from `installation-create-tables.sql.twig`,
+     * so the index has one definition and not two that drift. The installer runs before the
+     * container exists, but a dialect has no dependencies to inject.
+     *
+     * Outside a transaction, like the other DDL above: MySQL implicitly commits on every DDL
+     * statement, so wrapping it achieves nothing except a "no active transaction" throw at
+     * commit time.
+     */
+    private function installSearchIndex(): void
+    {
+        $db = $this->dbLink;
+        if ($db === null) {
+            throw new \Exception('no database connection');
+        }
+
+        $dialect = SqlDialectFactory::forDriver((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        $prefix = $this->config['table_prefix'];
+        $index = $prefix . SearchIndexSchema::TABLE;
+        $queue = $prefix . SearchIndexSchema::QUEUE_TABLE;
+
+        foreach ($dialect->searchIndexDdl($index, $queue) as $statement) {
+            $db->exec($statement);
+        }
+
+        // The seed is a few dozen pages, so this could have been indexed inline. It is
+        // queued instead so that a fresh install and an upgraded one converge through the
+        // same drain -- one path to keep working, not two.
+        $db->exec(
+            "INSERT INTO {$queue} (tag, queued_at) SELECT DISTINCT tag, {$dialect->now()}"
+            . " FROM {$prefix}pages WHERE latest = 'Y'"
+        );
+
+        $this->pass(_t('CREATION_OF_SEARCH_INDEX'));
     }
 
     /**
@@ -589,9 +647,27 @@ class InstallationController
             $statements[] = $current;
         }
 
+        // A fragment carrying nothing but comments is dropped, not just an empty one. The
+        // seed templates end their sections with `-- end triples` and the like, so the tail
+        // after the last `;` is a comment: MySQL and SQLite execute that happily as a no-op,
+        // and **PostgreSQL rejects it** with a bare "SQLSTATE[HY000]: General error" -- an
+        // empty query. Every fresh PostgreSQL install failed at "Insertion des pages par
+        // défaut", and the installer's guess for that was "Déjà créée ?".
+        //
+        // Third divergence of this exact shape in this one method's neighbourhood, after
+        // ticket 25's transactional-DDL and backslash-escape defects. The pattern is always
+        // the same: the templates are written for one dialect's tolerance.
         return array_values(array_filter(array_map('trim', $statements), function ($statement) {
-            return $statement !== '';
+            return self::stripSqlComments($statement) !== '';
         }));
+    }
+
+    /** A statement with its `--` line comments removed, for deciding whether it does anything. */
+    private static function stripSqlComments(string $statement): string
+    {
+        $withoutComments = preg_replace('/^\s*--[^\n]*$/m', '', $statement) ?? $statement;
+
+        return trim(str_replace(';', '', $withoutComments));
     }
 
     /**
@@ -605,20 +681,62 @@ class InstallationController
             ['driver' => $this->dbDriver()]
         );
 
-        foreach ($replacements as $keyword => $value) {
-            $quoted = $this->dbLink->quote((string)$value);
-            $sql = str_replace('{{' . $keyword . '}}', substr($quoted, 1, -1), $sql);
-        }
-
-        try {
-            foreach (self::splitSqlStatements($sql) as $statement) {
-                $this->dbLink->exec($statement);
-            }
-        } catch (\PDOException $th) {
+        // MySQL and MariaDB treat a backslash as an escape character inside string
+        // literals; standard SQL and SQLite do not. Since ticket 09 the seeded page bodies
+        // are JSON, so they are full of \" and \n -- which MySQL silently ate, storing
+        // invalid JSON. PageBody::decode() then falls back to treating the whole thing as
+        // raw markup, so the page rendered its own JSON envelope. 39 of the 61 seeded
+        // pages were affected on a fresh MySQL install; SQLite installs were fine, which
+        // is why the phpunit suite never saw it.
+        //
+        // These templates already use the standard '' for a literal apostrophe, so asking
+        // the server for standard behaviour is all that is needed. Scoped to this method
+        // on purpose: mysqldump output (importBackup) DOES rely on backslash escapes.
+        $db = $this->dbLink;
+        if ($db === null) {
             return false;
         }
 
+        $previousSqlMode = null;
+        if ($this->dbDriver() === 'mysql') {
+            $modeStatement = $db->query('SELECT @@SESSION.sql_mode');
+            $previousSqlMode = $modeStatement === false ? '' : (string)$modeStatement->fetchColumn();
+            $db->exec("SET SESSION sql_mode = CONCAT(@@SESSION.sql_mode, ',NO_BACKSLASH_ESCAPES')");
+        }
+
+        try {
+            // after the sql_mode change, so quote() escapes the way the server now parses
+            foreach ($replacements as $keyword => $value) {
+                $quoted = $db->quote((string)$value);
+                $sql = str_replace('{{' . $keyword . '}}', substr($quoted, 1, -1), $sql);
+            }
+
+            foreach (self::splitSqlStatements($sql) as $statement) {
+                $db->exec($statement);
+            }
+        } catch (\PDOException $th) {
+            // Kept, because the caller's message is a *guess* ("Déjà créée ?") and the
+            // driver's is a fact. On PostgreSQL that difference was the whole debugging
+            // session: "already created?" sent me looking for a stale database when the
+            // real answer was in the statement the server refused.
+            $this->lastSqlError = $th->getMessage();
+
+            return false;
+        } finally {
+            if ($previousSqlMode !== null) {
+                $db->exec('SET SESSION sql_mode = ' . $db->quote($previousSqlMode));
+            }
+        }
+
         return true;
+    }
+
+    /** The driver's message for the last failed statement, ready to append to an error. */
+    private function sqlErrorDetail(): string
+    {
+        return $this->lastSqlError === null
+            ? ''
+            : '<br /><code>' . htmlspecialchars($this->lastSqlError, ENT_QUOTES) . '</code>';
     }
 
     /**

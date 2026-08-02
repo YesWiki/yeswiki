@@ -274,12 +274,12 @@ const load = (domElement) => {
 
         if (vSearch != '') this.search = vSearch
 
-        if (vParams.champ !== undefined && vParams.champ.trim() !== '') {
-          vChamp = vParams.champ
+        if (vParams.field !== undefined && vParams.field.trim() !== '') {
+          vChamp = vParams.field
         }
 
-        if (vParams.ordre !== undefined && vParams.ordre.trim() !== '') {
-          vChamp = vParams.ordre
+        if (vParams.order !== undefined && vParams.order.trim() !== '') {
+          vChamp = vParams.order
         }
 
         if (vParams.query !== undefined) {
@@ -454,12 +454,12 @@ const load = (domElement) => {
         })
 
         if (this.sortOptions.length > 0) {
-          // params "champ" is used to choose default sort (backend sort). If present
+          // params "field" is used to choose default sort (backend sort). If present
           // we do not overwride this backend sort by the front end dynamic sort
-          if (this.params.champ) {
+          if (this.params.field) {
             const sort = this.sortOptions
-              .find((o) => o.field === this.params.champ.trim()
-                && o.order === ((typeof (this.params.ordre) == 'boolean' ? this.params.ordre : (this.params.ordre == '1' || this.params.ordre == 'true' || this.params.ordre == 'asc')) ? 'asc' : 'desc'))
+              .find((o) => o.field === this.params.field.trim()
+                && o.order === ((typeof (this.params.order) == 'boolean' ? this.params.order : (this.params.order == '1' || this.params.order == 'true' || this.params.order == 'asc')) ? 'asc' : 'desc'))
 
             if (sort) { this.currentSort = sort } else { this.currentSort = this.sortOptions[0] }
           }

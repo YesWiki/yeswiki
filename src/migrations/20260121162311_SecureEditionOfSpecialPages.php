@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Identity\Service\AclService;
 
 class SecureEditionOfSpecialPages extends YesWikiMigration
 {

@@ -114,7 +114,7 @@ utilisant le composant "Connexion"
 
 - après la création d'une liste, celle-ci ne s'affiche pas correctement dans la
   liste des listes (accessible avec
-  [ce lien](?BazaR&vue=listes 'Liste des listes :ignore'))
+  [ce lien](?BazaR&view=listes 'Liste des listes :ignore'))
 
 ### Correction
 

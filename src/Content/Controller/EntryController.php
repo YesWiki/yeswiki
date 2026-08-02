@@ -142,14 +142,14 @@ class EntryController extends YesWikiController
         $this->getService(PageContext::class)->setTag($entryId);
         $renderedEntry = null;
         $message = $this->getRequest()->query->get('message', '');
-        // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
+        // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{entrylist}}
         unset($_GET['message']);
         // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
-        $isUpdatingEntry = ($this->getRequest()->query->get('vue') === 'consulter');
+        $isUpdatingEntry = ($this->getRequest()->query->get('view') === 'consulter');
         if ($isUpdatingEntry) {
-            unset($_GET['vue']);
+            unset($_GET['view']);
         }
-        // unshift stack to check if this entry is included into a bazarliste into a Field
+        // unshift stack to check if this entry is included into a entrylist into a Field
         array_unshift($this->parentsEntries, $entryId);
         if (
             count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
@@ -233,7 +233,7 @@ class EntryController extends YesWikiController
             $_GET['message'] = $message;
         }
         if ($isUpdatingEntry) {
-            $_GET['vue'] = 'consulter';
+            $_GET['view'] = 'consulter';
         }
 
         $user = $this->authenticationService->getLoggedUser();
@@ -371,7 +371,7 @@ class EntryController extends YesWikiController
             testUrlInIframe(),
             '',
             [
-                'vue' => 'consulter',
+                'view' => 'consulter',
                 'action' => 'voir_fiche',
                 'tag' => $tag,
                 'message' => 'ajout_ok',
@@ -401,7 +401,7 @@ class EntryController extends YesWikiController
                         !empty($redirectUrl)
                         ? $redirectUrl
                         : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
-                            'vue' => 'consulter',
+                            'view' => 'consulter',
                             'action' => 'voir_fiche',
                             'tag' => $entry['tag'],
                             'message' => 'modif_ok',
@@ -451,7 +451,7 @@ class EntryController extends YesWikiController
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
-                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['vue' => 'consulter'], false));
+                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
                     }
 
                     return true;
@@ -459,7 +459,7 @@ class EntryController extends YesWikiController
             } catch (\Throwable $th) {
                 if ($redirectAfter) {
                     Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
-                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['vue' => 'consulter'], false));
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
                 }
                 throw new \Exception($th->getMessage(), $th->getCode(), $th);
             }
@@ -599,14 +599,18 @@ class EntryController extends YesWikiController
             $html['semantic'] = $GLOBALS['yeswikiServices']->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
+        // ticket 21: the French alias `fiche` is gone. It had been shadowed by `entry` "for
+        // backward compatibility" since long before this, so every core template already had
+        // an English name to read; keeping both only meant two names for one value, and a
+        // custom template silently reading the one core no longer maintains.
+        //
+        // `html` stays: it is not French, and activitystreams/note.twig reads it. Whether it
+        // should collapse into its `renderedFields` twin is a separate question from this
+        // ticket's.
         $values = [];
         $values['html'] = $html;
-        $values['fiche'] = $entry;
-        $values['form'] = $form;
-
-        // Transform some data so it's easier to use
-        // Rename some variable (we keep old one for backward compatibility)
         $values['entry'] = $entry;
+        $values['form'] = $form;
         $values['renderedFields'] = $html;
         $values['formFields'] = [];
         foreach ($values['form']['prepared'] as $config) {
@@ -837,7 +841,7 @@ class EntryController extends YesWikiController
             );
         }
 
-        return $this->getService(ActionRunner::class)->action('bazarliste', false, $params);
+        return $this->getService(ActionRunner::class)->action('entrylist', false, $params);
     }
 
     /**

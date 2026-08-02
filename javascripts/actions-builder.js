@@ -3,8 +3,8 @@ import { setup, appConfig } from './actions-builder-app.js'
 const { createApp } = Vue
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
-  calendrier: 'bazarcalendar',
-  map: 'bazarcarto'
+  calendar: 'bazarcalendar',
+  map: 'entrymap'
 }
 
 export default class {

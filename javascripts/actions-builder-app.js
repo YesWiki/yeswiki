@@ -10,7 +10,7 @@ import InputDivider from './components/InputDivider.js'
 import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
-import InputFacette from './components/InputFacette.js'
+import InputFacets from './components/InputFacets.js'
 import InputSortFields from './components/InputSortFields.js'
 import InputReaction from './components/InputReaction.js'
 import InputIconMapping from './components/InputIconMapping.js'
@@ -18,7 +18,7 @@ import InputColorMapping from './components/InputColorMapping.js'
 import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
-import InputCorrespondance from './components/InputCorrespondance.js'
+import InputFieldMapping from './components/InputFieldMapping.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import InputHint from './components/InputHint.js'
@@ -35,7 +35,7 @@ const components = {
   InputFormField,
   InputHidden,
   InputDivider,
-  InputFacette,
+  InputFacets,
   InputSortFields,
   InputReaction,
   InputIconMapping,
@@ -43,7 +43,7 @@ const components = {
   InputNavLinks,
   InputGeo,
   InputClass,
-  InputCorrespondance,
+  InputFieldMapping,
   InputColumnsWidth,
   WikiCodeInput,
   PreviewAction,
@@ -128,8 +128,8 @@ export const appConfig = {
         return props.some((prop) => prop?.advanced)
       })
     },
-    isBazarListeAction() {
-      return this.currentGroupId === 'bazarliste'
+    isEntryListAction() {
+      return this.currentGroupId === 'entrylist'
     },
     selectedActionAllConfigs() {
       let result = {}
@@ -140,7 +140,7 @@ export const appConfig = {
     },
     wikiCodeStart() {
       let actionId = this.selectedActionId
-      if (this.isBazarListeAction) actionId = 'bazarliste'
+      if (this.isEntryListAction) actionId = 'entrylist'
       let result = `{{${actionId}`
       for (const key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
@@ -233,7 +233,7 @@ export const appConfig = {
         }
 
         // For bazar action, name is contained inside the template attribute
-        if (newActionId == 'bazarliste') {
+        if (newActionId == 'entrylist') {
           for (const actionId in this.actions) {
             const action = this.actions[actionId]
             if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template) { this.selectedActionId = actionId }
@@ -245,7 +245,7 @@ export const appConfig = {
         this.selectedFormsIds = null
         this.selectedActionId = ''
         // Bazar dynamic by default
-        if (this.isBazarListeAction) this.values.dynamic = true
+        if (this.isEntryListAction) this.values.dynamic = true
       }
       this.updateActionParams()
       // If only one action available, select it
@@ -355,7 +355,7 @@ export const appConfig = {
           : (this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default)
         if (configValue && !this.values[propName]) this.values[propName] = configValue
       }
-      if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
+      if (this.isEntryListAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0)
     },
     updateActionParams() {
@@ -382,8 +382,8 @@ export const appConfig = {
       // Adds values from special components
       if (this.$refs.specialInput) this.$refs.specialInput.forEach((p) => result = { ...result, ...p.getValues() })
 
-      // default value for 'bazarliste'
-      if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
+      // default value for 'entrylist'
+      if (this.selectedActionId == 'entrylist') result.template = result.template || 'liste_accordeon'
 
       // put in first position 'id' and 'template' if existing
       const orderedResult = {}
@@ -394,7 +394,7 @@ export const appConfig = {
       this.actionParams = orderedResult
     },
     watchSelectedActionId() {
-      if (!this.isBazarListeAction && !this.isEditingExistingAction) {
+      if (!this.isEntryListAction && !this.isEditingExistingAction) {
         this.values = {}
       }
       this.initValuesOnActionSelected()

@@ -242,6 +242,50 @@ abstract class BazarField implements \JsonSerializable
         return is_null($pValue) || (is_array($pValue) && count(array_keys($pValue)) == 0) || (is_string($pValue) && trim($pValue) == '');
     }
 
+    /**
+     * What this field contributes to the search index (ticket 18 / ADR-0015).
+     *
+     * The index is **asked** rather than built by walking a body, because some stored
+     * *values* are envelope as surely as the keys are: a `stored_filename` UUID, a
+     * timestamp, a `form_id`. Indexing those reproduces the bug this replaced in a subtler
+     * form -- search `2026`, match everything edited this year. So the default is "my value
+     * as text", and the field types for which that is wrong say so by overriding, the same
+     * way field roles default from type (ADR-0012) rather than from a list of names held
+     * somewhere else.
+     *
+     * Deliberately reads the stored value directly instead of going through getValue():
+     * that method substitutes `$_REQUEST` and then the field's *default*, which is right
+     * for an input and wrong here twice over -- it would index a value the Content does not
+     * have, and make what gets indexed depend on the request that happened to trigger it.
+     *
+     * @param array<string, mixed>|null $entry the Content, in entry shape
+     */
+    public function searchableText($entry): string
+    {
+        if (!is_array($entry) || $this->propertyName === '' || $this->propertyName === null) {
+            return '';
+        }
+
+        return self::flattenForIndex($entry[$this->propertyName] ?? null);
+    }
+
+    /**
+     * A stored value as one line of indexable text. Arrays are flattened rather than
+     * dropped: a checkbox stores several keys, a geolocation several numbers, and losing
+     * them silently is how a field stops being findable without anything saying so.
+     */
+    protected static function flattenForIndex(mixed $value): string
+    {
+        if (is_array($value)) {
+            return trim(implode(' ', array_map([self::class, 'flattenForIndex'], $value)));
+        }
+        if (is_bool($value) || $value === null) {
+            return '';
+        }
+
+        return trim((string)$value);
+    }
+
     // HELPERS
     /**
      * Return true if we are if reading is allowed for the field.

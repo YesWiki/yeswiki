@@ -25,7 +25,7 @@ class PageBodyMigratorTest extends TestCase
      */
     public function testMarkupOpeningWithAnActionCallIsTreatedAsMarkup(): void
     {
-        $markup = '{{bazarliste id="1" template="map"}}';
+        $markup = '{{entrylist id="1" template="map"}}';
 
         $result = PageBodyMigrator::classify($markup, false);
 

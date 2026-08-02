@@ -23,7 +23,7 @@ actions:
         label: _t(AB_tags_listpagestag_nb_label)
         type: number
         min: 0
-      tri:
+      sort:
         label: _t(AB_tags_listpagestag_tri_label)
         type: list
         options:
@@ -41,7 +41,7 @@ actions:
         type: checkbox
         checkedvalue: '1'
         uncheckedvalue: ''
-  nuagetag:
+  tagcloud:
     label: _t(AB_tags_listpagestag_nuagetag_label)
     properties:
       tags:
@@ -51,14 +51,14 @@ actions:
       # class:
       #   label: class
       #   type: text
-      tri:
+      sort:
         label: _t(AB_tags_listpagestag_tri_label)
         type: list
         default: ''
         options:
           '': _t(AB_tags_nuagetag_tri_shuffle)
           apha: _t(AB_tags_listpagestag_tri_alpha)
-      nbclasses:
+      classcount:
         label: _t(AB_tags_listpagestag_nbclasses_label)
         type: number
         advanced: true

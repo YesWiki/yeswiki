@@ -40,7 +40,7 @@
   <meta name="viewport" content="width=device-width" />
 
   <!-- Title of the page -->
-  <title>{{ action('configuration param="wakka_name"') }} : {{ action('titrepage')|raw }}</title>
+  <title>{{ action('configuration param="wakka_name"') }} : {{ action('pagetitle')|raw }}</title>
 
   {{ action('favicon')|raw }}
   {{ action('linkrss')|raw }}
@@ -72,34 +72,34 @@
           <button class="yw-btn btn-menu">{{ icon('menu-2') }}</button>
           <div class="navbar-header">
             <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
-              {{ action('include page="PageTitre" doubleclic="1"')|raw }}
+              {{ action('include page="PageTitre" doubleclick="1"')|raw }}
             </a>
           </div>
-          {{ action('include page="PageMenuHaut" class="yw-topnav topnavpage links-container" doubleclic="1" actif="1"')|raw }}
-          {{ action('include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclic="1" actif="1"')|raw }}
+          {{ action('include page="PageMenuHaut" class="yw-topnav topnavpage links-container" doubleclick="1" active="1"')|raw }}
+          {{ action('include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclick="1" active="1"')|raw }}
         </div>
     </nav>
 
     <header id="yw-header">
       <div class="navbar-header">
         <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
-          {{ action('include page="PageTitre" doubleclic="1"')|raw }}
+          {{ action('include page="PageTitre" doubleclick="1"')|raw }}
         </a>
       </div>
-      {{ action('include page="PageHeader" class="yw-headerpage" doubleclic="1"')|raw }}
+      {{ action('include page="PageHeader" class="yw-headerpage" doubleclick="1"')|raw }}
     </header>
 
-    <div id="yw-main" role="main" tabindex="-1" {{ action('doubleclic')|raw }}>
+    <div id="yw-main" role="main" tabindex="-1" {{ action('doubleclick')|raw }}>
       <div class="yw-main-content alone">
         {{ page_content|raw }}
       </div>
     </div>
 
-    {{ action('barreredaction')|raw }}
+    {{ action('editbar')|raw }}
 
     <footer id="yw-footer">
       <div class="container">
-        {{ action('include page="PageFooter" class="footerpage" doubleclic="1"')|raw }}
+        {{ action('include page="PageFooter" class="footerpage" doubleclick="1"')|raw }}
       </div> <!-- /.container -->
     </footer><!-- /#yw-footer -->
   </div> <!-- /#yw-container -->

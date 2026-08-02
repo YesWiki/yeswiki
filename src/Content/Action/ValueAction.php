@@ -12,10 +12,10 @@ use YesWiki\Kernel\Service\RuntimeConfig;
  */
 class ValueAction extends YesWikiAction implements RegisteredAction
 {
-    /** `{{valeur}}` in page content -- stated, not inferred from the filename. */
+    /** `{{value}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
-        return 'valeur';
+        return 'value';
     }
 
     public function formatArguments($arg)
@@ -27,10 +27,10 @@ class ValueAction extends YesWikiAction implements RegisteredAction
 
         return [
             'url' => $url,
-            'champ' => $arg['champ'] ?? '',
+            'field' => $arg['field'] ?? '',
             'image' => $arg['image'] ?? '',
-            'texte' => $arg['texte'] ?? '',
-            'defaut' => $arg['defaut'] ?? '',
+            'text' => $arg['text'] ?? '',
+            'default' => $arg['default'] ?? '',
         ];
     }
 
@@ -45,12 +45,12 @@ class ValueAction extends YesWikiAction implements RegisteredAction
             return $this->renderError(_t('BAZAR_URL_ERROR') . ' : ' . htmlspecialchars($url) . '.');
         }
 
-        $field = $this->arguments['champ'];
+        $field = $this->arguments['field'];
         if (empty($field)) {
             return $this->renderError(_t('BAZAR_PARAM_CHAMP_REQUIRED'));
         }
         $image = $this->arguments['image'];
-        $texte = $this->arguments['texte'];
+        $text = $this->arguments['text'];
 
         // on garde en variable globale pour le cas ou l'action est appelée plusieurs fois
         if (!isset($GLOBALS['externalpage'][$url])) {
@@ -80,19 +80,19 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         preg_match_all($regexp, $remotePage, $matches);
 
         if (empty($matches[1])) {
-            return $this->arguments['defaut'];
+            return $this->arguments['default'];
         }
 
         // the remote page is not trusted: purify/escape whatever it returned before rendering it
         $htmlPurifierService = $this->getService(HtmlPurifierService::class);
 
-        if (!empty($texte) && $texte != 'lien') {
+        if (!empty($text) && $text != 'lien') {
             $fragment = $htmlPurifierService->cleanHTML(trim(array_shift($matches[1])));
 
-            return preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">' . htmlspecialchars(trim($texte)) . '</a>', $fragment);
+            return preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">' . htmlspecialchars(trim($text)) . '</a>', $fragment);
         }
 
-        if (!empty($texte) && $texte == 'lien') {
+        if (!empty($text) && $text == 'lien') {
             $fragment = $htmlPurifierService->cleanHTML(array_shift($matches[1]));
             $link = preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', $fragment);
 

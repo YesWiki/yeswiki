@@ -1,4 +1,4 @@
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 
 <div id="lettres_init" class="text-center">
   <!-- Alphabet cliquable pour aller sur les ancres des différentes lettres -->
@@ -8,15 +8,15 @@
 </div>
 
 <p class="wrapper_nombre_membres">
-  <span class="nombre_membres">{{ fiches|length }} {{ _t('BAZ_MEMBERS') }}</span>
+  <span class="nombre_membres">{{ entries|length }} {{ _t('BAZ_MEMBERS') }}</span>
 </p>
 
 <div class="annuaire-fiches-container">
 
 {% set curChar = '' %}
-{% for fiche in fiches %}
-  {% set titre = fiche.title|trim %}
-  {% set firstChar = removeAccents(titre)|slice(0, 1)|lower %}
+{% for entry in entries %}
+  {% set title = entry.title|trim %}
+  {% set firstChar = removeAccents(title)|slice(0, 1)|lower %}
   {% if curChar is empty or firstChar != curChar %}
     <div class="clearfix"></div>
     <div class='letter-title' id='lettre_{{ firstChar }}'>
@@ -25,11 +25,11 @@
     {% set curChar = firstChar %}
   {% endif %}
 {{ pager_links|raw }}
-  <a class="nom bazar-entry modalbox" {{ fiche.html_data|raw }}
-    href="{{ fiche.url|raw }}{{ fiche['external-data'] is defined
-        ? '/iframe" data-iframe="1" title="' ~ fiche.title|striptags
+  <a class="nom bazar-entry modalbox" {{ entry.html_data|raw }}
+    href="{{ entry.url|raw }}{{ entry['external-data'] is defined
+        ? '/iframe" data-iframe="1" title="' ~ entry.title|striptags
         : '' }}">
-    {{ titre|raw }}
+    {{ title|raw }}
   </a>
 {% endfor %}
 </div>

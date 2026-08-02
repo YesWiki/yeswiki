@@ -12,8 +12,8 @@
   {% if field.displayVideo and value matches regExp %}
   	{{ format('{{video url="'~ value ~'"'
 		~(field.ratio ? " ratio=\"#{field.ratio}\"" : '')
-		~(field.maxWidth ? " largeurmax=\"#{field.maxWidth}\"" : '')
-		~(field.maxHeight ? " hauteurmax=\"#{field.maxHeight}\"" : '')
+		~(field.maxWidth ? " maxwidth=\"#{field.maxWidth}\"" : '')
+		~(field.maxHeight ? " maxheight=\"#{field.maxHeight}\"" : '')
 		~(field.class ? " class=\"#{field.class}\"" : '')
 		~'}}')|raw }}
 	<p>{{ _t('VIDEO_LINK_FIELD',{link:"<a href=\"#{value}\" class=\"newtab\">#{value}</a>"})|raw }}</p>

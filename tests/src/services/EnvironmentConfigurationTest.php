@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 
-
 #[CoversMethod(EnvironmentConfiguration::class, 'apply')]
 #[CoversMethod(EnvironmentConfiguration::class, 'knownEnvNames')]
 class EnvironmentConfigurationTest extends TestCase

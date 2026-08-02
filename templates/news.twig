@@ -1,20 +1,20 @@
 <!-- this template is a duplicate of the agenda template, with some modification
 To be relevant for news, like displaying news that have a date before today -->
 
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 {% set imgwidth = 450 %}
 {% set imgheight = 450 %}
 {# tri par ordre chronologique inverse (usort date_compare); timestamp() maps
    missing/unparseable dates to 0, like the strtotime() the original used #}
-{% set fiches = fiches|sort((a, b) => timestamp(b.date|default('')) <=> timestamp(a.date|default(''))) %}
+{% set entries = entries|sort((a, b) => timestamp(b.date|default('')) <=> timestamp(a.date|default(''))) %}
 
 <div class="agenda-container">
-  {% for fiche in fiches %}
+  {% for entry in entries %}
   <div class="agenda-entry-container">
-    <figure class="bazar-entry agenda-entry" {{ fiche.html_data|raw }}>
+    <figure class="bazar-entry agenda-entry" {{ entry.html_data|raw }}>
       <div class="image">
-        {% if fiche.imagebf_image is defined and fiche.imagebf_image is not empty %}
-          <img loading="lazy" class="img-responsive" alt="" src="{{ resizedImage(fiche.imagebf_image, imgwidth, imgheight, 'crop') }}">
+        {% if entry.imagebf_image is defined and entry.imagebf_image is not empty %}
+          <img loading="lazy" class="img-responsive" alt="" src="{{ resizedImage(entry.imagebf_image, imgwidth, imgheight, 'crop') }}">
         {% else %}
           <img loading="lazy" alt="" class="trombi-image img-placeholder"
                src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
@@ -22,14 +22,14 @@ To be relevant for news, like displaying news that have a date before today -->
         {% endif %}
       </div>
       <fig-caption>
-        {% set fdate = '@' ~ timestamp(fiche.date|default('')) %}
+        {% set fdate = '@' ~ timestamp(entry.date|default('')) %}
         {% set moisfr = fdate|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
 
         <div class="date"><span class="day">{{ fdate|date('d') }}</span><span class="month">{{ moisfr }}</span></div>
-        <h5>{{ fiche.title|raw }}</h5>
-        {% if fiche.content is defined and fiche.content is not empty %}
+        <h5>{{ entry.title|raw }}</h5>
+        {% if entry.content is defined and entry.content is not empty %}
             <div class='agenda-subtitle'>
-              {{ fiche.content|striptags }}
+              {{ entry.content|striptags }}
             </div>
         {% endif %}
 
@@ -37,7 +37,7 @@ To be relevant for news, like displaying news that have a date before today -->
       </fig-caption>
       {% set useModal = params.modal|default('') == 1 %}
       <a class="{{ useModal ? 'modalbox' : '' }}"
-         href="{{ url({tag: fiche.tag}) }}">
+         href="{{ url({tag: entry.tag}) }}">
       </a>
     </figure>
   </div>
@@ -46,7 +46,7 @@ To be relevant for news, like displaying news that have a date before today -->
 
 {{ include_css('styles/bazar/agenda.css') }}
 {{ include_css('styles/bazar/news.css') }}
-{% set width = params.nbcol|default('') is empty ? 25 : 100 / params.nbcol %}
+{% set width = params.columns|default('') is empty ? 25 : 100 / params.columns %}
 
 {% endif %}
 

@@ -1,12 +1,12 @@
 {% import "@core/bazar/entry-decoration-macro.twig" as decoration %}
-{% if fiches|length > 0 %}
-    {{ info_res|raw }}
+{% if entries|length > 0 %}
+    {{ resultsInfo|raw }}
     <ul class="BAZ_liste {{ params.class }}">
-        {% for fiche in fiches %}
-            <li class="bazar-entry" {{ fiche.html_data|raw }}>
-                <a href="{{ fiche.url }}"
+        {% for entry in entries %}
+            <li class="bazar-entry" {{ entry.html_data|raw }}>
+                <a href="{{ entry.url }}"
                     {% if params.links_in_new_window is defined and params.links_in_new_window matches '/^(1|true|on|yes)$/i' %}target="_blank"{% endif %}>
-                    {{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}<span class="entry-title">{{ fiche.title|raw }}</span>
+                    {{ decoration.pellet(params, entry) }}{{ decoration.icon(params, entry) }}<span class="entry-title">{{ entry.title|raw }}</span>
                 </a>
             </li>
         {% endfor %}

@@ -265,7 +265,7 @@ class ExternalBazarService
             $pParams
         );
 
-        $vIDs = $vBazarListService->getIDs($pParams['idtypeannonce'] ?? $pParams['id'] ?? '');
+        $vIDs = $vBazarListService->getIDs($pParams['id'] ?? $pParams['id'] ?? '');
 
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];

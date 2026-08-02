@@ -68,7 +68,7 @@ class ActionsBuilderService
             return $a['position'] - $b['position'];
         });
 
-        // Add custom bazar templates to the list of bazarliste component
+        // Add custom bazar templates to the list of the entrylist component
         $bazarlisteCustomTemplates = glob('custom/templates/bazar/*.twig') ?: [];
         foreach ($bazarlisteCustomTemplates as $k => $v) {
             $bazarlisteCustomTemplates[$k] = str_replace('custom/templates/bazar/', '', $v);
@@ -84,8 +84,8 @@ class ActionsBuilderService
             } else {
                 $translation = '_t(AB_' . $name . '_label)';
             }
-            if (empty($data['action_groups']['bazarliste']['actions'][$name])) {
-                $data['action_groups']['bazarliste']['actions'][$name] = [
+            if (empty($data['action_groups']['entrylist']['actions'][$name])) {
+                $data['action_groups']['entrylist']['actions'][$name] = [
                     'label' => $translation,
                     'properties' => [
                         'template' => ['value' => $file],

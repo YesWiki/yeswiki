@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Service\CommentService;
-use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class UserCommentsAction extends YesWikiAction implements RegisteredAction

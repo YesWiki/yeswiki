@@ -456,6 +456,13 @@ class DbService
         return [];
     }
 
+    /**
+     * How many ROWS the query returned.
+     *
+     * Note what this is not: it does **not** read a `SELECT COUNT(*)`. Handed one of those it
+     * returns 1, because that query returns one row -- and 1 is plausible enough to survive
+     * review. Use scalar() for an aggregate.
+     */
     public function count($query): int
     {
         $stmt = $this->query($query);
@@ -464,6 +471,22 @@ class DbService
         }
 
         return 0;
+    }
+
+    /**
+     * The single value of a one-row, one-column query: `SELECT COUNT(*)`, `SELECT MAX(id)`.
+     *
+     * Added by ticket 18, whose "result counts are exact" claim rests on actually reading the
+     * aggregate rather than counting the row it arrives in (see count() above).
+     */
+    public function scalar(string $query, mixed $default = null): mixed
+    {
+        $row = $this->loadSingle($query);
+        if ($row === null || $row === []) {
+            return $default;
+        }
+
+        return reset($row);
     }
 
     public function columnExists($table, $column): bool

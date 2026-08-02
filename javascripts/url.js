@@ -7,8 +7,8 @@ import { parseCondition } from './search.js'
  * @return <object> in the form :
  * 	{
  *		keywords : <string> the keywords string like : 'toto "tata tata" | titi -tutu'
- *		champ : <string> the sort field
- *		ordre : <string> the direction of the sort "asc" or "desc"
+ *		field : <string> the sort field
+ *		order : <string> the direction of the sort "asc" or "desc"
  *		query : <array> of condition object { name : <string>, operator : string, values : [ <string>, ... ]}
  *		any other parameter... : <string>
  *	}
@@ -26,7 +26,7 @@ export function parseSearchParams(pParams) // Return params as a structured obje
     if ((cKey == 'q') || (cKey == 'keywords')) // keywords supports for clarity (q parameter is confusing with query parameter)
     {
       if (vValue && vValue.trim() !== '') vParseds.keywords = decodeURIComponent(vValue) // privilegiate use of "keywords"
-    } else if ((cKey == 'champ') || (cKey == 'ordre')) {
+    } else if ((cKey == 'field') || (cKey == 'order')) {
       vParseds[cKey] = vValue
     } else if (cKey == 'query') {
       if (vValue && vValue.trim() !== '') vParseds[cKey] = decodeURIComponent(vValue).split('|').map(parseCondition)
@@ -197,8 +197,8 @@ export function updateHash(pSavedHash = '', pKeywords = '', pSortField = '', pSo
   if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 
   if (vSearch != '') vCurrentParams.keywords = vSearch
-  if (pSortField && pSortField != '') vCurrentParams.champ = pSortField
-  if (pSortOrder && pSortOrder != '') vCurrentParams.ordre = pSortOrder
+  if (pSortField && pSortField != '') vCurrentParams.field = pSortField
+  if (pSortOrder && pSortOrder != '') vCurrentParams.order = pSortOrder
 
   let bHasFilter = false
 

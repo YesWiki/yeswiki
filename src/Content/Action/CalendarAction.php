@@ -8,10 +8,10 @@ use YesWiki\Render\Service\TemplateEngine;
 
 class CalendarAction extends YesWikiAction implements RegisteredAction
 {
-    /** `{{calendrier}}` in page content -- stated, not inferred from the filename. */
+    /** `{{calendar}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
-        return 'calendrier';
+        return 'calendar';
     }
 
     public function formatArguments($arg)
@@ -20,8 +20,11 @@ class CalendarAction extends YesWikiAction implements RegisteredAction
             $classes = explode(' ', $arg['class']);
             $classes = array_combine($classes, $classes);
         }
-        $minical = (isset($arg['minical']) && $arg['minical'] == 'true') || (isset($classes) && in_array('minical', $classes));
-        if ($minical) {
+        // ticket 22 renamed the PARAMETER; `minical` stays as the CSS class, which
+        // styles/bazar/calendar.css targets in nine rules and BazarCalendar.js reads. A
+        // class name is a value, not a parameter name, and is out of this ticket's scope.
+        $minicalendar = (isset($arg['minicalendar']) && $arg['minicalendar'] == 'true') || (isset($classes) && in_array('minical', $classes));
+        if ($minicalendar) {
             $classes['minical'] = 'minical';
         }
         $class = (isset($classes) && count($classes) > 0) ? implode(' ', $classes) : null;
@@ -37,7 +40,7 @@ class CalendarAction extends YesWikiAction implements RegisteredAction
         }
 
         return [
-            'minical' => $minical ?? null,
+            'minicalendar' => $minicalendar,
             'class' => $class,
             // template - default value calendar
             'template' => $template,
@@ -48,6 +51,6 @@ class CalendarAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        return $this->callAction('bazarliste', $this->arguments);
+        return $this->callAction('entrylist', $this->arguments);
     }
 }

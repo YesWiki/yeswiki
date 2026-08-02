@@ -4,10 +4,11 @@ namespace YesWiki\Render\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -95,7 +96,7 @@ class TemplateHelperService
 
     protected function getResizedFilename(string $fileName, array $page, string $tag, string $width, string $height, bool $extractFullFileName = false): string
     {
-        $attach = $this->getAttach();
+        $resizer = $this->container->get(ImageResizer::class);
 
         // current page
         $previousTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
@@ -105,16 +106,15 @@ class TemplateHelperService
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
         if ($extractFullFileName) {
             if (!empty($fileName)) {
-                $attach->file = $fileName;
-                $fileName = $attach->GetFullFilename(false);
+                $fileName = $this->container->get(AttachedFilePaths::class)->fullFilename($fileName, false);
             }
         }
         if (!empty($fileName) && file_exists($fileName)) {
-            $imageDest = $attach->getResizedFilename($fileName, $width, $height, 'crop');
+            $imageDest = $resizer->resizedFilename($fileName, $width, $height, 'crop');
 
             if (!empty($imageDest)) {
                 if (!file_exists($imageDest)) {
-                    $resizedImage = $attach->resizeImage(
+                    $resizedImage = $resizer->resize(
                         $fileName,
                         $imageDest,
                         $width,
@@ -132,16 +132,10 @@ class TemplateHelperService
         }
 
         // reset params
-        unset($attach);
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
         return empty($image) ? '' : $image;
-    }
-
-    protected function getAttach(): Attach
-    {
-        return new Attach($this->container);
     }
 
     /**

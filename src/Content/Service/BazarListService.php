@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Search\Service\SearchManager;
@@ -32,7 +31,7 @@ class BazarListService
 
     public function getForms($pOptions = []): array
     {
-        $vIDs = $this->getIDs($pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+        $vIDs = $this->getIDs($pOptions['id'] ?? '');
 
         $vLocalForms = $this->formManager->getMany($vIDs['locals']);
         $vExternalForms = $this->externalBazarService->getForms($vIDs['externals'], $pOptions['refresh'] ?? null);
@@ -44,8 +43,7 @@ class BazarListService
 
     private function replaceDefaultImage($options, $forms, $entries): array
     {
-        $attach = new Attach($this->container);
-        $basePath = $attach->GetUploadPath();
+        $basePath = $this->container->get(AttachedFilePaths::class)->uploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
 
@@ -96,7 +94,7 @@ class BazarListService
             $vSelectedID = null;
         }
 
-        $vIDs = $this->getIDs($vSelectedID ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+        $vIDs = $this->getIDs($vSelectedID ?? $pOptions['id'] ?? '');
 
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];
@@ -121,7 +119,7 @@ class BazarListService
         if (count($vExternalIDs) > 0) {
             $vExternalEntries = $this->externalBazarService->getEntries(
                 array_merge($pOptions, [
-                    'idtypeannonce' => ['locals' => [], 'externals' => $vExternalIDs],
+                    'id' => ['locals' => [], 'externals' => $vExternalIDs],
                     'forms' => $vForms,
                 ]),
             );
@@ -140,7 +138,7 @@ class BazarListService
         if ($pOptions['random'] ?? false) {
             shuffle($vEntries);
         } else {
-            usort($vEntries, $this->buildFieldSorter($pOptions['ordre'] ?? 'asc', $pOptions['champ'] ?? 'title'));
+            usort($vEntries, $this->buildFieldSorter($pOptions['order'] ?? 'asc', $pOptions['field'] ?? 'title'));
         }
 
         // Limit entries
@@ -331,16 +329,16 @@ class BazarListService
     }
 
     // [old-non-dynamic-bazarlist] filters state in stored in URL
-    // ?Page&facette=field1=3,4|field2=web
+    // ?Page&facet=field1=3,4|field2=web
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        $facette = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facette');
-        if (empty($facette)) {
+        $facet = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facet');
+        if (empty($facet)) {
             return [];
         }
         $result = [];
-        foreach (explode('|', $facette) as $field) {
+        foreach (explode('|', $facet) as $field) {
             list($key, $values) = explode('=', $field);
             $result[$key] = explode(',', trim($values));
         }
@@ -547,12 +545,12 @@ class BazarListService
             $vPostFix = explode(',', $vPostFix);
 
             foreach ($vPostFix as $vID) {
-                $vCorrespondance = preg_split('/\->?/', $vID);
+                $vFieldMapping = preg_split('/\->?/', $vID);
 
-                if (count($vCorrespondance) > 1) {
-                    $vIDs[] = ['url' => $vURL, 'id' => $vCorrespondance[0], 'localFormId' => $vCorrespondance[1]];
+                if (count($vFieldMapping) > 1) {
+                    $vIDs[] = ['url' => $vURL, 'id' => $vFieldMapping[0], 'localFormId' => $vFieldMapping[1]];
                 } else {
-                    $vIDs[] = ['url' => $vURL, 'id' => $vCorrespondance[0], 'localFormId' => ''];
+                    $vIDs[] = ['url' => $vURL, 'id' => $vFieldMapping[0], 'localFormId' => ''];
                 }
             }
         }
@@ -586,7 +584,7 @@ class BazarListService
 
     private function buildFieldSorter($order, $sortField): callable
     {
-        // stored wiki content still says {{bazarliste champ="date_creation_fiche"}} or
+        // stored wiki content still says {{entrylist champ="date_creation_fiche"}} or
         // champ="bf_titre" -- legacy entry-key names are aliased to the renamed ones
         // (ADR-0010; bf_titre maps to the computed `title`)
         $sortField = EntryManager::LEGACY_ENTRY_KEYS[$sortField] ?? $sortField;

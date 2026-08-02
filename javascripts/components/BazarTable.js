@@ -206,8 +206,8 @@ const componentParams = {
         }
 
         this.registerSpecialFields(fieldsToRegister, true, params, data, options)
-        const champField = await this.sanitizedParamAsync('champ')
-        const ordreField = await this.sanitizedParamAsync('ordre')
+        const champField = await this.sanitizedParamAsync('field')
+        const ordreField = await this.sanitizedParamAsync('order')
         const order = (ordreField === 'desc') ? 'desc' : 'asc'
         let firstColumnOrderable = 0
         for (let index = 0; index < data.columns.length; index++) {

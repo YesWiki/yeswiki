@@ -349,7 +349,7 @@ actions:
           4: 4
           6: 6
           12: 12
-  # ariane:
+  # breadcrumb:
   #   label: _t(AB_template_action_ariane_label)
   #   properties:
   #     nb:

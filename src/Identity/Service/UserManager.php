@@ -19,6 +19,8 @@ use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameReservedException;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
@@ -221,6 +223,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         // now genuinely needed since users share the same tag namespace as everything else)
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
+        }
+        // A RESERVED name is refused outright rather than suffixed (ticket 20). Registration
+        // is the one creation path that cannot quietly resolve a bad tag, because an
+        // account's name IS its tag -- buildBody() stores no second copy. Suffixing here
+        // would hand someone the account `api-2` after they typed `api`, which is exactly
+        // the silent rewrite the ticket forbids.
+        if (ReservedTags::isReserved($wikiName)) {
+            throw new UserNameReservedException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $wikiName]));
         }
         if (empty($email)) {
             throw new \Exception("'email' parameter of UserManager->create should not be empty!");

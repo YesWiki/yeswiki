@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Render\Action;
-use YesWiki\Render\Service\TemplateHelperService;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\TemplateHelperService;
 
 class ButtondropdownAction extends YesWikiAction implements RegisteredAction
 {

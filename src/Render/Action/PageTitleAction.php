@@ -7,7 +7,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 
 /**
- * `{{titrepage}}` -- converted from the procedural actions/titrepage.php by ticket 06.
+ * `{{pagetitle}}` -- converted from the procedural actions/titrepage.php by ticket 06.
  *
  * The body still prints rather than returning, so it runs inside an output buffer in its
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
@@ -17,7 +17,7 @@ class PageTitleAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
-        return 'titrepage';
+        return 'pagetitle';
     }
 
     public function run(): string

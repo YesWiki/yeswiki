@@ -1,8 +1,8 @@
 <div>
 	<form action="{{ url({params:{
-			vue: 'formulaire',
+			view: 'formulaire',
 			action: type,
-			idformulaire: int(request.get.idformulaire ?? 'error')
+			formid: int(request.get.formid ?? 'error')
 		}}) }}"
 		method="post"
 		style="display: inline"
@@ -10,7 +10,7 @@
 		{{ include("@core/alert-message.twig",{
 			type: "warning",
 			message: 
-				_t(type == 'delete' ? 'BAZ_FORM_DELETE' : 'BAZ_FORM_EMPTY',{'formId': int(request.get.idformulaire)}) ~ '<br/>' ~
+				_t(type == 'delete' ? 'BAZ_FORM_DELETE' : 'BAZ_FORM_EMPTY',{'formId': int(request.get.formid)}) ~ '<br/>' ~
 		    '<b>' ~ _t(type == 'delete' ? 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' : 'BAZ_CONFIRM_VIDER_FORMULAIRE') ~ ' ?</b><br/>'
 		}) }}
 		<input type="hidden" name="confirm{{ type == 'delete' ? 'Delete' : 'Empty' }}Token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
@@ -20,7 +20,7 @@
 			style="vertical-align: middle; display: inline" />
 	</form>
 	<form action="{{ url({params:{
-			vue: 'formulaire'
+			view: 'formulaire'
 		}}) }}"
 		method="post"
 		style="display: inline"

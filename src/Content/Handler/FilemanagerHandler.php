@@ -2,7 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Content\Attach;
+use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
@@ -45,9 +45,7 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         <div class="page">
             <?php
             if ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin()) {
-                $att = new Attach($this->services);
-                $att->doFileManager();
-                unset($att);
+                echo $this->getService(FileBrowser::class)->render();
             } else {
                 echo $this->getService(MarkdownFormatterService::class)->format('//' . _t('FILEMANAGER_ACTION_NEED_ACCESS') . '//');
             }

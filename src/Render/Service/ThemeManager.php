@@ -434,7 +434,7 @@ class ThemeManager implements EventSubscriberInterface
     {
         $runner = $this->container->get(ActionRunner::class);
 
-        return trim($runner->action('configuration param="wakka_name"') . ' : ' . $runner->action('titrepage'));
+        return trim($runner->action('configuration param="wakka_name"') . ' : ' . $runner->action('pagetitle'));
     }
 
     /**

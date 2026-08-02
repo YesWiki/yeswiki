@@ -1,20 +1,20 @@
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 {# affiche un evenement dans le temps -- year headers get .ss-row, entries get .bazar-entry #}
-{% macro ligne(gauche, droite, classligne, fiche, isYear) %}
-{% if isYear %}<div class="ss-row{{ classligne != '' ? ' ' ~ classligne : '' }}">{% else %}<div class="bazar-entry ss-row{{ classligne != '' ? ' ' ~ classligne : '' }}" {{ fiche.html_data|default('')|raw }}>{% endif %}                <div class="ss-left">
-                        {{ gauche|raw }}
+{% macro row(left, right, rowClass, entry, isYear) %}
+{% if isYear %}<div class="ss-row{{ rowClass != '' ? ' ' ~ rowClass : '' }}">{% else %}<div class="bazar-entry ss-row{{ rowClass != '' ? ' ' ~ rowClass : '' }}" {{ entry.html_data|default('')|raw }}>{% endif %}                <div class="ss-left">
+                        {{ left|raw }}
                     </div>
                     <div class="ss-right">
-                        {{ droite|raw }}
+                        {{ right|raw }}
                     </div>
                 </div>
 {% endmacro %}
 {% import _self as tl %}
-{% set fiches = fiches|sort((a, b) => timestamp(a.bf_date_debut_evenement|default('')) <=> timestamp(b.bf_date_debut_evenement|default(''))) %}
+{% set entries = entries|sort((a, b) => timestamp(a.bf_date_debut_evenement|default('')) <=> timestamp(b.bf_date_debut_evenement|default(''))) %}
 {% set years = [] %}
-{% for fiche in fiches %}
-  {% set annee = fiche.bf_date_debut_evenement|split('-')|first %}
-  {% if years is empty or years|last < annee %}{% set years = years|merge([annee]) %}{% endif %}
+{% for entry in entries %}
+  {% set year = entry.bf_date_debut_evenement|split('-')|first %}
+  {% if years is empty or years|last < year %}{% set years = years|merge([year]) %}{% endif %}
 {% endfor %}
 
       <h2 class="ss-subtitle"></h2>
@@ -22,27 +22,27 @@
         {% for value in years %}<a class="btn btn-mini btn-info" href="#annee{{ value }}">{{ value }}</a>{% endfor %}
       </div>
       <div id="ss-container" class="ss-container">
-        {% set anneeencours = '' %}
-        {% for fiche in fiches %}
-          {% set annee = fiche.bf_date_debut_evenement|split('-')|first %}
-          {% if anneeencours == '' or anneeencours < annee %}
-            {% set anneeencours = annee %}
-            {{ tl.ligne('<h2 id="annee' ~ anneeencours ~ '">' ~ _t('BAZ_YEAR') ~ '</h2>', '<h2>' ~ anneeencours ~ '</h2>', '', null, true) }}
+        {% set currentYear = '' %}
+        {% for entry in entries %}
+          {% set year = entry.bf_date_debut_evenement|split('-')|first %}
+          {% if currentYear == '' or currentYear < year %}
+            {% set currentYear = year %}
+            {{ tl.row('<h2 id="annee' ~ currentYear ~ '">' ~ _t('BAZ_YEAR') ~ '</h2>', '<h2>' ~ currentYear ~ '</h2>', '', null, true) }}
           {% endif %}
-          {% set taille = fiche.listeListeTailleImage|default('') %}
-          {% set pixelsimage = {'ss-small': 100, 'ss-medium': 200, 'ss-large': 300}[taille]|default(300) %}
-          {% set taille = taille in ['ss-small', 'ss-medium', 'ss-large'] ? taille : 'ss-large' %}
-          {% if fiche.imagebf_image|default('') is not empty and fileExists('files/' ~ fiche.imagebf_image) %}
-            {% set imgurl = resizedImage(fiche.imagebf_image, pixelsimage, pixelsimage, 'fit', '_') %}
+          {% set size = entry.listeListeTailleImage|default('') %}
+          {% set imagePixels = {'ss-small': 100, 'ss-medium': 200, 'ss-large': 300}[size]|default(300) %}
+          {% set size = size in ['ss-small', 'ss-medium', 'ss-large'] ? size : 'ss-large' %}
+          {% if entry.imagebf_image|default('') is not empty and fileExists('files/' ~ entry.imagebf_image) %}
+            {% set imgurl = resizedImage(entry.imagebf_image, imagePixels, imagePixels, 'fit', '_') %}
           {% else %}
-            {% set imgurl = resizeImageTo('src/assets/images/bazar/placeholder-800-800.jpg', 'cache/placeholder_' ~ pixelsimage ~ '_' ~ pixelsimage ~ '.jpg', pixelsimage, pixelsimage) %}
+            {% set imgurl = resizeImageTo('src/assets/images/bazar/placeholder-800-800.jpg', 'cache/placeholder_' ~ imagePixels ~ '_' ~ imagePixels ~ '.jpg', imagePixels, imagePixels) %}
           {% endif %}
-          {% set circle = '<a href="' ~ url({tag: fiche.tag}) ~ '" class="ss-circle" style="background-image:url(' ~ imgurl ~ ');">' ~ fiche.title ~ '</a>' %}
-          {% set texte = '<h3><span>' ~ fiche.bf_date_debut_evenement ~ '</span><a href="' ~ url({tag: fiche.tag}) ~ '">' ~ fiche.title ~ '</a></h3>' ~ fiche.texte|default('') %}
+          {% set circle = '<a href="' ~ url({tag: entry.tag}) ~ '" class="ss-circle" style="background-image:url(' ~ imgurl ~ ');">' ~ entry.title ~ '</a>' %}
+          {% set text = '<h3><span>' ~ entry.bf_date_debut_evenement ~ '</span><a href="' ~ url({tag: entry.tag}) ~ '">' ~ entry.title ~ '</a></h3>' ~ entry.texte|default('') %}
           {% if loop.index0 is even %}
-            {{ tl.ligne(circle, texte, taille, fiche, false) }}
+            {{ tl.row(circle, text, size, entry, false) }}
           {% else %}
-            {{ tl.ligne(texte, circle, taille, fiche, false) }}
+            {{ tl.row(text, circle, size, entry, false) }}
           {% endif %}
         {% endfor %}
       </div>

@@ -24,6 +24,9 @@ use YesWiki\Kernel\Service\UrlFormatter;
 #[\Field(['contenu_fichier'])]
 class FileContentField extends BazarField
 {
+    // ticket 18: the bytes of an upload -- extracting text from them is its own ticket
+    use ContributesNoSearchableText;
+
     /** @param array<int|string, mixed> $values */
     public function __construct(array $values, ContainerInterface $services)
     {

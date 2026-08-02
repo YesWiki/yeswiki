@@ -212,13 +212,12 @@ class Guard
     }
 
     /**
-     * sanitize data for correspondance.
+     * sanitize data for a field mapping: the field value, or an empty string
+     * when the visitor may not read it.
      *
      * @param string $fieldName
-     *
-     * @return $value value or empty string
      */
-    public function isFieldDataAuthorizedForCorrespondance(?array $page, ?array $entry, $fieldName)
+    public function isFieldDataAuthorizedForFieldMapping(?array $page, ?array $entry, $fieldName)
     {
         if (!$this->aclService->isAdmin()
                 && !$this->isPageOwner($page)

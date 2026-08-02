@@ -1677,7 +1677,7 @@ Hautatu kontrol-laukia "{proposedName}"(r)ekin ordezkatzeko, edo, bestela, aldat
     'BAZ_MEMBERS' => 'kideak',
     'BAZ_MORE_INFOS' => 'Informazio gehiago',
     'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Ez dago fitxarik aldi horretarako.',
-    'BAZ_CARD_NBCOL_TOO_HIGH' => '`nbcol` parametroa ezin da kontuan hartu `style="horizontal"`-rekin eta 2ra mugatuta geratzen da!',
+    'BAZ_CARD_NBCOL_TOO_HIGH' => '`columns` parametroa ezin da kontuan hartu `style="horizontal"`-rekin eta 2ra mugatuta geratzen da!',
     'URL' => 'URLa',
     'EVENT_IS_RECURRENT' => 'Gertaera hau errepikatu egiten da: %{repetition}',
     'EVENT_LIMIT_DATE' => '% {date}(e)ra arte',

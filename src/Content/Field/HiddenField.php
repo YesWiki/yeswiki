@@ -7,6 +7,9 @@ use Psr\Container\ContainerInterface;
 #[\Field(['champs_cache'])]
 class HiddenField extends BazarField
 {
+    // ticket 18: not shown to a reader, so not something a reader can be looking for
+    use ContributesNoSearchableText;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

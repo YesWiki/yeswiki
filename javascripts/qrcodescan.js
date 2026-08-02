@@ -198,7 +198,7 @@ function stepHandler(currentStep, entry) {
           subject: 'QRcode contact',
           message: message1,
           mail: secondpeople.bf_mail,
-          entete: 'Co-construire 2023', // Todo make a param
+          subjectprefix: 'Co-construire 2023', // Todo make a param
           type: 'contact'
         })
       })
@@ -221,7 +221,7 @@ function stepHandler(currentStep, entry) {
           subject: 'QRcode contact',
           message: message2,
           mail: firstpeople.bf_mail,
-          entete: 'Co-construire 2023',
+          subjectprefix: 'Co-construire 2023',
           type: 'contact'
         })
       })

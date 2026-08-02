@@ -1615,7 +1615,7 @@ Cardul creat va fi conectat automat la contul dvs. Vă rugăm să vă deconecta�
     'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pentru a modifica adresa de e-mail asociată cu acest cont, tastați altul decât "{email}".',
     'BAZ_MEMBERS' => 'membrii',
     'BAZ_MORE_INFOS' => 'Mai multe informații',
-    'BAZ_CARD_NBCOL_TOO_HIGH' => 'Parametrul `nbcol` nu poate fi luat în considerare cu `style="horizontal"` și este limitat la 2!',
+    'BAZ_CARD_NBCOL_TOO_HIGH' => 'Parametrul `columns` nu poate fi luat în considerare cu `style="horizontal"` și este limitat la 2!',
     'SUM' => 'Sumă',
     'URL' => 'Url',
     'EVENT_IS_RECURRENT' => 'Acest eveniment este recurent: %{repetition}',

@@ -1116,10 +1116,10 @@ return [
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',
 
     // relocated from tools/contact/lang/contact_ta.inc.php (ticket 18)
-    'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{abonnement ...}}',
+    'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே மெயில், டம்பிகடோயர், எச்ட் மேன்குவண்ட்.',
     'CONTACT_ACTION_CONTACT' => 'செயல் {{contact ...}}',
-    'CONTACT_ACTION_DESABONNEMENT' => 'செயல் {{desabonnement ...}}',
+    'CONTACT_ACTION_DESABONNEMENT' => 'செயல் {{unsubscribe ...}}',
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'செயல் {{listsubscription ...}}',
     'CONTACT_ACTION_MAILINGLIST' => 'செயல் {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'PARAM & EGRAVE; TRE "LIST" DOFFIGATOIRE (il s\'agit de l\'adresse mail de la liste de diffusion)',

@@ -1,0 +1,262 @@
+<?php
+
+namespace YesWiki\Content\Service;
+
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Render\Service\TemplateEngine;
+
+/**
+ * The file-manager screen: list, trash, restore and erase the files attached to the
+ * current page (ticket 24, extracted from `Attach`'s `fm*` methods).
+ *
+ * Operates on the **legacy** attached files -- the ones addressed by an encoded filename
+ * rather than by a Content row (see AttachedFilePaths). A file uploaded through the
+ * current model is a page of its own and is deleted like any other Content.
+ *
+ * `render()` returns its HTML rather than echoing it, unlike the code it replaces: the
+ * action and the handler that call it both already return a string, and the output
+ * buffering they wrapped around it existed only to catch these echoes.
+ */
+class FileBrowser
+{
+    private AttachedFilePaths $paths;
+    private ImageResizer $resizer;
+    private PageContext $pageContext;
+    private TemplateEngine $templateEngine;
+    private InputFilter $inputFilter;
+
+    public function __construct(
+        AttachedFilePaths $paths,
+        ImageResizer $resizer,
+        PageContext $pageContext,
+        TemplateEngine $templateEngine,
+        InputFilter $inputFilter
+    ) {
+        $this->paths = $paths;
+        $this->resizer = $resizer;
+        $this->pageContext = $pageContext;
+        $this->templateEngine = $templateEngine;
+        $this->inputFilter = $inputFilter;
+    }
+
+    /**
+     * Apply the `?do=` operation, then render the resulting listing.
+     *
+     * @param bool $isAction true for `{{filemanager}}`, false for the /filemanager handler
+     *                       -- they differ only in which template wraps the list
+     */
+    public function render(bool $isAction = false): string
+    {
+        $do = (string)($_GET['do'] ?? '');
+        switch ($do) {
+            case 'restore':
+                $this->restore();
+
+                return $this->renderListing(true, $isAction);
+            case 'erase':
+                $this->erase();
+
+                return $this->renderListing(true, $isAction);
+            case 'del':
+                $this->moveToTrash();
+
+                return $this->renderListing(false, $isAction);
+            case 'trash':
+                return $this->renderListing(true, $isAction);
+            case 'emptytrash':
+                $this->emptyTrash();
+                // falls through: emptying the trash returns you to the listing
+                // no break
+            default:
+                return $this->renderListing(false, $isAction);
+        }
+    }
+
+    private function renderListing(bool $trash, bool $isAction): string
+    {
+        $files = $this->files($trash);
+        $files = $this->sortByNameThenRevision($files);
+        $files = array_map(function ($file) {
+            return array_merge($file, [
+                'parsedTrashDate' => isset($file['trashdate']) ? $this->paths->parseDate((string)$file['trashdate']) : '',
+                'parsedDateUpload' => isset($file['dateupload']) ? $this->paths->parseDate((string)$file['dateupload']) : '',
+                'readableSize' => isset($file['size']) ? self::readableSize((int)$file['size']) : '',
+            ]);
+        }, $files);
+
+        return $this->templateEngine->renderSafely(
+            $isAction ? '@core/attach-filemanager.twig' : '@core/attach-filemanager-handler.twig',
+            [
+                'tag' => $this->pageContext->getTag(),
+                'method' => $this->pageContext->getMethod() !== 'show' ? $this->pageContext->getMethod() : '',
+                'trash' => $trash,
+                'files' => $files,
+            ]
+        );
+    }
+
+    /**
+     * The page's attached files, either live or trashed.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function files(bool $trash = false): array
+    {
+        $filePattern = $this->paths->isSafeMode()
+            ? '^' . $this->paths->currentPageTag() . '_.*_\d{14}_\d{14}\..*'
+            : '^.*_\d{14}_\d{14}\..*';
+        $filePattern .= $trash ? 'trash\d{14}' : '[^(trash\d{14})]';
+
+        return $this->paths->searchFiles('`' . $filePattern . '$`', $this->paths->uploadPath());
+    }
+
+    /**
+     * Move a file to the trash, and delete every cached resize of it.
+     *
+     * The cache sweep is by glob rather than by lookup because a thumbnail's name encodes
+     * the dimensions it was made at, and nothing records which dimensions were ever
+     * requested. The patterns cover the current naming plus three older ones still
+     * present in caches upgraded from earlier versions.
+     */
+    public function moveToTrash(string $rawFileName = ''): void
+    {
+        $path = $this->paths->uploadPath();
+        $rawFileName = $rawFileName !== ''
+            ? $rawFileName
+            : (string)$this->inputFilter->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
+        if ($rawFileName === '') {
+            return;
+        }
+
+        $filename = $path . '/' . basename($rawFileName);
+        if (!file_exists($filename)) {
+            return;
+        }
+
+        rename($filename, $filename . 'trash' . $this->paths->currentStamp());
+
+        foreach ($this->cachedResizePatterns($filename) as $pattern) {
+            array_map('unlink', glob($pattern) ?: []);
+        }
+    }
+
+    /** @return list<string> */
+    private function cachedResizePatterns(string $filename): array
+    {
+        $cachePath = $this->paths->cachePath();
+        $base = basename($filename);
+        $threeOrFour = ['[0-9][0-9][0-9]', '[0-9][0-9][0-9][0-9]'];
+
+        $patterns = [];
+        foreach (['fit', 'crop'] as $mode) {
+            foreach ($threeOrFour as $width) {
+                foreach ($threeOrFour as $height) {
+                    $patterns[] = $this->resizer->resizedFilename($filename, $width, $height, $mode);
+                }
+            }
+        }
+        // the old Image field
+        $patterns[] = $cachePath . '/vignette_' . $base;
+        $patterns[] = $cachePath . '/image_' . $base;
+        // the old agenda/blog/material-card/news/photobox/trombinoscope templates
+        foreach ($threeOrFour as $width) {
+            foreach ($threeOrFour as $height) {
+                $patterns[] = $cachePath . '/image_' . $width . '[x_]' . $height . '_' . $base;
+                $patterns[] = $cachePath . '/' . $width . 'x' . $height . '-' . $base;
+            }
+        }
+
+        return $patterns;
+    }
+
+    /** Delete one trashed file for good. */
+    public function erase(): void
+    {
+        $filename = $this->paths->uploadPath() . '/' . basename(realpath($_GET['file'] ?? '') ?: '');
+        // only ever deletes something already in the trash
+        if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
+            unlink($filename);
+        }
+    }
+
+    /** Delete every trashed file for good. */
+    public function emptyTrash(): void
+    {
+        foreach ($this->files(true) as $file) {
+            $filename = $file['path'] . '/' . $file['realname'];
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
+        }
+    }
+
+    /** Take a file back out of the trash. */
+    public function restore(): void
+    {
+        $filename = $this->paths->uploadPath() . '/' . ($_GET['file'] ?? '');
+        if (file_exists($filename)) {
+            rename($filename, (string)preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename));
+        }
+    }
+
+    /**
+     * By name, then by upload date so successive revisions of one file stay together.
+     *
+     * @param list<array<string, mixed>> $files
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function sortByNameThenRevision(array $files): array
+    {
+        usort($files, function ($a, $b) {
+            $result = strcasecmp(
+                ($a['name'] ?? '') . '.' . ($a['ext'] ?? ''),
+                ($b['name'] ?? '') . '.' . ($b['ext'] ?? '')
+            );
+
+            return $result === 0
+                ? strcasecmp((string)($a['dateupload'] ?? ''), (string)($b['dateupload'] ?? ''))
+                : $result;
+        });
+
+        return $files;
+    }
+
+    /**
+     * Bytes as a human-readable size.
+     *
+     * @author Aidan Lister <aidan@php.net>
+     *
+     * @see http://aidanlister.com/2004/04/human-readable-file-sizes/
+     */
+    public static function readableSize(int $size, ?string $max = null, string $system = 'si', string $retstring = '%01.2f %s'): string
+    {
+        $systems = [
+            'si' => ['prefix' => ['', 'Ko', 'Mo', 'Go', 'To', 'Po'], 'size' => 1000],
+            'bi' => ['prefix' => ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'], 'size' => 1024],
+        ];
+        $sys = $systems[$system] ?? $systems['si'];
+
+        $depth = count($sys['prefix']) - 1;
+        if ($max !== null) {
+            $found = array_search($max, $sys['prefix'], true);
+            if ($found !== false) {
+                $depth = $found;
+            }
+        }
+
+        $value = (float)$size;
+        $i = 0;
+        while ($value >= $sys['size'] && $i < $depth) {
+            $value /= $sys['size'];
+            $i++;
+        }
+        // plain bytes get no decimals
+        if ($sys['prefix'][$i] === '') {
+            $retstring = '%01u %s';
+        }
+
+        return sprintf($retstring, $value, $sys['prefix'][$i]);
+    }
+}

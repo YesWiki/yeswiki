@@ -16,7 +16,7 @@ use League\CommonMark\Renderer\NodeRendererInterface;
 
 /**
  * Adds support for [NN%] (0-100), rendered as a <progress> bar, e.g.
- * [50%] => <progress class="yw-progressbar" value="50" max="100">50%</progress>
+ * [50%] => <progress class="yw-progressbar" value="50" max="100">50%</progress>.
  */
 final class ProgressExtension implements ExtensionInterface
 {

@@ -282,7 +282,7 @@ class TagsManager
         }
     }
 
-    public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
+    public function getPagesByTags($tags = '', $type = '', $nb = '', $sort = '')
     {
         if (!empty($tags)) {
             $req = ' AND EXISTS (select resource FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource=tag';
@@ -296,10 +296,10 @@ class TagsManager
             $req .= ' GROUP BY resource ';
             $req .= ' HAVING COUNT(resource)=' . $nbdetags . ') ';
 
-            // gestion du tri de l'affichage
-            if ($tri == 'alpha') {
+            // gestion du tri de l'affichage (sort)
+            if ($sort == 'alpha') {
                 $req .= ' ORDER BY tag ASC ';
-            } elseif ($tri == 'date') {
+            } elseif ($sort == 'date') {
                 $req .= ' ORDER BY time DESC ';
             }
 

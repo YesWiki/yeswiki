@@ -35,19 +35,19 @@
         <td>{{ key }}</td>
         <td>
           {% if list.canDuplicate %}
-          <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'listes', action: 'duplicate', idliste: key }}) }}">
+          <a class="yw-btn yw-btn--sm" href="{{ url({ params: { view: 'listes', action: 'duplicate', listid: key }}) }}">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
           </a>
           {% endif %}
           {% if list.canEdit %}
-          <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
+          <a class="yw-btn yw-btn--sm" href="{{ url({ params: { view: 'listes', action: 'modif_liste', listid: key }}) }}">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
           </a>
           {% endif %}
           {% if list.canDelete %}
           <a
             class="yw-btn yw-btn--sm yw-btn--danger"
-            href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }}) }}"
+            href="{{ url({ params: { view: 'listes', action: 'supprimer_liste', listid: key }}) }}"
             onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
           >
             <svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
@@ -61,7 +61,7 @@
 </div>
 {% endif %}
 
-<a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="yw-btn yw-btn--primary" {% if not canCreate %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}" {% endif %}>
+<a href="{{ url({ params: { view: 'listes', action: 'saisir_liste'}})|raw }}" class="yw-btn yw-btn--primary" {% if not canCreate %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}" {% endif %}>
 	<svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 	{{ _t('BAZ_NOUVELLE_LISTE') }}
 </a>

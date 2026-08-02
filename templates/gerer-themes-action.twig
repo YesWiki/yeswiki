@@ -48,13 +48,13 @@
   <p><b>{{ _t('GERERTHEMES_ACTIONS') }}</b></p>
 
   <p class="type-modif-container">
-    <label for="typemajdefault">
-      <input type=radio name="typemaj" value="reinitialiser" id="typemajdefault" checked
+    <label for="updatetypedefault">
+      <input type=radio name="updatetype" value="reinitialiser" id="updatetypedefault" checked
             onClick="document.querySelectorAll('.edit-theme-container').forEach((el) => { el.style.display = 'none' })">
       <span>{{ _t('GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES') }}</span>
     </label>
-    <label for="typemajajouter">
-      <input type=radio name="typemaj" value="modifier" id="typemajajouter"
+    <label for="updatetypeajouter">
+      <input type=radio name="updatetype" value="modifier" id="updatetypeajouter"
             onClick="document.querySelectorAll('.edit-theme-container').forEach((el) => { el.style.display = '' })">
       <span>{{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}</span>
     </label>
@@ -70,7 +70,7 @@
       type="submit" 
       value="Mettre à jour"
       class="yw-btn yw-btn--primary"
-      onclick="this.form.action+='#gererthemes'; return true;"
+      onclick="this.form.action+='#adminthemes'; return true;"
       {% if hibernated -%}
       disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}"
       {%- endif %}

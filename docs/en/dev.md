@@ -68,11 +68,11 @@ Create a file inside `custom/templates/bazar`, either a `.twig` file or a `.tpl.
 <?php endforeach; ?>
 ```
 
-Then you use it with `{{ bazarliste id="1" template="my-template.twig" }}` or `{{ bazarliste id="1" template="my-template.tpl.html" }}`
+Then you use it with `{{entrylist id="1" template="my-template.twig" }}` or `{{entrylist id="1" template="my-template.tpl.html" }}`
 
 You can also overide an existing template : `custom/templates/bazar/liste_accordeon.tpl.html`
 
-Custom template will appear in the bazarliste component with default name : "Template custom : filename"
+Custom template will appear in the entrylist component with default name : "Template custom : filename"
 
 If you need to personnalize the name add a translation in file /custom/lang/custom_fr.inc.php
 example : 'AB_filename_label' => 'Template custom annuaire',
@@ -92,7 +92,7 @@ Create a file inside `custom/templates/bazar/entries/index-dynamic-templates/`
 {% endblock %}
 ```
 
-Then use it with `{{ bazarliste id=".." template="my-template" dynamic="true" }}`
+Then use it with `{{entrylist id=".." template="my-template" dynamic="true" }}`
 
 Check [this file](https://github.com/YesWiki/yeswiki/blob/doryphore-dev/tools/bazar/presentation/javascripts/entries-index-dynamic.js) to know what data is available inside the template.
 Have also a look to [existing templates](https://github.com/YesWiki/yeswiki/tree/doryphore-dev/tools/bazar/templates/entries/index-dynamic-templates), although some of them might be overcomplicated...

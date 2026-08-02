@@ -1,0 +1,70 @@
+{# {{search}} (ticket 26).
+
+   Shaped after admin-content-action.twig: the form is never submitted, it is `hx-include`d
+   into a GET of the results fragment. Filtering, paging and narrowing by content type are
+   then the same request with different parameters, and there is exactly one place that knows
+   how to render a result.
+
+   The container loads on `revealed` as well as `load` so an embedded {{search}} far down a
+   long page does not query before anyone has looked at it. #}
+<div class="yw-search" id="yw-search">
+    <form id="yw-search-form" class="yw-search-form" onsubmit="return false;">
+        <div class="yw-input-group">
+            <span class="yw-input-group-addon">{{ icon('loupe') }}</span>
+            <input type="search"
+                   name="phrase"
+                   id="yw-search-phrase"
+                   class="yw-input"
+                   value="{{ phrase }}"
+                   placeholder="{{ _t('TEMPLATE_SEARCH_PLACEHOLDER') }}"
+                   autocomplete="off"
+                   accesskey="C"
+                   hx-get="{{ apiUrl }}"
+                   hx-target="#yw-search-results"
+                   hx-include="#yw-search-form"
+                   hx-indicator="#yw-search-spinner"
+                   {# `input`, not `keyup`: keyup misses a paste, misses the search field's
+                      native clear button, and misses anything setting the value
+                      programmatically. `changed` keeps arrow keys and modifiers from
+                      re-querying, and the delay debounces typing. #}
+                   hx-trigger="input changed delay:300ms, search" />
+        </div>
+
+        {% if showFilters %}
+            <div class="yw-search-filters">
+                <label class="yw-search-filter">
+                    <span class="sr-only">{{ _t('SEARCH_FILTER_TYPE') }}</span>
+                    <select name="type"
+                            class="yw-input"
+                            hx-get="{{ apiUrl }}"
+                            hx-target="#yw-search-results"
+                            hx-include="#yw-search-form"
+                            hx-indicator="#yw-search-spinner"
+                            hx-trigger="change">
+                        <option value="">{{ _t('SEARCH_TYPE_ALL') }}</option>
+                        {% for t in types %}
+                            <option value="{{ t }}"{{ t == type ? ' selected' : '' }}>{{ _t('SEARCH_TYPE_' ~ t|upper) }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        {% else %}
+            <input type="hidden" name="type" value="{{ type }}" />
+        {% endif %}
+
+        <input type="hidden" name="limit" value="{{ limit }}" />
+    </form>
+
+    <div id="yw-search-spinner" class="htmx-indicator yw-search-spinner" aria-hidden="true">
+        {{ icon('loader-2') }}
+    </div>
+
+    <div id="yw-search-results"
+         class="yw-search-results-container"
+         aria-live="polite"
+         hx-get="{{ apiUrl }}"
+         hx-include="#yw-search-form"
+         hx-indicator="#yw-search-spinner"
+         hx-trigger="load, revealed">
+    </div>
+</div>

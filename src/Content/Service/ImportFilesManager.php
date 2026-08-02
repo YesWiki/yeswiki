@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -248,9 +247,7 @@ class ImportFilesManager
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage(['tag' => $pageTag, 'time' => $lastPageUpdate]);
 
         $remoteFileUrl = $remoteUrl . '?' . $pageTag . '/download&file=' . $filename;
-        $att = new Attach($this->container);
-        $att->file = $filename;
-        $newFilename = $att->GetFullFilename(true);
+        $newFilename = $this->container->get(AttachedFilePaths::class)->fullFilename($filename, true);
 
         $this->cURLDownload($remoteFileUrl, $newFilename, $overwrite);
     }

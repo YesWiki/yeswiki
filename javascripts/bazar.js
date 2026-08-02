@@ -20,7 +20,7 @@ function isVisible(el) {
 ywInitEach('body', () => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
-  // accordeon pour bazarliste
+  // accordeon pour entrylist
   ywInitEach('.titre_accordeon', (title) => {
     title.addEventListener('click', () => {
       const pane = title.nextElementSibling
@@ -720,7 +720,7 @@ ywInitEach('body', () => {
     })
 
     // on applique les changements a l'url
-    changeURLParameter('facette', newquery)
+    changeURLParameter('facet', newquery)
 
     // au moins un filtre à actionner
     let tabres = []
@@ -789,13 +789,13 @@ ywInitEach('body', () => {
 
     const vParam = new URLSearchParams(document.location.search)
     const vKeywords = vParam.get('keywords')
-    const vSortField = vParam.get('champ')
-    const vSortOrder = vParam.get('ordre')
+    const vSortField = vParam.get('field')
+    const vSortOrder = vParam.get('order')
 
-    const vFacette = getURLParameter('facette')
+    const vFacet = getURLParameter('facet')
     const vFilters = []
-    if (vFacette) {
-      vFacette
+    if (vFacet) {
+      vFacet
         .split('|')
         .map(parseCondition)
         .forEach((pCondition) => {
@@ -825,10 +825,10 @@ ywInitEach('body', () => {
           const checkbox = checkboxParam
           checkbox.checked = false
         })
-        const urlparamfacette = getURLParameter('facette')
-        if (urlparamfacette) {
-          urlparamfacette.split('|').forEach((facette) => {
-            const tabfilter = facette.split('=')
+        const urlParamFacet = getURLParameter('facet')
+        if (urlParamFacet) {
+          urlParamFacet.split('|').forEach((facet) => {
+            const tabfilter = facet.split('=')
             if (tabfilter[1] !== '') {
               tabfilter[1].split(',').forEach((value) => {
                 const checkbox = document.getElementById(`${tabfilter[0]}${value}`)

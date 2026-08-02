@@ -8,6 +8,7 @@ use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Routing\ReservedTags;
 
 class DuplicationManager
 {
@@ -217,6 +218,13 @@ class DuplicationManager
         }
         if (!$this->container->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
+        }
+        // reserved before taken, and with its own wording: "someone already has this, here
+        // is a free one" and "nobody can ever have this" are different problems, and a
+        // webmaster who is told the wrong one goes looking for a page that does not exist
+        // (ticket 20)
+        if (ReservedTags::isReserved($data['newTag'])) {
+            throw new \Exception(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $data['newTag']]) . ' ' . _t('RESERVED_TAG_TRY_INSTEAD', ['suggestion' => $this->container->get(PageManager::class)->suggestFreeTag($data['newTag'])]));
         }
         $page = $this->container->get(PageManager::class)->getOne($data['newTag']);
         if ($page) {

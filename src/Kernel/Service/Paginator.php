@@ -31,10 +31,10 @@ class Paginator
     private int $currentPage;
 
     /**
-     * @param array<mixed> $items      every item, unpaginated (re-indexed to a list)
-     * @param int         $perPage     items per page (>= 1)
-     * @param int         $currentPage 1-based; clamped into range
-     * @param int         $delta       how many page numbers form one block
+     * @param array<mixed> $items       every item, unpaginated (re-indexed to a list)
+     * @param int          $perPage     items per page (>= 1)
+     * @param int          $currentPage 1-based; clamped into range
+     * @param int          $delta       how many page numbers form one block
      */
     public function __construct(array $items, int $perPage, int $currentPage = 1, int $delta = 12)
     {
@@ -90,8 +90,8 @@ class Paginator
      * by ticket 02 -- a dead-code purge is the wrong place to change URL semantics -- but
      * it should not be baked into this class as though it were correct.
      *
-     * @param string               $url       everything before the '?'
-     * @param array<string, mixed> $extraVars query parameters to carry across pages
+     * @param string                            $url       everything before the '?'
+     * @param array<string, mixed>              $extraVars query parameters to carry across pages
      * @param array{prev: string, next: string} $labels
      */
     public function renderLinks(string $url, array $extraVars = [], array $labels = ['prev' => '&laquo;', 'next' => '&raquo;']): string

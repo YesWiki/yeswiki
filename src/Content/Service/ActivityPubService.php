@@ -329,7 +329,7 @@ class ActivityPubService
         // any local entry whose sourceUrl comes from the same host as the actor
         // but is absent from the current outbox should be removed.
         $actorHost = parse_url($actorUri, PHP_URL_HOST);
-        $localEntries = $entryManager->search(['idtypeannonce' => $form['id']]);
+        $localEntries = $entryManager->search(['id' => $form['id']]);
 
         foreach ($localEntries as $entry) {
             $tag = $entry['tag'];

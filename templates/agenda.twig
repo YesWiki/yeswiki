@@ -1,19 +1,19 @@
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 {% set imgwidth = 450 %}
 {% set imgheight = 450 %}
 
 <div class="agenda-container">
-  {% for fiche in fiches %}
+  {% for entry in entries %}
   <div class="agenda-entry-container">
-    <figure class="bazar-entry agenda-entry" {{ fiche.html_data|raw }}>
+    <figure class="bazar-entry agenda-entry" {{ entry.html_data|raw }}>
       <div class="image">
-        {% if fiche.imagebf_image is defined and fiche.imagebf_image != '' %}
+        {% if entry.imagebf_image is defined and entry.imagebf_image != '' %}
           <img loading="lazy" class="img-responsive" alt=""
-            src="{{ fiche['external-data'] is defined
-              ? fiche['external-data'].baseUrl ~ 'cache/image_' ~ imgwidth ~ 'x' ~ imgheight ~ '_' ~ fiche.imagebf_image
-              : resizedImage(fiche.imagebf_image, imgwidth, imgheight, 'crop') }}"
-              {{ fiche['external-data'] is defined
-                ? 'onerror="this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ '\'"'
+            src="{{ entry['external-data'] is defined
+              ? entry['external-data'].baseUrl ~ 'cache/image_' ~ imgwidth ~ 'x' ~ imgheight ~ '_' ~ entry.imagebf_image
+              : resizedImage(entry.imagebf_image, imgwidth, imgheight, 'crop') }}"
+              {{ entry['external-data'] is defined
+                ? 'onerror="this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ '\'"'
                 : '' }}>
         {% else %}
           <img loading="lazy" class="trombi-image img-placeholder" alt=""
@@ -22,11 +22,11 @@
         {% endif %}
       </div>
       <fig-caption>
-        {% set moisfr = fiche.bf_date_debut_evenement|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
-        <div class="date"><span class="day">{{ fiche.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ moisfr }}</span></div>
-        <h5>{{ fiche.title|raw }}</h5>
-        {% if fiche.soustitre is defined and fiche.soustitre is not empty %}
-          {% set soustitre = format(fiche.soustitre)|striptags('<br>')|nl2br %}
+        {% set moisfr = entry.bf_date_debut_evenement|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
+        <div class="date"><span class="day">{{ entry.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ moisfr }}</span></div>
+        <h5>{{ entry.title|raw }}</h5>
+        {% if entry.soustitre is defined and entry.soustitre is not empty %}
+          {% set soustitre = format(entry.soustitre)|striptags('<br>')|nl2br %}
             <small class='agenda-subtitle'>
               {{ (soustitre|slice(0, 280) ~ (soustitre|length > 280 ? '...' : ''))|raw }}
             </small>
@@ -36,8 +36,8 @@
       </fig-caption>
       {% set useModal = params.modal|default('') == 1 %}
       <a class="{{ useModal ? 'modalbox' : '' }}"
-         title="{{ fiche.title|striptags }}"
-         href="{{ fiche.url|raw }}{{ (fiche['external-data'] is defined and useModal) ? '/iframe" data-iframe="1' : '' }}">
+         title="{{ entry.title|striptags }}"
+         href="{{ entry.url|raw }}{{ (entry['external-data'] is defined and useModal) ? '/iframe" data-iframe="1' : '' }}">
       </a>
     </figure>
   </div>
@@ -46,7 +46,7 @@
 
 {{ include_css('styles/bazar/agenda.css') }}
 <style>
-  {% set width = params.nbcol|default('') is empty ? 25 : 100 / params.nbcol %}
+  {% set width = params.columns|default('') is empty ? 25 : 100 / params.columns %}
   .agenda-entry-container {
     width: {{ width }}%;
     padding: 1rem;

@@ -6,13 +6,16 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Exception\ReservedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 
 class PageManager
@@ -135,10 +138,16 @@ class PageManager
      * to pick a tag; it doesn't reserve anything or touch the database itself, so a caller
      * still needs to actually create the row promptly to avoid a race with a concurrent
      * request picking the same suggestion.
+     *
+     * A tag the router owns (ticket 20) is treated exactly like a taken one and suffixed
+     * away from. That is what keeps every *generated* tag safe without any caller having to
+     * know the reserved list: a user signing up as `api` keeps the username `api` and gets
+     * the page tag `api2`, because a username is never slugified or rewritten -- only the
+     * tag it is stored under moves.
      */
     public function suggestFreeTag(string $desiredTag): string
     {
-        if (!$this->tagExists($desiredTag)) {
+        if (!$this->tagIsUnavailable($desiredTag)) {
             return $desiredTag;
         }
 
@@ -147,7 +156,7 @@ class PageManager
         $separator = str_contains($desiredTag, '-') || strtolower($desiredTag) === $desiredTag ? '-' : '';
         for ($suffix = 2; $suffix <= self::MAX_SEQUENTIAL_SUFFIX_ATTEMPTS + 1; $suffix++) {
             $candidate = $desiredTag . $separator . $suffix;
-            if (!$this->tagExists($candidate)) {
+            if (!$this->tagIsUnavailable($candidate)) {
                 return $candidate;
             }
         }
@@ -156,9 +165,20 @@ class PageManager
         // fall back to a short random one instead of continuing to query forever
         do {
             $candidate = $desiredTag . '-' . substr(bin2hex(random_bytes(4)), 0, 6);
-        } while ($this->tagExists($candidate));
+        } while ($this->tagIsUnavailable($candidate));
 
         return $candidate;
+    }
+
+    /**
+     * The two reasons a tag cannot be used: something already has it, or nobody may ever
+     * have it. Deliberately not folded into tagExists(), which answers a narrower question
+     * that callers legitimately ask on its own ("is there a row here?") -- a reserved tag
+     * has no row.
+     */
+    private function tagIsUnavailable(string $tag): bool
+    {
+        return ReservedTags::isReserved($tag) || $this->tagExists($tag);
     }
 
     /**
@@ -180,12 +200,23 @@ class PageManager
         if ($this->tagExists($newTag)) {
             throw new \Exception("Cannot rename '$oldTag' to '$newTag': tag already taken");
         }
+        // renaming *off* a reserved tag is exactly what the ticket-20 migration does, so only
+        // the destination is guarded
+        if (ReservedTags::isReserved($newTag)) {
+            throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $newTag]));
+        }
 
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = '{$this->dbService->escape($newTag)}' WHERE tag = '{$this->dbService->escape($oldTag)}'");
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET comment_on = '{$this->dbService->escape($newTag)}' WHERE comment_on = '{$this->dbService->escape($oldTag)}'");
 
         unset($this->pageCache[$oldTag]);
         unset($this->ownersCache[$oldTag]);
+
+        // a rename fires no page.* event -- nothing about the Content changed, only its
+        // name -- so the search index is told directly. Without this the index keeps
+        // answering under the old tag, and every result for the renamed Content 404s
+        // (ticket 18).
+        $this->container->get(SearchIndexer::class)->rename($oldTag, $newTag);
     }
 
     /**
@@ -485,6 +516,14 @@ class PageManager
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        // Backstop for ticket 20. Every creation helper already picks its tag through
+        // suggestFreeTag(), which skips reserved names, and the paths where a human types a
+        // tag refuse one before getting here -- so this only fires when a caller invents a
+        // tag without asking. Writing the row anyway would produce Content that nothing can
+        // ever reach, which is worse than the failure.
+        if (ReservedTags::isReserved((string)$tag)) {
+            throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $tag]));
         }
         $user = $this->authenticationService->getLoggedUserName();
 

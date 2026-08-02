@@ -9,7 +9,7 @@
   </td>
   <td>
     <div class="yw-table__actions">
-      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { vue: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { view: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
         <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
       </a>
       {# a built-in type's form creates Content like any other form (ticket 13): what it
@@ -17,7 +17,7 @@
          ContentCreator's job. The File type is still missing its upload field, so it says
          so rather than offering a button that would write a row pointing at nothing. #}
       {% if form.canCreateContent %}
-        <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+        <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { view: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
           <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
         </a>
       {% endif %}
@@ -68,7 +68,7 @@
     <div class="yw-table__actions create-actions">
     {% if not form.isSystem %}
       {% if form.canEdit %}
-      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { view: 'formulaire', action: 'clone', formid: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
       </a>
       {% else %}
@@ -78,7 +78,7 @@
       {% endif %}
     {% endif %}
     {% if form.canEdit %}
-      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}" href="{{ url({ params: { view: 'formulaire', action: 'modif', formid: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
       </a>
     {% else %}
@@ -87,7 +87,7 @@
       </button>
     {% endif %}
     {% if form.isActivityPubEnabled %}
-      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+      <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { view: 'abonnements', action: 'list', formid: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
       </a>
     {% endif %}
@@ -112,10 +112,10 @@
     {% if not form.isSystem %}
       <div class="yw-table__actions erase-actions">
       {% if form.canDelete %}
-        <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
+        <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { view: 'formulaire', action: 'confirm_empty', formid: key, showmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>
         </a>
-        <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
+        <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { view: 'formulaire', action: 'confirm_delete', formid: key, showmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </a>
       {% else %}

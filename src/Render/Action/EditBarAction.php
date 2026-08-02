@@ -17,7 +17,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * `{{barreredaction}}` -- converted from the procedural actions/barreredaction.php by ticket 06.
+ * `{{editbar}}` -- converted from the procedural actions/barreredaction.php by ticket 06.
  *
  * The body still prints rather than returning, so it runs inside an output buffer in its
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
@@ -27,7 +27,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
-        return 'barreredaction';
+        return 'editbar';
     }
 
     public function run(): string

@@ -294,12 +294,12 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 $formulaire = '';
                 break;
             default:
-                $idformulaire = $data['form_id'] ?? '';
-                if (is_array($idformulaire) and count($idformulaire) > 0) {
-                    $idformulaire = $idformulaire[0];
+                $formId = $data['form_id'] ?? '';
+                if (is_array($formId) and count($formId) > 0) {
+                    $formId = $formId[0];
                 }
-                if (!empty($idformulaire) && strval($idformulaire) == strval(intval($idformulaire))) {
-                    $formulaire = $this->formManager->getOne($idformulaire);
+                if (!empty($formId) && strval($formId) == strval(intval($formId))) {
+                    $formulaire = $this->formManager->getOne($formId);
                 } else {
                     $formulaire = $this->formManager->getAll()[0];
                 }

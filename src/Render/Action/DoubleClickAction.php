@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
- * `{{doubleclic}}` -- converted from the procedural actions/doubleclic.php by ticket 06.
+ * `{{doubleclick}}` -- converted from the procedural actions/doubleclic.php by ticket 06.
  *
  * The body still prints rather than returning, so it runs inside an output buffer in its
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
@@ -20,7 +20,7 @@ class DoubleClickAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
-        return 'doubleclic';
+        return 'doubleclick';
     }
 
     public function run(): string

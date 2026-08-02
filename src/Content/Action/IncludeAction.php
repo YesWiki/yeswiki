@@ -120,8 +120,8 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // parameters, so still readable the way the shared scope exposed them -- including
         // $oldpage, which a procedural before-callback (attach's, historically) publishes by
         // defining it, since those land in the shared PerformableArguments
-        $actif = $this->getService(PerformableArguments::class)->get('actif');
-        $dblclic = $this->getService(PerformableArguments::class)->get('doubleclic');
+        $active = $this->getService(PerformableArguments::class)->get('active');
+        $doubleClick = $this->getService(PerformableArguments::class)->get('doubleclick');
         $clear = $this->getService(PerformableArguments::class)->get('clear');
         $oldpage = $this->getService(PerformableArguments::class)->get('oldpage');
 
@@ -142,8 +142,8 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             return $plugin_output_new . (string)ob_get_clean();
         }
 
-        // si le lien correspond à l'url, on rajoute une classe "actif"
-        if (!empty($actif) && $actif == '1') {
+        // si le lien correspond à l'url, on rajoute une classe "active-link"
+        if (!empty($active) && $active == '1') {
             $page_active = $this->getService(PageContext::class)->getTag();
             if ($oldpage != '') {
                 // si utilisation de l'extension attach
@@ -167,13 +167,13 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // rajoute le javascript pour le double clic si la configuration l'autorise, si le parametre est activé et les droits en écriture existent
         if (
             !empty($this->getService(RuntimeConfig::class)['allow_doubleclic']) && in_array($this->getService(RuntimeConfig::class)['allow_doubleclic'], ['1', 'yes', true])
-            && !empty($dblclic) && $dblclic == '1' && $this->getService(AclService::class)->hasAccess('write', $incPageName)
+            && !empty($doubleClick) && $doubleClick == '1' && $this->getService(AclService::class)->hasAccess('write', $incPageName)
         ) {
-            $actiondblclic = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';
+            $doubleClickAttribute = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';
         } else {
-            $actiondblclic = '';
+            $doubleClickAttribute = '';
         }
-        $plugin_output_new = str_replace('<div class="include ', '<div' . $actiondblclic . ' class="', $plugin_output_new);
+        $plugin_output_new = str_replace('<div class="include ', '<div' . $doubleClickAttribute . ' class="', $plugin_output_new);
 
         // on enleve le préfixe include_ des classes pour que le parametre passé
         // et le nom de classe CSS soient bien identiques

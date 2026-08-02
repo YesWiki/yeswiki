@@ -9,6 +9,9 @@ use YesWiki\Render\Service\ActionRunner;
 #[\Field(['map', 'carte_google'])]
 class MapField extends BazarField
 {
+    // ticket 18: coordinates are filtered, never searched as text
+    use ContributesNoSearchableText;
+
     protected $autocompleteFieldnames;
     protected $autocomplete;
     protected $geolocate;

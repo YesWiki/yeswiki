@@ -10,6 +10,9 @@ use YesWiki\Identity\Service\AclService;
 #[\Field(['champs_mail'])]
 class EmailField extends BazarField
 {
+    // ticket 18: an address in a public text index is an address-harvesting endpoint
+    use ContributesNoSearchableText;
+
     protected $seeEmailAcls;
     protected $sendMail;
     protected $showContactForm;

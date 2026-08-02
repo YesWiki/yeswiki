@@ -78,7 +78,7 @@ async function processEntry(entryCheckbox, counters) {
 importBtn.addEventListener('click', async(event) => {
   event.preventDefault()
 
-  const toImport = Array.from(importForm.querySelectorAll('input[name^=importfiche]:checked'))
+  const toImport = Array.from(importForm.querySelectorAll('input[name^=importentries]:checked'))
   const totalEntries = toImport.length
 
   if (totalEntries === 0) {

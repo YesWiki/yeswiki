@@ -8,7 +8,7 @@
         <input type="hidden"
                name="wiki"
                value="{{ pageTag ~ (handler ? '/' ~ handler : '') }}">
-        <input type="hidden" name="vue" value="consulter">
+        <input type="hidden" name="view" value="consulter">
         <input type="hidden" name="action" value="recherche">
         <div class="bazar-search yw-form-group">
             <div class="input-group input-prepend input-append">
@@ -42,7 +42,7 @@
                            name="query"
                            value="{{ params.query is iterable ? params.query|map(p => p.name ~ p.operator ~ p.value) |join(', ') : params.query }}">
                 {% endif %}
-                <input type="hidden" name="facette" value="{{ facette }}">
+                <input type="hidden" name="facet" value="{{ facet }}">
                 <span class="input-group-btn search-button-container">
                     <input value="{{ _t("BAZ_RECHERCHER") }}"
                            class="btn btn-primary"

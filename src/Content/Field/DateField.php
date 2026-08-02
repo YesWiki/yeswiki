@@ -9,6 +9,9 @@ use YesWiki\Kernel\Service\DateService as CoreDateService;
 #[\Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
 {
+    // ticket 18: a date indexed as text makes every year a match-all query
+    use ContributesNoSearchableText;
+
     public function requiresTagBeforeFormatting()
     {
         return true;

@@ -1,6 +1,7 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
@@ -15,6 +16,6 @@ class MapAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         // Retrocompatibility
-        return $this->callAction('bazarcarto', $this->arguments);
+        return $this->callAction('entrymap', $this->arguments);
     }
 }

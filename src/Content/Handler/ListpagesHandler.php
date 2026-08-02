@@ -54,7 +54,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $get_class = filter_input(INPUT_GET, 'class', FILTER_SANITIZE_SPECIAL_CHARS);
         $class = !empty($get_class) ? $get_class : 'liste';
         $nb = filter_input(INPUT_GET, 'nb', FILTER_SANITIZE_NUMBER_INT) ?: '';
-        $tri = filter_input(INPUT_GET, 'tri', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
+        $sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
         $template = basename(filter_input(INPUT_GET, 'template', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'pages_accordion.twig');
         $nbcartrunc = 200;
         $valtemplate = [];
@@ -87,7 +87,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
 
         $text = '';
         // affiche le resultat de la recherche
-        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri);
+        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $sort);
         if ($resultat) {
             $aclService = $this->getService(\YesWiki\Identity\Service\AclService::class);
             $element = [];

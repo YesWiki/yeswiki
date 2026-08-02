@@ -1,7 +1,8 @@
 {{ include_javascript('javascripts/bazar.js', true, true) }}
 {{ error|raw }}
 <h3 class="titre_type_fiche">{{ _t('BAZ_TITRE_SAISIE_FICHE') }}&nbsp;{{ form.label }}</h3>
-<form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" {% if not showConditions %}novalidate{% endif %}>
+{# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
+<form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" hx-boost="false" {% if not showConditions %}novalidate{% endif %}>
   {% if showConditions %}
     {{ form.condition|raw }}
     <div class="checkbox">

@@ -7,8 +7,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -136,12 +136,12 @@ class ImageApiController extends YesWikiController
 
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
     {
-        $attach = new Attach($this->services);
-        $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);
+        $resizer = $this->getService(ImageResizer::class);
+        $newFileName = $resizer->resizedFilename("files/$filename", (string)$width, (string)$height, $mode);
         if (file_exists($newFileName)) {
             return $newFileName;
         }
-        $attach->resizeImage("files/$filename", $newFileName, $width, $height, $mode);
+        $resizer->resize("files/$filename", $newFileName, $width, $height, $mode);
 
         return $newFileName;
     }

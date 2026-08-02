@@ -534,13 +534,13 @@ exemple avec l'outil [Frama groupe](https://framagroupes.org).
 **Ce que ca donne en language YesWiki** Abonnement :
 
 ```
-{{abonnement mail="my@mailing.list" }}
+{{subscribe mail="my@mailing.list" }}
 ```
 
 Désabonnement :
 
 ```
-{{desabonnement mail="my@mailing.list" }}
+{{unsubscribe mail="my@mailing.list" }}
 ```
 
 ### 8.8 Afficher un formulaire de création de fiche
@@ -643,7 +643,7 @@ Affiche toutes les favoris de l'utilisateur
 #### 9.2.4 Afficher mes fiches bazar
 
 L'action
-`{{bazarliste template="liste_accordeon" dynamic="true" filteruserasowner="true"}}`
+`{{entrylist template="liste_accordeon" dynamic="true" filteruserasowner="true"}}`
 
 Affiche toutes les fiches bazar dont l'utilisateur est propriétaire
 

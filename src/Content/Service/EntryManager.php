@@ -196,13 +196,13 @@ class EntryManager
     }
 
     /** getDataFromPage.
-     * @param array  $page            , content of page from sql
-     * @param bool   $debug,          to throw exception in case of error
-     * @param string $correspondance, to pass correspondance parameter directly to appendDisplayData
+     * @param array  $page          , content of page from sql
+     * @param bool   $debug,        to throw exception in case of error
+     * @param string $fieldMapping, to pass fieldMapping parameter directly to appendDisplayData
      *
      * @return array data formated
      */
-    public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
+    public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $fieldMapping = ''): array
     {
         $data = [];
         if (!empty($page['body'])) {
@@ -268,7 +268,7 @@ class EntryManager
             }
 
             // TODO call this function only when necessary
-            $this->appendDisplayData($data, $semantic, $correspondance, $page);
+            $this->appendDisplayData($data, $semantic, $fieldMapping, $page);
         } elseif ($debug) {
             trigger_error('empty \'body\' in EntryManager::getDataFromPage for page \'' . ($page['tag'] ?? '!!empty tag!!') . '\'', E_USER_WARNING);
         }
@@ -865,34 +865,34 @@ class EntryManager
     }
 
     /**
-     * Apply field correspondances to an entry.
+     * Apply field mappings to an entry.
      *
      * @param array        $pEntry
-     * @param string|array $pCorrespondances
+     * @param string|array $pFieldMappings
      *
      * @return mixed the entry with modified fields
      *
      * @throws \Exception
      */
-    public function applyCorrespondances(&$pEntry, $pCorrespondances, $pPage)
+    public function applyFieldMappings(&$pEntry, $pFieldMappings, $pPage)
     {
-        if (empty($pCorrespondances)) {
+        if (empty($pFieldMappings)) {
             return $pEntry;
         }
 
-        if (is_string($pCorrespondances)) {
-            $vCorrespondances = $this->getMultipleParameters($pCorrespondances, ',', '=');
+        if (is_string($pFieldMappings)) {
+            $vFieldMappings = $this->getMultipleParameters($pFieldMappings, ',', '=');
         } else {
-            $vCorrespondances = $pCorrespondances;
+            $vFieldMappings = $pFieldMappings;
         }
 
         // champs correspondants
-        if (!empty($vCorrespondances)) {
+        if (!empty($vFieldMappings)) {
             try {
-                foreach ($vCorrespondances as $vKey => $vData) {
+                foreach ($vFieldMappings as $vKey => $vData) {
                     if (isset($vKey)) {
                         if (isset($pEntry[$vData])) {
-                            $pEntry[$vKey] = $this->container->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
+                            $pEntry[$vKey] = $this->container->get(Guard::class)->isFieldDataAuthorizedForFieldMapping($pPage, $pEntry, $vData);
                         }
                     } else {
                         echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
@@ -910,37 +910,37 @@ class EntryManager
      * Append data needed for display
      * TODO move this to a class dedicated to display.
      *
-     * @param array  $pFiche
+     * @param array  $pEntry
      * @param bool   $pSemantic
-     * @param string $pCorrespondances
-     * @param array  $pPage,           appendDisplayData is called in environment with access to $pPage
-     *                                 helping to get owner without asking another time to the page manager to get it
+     * @param string $pFieldMappings
+     * @param array  $pPage,         appendDisplayData is called in environment with access to $pPage
+     *                               helping to get owner without asking another time to the page manager to get it
      *
      * @throws \Exception
      */
-    public function appendDisplayData(&$pFiche, $pSemantic, $pCorrespondances, array $pPage)
+    public function appendDisplayData(&$pEntry, $pSemantic, $pFieldMappings, array $pPage)
     {
         // user
-        $pFiche['user'] = $pPage['user'] ?? null;
+        $pEntry['user'] = $pPage['user'] ?? null;
         // owner
-        $pFiche['owner'] = $pPage['owner'] ?? null;
+        $pEntry['owner'] = $pPage['owner'] ?? null;
 
-        $pFiche = $this->applyCorrespondances($pFiche, $pCorrespondances, $pPage);
+        $pEntry = $this->applyFieldMappings($pEntry, $pFieldMappings, $pPage);
 
         // HTML data
-        $pFiche['html_data'] = $this->getHtmlDataAttributes($pFiche);
+        $pEntry['html_data'] = $this->getHtmlDataAttributes($pEntry);
 
-        // pFiche URL
-        if (!isset($pFiche['url'])) {
+        // pEntry URL
+        if (!isset($pEntry['url'])) {
             // could already be defined for entries from external json
-            $pFiche['url'] = $this->urlFormatter->href('', $pFiche['tag']);
+            $pEntry['url'] = $this->urlFormatter->href('', $pEntry['tag']);
         }
 
         // Données sémantiques
         if ($pSemantic) {
             // not possible to init the formManager in the constructor because of circular reference problem
-            $form = $this->container->get(FormManager::class)->getOne($pFiche['form_id']);
-            $pFiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pFiche);
+            $form = $this->container->get(FormManager::class)->getOne($pEntry['form_id']);
+            $pEntry['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pEntry);
         }
     }
 

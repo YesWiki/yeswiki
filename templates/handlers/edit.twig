@@ -10,7 +10,8 @@
   </div>
 {% endif %}
 
-<form id="ACEditor" name="ACEditor" enctype="multipart/form-data"
+{# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
+<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
       action="{{ url({ handler: handler }) }}" method="POST">
 
   {% if passwordForEditing %}

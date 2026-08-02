@@ -1,7 +1,8 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * QrCardscan action for yeswiki, for scanning a qrcard and propose actions
  *
  * @category Wiki
@@ -25,7 +26,7 @@ class QrCardscanAction extends YesWikiAction implements RegisteredAction
     public function formatArguments($args): array
     {
         return [
-            'speak' => (empty($args['speak']) || $args['speak'] == '0' || $args['speak'] == 'false' || $args['speak'] == 'no') ? 'false' : 'true'
+            'speak' => (empty($args['speak']) || $args['speak'] == '0' || $args['speak'] == 'false' || $args['speak'] == 'no') ? 'false' : 'true',
         ];
     }
 
@@ -35,6 +36,7 @@ class QrCardscanAction extends YesWikiAction implements RegisteredAction
         $output .= $this->render('@core/qrcardscan.twig', [
             'speak' => $this->arguments['speak'],
         ]);
+
         return $output;
     }
 }

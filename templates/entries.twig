@@ -1,8 +1,8 @@
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
   <div class="entries-container">
-    {% for fiche in fiches %}
-       <div class="bazar-entry" {{ fiche.html_data|raw }}>
-         {{ format('{{include class="clearfix" page="'~ fiche.tag ~'"}}')|raw }}
+    {% for entry in entries %}
+       <div class="bazar-entry" {{ entry.html_data|raw }}>
+         {{ format('{{include class="clearfix" page="'~ entry.tag ~'"}}')|raw }}
        </div>
     {% endfor %}
   </div> <!-- / entries-container -->

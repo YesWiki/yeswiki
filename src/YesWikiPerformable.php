@@ -140,9 +140,9 @@ abstract class YesWikiPerformable
         // This additional argument helps to prevent infinite loops.
         //
         // Deliberately the SHORT class name, not get_class(): callers compare it against
-        // literals like 'BazarCartoAction', and once ticket 06 gave these classes namespaces
+        // literals like 'EntryMapAction', and once ticket 06 gave these classes namespaces
         // get_class() started returning the FQCN, so every such comparison silently stopped
-        // matching -- turning {{bazarcarto}} into unbounded recursion. Third time this wave
+        // matching -- turning {{entrymap}} into unbounded recursion. Third time this wave
         // that get_class() broke on namespacing (after the action name and the ACL key).
         $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
 

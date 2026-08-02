@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block display_entries %}
-  {% set nbcol = params.nbcol %}
+  {% set nbcol = params.columns %}
   {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
   {% set isLink = isModal or (params.entrydisplay == 'direct') %}
 
@@ -86,7 +86,7 @@
 
         {# SUBTITLE AREA #}
         {% block area_subtitle %}
-          <entry-field :entry="entry" prop="subtitle" class="area subtitle-area line-clamp" :style="{'webkit-line-clamp': params.nblines}"></entry-field>
+          <entry-field :entry="entry" prop="subtitle" class="area subtitle-area line-clamp" :style="{'webkit-line-clamp': params.lines}"></entry-field>
         {% endblock %}
 
         {# TEXT AREA #}

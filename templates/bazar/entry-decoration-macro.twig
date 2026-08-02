@@ -1,11 +1,11 @@
 {# shared bazar-list entry decorations (ticket 07): the color pellet and icon
-   resolved from the bazarliste color=/icon= params via customValueForEntry() #}
-{% macro pellet(params, fiche) %}
-{%- set color = customValueForEntry(params.color|default(''), params.colorfield|default(''), fiche, '') -%}
+   resolved from the entrylist color=/icon= params via customValueForEntry() #}
+{% macro pellet(params, entry) %}
+{%- set color = customValueForEntry(params.color|default(''), params.colorfield|default(''), entry, '') -%}
 {%- if color is not empty %}<span class="pellet" style="background-color:{{ color }};"></span> {% endif -%}
 {% endmacro %}
 
-{% macro icon(params, fiche) %}
-{%- set icon = customValueForEntry(params.icon|default(''), params.iconfield|default(''), fiche, '') -%}
+{% macro icon(params, entry) %}
+{%- set icon = customValueForEntry(params.icon|default(''), params.iconfield|default(''), entry, '') -%}
 {%- if icon is not empty %}<i class="{{ icon }}"></i> {% endif -%}
 {% endmacro %}

@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Service\StringUtilService;
 
-
 class StringUtilServiceTest extends TestCase
 {
     #[DataProvider('folderToNamespaceProvider')]

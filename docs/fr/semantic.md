@@ -58,7 +58,7 @@ informations sont donc complétées ici**.
 ### 1. Activer le contexte sémantique
 
 - se rendre sur la page d'édition du formulaire concerné
-  [?BazaR&vue=formulaire&action=modif&idformulaire={formId}](?BazaR&vue=formulaire&action=modif&idformulaire=1 ':ignore')
+  [?BazaR&view=formulaire&action=modif&formid={formId}](?BazaR&view=formulaire&action=modif&formid=1 ':ignore')
 - tout en bas, déplier la partie "Configuration avancée"
 - compléter la partie `contexte sémantique`
   - si une seule ontologie utilisée, vous pouvez mettre l'url de l'ontologie

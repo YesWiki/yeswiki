@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Render\Action;
-use YesWiki\Render\Service\TabsRenderer;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\TabsRenderer;
 
 class TabsAction extends YesWikiAction implements RegisteredAction
 {

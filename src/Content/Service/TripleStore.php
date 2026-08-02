@@ -5,7 +5,6 @@ namespace YesWiki\Content\Service;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
-
 class TripleStore
 {
     protected $dbService;
@@ -93,13 +92,13 @@ class TripleStore
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
         if ($resource !== null) {
-            $where[] = " resource " . $res_op . " '" . $this->dbService->escape($resource) . "'";
+            $where[] = ' resource ' . $res_op . " '" . $this->dbService->escape($resource) . "'";
         }
         if ($property !== null) {
-            $where[] = " property " . $prop_op . " '" . $this->dbService->escape($property) . "'";
+            $where[] = ' property ' . $prop_op . " '" . $this->dbService->escape($property) . "'";
         }
         if ($value !== null) {
-            $where[] = " value " . $val_op . " '" . $this->dbService->escape($value) . "'";
+            $where[] = ' value ' . $val_op . " '" . $this->dbService->escape($value) . "'";
         }
         if (count($where) > 0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
@@ -187,7 +186,7 @@ class TripleStore
      */
     public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): ?int
     {
-        $sql = "SELECT id FROM " . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($re_prefix . $resource) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' AND value = '" . $this->dbService->escape($value) . "'";
+        $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($re_prefix . $resource) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' AND value = '" . $this->dbService->escape($value) . "'";
         $triple = $this->dbService->loadSingle($sql);
 
         return !is_null($triple) ?
@@ -199,9 +198,9 @@ class TripleStore
      * Deletes every triple for a given resource, whatever their property.
      *
      * @param string $resource
-     *                            The resource of the triples to delete
+     *                          The resource of the triples to delete
      * @param string $re_prefix
-     *                            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
+     *                          The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
      */
     public function deleteAll($resource, $re_prefix = THISWIKI_PREFIX): bool
     {
@@ -334,7 +333,7 @@ class TripleStore
         }
         $res = $re_prefix . $resource;
 
-        $sql = "DELETE FROM " . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' ";
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' ";
         if ($value !== null) {
             $valueQuery = "AND value = '" . $this->dbService->escape($value) . "'";
             $sql .= $valueQuery;

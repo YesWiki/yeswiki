@@ -1,4 +1,4 @@
-{% set vIDsParameter = params.idtypeannonce ?? params.id ?? null %}
+{% set vIDsParameter = params.id ?? params.id ?? null %}
 {% set vIDsString = vIDsParameter is iterable ? ( vIDsParameter is not empty ? vIDsParameter | join(',') : "") : vIDsParameter %}
 {% set vIDsObject = ( vIDsString is defined ? { id : vIDsString } : {}) %}
 {% set vBase64EncodedIDs = b64 (vIDsString) | url_encode %}
@@ -38,22 +38,22 @@ params.searchfields is defined
 %}
 {%
 set vCorrespondance =	(
-params.correspondance is defined
-? { correspondance : params.correspondance }
+params.fieldmapping is defined
+? { fieldmapping : params.fieldmapping }
 : {}
 )
 %}
 {%
-set vOrdre =	(
-params.ordre is defined
-? { ordre : params.ordre }
+set vOrder =	(
+params.order is defined
+? { order : params.order }
 : {}
 )
 %}
 {%
-set vChamp =	(
-params.champ is defined
-? { champ : params.champ }
+set vField =	(
+params.field is defined
+? { field : params.field }
 : {}
 )
 %}
@@ -96,8 +96,8 @@ set vGenericParams = {}
 | merge (vPeriod)
 %}
 {% set vRSSParams = {} | merge (vGenericParams) | merge (vIDsObject) %}
-{% set vCSVParams = {} | merge (vGenericParams) | merge (vOrdre) | merge (vChamp) %}
-{% set vJSONParams = {} | merge (vGenericParams) | merge (vOrdre) | merge (vChamp) %}
+{% set vCSVParams = {} | merge (vGenericParams) | merge (vOrder) | merge (vField) %}
+{% set vJSONParams = {} | merge (vGenericParams) | merge (vOrder) | merge (vField) %}
 {% set vRSSHRef = url ({ handler:'rss', params: vRSSParams }) %}
 {% set vCSSHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams }) %}
 {% set vJSONHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams }) %}

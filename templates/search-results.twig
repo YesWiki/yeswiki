@@ -1,0 +1,56 @@
+{# The results fragment (ticket 26), served by GET /api/search and swapped in by htmx.
+
+   `total` is a real count, not an estimate: page ACLs, field ACLs and the content-type
+   filter are all in the SQL, so nothing is dropped after the fact. `capped` says the count
+   stopped at SearchIndexQuery::COUNT_CAP -- counting every match of a very broad query costs
+   a full pass over the match set, and "1000+" is what a visitor needs anyway. Paging past the
+   cap still works. #}
+{% if prompt %}
+    <p class="yw-search-prompt">{{ _t('SEARCH_TYPE_SOMETHING') }}</p>
+{% elseif results is empty %}
+    <p class="yw-search-empty">{{ _t('NO_SEARCH_RESULT') }}.</p>
+{% else %}
+    <p class="yw-search-count">
+        {%- if capped -%}
+            {{ _t('SEARCH_N_OR_MORE_RESULTS', {total: total}) }}
+        {%- else -%}
+            {{ _t('SEARCH_N_RESULTS', {total: total}) }}
+        {%- endif -%}
+    </p>
+
+    <ol class="yw-search-results" start="{{ (page - 1) * limit + 1 }}">
+        {% for result in results %}
+            <li class="yw-search-result yw-search-result--{{ result.content_type }}">
+                <span class="yw-search-result-type">{{ _t('SEARCH_TYPE_' ~ result.content_type|upper) }}</span>
+                <h3 class="yw-search-result-title">
+                    <a href="{{ result.url }}">{{ result.title }}</a>
+                </h3>
+                {% if result.excerpt is not empty %}
+                    <p class="yw-search-result-excerpt">{{ result.excerpt }}</p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+
+    {% if pages > 1 %}
+        {# Paging re-requests the same fragment; the form supplies phrase/type/limit through
+           hx-include, so a page link only has to carry the page number. #}
+        <nav class="yw-search-pagination" aria-label="{{ _t('SEARCH_PAGINATION') }}">
+            {% if page > 1 %}
+                <button type="button" class="yw-btn yw-btn--sm"
+                        hx-get="{{ url({tag: 'api/search'}) }}"
+                        hx-target="#yw-search-results"
+                        hx-include="#yw-search-form"
+                        hx-vals='{"page": {{ page - 1 }}}'>{{ _t('PREVIOUS') }}</button>
+            {% endif %}
+            <span class="yw-search-page">{{ _t('SEARCH_PAGE_N_OF_M', {page: page, pages: pages}) }}</span>
+            {% if page < pages %}
+                <button type="button" class="yw-btn yw-btn--sm"
+                        hx-get="{{ url({tag: 'api/search'}) }}"
+                        hx-target="#yw-search-results"
+                        hx-include="#yw-search-form"
+                        hx-vals='{"page": {{ page + 1 }}}'>{{ _t('NEXT') }}</button>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endif %}

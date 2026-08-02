@@ -6,7 +6,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
@@ -17,7 +16,7 @@ class FileApiController extends YesWikiController
     /**
      * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php
      * page-handler AND the AJAX qqFileUploader path -- both funneled into the same
-     * underlying Attach class already, this is the one real validated path they become).
+     * underlying attach code already, this is the one real validated path they become).
      * Creates a new, independent "file" Content entry (FileManager), not tied 1:1 to
      * $pageTag afterward -- only used here to seed the new entry's initial read ACL.
      */

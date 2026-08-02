@@ -1,10 +1,11 @@
 <?php
 
 namespace YesWiki\Render\Action;
-use YesWiki\Identity\Service\InputFilter;
+
 use YesWiki\Content\Service\ActionsBuilderService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class AceditorAction extends YesWikiAction implements RegisteredAction

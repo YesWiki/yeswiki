@@ -39,7 +39,7 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
     {
         $output = '<body class="yeswiki-render">' . "\n"
             . '<div class="container">' . "\n"
-            . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}') . '>' . "\n";
+            . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}') . '>' . "\n";
 
         $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => strip_tags($_GET['content'])]); // fake Page for actions and handlers, all html is striped
 

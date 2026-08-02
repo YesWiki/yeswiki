@@ -1029,7 +1029,7 @@ return [
     'ATTACH_DESCRIPTION' => 'Beschrijving',
     'ATTACH_CANCEL' => 'Annuleren',
     'ATTACH_SAVE' => 'Opslaan',
-    'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'De actie video moet worden aangeroepen met de parameters «id» en «serveur». Voor «serveur» zijn alleen waarden «vimeo» of «youtube» of «peertube» toegestaan.',
+    'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'De actie video moet worden aangeroepen met de parameters «id» en «server». Voor «server» zijn alleen waarden «vimeo» of «youtube» of «peertube» toegestaan.',
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'De actie pdf moet worden aangeroepen met parameter «url» en de opgegeven url moet op dezelfde host staan als de wiki (bijvoorbeeld \' xxx.yyy.com \'), hetzelfde schema (bijvoorbeeld \' https \') en dezelfde poort indien opgegeven (bijvoorbeeld \'8080 \'). ',
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'JavaScript activeren om bestanden te uploaden',
     'UPLOAD_A_FILE' => 'Een bestand toevoegen/invoegen',

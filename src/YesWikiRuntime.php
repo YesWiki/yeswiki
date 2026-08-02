@@ -46,6 +46,7 @@ use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
@@ -59,6 +60,7 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Search\Service\SearchIndexer;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()
@@ -203,6 +205,32 @@ class YesWikiRuntime
         $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
         // purge expired account-activation keys
         $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
+        // reindex a bounded slice of whatever is queued for search (ticket 18)
+        $this->drainSearchIndexQueue();
+    }
+
+    /**
+     * The search index's fallback drain.
+     *
+     * A form change queues its entries and spawns `search:reindex` to do the work out of
+     * band. That spawn needs `proc_open` and a findable PHP binary, and plenty of shared
+     * hosting has neither -- so this is what guarantees the queue eventually empties
+     * anywhere.
+     *
+     * Bounded twice over, by rows and by wall clock, because it runs inside somebody's page
+     * view. That also makes it honestly unsuitable for a first fill of a large wiki: at 200
+     * Contents per run, gated behind MAINTENANCE_INTERVAL, a million-row wiki would take
+     * years. On a host that cannot spawn, `./yeswicli search:reindex --drain` really does
+     * have to be run once by hand -- ticket 18 says so rather than pretending otherwise.
+     */
+    protected function drainSearchIndexQueue(): void
+    {
+        try {
+            $this->service(SearchIndexer::class)->drain(200, 5);
+        } catch (\Throwable $failed) {
+            // maintenance is best-effort housekeeping on someone else's request; a search
+            // index that could not be drained must not turn their page view into an error
+        }
     }
 
     /**
@@ -267,8 +295,10 @@ class YesWikiRuntime
 
         $this->service(AuthenticationService::class)->connectUser();
 
-        // Is this a special page ?
-        if (in_array($tag, ['api', 'doc'])) {
+        // Is this a routed name rather than a tag? (ticket 20 -- ReservedTags is the single
+        // declaration; this used to be a second hardcoded list that could drift from the one
+        // in YesWikiInit::getRoute(), and did.)
+        if (ReservedTags::isReserved($tag)) {
             $this->runSpecialPages();
         } else {
             $request = $this->service(CurrentRequest::class)->get();

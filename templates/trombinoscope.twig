@@ -1,20 +1,20 @@
 {{ include_css('styles/bazar/trombinoscope.css') }}
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
   <div class="trombi-container">
-    {% for fiche in fiches %}
-       <a class="bazar-entry modalbox" data-size="modal-lg" {{ fiche.html_data|raw }}
-          href="{{ fiche.url ~ (fiche['external-data']  ? "/iframe" : "") }}"{{ fiche['external-data']  ? " data-iframe=\"1\"" : ''  }}
+    {% for entry in entries %}
+       <a class="bazar-entry modalbox" data-size="modal-lg" {{ entry.html_data|raw }}
+          href="{{ entry.url ~ (entry['external-data']  ? "/iframe" : "") }}"{{ entry['external-data']  ? " data-iframe=\"1\"" : ''  }}
             {# add /iframe only for external YesWiki entries #}
-          title="{{ fiche.title|striptags }}"
-          aria-label="{{ fiche.title|striptags }}">
+          title="{{ entry.title|striptags }}"
+          aria-label="{{ entry.title|striptags }}">
           <div class="image-container">
-            {% if fiche.imagebf_image is not empty %}
+            {% if entry.imagebf_image is not empty %}
               <img loading="lazy" class="trombi-image" alt=""
-                   src="{{ fiche['external-data']
-                        ? fiche['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ fiche.imagebf_image
-                        : resizedImage(fiche.imagebf_image, 300, 300, 'crop', '_') }}"
-                   {{ fiche['external-data']
-                    ? 'onerror=this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ "\'"
+                   src="{{ entry['external-data']
+                        ? entry['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ entry.imagebf_image
+                        : resizedImage(entry.imagebf_image, 300, 300, 'crop', '_') }}"
+                   {{ entry['external-data']
+                    ? 'onerror=this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ "\'"
                     : '' }} > {# TODO refactor resizeImage to use url and local cache ; idea  http://image.intervention.io/  ? #}
             {% else %}
               <img loading="lazy" class="trombi-image img-placeholder"
@@ -24,7 +24,7 @@
           </div>
 
           <div class="caption trombi-content">
-            <span class="title">{{ fiche.title }}</span>
+            <span class="title">{{ entry.title }}</span>
          </div>
        </a> <!-- / bazar-entry -->
     {% endfor %}

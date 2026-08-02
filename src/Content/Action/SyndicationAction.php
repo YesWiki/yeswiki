@@ -27,7 +27,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
     public function formatArguments($arg): array
     {
         $arg['showimage'] = $this->formatBoolean($arg, false, 'showimage');
-        $arg['nouvellefenetre'] = $this->formatBoolean($arg, false, 'nouvellefenetre');
+        $arg['newwindow'] = $this->formatBoolean($arg, false, 'newwindow');
         if (empty($arg['class'])) {
             $arg['class'] = '';
         }
@@ -139,17 +139,17 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
                                     $feedItem['image'] = $item->data['child']['http://www.itunes.com/dtds/podcast-1.0.dtd']['image'][0]['attribs']['']['href'];
                                 }
                             }
-                            if (!empty($this->arguments['nbchar'])) {
+                            if (!empty($this->arguments['maxchars'])) {
                                 $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
                                 $descLen = strlen($feedItem['description']);
                                 // check if text longer than max chars specified
                                 if ($descLen > 0
-                                    && $descLen > $this->arguments['nbchar']) {
+                                    && $descLen > $this->arguments['maxchars']) {
                                     $feedItem['description'] = truncate(
                                         $feedItem['description'],
-                                        $this->arguments['nbchar'],
+                                        $this->arguments['maxchars'],
                                         '... <a class="lien_lire_suite" href="' . $feedItem['url']
-                                    . '" ' . ($this->arguments['nouvellefenetre'] ? 'target="_blank" ' : '')
+                                    . '" ' . ($this->arguments['newwindow'] ? 'target="_blank" ' : '')
                                             . 'title="' . _t('SYNDICATION_READ_MORE') . '">' . _t('SYNDICATION_READ_MORE') . '</a>',
                                     );
                                 }
@@ -231,7 +231,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
                     'urlSite' => $feed->get_link(),
                     'urlHash' => md5(implode(',', $this->arguments['url'])),
                     'showImage' => $this->arguments['showimage'],
-                    'ext' => $this->arguments['nouvellefenetre'],
+                    'ext' => $this->arguments['newwindow'],
                 ]) . "\n" .
             '</div>' . "\n";
         }

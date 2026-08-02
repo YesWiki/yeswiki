@@ -48,7 +48,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
 
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}')
+                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n";
 
             if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
@@ -62,7 +62,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             // on recupere les entetes html mais pas ce qu'il y a dans le body
             $output .= '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}')
+                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n";
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
@@ -84,7 +84,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
 
         // on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
         if ($this->getRequest()->query->get('edit') == '1') {
-            $output .= $this->getService(MarkdownFormatterService::class)->format('{{barreredaction}}');
+            $output .= $this->getService(MarkdownFormatterService::class)->format('{{editbar}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');

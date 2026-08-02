@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
- * `{{ariane}}` -- converted from the procedural actions/ariane.php by ticket 06.
+ * `{{breadcrumb}}` -- converted from the procedural actions/ariane.php by ticket 06.
  *
  * The body still prints rather than returning, so it runs inside an output buffer in its
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
@@ -20,7 +20,7 @@ class BreadcrumbAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
-        return 'ariane';
+        return 'breadcrumb';
     }
 
     public function run(): string

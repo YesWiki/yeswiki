@@ -33,11 +33,11 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             $vBazarListService = $this->getService(BazarListService::class);
 
             $get = $this->getRequest()->query;
-            $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('form_id') ?? $get->get('idtypeannonce') ?? []);
+            $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('form_id') ?? []);
 
             $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->getService(RuntimeConfig::class)['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
-            $user = $get->get('utilisateur', '');
+            $user = $get->get('user', '');
 
             // chaine de recherche
 
@@ -51,9 +51,9 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             $vQuery = $get->get('query', '');
             $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
-            // correspondance
+            // fieldMapping
 
-            $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
+            $vFieldMapping = $get->has('fieldmapping') ? urldecode($get->get('fieldmapping')) : null;
 
             // datefilter
 
@@ -61,15 +61,15 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
 
             $vRSSEntries = $vBazarListService->getEntries(
                 [
-                    'idtypeannonce' => $vIDs,
+                    'id' => $vIDs,
                     'queries' => $vQuery,
                     'user' => $user,
                     'keywords' => $vKeywords,
                     'searchfields' => $vSearchFields,
                     'datefilter' => $vDateFilter,
-                    'correspondance' => $vCorrespondance,
-                    'ordre' => 'desc',
-                    'champ' => 'created_at',
+                    'fieldmapping' => $vFieldMapping,
+                    'order' => 'desc',
+                    'field' => 'created_at',
                     'nb' => $vItemCount,
                     'minDate' => $get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '',
                 ]

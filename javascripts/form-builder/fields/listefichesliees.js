@@ -17,7 +17,7 @@ export default {
     other_params: {
       label: _t('BAZ_FORM_EDIT_LISTEFICHES_PARAMS_LABEL'),
       value: '',
-      placeholder: 'Ex: champs="bf_nom" ordre="desc"'
+      placeholder: 'Ex: champs="bf_nom" order="desc"'
     },
     add_entry_btn_label: {
       label: _t('BAZ_FORM_EDIT_LISTEFICHES_PARAMS_ADD_ENTRY_BTN_LABEL'),

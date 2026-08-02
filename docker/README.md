@@ -8,6 +8,17 @@ The dev docker-compose contain the following images :
 
 - yeswiki-app: This image have only a php-fpm process and mount the directory in the container to be able to develop locally
 - yeswiki-db : a mysql (mariadb seems to not work properly currently) accessible from yeswiki with domaine name `yeswiki-db`
+- yeswiki-pg : a postgresql, reachable as `yeswiki-pg` (user / password / database all `yeswiki`).
+  Nothing points at it unless you ask -- the app installs against mysql by default. To run the
+  browser suite against postgresql instead:
+  ```
+  docker exec -e YESWIKI_TEST_DRIVER=pgsql yeswiki bash -c 'cd /var/www/html && bash tests/e2e/reset.sh'
+  docker exec yeswiki bash -lc 'cd /var/www/html && source /home/yeswiki/.nvm/nvm.sh && nvm use 22 \
+    && export PLAYWRIGHT_BROWSERS_PATH=0 YESWIKI_BASE_URL=http://yeswiki-web YESWIKI_TEST_DRIVER=pgsql \
+    && npx playwright test'
+  ```
+  It exists because the search index (ADR-0015) commits to three dialects, and a dialect nothing
+  can run is a dialect nobody tests -- the first run of it found four defects.
 - yeswiki-web : a nginx reverse-proxy. configuration can be found on nginx.conf file. Accessible on `localhost:8085`
 - myadmin : phpmyadmin accessible on `localhost:8086`
 - mail : container to intercept email send by yeswiki. Webmail is accessible on `localhost:1080`.You have to set the following in `yeswiki.config.php`
@@ -82,6 +93,7 @@ docker compose down
 
 ```
 docker volume rm yeswiki-db
+docker volume rm yeswiki-pg
 ```
 
 ## updating php or yarn dependency

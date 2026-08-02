@@ -453,10 +453,47 @@ class AclService
      */
     public function updateRequestWithACL(): string
     {
+        // ACLs now live in metadata.acls, a column on the very `pages` row being filtered --
+        // no join/subquery against a separate table needed, unlike the old acls-table version
+        // this replaces. Every caller of this method selects FROM the (unaliased or
+        // consistently-aliased) pages table, so bare `metadata`/`owner` column references
+        // resolve the same way the pre-existing bare `tag`/`owner` references already did.
+        return $this->buildReadAclPredicate(
+            $this->dbService->jsonExtract('metadata', '$.acls.read'),
+            'owner',
+            true
+        );
+    }
+
+    /**
+     * The same "may the current user read this row?" predicate, over a column that already
+     * holds the *effective* read ACL as plain text rather than a JSON path into `metadata`.
+     *
+     * Ticket 18's search index denormalises the read ACL onto its own rows (ADR-0015), so
+     * it filters with this. Sharing the predicate is the point: two hand-written versions of
+     * ACL evaluation is how a wiki ends up disclosing a private page down one path and not
+     * the other.
+     *
+     * `$nullMeansDefault` is false here, unlike for `pages`: the index resolves the default
+     * at write time, so a row's stored ACL is never absent.
+     */
+    public function aclColumnPredicate(string $aclColumn, string $ownerColumn): string
+    {
+        return $this->buildReadAclPredicate($aclColumn, $ownerColumn, false);
+    }
+
+    /**
+     * @param string $readAclExpr      SQL expression yielding the row's read ACL
+     * @param string $ownerColumn      SQL expression yielding the row's owner
+     * @param bool   $nullMeansDefault whether an absent ACL falls back to `default_read_acl`
+     */
+    private function buildReadAclPredicate(string $readAclExpr, string $ownerColumn, bool $nullMeansDefault): string
+    {
         // needed ACL
         $neededACL = ['*'];
         // connected ?
         $user = $this->authenticationService->getLoggedUser();
+        $userName = '';
         if (!empty($user)) {
             $userName = $user['name'];
             $neededACL[] = '+';
@@ -469,17 +506,10 @@ class AclService
             }
         }
 
-        // ACLs now live in metadata.acls, a column on the very `pages` row being filtered --
-        // no join/subquery against a separate table needed, unlike the old acls-table version
-        // this replaces. Every caller of this method selects FROM the (unaliased or
-        // consistently-aliased) pages table, so bare `metadata`/`owner` column references
-        // resolve the same way the pre-existing bare `tag`/`owner` references already did.
-        //
         // Built as clearly-parenthesized, self-contained sub-expressions (rather than the old
         // start/end string-accumulator, which relied on an implicit-subquery paren that this
         // rewrite has no equivalent for) so the grouping is verifiable by inspection instead
         // of by manually tracing open/close counts across the method.
-        $readAclExpr = $this->dbService->jsonExtract('metadata', '$.acls.read');
 
         // "the page's read ACL, evaluated against $neededACL": at least one needed entry is
         // explicitly granted, and none of them is explicitly denied (the '!' prefix)
@@ -508,11 +538,11 @@ class AclService
         $hasExplicitMatchingAcl = "(({$readAclExpr} IS NOT NULL) AND {$matchesNeededAcl})";
         if (!empty($user)) {
             $ownerMatch = "(({$readAclExpr} LIKE '%\\%%' AND {$readAclExpr} NOT LIKE '%!\\%%')" .
-                " AND owner = '" . $this->dbService->escape($userName) . "')";
+                " AND {$ownerColumn} = '" . $this->dbService->escape($userName) . "')";
             $hasExplicitMatchingAcl = "({$hasExplicitMatchingAcl} OR {$ownerMatch})";
         }
 
-        if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
+        if ($nullMeansDefault && $this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
             // current user can display pages without an explicit read acl too
             $request = "(({$readAclExpr} IS NULL) OR {$hasExplicitMatchingAcl})";
         } else {

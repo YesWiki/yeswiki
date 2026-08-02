@@ -52,7 +52,7 @@ class PageBodyTest extends TestCase
      */
     public function testDecodeOfMarkupStartingWithABraceIsStillMarkup(): void
     {
-        $markup = '{{bazarliste id="1"}}';
+        $markup = '{{entrylist id="1"}}';
 
         $this->assertSame(['content' => $markup], PageBody::decode($markup));
     }
@@ -90,7 +90,7 @@ class PageBodyTest extends TestCase
             ['a backslash', ['content' => 'C:\\Users\\path and a \\n that is not a newline']],
             ['real newlines and tabs', ['content' => "line one\nline two\n\ttabbed"]],
             ['double quotes', ['content' => 'He said "hello" to me']],
-            ['wiki action markup', ['content' => '{{bazarliste id="1" template="map"}}']],
+            ['wiki action markup', ['content' => '{{entrylist id="1" template="map"}}']],
             ['html', ['content' => '<div class="x">&amp; &lt;b&gt;</div>']],
             ['emoji', ['content' => 'ok 👍 done']],
             ['keywords list', ['content' => '', 'keywords' => ['accueil', 'mode d’emploi']]],

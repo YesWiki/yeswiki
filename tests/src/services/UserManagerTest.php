@@ -5,7 +5,6 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Throwable;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;

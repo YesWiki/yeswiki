@@ -3,7 +3,7 @@
   Documentation cna be found here https://pixelhumain.github.io/GoGoCartoJs/docs/configuration.html
   
   If you want to change something in the configuration, let's say the menu width, add a new parameter to bazarlist :
-  {{ bazarliste id="2" template="gogocarto.twig" menuwidth="500"}}
+  {{entrylist id="2" template="gogocarto.twig" menuwidth="500"}}
   Then you may to format or set defaults this new menuwidth parameter in BazarCarto::formatArguments
   So it will be available in this template with the code param['menuwidth']
 
@@ -20,7 +20,7 @@
   });
 
   Alternatively, for developers, they could provide a json configuration object url inside the "jsonconfurl" attribute, for example
-  {{ bazarliste id="2" template="gogocarto.twig" jsonconf="http://mysite/myCartoConf.json" }}
+  {{entrylist id="2" template="gogocarto.twig" jsonconf="http://mysite/myCartoConf.json" }}
   This jsonconf will be merged with the template configuration (providing data, taxonomy etc...)
 
   TODO
@@ -30,7 +30,7 @@
 {{ include_css('styles/vendor/gogocarto/gogocarto.min.css') }}
 
 {% if filters is not empty %}
-  <div id="gogo-map{{ params.nbbazarliste }}"
+  <div id="gogo-map{{ params.listindex }}"
           class="no-dblclick"
           style="width:{{ params.width }}; height:{{ params.height }}"></div>
 {% else %}
@@ -39,14 +39,14 @@
 
 <script>
   // wiki data to display
-  var data = {{ fiches|json_encode|raw }};
+  var data = {{ entries|json_encode|raw }};
   // All param attached in bazarlist action
   var param = {{ params|json_encode|raw }};
   // facettes filters
   var filters = {{ filters|json_encode|raw }};
 
   // ticket 16: ywInitEach, not DOMContentLoaded -- see admin-content-action.twig
-  ywInitEach("#gogo-map{{ params.nbbazarliste }}", function() {
+  ywInitEach("#gogo-map{{ params.listindex }}", function() {
     // ----------------------------------------------------
     // Transform wiki data to better fit gogocarto ontology.
     // ----------------------------------------------------
@@ -193,7 +193,7 @@
       // When everything is ready, starts gogocarto
       interval = setInterval(function() {
         if (typeof goGoCarto != "undefined" && confReady) {
-          carto = goGoCarto('#gogo-map{{ params.nbbazarliste }}', gogoConf)
+          carto = goGoCarto('#gogo-map{{ params.listindex }}', gogoConf)
           clearInterval(interval);
         }
       },100)

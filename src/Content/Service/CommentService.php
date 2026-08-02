@@ -224,7 +224,11 @@ class CommentService implements EventSubscriberInterface
         }
         // remove current comment to prevent infinite loop
         $query .= "AND tag != '{$this->dbService->escape($tag)}' ";
-        $query .= "AND latest = 'Y' " . 'ORDER BY substring(tag, 8) + 0';
+        // comments are tagged `comment<epoch>`, so they sort by the number after the prefix.
+        // `+ 0` used to do the coercion, which is a MySQL-ism: PostgreSQL answers "operator
+        // does not exist: text + integer" and the page dies with it.
+        $numericTag = $this->dbService->dialect()->castToInteger('substring(tag, 8)');
+        $query .= "AND latest = 'Y' ORDER BY {$numericTag}";
         $comments = array_filter($this->dbService->loadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });

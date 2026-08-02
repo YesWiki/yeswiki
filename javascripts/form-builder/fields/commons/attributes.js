@@ -113,7 +113,7 @@ export function enumEditorSetup(api) {
     const listId = api.getValue('linked_object')
     openListEditorModal(
       _t('LIST_UPDATE_TITLE'),
-      wiki.url(`?BazaR/iframe&vue=listes&action=modif_liste&voirmenu=0&onsubmit=postmessage&idliste=${listId}`),
+      wiki.url(`?BazaR/iframe&view=listes&action=modif_liste&showmenu=0&onsubmit=postmessage&listid=${listId}`),
       'list_updated',
       (data) => {
         // update the options (list name might have changed)
@@ -126,7 +126,7 @@ export function enumEditorSetup(api) {
   const createButton = listActionButton('fa-plus', () => {
     openListEditorModal(
       _t('LIST_CREATE_TITLE'),
-      wiki.url('?BazaR/iframe&vue=listes&action=saisir_liste&voirmenu=0&onsubmit=postmessage'),
+      wiki.url('?BazaR/iframe&view=listes&action=saisir_liste&showmenu=0&onsubmit=postmessage'),
       'list_created',
       (data) => {
         formAndListIds.lists[data.id] = data.title

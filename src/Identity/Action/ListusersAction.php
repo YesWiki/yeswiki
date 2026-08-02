@@ -1,8 +1,9 @@
 <?php
 
 namespace YesWiki\Identity\Action;
-use YesWiki\Identity\Service\UserManager;
+
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class ListusersAction extends YesWikiAction implements RegisteredAction

@@ -1,10 +1,10 @@
 {% set modal = params.modal|default('') is empty ? 'non' : params.modal %}
 {% if modal == '1' or modal == 1 %}{% set modal = 'modalbox' %}{% endif %}
 {% set type = params.type|default('') is empty ? 'complexe' : params.type %}
-{% set nbcol = params.nbcol|default('') is empty ? 4 : params.nbcol %}
+{% set nbcol = params.columns|default('') is empty ? 4 : params.columns %}
 {% set rowcol = {1: 12, 2: 6, 3: 4, 4: 3, 6: 2}[nbcol]|default('') %}
 {% set classes = ['Red', 'Blue-Grey', 'Pink', 'Purple', 'Deep-Purple', 'Indigo', 'Blue', 'Light-Blue', 'Cyan', 'Teal', 'Green', 'Light-Green', 'Lime', 'Yellow', 'Amber', 'Orange', 'Deep-Orange', 'Brown', 'Grey'] %}
-{{ info_res|raw }}
+{{ resultsInfo|raw }}
 {% set mcjs %}
 document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
   action.addEventListener('click', function() {
@@ -33,23 +33,23 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
 });
 {% endset %}
 {% if type != 'simple' %}
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
   <div class="row">
-  {% for fiche in fiches %}
-        <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ fiche.html_data|raw }}">
-        {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
+  {% for entry in entries %}
+        <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ entry.html_data|raw }}">
+        {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), entry, '') %}
         <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
           <h2>
-                      <span>{{ fiche.title|raw }}</span>
+                      <span>{{ entry.title|raw }}</span>
                       <strong>
                           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
-                          {{ fiche.bf_baseline|default('')|raw }}
+                          {{ entry.bf_baseline|default('')|raw }}
                       </strong>
                   </h2>
           <div class="mc-content">
-            {% if fiche.imagebf_image|default('') != '' %}
+            {% if entry.imagebf_image|default('') != '' %}
               <div class="img-container">
-                <img loading="lazy" class="img-responsive" src="{{ resizedImage(fiche.imagebf_image, 800, 800, 'crop') }}" alt="">
+                <img loading="lazy" class="img-responsive" src="{{ resizedImage(entry.imagebf_image, 800, 800, 'crop') }}" alt="">
               </div>
             {% else %}
               <div class="img-container">
@@ -59,7 +59,7 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
             {% endif %}
 
             <div class="mc-description">
-              {{ format(fiche.bf_description|default(''))|raw }}
+              {{ format(entry.bf_description|default(''))|raw }}
             </div>
           </div>
           <a class="mc-btn-action">
@@ -67,13 +67,13 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
           </a>
           <div class="mc-footer">
             <h4 class="hide">En savoir plus</h4>
-            <a href="{{ url({tag: fiche.tag}) }}">{{ icon('info-circle') }}</a>
+            <a href="{{ url({tag: entry.tag}) }}">{{ icon('info-circle') }}</a>
             <div class="pull-right">
               {% if hasAccess('write') %}
-              <a href="{{ url({tag: fiche.tag, handler: 'edit'}) }}">{{ icon('edit') }}</a>
+              <a href="{{ url({tag: entry.tag, handler: 'edit'}) }}">{{ icon('edit') }}</a>
               {% endif %}
               {% if userIsAdmin() or userIsOwner() %}
-              <a href="{{ url({tag: fiche.tag, handler: 'deletepage'}) }}" class="modalbox">{{ icon('trash') }}</a>
+              <a href="{{ url({tag: entry.tag, handler: 'deletepage'}) }}" class="modalbox">{{ icon('trash') }}</a>
               {% endif %}
             </div>
           </div>
@@ -88,26 +88,26 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
 {% endif %}
 
 {% if type == 'simple' %}
-{% if fiches|length > 0 %}
+{% if entries|length > 0 %}
 <div class="row">
-{% for fiche in fiches %}
+{% for entry in entries %}
   <style>
   .modal-header {
       display:none;
   }
   </style>
 
-    <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ fiche.html_data|raw }}">
-      <a class="{{ modal }}" title="{{ fiche.title }}" href="{{ url({tag: fiche.tag}) }}">
-      {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
+    <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ entry.html_data|raw }}">
+      <a class="{{ modal }}" title="{{ entry.title }}" href="{{ url({tag: entry.tag}) }}">
+      {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), entry, '') %}
       <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
      <h2>
-                    <span>{{ fiche.title|raw }} </span>
+                    <span>{{ entry.title|raw }} </span>
         </h2>
         <div class="mc-content">
-          {% if fiche.imagebf_image|default('') != '' %}
+          {% if entry.imagebf_image|default('') != '' %}
             <div class="img-container">
-              <img loading="lazy" class="img-responsive" src="{{ resizedImage(fiche.imagebf_image, 800, 800, 'crop') }}" alt="">
+              <img loading="lazy" class="img-responsive" src="{{ resizedImage(entry.imagebf_image, 800, 800, 'crop') }}" alt="">
             </div>
           {% else %}
             <div class="img-container">

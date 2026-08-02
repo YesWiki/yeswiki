@@ -1,6 +1,8 @@
 volumes:
   yeswiki-db:
     name: yeswiki-db
+  yeswiki-pg:
+    name: yeswiki-pg
 
 services:
     yeswiki-app:
@@ -15,6 +17,7 @@ services:
           - ..:/var/www/html
         depends_on:
           - yeswiki-db
+          - yeswiki-pg
         env_file: ./yeswiki.secrets
         user: "${UID:-1000}:${UID:-1000}"
         command: /var/www/html/docker/entrypoint.sh
@@ -25,6 +28,22 @@ services:
         volumes:
           - yeswiki-db:/var/lib/mysql
         env_file: ./yeswiki.secrets
+
+    # ADR-0015 commits the search index to all three dialects, and PostgreSQL's -- a
+    # generated tsvector with a GIN index -- is the one nothing had ever executed. It gets a
+    # service so that "supported" and "tested" can mean the same thing:
+    #   YESWIKI_TEST_DRIVER=pgsql bash tests/e2e/reset.sh && npx playwright test
+    # It is additive: nothing points at it unless a run asks for it, so the MySQL default is
+    # untouched.
+    yeswiki-pg:
+        image: postgres:16-alpine
+        container_name: yeswiki-pg
+        volumes:
+          - yeswiki-pg:/var/lib/postgresql/data
+        environment:
+          POSTGRES_USER: yeswiki
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: yeswiki
 
     yeswiki-web:
         image: nginx:alpine

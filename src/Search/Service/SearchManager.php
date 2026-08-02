@@ -602,7 +602,7 @@ class SearchManager
                 'formsIds' => [], // Types de fiches (par ID de formulaire)
                 'user' => '', // N'affiche que les fiches d'un utilisateur
                 'minDate' => '', // Date minimale des fiches
-                'correspondance' => '',
+                'fieldmapping' => '',
             ],
             $params,
         );
@@ -1143,7 +1143,7 @@ class SearchManager
             $filteredPage = (!$this->aclService->isAdmin() && $useGuard)
                 ? $this->container->get(Guard::class)->checkAcls($page, $page['tag'])
                 : $page;
-            $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance'] ?? '');
+            $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['fieldmapping'] ?? '');
             $data['-is-external-'] = '0';
             $searchResults[$data['tag']] = $data;
         }
@@ -1376,14 +1376,14 @@ class SearchManager
             $vParameters[] = 'searchfields=' . $vSearchFields;
         }
 
-        if (isset($pParameters['correspondance'])) {
-            $vCorrespondances = $pParameters['correspondance'];
+        if (isset($pParameters['fieldmapping'])) {
+            $vFieldMappings = $pParameters['fieldmapping'];
 
-            $vParameters[] = 'correspondance=' . urlencode(is_array($vCorrespondances)
-                    ? implode(',', array_map(function ($pName) use ($vCorrespondances) {
-                        return $pName . '=' . trim($vCorrespondances[$pName]);
-                    }, array_keys($vCorrespondances)))
-                    : $vCorrespondances);
+            $vParameters[] = 'fieldmapping=' . urlencode(is_array($vFieldMappings)
+                    ? implode(',', array_map(function ($pName) use ($vFieldMappings) {
+                        return $pName . '=' . trim($vFieldMappings[$pName]);
+                    }, array_keys($vFieldMappings)))
+                    : $vFieldMappings);
         }
 
         if (isset($pParameters['datefilter'])) {
@@ -1398,12 +1398,12 @@ class SearchManager
             $vParameters[] = 'period=' . trim($pParameters['period']);
         }
 
-        if (isset($pParameters['ordre'])) {
-            $vParameters[] = 'ordre=' . trim($pParameters['ordre']);
+        if (isset($pParameters['order'])) {
+            $vParameters[] = 'order=' . trim($pParameters['order']);
         }
 
-        if (isset($pParameters['champ'])) {
-            $vParameters[] = 'champ=' . trim($pParameters['champ']);
+        if (isset($pParameters['field'])) {
+            $vParameters[] = 'field=' . trim($pParameters['field']);
         }
 
         return implode('&', array_filter($vParameters, function ($pParameter) {

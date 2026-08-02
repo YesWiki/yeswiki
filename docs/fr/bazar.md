@@ -598,7 +598,7 @@ l'accordion après les champs concernés avec`</div></div></div></div>`
 Cette fonctionnalité est utile quand il y a une liste de personne dans le
 formulaire et que les personnes doivent s'ajouter dans la liste avant de pouvoir
 remplir le formulaire exemple =>
-<https://pimp-ta-balade.be/?BazaR&vue=saisir&action=saisir_fiche&id=7>
+<https://pimp-ta-balade.be/?BazaR&view=saisir&action=saisir_fiche&id=7>
 Figurez-vous déjà dans la liste ? (ci-dessous).
 
 ```html
@@ -836,9 +836,9 @@ fiches d'un formulaire.
 !> Ce qui suit ne peut à ce jour pas être fait avec l'interface graphique.
 
 Ceci se fait dans le code de la page en ajoutant le paramètre `query` à
-l'objet`{{bazarliste ...}}`. Ce paramètre sera suivi d'une condition.
+l'objet`{{entrylist ...}}`. Ce paramètre sera suivi d'une condition.
 
-> Par exemple dans le code `{{bazarliste id=2 query="bf_departement=29"}}`
+> Par exemple dans le code `{{entrylist id=2 query="bf_departement=29"}}`
 > Pourrait se lire : Afficher les fiches du formulaire "2" pour lesquelles la
 > valeur du champ "bf_departement" est égal à 29. Afficher uniquement les fiches
 > qui concernent le Finistère (29).
@@ -920,14 +920,14 @@ l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 ressources au hasar
 
 Il est possible d'afficher les données issues d'un YesWiki distant.
 
-1. Définir l'action `{{bazarliste id="1" template="map" ...}}` en utilisant le
+1. Définir l'action `{{entrylist id="1" template="map" ...}}` en utilisant le
    bouton **composants** "Afficher les données d'un formulaire" lors de la
    modification d'une page
 2. Identifier l'adresse des ""YesWiki"" distants et les formulaires recherchés.
    Ex: sur le formulaire 4 sur wiki <https://example.com> et le formulaire 5 sur
    le wiki <https://example.com/trombi2/>
-3. remplacer l'identifiant du formulaire dans l'action bazarliste id par
-   `{{bazarliste id="1,https://example.com|4,https://example.com/trombi2|5"}}`
+3. remplacer l'identifiant du formulaire dans l'action entrylist id par
+   `{{entrylist id="1,https://example.com|4,https://example.com/trombi2|5"}}`
 4. Sauver la page et enjoy
 
 ##### Explications
@@ -936,7 +936,7 @@ Il est possible d'afficher les données issues d'un YesWiki distant.
   nous avons les formulaires 1 et 6
 - un formulaire distant est représenté par son url suivi de `|` suivi du numéro
   de son formulaire. Dans l'exemple, nous avons deux formulaires distants.
-- plusieurs formulaires peuvent être appelés depuis une même action bazarliste,
+- plusieurs formulaires peuvent être appelés depuis une même action entrylist,
   chaque formulaire est séparé par une virgule
 - S'il faut plusieurs formulaires distants d'un même YesWiki, il faut à chaque
   fois répéter l'url devant `|`
@@ -1015,7 +1015,7 @@ https://www.example.com/?BazaR/json&demand=forms&id=y***image***...%%
 Dans l'exemple:
 
 - le formulaire concerné est `https://www.example.com|z`
-- la formule entrée `{{bazarliste id="https://www.example.com|z->y"}}`
+- la formule entrée `{{entrylist id="https://www.example.com|z->y"}}`
 
 //Si dans votre formulaire local vous voulez un comportement correct pour les
 liens, inspirez-vous des

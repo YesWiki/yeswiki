@@ -92,17 +92,17 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
             if (!$result) {
                 return [];
             }
-            $data = $result->fetchAll(\PDO::FETCH_ASSOC);
+            $data = $result->fetchAll(PDO::FETCH_ASSOC);
             if ($data === false) {
                 return [];
             }
+
             return $data;
-        } else {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable($tableName)} LIKE '$columnName';");
-            $data = $result ? $result->fetch(\PDO::FETCH_ASSOC) : false;
-            if ($data === false) {
-                throw new Exception("tables `$tableName` not verified because error while getting `$columnName` column !", 1);
-            }
+        }
+        $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable($tableName)} LIKE '$columnName';");
+        $data = $result ? $result->fetch(PDO::FETCH_ASSOC) : false;
+        if ($data === false) {
+            throw new Exception("tables `$tableName` not verified because error while getting `$columnName` column !", 1);
         }
 
         return $data;

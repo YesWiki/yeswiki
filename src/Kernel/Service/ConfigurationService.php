@@ -27,7 +27,29 @@ class ConfigurationService
         }
         $content = $this->getContentToWrite($config, $arrayName);
 
-        return file_put_contents($file, $content) !== false;
+        if (file_put_contents($file, $content) === false) {
+            return false;
+        }
+
+        // The configuration is a PHP file, so opcache caches its *compiled* form and
+        // revalidates by comparing mtime for equality. A request that has already included
+        // the file and then rewrites it in the same second produces a new mtime equal to
+        // the cached one -- so opcache decides nothing changed and keeps serving the old
+        // array indefinitely, not just until the next revalidate window.
+        //
+        // That is what made every admin setting look like it did nothing: md5_file() read
+        // the new bytes (so the container cache correctly saw itself as stale and rebuilt),
+        // while the include feeding that rebuild returned the stale compiled values, which
+        // were then baked into the fresh container and blessed with the new hash.
+        //
+        // Same class of trap as ConfigFileHashResource guards against for FileResource,
+        // one layer down. Invalidating explicitly is the standard remedy for treating a
+        // PHP file as a data store.
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($file, true);
+        }
+
+        return true;
     }
 
     /**

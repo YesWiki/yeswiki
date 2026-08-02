@@ -12,10 +12,10 @@ use YesWiki\Kernel\Service\UrlFormatter;
 
 class TagCloudAction extends YesWikiAction implements RegisteredAction
 {
-    /** `{{nuagetag}}` in page content -- stated, not inferred from the filename. */
+    /** `{{tagcloud}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
-        return 'nuagetag';
+        return 'tagcloud';
     }
 
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
@@ -24,13 +24,13 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
     {
         $class = $args['class'] ?? '';
         $tags = trim($args['tags'] ?? '');
-        $nbclasses = $args['nbclasses'] ?? '';
+        $classcount = $args['classcount'] ?? '';
 
         return [
             'class' => empty($class) ? '' : ' ' . $class,
             'tags' => empty($tags) ? [] : array_filter(array_map('trim', explode(' ', $tags)), 'strlen'),
-            'nbclasses' => empty($nbclasses) ? 6 : (int)$nbclasses,
-            'tri' => $args['tri'] ?? '',
+            'classcount' => empty($classcount) ? 6 : (int)$classcount,
+            'sort' => $args['sort'] ?? '',
         ];
     }
 
@@ -54,7 +54,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
             }
         }
         // permettra de fixer une classe pour la taille du tag
-        $mult = $max / $this->arguments['nbclasses'];
+        $mult = $max / $this->arguments['classcount'];
         if ($mult < 1) {
             $mult = 1;
         }
@@ -106,7 +106,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
                 $output .= '<div class="no-dblclick boite_nuage' . $this->arguments['class'] . '">
 			<ul class="nuage">' . "\n";
                 // on regarde s'il faut trier alphabetiquement
-                if ($this->arguments['tri'] === 'alpha') {
+                if ($this->arguments['sort'] === 'alpha') {
                 } else {
                     shuffle($tab_tag);
                 }

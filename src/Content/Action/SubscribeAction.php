@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * `{{abonnement}}` -- converted from the procedural actions/abonnement.php by ticket 06.
+ * `{{subscribe}}` -- converted from the procedural actions/abonnement.php by ticket 06.
  *
  * The body still prints rather than returning, so it runs inside an output buffer in its
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
@@ -20,7 +20,7 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
-        return 'abonnement';
+        return 'subscribe';
     }
 
     public function run(): string
@@ -79,7 +79,7 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction
             $templateVars['pageTag'] = $this->getService(PageContext::class)->getTag();
 
             // type de demande et placeholder
-            $templateVars['demand'] = 'abonnement';
+            $templateVars['demand'] = 'subscribe';
             $templateVars['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
             echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars);

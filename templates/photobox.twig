@@ -1,4 +1,4 @@
-{# template parameters (passable on the bazar/bazarliste action) #}
+{# template parameters (passable on the bazar/entrylist action) #}
 {% set thumbwidth = params.thumbwidth|default('') is empty ? 155 : params.thumbwidth %}
 {% set thumbheight = params.thumbheight|default('') is empty ? 115 : params.thumbheight %}
 {% set thumbresize = params.thumbresize|default('') is empty ? 'fit' : params.thumbresize %}
@@ -6,17 +6,17 @@
 {% set bigwidth = params.bigwidth|default('') is empty ? 1600 : params.bigwidth %}
 {% set bigheight = params.bigheight|default('') is empty ? 1200 : params.bigheight %}
 {% set bigresize = params.bigresize|default('') is empty ? 'fit' : params.bigresize %}
-{% if fiches|length > 0 %}
-{# unique per bazarliste call on the page (was the nbgalleries counter) #}
-{% set galleryId = params.nbbazarliste %}
+{% if entries|length > 0 %}
+{# unique per entrylist call on the page (was the nbgalleries counter) #}
+{% set galleryId = params.listindex %}
 {{ pager_links|raw }}
 <ul id='gallery{{ galleryId }}' class="pbgallery">
-{% for fiche in fiches %}
-    {% if fiche.imagebf_image is defined and fiche.imagebf_image != '' %}
-    <li class="bazar-entry" {{ fiche.html_data|raw }}>
-        <a class="pbgalery-link modalbox" title="{{ fiche.title }}"
-            href="{{ resizedImage(fiche.imagebf_image, bigwidth, bigheight, bigresize, '_') }}">
-            <img loading="lazy" alt="" data-pb-captionLink="{{ fiche.title }}[{{ url({tag: fiche.tag, handler: 'iframe'}) }}]" src="{{ resizedImage(fiche.imagebf_image, thumbwidth, thumbheight, thumbresize, '_') }}">
+{% for entry in entries %}
+    {% if entry.imagebf_image is defined and entry.imagebf_image != '' %}
+    <li class="bazar-entry" {{ entry.html_data|raw }}>
+        <a class="pbgalery-link modalbox" title="{{ entry.title }}"
+            href="{{ resizedImage(entry.imagebf_image, bigwidth, bigheight, bigresize, '_') }}">
+            <img loading="lazy" alt="" data-pb-captionLink="{{ entry.title }}[{{ url({tag: entry.tag, handler: 'iframe'}) }}]" src="{{ resizedImage(entry.imagebf_image, thumbwidth, thumbheight, thumbresize, '_') }}">
         </a>
     </li>
     {% endif %}

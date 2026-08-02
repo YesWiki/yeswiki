@@ -5,12 +5,12 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\SearchManager;
 
@@ -43,7 +43,8 @@ class FormManager
     protected $aclService;
     protected $cachedForms;
     protected $cacheValidatedForAll;
-    protected $attach;
+    protected AttachedFilePaths $paths;
+    protected ImageResizer $resizer;
 
     protected ContainerInterface $container;
 
@@ -74,19 +75,20 @@ class FormManager
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
         $this->hibernationService = $hibernationService;
-        $this->attach = new Attach($this->container);
+        $this->paths = $this->container->get(AttachedFilePaths::class);
+        $this->resizer = $this->container->get(ImageResizer::class);
     }
 
     protected function getBasePath()
     {
-        $basePath = $this->attach->GetUploadPath();
+        $basePath = $this->paths->uploadPath();
 
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
     protected function cleanCacheDefaultImage($prefix)
     {
-        $cache_path = $this->attach->GetCachePath();
+        $cache_path = $this->paths->cachePath();
         $cache_path = $cache_path . (substr($cache_path, -1) != '/' ? '/' : '');
         $scan_cache_files = scandir($cache_path);
         foreach ($scan_cache_files as $scan_cache_file) {
@@ -123,7 +125,7 @@ class FormManager
                     $ifp = fopen($tempFile, 'wb');
                     fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                     fclose($ifp);
-                    $this->attach->resizeImage($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
+                    $this->resizer->resize($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
                 } finally {
                     unlink($tempFile);
                 }
@@ -612,7 +614,31 @@ class FormManager
             'activitypub' => $this->buildActivitypubMetadata($data, $existingPage['metadatas']['activitypub'] ?? []),
         ]);
 
+        $this->dispatchFormEvent('form.updated', (string)$data['id'], $tag);
+
         return $saved;
+    }
+
+    /**
+     * A form is Content, so saving one already dispatches `page.updated` -- and a listener
+     * could sniff the type triple to tell which pages are forms. `form.updated` exists
+     * anyway because a form is a **schema**, and something changing a schema should say so
+     * rather than leave every listener to work it out.
+     *
+     * Ticket 18 is the first consumer: a form's template decides which fields exist, what
+     * each contributes to the search index and which Field ACL guards it, so a change here
+     * invalidates the indexed text of every entry under the form. Nothing about that is
+     * derivable from `page.updated` without re-deriving the type.
+     *
+     * Deliberately not wired to `webhooks`, which the CONTEXT decision scopes to comment and
+     * entry events.
+     */
+    private function dispatchFormEvent(string $event, string $formId, string $tag): void
+    {
+        $this->container->get(EventDispatcher::class)->yesWikiDispatch($event, [
+            'id' => $formId,
+            'data' => ['form_id' => $formId, 'tag' => $tag],
+        ]);
     }
 
     /**
@@ -739,6 +765,8 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
         unset($this->cachedForms[$id], $this->cachedForms[$tag]);
+
+        $this->dispatchFormEvent('form.deleted', (string)$id, $tag);
 
         return true;
     }

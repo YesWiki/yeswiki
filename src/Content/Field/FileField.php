@@ -5,10 +5,11 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\InputFilter;
@@ -21,12 +22,14 @@ use YesWiki\Kernel\Service\UrlFormatter;
 #[\Field(['fichier'])]
 class FileField extends BazarField
 {
+    // ticket 18: the stored filename is a UUID; ImageField and the External* variants inherit this
+    use ContributesNoSearchableText;
+
     protected $readLabel;
     protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
 
-    protected $attach;
     protected $maxSize;
     protected $authorizedExts;
 
@@ -48,7 +51,6 @@ class FileField extends BazarField
 
         $this->propertyName = $this->type . $this->name;
         $this->readLabel = empty(trim($values[self::FIELD_READ_LABEL])) ? _t('BAZ_FILEFIELD_FILE') : $values[self::FIELD_READ_LABEL];
-        $this->attach = null;
         $exts = $values[self::FIELD_AUTHORIZED_EXTS_LABEL] ?? '';
         $exts = is_string($exts) && !empty(trim($exts))
             ? explode(',', trim($exts))
@@ -81,10 +83,9 @@ class FileField extends BazarField
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
-                        $attach = $this->getAttach();
                         $rawFileName = $this->getService(InputFilter::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
                         if (!empty($rawFileName)) {
-                            $attach->fmDelete($rawFileName);
+                            $this->getService(FileBrowser::class)->moveToTrash($rawFileName);
                         }
                     } else {
                         // do not delete file if not same entry name (only remove from this entry)
@@ -241,12 +242,8 @@ class FileField extends BazarField
      */
     protected function getShortFileName(string $longFileName): string
     {
-        $attach = $this->getAttach();
-
         $fullFileName = "{$this->getBasePath()}$longFileName";
-        $fileNameInfos = file_exists($fullFileName) ? $attach->decodeLongFilename($fullFileName) : [];
-
-        unset($attach);
+        $fileNameInfos = file_exists($fullFileName) ? $this->paths()->decodeLongFilename($fullFileName) : [];
 
         $shortFileName = (empty($fileNameInfos['name']))
             ? $longFileName
@@ -285,10 +282,6 @@ class FileField extends BazarField
 
     protected function getFullFileName(string $fileName, string $tag, bool $newName = false): string
     {
-        $attach = $this->getAttach();
-        // adjust $params
-        $attach->file = $fileName;
-
         // current page
         $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
@@ -301,10 +294,9 @@ class FileField extends BazarField
             'owner' => '',
             'user' => '',
         ]);
-        $fullFileName = $attach->GetFullFilename($newName);
+        $fullFileName = $this->paths()->fullFilename($fileName, $newName);
 
         // reset params
-        unset($attach);
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
@@ -318,28 +310,20 @@ class FileField extends BazarField
      */
     protected function sanitizeFilename(string $filename): string
     {
-        $attach = $this->getAttach();
         // Remove accents and spaces
-        $sanitizedFilename = $attach->sanitizeFilename($filename);
-
-        return $sanitizedFilename;
+        return $this->getService(FileManager::class)->sanitizeFilename($filename);
     }
 
     protected function getBasePath(): string
     {
-        $attach = $this->getAttach();
-        $basePath = $attach->GetUploadPath();
+        $basePath = $this->paths()->uploadPath();
 
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
-    protected function getAttach(): Attach
+    private function paths(): AttachedFilePaths
     {
-        if (is_null($this->attach)) {
-            $this->attach = new Attach($this->services);
-        }
-
-        return $this->attach;
+        return $this->getService(AttachedFilePaths::class);
     }
 
     protected function updateEntryAfterFileDelete($entry)

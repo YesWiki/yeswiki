@@ -15,8 +15,11 @@ namespace YesWiki\Content\Entity;
  * on is that `decode()` always returns an array and `encode()` always produces a JSON
  * object, whatever the Content type.
  *
- * The column stays TEXT/LONGTEXT and holds JSON *text*: MySQL cannot build a FULLTEXT
- * index on a native JSON column, and `pages` has one on (tag, body).
+ * The column stays TEXT/LONGTEXT and holds JSON *text*. It no longer carries a FULLTEXT
+ * index -- ticket 18 moved search onto its own index table (ADR-0015) and dropped the one
+ * on `(tag, body)`, which nothing had ever queried with MATCH ... AGAINST. Whether the
+ * column should now become native JSON is ticket 19's question, and it is a field-query
+ * question only: full-text search no longer reads this column at all.
  */
 class PageBody
 {

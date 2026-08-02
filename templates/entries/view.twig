@@ -3,7 +3,7 @@
     <div class="yw-alert yw-alert--success">
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
-        <a href="{{ url({ params: { vue: 'saisir', id: form.id }}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
+        <a href="{{ url({ params: { view: 'saisir', id: form.id }}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
           {{ _t('BAZ_ADD_NEW_ENTRY') }}
         </a>
       {% endif %}

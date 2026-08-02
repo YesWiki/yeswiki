@@ -2,9 +2,9 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\ImageField;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FormManager;
@@ -23,7 +23,6 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         return 'userfavorites';
     }
 
-    protected $attach;
     protected $authenticationService;
     protected $entryManager;
     protected $favoritesManager;
@@ -47,7 +46,6 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         $this->formManager = $this->getService(FormManager::class);
         $this->pageManager = $this->getService(PageManager::class);
         $this->templateEngine = $this->getService(TemplateEngine::class);
-        $this->attach = new Attach($this->services);
 
         $user = $this->authenticationService->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];
@@ -151,8 +149,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         $this->getService(PageContext::class)->setTag($page['tag']);
         $this->getService(PageContext::class)->setPage($page);
 
-        $this->attach->file = $file;
-        $fullFileName = $this->attach->GetFullFilename();
+        $fullFileName = $this->getService(AttachedFilePaths::class)->fullFilename($file);
 
         if (substr($fullFileName, 0, strlen('files/')) == 'files/') {
             $fullFileName = substr($fullFileName, strlen('files/'));

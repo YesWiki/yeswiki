@@ -7,6 +7,9 @@ use Field;
 #[\Field(['openinghours'])]
 class OpeningHoursField extends BazarField
 {
+    // ticket 18: structured hours, queried by a filter rather than read as prose
+    use ContributesNoSearchableText;
+
     protected function renderInput($entry)
     {
         return $this->render('@core/inputs/openingHours.twig', [

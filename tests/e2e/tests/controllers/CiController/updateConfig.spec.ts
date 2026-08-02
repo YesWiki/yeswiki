@@ -9,8 +9,12 @@ test('Access should no be granted to anonymous', async({ page }) => {
 
 test('Admins should modify config', async({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  const res = await page.request.post(TARGET, { data: { wakka_name: 'New site name' } })
+  // `wakka_name` became `yeswiki_name` in this rewrite; this endpoint writes whatever
+  // key it is given verbatim, so the old name wrote a key nothing reads
+  const res = await page.request.post(TARGET, { data: { yeswiki_name: 'New site name' } })
   expect(res.status()).toBe(200)
   await page.goto('/')
-  await expect(page.locator('#yw-topnav .navbar-header .navbar-brand')).toContainText('New site name')
+  // the site name shows in the document title; the navbar brand includes the PageTitre
+  // page, so it never reflected this setting
+  await expect(page).toHaveTitle(/New site name/)
 })

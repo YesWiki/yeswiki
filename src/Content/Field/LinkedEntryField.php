@@ -71,7 +71,7 @@ class LinkedEntryField extends BazarField
         $addEntryLink = $this->getService(UrlFormatter::class)->href(
             'iframe',
             'BazaR',
-            'context=addentry&voirmenu=0&vue=saisir&' . $this->linkedId . '=' . $entry['tag'] . '&id=' . $this->name,
+            'context=addentry&showmenu=0&view=saisir&' . $this->linkedId . '=' . $entry['tag'] . '&id=' . $this->name,
             false
         );
         $emptyList = $this->isEmptyOutput($output);
@@ -99,7 +99,7 @@ class LinkedEntryField extends BazarField
         $query = $this->getQueryForLinkedLabels($entry);
         if (!empty($query)) {
             $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
-            $action = '{{bazarliste id="' . $this->name . '" query="' . $query . '" '
+            $action = '{{entrylist id="' . $this->name . '" query="' . $query . '" '
                 . ((!empty($this->limit)) ? 'nb="' . $this->limit . '" ' : '')
                 . 'template="' . (empty(trim($this->template)) ? 'liste_liens.twig' : $this->template) . '" '
                 . $this->otherParams . '}}';

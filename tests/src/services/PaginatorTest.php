@@ -5,10 +5,9 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Service\Paginator;
 
-
 /**
  * Ticket 02 replaced 1706 lines of vendored PEAR Pager with Paginator. These pin the
- * behaviour the one caller (BazarListeAction) actually relied on: the current page's
+ * behaviour the one caller (EntryListAction) actually relied on: the current page's
  * slice, PEAR "Jumping"-mode page blocks, and `pageID`-keyed links.
  */
 class PaginatorTest extends TestCase
@@ -85,7 +84,7 @@ class PaginatorTest extends TestCase
         $this->assertStringContainsString('pageID=1', $html);
         $this->assertStringContainsString('pageID=3', $html);
         // the stale pageID from the incoming query must not survive alongside the new one
-        $this->assertSame(1, substr_count($html, 'pageID'.'=2'));
+        $this->assertSame(1, substr_count($html, 'pageID=2'));
     }
 
     public function testCurrentPageIsMarkedActiveAndPrevNextAppearOnlyWhenReachable(): void

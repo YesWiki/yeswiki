@@ -2,7 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Content\Attach;
+use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -45,9 +45,7 @@ class FilemanagerAction extends YesWikiAction implements RegisteredAction
         // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
         if ($this->getService(AclService::class)->hasAccess('write')) {
-            $att = new Attach($this->services);
-            $att->doFileManagerAction();
-            unset($att);
+            echo $this->getService(FileBrowser::class)->render(true);
         } else {
             echo '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER') . '.</div>' . "\n";
         }

@@ -22,7 +22,6 @@
 
 use function Symfony\Component\String\u;
 
-use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\DateField;
@@ -30,6 +29,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Kernel\Service\HibernationService;
@@ -38,7 +38,7 @@ use YesWiki\Render\Service\TemplateEngine;
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 
 // The 24 BAZ_* action/view constants that used to live here are gone (ticket 12): 20 had
-// no reader left anywhere, and the four that did -- the `vue` URL parameter and the
+// no reader left anywhere, and the four that did -- the `view` URL parameter and the
 // listes/importer/exporter view names -- duplicated BazarAction's own class constants,
 // which is where their callers read them from now. BAZ_CHEMIN_UPLOAD above is unrelated
 // and still live.
@@ -272,11 +272,11 @@ function generateWikiName($name, $occurrence = 1)
 // tri par ordre desire
 function compareFieldsByPosition($a, $b)
 {
-    if ($GLOBALS['ordre'] == 'desc') {
-        return strcoll(mb_strtolower($b[$GLOBALS['champ']]), mb_strtolower($a[$GLOBALS['champ']]));
+    if ($GLOBALS['order'] == 'desc') {
+        return strcoll(mb_strtolower($b[$GLOBALS['field']]), mb_strtolower($a[$GLOBALS['field']]));
     }
 
-    return strcoll(mb_strtolower($a[$GLOBALS['champ']]), mb_strtolower($b[$GLOBALS['champ']]));
+    return strcoll(mb_strtolower($a[$GLOBALS['field']]), mb_strtolower($b[$GLOBALS['field']]));
 }
 
 /**
@@ -309,10 +309,10 @@ function resizeImage($image_src, $image_dest, $largeur, $hauteur, $method = 'fit
 {
     $services = $GLOBALS['yeswikiServices'];
     if (file_exists($image_src)) {
-        $attach = new Attach($services);
+        $resizer = $services->get(ImageResizer::class);
 
         // force new name
-        $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
+        $image_dest = $resizer->resizedFilename($image_src, (string)$largeur, (string)$hauteur, $method);
 
         if (!$services->get(HibernationService::class)->isWikiHibernated()
             && file_exists($image_dest)
@@ -322,7 +322,7 @@ function resizeImage($image_src, $image_dest, $largeur, $hauteur, $method = 'fit
             unlink($image_dest);
         }
         if (!file_exists($image_dest)) {
-            $result = $attach->resizeImage($image_src, $image_dest, $largeur, $hauteur, $method);
+            $result = $resizer->resize($image_src, $image_dest, $largeur, $hauteur, $method);
             if ($result != $image_dest) {
                 // do nothing : error
                 return $image_src;
@@ -430,7 +430,7 @@ function renderEntryView($inApp, $entryId, $form = '')
 }
 
 /**
- * Resolves a bazarliste display parameter (color=, icon=, ...) for one entry: when
+ * Resolves a entrylist display parameter (color=, icon=, ...) for one entry: when
  * the parameter is a value-map and a field name is given, pick the entry's matched
  * value (first match for comma-separated checkbox values), else the default.
  * Deleted by mistake in the wave-2 dead-code purge while the bazar list templates

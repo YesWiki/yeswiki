@@ -69,8 +69,11 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   KEY `idx_tag` (`tag`),
   KEY `idx_time` (`time`),
   KEY `idx_latest` (`latest`),
-  KEY `idx_comment_on` (`comment_on`),
-  FULLTEXT KEY `tag` (`tag`, `body`)
+  KEY `idx_comment_on` (`comment_on`)
+<# ticket 18: `body` used to carry a FULLTEXT index for a search that read it directly.
+   Search reads its own index table now (ADR-0015), and nothing ever queried this one with
+   MATCH ... AGAINST even before that -- all it did was amplify writes on a LONGTEXT column,
+   on every page save. Existing installs lose it in 20260802120000_CreateSearchIndex. #>
 <% endif %>
 )<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 

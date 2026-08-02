@@ -10,6 +10,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameReservedException;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -122,6 +123,14 @@ class UserApiController extends YesWikiController
                 $result = [
                     'notCreated' => [$postName],
                     'error' => str_replace('{currentName}', $postName, _t('USERSETTINGS_NAME_ALREADY_USED')),
+                ];
+            } catch (UserNameReservedException $th) {
+                // deliberately not folded into the branch above: "somebody already has that
+                // name" would send them trying variations of a name nobody can ever hold
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notCreated' => [$postName],
+                    'error' => $th->getMessage(),
                 ];
             } catch (UserEmailAlreadyUsedException $th) {
                 $code = Response::HTTP_BAD_REQUEST;

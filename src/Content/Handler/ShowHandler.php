@@ -155,7 +155,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 $output = '<body class="login-body">' . "\n"
                     . '<div class="container">' . "\n"
-                    . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}') . '>' . "\n";
+                    . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}') . '>' . "\n";
                 $output .= '<div class="yw-alert yw-alert--danger">' .
                     _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
                     '</div>' . "\n";

@@ -21,6 +21,9 @@ use YesWiki\Identity\Service\PasswordHasherFactory;
 #[\Field(['mot_de_passe'])]
 class PasswordField extends BazarField
 {
+    // ticket 18: a hash is not something anyone searches for, and matching one leaks that it is there
+    use ContributesNoSearchableText;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

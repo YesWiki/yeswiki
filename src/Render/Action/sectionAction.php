@@ -2,7 +2,7 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Content\Attach;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -94,10 +94,10 @@ class SectionAction extends YesWikiAction implements RegisteredAction
         }
 
         if (!empty($file)) {
-            $att = new Attach($this->services);
+            $paths = $this->getService(AttachedFilePaths::class);
 
             // test of image extension
-            if (!$att->isPicture($file)) {
+            if (!$paths->isPicture($file)) {
                 echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
                     . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
 
@@ -110,12 +110,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction
                 $width = 1920;
             }
 
-            // recuperation des parametres necessaires
-            $att->file = $file;
-            $att->desc = 'background image ' . $file;
-            $att->height = $height;
-            $att->width = $width;
-            $fullFilename = $att->GetFullFilename();
+            $fullFilename = $paths->fullFilename($file);
         }
 
         // container class
@@ -163,8 +158,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction
             }
             // test d'existance du fichier
             if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
-                $att->showFileNotExits();
-                // return;
+                echo '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . ' (' . htmlspecialchars($file) . ')</div>';
             }
         } else {
             echo $this->generate_error_msg('section');

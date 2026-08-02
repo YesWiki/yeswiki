@@ -20,7 +20,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         return 'bazar';
     }
 
-    public const URL_VIEW_PARAM = 'vue';
+    public const URL_VIEW_PARAM = 'view';
     public const URL_ACTION_PARAM = 'action';
 
     // Premier niveau d'action : pour toutes les fiches
@@ -106,11 +106,11 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                 return $arg[self::URL_VIEW_PARAM] ?? self::VIEW_DEFAULT;
             }),
             // afficher le menu de vues bazar ?
-            'voirmenu' => $this->sanitizedGet('voirmenu', function () use ($arg) {
-                return $arg['voirmenu'] ?? $this->params->get('baz_menu');
+            'showmenu' => $this->sanitizedGet('showmenu', function () use ($arg) {
+                return $arg['showmenu'] ?? $this->params->get('baz_menu');
             }),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $vIDs,
+            'id' => $vIDs,
             // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $redirecturl,
         ];
@@ -149,8 +149,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         // prints lands wherever the output buffer happens to be rather than where it was
         // called from, which is how bazar's own menu came out above the title of the page
         // that called it.
-        $menu = $this->arguments['voirmenu'] === '0' ? '' : $this->render('@core/menu.twig', [
-            'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
+        $menu = $this->arguments['showmenu'] === '0' ? '' : $this->render('@core/menu.twig', [
+            'menuItems' => array_map('trim', explode(',', $this->arguments['showmenu'])),
             'view' => $view,
         ]);
 
@@ -169,7 +169,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                 }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($req->get('form_id') ?? $req->get('id') ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
+                        return $entryController->create($req->get('form_id') ?? $req->get('id') ?? $this->arguments['id']['locals'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($req->get('tag'));
                     case self::ACTION_ENTRY_DELETE:
@@ -182,12 +182,12 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                     case self::ACTION_CHOOSE_FORM:
                         return $entryController->selectForm();
                     default:
-                        if (!empty($this->arguments['idtypeannonce']['locals'])) {
-                            if (count($this->arguments['idtypeannonce']['locals']) > 1) {
-                                return $entryController->selectForm($this->arguments['idtypeannonce']['locals']);
+                        if (!empty($this->arguments['id']['locals'])) {
+                            if (count($this->arguments['id']['locals']) > 1) {
+                                return $entryController->selectForm($this->arguments['id']['locals']);
                             }
 
-                            return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
+                            return $entryController->create($this->arguments['id']['locals'][0], $this->arguments['redirecturl']);
                         }
 
                         return $entryController->selectForm();
@@ -206,13 +206,13 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->update($req->query->get('idformulaire'));
+                        return $formController->update($req->query->get('formid'));
                     case self::ACTION_FORM_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->delete($req->query->get('idformulaire'));
+                        return $formController->delete($req->query->get('formid'));
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:
                         if ($this->isWikiHibernated()) {
@@ -227,13 +227,13 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->empty($req->query->get('idformulaire'));
+                        return $formController->empty($req->query->get('formid'));
                     case self::ACTION_FORM_CLONE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->clone($req->query->get('idformulaire'));
+                        return $formController->clone($req->query->get('formid'));
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }
@@ -241,21 +241,21 @@ class BazarAction extends YesWikiAction implements RegisteredAction
             case self::VIEW_SUBSCRIPTIONS:
                 switch ($action) {
                     case self::ACTION_SUBSCRIPTION_LIST:
-                        return $formController->manageAbonnements($req->query->get('idformulaire'));
+                        return $formController->manageAbonnements($req->query->get('formid'));
                     case self::ACTION_SUBSCRIPTION_ADD:
                         if ($req->query->get('type') === 'following') {
-                            return $formController->addFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
+                            return $formController->addFollowing($req->query->get('formid'), $req->query->get('actor'));
                         }
                         // no break
                     case self::ACTION_SUBSCRIPTION_REMOVE:
                         if ($req->query->get('type') === 'followers') {
-                            return $formController->removeFollower($req->query->get('idformulaire'), $req->query->get('actor'));
+                            return $formController->removeFollower($req->query->get('formid'), $req->query->get('actor'));
                         }
 
-                        return $formController->removeFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
+                        return $formController->removeFollowing($req->query->get('formid'), $req->query->get('actor'));
 
                     case self::ACTION_ABONNEMENT_SYNC:
-                        return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
+                        return $formController->syncActorPosts($req->query->get('formid'), $req->query->get('actor'));
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }
@@ -273,21 +273,21 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $listController->update($req->query->get('idliste'));
+                        return $listController->update($req->query->get('listid'));
                     case self::ACTION_LIST_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $listController->delete($req->query->get('idliste'));
+                        return $listController->delete($req->query->get('listid'));
                     default:
                         return $listController->displayAll();
                 }
                 // no break
             case self::VIEW_IMPORT:
-                return $this->callAction('bazarimport', $this->arguments);
+                return $this->callAction('entryimport', $this->arguments);
             case self::VIEW_EXPORT:
-                return $this->callAction('bazarexport', $this->arguments);
+                return $this->callAction('entryexport', $this->arguments);
             case self::VIEW_SEARCH:
             case self::VIEW_DEFAULT:
             default:
@@ -298,7 +298,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                     default:
                         $this->arguments['search'] = true;
 
-                        return $this->callAction('bazarliste', array_merge($this->arguments, ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']]));
+                        return $this->callAction('entrylist', array_merge($this->arguments, ['id' => $this->arguments['id']['locals']]));
                 }
         }
     }

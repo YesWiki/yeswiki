@@ -19,13 +19,13 @@
 		<button class="yw-panel__heading yw-collapse-toggle" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="false" aria-controls="collapseThemes">
 			<h2 class="yw-panel__title">Thèmes
 				{% if nbMaj > 0 %}
-					{% set alerte = '' %}
+					{% set alert = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = _t('AU_SEVERAL_THEMES_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
+						{% set alert = _t('AU_SEVERAL_THEMES_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
 					{% else %}
-						{% set alerte = _t('AU_ONE_THEME_UPDATE') %}
+						{% set alert = _t('AU_ONE_THEME_UPDATE') %}
 					{% endif %}
-					<span class="alert-msg" style="float: right;">{{alerte}}</span>
+					<span class="alert-msg" style="float: right;">{{alert}}</span>
 				{% endif %}
 			</h2>
 		</button>
@@ -51,13 +51,13 @@
 		<button class="yw-panel__heading yw-collapse-toggle" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
 			<h2 class="yw-panel__title">Tools (extensions)
 				{% if nbMaj > 0 %}
-					{% set alerte = '' %}
+					{% set alert = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = _t('AU_SEVERAL_TOOLS_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
+						{% set alert = _t('AU_SEVERAL_TOOLS_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
 					{% else %}
-						{% set alerte = _t('AU_ONE_TOOL_UPDATE') %}
+						{% set alert = _t('AU_ONE_TOOL_UPDATE') %}
 					{% endif %}
-					<span style="float: right;">{{alerte}}</span>
+					<span style="float: right;">{{alert}}</span>
 				{% endif %}
 			</h2>
 		</button>

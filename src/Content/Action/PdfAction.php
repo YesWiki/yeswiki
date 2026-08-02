@@ -1,13 +1,14 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * Action to display a pdf in an embedded reader.
  *
  * @param url  required The url of the pdf file. The url has to be from the same origin than the wiki (same schema, same host & same port)
  * @param ratio shape for the container : possible values empty (default), 'portrait' - 'paysage' - 'carre'
- * @param largeurmax  the maximum wanted width ; number without "px"
- * @param hauteurmax  the maximum wanted heigth ; number without "px"
+ * @param maxwidth  the maximum wanted width ; number without "px"
+ * @param maxheight  the maximum wanted heigth ; number without "px"
  * @param class class add class to the container : use "pull-right" and "pull-left" for position
  *
  * @category YesWiki
@@ -35,8 +36,8 @@ class PdfAction extends YesWikiAction implements RegisteredAction
         return [
             'url' => $arg['url'] ?? '',
             'ratio' => $arg['ratio'] ?? '',
-            'largeurmax' => $arg['largeurmax'] ?? '',
-            'hauteurmax' => $arg['hauteurmax'] ?? '',
+            'maxwidth' => $arg['maxwidth'] ?? '',
+            'maxheight' => $arg['maxheight'] ?? '',
             'class' => str_replace('attached_file', '', $arg['class'] ?? ''), // to prevent errors
         ];
     }
@@ -85,8 +86,8 @@ class PdfAction extends YesWikiAction implements RegisteredAction
         }
 
         // size
-        $maxWidth = $this->arguments['largeurmax'];
-        $maxHeight = $this->arguments['hauteurmax'];
+        $maxWidth = $this->arguments['maxwidth'];
+        $maxHeight = $this->arguments['maxheight'];
         $manageSize = false;
         if (!empty($maxWidth) && is_numeric($maxWidth)) {
             $manageSize = true;

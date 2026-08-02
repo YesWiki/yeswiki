@@ -1,41 +1,41 @@
 {% set premier = params.header|default('true') in ['true', '1'] or params.header|default('true') == 1 %}
 {% set showauthor = params.show_author|default('') == '1' %}
 {% set showdate = params.show_date|default('') == '1' %}
-{% set nbcols = params.nbcols|default('') %}
-{% set nbcols = nbcols in ['1', '2', '3', '4'] ? nbcols : 1 %}
+{% set columns = params.columns|default('') %}
+{% set columns = columns in ['1', '2', '3', '4'] ? columns : 1 %}
 {% import "@core/bazar/entry-decoration-macro.twig" as decoration %}
-{% if fiches|length > 0 %}
-<div class="cols{{ nbcols }}">
-    {% for fiche in fiches %}
-    {% set soustitre = (fiche.soustitre is defined and fiche.soustitre is not empty)
-        ? format(fiche.soustitre)|striptags('<br>')|nl2br : '' %}
+{% if entries|length > 0 %}
+<div class="cols{{ columns }}">
+    {% for entry in entries %}
+    {% set soustitre = (entry.soustitre is defined and entry.soustitre is not empty)
+        ? format(entry.soustitre)|striptags('<br>')|nl2br : '' %}
 	    {% if premier %}{% set premier = false %}
-		    <div class="well bazar-entry" {{ fiche.html_data|raw }}>
-				{% if fiche.imagebf_image is defined and fiche.imagebf_image is not empty and (fileExists('files/' ~ fiche.imagebf_image) or fiche['external-data'] is defined) %}
-					<a class="pull-right" style="margin:0 0 1em 1em;" href="{{ fiche.url|raw }}">
-					<img loading="lazy" class="img-blog" alt="{{ fiche.title|striptags }}"
-						src="{{ fiche['external-data'] is defined
-						? fiche['external-data'].baseUrl ~ 'cache/image_400_300_' ~ fiche.imagebf_image
-						: resizedImage(fiche.imagebf_image, 400, 300, 'crop', '_') }}" {{ fiche['external-data'] is defined
-						? 'onerror="this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ '\'"style="max-width:400px;max-height:300px;"'
+		    <div class="well bazar-entry" {{ entry.html_data|raw }}>
+				{% if entry.imagebf_image is defined and entry.imagebf_image is not empty and (fileExists('files/' ~ entry.imagebf_image) or entry['external-data'] is defined) %}
+					<a class="pull-right" style="margin:0 0 1em 1em;" href="{{ entry.url|raw }}">
+					<img loading="lazy" class="img-blog" alt="{{ entry.title|striptags }}"
+						src="{{ entry['external-data'] is defined
+						? entry['external-data'].baseUrl ~ 'cache/image_400_300_' ~ entry.imagebf_image
+						: resizedImage(entry.imagebf_image, 400, 300, 'crop', '_') }}" {{ entry['external-data'] is defined
+						? 'onerror="this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ '\'"style="max-width:400px;max-height:300px;"'
 						: '' }}>
 					</a>
 				{% endif %}	  
 				<h2 style="margin-top:0;margin-bottom:.25em;">
-					<a href="{{ fiche.url|raw }}">
-						{{ fiche.title|raw }}
+					<a href="{{ entry.url|raw }}">
+						{{ entry.title|raw }}
 					</a>
 				</h2>
 				{% if showdate %}
 				<small>
-					<a href="{{ fiche.url|raw }}/revisions">
+					<a href="{{ entry.url|raw }}/revisions">
 						<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>
 					</a>
-					&nbsp;{{ fiche.updated_at|date('d.m.Y') }}
+					&nbsp;{{ entry.updated_at|date('d.m.Y') }}
 				</small>
 				{% endif %}
 				{% if showauthor %}
-					<small>par {% if fiche['external-data'] is defined %}<a href="{{ fiche['external-data'].baseUrl }}?{{ fiche.owner }}">{{ fiche.owner }}</a>{% else %}{{ format(fiche.owner)|raw }}{% endif %}</small>
+					<small>par {% if entry['external-data'] is defined %}<a href="{{ entry['external-data'].baseUrl }}?{{ entry.owner }}">{{ entry.owner }}</a>{% else %}{{ format(entry.owner)|raw }}{% endif %}</small>
 				{% endif %}
 
         {% if soustitre is not empty %}
@@ -44,44 +44,44 @@
           </p>
         {% endif %}
 				<p class="lead">
-					<a href="{{ fiche.url|raw }}">{{ _t('BAZ_MORE_INFOS') }}...</a>
+					<a href="{{ entry.url|raw }}">{{ _t('BAZ_MORE_INFOS') }}...</a>
 				</p>
 				<div class="clearfix"></div>
 			</div>
 		{% else %}
-			<div class="article bazar-entry" {{ fiche.html_data|raw }}>
-				{% if fiche.imagebf_image is defined and fiche.imagebf_image is not empty and (fileExists('files/' ~ fiche.imagebf_image) or fiche['external-data'] is defined) %}
-					<a class="pull-left" style="margin:0 1em 1em 0;" href="{{ fiche.url|raw }}">
-					<img loading="lazy" class="img-blog" alt="{{ fiche.title|striptags }}"
-						src="{{ fiche['external-data'] is defined
-						? fiche['external-data'].baseUrl ~ 'cache/image_200_150_' ~ fiche.imagebf_image
-						: resizedImage(fiche.imagebf_image, 200, 150, 'crop', '_') }}"{{ fiche['external-data'] is defined
-						? 'onerror="this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ '\'"style="max-width:200px;max-height:150px;"'
+			<div class="article bazar-entry" {{ entry.html_data|raw }}>
+				{% if entry.imagebf_image is defined and entry.imagebf_image is not empty and (fileExists('files/' ~ entry.imagebf_image) or entry['external-data'] is defined) %}
+					<a class="pull-left" style="margin:0 1em 1em 0;" href="{{ entry.url|raw }}">
+					<img loading="lazy" class="img-blog" alt="{{ entry.title|striptags }}"
+						src="{{ entry['external-data'] is defined
+						? entry['external-data'].baseUrl ~ 'cache/image_200_150_' ~ entry.imagebf_image
+						: resizedImage(entry.imagebf_image, 200, 150, 'crop', '_') }}"{{ entry['external-data'] is defined
+						? 'onerror="this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ '\'"style="max-width:200px;max-height:150px;"'
 						: '' }}>
 					</a>
 				{% endif %}	  
 				<h4 class="title-article">
-					<a href="{{ fiche.url|raw }}">
-						{{ fiche.title|raw }}
+					<a href="{{ entry.url|raw }}">
+						{{ entry.title|raw }}
 					</a>
 				</h4>
 				{% if showdate %}
 				<small>
-					<a href="{{ fiche.url|raw }}/revisions">
+					<a href="{{ entry.url|raw }}/revisions">
 						<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>
 					</a>
-					&nbsp;{{ fiche.updated_at|date('d.m.Y') }}
+					&nbsp;{{ entry.updated_at|date('d.m.Y') }}
 				</small>
 				{% endif %}
 				{% if showauthor %}
-					<small>par {% if fiche['external-data'] is defined %}<a href="{{ fiche['external-data'].baseUrl }}?{{ fiche.owner }}">{{ fiche.owner }}</a>{% else %}{{ format(fiche.owner)|raw }}{% endif %}</small>
+					<small>par {% if entry['external-data'] is defined %}<a href="{{ entry['external-data'].baseUrl }}?{{ entry.owner }}">{{ entry.owner }}</a>{% else %}{{ format(entry.owner)|raw }}{% endif %}</small>
 				{% endif %}
         {% if soustitre is not empty %}
           <p class='desc text-justify'>
             {{ (soustitre|slice(0, 280) ~ (soustitre|length > 280 ? '...' : ''))|raw }}
           </p>
         {% endif %}
-				<a class="link-more" href="{{ fiche.url|raw }}">{{ _t('BAZ_MORE_INFOS') }}...</a>
+				<a class="link-more" href="{{ entry.url|raw }}">{{ _t('BAZ_MORE_INFOS') }}...</a>
 				<div class="clearfix"></div>
 			</div>
 		{% endif %}

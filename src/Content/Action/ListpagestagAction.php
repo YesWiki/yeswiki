@@ -55,7 +55,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
         $lienedit = '';
         $class = $this->getService(PerformableArguments::class)->get('class');
         $nb = $this->getService(PerformableArguments::class)->get('nb');
-        $tri = $this->getService(PerformableArguments::class)->get('tri');
+        $sort = $this->getService(PerformableArguments::class)->get('sort');
         $template = $this->getService(PerformableArguments::class)->get('template');
         if (empty($template)) {
             $template = 'pages_list.twig';
@@ -64,7 +64,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
         $output = '';
 
         // affiche le resultat de la recherche
-        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri);
+        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $sort);
         if ($resultat) {
             $nb_total = count($resultat);
             // affichage des resultats

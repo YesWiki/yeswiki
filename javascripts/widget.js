@@ -33,7 +33,7 @@ const widgetapp = createApp({
       this.checkedfacette.forEach((element, index) => {
         facettelabel[index] = facettetext.facettetext[element]
       })
-      return '{{bazarliste'
+      return '{{entrylist'
         + ` id="${this.formid}"`
         + ` template="${this.templatemodel}"`
         + ` width="${this.widthmodel}"`
