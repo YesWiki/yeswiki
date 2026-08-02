@@ -167,4 +167,95 @@ class ApiControllerFilesTest extends YesWikiTestCase
             }
         }
     }
+
+    /**
+     * The picker filters by family and by extension, and both are derived here rather
+     * than stored -- so what the listing says a file is has to survive the MIME sniffer
+     * having no idea. A .csv is reported as text/plain and an unrecognised upload as
+     * application/octet-stream; neither may end up in "other" when the name says
+     * otherwise.
+     */
+    #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
+    public function testFamilyIsDerivedFromTheExtensionWhenTheMimeTypeIsUseless(YesWikiRuntime $wiki): void
+    {
+        $this->assertSame('document', FileManager::familyOf('text/plain', 'accounts.csv'));
+        $this->assertSame('image', FileManager::familyOf('application/octet-stream', 'holiday.JPG'));
+        $this->assertSame('video', FileManager::familyOf('', 'clip.mp4'));
+        $this->assertSame('audio', FileManager::familyOf('', 'interview.ogg'));
+        // no extension to go on: the MIME type is all that is left
+        $this->assertSame('image', FileManager::familyOf('image/png', 'screenshot'));
+        $this->assertSame('document', FileManager::familyOf('application/vnd.oasis.opendocument.text', 'notes'));
+        $this->assertSame('other', FileManager::familyOf('application/zip', 'backup.zip'));
+
+        $this->assertSame('jpg', FileManager::extensionOf('holiday.JPG'));
+        $this->assertSame('', FileManager::extensionOf('README'));
+    }
+
+    #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
+    public function testGetFilesNarrowsByFamilyAndSearchesTheExtension(YesWikiRuntime $wiki): void
+    {
+        $controller = $wiki->services->get(FileApiController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
+
+        $fileManager = $wiki->services->get(FileManager::class);
+        $marker = 'familyfiltermarker';
+        $uploads = ["$marker-photo.png" => 'image/png', "$marker-notes.txt" => 'text/plain'];
+        $tags = [];
+        $tmpPaths = [];
+
+        try {
+            $authenticationService->login($admin);
+            foreach ($uploads as $filename => $mimeType) {
+                $tmpPath = sys_get_temp_dir() . '/ApiControllerFilesTest-' . uniqid() . '-' . $filename;
+                file_put_contents($tmpPath, 'family filter test');
+                $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
+                $request->files->set('upFile', new UploadedFile($tmpPath, $filename, $mimeType, null, true));
+                $uploaded = json_decode($controller->uploadFile($request)->getContent(), true);
+                $tags[] = $uploaded['tag'];
+                $tmpPaths[] = $tmpPath;
+                // an upload answers in the shape the listing does, so the picker can select
+                // what it just uploaded without a second request
+                $this->assertArrayHasKey('family', $uploaded);
+                $this->assertArrayHasKey('extension', $uploaded);
+            }
+
+            $all = $this->listFiles($controller, ['search' => $marker]);
+            $this->assertCount(2, $all);
+
+            $images = $this->listFiles($controller, ['search' => $marker, 'family' => 'image']);
+            $this->assertSame(["$marker-photo.png"], array_column($images, 'original_filename'));
+            $this->assertSame('png', $images[0]['extension']);
+
+            $documents = $this->listFiles($controller, ['search' => $marker, 'family' => 'document']);
+            $this->assertSame(["$marker-notes.txt"], array_column($documents, 'original_filename'));
+
+            // searching the extension is how someone looks for a kind of file whose name
+            // they do not remember
+            $byExtension = $this->listFiles($controller, ['search' => 'png']);
+            $this->assertContains("$marker-photo.png", array_column($byExtension, 'original_filename'));
+            $this->assertNotContains("$marker-notes.txt", array_column($byExtension, 'original_filename'));
+        } finally {
+            $authenticationService->logout();
+            foreach ($tags as $tag) {
+                $fileManager->delete($tag);
+            }
+            foreach ($tmpPaths as $tmpPath) {
+                if (file_exists($tmpPath)) {
+                    unlink($tmpPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $query
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function listFiles(FileApiController $controller, array $query): array
+    {
+        return json_decode($controller->getFiles(Request::create('/api/files', 'GET', $query))->getContent(), true);
+    }
 }

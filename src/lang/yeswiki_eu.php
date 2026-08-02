@@ -1170,6 +1170,14 @@ Aldatu beharreko zutabearen testua geroago
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',
+    'ATTACH_FILE_PICKER_ALL_EXTENSIONS' => 'All extensions',
+    'ATTACH_FILE_PICKER_NO_RESULT' => 'No file matches these filters.',
+    'ATTACH_FILE_PICKER_FAMILY_ALL' => 'All',
+    'ATTACH_FILE_PICKER_FAMILY_IMAGE' => 'Images',
+    'ATTACH_FILE_PICKER_FAMILY_VIDEO' => 'Videos',
+    'ATTACH_FILE_PICKER_FAMILY_AUDIO' => 'Audio',
+    'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
+    'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
     // relocated from tools/contact/lang/contact_eu.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => '{{suscripcion ...}} ekintza',

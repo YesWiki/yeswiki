@@ -76,7 +76,9 @@ ywInitEach('body', (body) => {
       formData.set('field', form.dataset.field)
     }
 
-    fetch(wiki.url('/api/contact/mail'), { method: 'POST', body: formData })
+    // no leading slash: wiki.baseUrl already ends in `?`, so `/api/...` builds `/?/api/...`,
+    // which redirects to the home page instead of reaching the route
+    fetch(wiki.url('api/contact/mail'), { method: 'POST', body: formData })
       .then((response) => response.json())
       .then((result) => {
         form.querySelectorAll('.yw-alert').forEach((el) => el.remove())

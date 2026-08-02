@@ -18,11 +18,19 @@
         </div>
 
         <div data-yw-file-picker-pane="existing">
-          <div class="yw-form-group">
+          <div class="file-picker-filters">
             <input type="text" name="search" class="yw-input" autocomplete="off"
               placeholder="{{ _t('ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER') }}">
+            {# the extension list is built from the files themselves: offering ".docx" on a
+               wiki where nobody ever uploaded one is offering an empty result #}
+            <select name="extension" class="yw-input" data-yw-file-picker-extensions>
+              <option value="">{{ _t('ATTACH_FILE_PICKER_ALL_EXTENSIONS') }}</option>
+            </select>
           </div>
+          {# families are rendered by the JS, which knows how many files each one holds #}
+          <div class="file-picker-families" data-yw-file-picker-families></div>
           <ul class="file-picker-results" data-yw-file-picker-results></ul>
+          <p class="file-picker-empty" data-yw-file-picker-empty hidden>{{ _t('ATTACH_FILE_PICKER_NO_RESULT') }}</p>
         </div>
 
         <div data-yw-file-picker-pane="upload" hidden>

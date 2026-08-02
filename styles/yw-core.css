@@ -2372,6 +2372,12 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-color: var(--primary-color);
   color: #fff;
 }
+
+.yw-btn--primary:hover {
+  color: var(--primary-color);
+  background-color: var(--neutral-light-color);
+}
+
 .btn-danger,
 .btn-error {
   background: var(--danger-color);

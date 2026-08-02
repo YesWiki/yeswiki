@@ -22,6 +22,30 @@ class FileManager
 {
     public const TRIPLES_FILE_TYPE = 'file';
 
+    /**
+     * The families a list of files can be narrowed to, in the order a picker offers them.
+     * Coarser than the extension on purpose: someone looking for a photo they uploaded
+     * does not remember whether it was a .jpg or a .webp.
+     */
+    public const FAMILIES = ['image', 'video', 'audio', 'document', 'other'];
+
+    /**
+     * Extensions that decide a family on their own, ahead of the MIME type. The MIME is
+     * sniffed from the bytes at upload time and routinely lands somewhere useless --
+     * `text/plain` for a .csv, `application/octet-stream` for anything the sniffer does
+     * not recognise -- while the extension is what the uploader named the file.
+     */
+    private const FAMILY_EXTENSIONS = [
+        'image' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif', 'ico', 'tif', 'tiff'],
+        'video' => ['mp4', 'webm', 'ogv', 'mov', 'avi', 'mkv', 'm4v', 'mpg', 'mpeg', 'wmv'],
+        'audio' => ['mp3', 'ogg', 'oga', 'wav', 'flac', 'm4a', 'aac', 'opus', 'wma', 'mid', 'midi'],
+        'document' => [
+            'pdf', 'doc', 'docx', 'odt', 'rtf', 'txt', 'md',
+            'xls', 'xlsx', 'ods', 'csv',
+            'ppt', 'pptx', 'odp', 'epub',
+        ],
+    ];
+
     // private/ is denied by both the shipped nginx.conf and private/.htaccess, unlike the
     // web-root files/ directory static assets used to live in -- direct web access to a
     // file's bytes must be impossible, or the ACL enforced by the download API route below
@@ -88,6 +112,45 @@ class FileManager
 
         // return the min size limit, excluding 0 values that mean no limit
         return min(array_filter([$confMaxFileSize, $postMaxSize, $uploadMax]) ?: [DEFAULT_MAX_UPLOAD_SIZE]);
+    }
+
+    /**
+     * The lowercase extension a file is named with, without the dot ('' when it has none).
+     */
+    public static function extensionOf(string $originalFilename): string
+    {
+        return strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
+    }
+
+    /**
+     * Which of self::FAMILIES this file belongs to -- what a picker filters by, and what
+     * decides which icon stands in for a file that cannot be shown as a thumbnail.
+     * Derived, never stored: an existing file entry gets its family the moment this
+     * method learns a new extension, with no migration.
+     */
+    public static function familyOf(string $mimeType, string $originalFilename): string
+    {
+        $extension = self::extensionOf($originalFilename);
+        foreach (self::FAMILY_EXTENSIONS as $family => $extensions) {
+            if (in_array($extension, $extensions, true)) {
+                return $family;
+            }
+        }
+
+        $mimeType = strtolower($mimeType);
+        foreach (['image', 'video', 'audio'] as $family) {
+            if (str_starts_with($mimeType, "$family/")) {
+                return $family;
+            }
+        }
+        // an office format the extension list above does not name yet still says so in its
+        // MIME type, which is long but unmistakable
+        if (str_starts_with($mimeType, 'text/')
+            || preg_match('#^application/(pdf|rtf|msword|vnd\.(ms-|oasis\.opendocument|openxmlformats-))#', $mimeType) === 1) {
+            return 'document';
+        }
+
+        return 'other';
     }
 
     public function isFileTag(string $tag): bool

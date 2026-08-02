@@ -51,7 +51,27 @@ class FileApiController extends YesWikiController
             $stored['mime_type'],
         );
 
-        return new ApiResponse($entry, Response::HTTP_CREATED);
+        return new ApiResponse($this->withDerivedAttributes($entry), Response::HTTP_CREATED);
+    }
+
+    /**
+     * A file entry as this API hands it out: its stored body, plus the extension and the
+     * family that follow from it. Derived on the way out rather than written into every
+     * body, so an existing file gains a family the moment FileManager learns a new
+     * extension, with no migration -- and so the freshly uploaded entry this route
+     * returns is shaped exactly like the ones the listing returns.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed>
+     */
+    private function withDerivedAttributes(array $entry): array
+    {
+        $filename = (string)($entry['original_filename'] ?? '');
+        $entry['extension'] = FileManager::extensionOf($filename);
+        $entry['family'] = FileManager::familyOf((string)($entry['mime_type'] ?? ''), $filename);
+
+        return $entry;
     }
 
     /**
@@ -94,11 +114,20 @@ class FileApiController extends YesWikiController
 
     /**
      * List file entries the requester can read, for the file-picker UI (ticket 17).
+     *
+     * `search` narrows by filename or extension; `family` to one of
+     * FileManager::FAMILIES. Both are answered here rather than left to the caller so
+     * that any consumer filters the same way the picker does -- but the picker itself
+     * asks for the whole list once per opening and narrows in the browser, which is
+     * what makes its filter counts exact and its typing instant. That trade holds while
+     * a wiki's uploads number in the thousands; past that, this route needs paging and
+     * the picker needs to ask it per keystroke again.
      */
     #[Route('/api/files', methods: ['GET'], options: ['acl' => ['public']])]
     public function getFiles(Request $request)
     {
         $search = strtolower((string)$request->query->get('search', ''));
+        $family = (string)$request->query->get('family', '');
         $fileManager = $this->getService(FileManager::class);
         $aclService = $this->getService(AclService::class);
 
@@ -111,12 +140,23 @@ class FileApiController extends YesWikiController
             if (empty($entry)) {
                 continue;
             }
-            if (!empty($search) && strpos(strtolower($entry['original_filename'] ?? ''), $search) === false) {
+
+            $entry = $this->withDerivedAttributes($entry);
+            if (!empty($family) && $entry['family'] !== $family) {
+                continue;
+            }
+            // the extension is part of what is searched: typing "pdf" is how someone
+            // looks for a PDF, and the filename alone would only match it by accident
+            if (!empty($search)
+                && !str_contains(strtolower((string)($entry['original_filename'] ?? '')), $search)
+                && !str_contains($entry['extension'], $search)) {
                 continue;
             }
             $entries[] = $entry;
         }
 
-        return new ApiResponse($entries, Response::HTTP_OK);
+        // newest first: the file someone is looking for in an editor is usually the one
+        // they just uploaded, and getAllFileTags() hands them back oldest-first
+        return new ApiResponse(array_reverse($entries), Response::HTTP_OK);
     }
 }
