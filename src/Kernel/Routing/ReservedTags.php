@@ -48,11 +48,19 @@ final class ReservedTags
      *
      * @var list<string>
      */
-    public const NAMES = ['api', 'doc', 'search'];
+    public const NAMES = ['admin', 'api', 'dashboard', 'doc', 'search', 'user'];
 
+    /**
+     * Whether a name belongs to the router rather than to Content.
+     *
+     * The FIRST segment decides, so `dashboard/forms` is as reserved as `dashboard` --
+     * which is what a routed screen names itself when it has more than one segment
+     * (DashboardController::page()), and what the URL parser splits on. No tag can hold a
+     * `/` anyway, so nothing that could be Content changes meaning here.
+     */
     public static function isReserved(string $tag): bool
     {
-        return in_array(self::canonical($tag), self::NAMES, true);
+        return in_array(self::canonical(explode('/', $tag)[0]), self::NAMES, true);
     }
 
     /**

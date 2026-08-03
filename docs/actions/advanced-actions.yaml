@@ -192,7 +192,7 @@ actions:
         default: 'default.twig'
         options:
           'default.twig': _t(AB_advanced_action_login_template_default)
-          'modal.twig': _t(AB_advanced_action_login_template_modal)
+          'account-link.twig': _t(AB_advanced_action_login_template_account_link)
           'horizontal.twig': _t(AB_advanced_action_login_template_horizontal)
           'dropdown.twig': _t(AB_advanced_action_login_template_dropdown)
       signupurl:
@@ -250,4 +250,4 @@ actions:
         checkedvalue: 'true'
         uncheckedvalue: 'false'
         showif:
-          template: modal\.(?:twig|tpl\.html)
+          template: account-link\.(?:twig|tpl\.html)

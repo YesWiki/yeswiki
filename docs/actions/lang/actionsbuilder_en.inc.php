@@ -410,7 +410,7 @@ return [
     'AB_advanced_action_login_btnclass_label' => 'CSS class for buttons',
     'AB_advanced_action_login_nobtn_label' => 'Replace the button with a link (modal only)',
     'AB_advanced_action_login_template_default' => 'Standard',
-    'AB_advanced_action_login_template_modal' => 'Modal',
+    'AB_advanced_action_login_template_account_link' => 'Account link',
     'AB_advanced_action_login_template_dropdown' => 'Rolling menu',
     'AB_advanced_action_login_loggedinurl_label' => 'Redirect url after successful connection',
     'AB_advanced_action_login_loggedouturl_label' => 'Redirect url after disconnection',

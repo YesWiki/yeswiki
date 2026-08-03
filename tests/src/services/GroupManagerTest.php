@@ -23,10 +23,39 @@ class GroupManagerTest extends YesWikiTestCase
         return $wiki->services->get(GroupManager::class);
     }
 
+    /**
+     * Every group this class creates, deleted again in tearDownAfterClass().
+     *
+     * @var list<string>
+     */
+    private static array $groupsToClean = [];
+
+    /** A group name this class owns, and takes away again when it is done. */
+    private static function groupName(): string
+    {
+        self::$groupsToClean[] = $name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+
+        return $name;
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        $groupManager = static::getWiki()->services->get(GroupManager::class);
+        foreach (array_unique(self::$groupsToClean) as $group) {
+            try {
+                $groupManager->delete($group);
+            } catch (\Throwable) {
+            }
+        }
+        self::$groupsToClean = [];
+
+        parent::tearDownAfterClass();
+    }
+
     #[Depends('testGroupManagerExisting')]
     public function testCreate(GroupManager $groupManager)
     {
-        $group_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = self::groupName();
         $groupManager->create($group_name, []);
         $this->assertTrue($groupManager->groupExists($group_name));
 
@@ -59,7 +88,7 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     public function testUpdateMember(GroupManager $groupManager)
     {
-        $group_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = self::groupName();
         $users = [];
         for ($i = 0; $i < 5; $i++) {
             array_push($users, StringUtilService::generateRandomString(10));

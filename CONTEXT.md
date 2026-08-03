@@ -70,7 +70,7 @@ The CSS and JavaScript a render says it needs, returned together with what was r
 _Avoid_: "the css/js globals" (retired), asset bundle (bundling was considered and rejected), "registering assets" as a side effect (registration is scoped and returns a value).
 
 **Reserved tag**:
-A tag no Content may take because something else already answers to it — `api`, `doc`, and since ticket 26 `search`. Distinct from a *collision*, which is two pieces of Content wanting the same tag and is resolved by suggesting an alternative: a reserved tag is unavailable to everyone, permanently, and the list of them is core's to declare rather than a wiki's to discover. Extends the global uniqueness rule (ADR-0001) from "unique across Content types" to "unique across Content types and routes".
+A tag no Content may take because something else already answers to it — `api`, `doc`, `search`, and the routed screens `dashboard`, `admin` and `user`. Only the FIRST path segment competes with a tag, so `dashboard/forms` is as reserved as `dashboard` while handler names in the second segment (`edit`, `raw`, …) are not. Distinct from a *collision*, which is two pieces of Content wanting the same tag and is resolved by suggesting an alternative: a reserved tag is unavailable to everyone, permanently, and the list of them is core's to declare rather than a wiki's to discover. Extends the global uniqueness rule (ADR-0001) from "unique across Content types" to "unique across Content types and routes".
 _Avoid_: "system page" (a reserved tag has no Content behind it at all), forbidding by prefix.
 
 **Entry system keys**:

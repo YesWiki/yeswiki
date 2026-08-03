@@ -1,0 +1,9 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# `{{entryuserpage}}` is `{{entrylist}}` with the logged-in name filled in as the owner --
+   it reads the session itself, so this screen cannot show one person another's entries by
+   passing the wrong argument. #}
+{% block dashboard_content %}
+  <h1>{{ _t('ACCOUNT_ENTRIES') }}</h1>
+  {{ renderAction('entryuserpage', { dynamic: 'true' })|raw }}
+{% endblock %}

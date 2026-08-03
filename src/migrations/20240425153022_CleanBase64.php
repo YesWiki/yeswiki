@@ -1,8 +1,8 @@
 <?php
 
+use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Field\TextareaField;
 use YesWiki\Core\YesWikiMigration;
 
 class CleanBase64 extends YesWikiMigration

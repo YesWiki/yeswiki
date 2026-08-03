@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Field\CalcField;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 class CalcFieldToString extends YesWikiMigration

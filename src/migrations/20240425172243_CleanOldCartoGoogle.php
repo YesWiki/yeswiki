@@ -1,9 +1,9 @@
 <?php
 
+use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Field\MapField;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\SearchManager;

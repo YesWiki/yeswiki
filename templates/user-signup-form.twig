@@ -44,13 +44,13 @@
 {{ captcha|raw }}
 <div class="yw-form-group">
   <div class="controls">
-    <input class="btn btn-block btn-primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />
+    <input class="yw-btn yw-btn--block yw-btn--primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />
   </div>
 </div>
 </form>
 
 <hr>
 
-<button class="btn btn-block btn-default" onclick="document.querySelector('a[href=\'#LoginModal\']').click()">
+<a class="yw-btn yw-btn--block" href="{{ url({ tag: 'user' }) }}">
   {{ _t('LOGIN_LOGIN') }}
-</button>
+</a>

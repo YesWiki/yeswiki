@@ -23,6 +23,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\SearchIndexQuery;
 
 class FormController extends YesWikiController
 {
@@ -79,10 +80,32 @@ class FormController extends YesWikiController
             fn ($a, $b) => ($declaredOrder[$a['contentType']] ?? PHP_INT_MAX) <=> ($declaredOrder[$b['contentType']] ?? PHP_INT_MAX)
         );
 
-        return $this->render('@core/forms/forms_table.twig', [
+        // how much Content each form holds and when it last changed, in one grouped read
+        // of the search index rather than a query per form
+        $stats = $this->getService(SearchIndexQuery::class)->contentStats();
+        $withStats = function (array $forms) use ($stats): array {
+            foreach ($forms as $id => $form) {
+                $isSystem = (bool)($form['isSystem'] ?? false);
+                $found = $isSystem
+                    ? ($stats['byType'][(string)($form['contentType'] ?? '')] ?? null)
+                    : ($stats['byForm'][(string)$id] ?? null);
+                // No rows means none of that Content exists -- but only once the index has
+                // been built at all. Before that (a fresh install, or between the migration
+                // and the first reindex) every form would read "0", which is a lie where
+                // "not counted yet" is the truth, so a wholly empty index says nothing.
+                $forms[$id]['stats'] = $found ?? [
+                    'count' => $stats['total'] > 0 ? 0 : null,
+                    'last' => '',
+                ];
+            }
+
+            return $forms;
+        };
+
+        return $this->render('@core/forms/forms_list.twig', [
             'message' => $message,
-            'systemForms' => $systemForms,
-            'forms' => array_filter($values, fn ($form) => !$form['isSystem']),
+            'systemForms' => $withStats($systemForms),
+            'forms' => $withStats(array_filter($values, fn ($form) => !$form['isSystem'])),
             'userIsAdmin' => $this->getService(AclService::class)->isAdmin(),
             'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
         ]);

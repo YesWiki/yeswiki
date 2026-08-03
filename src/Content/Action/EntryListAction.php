@@ -105,6 +105,14 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
         if ($template) {
             $template = htmlspecialchars($template);
         }
+        // The configured default is as much a choice as an explicit one, and it has to be
+        // made here rather than at the end: the dynamic mapping below is what turns a
+        // template name into one of the JS views, and it was reading a `$template` that was
+        // still null whenever nobody passed one. `{{entrylist dynamic="true"}}` therefore
+        // kept `default_bazar_template` -- which ships as `liste_accordeon.twig`, extension
+        // included -- and the dynamic renderer appends `.twig` of its own, asking for
+        // `liste_accordeon.twig.twig` and failing with "template not found".
+        $template = $template ?: (string)$this->params->get('default_bazar_template');
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
@@ -120,13 +128,16 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
             }
         }
 
-        if (in_array($template, ['list', 'card', 'map-and-table', 'table', 'timeline'])) {
+        // compared without its extension: the same template is written `liste_accordeon` in
+        // page content and `liste_accordeon.twig` in the config, and both must map
+        $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)$template);
+        if (in_array($bareTemplate, ['list', 'card', 'map-and-table', 'table', 'timeline'], true)) {
             $dynamic = true;
         }
-        if ($dynamic && $template == 'liste_accordeon') {
+        if ($dynamic && $bareTemplate === 'liste_accordeon') {
             $template = 'list';
         }
-        if ($dynamic && in_array($template, ['tableau.tpl.html', 'tableau.twig', 'tableau'])) {
+        if ($dynamic && $bareTemplate === 'tableau') {
             $template = 'table';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
@@ -136,7 +147,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
         $searchfields = empty($searchfields) ? [PageBody::TITLE] : $searchfields;
         // End dynamic
 
-        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || (is_string($template) && substr($template, 0, strlen('agenda')) == 'agenda'));
+        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || str_starts_with($template, 'agenda'));
 
         // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
         $search = !isset($arg['search'])
@@ -226,7 +237,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
             // AFFICHAGE
 
             // Template pour l'affichage de la liste de fiches
-            'template' => (!empty($template)) ? $template : $this->params->get('default_bazar_template'),
+            'template' => $template,
 
             // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
             'managementbar' => $this->formatBoolean($arg, true, 'managementbar'),

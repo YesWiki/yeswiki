@@ -10,6 +10,7 @@ use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -29,6 +30,78 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public const INVALID_CHAR = '+-_*=.:,?';
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+    /**
+     * Every group and user this class invents, so that it can take them away again.
+     *
+     * The fixtures are built in static data providers, which PHPUnit calls once per test
+     * method that declares them -- so a single run of this file used to leave a dozen
+     * groups behind, and a wiki used for development accumulated thousands of them
+     * (3352 on the one this was found on). Nothing deleted them: the tests that call
+     * delete() do it as the behaviour under test, not as cleanup.
+     *
+     * @var list<string>
+     */
+    private static array $groupsToClean = [];
+
+    /** @var list<string> */
+    private static array $usersToClean = [];
+
+    /** A group name this class owns, and will delete when it is done with it. */
+    private static function groupName(): string
+    {
+        self::$groupsToClean[] = $name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+
+        return $name;
+    }
+
+    /** Same, for the derived names the tests build out of a fixture name. */
+    private static function alsoClean(string $groupName): string
+    {
+        self::$groupsToClean[] = $groupName;
+
+        return $groupName;
+    }
+
+    private static function createUser(string $emailPrefix): string
+    {
+        self::$usersToClean[] = $name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        static::getWiki()->services->get(UserOperationsService::class)->create([
+            'name' => $name,
+            'email' => $emailPrefix . '@example.com',
+            'password' => $name,
+        ]);
+
+        return $name;
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        $services = static::getWiki()->services;
+        $groups = $services->get(GroupOperationsService::class);
+        foreach (array_unique(self::$groupsToClean) as $group) {
+            try {
+                $groups->delete($group);
+            } catch (\Throwable) {
+                // already deleted by the test that was exercising delete()
+            }
+        }
+        $userManager = $services->get(UserManager::class);
+        $userOperations = $services->get(UserOperationsService::class);
+        foreach (array_unique(self::$usersToClean) as $userName) {
+            try {
+                $user = $userManager->getOneByName($userName);
+                if ($user) {
+                    $userOperations->delete($user);
+                }
+            } catch (\Throwable) {
+            }
+        }
+        self::$groupsToClean = [];
+        self::$usersToClean = [];
+
+        parent::tearDownAfterClass();
+    }
+
     public function testGroupOperationsServiceExisting(): GroupOperationsService
     {
         $wiki = $this->getWiki();
@@ -41,12 +114,12 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     {
         $wiki = static::getWiki();
         $invalid_group_name = StringUtilService::generateRandomString(5, self::INVALID_CHAR) . StringUtilService::generateRandomString(10);
-        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $valid_group_name = self::groupName();
+        $new_valid_group = self::groupName();
 
-        $userOperationsService = $wiki->services->get(UserOperationsService::class);
-        $user_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
+        $user_name = self::createUser($valid_group_name);
+        // testDelete builds this one out of the user's name
+        self::alsoClean($user_name . 'group');
 
         // groupname, error type, members
         return [
@@ -128,18 +201,15 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public static function dataProviderTestAdd()
     {
         $wiki = static::getWiki();
-        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $third_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $fourth_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $valid_group_name = self::groupName();
+        $new_valid_group = self::groupName();
+        $third_valid_group = self::groupName();
+        $fourth_valid_group = self::groupName();
+        // deliberately never created: this one is the "group does not exist" case
         $not_existing_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
 
-        $user_name = StringUtilService::generateRandomString(10);
-        $user_name_1 = StringUtilService::generateRandomString(10);
-
-        $userOperationsService = $wiki->services->get(UserOperationsService::class);
-        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
-        $userOperationsService->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
+        $user_name = self::createUser($valid_group_name);
+        $user_name_1 = self::createUser($new_valid_group);
 
         $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
         $groupOperationsService->create($valid_group_name, [$user_name_1]);
@@ -183,16 +253,13 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public static function dataProviderTestRemoveMembers()
     {
         $wiki = static::getWiki();
-        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $valid_group_name = self::groupName();
+        $new_valid_group = self::groupName();
+        // deliberately never created: this one is the "group does not exist" case
         $not_existing_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
 
-        $user_name = StringUtilService::generateRandomString(10);
-        $user_name_1 = StringUtilService::generateRandomString(10);
-
-        $userOperationsService = $wiki->services->get(UserOperationsService::class);
-        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
-        $userOperationsService->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
+        $user_name = self::createUser($valid_group_name);
+        $user_name_1 = self::createUser($new_valid_group);
 
         $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
         $groupOperationsService->create($new_valid_group, [$user_name_1, $user_name]);

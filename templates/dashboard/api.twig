@@ -1,0 +1,55 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The API route list, read off the live RouteCollection by DocumentationApiController --
+   so it cannot describe an endpoint the wiki does not have.
+
+   One row per route: what it answers to, where it is, what it wants, and who may call it.
+   The method is a badge because it is the one thing a reader scans for. #}
+{% block dashboard_content %}
+  <h1>{{ _t('API_DOC_TITLE') }}</h1>
+  <p class="yw-dashboard__intro">{{ _t('API_DOC_INTRO') }}</p>
+
+  {% for segment, routes in groups %}
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h2><code>{{ segment }}</code></h2>
+      <table class="yw-api">
+        <tbody>
+          {% for route in routes %}
+            <tr>
+              <td class="yw-api__methods">
+                {% for method in route.methods %}
+                  <span class="yw-api__method yw-api__method--{{ method|lower }}">{{ method }}</span>
+                {% endfor %}
+              </td>
+              <td>
+                <code class="yw-api__url">{{ route.url }}</code>
+                {% if route.params is not empty %}
+                  <ul class="yw-api__params">
+                    {% for param in route.params %}
+                      <li>
+                        <code>{{ param.name }}</code>
+                        {% if param.pattern %}<span class="yw-api__pattern">{{ param.pattern }}</span>{% endif %}
+                        {% if param.optional %}
+                          <em>{{ _t('API_DOC_PARAM_OPTIONAL') }}{% if param.default is not null %}
+                            : <code>{{ param.default }}</code>{% endif %}</em>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </td>
+              <td class="yw-api__acl">
+                <code>{{ route.acl }}</code>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endfor %}
+
+  {# whatever the installed extensions add to this page, as they build it themselves #}
+  {% if extensionDocs is not empty %}
+    <section class="yw-dashboard__card yw-dashboard__card--wide">{{ extensionDocs|raw }}</section>
+  {% endif %}
+{% endblock %}

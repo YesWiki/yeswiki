@@ -4,9 +4,11 @@ namespace YesWiki\Admin\Api;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Route as SymfonyRoute;
+use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\RouteProvider;
-use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
@@ -17,11 +19,15 @@ use YesWiki\Render\Service\TemplateEngine;
  */
 class DocumentationApiController extends YesWikiController
 {
+    use DashboardShell;
+
     #[Route('/api', options: ['acl' => ['public']])]
     public function getDocumentation()
     {
-        $urlFormatter = $this->getService(UrlFormatter::class);
-        $baseUrl = $urlFormatter->href('', '');
+        // the configured base URL, NOT href('', '') -- an empty tag there falls back to
+        // the *current* page's tag, which on this very route is `api`, so every URL on
+        // this page came out as `?apiapi/...`
+        $baseUrl = (string)$this->getService(RuntimeConfig::class)['base_url'];
 
         // group /api/* routes by their first path segment after /api
         $groups = [];
@@ -31,27 +37,21 @@ class DocumentationApiController extends YesWikiController
                 continue;
             }
             $segment = explode('/', trim(substr($path, 4), '/'))[0] ?: '(root)';
-            $methods = $route->getMethods() ?: ['GET'];
-            $acl = (array)($route->getOption('acl') ?? ['public']);
             $groups[$segment][] = [
                 'path' => $path,
-                'methods' => implode('|', $methods),
-                'acl' => implode(', ', $acl),
+                'url' => $baseUrl . ltrim($path, '/'),
+                'methods' => $route->getMethods() ?: ['GET'],
+                'acl' => implode(', ', (array)($route->getOption('acl') ?? ['public'])),
+                'params' => $this->parametersOf($route),
             ];
         }
         ksort($groups);
-
-        $output = '<h1>YesWiki API</h1>';
-        $output .= '<p>' . _t('ONLY_FOR_ADMINS') . ' : <code>@admins</code></p>';
-        foreach ($groups as $segment => $routes) {
+        foreach ($groups as &$routes) {
             usort($routes, fn ($a, $b) => [$a['path'], $a['methods']] <=> [$b['path'], $b['methods']]);
-            $output .= '<h2><code>' . htmlspecialchars($segment) . '</code></h2>' . "\n";
-            foreach ($routes as $route) {
-                $output .= '<p><code>' . htmlspecialchars($route['methods']) . ' '
-                    . htmlspecialchars($baseUrl . ltrim($route['path'], '/')) . '</code>'
-                    . ' <small>(acl: ' . htmlspecialchars($route['acl']) . ')</small></p>' . "\n";
-            }
         }
+        unset($routes);
+
+        $output = '';
 
         // extensions may still ship their own documentation hook
         foreach ($this->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
@@ -80,8 +80,42 @@ class DocumentationApiController extends YesWikiController
             }
         }
 
-        $output = $this->getService(TemplateEngine::class)->renderPage('<div class="api-container">' . $output . '</div>');
+        // the same shell as /doc, /dashboard/* and /admin/*: this list is one of the
+        // wiki's public routes, so it is reachable from their sidebar and shows it too
+        $templateEngine = $this->getService(TemplateEngine::class);
 
-        return new Response($output);
+        return new Response($templateEngine->renderPage($templateEngine->render('@core/dashboard/api.twig', $this->dashboardShell('api', [
+            'groups' => $groups,
+            'extensionDocs' => $output,
+        ]))));
+    }
+
+    /**
+     * The placeholders a route's path carries, with what the route says about each.
+     *
+     * A reader of this page has to know that `/api/forms/{formId}/entries/{output}` wants
+     * two values and which ones may be left out, and the route itself is the only thing
+     * that knows -- so it is read rather than restated.
+     *
+     * @return list<array{name: string, optional: bool, default: scalar|null, pattern: string|null}>
+     */
+    private function parametersOf(SymfonyRoute $route): array
+    {
+        preg_match_all('/\{!?(\w+)\}/', $route->getPath(), $matches);
+        $defaults = $route->getDefaults();
+        $requirements = $route->getRequirements();
+
+        $params = [];
+        foreach ($matches[1] as $name) {
+            $default = $defaults[$name] ?? null;
+            $params[] = [
+                'name' => $name,
+                'optional' => array_key_exists($name, $defaults),
+                'default' => is_scalar($default) ? $default : null,
+                'pattern' => isset($requirements[$name]) ? (string)$requirements[$name] : null,
+            ];
+        }
+
+        return $params;
     }
 }

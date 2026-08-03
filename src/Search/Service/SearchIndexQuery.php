@@ -180,6 +180,61 @@ class SearchIndexQuery
     }
 
     /**
+     * How much Content each form holds, and when it last changed.
+     *
+     * Read off the search index rather than counted over `pages`: this table has one row
+     * per Content and is indexed, while the authoritative version of the same question --
+     * `GROUP BY json_extract(body, '$.form_id')` over every latest revision -- is a scan of
+     * the whole wiki, on a screen anyone may open. The two were compared row by row on a
+     * real wiki and agree; when they cannot, the index is what search itself answers from,
+     * so this screen and a search agree about what exists.
+     *
+     * Keyed the way the caller asks: a webmaster's form owns rows carrying its `form_id`,
+     * while the built-in Content types own every row of their `content_type` -- a page, an
+     * account and a file carry no form_id at all. The form's own row is never counted: a
+     * form is described by itself, and `form_id` on it means "I am this form".
+     *
+     * `total` is what tells "this wiki holds nothing of that kind" from "the index has not
+     * been built yet", which read the same from a single form's row and must not.
+     *
+     * @return array{total: int, byForm: array<string, array{count: int, last: string}>, byType: array<string, array{count: int, last: string}>}
+     */
+    public function contentStats(): array
+    {
+        $empty = ['total' => 0, 'byForm' => [], 'byType' => []];
+        if (!$this->schema->exists()) {
+            return $empty;
+        }
+
+        // DISTINCT tag, like facets(): a Content whose form has restricted fields owns one
+        // row per ACL bucket, and COUNT(*) would report it as several entries
+        $rows = $this->dbService->loadAll(
+            'SELECT content_type, form_id, COUNT(DISTINCT tag) AS total, MAX(updated_at) AS last'
+            . ' FROM ' . $this->schema->table()
+            . " WHERE content_type <> 'form'"
+            . ' GROUP BY content_type, form_id'
+        );
+
+        $stats = $empty;
+        foreach ($rows as $row) {
+            $entry = ['count' => (int)$row['total'], 'last' => (string)($row['last'] ?? '')];
+            $formId = (string)($row['form_id'] ?? '');
+            if ($formId !== '') {
+                $stats['byForm'][$formId] = $entry;
+            }
+            $type = (string)$row['content_type'];
+            if (!isset($stats['byType'][$type])) {
+                $stats['byType'][$type] = ['count' => 0, 'last' => ''];
+            }
+            $stats['byType'][$type]['count'] += $entry['count'];
+            $stats['byType'][$type]['last'] = max($stats['byType'][$type]['last'], $entry['last']);
+            $stats['total'] += $entry['count'];
+        }
+
+        return $stats;
+    }
+
+    /**
      * How many Contents of each type the query matches, for the facet row.
      *
      * Deliberately **not** filtered by the currently selected type: the point of a facet is

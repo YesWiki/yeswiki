@@ -1,0 +1,60 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# Every way out of this wiki, on one page.
+
+   Feeds and per-form exports are built from the wiki's own routes rather than hardcoded,
+   so a form added tomorrow appears here without anyone editing this template. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_EXPORT') }}</h1>
+  <p class="yw-dashboard__intro">{{ _t('DASHBOARD_EXPORT_INTRO') }}</p>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('DASHBOARD_EXPORT_FEEDS') }}</h2>
+    <ul class="yw-dashboard__links">
+      {% for feed in feeds %}
+        <li>
+          <a href="{{ feed.url }}">{{ icon('rss') }} {{ feed.label }}</a>
+          <code>{{ feed.url }}</code>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('DASHBOARD_EXPORT_FORMS') }}</h2>
+    {% if forms is empty %}
+      <p class="text-muted">{{ _t('DASHBOARD_EXPORT_NO_FORM') }}</p>
+    {% else %}
+      <table class="yw-table">
+        <thead>
+          <tr>
+            <th>{{ _t('DASHBOARD_EXPORT_FORM') }}</th>
+            {% for format in formats %}<th>{{ format.label }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for form in forms %}
+            <tr>
+              <td>{{ form.label }}</td>
+              {% for format in formats %}
+                <td><a href="{{ form.baseUrl ~ format.output }}">{{ format.label }}</a></td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('DASHBOARD_EXPORT_FILES') }}</h2>
+    <ul class="yw-dashboard__links">
+      {% for link in fileLinks %}
+        <li>
+          <a href="{{ link.url }}">{{ icon(link.icon) }} {{ link.label }}</a>
+          <code>{{ link.url }}</code>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

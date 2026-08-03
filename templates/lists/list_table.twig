@@ -48,7 +48,7 @@
           <a
             class="yw-btn yw-btn--sm yw-btn--danger"
             href="{{ url({ params: { view: 'listes', action: 'supprimer_liste', listid: key }}) }}"
-            onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
+            onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE')|e('js') }} ?');"
           >
             <svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
           </a>

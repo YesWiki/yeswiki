@@ -524,11 +524,63 @@ class YesWikiRuntime
     public function onDispatchException(ExceptionEvent $event): void
     {
         $th = $event->getThrowable();
-        if ($th instanceof HttpException) {
+        $exit = $this->exitExceptionIn($th);
+        if ($exit !== null) {
+            $event->setResponse($this->exitToResponse($exit));
+        } elseif ($th instanceof HttpException) {
             $event->setResponse(new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders()));
         } else {
             $event->setResponse(new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
+    }
+
+    /**
+     * The ExitException in a throwable, however deeply it was wrapped -- or null.
+     *
+     * A routed screen renders its actions through Twig, and Twig wraps ANYTHING that
+     * escapes a template in a `Twig\Error\RuntimeError` carrying the original as its
+     * previous. So the redirect that ends a login arrives here as a RuntimeError "an
+     * exception has been thrown during the rendering of a template", and a bare
+     * `instanceof` on the throwable itself never matches.
+     */
+    private function exitExceptionIn(\Throwable $th): ?ExitException
+    {
+        for ($candidate = $th; $candidate !== null; $candidate = $candidate->getPrevious()) {
+            if ($candidate instanceof ExitException) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * `Redirector::redirect()`/`terminate()` unwinding out of a *routed* controller.
+     *
+     * Every action that ends a request does it by throwing this (the class comment on
+     * Redirector says why), and pages have always handled it -- LegacyPageController catches
+     * it around the handler. A route did not, so the exception reached the handler above and
+     * came back as a 500 carrying a stack trace. That is not an edge case: it is what a
+     * routed screen rendering `{{login}}`, `{{usersettings}}` or any admin action does the
+     * moment someone submits its form, which is to say the first time anyone uses it.
+     *
+     * `redirect()` has already called `header('Location: ...')`, and Response::send() writes
+     * its own 200 status line over that -- a Location header with a 200 is a blank page, not
+     * a redirect. So the header is read back and reflected as a real 302, exactly as
+     * LegacyPageController::toResponse() does for pages.
+     */
+    private function exitToResponse(ExitException $th): Response
+    {
+        foreach (headers_list() as $header) {
+            if (stripos($header, 'Location:') === 0) {
+                return new Response('', Response::HTTP_FOUND, [
+                    'Location' => trim(substr($header, strlen('Location:'))),
+                ]);
+            }
+        }
+
+        // a bare terminate($message): the message was the whole body under the old exit()
+        return new Response(YesWikiKernel::isCli() ? '' : $th->getMessage());
     }
 
     /**

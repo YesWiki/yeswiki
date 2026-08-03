@@ -333,7 +333,7 @@ Bereizi etiketa bakoitza ';' ',' ' ren arabera|Hainbat
     'AB_advanced_action_login_nobtn_label' => 'Ordeztu botoia esteka batekin (modala bakarrik)',
     'AB_advanced_action_login_template_label' => 'Txantiloia',
     'AB_advanced_action_login_template_default' => 'Estandarra',
-    'AB_advanced_action_login_template_modal' => 'Modala',
+    'AB_advanced_action_login_template_account_link' => 'Modala',
     'AB_advanced_action_login_template_horizontal' => 'Horizontala',
     'AB_advanced_action_login_template_dropdown' => 'Goitik beherako zerrenda',
     'AB_advanced_action_login_loggedinurl_label' => 'Birbideratze-URLa behar bezala konektatu ondoren',

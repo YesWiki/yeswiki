@@ -176,7 +176,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
     private function addTag(\DOMDocument $doc, \DOMNode $parent, string $name, ?string $value, bool $cdata = false): void
     {
         $element = $parent->appendChild($doc->createElement($name));
-        $value ??= '';
+        $value = $this->xmlSafe($value ?? '');
         if ($value === '') {
             return;
         }
@@ -187,6 +187,27 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
         if ($content !== false) {
             $element->appendChild($content);
         }
+    }
+
+    /**
+     * $value with everything XML 1.0 cannot carry taken out.
+     *
+     * Entry content is whatever anyone ever pasted into this wiki, and a single control
+     * character or broken UTF-8 sequence makes the whole document unparseable -- CDATA
+     * does not help, the character is illegal in the document at all. A feed reader gets
+     * nothing from that; dropping the byte costs it nothing.
+     */
+    private function xmlSafe(string $value): string
+    {
+        // invalid UTF-8 first: the /u pattern below cannot match against broken sequences
+        // and would return null for the whole string
+        $value = (string)mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+
+        return (string)preg_replace(
+            '/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u',
+            '',
+            $value
+        );
     }
 
     private function sanitize($string)

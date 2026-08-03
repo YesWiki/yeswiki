@@ -28,6 +28,25 @@ class CommentServiceHashcashTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'CommentServiceHashcashRegressionPage';
 
+    /**
+     * The success case below posts a real comment, and a comment is a page row: without
+     * this the suite left one behind on every run, 786 of them by the time anyone looked.
+     * deleteOrphaned() takes the page's comments with it (`OR comment_on = tag`), so the
+     * index rows are collected first -- they are keyed by the comment's own tag.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $wiki = self::getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $indexer = $wiki->services->get(\YesWiki\Search\Service\SearchIndexer::class);
+
+        foreach ($wiki->services->get(CommentService::class)->loadComments(self::PAGE_TAG, true) as $comment) {
+            $indexer->delete((string)($comment['tag'] ?? ''));
+        }
+        $indexer->delete(self::PAGE_TAG);
+        $pageManager->deleteOrphaned(self::PAGE_TAG);
+    }
+
     public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();

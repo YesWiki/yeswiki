@@ -1,0 +1,48 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# What the wiki has been up to lately, for anyone who can read it. Built out of the
+   actions a webmaster would put on a page of their own -- there is no dashboard-only
+   rendering here, so what this route shows and what `{{recentchanges}}` shows cannot
+   drift apart. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ACTIVITY') }}</h1>
+
+  <div class="yw-dashboard__grid">
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_PAGES') }}</h2>
+      {# every Content type is a page now (ADR-0011), so one list covers entries,
+         users and files as well as pages #}
+      {{ renderAction('recentchanges', { max: 15 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_USERS') }}</h2>
+      {{ renderAction('listusers', { last: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_COMMENTS') }}</h2>
+      {{ renderAction('recentcomments', { max: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_COMMENTED') }}</h2>
+      {{ renderAction('recentlycommented', { max: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_KEYWORDS') }}</h2>
+      {{ renderAction('tagcloud')|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_ORPHANS') }}</h2>
+      {{ renderAction('orphanedpages')|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('DASHBOARD_ACTIVITY_INDEX') }}</h2>
+      {{ renderAction('pageindex')|raw }}
+    </section>
+  </div>
+{% endblock %}

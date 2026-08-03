@@ -323,7 +323,7 @@ return [
     'AB_advanced_action_login_nobtn_label' => 'Sostituire il pulsante con un link (solo modal)',
     'AB_advanced_action_login_template_label' => 'Template',
     'AB_advanced_action_login_template_default' => 'Standard',
-    'AB_advanced_action_login_template_modal' => 'Modal',
+    'AB_advanced_action_login_template_account_link' => 'Modal',
     'AB_advanced_action_login_template_horizontal' => 'Orizzontale',
     'AB_advanced_action_login_template_dropdown' => 'Menu di rotolamento',
     'AB_advanced_action_login_loggedinurl_label' => 'Redirect url dopo una connessione di successo',

@@ -260,8 +260,6 @@ class CSVManager
     /**
      * getLabelsFromEnumFieldOptions.
      *
-     * @param EnumField $field
-     *
      * @return mixed array|string|null
      */
     private function getLabelsFromEnumFieldOptions($value, EnumField $field, array $entry)

@@ -112,4 +112,20 @@ class ReservedTagsTest extends TestCase
 
         return null;
     }
+
+    /**
+     * A routed screen with more than one segment names itself by its whole path
+     * (`dashboard/forms`), because an action linking to "this page" reads that name. It is
+     * still the router's, not Content's: the edit bar renders on a page, and a route that
+     * did not answer to this offered "edit this page" for a tag nothing can ever occupy.
+     */
+    public function testAMultiSegmentRouteIsReservedByItsFirstSegment(): void
+    {
+        $this->assertTrue(ReservedTags::isReserved('dashboard/forms'));
+        $this->assertTrue(ReservedTags::isReserved('admin/users'));
+        $this->assertTrue(ReservedTags::isReserved('API/forms/1'), 'matching stays case-insensitive');
+        // a tag merely starting with a reserved name is ordinary, path or not
+        $this->assertFalse(ReservedTags::isReserved('apiculture'));
+        $this->assertFalse(ReservedTags::isReserved('dashboards/forms'));
+    }
 }

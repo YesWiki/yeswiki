@@ -3,10 +3,13 @@
 namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\TestCase;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\YesWikiRuntime;
 
 class YesWikiTestCase extends TestCase
@@ -45,6 +48,11 @@ class YesWikiTestCase extends TestCase
      * the run keeps it. Groups carry no timestamp, so they are diffed against a snapshot
      * taken here instead -- this runs on the first getWiki() call, which is the first thing
      * any provider does, hence before the run has created any group of its own.
+     *
+     * Comments are swept the same way as users, on their timestamp: a test that posts one
+     * leaves a page row behind on every single run, and CommentServiceHashcashTest alone
+     * had accumulated 786 of them on one page. They are matched on `time` at or after the
+     * run started, which in a test database is the suite's own writing.
      */
     private static function registerLeakSweep(YesWikiRuntime $wiki): void
     {
@@ -76,7 +84,39 @@ class YesWikiTestCase extends TestCase
                     // idem
                 }
             }
+
+            self::sweepComments($wiki);
         });
+    }
+
+    /** Every comment the run wrote, index rows included. */
+    private static function sweepComments(YesWikiRuntime $wiki): void
+    {
+        try {
+            $dbService = $wiki->services->get(DbService::class);
+            $time = $dbService->quoteIdentifier('time');
+            $rows = $dbService->loadAll(
+                "SELECT DISTINCT tag FROM {$dbService->prefixTable('pages')}"
+                . " WHERE comment_on <> '' AND {$time} >= '{$dbService->escape(self::$runStartedAt)}'"
+            );
+        } catch (\Throwable $t) {
+            return;
+        }
+
+        $pageManager = $wiki->services->get(PageManager::class);
+        $indexer = $wiki->services->get(SearchIndexer::class);
+        foreach ($rows as $row) {
+            $tag = (string)($row['tag'] ?? '');
+            if ($tag === '') {
+                continue;
+            }
+            try {
+                $pageManager->deleteOrphaned($tag);
+                $indexer->delete($tag);
+            } catch (\Throwable $t) {
+                // best effort, like the rest of the sweep
+            }
+        }
     }
 
     private static function isLeakedTestUser(mixed $user): bool

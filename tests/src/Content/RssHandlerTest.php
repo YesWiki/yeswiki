@@ -41,7 +41,10 @@ class RssHandlerTest extends YesWikiTestCase
         $output = $this->runRssOn($wiki, 'a plain page');
 
         $doc = new \DOMDocument();
-        $this->assertTrue($doc->loadXML($output), 'the feed must parse as XML');
+        // the body goes in the message: when this fails it is almost never a syntax slip
+        // in the builder but something upstream returning a PHP message instead of a feed
+        // -- RssHandler::run() catches every Throwable and answers with its text
+        $this->assertTrue($doc->loadXML($output), "the feed must parse as XML, got:\n" . substr($output, 0, 500));
 
         $root = $doc->documentElement;
         $this->assertNotNull($root);
@@ -67,11 +70,41 @@ class RssHandlerTest extends YesWikiTestCase
         try {
             $output = $this->runRssOn($wiki, 'a plain page');
             $doc = new \DOMDocument();
-            $this->assertTrue($doc->loadXML($output), 'an & in the config must not break the feed');
+            $this->assertTrue(
+                $doc->loadXML($output),
+                "an & in the config must not break the feed, got:\n" . substr($output, 0, 500)
+            );
             $this->assertSame(
                 'Tom & Jerry <not a tag> "quoted"',
                 $doc->getElementsByTagName('description')->item(0)?->textContent
             );
+        } finally {
+            $config['BAZ_RSS_DESCRIPTIONSITE'] = $previous;
+        }
+    }
+
+    /**
+     * A feed is built out of whatever anyone ever pasted into the wiki, and XML 1.0 has
+     * characters it simply cannot carry -- a control byte, a broken UTF-8 sequence. Inside
+     * CDATA or not, one of them makes the document unparseable for every reader.
+     */
+    #[Depends('testWikiExisting')]
+    public function testCharactersXmlCannotCarryDoNotBreakTheFeed(YesWikiRuntime $wiki): void
+    {
+        $config = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
+        $previous = $config['BAZ_RSS_DESCRIPTIONSITE'] ?? null;
+        // a form feed, a NUL, and a truncated multi-byte sequence
+        $config['BAZ_RSS_DESCRIPTIONSITE'] = "before\x0cmid\x00\xC3after";
+        try {
+            $output = $this->runRssOn($wiki, 'a plain page');
+            $doc = new \DOMDocument();
+            $this->assertTrue(
+                $doc->loadXML($output),
+                "illegal characters must not break the feed, got:\n" . substr($output, 0, 500)
+            );
+            $description = $doc->getElementsByTagName('description')->item(0)?->textContent;
+            $this->assertStringContainsString('before', (string)$description);
+            $this->assertStringContainsString('after', (string)$description);
         } finally {
             $config['BAZ_RSS_DESCRIPTIONSITE'] = $previous;
         }

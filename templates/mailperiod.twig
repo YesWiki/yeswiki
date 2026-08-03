@@ -10,8 +10,10 @@
 
     {# Subscribe choices #}
     {% for period, config in periods %}
-      {% set url = user ? url({ params: { subscribe: period} }) : '#LoginModal' %}
-      <a href="{{ url }}" {% if not user %}data-toggle="modal"{% endif %}
+      {# signed out, the button leads to /user: subscribing needs an account, and the way to
+         one is a screen now rather than a modal this page would have to carry #}
+      {% set url = user ? url({ params: { subscribe: period} }) : url({ tag: 'user' }) %}
+      <a href="{{ url }}"
          class="btn btn-{{ config.subscribed ? 'primary' : 'default' }}">
         {{ config.label }}
       </a>

@@ -1,0 +1,24 @@
+{% extends "@core/default.twig" %}
+
+{# The navbar's account button: a link to /user, and nothing else.
+
+   What it replaces was `modal.twig` -- a whole login form, plus a menu of account links,
+   rendered into every page of the wiki whether or not anyone would ever open it. Its markup
+   landed inside `#yw-topnav` on a boosted navigation and outside it on a direct load, and
+   the account links it listed pointed at seeded pages (`ParametresUtilisateur`,
+   `MesContenus`) that an install may well have renamed. The account is a route now, so the
+   navbar only has to say who you are and where to click.
+
+   Still the `{{login}}` action rather than a plain link in the squelette, because only the
+   action knows whether there is a session and whose name to show. #}
+{% block main %}
+  <a class="navbar-btn account-link {{ not nobtn ? 'yw-btn ' ~ btnclass : '' }}"
+     href="{{ url({ tag: 'user' }) }}"
+     data-tooltip="tooltip"
+     data-placement="bottom"
+     title="{{ connected ? _t('LOGIN_MY_OPTIONS') : _t('LOGIN_LOGIN') }}"
+     aria-label="{{ connected ? _t('LOGIN_MY_OPTIONS') : _t('LOGIN_LOGIN') }}">
+    {{ icon(connected ? 'user' : 'login') }}
+    <span class="account-link__label">{{ connected ? user : _t('LOGIN_LOGIN') }}</span>
+  </a>
+{% endblock %}

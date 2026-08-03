@@ -48,7 +48,7 @@
 				<a
 					class="btn btn-danger btn-xs"
 					href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'following', formid: form.id }}) }}"
-					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
+					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT')|e('js') }} ?');"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
 				</a>
@@ -84,7 +84,7 @@
 				<a
 					class="btn btn-danger btn-xs"
 					href="{{ url({ params: { view: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', formid: form.id }}) }}"
-					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
+					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE')|e('js') }} ?');"
 				>
 					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
 				</a>

@@ -21,7 +21,7 @@
             				</a>
 		            {% endif %}
 		            {% if userIsAdmin() or userIsOwner() %}
-		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ url({tag: page.tag, handler: 'deletepage'}) }}"  onclick="javascript:return confirm('{{ _t('TEMPLATE_CONFIRM_DELETE_PAGE') }} ?');">
+		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ url({tag: page.tag, handler: 'deletepage'}) }}"  onclick="javascript:return confirm('{{ _t('TEMPLATE_CONFIRM_DELETE_PAGE')|e('js') }} ?');">
             					  <svg class="yw-icon icon-trash icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
             				</a>
 		            {% endif %}

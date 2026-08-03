@@ -312,7 +312,7 @@ return [
     'AB_management_userstable_label' => 'Tabela do usuário',
     'AB_advanced_action_login_lostpasswordurl_hint' => 'Página wiki ou url',
     'AB_advanced_action_login_btnclass_label' => 'Classe CSS para botões',
-    'AB_advanced_action_login_template_modal' => 'Modal',
+    'AB_advanced_action_login_template_account_link' => 'Modal',
     'AB_advanced_action_login_loggedinurl_hint' => "Wiki ou url página (use 'incomingurl' se vazio ou em caso de erro)",
     'AB_advanced_action_login_loggedouturl_label' => 'Redirecionar url após a desconexão',
     'AB_advanced_action_login_loggedouturl_hint' => 'Efeito sombra Scope',

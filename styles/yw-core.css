@@ -254,6 +254,7 @@ span.missingpage,
 #yw-topnav > .container > .navbar-header {
   width: max-content;
   margin-right: 1em;
+  margin-left: -1em;
 }
 
 #yw-topnav > .container > .topnavpage {
@@ -954,9 +955,13 @@ td.users-table-break-word {
   padding: 3px 8px;
   font-size: 12px;
 }
+/* box-sizing, because a <button> gets it from the browser's form-control defaults and an
+   <a> does not: a block link came out 26px (padding + border) wider than the block button
+   below it, which is what made a stack of buttons look ragged. */
 .yw-btn--block {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 .yw-btn--primary {
   background: var(--primary-color);
@@ -1805,17 +1810,181 @@ textarea.yw-input {
   gap: 4px;
 }
 
-/* the forms admin lists core's own Content types apart from a webmaster's (ticket 10) */
-.forms-table__heading {
-  margin-top: 24px;
-  margin-bottom: 4px;
+/* The forms admin: core's own Content types listed apart from a webmaster's (ticket 10).
+
+   Cards rather than a table: nothing on this screen is a value you compare down a column,
+   and the description -- the one thing that says what a form is for -- had the narrowest
+   cell of five. A card gives each form the width of a paragraph and lets its actions read
+   as belonging to it. */
+.forms-list__section + .forms-list__section {
+  margin-top: 32px;
 }
-.forms-table__heading:first-child {
-  margin-top: 0;
+
+.forms-list__section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
 }
-.forms-table__hint {
-  margin-bottom: 8px;
-  color: var(--neutral-soft-color);
+
+.forms-list__section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.forms-list__filter {
+  width: auto;
+  min-width: 14rem;
+}
+
+.forms-list__heading {
+  margin: 0;
+}
+
+.forms-list__hint {
+  margin-bottom: 12px;
+  color: var(--neutral-color, #777);
+  font-size: 0.9em;
+}
+
+.forms-list__empty {
+  margin: 12px 0;
+  color: var(--neutral-color, #777);
+  font-style: italic;
+}
+
+.forms-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 12px;
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 6px;
+  background: var(--neutral-light-color, #f9f9f9);
+}
+
+/* `display: flex` above beats the UA's `[hidden] { display: none }`, so a card the filter
+   hid would stay on screen -- the same trap the dashboard rail hits with its own `hidden` */
+.form-card[hidden] {
+  display: none;
+}
+
+.form-card__header {
+  min-width: 0;
+}
+
+.form-card__title {
+  margin: 0;
+  font-size: 1.05rem !important;
+}
+
+/* the id, beside the name it identifies rather than in a column of its own */
+.form-card__id {
+  margin-left: 4px;
+  color: var(--neutral-color, #777);
+  font-family: monospace;
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+.form-card__description {
+  margin: 4px 0 0;
+  color: var(--neutral-color, #777);
+  font-size: 0.9em;
+  line-height: 1.35;
+}
+
+/* the two facts that say whether a form is alive, right under what it is */
+.form-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  color: var(--neutral-color, #777);
+  font-size: 0.85em;
+}
+
+.form-card__count {
+  font-weight: 600;
+}
+
+/* an empty form is a fact, not an emphasis: it reads as ordinary text so the eye lands on
+   the forms that hold something */
+.form-card__count--empty {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.form-card__entries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Exports are one-word links, not buttons: there can be six of them on a card, and six
+   buttons would read as the most important thing on it. */
+.form-card__formats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 0.85em;
+}
+
+.form-card__formats-label {
+  color: var(--neutral-color, #777);
+  font-size: 0.9em;
+  text-transform: lowercase;
+}
+
+.form-card__format {
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--neutral-color, #777);
+  font-family: monospace;
+  text-decoration: none;
+}
+
+.form-card__format:hover,
+.form-card__format:focus-visible {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.form-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--neutral-soft-color);
+}
+
+/* emptying and deleting a form are the only irreversible actions here: quiet until meant */
+.form-card__destructive .yw-btn--danger {
+  background: transparent;
+  border: 1px solid var(--neutral-soft-color);
+  color: var(--danger-color);
+}
+
+.form-card__destructive .yw-btn--danger:hover:not([disabled]) {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: #fff;
 }
 
 /* ---- Datatable (ticket 16: replaces jQuery DataTables — vanilla sort/search/paginate) ---- */
@@ -2489,6 +2658,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .btn-block {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 .btn-primary {
   background: var(--primary-color);

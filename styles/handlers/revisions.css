@@ -125,13 +125,6 @@
   opacity: 0.5;
 }
 
-body,
-#yw-header,
-#yw-main,
-#yw-footer {
-  background-color: #4e505608;
-}
-
 .preview-container .preview-content {
   padding: 2rem;
   background-color: var(--neutral-light-color);

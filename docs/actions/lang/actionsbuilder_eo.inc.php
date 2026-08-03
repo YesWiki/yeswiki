@@ -331,7 +331,7 @@ return [
     'AB_advanced_action_login_nobtn_label' => '',
     'AB_advanced_action_login_template_label' => '',
     'AB_advanced_action_login_template_default' => '',
-    'AB_advanced_action_login_template_modal' => '',
+    'AB_advanced_action_login_template_account_link' => '',
     'AB_advanced_action_login_template_horizontal' => '',
     'AB_advanced_action_login_template_dropdown' => '',
     'AB_advanced_action_login_loggedinurl_label' => '',

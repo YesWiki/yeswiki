@@ -76,6 +76,28 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
     }
 
     /**
+     * The same read through `PageManager::getAll()`, which hands the guard RAW `pages` rows
+     * -- body as JSON text, not decoded (ticket 09).
+     *
+     * checkUserAcls() bailed out on those (`if (!is_array($body)) return $page`), so every
+     * screen built on getAll() -- the admin content list, `{{mypages}}` -- got accounts with
+     * their password hash, activation key and e-mail intact. Its sibling checkAcls() did not
+     * bail: it indexed the string and fataled instead, which is how this was found.
+     */
+    public function testTheHashIsRedactedOnRowsWhoseBodyIsStillRawJson(): void
+    {
+        $this->createAccount(self::NAME, 'ufarp-raw@example.tld');
+
+        $rows = $this->getWiki()->services->get(PageManager::class)->getAll();
+        $row = current(array_filter($rows, fn ($page) => ($page['tag'] ?? '') === self::NAME));
+
+        $this->assertNotFalse($row, 'the account must be among the pages');
+        $body = is_array($row['body']) ? $row['body'] : PageBody::decode($row['body']);
+        $this->assertSame('', $body['password'] ?? null, 'the hash must not survive a raw-row read');
+        $this->assertSame('', $body['email'] ?? null, 'nor the address, for a reader who is neither owner nor admin');
+    }
+
+    /**
      * History is a render path. A hash left readable in an old revision is the same leak
      * as one left readable in the current view -- ADR-0003 says so explicitly.
      */

@@ -11,12 +11,12 @@
          it -- adding another one is the toolbar button's job #}
       <button type="button" class="yw-btn yw-btn--sm actions-builder-panel__back"
               v-if="view === 'settings' && !isEditingExistingAction" @click="backToPalette"
-              :title="'{{ _t('ACTION_BUILDER_PALETTE_BACK') }}'">
+              :title="'{{ _t('ACTION_BUILDER_PALETTE_BACK')|e('js') }}'">
         {{ icon('arrow-left') }}
       </button>
       {# the rail names what it is on: the component, not the drawer it was found in #}
       <h2 class="yw-rail__title"
-          v-html="view === 'palette' ? '{{ _t('ACTION_BUILDER_PALETTE_TITLE') }}' : railTitle"></h2>
+          v-html="view === 'palette' ? '{{ _t('ACTION_BUILDER_PALETTE_TITLE')|e('js') }}' : railTitle"></h2>
       <button type="button" class="yw-close" @click="close" aria-label="close">&times;</button>
     </div>
 
@@ -69,7 +69,7 @@
         <div class="panels-config-container">
           <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class"
                :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
-            <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
+            <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS')|e('js') }}'"></h3>
             <div class="config-panel-content">
               <template v-for="(config, propName) in panel.params.properties" :key="propName">
                 <div v-html="config.intro" v-show="checkVisibility(config)"></div>
@@ -86,7 +86,7 @@
 
         {# Advanced Params Checkbox #}
         <input-checkbox v-if="isSomeAdvancedParams" :value="displayAdvancedParams" @input="displayAdvancedParams = $event"
-                        :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS') }}'}"
+                        :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS')|e('js') }}'}"
                         class="advanced-params">
         </input-checkbox>
 

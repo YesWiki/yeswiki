@@ -1,0 +1,14 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# BazaR's forms screen. The action decides for itself what a given reader may see and do,
+   so this route is public like the rest of the dashboard -- a visitor gets the lists, an
+   admin gets the management screens.
+
+   `showmenu: 0`: BazaR ships a tab bar of its own (`.BAZ_menu`), which on a dashboard
+   route would be a second navigation under the first. The rail on the left is the
+   navigation; the views that bar used to reach are routes or links of their own. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_FORMS') }}</h1>
+  <p class="yw-dashboard__intro">{{ _t('DASHBOARD_FORMS_INTRO') }}</p>
+  {{ renderAction('bazar', { showmenu: '0' })|raw }}
+{% endblock %}

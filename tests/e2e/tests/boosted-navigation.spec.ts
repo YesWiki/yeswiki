@@ -248,6 +248,59 @@ test.describe('boosted navigation', () => {
     expect(watcher.errors(), 'the browser reported errors during navigation').toEqual([])
   })
 
+  /**
+   * /doc and /api are dashboard routes, so moving between them is a boosted swap that
+   * re-runs every <script> the swapped body carries -- documentation.js among them.
+   *
+   * It declared `const docRoot` at top level, and a second run of the same file in the same
+   * global scope is a SyntaxError: the whole script died before its first statement. That
+   * statement is the empty <nav> it puts at the top of the body for docsify to claim, so
+   * docsify's `find('nav')` took the WIKI's navbar instead, emptied it into `_navbar.md`,
+   * and the site navigation vanished until a full reload. Nothing server-side can see this.
+   */
+  test('leaving the documentation and coming back keeps the wiki navbar', async ({ page }, testInfo) => {
+    const watcher = watchConsole(page)
+    const railLink = (route: string) => page.locator(`.yw-dashboard__sidebar a[href*="${route}"]`).first()
+    // The wiki's own menu, by what it points at rather than by how many links it holds: the
+    // login modal's markup sits inside the navbar after a boosted swap and outside it on a
+    // direct load, so a count differs for a reason that has nothing to do with this.
+    const wikiMenuLinks = () => page.locator('#yw-topnav .topnavpage a').count()
+
+    await page.goto('/?doc')
+    await expect(
+      page.locator('.yw-dashboard__canvas main .markdown-section'),
+      'docsify did not render on a direct load'
+    ).toBeVisible({ timeout: 15000 })
+    const linksBefore = await wikiMenuLinks()
+    expect(linksBefore, 'this wiki has no navbar menu, so there is nothing to lose').toBeGreaterThan(0)
+
+    for (let round = 0; round < 2; round += 1) {
+      await railLink('api').click()
+      await page.waitForFunction(() => window.location.href.includes('api'), null, { timeout: 10000 })
+      await railLink('doc').click()
+      await page.waitForFunction(() => window.location.href.includes('doc'), null, { timeout: 10000 })
+      await page.waitForTimeout(1500)
+
+      await expect(
+        page.locator('.yw-dashboard__canvas main .markdown-section'),
+        `docsify did not render after round trip ${round + 1}`
+      ).toBeVisible({ timeout: 15000 })
+      // the navbar must still be the wiki's own: hijacked, docsify empties it and marks it
+      // `app-nav`, so its own menu links are what disappear
+      expect(
+        await wikiMenuLinks(),
+        `the wiki navbar was emptied after round trip ${round + 1}`
+      ).toBe(linksBefore)
+      expect(
+        await page.locator('#yw-topnav.app-nav').count(),
+        `docsify claimed the wiki navbar after round trip ${round + 1}`
+      ).toBe(0)
+    }
+
+    await attachConsole(watcher, testInfo)
+    expect(watcher.errors(), 'the browser reported errors').toEqual([])
+  })
+
   /** With the cache disabled, going back is an ordinary load -- and must still work. */
   test('the back button restores a working page', async ({ page }, testInfo) => {
     const watcher = watchConsole(page)

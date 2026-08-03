@@ -1,0 +1,22 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The three ACL surfaces GererDroits / GererDroitsActions / GererDroitsHandlers used to
+   spread over three pages, on one route. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_PERMISSIONS') }}</h1>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_PAGES') }}</h2>
+    {{ renderAction('adminacls')|raw }}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_ACTIONS') }}</h2>
+    {{ renderAction('editactionsacls')|raw }}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_HANDLERS') }}</h2>
+    {{ renderAction('edithandlersacls')|raw }}
+  </section>
+{% endblock %}

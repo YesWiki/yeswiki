@@ -1,0 +1,6 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_BACKUPS') }}</h1>
+  {{ renderAction('adminbackups')|raw }}
+{% endblock %}

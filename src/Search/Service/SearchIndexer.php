@@ -269,7 +269,15 @@ class SearchIndexer
     {
         $rows = [];
         foreach ($contents as $content) {
-            foreach ($content->buckets as $acl => $text) {
+            // A Content with a name but no field text still has to be findable *by that
+            // name*: an uploaded file has nothing but its filename, an account nothing but
+            // its login, and one row per ACL bucket meant zero rows for both -- so no
+            // uploaded file and no account was in the index at all, and neither could be
+            // searched or counted. The title lives in its own indexed column, so the
+            // fallback row is the public bucket with no text; `page_read_acl` still decides
+            // who may see it. `extract()` has already dropped the ones that are truly empty.
+            $buckets = $content->buckets === [] ? ['' => ''] : $content->buckets;
+            foreach ($buckets as $acl => $text) {
                 $rows[] = '('
                     . "'{$this->dbService->escape($content->tag)}', "
                     . "'{$this->dbService->escape((string)$acl)}', "

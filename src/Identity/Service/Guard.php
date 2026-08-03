@@ -3,6 +3,7 @@
 namespace YesWiki\Identity\Service;
 
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
@@ -76,7 +77,13 @@ class Guard
             return $page;
         }
         if ($page) {
-            $body = $page['body'] ?? [];
+            // PageManager::getAll() hands over raw `pages` rows, whose body is JSON *text*
+            // (ticket 09) -- so this read `$body['form_id']` on a string, which under PHP 8
+            // is a fatal "cannot access offset of type string on string" and took out every
+            // screen listing pages. Decoded here and re-encoded below, so the caller gets
+            // back the shape it passed in.
+            $rawBody = $page['body'] ?? null;
+            $body = is_array($rawBody) ? $rawBody : PageBody::decode(is_string($rawBody) ? $rawBody : null);
 
             if ($body) {
                 $form = $this->formManager->getOne($body['form_id']);
@@ -94,7 +101,7 @@ class Guard
                             $body[$field] = '';
                             // on vide le champ
                         }
-                        $page['body'] = $body;
+                        $page['body'] = is_array($rawBody) ? $body : PageBody::encode($body);
                     }
                 }
             }
@@ -132,8 +139,12 @@ class Guard
         if (empty($page['body'])) {
             return $page;
         }
-        $body = $page['body'];
-        if (!is_array($body)) {
+        // same as checkAcls(): a raw `pages` row carries its body as JSON text. Returning
+        // early on one -- which is what this did -- skipped the redaction entirely, and the
+        // first field in USER_ALWAYS_HIDDEN_FIELDS is the password hash.
+        $rawBody = $page['body'];
+        $body = is_array($rawBody) ? $rawBody : PageBody::decode(is_string($rawBody) ? $rawBody : null);
+        if (!$body) {
             return $page;
         }
 
@@ -151,7 +162,7 @@ class Guard
             }
         }
         if ($modified) {
-            $page['body'] = $body;
+            $page['body'] = is_array($rawBody) ? $body : PageBody::encode($body);
         }
 
         return $page;

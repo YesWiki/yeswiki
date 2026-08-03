@@ -139,6 +139,62 @@ class SearchIndexTest extends YesWikiTestCase
         $this->assertCount(1, $found['results']);
     }
 
+    /**
+     * A Content whose only searchable text is its NAME must still be in the index.
+     *
+     * The writer emitted one row per ACL bucket, and a Content whose fields hold no text has
+     * no bucket -- so it produced no rows at all. That was every uploaded file (which has a
+     * filename and nothing else) and every account: neither could be found by name, and
+     * neither was counted by contentStats(), which reported "0 files" on a wiki holding
+     * dozens. The fallback row is public with no text; `page_read_acl` still guards it.
+     */
+    public function testAContentWithANameButNoTextIsStillIndexed(): void
+    {
+        $this->savePage(self::TAG, 'Salsifis', '');
+
+        $found = $this->search('salsifis');
+
+        $this->assertSame(1, $found['total'], 'a Content must be findable by its name alone');
+        $this->assertSame(self::TAG, $found['results'][0]['tag']);
+
+        $stats = $this->getWiki()->services->get(SearchIndexQuery::class)->contentStats();
+        $this->assertGreaterThan(0, $stats['byType']['page']['count'] ?? 0);
+    }
+
+    /**
+     * contentStats() is what the forms screen reports "N entries" from, so it counts
+     * Contents, not index rows -- a Content with restricted fields owns one row per ACL
+     * bucket -- and never counts the forms themselves among the Content they describe.
+     */
+    public function testContentStatsCountsContentsAndIgnoresForms(): void
+    {
+        $wiki = $this->getWiki();
+        $db = $wiki->services->get(DbService::class);
+        $schema = $wiki->services->get(SearchIndexSchema::class);
+
+        $this->savePage(self::TAG, 'Panais', 'un texte sur le panais');
+        // a second ACL bucket for the same Content, exactly as a restricted field produces
+        $db->query(
+            "INSERT INTO {$schema->table()}"
+            . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
+            . " VALUES ('" . self::TAG . "', '@admins', '" . md5('@admins') . "', '', '',"
+            . " 'page', '', 'Panais', 'un secret', '2026-01-01 00:00:00')"
+        );
+
+        $stats = $wiki->services->get(SearchIndexQuery::class)->contentStats();
+        $pagesBefore = $stats['byType']['page']['count'] ?? 0;
+
+        $this->savePage(self::OTHER_TAG, 'Panais bis', 'un autre texte');
+        $stats = $wiki->services->get(SearchIndexQuery::class)->contentStats();
+
+        $this->assertSame(
+            $pagesBefore + 1,
+            $stats['byType']['page']['count'] ?? 0,
+            'a Content indexed in two ACL buckets must count once'
+        );
+        $this->assertArrayNotHasKey('form', $stats['byType'], 'a form is not Content of its own form');
+    }
+
     public function testTheContentTypeFilterNarrows(): void
     {
         $this->savePage(self::TAG, 'Topinambour', 'un texte sur le topinambour');

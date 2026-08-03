@@ -1,0 +1,17 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# BazaR's import and export screens, which its tab bar used to be the only way to reach.
+   Both on one route: they are two halves of the same job, and neither fills a screen. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_IMPORTS') }}</h1>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('DASHBOARD_ADMIN_IMPORT') }}</h2>
+    {{ renderAction('bazar', { view: 'importer', showmenu: '0' })|raw }}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('DASHBOARD_ADMIN_EXPORT') }}</h2>
+    {{ renderAction('bazar', { view: 'exporter', showmenu: '0' })|raw }}
+  </section>
+{% endblock %}

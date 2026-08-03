@@ -40,7 +40,7 @@
                             {% if showAdminActions %}
                                 <button class="btn btn-default btn-xs"
                                     data-key="{{ key }}"
-                                    onclick="javascript:deleteCSSPreset(this,'{{ _t('TEMPLATE_DELETE_CSS_PRESET') }} {{ key }} ?',
+                                    onclick="javascript:deleteCSSPreset(this,'{{ _t('TEMPLATE_DELETE_CSS_PRESET')|e('js') }} {{ key|e('js') }} ?',
                                     '{{ url({tag:"api/templates/custom-presets/#{key}"}) }}');">
                                     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
                                 </button>

@@ -331,7 +331,7 @@ return [
     'AB_advanced_action_login_nobtn_label' => 'Sustituir el botón por un enlace (sólo modal)',
     'AB_advanced_action_login_template_label' => 'Plantilla',
     'AB_advanced_action_login_template_default' => 'Estándar',
-    'AB_advanced_action_login_template_modal' => 'Modal',
+    'AB_advanced_action_login_template_account_link' => 'Modal',
     'AB_advanced_action_login_template_horizontal' => 'Horizontal',
     'AB_advanced_action_login_template_dropdown' => 'Menú desplegable',
     'AB_advanced_action_login_loggedinurl_label' => 'Redireccionar URL después de iniciar sesión correctamente',

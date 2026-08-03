@@ -1,0 +1,16 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The two traces you leave on other people's pages. #}
+{% block dashboard_content %}
+  <h1>{{ _t('ACCOUNT_REACTIONS') }}</h1>
+
+  <section class="yw-account__section">
+    <h2>{{ _t('ACCOUNT_REACTIONS_VOTES') }}</h2>
+    {{ renderAction('userreactions')|raw }}
+  </section>
+
+  <section class="yw-account__section">
+    <h2>{{ _t('ACCOUNT_REACTIONS_COMMENTS') }}</h2>
+    {{ renderAction('usercomments')|raw }}
+  </section>
+{% endblock %}

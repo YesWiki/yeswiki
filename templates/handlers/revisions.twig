@@ -42,14 +42,18 @@
           {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
           {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
+        {# The labels are element content, NOT `v-text="'…'"`. A translation pasted inside a
+           JS string literal is a translation that may not contain the quote character that
+           closes it, and the French one does: "droits d'accès" ended the string mid-word,
+           so Vue failed to compile this template and the whole revisions screen went blank.
+           Written this way Twig substitutes plain text and Vue never parses it. #}
          <a :href="restoreUrl" class="btn btn-success btn-restore"
-            :class="{ disabled: isLastRevision }"
-            v-text="isLastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
+            :class="{ disabled: isLastRevision }">
+          <span v-if="isLastRevision">{{ _t('CURRENT_VERSION') }}</span>
+          <span v-else>{{ _t('RESTORE_REVISION') }}</span>
         </a>
         <a v-if="!isLastRevision" :href="fullRestoreUrl" class="btn btn-link btn-restore-full"
-           title="{{ _t('RESTORE_REVISION_FULL') }}"
-           v-text="'{{ _t('RESTORE_REVISION_FULL') }}'">
-        </a>
+           title="{{ _t('RESTORE_REVISION_FULL') }}">{{ _t('RESTORE_REVISION_FULL') }}</a>
       </div>
       <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(false)" :disabled="isLastRevision || null"><use href="src/assets/icons.svg#chevron-right"/></svg>
     </div>

@@ -328,7 +328,7 @@ return [
     'AB_advanced_action_login_nobtn_label' => 'ரெம்லேசர் லு பூட்டன் பார் அன் லீன் (மாதிரி தனித்துவம்)',
     'AB_advanced_action_login_template_label' => 'வார்ப்புரு',
     'AB_advanced_action_login_template_default' => 'தரநிலை',
-    'AB_advanced_action_login_template_modal' => 'மோடல்',
+    'AB_advanced_action_login_template_account_link' => 'மோடல்',
     'AB_advanced_action_login_template_horizontal' => 'கிடைமட்டமாக',
     'AB_advanced_action_login_template_dropdown' => 'பட்டியல் டெரூலண்ட்',
     'AB_advanced_action_login_loggedinurl_label' => 'முகவரி DE REAIRECTION APRES CONNEXION Réussie',

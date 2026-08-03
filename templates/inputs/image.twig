@@ -19,7 +19,7 @@
                 {% if isAllowedToDeleteFile and not isDefaultImage %}
                     <a class="yw-btn yw-btn--sm yw-btn--danger"
                        href="{{ deleteUrl }}"
-                       onclick="javascript:return confirm('{{ _t("BAZ_CONFIRMATION_SUPPRESSION_IMAGE") }}');">
+                       onclick="javascript:return confirm('{{ _t("BAZ_CONFIRMATION_SUPPRESSION_IMAGE")|e('js') }}');">
                         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
                         {{ _t("BAZ_SUPPRIMER_IMAGE") }}
                     </a>

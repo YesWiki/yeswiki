@@ -1,112 +1,101 @@
 {# ============================================================
    AdminContent action – main shell template
    Loaded once; the inner table is swapped by HTMX.
-   ============================================================ #}
-
-{{ include_css('styles/actions/admin-content.css') }}
-
-<div class="full-width no-dblclick">
-<div class="admin-content-wrapper" id="admin-content-wrapper">
-
+============================================================ #}
+{{ include_css("styles/actions/admin-content.css") }}
+<div class="no-dblclick admin-content-wrapper" id="admin-content-wrapper">
     {# --------------------------------------------------------
        Flash / bulk-action result area
        -------------------------------------------------------- #}
     <div id="admin-bulk-result" aria-live="polite"></div>
-
     {# --------------------------------------------------------
        Filter bar  (values are included in every HTMX request)
        -------------------------------------------------------- #}
     <div class="admin-content-filter-bar">
         <form id="admin-content-filter-form" autocomplete="off">
-
             <div class="yw-form-group">
-                <label for="acf-search">{{ _t('TEMPLATE_SEARCH') }}</label>
+                <label for="acf-search">{{ _t("TEMPLATE_SEARCH") }}</label>
                 {# the shared box in its inline form: same component as {{search}} and the
                    entry lists, sized for a filter bar rather than for a page that is about
                    searching. No button -- this bar filters as you type. #}
                 {% include '@core/_searchbox.twig' with {
-                    name: 'search',
-                    id: 'acf-search',
-                    button: '',
-                    modifier: 'yw-searchbox--inline'
+                name: 'search',
+                id: 'acf-search',
+                button: '',
+                modifier: 'yw-searchbox--inline'
                 } only %}
             </div>
-
             <div class="yw-form-group">
                 <label for="acf-type">Type</label>
                 <select id="acf-type" name="type" class="yw-input">
-                    <option value="all">— {{ _t('GROUP_SELECTION') }} —</option>
-                    <option value="pages">{{ _t('ADMIN_CONTENT_TYPE_PAGES') }}</option>
-                    <option value="bazar">{{ _t('ADMIN_CONTENT_TYPE_ALL_FORMS') }}</option>
+                    <option value="all">— {{ _t("GROUP_SELECTION") }} —</option>
+                    <option value="pages">{{ _t("ADMIN_CONTENT_TYPE_PAGES") }}</option>
+                    <option value="bazar">{{ _t("ADMIN_CONTENT_TYPE_ALL_FORMS") }}</option>
                     {% for id, form in forms %}
-                    <option value="{{ id }}">{{ _t('ADMIN_CONTENT_TYPE_FORM')|replace({'{name}': form.label}) }}</option>
+                        <option value="{{ id }}">{{ _t("ADMIN_CONTENT_TYPE_FORM") |replace({'{name}': form.label}) }}</option>
                     {% endfor %}
-                    <option value="lists">{{ _t('ADMIN_CONTENT_TYPE_LISTS') }}</option>
-                    <option value="special">{{ _t('ADMIN_CONTENT_TYPE_SPECIAL_PAGES') }}</option>
-                    <option value="comments">{{ _t('COMMENTS') }}</option>
+                    <option value="lists">{{ _t("ADMIN_CONTENT_TYPE_LISTS") }}</option>
+                    <option value="special">{{ _t("ADMIN_CONTENT_TYPE_SPECIAL_PAGES") }}</option>
+                    <option value="comments">{{ _t("COMMENTS") }}</option>
                 </select>
             </div>
-
             <div class="yw-form-group">
-                <label for="acf-owner">{{ _t('TEMPLATE_OWNER') }}</label>
+                <label for="acf-owner">{{ _t("TEMPLATE_OWNER") }}</label>
                 <select id="acf-owner" name="owner" class="yw-input">
-                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
-                    {% for owner in owners %}
-                    <option value="{{ owner|e('html_attr') }}">{{ owner|e }}</option>
-                    {% endfor %}
+                    <option value="">— {{ _t("GROUP_SELECTION") }} —</option>
+                    {% for owner in owners %}<option value="{{ owner|e("html_attr") }}">{{ owner|e }}</option>{% endfor %}
                 </select>
             </div>
-
             <div class="yw-form-group">
-                <label for="acf-acl">{{ _t('ADMIN_CONTENT_ACL_LABEL') }}</label>
+                <label for="acf-acl">{{ _t("ADMIN_CONTENT_ACL_LABEL") }}</label>
                 <select id="acf-acl" name="acl_filter" class="yw-input">
-                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
-                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }}">
-                        <option value="read|*">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="read|+">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="read|%">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
+                    <option value="">— {{ _t("GROUP_SELECTION") }} —</option>
+                    <optgroup label="{{ _t("ADMIN_CONTENT_ACL_READ_LABEL") }}">
+                        <option value="read|*">{{ _t("ADMIN_CONTENT_ACL_READ_LABEL") }} : {{ _t("ACLS_EVERYBODY") }}</option>
+                        <option value="read|+">{{ _t("ADMIN_CONTENT_ACL_READ_LABEL") }} : {{ _t("ACLS_AUTHENTIFICATED_USERS") }}</option>
+                        <option value="read|%">{{ _t("ADMIN_CONTENT_ACL_READ_LABEL") }} : {{ _t("ACLS_OWNER") }}</option>
                         {% for group in groups %}
-                        <option value="read|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : @{{ group }}</option>
+                            <option value="read|@{{ group }}">{{ _t("ADMIN_CONTENT_ACL_READ_LABEL") }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
-                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }}">
-                        <option value="write|*">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="write|+">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="write|%">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
+                    <optgroup label="{{ _t("ADMIN_CONTENT_ACL_WRITE_LABEL") }}">
+                        <option value="write|*">{{ _t("ADMIN_CONTENT_ACL_WRITE_LABEL") }} : {{ _t("ACLS_EVERYBODY") }}</option>
+                        <option value="write|+">{{ _t("ADMIN_CONTENT_ACL_WRITE_LABEL") }} : {{ _t("ACLS_AUTHENTIFICATED_USERS") }}</option>
+                        <option value="write|%">{{ _t("ADMIN_CONTENT_ACL_WRITE_LABEL") }} : {{ _t("ACLS_OWNER") }}</option>
                         {% for group in groups %}
-                        <option value="write|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : @{{ group }}</option>
+                            <option value="write|@{{ group }}">{{ _t("ADMIN_CONTENT_ACL_WRITE_LABEL") }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
-                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }}">
-                        <option value="comment|*">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="comment|+">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="comment|%">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
-                        <option value="comment|comments-closed">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_COMMENTS_CLOSED') }}</option>
+                    <optgroup label="{{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }}">
+                        <option value="comment|*">{{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }} : {{ _t("ACLS_EVERYBODY") }}</option>
+                        <option value="comment|+">{{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }} : {{ _t("ACLS_AUTHENTIFICATED_USERS") }}</option>
+                        <option value="comment|%">{{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }} : {{ _t("ACLS_OWNER") }}</option>
+                        <option value="comment|comments-closed">
+                            {{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }} : {{ _t("ACLS_COMMENTS_CLOSED") }}
+                        </option>
                         {% for group in groups %}
-                        <option value="comment|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : @{{ group }}</option>
+                            <option value="comment|@{{ group }}">{{ _t("ADMIN_CONTENT_ACL_COMMENT_LABEL") }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
                 </select>
             </div>
-
             <div class="yw-form-group">
-                <label for="acf-theme">{{ _t('ADMIN_CONTENT_THEME_THEME') }}</label>
+                <label for="acf-theme">{{ _t("ADMIN_CONTENT_THEME_THEME") }}</label>
                 <select id="acf-theme" name="theme_filter" class="yw-input">
-                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
-                    {% for key, tpl in templates %}
-                    <option value="{{ key|e('html_attr') }}">{{ (tpl.name ?? key)|e }}</option>
-                    {% endfor %}
+                    <option value="">— {{ _t("GROUP_SELECTION") }} —</option>
+                    {% for key, tpl in templates %}<option value="{{ key|e("html_attr") }}">{{ (tpl.name ?? key)|e }}</option>{% endfor %}
                 </select>
             </div>
-
             <div class="yw-form-group">
-                <label for="acf-tag">{{ _t('ADMIN_CONTENT_KEYWORDS_LABEL') }}</label>
-                <input id="acf-tag" type="text" name="tag_filter" class="yw-input"
-                       placeholder="{{ _t('ACLS_SELECT_PAGES_FILTER') }}">
+                <label for="acf-tag">{{ _t("ADMIN_CONTENT_KEYWORDS_LABEL") }}</label>
+                <input id="acf-tag"
+                       type="text"
+                       name="tag_filter"
+                       class="yw-input"
+                       placeholder="{{ _t("ACLS_SELECT_PAGES_FILTER") }}">
             </div>
-
             <div class="yw-form-group">
-                <label for="acf-perpage">{{ _t('ADMIN_CONTENT_PER_PAGE_LABEL') }}</label>
+                <label for="acf-perpage">{{ _t("ADMIN_CONTENT_PER_PAGE_LABEL") }}</label>
                 <select id="acf-perpage" name="perpage" class="yw-input">
                     <option value="50" selected>50</option>
                     <option value="100">100</option>
@@ -115,76 +104,88 @@
                     <option value="500">500</option>
                 </select>
             </div>
-
             {# Hidden state fields (updated by JS) #}
             <input type="hidden" id="acf-sort" name="sort" value="tag">
             <input type="hidden" id="acf-dir"  name="dir"  value="asc">
             <input type="hidden" id="acf-page" name="page" value="1">
-
             <div class="yw-form-group">
                 <button type="button" id="acf-reset" class="yw-btn yw-btn--sm">
-                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg> {{ _t('YW_CANCEL') }}
+                    <svg class="yw-icon" aria-hidden="true">
+                        <use href="src/assets/icons.svg#x" />
+                    </svg>
+                    {{ _t("YW_CANCEL") }}
                 </button>
             </div>
-
         </form>
-    </div>{# /.admin-content-filter-bar #}
-
+    </div>
+    {# /.admin-content-filter-bar #}
     {# --------------------------------------------------------
        Table container – HTMX target
        -------------------------------------------------------- #}
     <div class="admin-content-table-wrap">
         <div id="table-spinner" class="htmx-indicator admin-content-spinner">
-            <svg class="yw-icon yw-icon--spin yw-icon--2x yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#loader-2"/></svg>
+            <svg class="yw-icon yw-icon--spin yw-icon--2x yw-text-muted"
+                 aria-hidden="true">
+                <use href="src/assets/icons.svg#loader-2" />
+            </svg>
         </div>
-
-    <div id="admin-content-table-container"
-         hx-get="{{ apiUrl }}"
-         hx-trigger="refreshTable from:body"
-         hx-include="#admin-content-filter-form"
-         hx-indicator="#table-spinner"
-         hx-swap="innerHTML">
+        <div id="admin-content-table-container"
+             hx-get="{{ apiUrl }}"
+             hx-trigger="refreshTable from:body"
+             hx-include="#admin-content-filter-form"
+             hx-indicator="#table-spinner"
+             hx-swap="innerHTML"></div>
     </div>
-    </div>{# /.admin-content-table-wrap #}
-
+    {# /.admin-content-table-wrap #}
     {# --------------------------------------------------------
        Bulk action sticky panel
        -------------------------------------------------------- #}
     <div class="admin-bulk-panel" id="admin-bulk-panel" aria-live="polite">
-        <span class="bulk-count" id="bulk-count-label">0 {{ _t('PAGES') }}</span>
-
+        <span class="bulk-count" id="bulk-count-label">0 {{ _t("PAGES") }}</span>
         {% if not isHibernated %}
-        <button type="button" class="yw-btn yw-btn--warning yw-btn--sm"
-                data-yw-modal-target="#modal-acls"
-                id="btn-bulk-acls"
-                onclick="adminContent.populateModal('acls')">
-            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg> {{ _t('ADMIN_CONTENT_ACL_LABEL') }}
-        </button>
-
-        <button type="button" class="yw-btn yw-btn--info yw-btn--sm"
-                data-yw-modal-target="#modal-theme"
-                id="btn-bulk-theme"
-                onclick="adminContent.populateModal('theme')">
-            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#brush"/></svg> {{ _t('ADMIN_CONTENT_BULK_THEME') }}
-        </button>
+            <button type="button"
+                    class="yw-btn yw-btn--warning yw-btn--sm"
+                    data-yw-modal-target="#modal-acls"
+                    id="btn-bulk-acls"
+                    onclick="adminContent.populateModal('acls')">
+                <svg class="yw-icon" aria-hidden="true">
+                    <use href="src/assets/icons.svg#lock" />
+                </svg>
+                {{ _t("ADMIN_CONTENT_ACL_LABEL") }}
+            </button>
+            <button type="button"
+                    class="yw-btn yw-btn--info yw-btn--sm"
+                    data-yw-modal-target="#modal-theme"
+                    id="btn-bulk-theme"
+                    onclick="adminContent.populateModal('theme')">
+                <svg class="yw-icon" aria-hidden="true">
+                    <use href="src/assets/icons.svg#brush" />
+                </svg>
+                {{ _t("ADMIN_CONTENT_BULK_THEME") }}
+            </button>
         {% endif %}
-
-        <button type="button" class="yw-btn yw-btn--danger yw-btn--sm"
+        <button type="button"
+                class="yw-btn yw-btn--danger yw-btn--sm"
                 data-yw-modal-target="#modal-delete"
                 id="btn-bulk-delete"
                 onclick="adminContent.populateModal('delete')">
-            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#trash" />
+            </svg>
+            {{ _t("DELETE") }}
         </button>
-
-        <button type="button" class="yw-btn yw-btn--sm" onclick="adminContent.clearSelection()">
-            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#circle-x"/></svg> {{ _t('YW_CANCEL') }}
+        <button type="button"
+                class="yw-btn yw-btn--sm"
+                onclick="adminContent.clearSelection()">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#circle-x" />
+            </svg>
+            {{ _t("YW_CANCEL") }}
         </button>
     </div>
-
     {# ============================================================
        MODALS
-       ============================================================ #}
-
+============================================================ #}
     {# ---- DELETE modal ---- #}
     <div class="yw-modal" id="modal-delete" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog" role="document">
@@ -192,7 +193,10 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <svg class="yw-icon yw-text-danger" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
+                        <svg class="yw-icon yw-text-danger" aria-hidden="true">
+                            <use href="src/assets/icons.svg#trash" />
+                        </svg>
+                        {{ _t("DELETE") }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -201,28 +205,35 @@
                       id="form-delete">
                     <div class="yw-modal__body">
                         <div class="yw-alert yw-alert--danger">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#alert-triangle"/></svg>
-                            <strong>{{ _t('ADMIN_CONTENT_IRREVERSIBLE_ACTION') }}</strong> —
-                            {{ _t('ADMIN_CONTENT_DELETE_WARNING') }}
+                            <svg class="yw-icon" aria-hidden="true">
+                                <use href="src/assets/icons.svg#alert-triangle" />
+                            </svg>
+                            <strong>{{ _t("ADMIN_CONTENT_IRREVERSIBLE_ACTION") }}</strong> —
+                            {{ _t("ADMIN_CONTENT_DELETE_WARNING") }}
                         </div>
-                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="delete-count-label">0</strong> page(s)</p>
+                        <p>
+                            {{ _t("ADMIN_CONTENT_SELECTED_LABEL") }} <strong id="delete-count-label">0</strong> page(s)
+                        </p>
                         <div id="delete-pages-list" class="yw-box"></div>
                         <input type="hidden" name="bulk_action" value="delete">
-                        <input type="hidden" name="csrf-token"
-                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+                        <input type="hidden"
+                               name="csrf-token"
+                               value="{{ csrfToken({"id": "main", "refresh": false}) |e('html_attr') }}">
                         <div id="delete-pages-inputs"></div>
                     </div>
                     <div class="yw-modal__footer">
-                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t("YW_CANCEL") }}</button>
                         <button type="submit" class="yw-btn yw-btn--danger">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
+                            <svg class="yw-icon" aria-hidden="true">
+                                <use href="src/assets/icons.svg#trash" />
+                            </svg>
+                            {{ _t("DELETE") }}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
     {# ---- ACLs modal ---- #}
     <div class="yw-modal" id="modal-acls" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog yw-modal__dialog--lg" role="document">
@@ -230,7 +241,10 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <svg class="yw-icon yw-text-warning" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg> {{ _t('ADMIN_CONTENT_EDIT_ACL_TITLE') }}
+                        <svg class="yw-icon yw-text-warning" aria-hidden="true">
+                            <use href="src/assets/icons.svg#lock" />
+                        </svg>
+                        {{ _t("ADMIN_CONTENT_EDIT_ACL_TITLE") }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -238,76 +252,77 @@
                       hx-swap="innerHTML"
                       id="form-acls">
                     <div class="yw-modal__body">
-
-                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="acls-count-label">0</strong> page(s)</p>
+                        <p>
+                            {{ _t("ADMIN_CONTENT_SELECTED_LABEL") }} <strong id="acls-count-label">0</strong> page(s)
+                        </p>
                         <div id="acls-pages-inputs"></div>
                         <input type="hidden" name="bulk_action" value="change-acls">
-                        <input type="hidden" name="csrf-token"
-                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-
+                        <input type="hidden"
+                               name="csrf-token"
+                               value="{{ csrfToken({"id": "main", "refresh": false}) |e('html_attr') }}">
                         <div class="yw-form-group">
-                            <label>{{ _t('ADMIN_CONTENT_ACL_MODE_LABEL') }}</label>
+                            <label>{{ _t("ADMIN_CONTENT_ACL_MODE_LABEL") }}</label>
                             <div>
                                 <label class="yw-radio-inline">
                                     <input type="radio" name="acl_mode" value="replace" checked>
-                                    {{ _t('ACLS_REPLACE_SELECTED_PAGES') }}
+                                    {{ _t("ACLS_REPLACE_SELECTED_PAGES") }}
                                 </label>
                                 <label class="yw-radio-inline">
                                     <input type="radio" name="acl_mode" value="append">
-                                    {{ _t('ADMIN_CONTENT_ACL_MODE_APPEND') }}
+                                    {{ _t("ADMIN_CONTENT_ACL_MODE_APPEND") }}
                                 </label>
                                 <label class="yw-radio-inline">
                                     <input type="radio" name="acl_mode" value="default">
-                                    {{ _t('ACLS_RESET_SELECTED_PAGES') }}
+                                    {{ _t("ACLS_RESET_SELECTED_PAGES") }}
                                 </label>
                             </div>
                         </div>
-
-                        <div class="yw-alert yw-alert--info" style="font-size:12px;">
-                            {{ _t('ACLS_HELPER')|raw }}
-                        </div>
-
+                        <div class="yw-alert yw-alert--info" style="font-size:12px;">{{ _t("ACLS_HELPER") |raw }}</div>
                         <div class="yw-form-row">
                             {% for role in ['read','write','comment'] %}
-                            <div class="yw-form-group">
-                                <label>
-                                    {% if role == 'read' %}{{ _t('YW_ACLS_READ') }}
-                                    {% elseif role == 'write' %}{{ _t('YW_ACLS_WRITE') }}
-                                    {% else %}{{ _t('YW_ACLS_COMMENT') }}
-                                    {% endif %}
-                                </label>
-                                <select name="acl_{{ role }}" class="yw-input acl-select">
-                                    <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
-                                    {% if role == 'comment' %}
-                                    <option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>
-                                    {% else %}
-                                    <option value="*">{{ _t('ACLS_EVERYBODY') }}</option>
-                                    {% endif %}
-                                    <option value="+">{{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                                    <option value="%">{{ _t('ACLS_OWNER') }}</option>
-                                    {% for group in groups %}
-                                    <option value="@{{ group }}">@{{ group }}</option>
-                                    {% endfor %}
-                                </select>
-                                <input type="text" name="acl_{{ role }}_custom"
-                                       class="yw-input" style="margin-top:4px;"
-                                       placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}">
-                            </div>
+                                <div class="yw-form-group">
+                                    <label>
+                                        {% if role == 'read' %}
+                                            {{ _t("YW_ACLS_READ") }}
+                                        {% elseif role == 'write' %}
+                                            {{ _t("YW_ACLS_WRITE") }}
+                                        {% else %}
+                                            {{ _t("YW_ACLS_COMMENT") }}
+                                        {% endif %}
+                                    </label>
+                                    <select name="acl_{{ role }}" class="yw-input acl-select">
+                                        <option value="">— {{ _t("ACLS_NO_CHANGE") }} —</option>
+                                        {% if role == 'comment' %}
+                                            <option value="comments-closed">{{ _t("ACLS_COMMENTS_CLOSED") }}</option>
+                                        {% else %}
+                                            <option value="*">{{ _t("ACLS_EVERYBODY") }}</option>
+                                        {% endif %}
+                                        <option value="+">{{ _t("ACLS_AUTHENTIFICATED_USERS") }}</option>
+                                        <option value="%">{{ _t("ACLS_OWNER") }}</option>
+                                        {% for group in groups %}<option value="@{{ group }}">@{{ group }}</option>{% endfor %}
+                                    </select>
+                                    <input type="text"
+                                           name="acl_{{ role }}_custom"
+                                           class="yw-input"
+                                           style="margin-top:4px"
+                                           placeholder="{{ _t("ACLS_LIST_OF_ACLS") }}">
+                                </div>
                             {% endfor %}
                         </div>
-
                     </div>
                     <div class="yw-modal__footer">
-                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t("YW_CANCEL") }}</button>
                         <button type="submit" class="yw-btn yw-btn--warning">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#device-floppy"/></svg> {{ _t('ACLS_UPDATE') }}
+                            <svg class="yw-icon" aria-hidden="true">
+                                <use href="src/assets/icons.svg#device-floppy" />
+                            </svg>
+                            {{ _t("ACLS_UPDATE") }}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
     {# ---- Theme modal ---- #}
     <div class="yw-modal" id="modal-theme" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog yw-modal__dialog--lg" role="document">
@@ -315,7 +330,10 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <svg class="yw-icon yw-text-info" aria-hidden="true"><use href="src/assets/icons.svg#brush"/></svg> {{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}
+                        <svg class="yw-icon yw-text-info" aria-hidden="true">
+                            <use href="src/assets/icons.svg#brush" />
+                        </svg>
+                        {{ _t("GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES") }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -323,67 +341,65 @@
                       hx-swap="innerHTML"
                       id="form-theme">
                     <div class="yw-modal__body">
-
-                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="theme-count-label">0</strong> page(s)</p>
+                        <p>
+                            {{ _t("ADMIN_CONTENT_SELECTED_LABEL") }} <strong id="theme-count-label">0</strong> page(s)
+                        </p>
                         <div id="theme-pages-inputs"></div>
                         <input type="hidden" name="bulk_action" value="change-theme">
-                        <input type="hidden" name="csrf-token"
-                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-
+                        <input type="hidden"
+                               name="csrf-token"
+                               value="{{ csrfToken({"id": "main", "refresh": false}) |e('html_attr') }}">
                         <div class="yw-form-group">
                             <label class="yw-checkbox-inline">
                                 <input type="checkbox" name="reset_theme" value="1" id="chk-reset-theme">
-                                {{ _t('GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES') }}
+                                {{ _t("GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES") }}
                             </label>
                         </div>
-
                         <div id="theme-fields">
                             <div class="yw-form-row">
                                 <div class="yw-form-group">
-                                    <label>{{ _t('ADMIN_CONTENT_THEME_THEME') }}</label>
+                                    <label>{{ _t("ADMIN_CONTENT_THEME_THEME") }}</label>
                                     <select name="theme" id="theme-select" class="yw-input">
-                                        <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
-                                        {% for key, tpl in templates %}
-                                        <option value="{{ key }}">{{ tpl.name ?? key }}</option>
-                                        {% endfor %}
+                                        <option value="">— {{ _t("ACLS_NO_CHANGE") }} —</option>
+                                        {% for key, tpl in templates %}<option value="{{ key }}">{{ tpl.name ?? key }}</option>{% endfor %}
                                     </select>
                                 </div>
                                 <div class="yw-form-group">
-                                    <label>{{ _t('ADMIN_CONTENT_THEME_SQUELETTE') }}</label>
+                                    <label>{{ _t("ADMIN_CONTENT_THEME_SQUELETTE") }}</label>
                                     <select name="squelette" id="squelette-select" class="yw-input">
-                                        <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        <option value="">— {{ _t("ACLS_NO_CHANGE") }} —</option>
                                     </select>
                                 </div>
                                 <div class="yw-form-group">
-                                    <label>{{ _t('ADMIN_CONTENT_THEME_STYLE') }}</label>
+                                    <label>{{ _t("ADMIN_CONTENT_THEME_STYLE") }}</label>
                                     <select name="style" id="style-select" class="yw-input">
-                                        <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        <option value="">— {{ _t("ACLS_NO_CHANGE") }} —</option>
                                     </select>
                                 </div>
                                 <div class="yw-form-group">
-                                    <label>{{ _t('ADMIN_CONTENT_THEME_PRESET') }}</label>
+                                    <label>{{ _t("ADMIN_CONTENT_THEME_PRESET") }}</label>
                                     <select name="preset" id="preset-select" class="yw-input">
-                                        <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        <option value="">— {{ _t("ACLS_NO_CHANGE") }} —</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                     <div class="yw-modal__footer">
-                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t("YW_CANCEL") }}</button>
                         <button type="submit" class="yw-btn yw-btn--info">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#device-floppy"/></svg> {{ _t('ACLS_UPDATE') }}
+                            <svg class="yw-icon" aria-hidden="true">
+                                <use href="src/assets/icons.svg#device-floppy" />
+                            </svg>
+                            {{ _t("ACLS_UPDATE") }}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-</div>{# /.admin-content-wrapper #}
-</div>{# /.full-width #}
-
+</div>
+{# /.admin-content-wrapper #}
 <script>
 (function () {
     'use strict';
@@ -529,8 +545,7 @@
             return str
                 .replace(/&/g, '&amp;')
                 .replace(/"/g, '&quot;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+                .replace(/</g , '&lt;') .replace( />/g, '&gt;');
         },
     };
 

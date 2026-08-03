@@ -17,7 +17,7 @@
             </label>
              {% if isAllowedToDeleteFile %}
                 <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ deleteUrl }}"
-                   onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') }}');">
+                   onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER')|e('js') }}');">
                     {{- _t('BAZ_SUPPRIMER') -}}
                 </a>
              {% else %}

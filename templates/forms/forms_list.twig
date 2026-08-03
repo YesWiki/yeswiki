@@ -1,0 +1,75 @@
+{% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
+
+{% if message %}
+<div class="yw-alert yw-alert--success">
+  <a data-yw-dismiss="alert" class="yw-close" type="button">&times;</a>
+  {{ _t(message) }}
+</div>
+{% endif %}
+
+{# Cards, not a table.
+
+   A table is for values you compare down a column, and nothing here is: every row had one
+   name, one description, a handful of export links and a cluster of buttons, so the grid
+   was five columns of ragged, mostly-empty cells with the description -- the one thing
+   that says what a form is FOR -- squeezed under the name in the narrowest one.
+
+   A card gives each form the width of a paragraph, and the actions read as belonging to
+   the form above them rather than as a row of anonymous icons. What the table did offer
+   was search over many forms; that is the filter box below, which is why the cards carry
+   their searchable text in a data attribute. #}
+{% macro formsCards(forms, tooltipMessage) %}
+  <div class="forms-cards">
+    {% for key, form in forms %}
+      {{ include('@core/forms/form_card.twig', { key: key, form: form, tooltipMessage: tooltipMessage }) }}
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{# Core's own Content types first, and apart: these describe the wiki's pages, accounts
+   and files rather than data a webmaster designed. Always three, so no filter. #}
+{% if systemForms|length > 0 %}
+  <section class="forms-list__section">
+    <h2 class="forms-list__heading">{{ _t('BAZ_SYSTEM_FORMS') }}</h2>
+    <p class="forms-list__hint">{{ _t('BAZ_SYSTEM_FORMS_HINT') }}</p>
+    {{ _self.formsCards(systemForms, tooltipMessage) }}
+  </section>
+{% endif %}
+
+<section class="forms-list__section" data-yw-card-filter-scope>
+  <div class="forms-list__section-header">
+    {% if systemForms|length > 0 %}
+      <h2 class="forms-list__heading">{{ _t('BAZ_USER_FORMS') }}</h2>
+    {% endif %}
+    <div class="forms-list__section-actions">
+      {% if forms|length > 6 %}
+        <input type="search" class="yw-input forms-list__filter" data-yw-card-filter
+               autocomplete="off" placeholder="{{ _t('BAZ_FORMS_FILTER') }}"
+               aria-label="{{ _t('BAZ_FORMS_FILTER') }}">
+      {% endif %}
+      {% if userIsAdmin and not isWikiHibernated %}
+        <a class="yw-btn yw-btn--primary" href="{{ url({ params: { view: 'formulaire', action: 'new' }}) }}">
+          {% block createformbutton %}
+            <svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
+            {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
+          {% endblock createformbutton %}
+        </a>
+      {% else %}
+        <button type="button" class="yw-btn yw-btn--primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
+          {{ block('createformbutton') }}
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if forms|length > 0 %}
+    {{ _self.formsCards(forms, tooltipMessage) }}
+    <p class="forms-list__empty" data-yw-card-filter-empty hidden>{{ _t('BAZ_FORMS_FILTER_NO_RESULT') }}</p>
+  {% else %}
+    <div class="yw-alert yw-alert--info">
+      <a data-yw-dismiss="alert" class="yw-close">&times;</a>{{ _t('BAZ_INTRO_AJOUT_FORMULAIRE')|raw }}
+    </div>
+  {% endif %}
+</section>
+
+{{ include_javascript('javascripts/card-filter.js') }}

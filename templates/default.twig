@@ -73,7 +73,7 @@
                                     <span>{{ _t("LOGIN_REMEMBER_ME") }}</span>
                                 </label>
                             </div>
-                            <button type="submit" class="btn btn-block {{ btnclass }} btn-primary">{{ _t("LOGIN_LOGIN") }}</button>
+                            <button type="submit" class="yw-btn yw-btn--block {{ btnclass }} yw-btn--primary">{{ _t("LOGIN_LOGIN") }}</button>
                             {% block hidden %}
                                 <input type="hidden" name="context" value="{{ context }}" />
                                 <input type="hidden" name="action" value="login" />
@@ -85,7 +85,7 @@
                             {% block signupurl %}
                                 {% if signupurl is not empty and signupurl != "0" %}
                                     {% block signupurlhead %}<hr>{% endblock %}
-                                    <a class="{% block signupurlbtnclass %}btn btn-block btn-default{% endblock %} {{ btnclass }}"
+                                    <a class="{% block signupurlbtnclass %}yw-btn yw-btn--block{% endblock %} {{ btnclass }}"
                                        href="{{ signupurl }}">{{ _t("LOGIN_SIGNUP") }}</a>
                                 {% endif %}
                             {% endblock %}

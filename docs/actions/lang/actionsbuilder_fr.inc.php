@@ -335,7 +335,7 @@ return [
     'AB_advanced_action_login_nobtn_label' => 'Remplacer le bouton par un lien (modal uniquement)',
     'AB_advanced_action_login_template_label' => 'Template',
     'AB_advanced_action_login_template_default' => 'Standard',
-    'AB_advanced_action_login_template_modal' => 'Modal',
+    'AB_advanced_action_login_template_account_link' => 'Lien vers le compte',
     'AB_advanced_action_login_template_horizontal' => 'Horizontal',
     'AB_advanced_action_login_template_dropdown' => 'Menu déroulant',
     'AB_advanced_action_login_loggedinurl_label' => 'Url de redirection après connexion réussie',

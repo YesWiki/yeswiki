@@ -4,20 +4,33 @@ namespace YesWiki\Admin\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Render\Service\TemplateEngine;
 
+/**
+ * `/doc` -- the documentation, rendered as a page of this wiki.
+ *
+ * It answered with a standalone HTML document until now: its own <head>, its own theme,
+ * no navbar and no way back into the wiki. It is a dashboard route like the others, so it
+ * gets the same shell and the same left rail (@core/dashboard/layout.twig).
+ */
 class DocumentationController extends YesWikiController
 {
+    use DashboardShell;
+
     #[Route('/doc', options: ['acl' => ['public']])]
     public function show()
     {
-        return new Response($this->render('@core/documentation.twig', [
+        $templateEngine = $this->getService(TemplateEngine::class);
+
+        return new Response($templateEngine->renderPage($templateEngine->render('@core/doc.twig', $this->dashboardShell('doc', [
             'config' => $this->getService(RuntimeConfig::class)->all(),
             'i18n' => $GLOBALS['translations_js'],
             'locale' => $GLOBALS['prefered_language'],
             'extensions' => $this->getExtensionsWithDocs(),
-        ]));
+        ]))));
     }
 
     private function getExtensionsWithDocs(): array
