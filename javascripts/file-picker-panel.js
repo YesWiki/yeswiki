@@ -1,16 +1,17 @@
-// javascripts/file-picker-modal.js -- ticket 17: replaces
+// javascripts/file-picker-panel.js -- ticket 17: replaces
 // tools/attach/presentation/javascripts/file-upload-modal.js (jQuery + qq.js
 // FileUploader). Files are their own tagged Content entries now (FileManager), so this
-// modal has two panes: pick one of the files the requester can already read (GET
+// rail has two panes: pick one of the files the requester can already read (GET
 // /api/files) or upload a new one (POST /api/files) -- both feed the same
 // configuration form before calling onComplete with a {{attach file="tag" ...}} string.
-// Mirrors link-modal.js's open()/onComplete shape.
+// Mirrors link-panel.js's open()/onComplete shape.
 //
 // The whole readable list is fetched once per opening and narrowed here rather than
 // re-queried per keystroke: that is what lets each family button say how many files it
 // holds and the extension list name only extensions that exist. See
 // FileApiController::getFiles() for where that stops being the right trade.
 import { legacyIconToSprite } from './yw-icon-map.js'
+import { claimRailSlot, registerRail } from './editor-rails.js'
 
 /** Sprite icon standing in for a file that has no thumbnail of its own. */
 const FAMILY_ICONS = {
@@ -58,36 +59,56 @@ export default class {
   files = []
   family = ''
 
-  get modal() { return document.getElementById('YesWikiFilePickerModal') }
-  get tabExisting() { return this.modal.querySelector('[data-yw-file-picker-tab="existing"]') }
-  get tabUpload() { return this.modal.querySelector('[data-yw-file-picker-tab="upload"]') }
-  get paneExisting() { return this.modal.querySelector('[data-yw-file-picker-pane="existing"]') }
-  get paneUpload() { return this.modal.querySelector('[data-yw-file-picker-pane="upload"]') }
-  get searchInput() { return this.modal.querySelector('input[name="search"]') }
-  get extensionSelect() { return this.modal.querySelector('[data-yw-file-picker-extensions]') }
-  get families() { return this.modal.querySelector('[data-yw-file-picker-families]') }
-  get results() { return this.modal.querySelector('[data-yw-file-picker-results]') }
-  get emptyMessage() { return this.modal.querySelector('[data-yw-file-picker-empty]') }
-  get uploadInput() { return this.modal.querySelector('input[name="upFile"]') }
-  get uploadError() { return this.modal.querySelector('.file-picker-upload-error') }
-  get selectedBox() { return this.modal.querySelector('.file-picker-selected') }
-  get selectedName() { return this.modal.querySelector('[data-yw-file-picker-selected-name]') }
-  get optionsForm() { return this.modal.querySelector('.file-picker-options') }
-  get insertBtn() { return this.modal.querySelector('.btn-insert-upload') }
-  get imageOptions() { return this.modal.querySelectorAll('.image-option') }
-  get pdfOptions() { return this.modal.querySelectorAll('.pdf-option') }
-  get fileOptions() { return this.modal.querySelectorAll('.file-option') }
+  get panel() { return document.getElementById('YesWikiFilePickerPanel') }
+  get tabExisting() { return this.panel.querySelector('[data-yw-file-picker-tab="existing"]') }
+  get tabUpload() { return this.panel.querySelector('[data-yw-file-picker-tab="upload"]') }
+  get paneExisting() { return this.panel.querySelector('[data-yw-file-picker-pane="existing"]') }
+  get paneUpload() { return this.panel.querySelector('[data-yw-file-picker-pane="upload"]') }
+  get searchInput() { return this.panel.querySelector('input[name="search"]') }
+  get extensionSelect() { return this.panel.querySelector('[data-yw-file-picker-extensions]') }
+  get families() { return this.panel.querySelector('[data-yw-file-picker-families]') }
+  get results() { return this.panel.querySelector('[data-yw-file-picker-results]') }
+  get emptyMessage() { return this.panel.querySelector('[data-yw-file-picker-empty]') }
+  get uploadInput() { return this.panel.querySelector('input[name="upFile"]') }
+  get uploadError() { return this.panel.querySelector('.file-picker-upload-error') }
+  get selectedBox() { return this.panel.querySelector('.file-picker-selected') }
+  get selectedName() { return this.panel.querySelector('[data-yw-file-picker-selected-name]') }
+  get optionsForm() { return this.panel.querySelector('.file-picker-options') }
+  get insertBtn() { return this.panel.querySelector('.btn-insert-upload') }
+  /** Every option whose visibility depends on the chosen file or the target syntax. */
+  get conditionalOptions() {
+    return this.panel.querySelectorAll('.image-option, .pdf-option, .file-option, [data-yw-file-picker-wiki-only]')
+  }
+
+  isOpen = false
 
   constructor() {
+    // see the same guard in actions-builder.js: a page can render an editor without
+    // the rails, and a rail with no panel does nothing rather than throwing
+    if (!this.panel) return
+    registerRail(this)
+    this.panel.querySelectorAll('[data-yw-file-picker-close]')
+      .forEach((btn) => btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        this.close()
+      }))
     this.tabExisting.addEventListener('click', () => this.showTab('existing'))
     this.tabUpload.addEventListener('click', () => this.showTab('upload'))
     this.searchInput.addEventListener('input', () => this.applyFilters())
     this.extensionSelect.addEventListener('change', () => this.applyFilters())
-    this.modal.querySelector('.btn-do-upload').addEventListener('click', () => this.uploadNewFile())
+    this.panel.querySelector('.btn-do-upload').addEventListener('click', () => this.uploadNewFile())
   }
 
+  /**
+   * options.onComplete(insertedText) -- what the caller drops at its own cursor.
+   * options.format -- 'wiki' (default) writes a {{attach}} action for the ACeditor,
+   * 'markdown' writes `![alt](url)` / `[text](url)` for the Vditor toolbar, whose field
+   * stores HTML and never sees the wiki parser.
+   */
   open(options) {
+    if (!this.panel) return
     this.onComplete = options.onComplete
+    this.format = options.format === 'markdown' ? 'markdown' : 'wiki'
     this.selectedTag = null
     this.selectedEntry = null
     this.optionsForm.hidden = true
@@ -107,13 +128,23 @@ export default class {
     if (this.insertHandler) this.insertBtn.removeEventListener('click', this.insertHandler)
     this.insertHandler = () => {
       if (!this.selectedTag) return
-      this.onComplete(this.buildYesWikiCode())
-      this.modal.classList.remove('yw-modal--open')
+      this.onComplete(this.format === 'markdown' ? this.buildMarkdown() : this.buildYesWikiCode())
+      this.close()
     }
     this.insertBtn.addEventListener('click', this.insertHandler)
 
-    this.modal.classList.add('yw-modal--open')
+    // the slot on the right holds one rail at a time -- see editor-rails.js
+    claimRailSlot(this)
+    this.panel.hidden = false
+    this.isOpen = true
+    // a rail opened by pressing a button: the search box is what it opened for
     requestAnimationFrame(() => this.searchInput.focus())
+  }
+
+  close() {
+    if (!this.isOpen || !this.panel) return
+    this.panel.hidden = true
+    this.isOpen = false
   }
 
   showTab(tab) {
@@ -320,18 +351,22 @@ export default class {
     // and the alignment/size options are what makes the picker useful for one
     const isImage = entry.family === 'image'
     const isPdf = entry.extension === 'pdf' || entry.mime_type === 'application/pdf'
-    this.imageOptions.forEach((shownFor) => {
-      const field = shownFor
-      field.style.display = isImage ? '' : 'none'
+
+    // one rule per option rather than one loop per class: an option can be both
+    // image-only and wiki-only, and two loops writing the same style property in
+    // sequence decide the answer by their order rather than by what the option is
+    const hidden = (option) => {
+      if (this.format === 'markdown' && option.hasAttribute('data-yw-file-picker-wiki-only')) return true
+      if (option.classList.contains('image-option')) return !isImage
+      if (option.classList.contains('pdf-option')) return !isPdf
+      if (option.classList.contains('file-option')) return isImage
+      return false
+    }
+    this.conditionalOptions.forEach((element) => {
+      const option = element
+      option.style.display = hidden(option) ? 'none' : ''
     })
-    this.pdfOptions.forEach((shownFor) => {
-      const field = shownFor
-      field.style.display = isPdf ? '' : 'none'
-    })
-    this.fileOptions.forEach((shownFor) => {
-      const field = shownFor
-      field.style.display = isImage ? 'none' : ''
-    })
+
     if (!isImage && !isPdf) {
       const linkText = this.optionsForm.querySelector('[name="attach_link_text"]')
       if (linkText && !linkText.value) linkText.value = this.selectedEntry.original_filename
@@ -386,5 +421,26 @@ export default class {
 
     result += '}}'
     return result
+  }
+
+  /**
+   * The same file as Markdown, for an editor whose field stores HTML: an image is
+   * embedded, anything else becomes a download link. Both point at the ACL-checked
+   * download route, which is the only way to the bytes now that they live under
+   * private/ (ADR-0006).
+   */
+  buildMarkdown() {
+    const form = this.optionsForm
+    const isImage = this.selectedEntry.family === 'image'
+    const alt = form.querySelector('[name="attach_alt"]').value
+    const linkText = form.querySelector('[name="attach_link_text"]').value
+    const label = (isImage ? alt : linkText || alt) || this.selectedEntry.original_filename
+    const url = wiki.url(`api/files/${encodeURIComponent(this.selectedTag)}/download`)
+
+    // a `]` in the label would close the link text early; a `(` or `)` would break the
+    // destination that follows it
+    const esc = (s) => String(s).replace(/([[\]()])/g, '\\$1')
+
+    return `${isImage ? '!' : ''}[${esc(label)}](${url})`
   }
 }

@@ -51,6 +51,18 @@ textarea.aceditor-textarea {
   border-radius: 3px;
 }
 
+/* What a rail is open on -- the component, or the link. Ace sizes and places marker-layer
+   children itself, so the rule only supplies the paint -- and the `position` they need
+   to accept the inline offsets. */
+.ace-body .ace_marker-layer .yw-active-group {
+  position: absolute;
+  z-index: 1;
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--primary-color) 35%, transparent);
+}
+
 .ace-body .ace_markup {
   color: #bc1c96;
 }
@@ -119,12 +131,10 @@ textarea.aceditor-textarea {
 .scroll-container-toolbar {
   transition: all ease-in 0.2s;
   position: sticky;
-  top: 46px;
+  /* the offset (and its nav-up value) is declared once in yw-core.css: the Vditor
+     toolbar sticks to the same line, and a form can show both editors at once */
+  top: var(--sticky-toolbar-top);
   z-index: 6;
-}
-
-.nav-up .scroll-container-toolbar {
-  top: 0;
 }
 
 #ACEditor .ace-container .ace-body {
@@ -171,18 +181,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   display: none;
 }
 
-.component-action-list > li.open-existing-action {
-  display: none;
-}
-
-.component-action-list.only-edit > li.open-existing-action {
-  display: block;
-}
-
-.component-action-list.only-edit > li:not(.open-existing-action) {
-  display: none;
-}
-
 .aceditor-btn-comment {
   font-style: italic;
   color: green !important;
@@ -213,195 +211,9 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   background-color: var(--neutral-light-color);
 }
 
-/* ================= */
-
-/* FLYING ACTION BAR */
-
-/* ================= */
-.flying-edit-button {
-  opacity: 0;
-  transition: opacity 0.3s;
-  position: absolute;
-  z-index: 50;
-  left: 0;
-}
-
-.flying-edit-button.active {
-  opacity: 1;
-}
-
-.flying-edit-button .yw-btn {
-  width: 2.3rem;
-  padding: 0.4rem 0;
-  transform: translateX(-2.3rem);
-  border-radius: 5px 0 0 5px;
-}
-
-/* In iframe, button is inside the textarea */
-.yeswiki-iframe-body .flying-edit-button .yw-btn {
-  border-radius: 0 3px 3px 0;
-  padding: 0.25rem 0;
-  width: 1.8rem;
-  transform: translateX(0);
-}
-
-/* in small screen, make button smaller and overlapping textarea */
-@media (width <=1200px) {
-  body:not(.yeswiki-iframe-body) .flying-edit-button .yw-btn {
-    border-radius: 4px;
-    padding: 0.4rem 0;
-    width: 2rem;
-    transform: translateX(-0.9rem);
-  }
-
-  body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .yw-btn {
-    /* overlap more to cover gutter */
-    border-radius: 4px;
-    padding: 0.4rem 0;
-    width: 2.2rem;
-    transform: translateX(-0.5rem);
-  }
-}
-
-#YesWikiLinkModal .more-options {
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+.link-panel .more-options {
+  border-top: 1px solid var(--neutral-soft-color);
+  border-bottom: 1px solid var(--neutral-soft-color);
   margin: 1.5rem 0;
   padding: 0.5rem 0;
-}
-
-/* File picker modal (ticket 17, replaces the qq.js uploader + Bootstrap upload modal) */
-#YesWikiFilePickerModal .file-picker-tabs {
-  margin-bottom: 1rem;
-}
-
-#YesWikiFilePickerModal .file-picker-filters {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-#YesWikiFilePickerModal .file-picker-filters input[name='search'] {
-  flex: 1 1 auto;
-}
-
-#YesWikiFilePickerModal .file-picker-filters select {
-  flex: 0 0 auto;
-  width: auto;
-}
-
-#YesWikiFilePickerModal .file-picker-families {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-bottom: 0.5rem;
-}
-
-#YesWikiFilePickerModal .file-picker__family {
-  padding: 0.15rem 0.6rem;
-  font-size: 0.85em;
-}
-
-#YesWikiFilePickerModal .file-picker-results {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1em;
-}
-
-#YesWikiFilePickerModal .file-picker-results:empty {
-  display: none;
-}
-
-#YesWikiFilePickerModal .file-picker-empty {
-  margin: 0.5rem 0;
-  color: var(--neutral-color, #777);
-  font-style: italic;
-}
-
-#YesWikiFilePickerModal .file-picker-results li {
-  border-bottom: 1px solid #ccc;
-  width: 18.5rem;
-}
-
-#YesWikiFilePickerModal .file-picker-results li:last-child {
-  border-bottom: none;
-}
-
-#YesWikiFilePickerModal .file-picker__result {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 0.4rem 0.75rem;
-  cursor: pointer;
-}
-
-#YesWikiFilePickerModal .file-picker__result:hover,
-#YesWikiFilePickerModal .file-picker__result.file-picker__result--selected {
-  background: var(--neutral-light-color);
-}
-
-/* a fixed box so a list of mixed portrait/landscape thumbnails still reads as a list */
-#YesWikiFilePickerModal .file-picker__thumb {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  overflow: hidden;
-  border-radius: 3px;
-  background: var(--neutral-light-color);
-}
-
-#YesWikiFilePickerModal .file-picker__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-#YesWikiFilePickerModal .file-picker__thumb .yw-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  opacity: 0.6;
-}
-
-#YesWikiFilePickerModal .file-picker__meta {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#YesWikiFilePickerModal .file-picker__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#YesWikiFilePickerModal .file-picker__details {
-  font-size: 0.8em;
-  color: var(--neutral-color, #777);
-}
-
-#YesWikiFilePickerModal .file-picker-selected {
-  margin: 1rem 0;
-  padding: 0.5rem 0.75rem;
-  background: var(--neutral-light-color);
-  border-radius: 4px;
-}
-
-#YesWikiFilePickerModal .file-picker-options {
-  margin-top: 1rem;
-  border-top: 1px solid #eee;
-  padding-top: 1rem;
 }

@@ -1,44 +1,86 @@
 /* global pageTags */
 import MarkdownExtra from './markdown-extra.js'
+import { claimRailSlot, registerRail } from './editor-rails.js'
 
+/**
+ * The link editor, docked as a rail beside the editor rather than shown as a modal over
+ * it -- the same slot and the same rules as the actions builder: it opens on the link the
+ * cursor is in, swaps to the next one, and closes when the cursor leaves for ordinary
+ * text, taking any half-typed change with it.
+ */
 export default class {
   onComplete
   extra
   insertHandler
   inputHandler
+  editor
+  isOpen = false
+  isEditing = false
+  openKey = null
 
-  get modal() { return document.getElementById('YesWikiLinkModal') }
-  get inputUrl() { return this.modal.querySelector('input[name=url]') }
-  get inputText() { return this.modal.querySelector('input[name=text]') }
-  get inputTitle() { return this.modal.querySelector('input[name=title]') }
-  get inputTarget() { return this.modal.querySelector('select[name=target]') }
-  get suggestions() { return this.modal.querySelector('[data-link-modal-suggestions]') }
+  get panel() { return document.getElementById('YesWikiLinkPanel') }
+  get inputUrl() { return this.panel.querySelector('input[name=url]') }
+  get inputText() { return this.panel.querySelector('input[name=text]') }
+  get inputTitle() { return this.panel.querySelector('input[name=title]') }
+  get inputTarget() { return this.panel.querySelector('select[name=target]') }
+  get suggestions() { return this.panel.querySelector('[data-link-panel-suggestions]') }
 
   TARGETS = ['newtab', 'modal']
 
-  open(options) {
+  /**
+   * True while the rail is writing a link the document does not have yet. It was opened
+   * from the toolbar, not from the cursor, so the cursor moving must not close it.
+   */
+  get isPlacingNewLink() { return this.isOpen && !this.isEditing }
+
+  constructor() {
+    // see the same guard in actions-builder.js: a page can render an editor without
+    // the rails, and a rail with no panel does nothing rather than throwing
+    if (!this.panel) return
+    registerRail(this)
+    this.panel.querySelectorAll('[data-yw-link-panel-close]')
+      .forEach((btn) => btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        this.close()
+      }))
+  }
+
+  open(editor, options) {
+    if (!this.panel) return
+    this.editor = editor
+    // refreshed even when the panel below is left alone: the range it writes into moves
+    // as the document does, and the caller recomputes it on every cursor change
+    this.onComplete = options.onComplete
+    this.isEditing = options.action === 'edit'
+    // the same link as the one already on screen: leave the fields as the user left them
+    if (this.isOpen && options.key && options.key === this.openKey) return
+    this.openKey = options.key || null
+
     this.extra = new MarkdownExtra(options.extra || '')
     const target = (this.extra.classes.filter((c) => this.TARGETS.includes(c)))[0]
     this.extra.classes = this.extra.classes.filter((c) => !this.TARGETS.includes(c))
 
-    this.onComplete = options.onComplete
     this.inputUrl.value = options.link || ''
     this.inputText.value = options.text || ''
     this.inputTitle.value = options.title || ''
     this.inputTarget.value = target || ''
+    this.panel.querySelector('.link-error').classList.add('hidden')
 
-    const insertBtn = this.modal.querySelector('.btn-insert')
+    const insertBtn = this.panel.querySelector('.btn-insert')
     if (this.insertHandler) insertBtn.removeEventListener('click', this.insertHandler)
     this.insertHandler = (e) => {
       const code = this.buildYesWikiCode(e)
       if (code !== undefined) {
         this.onComplete(code)
-        this.modal.classList.remove('yw-modal--open')
+        // a link the document now has: the cursor lands in it, and the rail follows it
+        // there the same way it follows a component it has just placed
+        this.isEditing = true
+        this.openKey = null
       }
     }
     insertBtn.addEventListener('click', this.insertHandler)
 
-    this.modal.querySelectorAll('[data-show]').forEach((shownFor) => {
+    this.panel.querySelectorAll('[data-show]').forEach((shownFor) => {
       const field = shownFor
       const shown = field.getAttribute('data-show').split(',').includes(options.action)
       field.style.display = shown ? '' : 'none'
@@ -62,9 +104,21 @@ export default class {
     }
     this.inputUrl.addEventListener('input', this.inputHandler)
 
-    this.modal.classList.add('yw-modal--open')
-    // wait a frame so the modal is actually visible before focusing
-    requestAnimationFrame(() => this.inputUrl.focus())
+    // the slot on the right holds one rail at a time -- see editor-rails.js
+    claimRailSlot(this)
+    this.panel.hidden = false
+    this.isOpen = true
+    // only when there is nothing in it to read yet: a rail that opened because the cursor
+    // moved into a link has to leave the keyboard where the user put it
+    if (!this.isEditing) requestAnimationFrame(() => this.inputUrl.focus())
+  }
+
+  close() {
+    if (!this.isOpen || !this.panel) return
+    if (this.editor) this.editor.clearHighlight()
+    this.panel.hidden = true
+    this.isOpen = false
+    this.openKey = null
   }
 
   updateSuggestions() {
@@ -119,7 +173,7 @@ export default class {
     const validLink = link && (isUrl || !haveSpecialChars)
     if (!validLink) {
       event.stopImmediatePropagation()
-      this.modal.querySelector('.link-error').classList.remove('hidden')
+      this.panel.querySelector('.link-error').classList.remove('hidden')
       return undefined
     }
 

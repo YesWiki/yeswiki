@@ -1,0 +1,55 @@
+{# The link editor, docked as a right-hand rail beside the editor rather than shown as a
+   modal -- the same slot as the actions builder, and only ever one of the two is open.
+   Sits OUTSIDE the edited form, as a sibling of .yw-designer__canvas: it carries a form
+   of its own, and its inputs configure what is being written rather than being fields of
+   the page. Opened by the cursor landing in a link (javascripts/aceditor.js). #}
+<aside class="yw-designer__sidebar link-panel" id="YesWikiLinkPanel" hidden>
+	<div class="yw-rail__header">
+		<h2 class="yw-rail__title" data-show="newlink">{{ _t('ACEDITOR_LINK') }}</h2>
+		<h2 class="yw-rail__title" data-show="edit">{{ _t('ACEDITOR_LINK_EDIT') }}</h2>
+		<h2 class="yw-rail__title" data-show="newpage">{{ _t('ACEDITOR_NEWPAGE') }}</h2>
+		<button type="button" class="yw-close" data-yw-link-panel-close aria-label="close">&times;</button>
+	</div>
+
+	<form>
+		{# Link (page or url) #}
+		<div class="yw-form-group internal-link" style="position: relative;">
+			<label data-show="newlink,edit">{{ _t('ACEDITOR_LINK_PAGE_OR_URL') }}</label>
+			<label data-show="newpage">{{ _t('ACEDITOR_LINK_NEW_PAGE_NAME') }}</label>
+			<input class="yw-input" type="text" name="url" autocomplete="off">
+			<ul class="yw-suggestions" data-link-panel-suggestions hidden></ul>
+			<span class="link-error yw-text-danger hidden">{{ _t('ACEDITOR_LINK_ERROR') }}</span>
+			<span data-show="newlink,edit">{{ _t('ACEDITOR_LINK_HINT_NEW_PAGE_NAME') }}</span>
+			{# Error message #}
+			<div class="yw-text-danger" id="page-already-exist-alert" style="display: none;">
+				{{ _t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS') }}
+			</div>
+		</div>
+		{# Text #}
+		<div class="yw-form-group">
+			<label data-show="newlink,edit">{{ _t('ACEDITOR_LINK_TEXT') }}</label>
+			<label data-show="newpage">{{ _t('ACEDITOR_LINK_NEW_PAGE_TEXT') }}</label>
+			<input class="yw-input" type="text" name="text">
+		</div>
+		<div class="more-options" data-show="newlink,edit">
+			{# Title #}
+			<div class="yw-form-group">
+				<label>{{ _t('ACEDITOR_LINK_TITLE') }}</label>
+				<input class="yw-input" type="text" name="title">
+			</div>
+			{# Target #}
+			<div class="yw-form-group">
+				<select class="yw-input" name="target" data-show="newlink,edit">
+					<option value="" selected>{{ _t('ACEDITOR_LINK_OPEN_IN_CURRENT_TAB') }}</option>
+					<option value="newtab">{{ _t('ACEDITOR_LINK_OPEN_IN_NEW_TAB') }}</option>
+					<option value="modalbox">{{ _t('ACEDITOR_LINK_OPEN_IN_MODAL') }}</option>
+				</select>
+			</div>
+		</div>
+	</form>
+
+	<div class="yw-rail__footer">
+		<a href="#" class="yw-btn" data-yw-link-panel-close>{{ _t('ACEDITOR_LINK_CANCEL') }}</a>
+		<a href="#" class="yw-btn yw-btn--primary btn-insert">{{ _t('ACEDITOR_LINK_INSERT') }}</a>
+	</div>
+</aside>

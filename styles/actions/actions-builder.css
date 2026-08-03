@@ -22,8 +22,89 @@ input[type='range'] {
 
 /* ACTION BUILDER APP */
 
+/* `clip`, not `hidden`: both keep a wide parameter (a preview iframe, a long select) from
+   spilling out sideways, but `hidden` makes this a scroll container of its own -- and the
+   rail's sticky header and footer then have nothing to stick to, because the box they
+   would stick inside is as tall as its own content. Nothing here ever scrolls on its own;
+   the rail around it does. */
 #actions-builder-app {
-  overflow: hidden !important;
+  overflow: clip !important;
+}
+
+/* The rail's layout and its header are shared with the link rail, in yw-core.css
+   (.yw-designer__sidebar, .yw-rail__*). What is left here is what only this rail has. */
+.actions-builder-panel__back {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+/* The palette, same shape as the form designer's (styles/form-builder.css): a grid of
+   cards, each an icon over a name, under the heading of the group it belongs to. */
+.actions-builder-panel__palette-group {
+  margin: 14px 0 6px;
+  font-size: 0.85rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.actions-builder-panel__palette {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.actions-builder-panel__component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 10px 6px;
+  min-height: 76px;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 6px;
+}
+
+.actions-builder-panel__component:hover,
+.actions-builder-panel__component:focus-visible {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.actions-builder-panel__component-icon .yw-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  opacity: 0.75;
+}
+
+/* a component name is a label, not prose: two lines, then an ellipsis, so a long one
+   cannot make its card twice the height of the card beside it */
+.actions-builder-panel__component-label {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.actions-builder-panel__empty {
+  margin: 0.5rem 0;
+  color: var(--neutral-color, #777);
+  font-style: italic;
+}
+
+/* The insert button reads `input-group-addon btn btn-primary`, and .input-group-addon's
+   own background is declared after .btn-primary's in yw-core.css -- so it won white text
+   on a near-white bar, and the button has been invisible. Restore the primary fill. */
+#actions-builder-panel .input-group-addon.btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 #actions-builder-app .yw-form-group .yw-form-label {
@@ -69,6 +150,35 @@ input[type='range'] {
   > .input-group:not(.iconpicker-container)
   .hint {
   margin-bottom: 0;
+}
+
+/* ...except that the builder is a 340px rail now, not a wide modal: a label and its
+   control no longer fit on one row, and side by side they get a few characters each.
+   Declared right after the rules above because it ties with them on specificity, and
+   order is what decides a tie.
+
+   `:has(> .yw-form-label)` is what distinguishes a parameter (label + control, stacks)
+   from a composite control like the icon picker (input + its picker button, stays a
+   row). A checkbox stays a row too: there the label is the target you click. */
+#actions-builder-app
+  :not(.multi-input-container)
+  > *
+  > .input-group:not(.iconpicker-container):not(.checkbox):has(
+    > .yw-form-label
+  ) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+/* flex-grow follows the main axis, which is vertical once stacked: left alone, every
+   input would stretch to the height of the tallest thing in its group */
+#actions-builder-app
+  :not(.multi-input-container)
+  > *
+  > .input-group:not(.iconpicker-container):not(.checkbox):has(> .yw-form-label)
+  .yw-input {
+  flex-grow: 0;
 }
 
 .addon-icon {
@@ -123,29 +233,28 @@ input[type='range'] {
   margin-bottom: 1.5rem;
 }
 
-/* CONFIG PARAMETERS */
+/* CONFIG PARAMETERS
+   These were laid out for a wide modal: side-by-side columns whose widths the template
+   writes as inline styles (33% each, or 50% for a lone one). In a 340px rail there is
+   room for exactly one column, so they stack -- and `!important` is what outranks an
+   inline style, the same reason the Vditor toolbar rules use it. */
 .panels-config-container {
   display: flex;
-  justify-content: center;
-}
-
-.config-panel:not(:last-child) {
-  margin-right: 2rem;
+  flex-direction: column;
 }
 
 .config-panel {
-  min-width: 250px;
+  width: 100% !important;
+  min-width: 0;
+  max-width: none;
 }
 
-.config-panel.specific-action-params {
-  flex: 1 auto;
-  max-width: 400px;
+.config-panel:not(:last-child) {
+  margin-bottom: 1.5rem;
 }
 
 .config-panel-content {
-  /* max-height: 600px;
-  overflow-y: auto; */
-  padding-right: 1rem;
+  padding-right: 0;
 }
 
 .config-panel-content .hint {
@@ -157,31 +266,31 @@ input[type='range'] {
   text-align: justify;
 }
 
-#actions-builder-modal h3 {
-  text-align: center;
+#actions-builder-panel h3 {
+  text-align: left;
+  font-size: 1rem;
 }
-#actions-builder-modal .config-panel h3:first-child {
-  margin-bottom: 30px;
+#actions-builder-panel .config-panel h3:first-child {
+  margin-bottom: 12px;
 }
 
 .advanced-params {
-  justify-content: center;
   margin-top: 2rem;
 }
 
-#actions-builder-modal .text-muted {
+#actions-builder-panel .text-muted {
   font-size: 0.8em;
 }
 
-#actions-builder-modal .input-group .sp-original-input-container {
+#actions-builder-panel .input-group .sp-original-input-container {
   flex-grow: 1;
 }
 
-#actions-builder-modal .input-group-addon + label {
+#actions-builder-panel .input-group-addon + label {
   margin-left: 1rem !important;
 }
 
-#actions-builder-modal .input-group-addon + label.yw-form-label {
+#actions-builder-panel .input-group-addon + label.yw-form-label {
   margin-left: 2.5rem !important;
 }
 
@@ -250,17 +359,3 @@ input[type='range'] {
 }
 
 /* WIKI CODE */
-.result {
-  border: 1px dashed #c1c1c1;
-  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  font-size: 1rem;
-}
-
-.result-container {
-  margin: 2rem 0 1rem;
-}
-
-.result-container h3 {
-  margin-bottom: 1.5rem;
-  color: var(--secondary-color-1);
-}

@@ -29,6 +29,14 @@
   --success-color: #26a69a;
   --danger-color: #ff006e;
   --warning-color: #ffc300;
+  /* How far down a sticky editor toolbar parks: clear of the sticky top bar. Shared,
+     because a form can carry both an ACeditor and a Vditor and the two have to agree. */
+  --sticky-toolbar-top: 46px;
+}
+
+/* once the top bar has taken itself away, the toolbar takes its place */
+body.nav-up {
+  --sticky-toolbar-top: 0px;
 }
 
 html {
@@ -1524,6 +1532,121 @@ textarea.yw-input {
 }
 .yw-modal__header .yw-close {
   position: static;
+}
+
+/* ---- Designer layout --------------------------------------------
+   What you edit on the left, what configures it on the right: the shape the form
+   designer established (styles/form-builder.css's .yw-fb, "Elementor-style") and the
+   actions builder now shares. The rail is `order: 2` rather than second in the source
+   so that the thing being edited comes first for a screen reader and on a narrow
+   screen, where the rail stops being a column at all (see the media query below).
+   Hiding the rail is `hidden` on the element itself -- a flex container ignores it and
+   the canvas takes the whole width, with no state class to keep in sync. */
+.yw-designer {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.yw-designer__canvas {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yw-designer__sidebar {
+  position: fixed;
+  top: calc(var(--sticky-toolbar-top) - 1);
+  border-radius: 6px 0 0 6px;
+  right: 0;
+  z-index: 10;
+  max-width: 340px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid var(--neutral-soft-color);
+  padding: 12px;
+  background: var(--neutral-light-color, #f1f1f1);
+  transform: translateX(0);
+  transition:
+    transform 0.25s ease,
+    visibility 0s;
+}
+
+/* `hidden` is still the whole state -- there is no open/closed class to keep in sync --
+   but a rail that comes and goes on its own as the cursor moves has to say where it went.
+   Overriding the UA's display:none is what leaves something to animate; `visibility`
+   flips only once it has finished sliding out, so it is properly gone afterwards. */
+.yw-designer__sidebar[hidden] {
+  display: block;
+  visibility: hidden;
+  transform: translateX(105%);
+  pointer-events: none;
+  transition:
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yw-designer__sidebar,
+  .yw-designer__sidebar[hidden] {
+    transition: none;
+  }
+}
+
+/* The chrome a rail shares with the next one: a header that stays put while what is under
+   it scrolls, and a footer for whatever writes the change into the document. */
+.yw-rail__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: -12px -12px 10px;
+  padding: 10px 12px;
+  background: var(--neutral-light-color, #f1f1f1);
+  border-bottom: 1px solid var(--neutral-soft-color);
+}
+
+.yw-rail__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.yw-rail__header .yw-close {
+  position: static;
+}
+
+/* Parked at the bottom of the rail, on top of whatever is scrolling past behind it: what
+   a rail is FOR is writing the change into the document, and hunting for that button at
+   the end of a long list of parameters is hunting for the point of the panel. */
+.yw-rail__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 16px -12px -12px;
+  padding: 10px 12px;
+  background: var(--neutral-light-color, #f1f1f1);
+  border-top: 1px solid var(--neutral-soft-color);
+}
+
+/* below this there is no room for two columns: the rail becomes an overlay on the side
+   it already occupied, rather than a full-width block pushing the editor off-screen */
+@media (max-width: 800px) {
+  .yw-designer__sidebar {
+    position: fixed;
+    z-index: 1040;
+    inset: 0 0 0 auto;
+    width: min(340px, 90vw);
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+  }
 }
 
 /* ---- Modal ------------------------------------------------------

@@ -201,7 +201,12 @@ class HashCashService
                 $expired[] = $eax;
 
                 $val = intval($this->secretValue());
-                $inc = rand(intval($val / 100), $val - 1);
+                // A secret that is missing, empty or not a number at all intval()s to 0,
+                // and the increment drawn from it is then 0 too -- so this divided by zero
+                // and the route answered with an HTML fatal-error page, which the browser
+                // eval()s ("Unexpected token '<'"). The puzzle is degenerate when the
+                // secret is, but it must not be fatal.
+                $inc = $val > 1 ? max(1, rand(intval($val / 100), $val - 1)) : 1;
                 $n = floor($val / $inc);
                 $r = $val % $inc;
 

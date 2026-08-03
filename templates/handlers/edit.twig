@@ -10,6 +10,11 @@
   </div>
 {% endif %}
 
+{# the edited form and the actions-builder rail are siblings in one flex row: the rail
+   configures what is being edited, it is not part of what gets posted #}
+<div class="yw-designer">
+<div class="yw-designer__canvas">
+
 {# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
 <form id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
       action="{{ url({ handler: handler }) }}" method="POST">
@@ -90,5 +95,6 @@
 
 </form>
 
-{# They should be included outside of form tag #}
-{{ include('@core/aceditor-modals.twig') }}
+</div>{# .yw-designer__canvas #}
+{{ include('@core/aceditor-rails.twig') }}
+</div>{# .yw-designer #}

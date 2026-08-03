@@ -39,6 +39,95 @@
   padding: 8px 10px !important;
 }
 
+/* Vditor's own `pin` parks the toolbar at the very top of the viewport, where the sticky
+   top bar already is; this puts it on the same line as the ACeditor's toolbar, with
+   yw-core.css owning the offset. Only `top` is overridden: Vditor stacks its per-block
+   popover (z-index 3) above this toolbar (1) on purpose, and the first block's popover
+   is drawn just above the editor, i.e. exactly where the toolbar is -- raising the
+   toolbar would bury the one control the first block has. */
+.vditor-toolbar--pin {
+  top: var(--sticky-toolbar-top);
+}
+
+/* fullscreen has no top bar to clear: .vditor is fixed and already offset by the margin
+   below, so anything but 0 would park the toolbar inside its own box */
+.vditor--fullscreen .vditor-toolbar--pin {
+  top: 0;
+}
+
+/* The per-block controls (move up, move down, remove) float over the block they act on.
+   Vditor separates them from it with 0.86 opacity and a faint shadow, which on a white
+   field reads as icons sitting in the middle of the text -- give them the border every
+   other floating control here has, so they read as a control. */
+.vditor-panel--none {
+  opacity: 1;
+  border: 1px solid var(--neutral-soft-color);
+}
+
+/* Vditor's toolbar buttons wear .yw-btn, added by vditor-textarea.js once Vditor has
+   built them -- so their radius, weight, hover and any theme override of the button come
+   from the one place every other button in the wiki gets them. What is left here is
+   undoing Vditor's own rules for those same buttons, which are more specific than a bare
+   class and would otherwise win: it paints them as flat 25px-wide transparent icons. */
+.vditor-toolbar__item > button.yw-btn {
+  width: auto;
+  height: auto;
+  padding: 6px 12px;
+  border: 1px solid var(--neutral-soft-color);
+  background-color: #fff;
+  color: var(--neutral-color);
+  /* Vditor zeroes the font size (its buttons hold nothing but an icon), which collapses
+     the line box .yw-btn sizes itself by -- restoring it is what makes these exactly as
+     tall as the ACeditor's buttons rather than 5px shorter */
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.vditor-toolbar__item > button.yw-btn:hover {
+  color: var(--neutral-color);
+}
+
+.vditor-toolbar__item > button.yw-btn.vditor-menu--current {
+  color: var(--primary-color) !important;
+}
+
+.vditor-toolbar__item > button.yw-btn.vditor-menu--disabled {
+  opacity: 0.6;
+}
+
+/* Vditor's icons are solid glyphs it fills; the sprite icon on the file button is a
+   Tabler outline, which is invisible at stroke-width 0 */
+.vditor-toolbar__item > button .yw-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  width: 15px;
+  height: 15px;
+}
+
+/* Like the ACeditor's .btn-group runs: buttons touch, and the separator between two runs
+   is a gap rather than a rule. `:has()` is what names "the last button before a divider",
+   which has no previous-sibling equivalent. */
+.vditor-toolbar__divider {
+  border-left: 0;
+  margin: 0 4px;
+}
+
+.vditor-toolbar__item:not(:first-child):not(
+    .vditor-toolbar__divider + .vditor-toolbar__item
+  )
+  > button.yw-btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+
+.vditor-toolbar__item:not(:last-child):not(:has(+ .vditor-toolbar__divider))
+  > button.yw-btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .vditor.vditor--fullscreen {
   margin: 46.5px 0 0 0 !important;
 }

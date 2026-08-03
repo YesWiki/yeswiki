@@ -3,15 +3,16 @@
    (FileManager), reusable across pages, so this modal has two panes: pick one of the
    files the user can already read, or upload a new one -- both feed the same
    configuration form (alignment/size/caption/...) before inserting
-   {{attach file="tag" ...}}. See javascripts/file-picker-modal.js. #}
-<div class="yw-modal" id="YesWikiFilePickerModal">
-  <div class="yw-modal__dialog yw-modal__dialog--lg">
-    <div class="yw-modal__content">
-      <div class="yw-modal__header">
-        <h4 class="yw-modal__title">{{ _t('UPLOAD_FILE') }}</h4>
-        <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
-      </div>
-      <div class="yw-modal__body">
+   {{attach file="tag" ...}}. See javascripts/file-picker-panel.js. #}
+{# declared here, not by the ACeditor: the Vditor toolbar opens this same rail on a form
+   that renders no ACeditor, and inherited its stylesheet only by accident before #}
+{{ include_css('styles/file-picker-panel.css') }}
+<aside class="yw-designer__sidebar file-picker-panel" id="YesWikiFilePickerPanel" hidden>
+  <div class="yw-rail__header">
+    <h2 class="yw-rail__title">{{ _t('UPLOAD_FILE') }}</h2>
+    <button type="button" class="yw-close" data-yw-file-picker-close aria-label="close">&times;</button>
+  </div>
+  <div class="file-picker-panel__body">
         <div class="btn-group file-picker-tabs">
           <button type="button" class="yw-btn yw-btn--primary" data-yw-file-picker-tab="existing">{{ _t('ATTACH_FILE_PICKER_CHOOSE_EXISTING') }}</button>
           <button type="button" class="yw-btn" data-yw-file-picker-tab="upload">{{ _t('ATTACH_FILE_PICKER_UPLOAD_NEW') }}</button>
@@ -51,7 +52,11 @@
             <input type="text" name="attach_link_text" value="" class="yw-input">
           </div>
 
-          <div class="yw-form-group pdf-option">
+          {# data-yw-file-picker-wiki-only: these configure the {{attach}} action this modal
+             writes for the ACeditor. The Vditor toolbar uses the same picker but inserts
+             Markdown, which has nowhere to put an alignment or a PDF display mode -- an
+             option that would be silently dropped is not offered. #}
+          <div class="yw-form-group pdf-option" data-yw-file-picker-wiki-only>
             <label>{{ _t('ATTACH_ACTION_DISPLAY_PDF_TEXT') }}</label>
             <div>
               <label class="yw-radio-inline">
@@ -65,7 +70,7 @@
             </div>
           </div>
 
-          <div class="yw-form-group image-option">
+          <div class="yw-form-group image-option" data-yw-file-picker-wiki-only>
             <label>{{ _t('IMAGE_ALIGN') }}</label>
             <div>
               <label class="yw-radio-inline">
@@ -83,7 +88,7 @@
             </div>
           </div>
 
-          <div class="yw-form-group image-option">
+          <div class="yw-form-group image-option" data-yw-file-picker-wiki-only>
             <label>{{ _t('IMAGE_SIZE') }}</label>
             <div>
               <label class="yw-radio-inline">
@@ -110,11 +115,11 @@
             <input type="text" name="attach_alt" value="" class="yw-input">
           </div>
 
-          <a href="#avanced-settings" class="yw-btn yw-collapse-toggle" data-yw-collapse-toggle="#file-picker-advanced-settings" aria-expanded="false">
+          <a href="#avanced-settings" class="yw-btn yw-collapse-toggle" data-yw-file-picker-wiki-only data-yw-collapse-toggle="#file-picker-advanced-settings" aria-expanded="false">
             {{ _t('ADVANCED_PARAMETERS') }}
             <span class="yw-collapse-toggle__caret"></span>
           </a>
-          <div id="file-picker-advanced-settings" class="yw-collapse">
+          <div id="file-picker-advanced-settings" class="yw-collapse" data-yw-file-picker-wiki-only>
             <hr>
             <div class="yw-form-group">
               <label for="file_picker_attach_link">{{ _t('ASSOCIATED_LINK') }}</label>
@@ -154,11 +159,9 @@
             </div>
           </div>
         </form>
-      </div>
-      <div class="yw-modal__footer">
-        <a href="#" data-yw-dismiss="modal" class="yw-btn btn-cancel-upload">{{ _t('ATTACH_CANCEL') }}</a>
-        <button type="button" class="yw-btn yw-btn--primary btn-insert-upload" disabled>{{ _t('INSERT') }}</button>
-      </div>
-    </div>
   </div>
-</div>
+  <div class="yw-rail__footer">
+    <a href="#" data-yw-file-picker-close class="yw-btn btn-cancel-upload">{{ _t('ATTACH_CANCEL') }}</a>
+    <button type="button" class="yw-btn yw-btn--primary btn-insert-upload" disabled>{{ _t('INSERT') }}</button>
+  </div>
+</aside>

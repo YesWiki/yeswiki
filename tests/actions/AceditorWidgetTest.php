@@ -10,7 +10,7 @@ require_once 'tests/YesWikiTestCase.php';
 
 /**
  * Regression tests for ticket 11 (aceditor absorbed into core): the editor
- * wrapper/toolbar/link-modal no longer depend on jQuery or Bootstrap's JS
+ * wrapper/toolbar/link rail no longer depend on jQuery or Bootstrap's JS
  * components (bootstrap-tagsinput, data-toggle="dropdown", data-toggle="modal").
  * The Vue-based actions-builder subsystem is deliberately untouched/still
  * Bootstrap-styled -- out of scope for this ticket.

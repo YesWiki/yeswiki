@@ -12,10 +12,21 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
-// TODO use Symfony XmlEncoder instead
-// https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
+/**
+ * The RSS 2.0 feed of a bazar list.
+ *
+ * Built with DOM rather than by concatenating strings: the feed used to be assembled
+ * with pear/xml_util (abandoned upstream), which escaped each value -- and then the whole
+ * document was run through html_entity_decode() to turn the escaped `<![CDATA[` markers
+ * back into real CDATA sections. That undid the escaping of everything ELSE too, so a
+ * single `&` or `<` in an entry title produced a feed no reader could parse. Here the
+ * escaping is the parser's job and CDATA is a node type, so neither trick is needed.
+ */
 class RssHandler extends YesWikiHandler implements RegisteredHandler
 {
+    private const NS_ATOM = 'http://www.w3.org/2005/Atom';
+    private const NS_DC = 'http://purl.org/dc/elements/1.1/';
+
     /** `/PageName/rss` -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
@@ -80,104 +91,92 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             // setlocale() pour avoir les formats de date valides (w3c) --julien
             setlocale(LC_TIME, 'C');
 
-            $xml = XML_Util::getXMLDeclaration('1.0', 'UTF-8', 'yes');
-            $xml .= "\r\n  ";
-            $xml .= XML_Util::createStartElement('rss', ['version' => '2.0',
-                'xmlns:atom' => 'http://www.w3.org/2005/Atom', 'xmlns:dc' => 'http://purl.org/dc/elements/1.1/', ]);
-            $xml .= "\r\n    ";
-            $xml .= XML_Util::createStartElement('channel');
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('count', null, $vCount);
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->getService(RuntimeConfig::class)['BAZ_RSS_DESCRIPTIONSITE']));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('link', null, $this->sanitize($this->getService(RuntimeConfig::class)['BAZ_RSS_ADRESSESITE']));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('language', null, 'fr-FR');
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->getService(RuntimeConfig::class)['BAZ_RSS_NOMSITE'])));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('category', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_CATEGORIE']);
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('managingEditor', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_MANAGINGEDITOR']);
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('webMaster', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_WEBMASTER']);
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('ttl', null, '60');
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createStartElement('image');
-            $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('url', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_LOGOSITE']);
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createEndElement('image');
+            $config = $this->getService(RuntimeConfig::class);
+
+            $doc = new \DOMDocument('1.0', 'UTF-8');
+            $doc->xmlStandalone = true;
+            $doc->formatOutput = true;
+
+            $rss = $doc->appendChild($doc->createElement('rss'));
+            $rss->setAttribute('version', '2.0');
+            $rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:atom', self::NS_ATOM);
+            $rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:dc', self::NS_DC);
+
+            $channel = $rss->appendChild($doc->createElement('channel'));
+            $this->addTag($doc, $channel, 'title', $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
+            $this->addTag($doc, $channel, 'lastBuildDate', date('r'));
+            $this->addTag($doc, $channel, 'count', (string)$vCount);
+            $this->addTag($doc, $channel, 'description', $this->sanitize($config['BAZ_RSS_DESCRIPTIONSITE']));
+            $this->addTag($doc, $channel, 'link', $this->sanitize($config['BAZ_RSS_ADRESSESITE']));
+            $this->addTag($doc, $channel, 'language', 'fr-FR');
+            $this->addTag($doc, $channel, 'copyright', 'Copyright (c) ' . date('Y') . ' ' . removeAccents($config['BAZ_RSS_NOMSITE']));
+            $this->addTag($doc, $channel, 'docs', 'http://www.stervinou.com/projets/rss/');
+            $this->addTag($doc, $channel, 'category', $config['BAZ_RSS_CATEGORIE']);
+            $this->addTag($doc, $channel, 'managingEditor', $config['BAZ_RSS_MANAGINGEDITOR']);
+            $this->addTag($doc, $channel, 'webMaster', $config['BAZ_RSS_WEBMASTER']);
+            $this->addTag($doc, $channel, 'ttl', '60');
+
+            $image = $channel->appendChild($doc->createElement('image'));
+            $this->addTag($doc, $image, 'url', $config['BAZ_RSS_LOGOSITE']);
+
+            // where a reader finds this very feed again
+            $self = $channel->appendChild($doc->createElementNS(self::NS_ATOM, 'atom:link'));
+            $self->setAttribute('href', $this->getRequest()->getSchemeAndHttpHost() . $this->getRequest()->getRequestUri());
+            $self->setAttribute('rel', 'self');
+            $self->setAttribute('type', 'application/rss+xml');
 
             if ($vCount > 0) {
                 // Creation des items : titre + lien + description + date de publication
                 foreach ($vRSSEntries as $vRSSEntry) {
-                    $xml .= "\r\n      ";
-                    $xml .= XML_Util::createStartElement('item');
-                    $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? '')));
-                    $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $vRSSEntry['url'] . ']]>');
-                    $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $vRSSEntry['url'] . ']]>');
-                    $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('dc:creator', null, $vRSSEntry['owner']);
-                    $xml .= "\r\n      ";
-                    $xml .= XML_Util::createTag(
-                        'description',
-                        null,
-                        '<![CDATA[' . preg_replace(
-                            '/data-id=".*"/Ui',
-                            '',
-                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->getService(UrlFormatter::class)->href('', $vRSSEntry['tag'])))
-                        ) . ']]>'
-                    );
-                    $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($vRSSEntry['created_at'])));
-                    $xml .= "\r\n      ";
-                    $xml .= XML_Util::createEndElement('item');
+                    $item = $channel->appendChild($doc->createElement('item'));
+                    $this->addTag($doc, $item, 'title', $this->sanitize($vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? ''));
+                    $this->addTag($doc, $item, 'link', $vRSSEntry['url'], true);
+                    $this->addTag($doc, $item, 'guid', $vRSSEntry['url'], true);
+                    $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
+                    $creator->appendChild($doc->createTextNode((string)$vRSSEntry['owner']));
+                    $this->addTag($doc, $item, 'description', preg_replace(
+                        '/data-id=".*"/Ui',
+                        '',
+                        $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->getService(UrlFormatter::class)->href('', $vRSSEntry['tag'])))
+                    ), true);
+                    $this->addTag($doc, $item, 'pubDate', date('r', strtotime($vRSSEntry['created_at'])));
                 }
             } else {
                 // pas d'annonces
-                $xml .= "\r\n      ";
-                $xml .= XML_Util::createStartElement('item');
-                $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
-                $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $this->getService(RuntimeConfig::class)['base_url'] . $this->getService(RuntimeConfig::class)['root_page'] . ']]>');
-                $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->getService(RuntimeConfig::class)['base_url'] . $this->getService(RuntimeConfig::class)['root_page'] . ']]>');
-                $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('description', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
-                $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime('01/01/%Y')));
-                $xml .= "\r\n      ";
-                $xml .= XML_Util::createEndElement('item');
+                $item = $channel->appendChild($doc->createElement('item'));
+                $this->addTag($doc, $item, 'title', $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
+                $this->addTag($doc, $item, 'link', $config['base_url'] . $config['root_page'], true);
+                $this->addTag($doc, $item, 'guid', $config['base_url'] . $config['root_page'], true);
+                $this->addTag($doc, $item, 'description', $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
+                $this->addTag($doc, $item, 'pubDate', date('r', strtotime('01/01/%Y')));
             }
-            $xml .= "\r\n    ";
-            $xml .= XML_Util::createEndElement('channel');
-            $xml .= "\r\n  ";
-            $xml .= XML_Util::createEndElement('rss');
 
             header('Content-type: text/xml; charset=UTF-8');
 
-            return str_replace(
-                '</image>',
-                '</image>' . "\n"
-            . '    <atom:link href="' . htmlentities($this->getRequest()->getSchemeAndHttpHost() . $this->getRequest()->getRequestUri())
-            . '" rel="self" type="application/rss+xml" />',
-                $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
-            );
+            return $doc->saveXML();
         } catch (\Exception $e) {
             return 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+    }
+
+    /**
+     * One element of the feed. `$cdata` for the values that carry markup or a raw URL --
+     * a CDATA section rather than escaping, so that a reader showing the description gets
+     * the entry's HTML back rather than a page of visible tags.
+     */
+    private function addTag(\DOMDocument $doc, \DOMNode $parent, string $name, ?string $value, bool $cdata = false): void
+    {
+        $element = $parent->appendChild($doc->createElement($name));
+        $value ??= '';
+        if ($value === '') {
+            return;
+        }
+        // `]]>` inside an entry would end the section early: split it across two of them
+        $content = $cdata
+            ? $doc->createCDATASection(str_replace(']]>', ']]]]><![CDATA[>', $value))
+            : $doc->createTextNode($value);
+        if ($content !== false) {
+            $element->appendChild($content);
         }
     }
 

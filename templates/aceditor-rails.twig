@@ -1,0 +1,15 @@
+{# The docked rails an editor opens on the right of what is being written: one for the
+   component the cursor is in, one for the link, one for the files. Only ever one of them
+   is open -- they share the slot -- and all three are declared here so that no template
+   rendering an editor can ship some of them and not the others.
+
+   Every template that renders an {{aceditor}} includes THIS, and nothing else: the
+   editor's JavaScript builds all three rails on startup, so a page that shipped two of
+   them used to break on the third. See javascripts/editor-rails.js.
+
+   They belong OUTSIDE the edited form -- each carries inputs of its own, which configure
+   what is being written rather than being fields of the page -- and, where there is one,
+   inside .yw-designer as a sibling of the canvas. #}
+{{ include('@core/actions-builder-panel.twig') }}
+{{ include('@core/link-panel.twig') }}
+{{ include('@core/file-picker-panel.twig') }}

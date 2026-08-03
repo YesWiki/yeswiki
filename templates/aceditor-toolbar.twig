@@ -45,25 +45,15 @@
 {# Upload file #}
 {{ include('@core/file-picker-button.twig') }}
 
-{# Actions builder menu #}
-<div class="btn-group actions-builder-button yw-dropdown">
-  <a class="yw-btn" href="#" data-yw-dropdown-toggle>
-    {{ _t('ACEDITOR_ACTIONS') }}
-    <span class="yw-dropdown__caret"></span>
-  </a>
-  <ul class="yw-dropdown__menu component-action-list">
-    <li class="open-actions-builder-btn open-existing-action">
-      <a>{{ _t('ACEDITOR_ACTIONS_EDIT_CURRENT') }}</a>
-    </li>
-
-    {% for groupName, groupConfig in actionsBuilderData.action_groups %}
-      {% if not groupConfig.onlyEdit %}
-        <li>
-          <a class="open-actions-builder-btn" data-group-name="{{ groupName }}">{{ groupConfig.label }}</a>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
+{# Actions builder. One button, not a menu: choosing what to insert happens in the rail's
+   palette, where every component is visible at once and searchable, rather than in a
+   dropdown that only listed the groups. This button only ADDS -- editing a component
+   already written is done by putting the cursor in it, see javascripts/aceditor.js. #}
+<div class="btn-group actions-builder-button">
+  <button type="button" class="yw-btn aceditor-btn open-actions-builder-btn">
+    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#layout-grid"/></svg>
+    <span>{{ _t('ACEDITOR_ACTIONS') }}</span>
+  </button>
 </div>
 
 {# Help #}

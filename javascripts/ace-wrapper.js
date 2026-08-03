@@ -9,6 +9,7 @@ export default class {
   container
   cursor = {} // ace cursor with more infos
   cursorChangeCallbacks = []
+  markerId = null
   langTools
   classesToIgnoreForData = ['markup', 'md-extra-markup', 'equal', 'space',
     'attribute-quote-mark', 'title-quote-mark']
@@ -213,5 +214,95 @@ export default class {
   insert(text) {
     this.ace.insert(text)
     this.selectCurrentGroupAfterEdit()
+  }
+
+  lineLength(row) {
+    return this.ace.session.getLine(row).length
+  }
+
+  /** A range on one line. The rails describe what they are on with these. */
+  rangeFor(row, colStart, colEnd) {
+    return new ace.Range(row, colStart, row, colEnd)
+  }
+
+  selectionRange() {
+    return this.ace.getSelectionRange()
+  }
+
+  /**
+   * Replace a range decided earlier rather than whatever is selected now. A rail is not a
+   * modal: between opening it and pressing its button, the cursor is free to wander, and
+   * what the rail rewrites has to be what it was opened on.
+   */
+  replaceRange(range, text) {
+    if (!range) return this.replaceCurrentGroupBy(text)
+    this.ace.selection.setRange(range)
+    return this.replaceSelectionBy(text)
+  }
+
+  /**
+   * Tint what a rail is open on, so that the panel on the right and the text on the left
+   * obviously refer to the same thing.
+   *
+   * A marker rather than a selection: a selection is something the next keystroke wipes
+   * out, and this has to survive typing inside the very thing it points at.
+   */
+  highlightRange(range) {
+    this.clearHighlight()
+    if (!range) return
+    this.markerId = this.ace.session.addMarker(range, 'yw-active-group', 'text')
+  }
+
+  clearHighlight() {
+    if (this.markerId === null) return
+    this.ace.session.removeMarker(this.markerId)
+    this.markerId = null
+  }
+
+  /**
+   * The tag that a `{{end elem="X"}}` closes: the nearest `{{X ...}}` above it that is not
+   * already closed in between, so that a grid inside a grid resolves to the one it really
+   * belongs to. Null when there is none -- an unbalanced `end` is not this method's
+   * problem to report.
+   *
+   * A scan of the text rather than a walk of the highlighter's tokens: ace tokenises the
+   * line the cursor is on, and the opening tag can be any number of lines above it.
+   */
+  findOpeningTag(elem, fromRow, fromColumn) {
+    const closesElem = new RegExp(`elem\\s*=\\s*["']${this.escapeRegExp(elem)}["']`)
+    let depth = 0
+    for (let row = fromRow; row >= 0; row -= 1) {
+      const tags = [...this.ace.session.getLine(row).matchAll(/\{\{\s*(\w+)([^}]*)\}\}/g)]
+        // on the row the `end` is on, only what is written before it can open it
+        .filter((tag) => row < fromRow || tag.index + tag[0].length <= fromColumn)
+      for (let i = tags.length - 1; i >= 0; i -= 1) {
+        const [markup, name, attributes] = tags[i]
+        if (name === 'end' && closesElem.test(attributes)) {
+          depth += 1
+        } else if (name === elem) {
+          if (depth === 0) {
+            return {
+              name,
+              text: markup.slice(2, -2).trim(),
+              range: this.rangeFor(row, tags[i].index, tags[i].index + markup.length)
+            }
+          }
+          depth -= 1
+        }
+      }
+    }
+    return null
+  }
+
+  /**
+   * Insert somewhere other than where the cursor happens to be. The actions builder
+   * decides where a new component goes when it opens -- the cursor may well have moved
+   * on by the time the user is done configuring it.
+   */
+  insertAt(position, text) {
+    if (!position) return this.insert(text)
+    this.ace.moveCursorTo(position.row, position.column)
+    this.ace.clearSelection()
+    return this.insert(position.onNewLine ? `\n${text}` : text)
   }
 }

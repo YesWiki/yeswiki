@@ -115,7 +115,9 @@ class TextareaField extends BazarField
         if ($this->syntax === self::SYNTAX_HTML) {
             $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/vditor/index.css');
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/vditor/index.min.js');
-            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vditor-textarea.js');
+            // a module since it shares the ACeditor's file picker: yw-assets.js sequences
+            // it after vendor/vditor above, so the `Vditor` global it reads is still there
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vditor-textarea.js', false, true);
 
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }

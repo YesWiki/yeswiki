@@ -1,3 +1,5 @@
+import { legacyIconToSprite } from './yw-icon-map.js'
+import { claimRailSlot, registerRail } from './editor-rails.js'
 import InputHelper from './components/InputHelper.js'
 import InputHidden from './components/InputHidden.js'
 import InputText from './components/InputText.js'
@@ -19,7 +21,6 @@ import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
 import InputFieldMapping from './components/InputFieldMapping.js'
-import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import InputHint from './components/InputHint.js'
 import AddonIcon from './components/AddonIcon.js'
@@ -45,7 +46,6 @@ const components = {
   InputClass,
   InputFieldMapping,
   InputColumnsWidth,
-  WikiCodeInput,
   PreviewAction,
   InputHint,
   AddonIcon
@@ -53,6 +53,29 @@ const components = {
 
 // actionsBuilderData is defined is AceditorAction
 const data = typeof actionsBuilderData === 'object' ? actionsBuilderData : { forms: {}, action_groups: {} }
+
+/**
+ * A sprite icon per action group, for the palette. Kept here rather than in the group's
+ * own YAML: a group is documentation an extension ships, and asking every extension
+ * author to name an icon before their actions can be listed would be a worse trade than
+ * a shared fallback. An unmapped group gets one, and still appears.
+ */
+const PALETTE_ICONS = {
+  'advanced-actions': 'tool',
+  bazar: 'square-plus',
+  buttons: 'external-link',
+  contact: 'mail',
+  entrylist: 'layout-grid',
+  management: 'settings',
+  reactions: 'thumb-up',
+  syndication: 'rss',
+  tags: 'tags',
+  templates: 'brush',
+  textsearch: 'loupe',
+  video: 'player-play'
+}
+
+const paletteIcon = (groupId) => legacyIconToSprite(PALETTE_ICONS[groupId] || 'stack-2') || ''
 
 // dynamically loads other components defined in extensions or in custom folder
 if (data.extraComponents) {
@@ -89,14 +112,78 @@ export const appConfig = {
       actionParams: {},
       isEditingExistingAction: false,
       displayAdvancedParams: false,
+      // 'palette' to pick a component, 'settings' to configure the one that was picked
+      view: 'palette',
+      paletteFilter: '',
+      isOpen: false,
+      // which component the rail is on, so that a caller can ask for the same one twice
+      openKey: null,
+      // where a component that is not in the document yet should be written
+      insertAt: null,
+      // and where the one it IS on is written, which is what an update rewrites
+      target: null,
       // Current Aceditor in use
       editor: null
     }
   },
   computed: {
+    /**
+     * True while the rail is placing a component the document does not contain yet. The
+     * cursor is then free to move without the rail following it: what is on screen was
+     * asked for from the toolbar, and only inserting or closing it ends that.
+     */
+    isPlacingNewAction() {
+      return this.isOpen && !this.isEditingExistingAction
+    },
     actionGroup() {
       if (!this.currentGroupId) return { label: '', actions: {} }
       return this.actionGroups[this.currentGroupId] || { label: '', actions: {} }
+    },
+    /**
+     * What the rail is on, for its header: the component. The group it belongs to is how
+     * the palette is arranged, not what is being configured -- and with the component
+     * decided before this panel shows, naming the drawer instead of the thing in it left
+     * every button's settings titled "Buttons".
+     */
+    railTitle() {
+      return this.selectedAction?.label || this.actionGroup?.label || ''
+    },
+    /**
+     * Read from `wiki.lang` rather than translated in the template: both keys live in the
+     * javascript catalog (src/lang/yeswikijs_*.php), which is the one the browser reads
+     * and the one Twig's `_t()` does not see.
+     */
+    submitLabel() {
+      return this.isEditingExistingAction
+        ? wiki.lang.ACTION_BUILDER_UPDATE_CODE
+        : wiki.lang.ACTION_BUILDER_INSERT_CODE
+    },
+    /**
+     * The palette: every component that can be inserted, under its group's heading and
+     * narrowed by the filter box. Flat rather than group-then-action, because "which
+     * group is a calendar in" is a question nobody should have to answer -- picking an
+     * item names both.
+     *
+     * `onlyEdit` groups (attach, pdf) describe actions you reach by putting the cursor
+     * in one, never by inserting a new one; they are not offered. Nor are the `common*`
+     * pseudo-actions, which are shared parameter panels rather than components.
+     */
+    paletteGroups() {
+      const needle = this.paletteFilter.trim().toLowerCase()
+      const matches = (text) => !needle || String(text).toLowerCase().includes(needle)
+
+      return Object.entries(this.actionGroups)
+        .filter(([, group]) => group && !group.onlyEdit)
+        .map(([groupId, group]) => ({
+          id: groupId,
+          label: group.label,
+          icon: paletteIcon(groupId),
+          actions: Object.entries(group.actions || {})
+            .filter(([actionId, action]) => action && action.label && !actionId.startsWith('common'))
+            .filter(([, action]) => matches(action.label) || matches(group.label))
+            .map(([actionId, action]) => ({ id: actionId, label: action.label }))
+        }))
+        .filter((group) => group.actions.length > 0)
     },
     actions() {
       const actions = this.actionGroup?.actions || {}
@@ -195,11 +282,88 @@ export const appConfig = {
   methods: {
     open(editor, options) {
       this.editor = editor
-      document.getElementById('actions-builder-modal').classList.add('yw-modal--open')
+      // refreshed even when the panel below is left alone: both are places in a document
+      // that moves as it is edited, and the caller recomputes them on every cursor change
+      this.target = options.target || null
+      this.insertAt = options.insertAt || null
+      // the component already on screen: leave it be. The cursor re-asks for it on every
+      // move inside it, and rebuilding the settings under the user would lose what they
+      // have typed into them
+      if (this.isOpen && options.key && options.key === this.openKey) return
+      this.openKey = options.key || null
+      // the tint in the text means "this is what the panel is on": nothing is, when the
+      // panel is about to place a component the document does not have yet
+      if (!options.action) this.editor.clearHighlight()
+      // the slot on the right holds one rail at a time. Registered from here rather
+      // than from the wrapper that mounts this app, so that the object the slot knows
+      // and the one asking for it are the same one -- see editor-rails.js
+      registerRail(this)
+      claimRailSlot(this)
+      // a docked rail rather than an overlay: `hidden` is the whole state
+      document.getElementById('actions-builder-panel').hidden = false
+      this.isOpen = true
       this.currentGroupId = options.groupName
       this.currentSelectedAction = options.action
       this.isEditingExistingAction = !!options.action
+      // editing the component under the cursor, or a caller naming one group, both know
+      // what they want already; opening with neither is the "what can I insert?" case
+      this.view = options.action || options.groupName ? 'settings' : 'palette'
+      this.paletteFilter = ''
       setTimeout(() => this.initValues(), 0)
+    },
+    close() {
+      if (!this.isOpen) return
+      if (this.editor) this.editor.clearHighlight()
+      document.getElementById('actions-builder-panel').hidden = true
+      this.isOpen = false
+      this.openKey = null
+    },
+    /** The rail's one button: write what it has been configured into the document. */
+    writeIntoEditor() {
+      if (this.isEditingExistingAction) {
+        this.updateExistingAction(this.wikiCode)
+      } else {
+        this.insertNewAction(this.wikiCode)
+      }
+    },
+    /**
+     * Write a component the document does not have yet, where it was decided it would go
+     * when the rail opened, and stay on it: what was just placed is now what is edited.
+     */
+    insertNewAction(wikiCode) {
+      this.isEditingExistingAction = true
+      this.openKey = null
+      this.editor.insertAt(this.insertAt, wikiCode)
+    },
+    /**
+     * Rewrite the component this panel was opened on -- which is not necessarily the one
+     * the cursor is in: landing on a `{{end elem="..."}}` opens the panel on the tag it
+     * closes, several lines above.
+     */
+    updateExistingAction(wikiCode) {
+      this.editor.replaceRange(this.target, wikiCode)
+    },
+    /** Picked from the palette: this names the group AND the action, so both are set. */
+    selectFromPalette(groupId, actionId) {
+      this.currentGroupId = groupId
+      this.currentSelectedAction = null
+      this.isEditingExistingAction = false
+      this.view = 'settings'
+      // initValues() clears selectedActionId on the way in, so the choice is applied
+      // after it rather than before -- and the watcher then loads the action's params
+      setTimeout(() => {
+        this.initValues()
+        this.selectedActionId = actionId
+      }, 0)
+    },
+    backToPalette() {
+      this.view = 'palette'
+      this.paletteFilter = ''
+      // whatever was being edited is abandoned here: the rail is picking a component to
+      // add again, which is also what keeps the cursor from pulling it back (open())
+      this.isEditingExistingAction = false
+      this.openKey = null
+      if (this.editor) this.editor.clearHighlight()
     },
     initValues() {
       this.values = {}

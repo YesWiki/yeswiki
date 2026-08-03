@@ -36,8 +36,6 @@
     "league/commonmark": "^2.4",
     "league/html-to-markdown": "^5.1",
     "nesbot/carbon": "^2.66.0",
-    "oomphinc/composer-installers-extender": "^2.0",
-    "pear/xml_util": "^1.4",
     "phpmailer/phpmailer": "^6.2",
     "simplepie/simplepie": "^1.8",
     "stefangabos/zebra_image": "^3.0",
@@ -60,20 +58,6 @@
     "twig/twig": "^3.0"
   },
   "conflict": {},
-  "extra": {
-    "installer-types": [
-      "yeswiki-extension",
-      "yeswiki-theme"
-    ],
-    "installer-paths": {
-      "tools/{$name}": [
-        "type:yeswiki-extension"
-      ],
-      "themes/{$name}": [
-        "type:yeswiki-theme"
-      ]
-    }
-  },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.4",
     "phpstan/phpstan": "^2.1",
@@ -81,10 +65,7 @@
     "symfony/var-dumper": "^7.4"
   },
   "config": {
-    "allow-plugins": {
-      "composer/installers": true,
-      "oomphinc/composer-installers-extender": true
-    },
+    "allow-plugins": {},
     "optimize-autoloader": true,
     "platform": {
       "php": "8.3.0"

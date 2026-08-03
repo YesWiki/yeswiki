@@ -1,0 +1,114 @@
+{# The actions builder, docked as a right-hand rail beside the editor rather than shown
+   as a modal -- same idiom as the form designer (styles/form-builder.css's .yw-fb).
+   Sits OUTSIDE the edited form, as a sibling of .yw-designer__canvas: its selects and
+   inputs are configuration, not fields, and would otherwise be posted with the page.
+   Hidden until a toolbar button opens it (javascripts/actions-builder-app.js). #}
+<aside class="yw-designer__sidebar actions-builder-panel" id="actions-builder-panel" hidden>
+  <div id="actions-builder-app">
+    <div class="yw-rail__header">
+      {# the palette is the way back, but only while a component is being CHOSEN: on one
+         the document already has, the panel is its properties and there is nothing behind
+         it -- adding another one is the toolbar button's job #}
+      <button type="button" class="yw-btn yw-btn--sm actions-builder-panel__back"
+              v-if="view === 'settings' && !isEditingExistingAction" @click="backToPalette"
+              :title="'{{ _t('ACTION_BUILDER_PALETTE_BACK') }}'">
+        {{ icon('arrow-left') }}
+      </button>
+      {# the rail names what it is on: the component, not the drawer it was found in #}
+      <h2 class="yw-rail__title"
+          v-html="view === 'palette' ? '{{ _t('ACTION_BUILDER_PALETTE_TITLE') }}' : railTitle"></h2>
+      <button type="button" class="yw-close" @click="close" aria-label="close">&times;</button>
+    </div>
+
+    {# Palette: every component that can be inserted, searchable. Choosing one is what
+       opens the settings below -- the old dropdown listed groups and made you choose the
+       action again inside the modal. #}
+    <div class="actions-builder-panel__body" v-if="view === 'palette'">
+      <div class="yw-form-group">
+        <input type="text" class="yw-input" v-model="paletteFilter" autocomplete="off"
+               placeholder="{{ _t('ACTION_BUILDER_PALETTE_FILTER') }}">
+      </div>
+      <p v-if="paletteGroups.length === 0" class="actions-builder-panel__empty">
+        {{ _t('ACTION_BUILDER_PALETTE_NO_RESULT') }}
+      </p>
+      <template v-for="group in paletteGroups" :key="group.id">
+        <h3 class="actions-builder-panel__palette-group" v-text="group.label"></h3>
+        <div class="actions-builder-panel__palette">
+          <button type="button" class="actions-builder-panel__component"
+                  v-for="action in group.actions" :key="action.id"
+                  @click="selectFromPalette(group.id, action.id)">
+            <span class="actions-builder-panel__component-icon" v-html="group.icon"></span>
+            <span class="actions-builder-panel__component-label" v-html="action.label"></span>
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <div class="actions-builder-panel__body" v-else>
+      {# Choose form (only for bazar actions) #}
+      <div v-if="needFormField" class="yw-form-group">
+        <label class="yw-form-label">{{ _t('ACTION_BUILDER_CHOOSE_FORM') }}</label>
+        <select :value="getSelectedFormId()" required class="yw-input" @change="setSelectedFormId" ref="formSelection">
+          <option v-for="(name, id) in formIds" :value="id" v-text="name"></option>
+        </select>
+        <span v-if="isEntryListAction" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT')|raw }}</span>
+      </div>
+
+      {# No "which action of this group?" select: the component is already decided by the
+         time this shows -- by the cursor landing in one, or by the palette card that was
+         picked -- and the header says which one it is. #}
+
+      {# Action Configuration #}
+      <div v-if="selectedAction && (!needFormField || selectedForms)" class="action-parameters-container">
+
+        <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
+
+        {# Iframe Preview #}
+        <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup ? actionGroup.previewHeight : null"></preview-action>
+
+        <div class="panels-config-container">
+          <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class"
+               :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
+            <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
+            <div class="config-panel-content">
+              <template v-for="(config, propName) in panel.params.properties" :key="propName">
+                <div v-html="config.intro" v-show="checkVisibility(config)"></div>
+                <component :is="componentIdFrom(config)" :ref="refFrom(config)"
+                           :value="values[propName]" v-on:input="updateValue(propName, $event)"
+                           v-show="checkVisibility(config)"
+                           :name="propName" :values="values"
+                           :config="config" :selected-forms="selectedForms">
+                </component>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        {# Advanced Params Checkbox #}
+        <input-checkbox v-if="isSomeAdvancedParams" :value="displayAdvancedParams" @input="displayAdvancedParams = $event"
+                        :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS') }}'}"
+                        class="advanced-params">
+        </input-checkbox>
+
+      </div>
+    </div>
+
+    {# The one thing this rail is for, parked at the bottom of it: the wiki code it builds
+       is what goes in the page, not something to read or copy out by hand. #}
+    <div class="yw-rail__footer" v-if="view === 'settings' && selectedAction && (!needFormField || selectedForms)">
+      <button type="button" class="yw-btn yw-btn--primary" data-yw-action-submit
+              @click="writeIntoEditor" v-text="submitLabel"></button>
+    </div>
+  </div>
+</aside>
+
+{{ include_css('styles/vendor/leaflet/leaflet.css') }}
+{{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
+
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+
+{{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
+{{ include_css('styles/vendor/vue-select/vue-select.css') }}
+
+{{ include_javascript('javascripts/actions-builder.js', false, true) }}
+{{ include_css('styles/actions/actions-builder.css') }}
