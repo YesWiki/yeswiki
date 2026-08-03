@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Api;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Admin\Controller\ArchiveController;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 

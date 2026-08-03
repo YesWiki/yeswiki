@@ -1,0 +1,47 @@
+name: Static analysis
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [doryphore, ectoplasme]
+    paths:
+      - '**.php'
+      - 'phpstan/**'
+      - 'composer.lock'
+      - '.github/workflows/phpstan.yml'
+  pull_request:
+    branches: [doryphore, doryphore-dev, ectoplasme]
+    paths:
+      - '**.php'
+      - 'phpstan/**'
+      - 'composer.lock'
+      - '.github/workflows/phpstan.yml'
+
+jobs:
+  phpstan:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # Matches composer.json > config > platform > php, so analysis sees the same
+          # language level the runtime is pinned to.
+          php-version: '8.3'
+          extensions: mysqli
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # No database, no web server: PHPStan never executes the code, so this job stays
+      # fast and is a usable pre-merge gate rather than a full-environment test run.
+      - name: Run PHPStan
+        run: composer analyse
+
+      - name: Report wave-two progress counters
+        if: always()
+        run: php phpstan/wave-counters.php

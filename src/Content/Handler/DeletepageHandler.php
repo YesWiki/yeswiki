@@ -64,7 +64,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                     $dbService = $this->getService(DbService::class);
                     $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '" . $dbService->escape($tag) . "'");
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 // do nothing
             }
         }

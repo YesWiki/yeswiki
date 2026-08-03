@@ -128,18 +128,27 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             if ($vCount > 0) {
                 // Creation des items : titre + lien + description + date de publication
                 foreach ($vRSSEntries as $vRSSEntry) {
+                    // every key here is optional: what a list yields depends on the form
+                    // and on the query, and an entry missing one is not a reason to warn
+                    // its way into the middle of an XML document
+                    $url = (string)($vRSSEntry['url'] ?? '');
+                    $published = strtotime((string)($vRSSEntry['created_at'] ?? $vRSSEntry['updated_at'] ?? ''));
+
                     $item = $channel->appendChild($doc->createElement('item'));
                     $this->addTag($doc, $item, 'title', $this->sanitize($vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? ''));
-                    $this->addTag($doc, $item, 'link', $vRSSEntry['url'], true);
-                    $this->addTag($doc, $item, 'guid', $vRSSEntry['url'], true);
+                    $this->addTag($doc, $item, 'link', $url, true);
+                    $this->addTag($doc, $item, 'guid', $url, true);
                     $creator = $item->appendChild($doc->createElementNS(self::NS_DC, 'dc:creator'));
-                    $creator->appendChild($doc->createTextNode((string)$vRSSEntry['owner']));
+                    $creator->appendChild($doc->createTextNode((string)($vRSSEntry['owner'] ?? '')));
                     $this->addTag($doc, $item, 'description', preg_replace(
                         '/data-id=".*"/Ui',
                         '',
-                        $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->getService(UrlFormatter::class)->href('', $vRSSEntry['tag'])))
+                        $this->sanitize($this->updateRelativeLinks(
+                            $this->getService(EntryController::class)->view($vRSSEntry),
+                            $this->getService(UrlFormatter::class)->href('', (string)($vRSSEntry['tag'] ?? ''))
+                        ))
                     ), true);
-                    $this->addTag($doc, $item, 'pubDate', date('r', strtotime($vRSSEntry['created_at'])));
+                    $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
                 }
             } else {
                 // pas d'annonces

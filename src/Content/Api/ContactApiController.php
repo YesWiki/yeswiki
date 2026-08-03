@@ -175,6 +175,4 @@ class ContactApiController extends YesWikiController
 
         return new ApiResponse(['type' => $message['class'], 'message' => $message['message']], Response::HTTP_OK);
     }
-
-    public const POST_CACHE_URLIMAGE_TOKEN_ID = 'POST api/images/cache/{width}/{height}/{mode}';
 }

@@ -1,0 +1,37 @@
+# Paths below are relative to THIS file, so the whole tool lives in one directory
+# instead of scattering three entries across the project root.
+includes:
+    - baseline.neon
+
+parameters:
+    level: 8
+
+    # YW_CHARSET is defined in phpstan/bootstrap.php so analysis knows it exists, but its
+    # runtime value comes from config['charset'] (see LanguageService) -- without this,
+    # PHPStan constant-folds every `YW_CHARSET != 'UTF-8'` legacy-charset guard into an
+    # "always false" error.
+    dynamicConstantNames:
+        - YW_CHARSET
+
+    paths:
+        - ../src
+        # Only the bundled sample extension is repo content. extensions/* is gitignored
+        # (see .gitignore) and community extensions installed there are typically symlinks
+        # to a developer's own checkout -- analysing them would make local runs disagree
+        # with CI, which has none of them, and would flag code this wave is explicitly not
+        # responsible for adapting.
+        - ../extensions/helloworld
+        - ../tests
+
+    excludePaths:
+        analyseAndScan:
+            - ../tests/e2e
+            - ../extensions/*/node_modules
+
+    # src/vendor/ is gone entirely (the captcha font moved to src/assets/fonts/).
+
+    bootstrapFiles:
+        - bootstrap.php
+
+    stubFiles:
+        - symfony-container.stub

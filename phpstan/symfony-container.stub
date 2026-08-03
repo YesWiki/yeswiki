@@ -1,0 +1,35 @@
+<?php
+
+namespace Symfony\Component\DependencyInjection;
+
+/**
+ * Generic stub for Symfony's service container.
+ *
+ * `ContainerInterface::get()` is declared `?object`, so without this stub PHPStan cannot
+ * see what any of every container get(X::class) call site actually returns —
+ * every one of them resolves to `object` and nothing downstream is checked. That would
+ * make the analyser blind to precisely the code this wave rewrites.
+ *
+ * Every real call site in this codebase passes `X::class`; the only 8 that don't are the
+ * generic wrapper methods (YesWikiController, BazarField, YesWikiMigration,
+ * YesWikiPerformable, FormPropertiesService), which already declare
+ * `@param class-string<T>` themselves and so type-check straight through.
+ *
+ * The real interface's `extends Psr\Container\ContainerInterface` is deliberately not
+ * repeated here: a stub only overlays type information onto the real declaration, and
+ * restating the parent makes PHPStan resolve it in the stub's own (non-autoloaded)
+ * context, where it fails. Omitting it keeps the real hierarchy intact.
+ *
+ * Kept after ticket 08: the container itself is legitimate DI surface now (tests, base-class getService helpers), and this stub is what types every get() chain.
+ */
+interface ContainerInterface
+{
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $id
+     *
+     * @return ($invalidBehavior is 1 ? T : T|null)
+     */
+    public function get(string $id, int $invalidBehavior = 1): ?object;
+}

@@ -49,6 +49,7 @@ jobs:
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='tests' \
+            --exclude='phpstan' \
             --exclude='.env' \
             --exclude='*.config.php' \
             --exclude='.php-cs-fixer.cache' \

@@ -91,7 +91,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                 $vID = $this->bazarListService->getTheID($this->arguments['id']);
 
                 if ($vID['isExternal']) {
-                    throw \Exception('The specified ID for import should be local');
+                    throw new \Exception('The specified ID for import should be local');
 
                     return 'The specified ID for import should be local';
                 }
@@ -120,7 +120,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                 $vID = $this->bazarListService->getTheID($this->arguments['id']);
 
                 if ($vID['isExternal']) {
-                    throw \Exception('The specified ID for import should be local');
+                    throw new \Exception('The specified ID for import should be local');
 
                     return 'The specified ID for import should be local';
                 }

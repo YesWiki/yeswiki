@@ -17,6 +17,7 @@
 !themes/
 !extensions/
 !docker/
+!phpstan/
 
 # Composer
 vendor
@@ -29,7 +30,10 @@ styles/vendor/
 # SEO
 robots.txt
 
-phpstan*
+# PHPStan's config, baseline, bootstrap and stubs are repo content -- CI runs
+# `composer analyse` against them. Only a result cache, if ever pointed here
+# (parameters.tmpDir), is generated.
+/phpstan/cache/
 
 # YesWiki stuff
 .env

@@ -463,25 +463,19 @@ export const appConfig = {
         const idsToSearch = this.selectedFormsIds.filter((fid) => !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid))
         if (idsToSearch.length > 0) {
           idsToSearch.forEach((id) => this.loadingForms.push(id))
-          const params = { demand: 'forms' }
-          if (idsToSearch.length == 1) {
-            params.id = idsToSearch[0]
-          } else {
-            idsToSearch.forEach((id, index) => {
-              params[`id[${index}]`] = id
-            })
-          }
-          fetch(wiki.url('?wiki/json', params)).then((response) => response.json()).then((data) => {
+          // One request per form, against the API that replaced `?wiki/json&demand=forms`
+          // (that handler is gone; it answered this fetch with an error PAGE, which
+          // response.json() rejected on -- leaving `selectedForms` null, and every
+          // form-based action in this panel with no parameters at all).
+          Promise.all(idsToSearch.map((id) => fetch(wiki.url(`?api/forms/${encodeURIComponent(id)}`))
+            .then((response) => (response.ok ? response.json() : null))
+            .catch(() => null))).then((forms) => {
             this.loadingForms = this.loadingForms.filter((e) => !idsToSearch.includes(e))
-            // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-            if (Array.isArray(data) && data[0] != undefined) {
-              // copy forms
-              data.forEach((form) => {
-                if (form.id != undefined && idsToSearch.includes(form.id)) {
-                  this.loadedForms[form.id] = form
-                }
-              })
-            }
+            forms.forEach((form) => {
+              if (form && form.id != undefined && idsToSearch.includes(`${form.id}`)) {
+                this.loadedForms[form.id] = form
+              }
+            })
             // default forms for missing
             idsToSearch.forEach((fid) => {
               // fake empty form

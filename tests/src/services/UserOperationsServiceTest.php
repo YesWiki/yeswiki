@@ -7,6 +7,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;

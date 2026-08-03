@@ -260,7 +260,7 @@ class CSVManager
     /**
      * getLabelsFromEnumFieldOptions.
      *
-     * @param BazarEnumFieldField $field
+     * @param EnumField $field
      *
      * @return mixed array|string|null
      */

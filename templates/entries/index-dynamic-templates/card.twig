@@ -5,7 +5,11 @@
 {% endblock %}
 
 {% block display_entries %}
-  {% set nbcol = params.columns %}
+  {# `|default` matters: this number is interpolated straight into a CSS grid template,
+     so a missing `columns` used to emit `repeat(, minmax(0, 1fr))` -- an invalid
+     declaration the browser drops, leaving the cards in a single column with no clue
+     why. 3 is what the actions builder offers as the default. #}
+  {% set nbcol = params.columns|default(3) %}
   {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
   {% set isLink = isModal or (params.entrydisplay == 'direct') %}
 
