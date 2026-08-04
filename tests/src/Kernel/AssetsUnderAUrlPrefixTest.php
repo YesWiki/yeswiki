@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Kernel;
 
+use YesWiki\Kernel\Service\AssetPublisher;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -31,6 +32,68 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
     private const PORT = 8791;
 
     public function testAnAssetIsServedThroughAPrefixThatIsNotAFolder(): void
+    {
+        $this->underAPrefix(function (): void {
+            $asset = $this->fetch('/ecto/themes/yeswiki/styles/yeswiki.css');
+            $this->assertStringContainsString('200', $asset['status'], 'the stylesheet must be served');
+            $this->assertStringContainsString(
+                'text/css',
+                $asset['type'],
+                'served as a stylesheet, not as the wiki page it fell through to'
+            );
+
+            // ...and a real page URL under the same prefix still reaches the wiki: this
+            // must recognise assets, not swallow everything with a prefix on it
+            $page = $this->fetch('/ecto/SomePage');
+            $this->assertStringContainsString('text/html', $page['type']);
+        });
+    }
+
+    /**
+     * The published form of the same thing: `cache/assets/{version}/{path}`, which is what a
+     * farm instance's pages actually link to, and what ES module imports resolve to on their
+     * own. These reach PHP whenever the file has not been materialized into the instance yet
+     * -- every first request, and every request for a module the page did not itself declare.
+     */
+    public function testAPublishedAssetIsServedThroughThatPrefixToo(): void
+    {
+        $this->underAPrefix(function (): void {
+            foreach (['styles/bazar/entries/index.css' => 'text/css',
+                'javascripts/link-panel.js' => 'text/javascript'] as $path => $type) {
+                $asset = $this->fetch('/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/' . $path);
+                $this->assertStringContainsString('200', $asset['status'], $path);
+                $this->assertStringContainsString($type, $asset['type'], $path);
+            }
+        });
+    }
+
+    /**
+     * ...and when it cannot be served, it is a 404 and not a page.
+     *
+     * A wiki that answers a stylesheet request with HTML gets "bloquée en raison d'un type
+     * MIME text/html incorrect" in the console -- which names the symptom and hides the
+     * cause. Nothing under `cache/assets/` is ever a page, so say so.
+     */
+    public function testAPublishedAssetThatCannotBeServedIsNotAnsweredWithAPage(): void
+    {
+        $this->underAPrefix(function (): void {
+            foreach ([
+                'no such file' => '/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/javascripts/nope.js',
+                'not a servable path' => '/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/private/secret.js',
+                'no version at all' => '/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'yw-core.css',
+            ] as $label => $url) {
+                $answer = $this->fetch($url);
+                $this->assertStringContainsString('404', $answer['status'], $label);
+                $this->assertStringNotContainsString('text/html', $answer['type'], $label);
+            }
+        });
+    }
+
+    /**
+     * Lay out a farm whose instance is not reachable from the docroot -- the prefix exists
+     * only in the URL -- serve it, and run $probe against it.
+     */
+    private function underAPrefix(\Closure $probe): void
     {
         $this->getWiki(); // for the path constants
         $root = sys_get_temp_dir() . '/yeswiki-prefix-test-' . getmypid();
@@ -66,19 +129,7 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
 
         try {
             $this->waitForServer();
-
-            $asset = $this->fetch('/ecto/themes/yeswiki/styles/yeswiki.css');
-            $this->assertStringContainsString('200', $asset['status'], 'the stylesheet must be served');
-            $this->assertStringContainsString(
-                'text/css',
-                $asset['type'],
-                'served as a stylesheet, not as the wiki page it fell through to'
-            );
-
-            // ...and a real page URL under the same prefix still reaches the wiki: this
-            // must recognise assets, not swallow everything with a prefix on it
-            $page = $this->fetch('/ecto/SomePage');
-            $this->assertStringContainsString('text/html', $page['type']);
+            $probe();
         } finally {
             proc_terminate($server);
             proc_close($server);

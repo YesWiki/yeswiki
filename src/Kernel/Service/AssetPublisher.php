@@ -151,12 +151,9 @@ class AssetPublisher
             $rest = substr($uriPath, strlen(self::PUBLISHED_PREFIX));
             $parts = explode('/', $rest, 2);
             if (count($parts) !== 2 || !self::isValidVersion($parts[0]) || !self::isServablePath($parts[1])) {
-                if ($instanceDir !== null) {
-                    // never fall through to booting the shared root wiki with a changed cwd
-                    self::notFound();
-                }
-
-                return;
+                // nothing under cache/assets/ is ever a wiki page, and booting the shared
+                // root wiki with a changed cwd would be worse still
+                self::notFound();
             }
             $target = self::materialize($parts[0], $parts[1]);
             if ($target !== null) {
@@ -173,6 +170,17 @@ class AssetPublisher
             if ($sourceFile !== null) {
                 self::serveFile($sourceFile, false);
             }
+            self::notFound();
+        }
+
+        // A request still naming a published asset is one this could not place, whatever the
+        // reason -- an unforeseen mount, a prefix that survived every strip above. A page is
+        // the one answer that must not be given to it: the browser refuses `text/html` for a
+        // stylesheet or a module and reports a MIME error, which says nothing about what
+        // actually went wrong ("bloquée en raison d'un type MIME text/html incorrect", from a
+        // farm whose sources predated the prefix handling). A 404 says it plainly.
+        $requested = rawurldecode((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH));
+        if (str_contains($requested, '/' . self::PUBLISHED_PREFIX)) {
             self::notFound();
         }
     }
