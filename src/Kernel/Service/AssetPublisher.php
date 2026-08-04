@@ -153,13 +153,17 @@ class AssetPublisher
             if (count($parts) !== 2 || !self::isValidVersion($parts[0]) || !self::isServablePath($parts[1])) {
                 // nothing under cache/assets/ is ever a wiki page, and booting the shared
                 // root wiki with a changed cwd would be worse still
-                self::notFound();
+                self::notFound('not a publishable asset path: ' . $rest);
             }
             $target = self::materialize($parts[0], $parts[1]);
             if ($target !== null) {
                 self::serveFile($target, true);
             }
-            self::notFound();
+            self::notFound(
+                self::resolveSourceFile($parts[1]) === null
+                    ? 'no such file in the sources: ' . $parts[1]
+                    : 'could not publish into ' . getcwd() . '/' . self::PUBLISHED_PREFIX . ' (not writable?): ' . $parts[1]
+            );
         }
 
         if (self::isServablePath($uriPath)) {
@@ -170,7 +174,7 @@ class AssetPublisher
             if ($sourceFile !== null) {
                 self::serveFile($sourceFile, false);
             }
-            self::notFound();
+            self::notFound('no such file in the sources: ' . $uriPath);
         }
 
         // A request still naming a published asset is one this could not place, whatever the
@@ -181,7 +185,7 @@ class AssetPublisher
         // farm whose sources predated the prefix handling). A 404 says it plainly.
         $requested = rawurldecode((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH));
         if (str_contains($requested, '/' . self::PUBLISHED_PREFIX)) {
-            self::notFound();
+            self::notFound('asset path not placed: ' . $requested);
         }
     }
 
@@ -276,6 +280,10 @@ class AssetPublisher
         $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
         $target = $assetsDir . '/' . $version . '/' . $relPath;
 
+        // an instance published before publishReferences() existed has the sheets but not
+        // what they import: sweep it once, then never again for this version
+        self::publishMissingReferences($version, $assetsDir . '/' . $version);
+
         if (is_file($target) && $version !== 'dev') {
             return $target;
         }
@@ -307,7 +315,188 @@ class AssetPublisher
             return is_file($target) ? $target : null;
         }
 
+        self::publishReferences($version, $relPath, $sourceFile);
+
         return $target;
+    }
+
+    /**
+     * Publish what a freshly published stylesheet or script points at: `@import`ed sheets,
+     * `url()` fonts and images, statically imported modules.
+     *
+     * These are the assets nobody registers and nothing emits a URL for -- the browser
+     * derives them from inside the file it was given, relative to the published path. They
+     * were left to the request interception, which only sees them if the webserver sends
+     * missing files through index.php. A farm instance whose vhost has no such fallback --
+     * a plain subdirectory on a shared host, say -- then serves its page, serves every
+     * registered asset from disk, and 404s exactly the sheets `bazar.css` imports. The
+     * browser reports that as a MIME error, naming a stylesheet that looks perfectly fine.
+     *
+     * So publish the closure instead of hoping to be asked for it. It costs one scan per
+     * file per version -- these run only on the copy, not on the requests that follow -- and
+     * makes farm mode independent of the vhost's rewrite rules.
+     *
+     * @param array<string, true> $seen guards cycles (a.css imports b.css imports a.css)
+     */
+    private static function publishReferences(string $version, string $relPath, string $sourceFile, array &$seen = []): void
+    {
+        $extension = strtolower(pathinfo($relPath, PATHINFO_EXTENSION));
+        if (!in_array($extension, ['css', 'js', 'mjs'], true) || \count($seen) > 500) {
+            return;
+        }
+        $seen[$relPath] = true;
+
+        $content = @file_get_contents($sourceFile);
+        if ($content === false) {
+            return;
+        }
+
+        $base = \dirname($relPath);
+        foreach (self::referencesIn($content, $extension) as $reference) {
+            $resolved = self::resolveRelative($base, $reference);
+            if ($resolved === null || isset($seen[$resolved]) || !self::isServablePath($resolved)) {
+                continue;
+            }
+            $seen[$resolved] = true;
+            $referenced = self::resolveSourceFile($resolved);
+            if ($referenced === null) {
+                continue;
+            }
+            if (self::materializeOne($version, $resolved, $referenced)) {
+                self::publishReferences($version, $resolved, $referenced, $seen);
+            }
+        }
+    }
+
+    /**
+     * The relative references a stylesheet or script makes to files beside it. Absolute URLs,
+     * data: URIs and site-root paths are somebody else's business.
+     *
+     * @return list<string>
+     */
+    private static function referencesIn(string $content, string $extension): array
+    {
+        $patterns = $extension === 'css'
+            ? [
+                '~@import\s+(?:url\()?\s*[\'"]([^\'"]+)[\'"]~i',
+                '~url\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)~i',
+            ]
+            : [
+                // static import/export forms only: whatever a bundler or a dynamic import
+                // computes at runtime cannot be read off the source
+                '~(?:^|[\s;])(?:import|export)\s[^;\'"]*?from\s*[\'"]([^\'"]+)[\'"]~m',
+                '~(?:^|[\s;])import\s*[\'"]([^\'"]+)[\'"]~m',
+            ];
+
+        $found = [];
+        foreach ($patterns as $pattern) {
+            if (preg_match_all($pattern, $content, $matches)) {
+                foreach ($matches[1] as $reference) {
+                    $reference = trim($reference);
+                    if ($reference === '' || !str_starts_with($reference, '.')) {
+                        continue; // absolute, protocol-relative, data:, or a bare package name
+                    }
+                    $found[] = $reference;
+                }
+            }
+        }
+
+        return array_values(array_unique($found));
+    }
+
+    /**
+     * Resolve `../fonts/x.woff2` against the directory of the file that referenced it, into a
+     * source-relative path. Null when it climbs out of the source tree or carries a query or
+     * fragment we cannot publish under.
+     */
+    private static function resolveRelative(string $base, string $reference): ?string
+    {
+        $reference = (string)preg_replace('~[?#].*$~', '', $reference);
+        if ($reference === '') {
+            return null;
+        }
+
+        $segments = [];
+        foreach (explode('/', ($base === '.' ? '' : $base . '/') . $reference) as $segment) {
+            if ($segment === '' || $segment === '.') {
+                continue;
+            }
+            if ($segment === '..') {
+                if ($segments === []) {
+                    return null;
+                }
+                array_pop($segments);
+
+                continue;
+            }
+            $segments[] = $segment;
+        }
+
+        return $segments === [] ? null : implode('/', $segments);
+    }
+
+    /**
+     * Copy one already-located source file into the published tree. Same body as
+     * materialize()'s tail, without the lookup or the recursion -- the caller has both.
+     */
+    private static function materializeOne(string $version, string $relPath, string $sourceFile): bool
+    {
+        $target = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/') . '/' . $version . '/' . $relPath;
+        if (is_file($target) && ($version !== 'dev' || filemtime($target) >= filemtime($sourceFile))) {
+            return false; // already there: its own references were published with it
+        }
+
+        $targetDir = \dirname($target);
+        if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
+            return false;
+        }
+        $tmp = $targetDir . '/.' . uniqid('publish', true) . '.tmp';
+        if (!@copy($sourceFile, $tmp)) {
+            return false;
+        }
+        touch($tmp, filemtime($sourceFile) ?: time());
+        if (!@rename($tmp, $target)) {
+            @unlink($tmp);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * One sweep per published version: every stylesheet and script already sitting there gets
+     * its references published too.
+     *
+     * Only for trees published by an older YesWiki, which copied each registered file and
+     * nothing it points at. Marked with a dot-file (never servable: isServablePath() refuses
+     * dot segments), written before the sweep so a concurrent request does not repeat it.
+     */
+    private static function publishMissingReferences(string $version, string $versionDir): void
+    {
+        $marker = $versionDir . '/.references-published';
+        if (!is_dir($versionDir) || is_file($marker)) {
+            return;
+        }
+        if (@file_put_contents($marker, '') === false) {
+            return; // unwritable cache: the request interception is the only route left
+        }
+
+        $seen = [];
+        $tree = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($versionDir, \FilesystemIterator::SKIP_DOTS));
+        foreach ($tree as $file) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
+                continue;
+            }
+            $relPath = ltrim(str_replace($versionDir, '', $file->getPathname()), '/');
+            if (isset($seen[$relPath]) || !self::isServablePath($relPath)) {
+                continue;
+            }
+            $sourceFile = self::resolveSourceFile($relPath);
+            if ($sourceFile !== null) {
+                self::publishReferences($version, $relPath, $sourceFile, $seen);
+            }
+        }
     }
 
     /**
@@ -359,11 +548,20 @@ class AssetPublisher
         exit;
     }
 
-    private static function notFound(): void
+    /**
+     * 404 as text, never as a page, and saying which of the ways this can fail happened.
+     *
+     * The reason costs one line and answers, from the browser alone, the question that
+     * otherwise needs a shell on the server: are the sources missing the file, is the
+     * instance's cache unwritable, or did the request never get recognised as an asset at
+     * all. It names only the path the requester already asked for.
+     */
+    private static function notFound(string $reason = ''): void
     {
         http_response_code(404);
         header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Not found';
+        header('X-Content-Type-Options: nosniff');
+        echo 'YesWiki: asset not found', $reason === '' ? '' : ' -- ' . $reason, "\n";
         exit;
     }
 }
