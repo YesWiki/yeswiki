@@ -43,11 +43,51 @@ function getAbsoluteUrl()
  */
 function computeBaseURL($rewrite_mode = false)
 {
-    $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
-
     return getRootUrl()
-        . $scriptlocation
+        . wikiMountPath()
         . ($rewrite_mode ? '/' : '/?');
+}
+
+/**
+ * The path the wiki is reached under, without its trailing slash: '' at a docroot root,
+ * '/mywiki' in a subdirectory, '/ecto' behind an alias.
+ *
+ * SCRIPT_NAME answers this whenever the wiki really lives at that path on disk. It does not
+ * when the prefix is only a *URL* -- an nginx `location`, an Apache `alias`, a reverse proxy
+ * mounting the wiki at /ecto: there SCRIPT_NAME is plain `/index.php` and the prefix
+ * survives only in REQUEST_URI. The installer took SCRIPT_NAME's word for it and wrote its
+ * stylesheet links to `https://host/styles/...`, outside the wiki's own location entirely --
+ * so the install page arrived unstyled, and the base_url it offered to save was wrong too.
+ *
+ * Reading it back from the request is only safe where the path cannot be a page: ending in
+ * `/` or in `index.php`, which is how anyone arrives at a wiki they are about to install. A
+ * bare `/SomePage` is left alone -- at a docroot root that is a page, not a mount point.
+ *
+ * @return string mount path with no trailing slash, '' at the root
+ */
+function wikiMountPath(): string
+{
+    $script = (string)($_SERVER['SCRIPT_NAME'] ?? '');
+    // only when it really names the entry script: some SAPIs (the built-in server behind a
+    // router) put the *requested* path in SCRIPT_NAME, which is not where the wiki lives
+    $scriptLocation = str_ends_with($script, '/index.php')
+        ? substr($script, 0, -strlen('/index.php'))
+        : '';
+    $path = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+
+    // the wiki is where the script says, and the request agrees: subdirectory install
+    if ($scriptLocation !== '' && str_starts_with(rtrim($path, '/') . '/', $scriptLocation . '/')) {
+        return $scriptLocation;
+    }
+
+    if (str_ends_with($path, '/index.php')) {
+        $path = substr($path, 0, -strlen('/index.php')) . '/';
+    }
+    if (!str_ends_with($path, '/')) {
+        return $scriptLocation;
+    }
+
+    return rtrim($path, '/');
 }
 
 /**

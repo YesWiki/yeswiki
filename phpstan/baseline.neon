@@ -15995,27 +15995,9 @@ parameters:
 			path: ../src/Identity/Service/HashCashService.php
 
 		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Identity/Service/HashCashService.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fwrite expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Service/HashCashService.php
-
-		-
 			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
 			identifier: argument.type
 			count: 2
-			path: ../src/Identity/Service/HashCashService.php
-
-		-
-			message: '#^Parameter \#2 \$data of function fwrite expects string, int\<21474836, 2126008810\> given\.$#'
-			identifier: argument.type
-			count: 1
 			path: ../src/Identity/Service/HashCashService.php
 
 		-

@@ -28,7 +28,16 @@ class HashCashService
      */
     private function secretFile(): string
     {
-        return YESWIKI_SOURCE_DIR . '/cache/hashcash.key';
+        // The INSTANCE's cache, not the source's. `cache/` is instance data -- provisioned
+        // per wiki by src/bootstrap_paths.php -- and this was the one place in the codebase
+        // writing into the shared source tree instead. On a farm that tree is one folder
+        // behind every wiki on the server and is routinely not writable by the web user, so
+        // the fopen() below returned false and fclose(false) took the whole page down with
+        // "Argument #1 ($stream) must be of type resource".
+        //
+        // It is also the secret two wikis must not share: it is the answer to the puzzle
+        // their visitors are being asked, and one of them rewrites it every four hours.
+        return YESWIKI_INSTANCE_DIR . '/cache/hashcash.key';
     }
 
     /**
@@ -52,13 +61,37 @@ class HashCashService
         return $str;
     }
 
-    /** The current secret key. */
+    /** The current secret key, or '' when there is none to be had. */
     private function secretValue(): string
     {
         // the original guarded this with function_exists('file_get_contents') and a
         // fopen/fread fallback -- that function has been unconditionally available for
-        // the entire life of PHP 5+, let alone the ^8.3 this requires
-        return (string)file_get_contents($this->secretFile());
+        // the entire life of PHP 5+, let alone the ^8.3 this requires. `@` because a
+        // missing key is a state this class handles, not a warning to print into a page.
+        return (string)@file_get_contents($this->secretFile());
+    }
+
+    /**
+     * Write a fresh secret, and say whether it could be written at all.
+     *
+     * Everything here hangs on this file: no file, no puzzle to pose and no answer to
+     * check. Rather than let each caller discover that through a warning, they ask.
+     */
+    private function refreshSecret(): bool
+    {
+        return @file_put_contents($this->secretFile(), (string)rand(21474836, 2126008810)) !== false;
+    }
+
+    /** Whether there is a usable puzzle -- a secret this wiki can read and refresh. */
+    private function hasSecret(): bool
+    {
+        $file = $this->secretFile();
+        $current = @file_get_contents($file);
+        if ($current === false || $current === '' || (time() - (int)@filemtime($file)) > self::REFRESH) {
+            return $this->refreshSecret();
+        }
+
+        return true;
     }
 
     /**
@@ -72,6 +105,12 @@ class HashCashService
         if (empty($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
             return true;
         }
+        // a wiki that cannot keep the secret was never able to pose the puzzle either
+        // (getJavascriptCode() renders nothing), so there is nothing to check -- and
+        // refusing every save because a cache folder is read-only helps nobody
+        if (!$this->hasSecret()) {
+            return true;
+        }
         $value = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('hashcash_value');
 
         return isset($value) && $value == $this->secretValue();
@@ -79,19 +118,10 @@ class HashCashService
 
     public function getJavascriptCode($formId = 'ACEditor')
     {
-        if (!file_exists($this->secretFile())) {
-            $handle = fopen($this->secretFile(), 'w');
-            fclose($handle);
-        }
-        // UPDATE RANDOM SECRET
-        $curr = @file_get_contents($this->secretFile());
-        if (empty($curr) || (time() - @filemtime($this->secretFile())) > self::REFRESH) {
-            if (is_writable($this->secretFile())) {
-                // update our secret
-                $fp = fopen($this->secretFile(), 'w');
-                fwrite($fp, rand(21474836, 2126008810));
-                fclose($fp);
-            }
+        // No secret, no puzzle: say nothing rather than pose a question nobody can mark.
+        // checkHashcash() reads the same state and lets the save through.
+        if (!$this->hasSecret()) {
+            return '';
         }
 
         $scriptUrl = $this->urlFormatter->href('', 'api/hashcash', ['formid' => $formId]);
