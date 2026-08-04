@@ -9,12 +9,14 @@
             {% endif %}
             <a href="{{ fileUrl }}" data-id="{{ field.name }}" target="_blank" {% if not isUrl %}download="{{ shortFileName }}"{% endif %}>{{ shortFileName }}</a>
             &nbsp;-&nbsp;
-            <label class="yw-btn yw-btn--sm">
+            {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+            <button type="button"
+                    class="yw-btn yw-btn--sm yw-file-picker-field__button"
+                    data-yw-file-picker-field="{{ field.propertyName }}_url">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
                 {{ _t('BAZ_MODIFIER_FICHIER') }}
-                {% set style = 'display:none;' %}
-                {{ block('inputblock') }}
-            </label>
+            </button>
+            <input type="url" name="{{ field.propertyName }}_url" id="{{ field.propertyName }}_url" hidden />
              {% if isAllowedToDeleteFile %}
                 <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ deleteUrl }}"
                    onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER')|e('js') }}');">
@@ -34,44 +36,29 @@
                 value="{{ value }}"
             />
         {% else %}
-            <div class="file-url-tabs">
-                <ul class="yw-nav" role="tablist">
-                    <li role="presentation" class="active">
-                        <a href="#{{ field.propertyName }}-upload" aria-controls="{{ field.propertyName }}-upload" role="tab" data-toggle="tab">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg> {{ _t('BAZ_UPLOAD_FILE') }}
-                        </a>
-                    </li>
-                    <li role="presentation">
-                        <a href="#{{ field.propertyName }}-url" aria-controls="{{ field.propertyName }}-url" role="tab" data-toggle="tab">
-                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg> {{ _t('BAZ_URL') }}
-                        </a>
-                    </li>
-                </ul>
-                <div class="yw-tabs__content">
-                    <div role="tabpanel" class="yw-tabs__pane active" id="{{ field.propertyName }}-upload">
-                        {% block inputblock %}
-                        <input
-                            type="file"
-                            data-max-size="{{ maxSize }}"
-                            id="{{ field.propertyName }}"
-                            name="{{ field.propertyName }}"
-                            {% if style %}style="{{ style }}"{% endif %}
-                            class="yw-input yw-file-upload"
-                            {% if field.authorizedExts is not empty %}accept="{{field.authorizedExts|join(',')}}"{% endif %}
-                            {% if field.required %}required{% endif %}
-                        />
-                        {% endblock %}
-                    </div>
-                    <div role="tabpanel" class="yw-tabs__pane" id="{{ field.propertyName }}-url">
-                        <input
-                            type="url"
-                            id="{{ field.propertyName }}_url"
-                            name="{{ field.propertyName }}_url"
-                            class="yw-input"
-                            placeholder="https://..."
-                        />
-                    </div>
-                </div>
+            {# Two ways to fill this field, and the first one is the rail the editors use:
+               it lists every file this wiki already holds and uploads a new one into the
+               same place, so a file attached here is a file Content like any other. What
+               it hands back is that file's own address, which lands in the URL box below
+               -- the same box, still there for a file that lives somewhere else. #}
+            {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+            <div class="file-or-url">
+                <button type="button"
+                        class="yw-btn yw-file-picker-field__button"
+                        data-yw-file-picker-field="{{ field.propertyName }}_url">
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
+                    {{ _t('ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD') }}
+                </button>
+                <strong data-yw-file-picker-chosen="{{ field.propertyName }}_url" hidden></strong>
+                <label class="yw-form-label" for="{{ field.propertyName }}_url">{{ _t('BAZ_OR_URL') }}</label>
+                <input
+                    type="url"
+                    id="{{ field.propertyName }}_url"
+                    name="{{ field.propertyName }}_url"
+                    class="yw-input"
+                    placeholder="https://..."
+                    {% if field.required %}required{% endif %}
+                />
             </div>
         {% endif %}
     </div>

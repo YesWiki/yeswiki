@@ -416,17 +416,22 @@ class ThemeManager implements EventSubscriberInterface
             'layout_fingerprint_header' => BoostedNavigation::FINGERPRINT_HEADER,
         ]);
 
+        // in debug mode, what the request cost goes at the foot of whatever is returned --
+        // including a boosted fragment, which replaces the body and would otherwise take
+        // the previous page's readout away with it and put nothing back
+        $debug = $this->container->get(DebugReport::class);
+
         if ($boosted->isBoosted()) {
             // Ticket 16: the body block *is* the fragment. The title rides along as a
             // top-level element -- htmx applies a fragment's own <title> to the document --
             // and the assets go out of band into <head>, because htmx strips a literal <head>
             // from a fragment response.
             return $this->twig->render('@core/_boosted-title.twig', ['title' => $this->pageTitle()])
-                . $body
+                . $debug->appendTo($body)
                 . $this->container->get(AssetRegistry::class)->drain()->toOutOfBandHtml();
         }
 
-        return $template->renderBlock('head') . $body;
+        return $debug->appendTo($template->renderBlock('head') . $body);
     }
 
     /** The document title, rendered the same way the head block does it. */

@@ -6,16 +6,15 @@
             {% if isUrl|default(false) %}<span class="url-indicator"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg></span>{% endif %}
             <output id="img-{{ field.propertyName }}">{{ image|raw }}</output>
             <div class="image-actions">
-                <label class="yw-btn yw-btn--sm">
+                {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+                <button type="button"
+                        class="yw-btn yw-btn--sm yw-file-picker-field__button"
+                        data-yw-file-picker-field="{{ field.propertyName }}_url"
+                    data-yw-file-picker-only="image">
                     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
                     {{ _t("BAZ_MODIFIER_IMAGE") }}
-                    <input type="file"
-                           style="display: none"
-                           class="yw-image-upload"
-                           id="{{ field.propertyName }}"
-                           name="{{ field.propertyName }}"
-                           accept=".webp, .svg, .avif, .jpeg, .jpg, .gif, .png">
-                </label>
+                </button>
+                <input type="url" name="{{ field.propertyName }}_url" id="{{ field.propertyName }}_url" hidden />
                 {% if isAllowedToDeleteFile and not isDefaultImage %}
                     <a class="yw-btn yw-btn--sm yw-btn--danger"
                        href="{{ deleteUrl }}"
@@ -40,48 +39,33 @@
                name="oldimage_{{ field.propertyName }}"
                value="{{ value }}" />
     {% else %}
-        <div class="file-url-tabs">
-            <ul class="yw-nav" role="tablist">
-                <li role="presentation" class="active">
-                    <a href="#{{ field.propertyName }}-upload"
-                       aria-controls="{{ field.propertyName }}-upload"
-                       role="tab"
-                       data-toggle="tab">
-                        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg> {{ _t("BAZ_UPLOAD_FILE") }}
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a href="#{{ field.propertyName }}-url"
-                       aria-controls="{{ field.propertyName }}-url"
-                       role="tab"
-                       data-toggle="tab">
-                        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg> {{ _t("BAZ_URL") }}
-                    </a>
-                </li>
-            </ul>
-            <div class="yw-tabs__content">
-                <div role="tabpanel"
-                     class="yw-tabs__pane active"
-                     id="{{ field.propertyName }}-upload">
-                    <input data-max-size="{{ maxSize }}"
-                           type="file"
-                           class="yw-image-upload yw-input"
-                           id="{{ field.propertyName }}"
-                           name="{{ field.propertyName }}"
-                           accept=".webp, .jpeg, .jpg, .gif, .png"
-                           {% if field.required %}required{% endif %}>
-                    <output id="img-{{ field.propertyName }}" class="col-xs-9"></output>
-                </div>
-                <div role="tabpanel" class="yw-tabs__pane" id="{{ field.propertyName }}-url">
-                    <input type="url"
-                           id="{{ field.propertyName }}_url"
-                           name="{{ field.propertyName }}_url"
-                           class="yw-input image-url-input"
-                           placeholder="https://..." />
-                    <output id="img-{{ field.propertyName }}-url-preview"
-                            class="col-xs-9 image-url-preview"></output>
-                </div>
-            </div>
+        {# The rail the editors use, rather than a file box of this field's own: it lists
+           the images this wiki already holds and uploads a new one into the same place,
+           so a picture attached here is a file Content like any other. It hands back that
+           file's address, which lands in the URL box below -- the same box, still there
+           for an image hosted somewhere else. #}
+        {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+        <div class="file-or-url">
+            <button type="button"
+                    class="yw-btn yw-file-picker-field__button"
+                    data-yw-file-picker-field="{{ field.propertyName }}_url"
+                    data-yw-file-picker-only="image">
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#photo"/></svg>
+                {{ _t("ATTACH_FILE_PICKER_CHOOSE_OR_UPLOAD") }}
+            </button>
+            <strong data-yw-file-picker-chosen="{{ field.propertyName }}_url" hidden></strong>
+            <label class="yw-form-label" for="{{ field.propertyName }}_url">{{ _t("BAZ_OR_URL") }}</label>
+            <input type="url"
+                   id="{{ field.propertyName }}_url"
+                   name="{{ field.propertyName }}_url"
+                   class="yw-input image-url-input"
+                   placeholder="https://..."
+                   {% if field.required %}required{% endif %} />
+            {# `<input id>` + `-preview`, which is what image-field.js looks for: this said
+               `img-<name>-url-preview` and the input is `<name>_url`, so the two never met
+               and the URL preview has never appeared #}
+            <output id="{{ field.propertyName }}_url-preview"
+                    class="image-url-preview"></output>
         </div>
     {% endif %}
 {% endblock %}

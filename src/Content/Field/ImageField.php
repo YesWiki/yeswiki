@@ -262,9 +262,15 @@ class ImageField extends FileField
             $value = $this->getDefaultImageName($entry);
         }
 
-        // Handle URL value - display image directly without resize
         if ($this->isUrl($value)) {
-            return '<img src="' . htmlspecialchars($value) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
+            // ...unless the URL is one of ours. A file picked from the rail is stored as
+            // its own download address, and the bytes behind it are on this disk, so the
+            // thumbnail sizes this field was configured with apply to it exactly as they
+            // do to a file uploaded into the entry's own directory. Only a picture really
+            // hosted somewhere else goes out at whatever size its host sends.
+            $sized = $this->ownFileAtFieldSize($value);
+
+            return '<img src="' . htmlspecialchars($sized) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
         }
 
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
@@ -282,6 +288,39 @@ class ImageField extends FileField
         }
 
         return '';
+    }
+
+    /**
+     * A file of this wiki's own, asked for at this field's configured size.
+     *
+     * A picture picked from the file rail is stored as its own download address, and the
+     * bytes behind it are on this disk -- so the sizes this field was configured with
+     * apply to it exactly as they do to a file uploaded into the entry's own directory.
+     * The resizing happens behind `/api/files/<tag>/download`, which is the one place
+     * that checks whether this reader may have the file at all: a thumbnail written into
+     * the public `cache/` directory would be a readable copy of a file whose whole point
+     * is that reading it is checked.
+     *
+     * Anything else -- a picture really hosted elsewhere, a URL that merely looks like
+     * ours -- comes back unchanged and goes out at whatever size its host sends.
+     */
+    private function ownFileAtFieldSize(string $url): string
+    {
+        $width = $this->imageWidth ?: $this->thumbnailWidth;
+        $height = $this->imageHeight ?: $this->thumbnailHeight;
+        if (empty($width) || empty($height)) {
+            return $url;
+        }
+
+        $base = $this->getService(UrlFormatter::class)->getBaseUrl();
+        if (!str_starts_with($url, $base) || !preg_match('#api/files/[^/?&]+/download#', $url)) {
+            return $url;
+        }
+
+        return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query([
+            'width' => $width,
+            'height' => $height,
+        ]);
     }
 
     protected function isImage($fileName)

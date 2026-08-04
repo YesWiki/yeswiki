@@ -12,12 +12,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Provision a new farm instance folder: an index.php pointing at this YesWiki source tree,
  * plus the instance data folders. Everything else (config, database) is created by the web
  * installer on first visit - see src/bootstrap_paths.php for the data folder layout.
+ *
+ * `RunsOutsideAnInstance`, and the reason is the whole point of the command: the folder you
+ * run it in is the shared source, which is nobody's wiki and has no config. It touches no
+ * service -- only the filesystem and YESWIKI_SOURCE_DIR -- so it needs no container, and
+ * accepts a null one.
  */
-class CreateInstanceCommand extends Command
+class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 {
-    protected ContainerInterface $services;
+    protected ?ContainerInterface $services;
 
-    public function __construct(ContainerInterface $services)
+    public function __construct(?ContainerInterface $services = null)
     {
         parent::__construct();
         $this->services = $services;
@@ -30,6 +35,7 @@ class CreateInstanceCommand extends Command
             ->setDescription('Create a new wiki instance folder sharing this YesWiki as source.')
             ->setHelp("Creates <path> (relative to the current directory, or absolute) containing:\n" .
                 "- index.php loading YesWiki from this source tree\n" .
+                "- yeswicli, this wiki's own console\n" .
                 "- the instance data folders (cache/, custom/, files/, private/)\n\n" .
                 "Point a vhost docroot at the folder (with the standard rewrite fallback\n" .
                 "to index.php) and visit it: the installer creates yeswiki.config.php and\n" .
@@ -67,6 +73,9 @@ class CreateInstanceCommand extends Command
 
             return Command::FAILURE;
         }
+        // `../mywiki` printed back as `/srv/yeswiki/../mywiki` is a path nobody can check
+        // at a glance -- and every line below quotes it
+        $path = realpath($path) ?: $path;
 
         $sourceDir = var_export(YESWIKI_SOURCE_DIR, true);
         $indexContent = <<<PHP
@@ -95,13 +104,40 @@ class CreateInstanceCommand extends Command
             @copy(YESWIKI_SOURCE_DIR . '/private/.htaccess', $path . '/private/.htaccess');
         }
 
+        $this->writeConsoleWrapper($path);
+
         $output->writeln("<info>Instance created in $path</info>");
         $output->writeln('Next steps:');
         $output->writeln(" - point a vhost docroot at $path, with the rewrite fallback to index.php");
         $output->writeln('   (nginx: `try_files $uri /index.php$is_args$args;` - apache: standard YesWiki rewrite)');
         $output->writeln(' - deny web access to private/ (nginx setups; apache is covered by private/.htaccess)');
         $output->writeln(' - visit the site: the installer will create yeswiki.config.php and the database');
+        $output->writeln(" - run this wiki's own commands with <info>$path/yeswicli</info>");
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * A `yeswicli` of its own in the new folder.
+     *
+     * The console decides which wiki it is talking to from the working directory, so the
+     * source tree's own `yeswicli` already serves any instance you `cd` into. This spares
+     * everyone remembering that: one wiki, one script, sitting next to the wiki it runs.
+     */
+    private function writeConsoleWrapper(string $path): void
+    {
+        $console = YESWIKI_SOURCE_DIR . '/src/commands/console';
+        $wrapper = <<<SH
+            #!/usr/bin/env bash
+            # This wiki's console: the shared YesWiki source, run from this folder -- which is
+            # what tells it which wiki it is (YESWIKI_INSTANCE_DIR is the working directory).
+            cd "\$(dirname "\${BASH_SOURCE[0]}")" || exit 1
+            php {$console} "\$@"
+
+            SH;
+
+        if (file_put_contents($path . '/yeswicli', $wrapper) !== false) {
+            @chmod($path . '/yeswicli', 0755);
+        }
     }
 }

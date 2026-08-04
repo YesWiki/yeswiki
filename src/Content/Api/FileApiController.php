@@ -7,12 +7,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 
 class FileApiController extends YesWikiController
 {
+    /** Ceiling on a `?width=`/`?height=`: they name a file on disk and arrive in a URL. */
+    private const MAX_RESIZE = 4000;
+
     /**
      * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php
      * page-handler AND the AJAX qqFileUploader path -- both funneled into the same
@@ -93,6 +97,15 @@ class FileApiController extends YesWikiController
         }
 
         $filename = $entry['original_filename'] ?? basename($path);
+        // `?width=&height=` serves a resized copy instead of the original -- what a bazar
+        // image field asks for when its thumbnail sizes are set. It is served from HERE,
+        // through the same ACL check above, and cached under private/ with the bytes:
+        // a thumbnail dropped in the public cache/ directory would be a readable copy of
+        // a file whose whole point is that reading it is checked.
+        $resized = $this->resizedCopy($request, $path);
+        if ($resized !== null) {
+            $path = $resized;
+        }
         // default inline (so {{attach}}'s <img>/<audio>/<iframe> rendering can point straight
         // at this route now that the bytes no longer live under the web-servable files/ dir);
         // ?download=1 forces a real "Save As" download
@@ -110,6 +123,42 @@ class FileApiController extends YesWikiController
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
             ]
         );
+    }
+
+    /**
+     * The resized copy this request asked for, generated on first use -- or null when it
+     * asked for none, or when the file is not an image, or when resizing failed.
+     *
+     * Failure is null rather than an error: the caller wanted a smaller picture and gets
+     * the picture. Sizes are clamped because they name a file on disk and arrive in a URL.
+     */
+    private function resizedCopy(Request $request, string $path): ?string
+    {
+        $width = (int)$request->query->get('width', 0);
+        $height = (int)$request->query->get('height', 0);
+        if ($width < 1 || $height < 1 || @getimagesize($path) === false) {
+            return null;
+        }
+        $width = min($width, self::MAX_RESIZE);
+        $height = min($height, self::MAX_RESIZE);
+        $mode = $request->query->get('mode') === 'crop' ? 'crop' : 'fit';
+
+        $cacheDir = FileManager::STORAGE_DIR . '/cache';
+        if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {
+            return null;
+        }
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $destination = $cacheDir . '/' . pathinfo($path, PATHINFO_FILENAME)
+            . "_{$mode}_{$width}_{$height}" . ($extension === '' ? '' : ".{$extension}");
+
+        if (file_exists($destination)) {
+            return $destination;
+        }
+
+        return $this->getService(ImageResizer::class)->resize($path, $destination, $width, $height, $mode) === $destination
+            ? $destination
+            : null;
     }
 
     /**

@@ -1,0 +1,20 @@
+{# What this request cost, in debug mode only (Kernel\Service\DebugReport).
+
+   Deliberately plain and deliberately last: it is a developer's readout, not part of the
+   page, so it carries no translations -- a wiki running with `debug` on is a wiki someone
+   is working on. #}
+<div class="debug yw-debug-report">
+  <h4>Query log</h4>
+  <p>
+    <strong>{{ totalTime|round(4) }} s total time</strong><br />
+    <strong>{{ sqlTime|round(4) }} s total SQL time</strong> ({{ sqlShare|round(2) }}% of total time)<br />
+    <strong>{{ queryCount }} quer{{ queryCount == 1 ? 'y' : 'ies' }}</strong>
+  </p>
+  {% if queries %}
+    <ol class="yw-debug-report__queries">
+      {% for query in queries %}
+        <li><code>{{ query.query }}</code> <em>({{ query.time|round(4) }} s)</em></li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+</div>

@@ -133,6 +133,24 @@ span.missingpage,
   margin: 0 auto;
 }
 
+/* The query log at the foot of a page in debug mode (Kernel\Service\DebugReport). A busy
+   page runs a hundred queries or more, so the list scrolls in its own box rather than
+   pushing the whole document down and burying what it is reporting on. */
+.yw-debug-report__queries {
+  max-height: 20em;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 2.5em;
+  font-family: monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.yw-debug-report__queries code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Fin divers mise en forme */
 
 /* Les 3 colonnes potentielles de la page centrale */
@@ -458,6 +476,58 @@ span.missingpage,
 #yw-topnav.fixable {
   position: sticky;
   top: 0;
+}
+
+/* ---- a URL box says so ------------------------------------------------------
+   Every `input[type="url"]` in the wiki carries the link glyph inside it, so the box is
+   recognisable without a label of its own repeating the word "URL". The sprite cannot be
+   used here -- `<use>` needs an element, and this is a background -- so the same Tabler
+   path is inlined; keep the two in step if the icon ever changes. */
+input[type='url'] {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 15l6 -6'/><path d='M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464'/><path d='M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 0.5em center;
+  background-size: 1.15em 1.15em;
+  padding-left: 2.2em;
+}
+
+/* The two ways to fill a file or image field, on one line: the rail that finds or uploads
+   one, and the address of a file that lives somewhere else. They wrap on a narrow screen
+   rather than squeezing the URL box to nothing. */
+.file-or-url {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-or-url .yw-input {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.file-or-url .yw-form-label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* the picked file's name, between the button and the URL box */
+.file-or-url [data-yw-file-picker-chosen] {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 14rem;
+}
+
+/* the preview the URL box fills goes under the line, not in it */
+.file-or-url .image-url-preview {
+  flex-basis: 100%;
+}
+
+.file-or-url .image-url-preview img {
+  max-height: 12rem;
+  width: auto;
 }
 
 /* ---- an account's face, and the navbar button that wears it ----------------
