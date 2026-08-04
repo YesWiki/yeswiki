@@ -77,8 +77,10 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         }
         AssetPublisher::publishedUrl('javascripts/aceditor.js', '1');
 
-        // the ones the farm reported: aceditor.js imports them by relative path
-        foreach (['link-panel.js', 'file-picker-panel.js', 'editor-rails.js'] as $imported) {
+        // the ones the farm reported: aceditor.js imports them by relative path, and
+        // mode-yeswiki.js is imported by ace-wrapper.js rather than fetched by ACE's own
+        // loader -- a module fetched by a URL built at runtime is one nothing can publish
+        foreach (['link-panel.js', 'file-picker-panel.js', 'editor-rails.js', 'mode-yeswiki.js'] as $imported) {
             if (!is_file(\YESWIKI_SOURCE_DIR . '/javascripts/' . $imported)) {
                 continue;
             }
@@ -134,6 +136,75 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         }
 
         $this->assertSame(['custom/closure/refs.css'], $published, 'nothing but the sheet itself');
+    }
+
+    /**
+     * A source file that changed is published again, release string or not.
+     *
+     * Freshness used to be keyed on the version: anything but `dev` was taken as final and
+     * the published copy was never looked at again. That is right for a released instance
+     * and wrong for every instance following a branch -- and those are the ones where a fix
+     * is pulled and nothing changes, because the wiki goes on serving the copy it published
+     * the first time.
+     */
+    public function testAChangedSourceFileIsPublishedAgainUnderTheSameVersion(): void
+    {
+        $dir = $this->instance . '/custom/closure';
+        mkdir($dir, 0755, true);
+        file_put_contents($dir . '/changing.css', ".before { color: red }\n");
+        AssetPublisher::publishedUrl('custom/closure/changing.css', '1');
+        $this->assertStringContainsString('.before', (string)file_get_contents($this->published('custom/closure/changing.css')));
+
+        file_put_contents($dir . '/changing.css', ".after { color: blue }\n");
+        touch($dir . '/changing.css', time() + 2); // an edit a second after the copy
+        AssetPublisher::publishedUrl('custom/closure/changing.css', '1');
+
+        $this->assertStringContainsString(
+            '.after',
+            (string)file_get_contents($this->published('custom/closure/changing.css')),
+            'the published copy must follow the source'
+        );
+    }
+
+    /**
+     * No file of ours points above the source tree.
+     *
+     * `javascripts/entries-index-dynamic.js` opened with
+     * `import Panel from '../../../../javascripts/shared-components/Panel.js'` -- four levels
+     * up, correct back when the file lived in `tools/bazar/presentation/javascripts/` and
+     * never corrected when it moved. Browsers clamp the extra `..` at the site root, so on a
+     * standalone install it kept resolving to the same file and nothing ever complained.
+     *
+     * On a farm it does not: from `cache/assets/{version}/javascripts/` those four levels
+     * land exactly on the site root, and the import goes to the unversioned source path --
+     * a path that only answers where the webserver sends misses to index.php. Reported as
+     * `/ecto/javascripts/shared-components/Panel.js` blocked for its MIME type.
+     */
+    public function testNoAssetOfOursReferencesSomethingAboveTheSourceTree(): void
+    {
+        $root = \YESWIKI_SOURCE_DIR;
+        $tree = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/javascripts', \FilesystemIterator::SKIP_DOTS));
+
+        $broken = [];
+        foreach ($tree as $file) {
+            $path = (string)$file;
+            // vendored builds are somebody else's business, and are not ES modules anyway
+            if (!str_ends_with($path, '.js') || str_contains($path, '/vendor/')) {
+                continue;
+            }
+            $content = (string)file_get_contents($path);
+            if (!preg_match_all('~(?:^|[\s;])(?:import|export)\s[^;\'"]*?from\s*[\'"](\.[^\'"]+)[\'"]~m', $content, $matches)) {
+                continue;
+            }
+            foreach ($matches[1] as $reference) {
+                $target = \dirname($path) . '/' . $reference;
+                if (!is_file($target)) {
+                    $broken[] = str_replace($root . '/', '', $path) . ' -> ' . $reference;
+                }
+            }
+        }
+
+        $this->assertSame([], $broken, 'relative imports must resolve where they say they do');
     }
 
     /**

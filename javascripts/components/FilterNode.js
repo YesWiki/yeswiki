@@ -1,4 +1,4 @@
-import CollapseTransition from '../../../../../javascripts/shared-components/CollapseTransition.js'
+import CollapseTransition from '../shared-components/CollapseTransition.js'
 
 const FilterNode = {
   name: 'FilterNode',

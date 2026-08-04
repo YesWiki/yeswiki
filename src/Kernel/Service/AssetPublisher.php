@@ -284,14 +284,15 @@ class AssetPublisher
         // what they import: sweep it once, then never again for this version
         self::publishMissingReferences($version, $assetsDir . '/' . $version);
 
-        if (is_file($target) && $version !== 'dev') {
-            return $target;
-        }
-
         $sourceFile = self::resolveSourceFile($relPath);
         if ($sourceFile === null) {
             return is_file($target) ? $target : null;
         }
+        // freshness by mtime, whatever the version. Keying it on the release instead assumes
+        // sources only change at a release, which is false for every instance following a
+        // branch: their published copy would stay as it was until the release string moved,
+        // and an updated wiki would go on serving the JS it shipped with. The stat is free --
+        // the is_file() above just filled PHP's cache for this path.
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return $target;
         }
@@ -442,8 +443,8 @@ class AssetPublisher
     private static function materializeOne(string $version, string $relPath, string $sourceFile): bool
     {
         $target = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/') . '/' . $version . '/' . $relPath;
-        if (is_file($target) && ($version !== 'dev' || filemtime($target) >= filemtime($sourceFile))) {
-            return false; // already there: its own references were published with it
+        if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
+            return false; // already there and current: its references came with it
         }
 
         $targetDir = \dirname($target);

@@ -3,6 +3,10 @@ import './vendor/ace/ace.js'
 // Loads html rules cause it's used inside yeswiki mode
 import './vendor/ace/mode-html.js'
 import './vendor/ace/ext-language_tools.js'
+// The wiki syntax mode, imported rather than left to ACE's own loader: a module ACE fetches
+// by URL is a module nothing can see coming, so a farm instance never publishes it and the
+// editor loads without highlighting. Same side-effect registration as the vendor files above.
+import './mode-yeswiki.js'
 
 export default class {
   ace = null
@@ -17,8 +21,11 @@ export default class {
   constructor(domElement, options = {}) {
     this.container = domElement
 
-    // Where to find the 'mode-XXXX' files
-    ace.config.set('basePath', `${wiki.baseUrl.replace(/\?+$/, '')}javascripts`)
+    // Where to find anything ACE still loads on its own (themes, ext-*). Taken from this
+    // module's own URL, not from the wiki's base: a farm instance serves its scripts out of
+    // cache/assets/{version}/, and `${wiki.baseUrl}javascripts` points at a source path that
+    // only exists on the shared code tree.
+    ace.config.set('basePath', new URL('.', import.meta.url).href)
 
     this.ace = ace.edit(domElement, {
       printMargin: false,
