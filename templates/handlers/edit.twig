@@ -65,48 +65,33 @@
     {% endfor %}
   {% endif %}
 
-  {# The same floating cluster the page has in read mode, saying what you can do while
-     editing instead: save, preview it first if this wiki asks for that, walk away, or
-     delete the thing outright. `{{editbar}}` renders no cluster on an edit screen -- one
-     corner, one set of actions -- and this one lives in the editor's own template rather
-     than in the bar so that the only way to save a page is never in a template a theme
-     may leave out.
+  {# What you can do while editing, said twice: floating in the corner, so it is at hand
+     wherever you are in a long page, and again at the foot of the form, where a form's
+     buttons have always been and where you end up after filling one in. Same buttons from
+     one macro, so the two cannot drift apart.
+
+     `{{editbar}}` renders no cluster on an edit screen -- one corner, one set of actions --
+     and these live in the editor's own template rather than in the bar so that the only way
+     to save a page is never in a template a theme may leave out.
 
      Inside the <form>, so the buttons submit it without naming it. #}
   <nav class="yw-page-actions yw-page-actions--editing" aria-label="{{ _t('TEMPLATE_SAVE') }}">
-    <button type="submit" name="submit" value="{{ saveValue }}" class="yw-btn yw-page-actions__edit">
-      {{ icon('device-floppy') }}
-      <span>{{ _t('TEMPLATE_SAVE') }}</span>
-    </button>
+    {{ _self.saveButton(saveValue, true) }}
     <div class="yw-page-actions__more">
-      {% if config['preview_before_save'] and not preview %}
-        <button type="submit" name="submit" value="preview" class="yw-btn yw-btn--sm">
-          {{ icon('eye') }}
-          <span>{{ _t('EDIT_PREVIEW') }}</span>
-        </button>
-      {% endif %}
-      {# leaving, then destroying: the two ways out, in that order, and the one that keeps
-         the page comes first #}
-      <a href="{{ cancelUrl }}" class="yw-btn yw-btn--sm link-cancel">
-        {{ icon('x') }}
-        <span>{{ _t('TEMPLATE_CANCEL') }}</span>
-      </a>
-      {% if deleteUrl %}
-        <a href="{{ deleteUrl }}"
-           title="{{ _t('TEMPLATE_DELETE_PAGE') }}"
-           class="yw-btn yw-btn--sm yw-btn--danger link-deletepage modalbox">
-          {{ icon('trash') }}
-          <span>{{ _t('TEMPLATE_DELETE') }}</span>
-        </a>
-      {% endif %}
+      {{ _self.otherActions(config, preview, cancelUrl, deleteUrl, true) }}
     </div>
   </nav>
 
   <div class="form-actions">
-    {# Reedit Button #}
+    {{ _self.saveButton(saveValue, false) }}
+    {{ _self.otherActions(config, preview, cancelUrl, deleteUrl, false) }}
+
+    {# Reedit Button: only ever here. It belongs to the preview screen, which is a page you
+       are reading rather than a corner you are working from. #}
     {% if preview %}
-      <button type="submit" name="submit" value="reedit" class="btn btn-primary">
-        {{ _t('TEMPLATE_REEDIT') }}
+      <button type="submit" name="submit" value="reedit" class="yw-btn">
+        {{ icon('arrow-back-up') }}
+        <span>{{ _t('TEMPLATE_REEDIT') }}</span>
       </button>
     {% endif %}
 
@@ -124,3 +109,40 @@
 </div>{# .yw-designer__canvas #}
 {{ include('@core/aceditor-rails.twig') }}
 </div>{# .yw-designer #}
+
+{# The buttons themselves, in one place. `floating` is the only difference between the two
+   copies: in the corner the cluster collapses to the save button and shrinks the rest, at
+   the foot of the form they are one plain row. #}
+{% macro saveButton(saveValue, floating) %}
+  <button type="submit"
+          name="submit"
+          value="{{ saveValue }}"
+          class="yw-btn {{ floating ? 'yw-page-actions__edit' : 'yw-btn--primary' }}">
+    {{ icon('device-floppy') }}
+    <span>{{ _t('TEMPLATE_SAVE') }}</span>
+  </button>
+{% endmacro %}
+
+{% macro otherActions(config, preview, cancelUrl, deleteUrl, floating) %}
+  {% set size = floating ? 'yw-btn--sm' : '' %}
+  {% if config['preview_before_save'] and not preview %}
+    <button type="submit" name="submit" value="preview" class="yw-btn {{ size }}">
+      {{ icon('eye') }}
+      <span>{{ _t('EDIT_PREVIEW') }}</span>
+    </button>
+  {% endif %}
+  {# leaving, then destroying: the two ways out, in that order, and the one that keeps the
+     page comes first #}
+  <a href="{{ cancelUrl }}" class="yw-btn {{ size }} link-cancel">
+    {{ icon('x') }}
+    <span>{{ _t('TEMPLATE_CANCEL') }}</span>
+  </a>
+  {% if deleteUrl %}
+    <a href="{{ deleteUrl }}"
+       title="{{ _t('TEMPLATE_DELETE_PAGE') }}"
+       class="yw-btn {{ size }} yw-btn--danger link-deletepage modalbox">
+      {{ icon('trash') }}
+      <span>{{ _t('TEMPLATE_DELETE') }}</span>
+    </a>
+  {% endif %}
+{% endmacro %}

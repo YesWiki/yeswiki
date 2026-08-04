@@ -80,6 +80,35 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
     }
 
     /**
+     * A `yeswiki.config.php` that exists but configures nothing is not a wiki either.
+     *
+     * Reported from a real server: an install that never finished leaves the file behind,
+     * and `file_exists()` was the whole test -- so the console fabricated `$_SERVER` from
+     * a `base_url` that was not there (four warnings), booted anyway, and died connecting
+     * to a database with no credentials. All from a command asked only to list itself.
+     */
+    public function testAConfigThatConfiguresNothingIsNotAWiki(): void
+    {
+        $folder = sys_get_temp_dir() . '/yeswiki-console-halfwritten-' . getmypid();
+        if (!is_dir($folder) && !mkdir($folder, 0755, true)) {
+            $this->markTestSkipped('could not make a folder to run the console in');
+        }
+        file_put_contents($folder . '/yeswiki.config.php', "<?php\n");
+
+        try {
+            [$output, $status] = $this->console($folder, 'list');
+
+            $this->assertSame(0, $status, $output);
+            $this->assertStringNotContainsString('Warning', $output, 'no reading of keys that are not there');
+            $this->assertStringNotContainsString('Access denied', $output, 'and no connecting to nothing');
+            $this->assertStringContainsString('configures no wiki', $output, 'it says what is wrong instead');
+            $this->assertStringContainsString('core:create-instance', $output);
+        } finally {
+            exec('rm -rf ' . escapeshellarg($folder));
+        }
+    }
+
+    /**
      * ...and what it offers there actually works: a wiki gets made, with a console of its
      * own pointing back at this source.
      */

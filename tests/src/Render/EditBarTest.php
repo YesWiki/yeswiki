@@ -231,7 +231,7 @@ class EditBarTest extends YesWikiTestCase
             'cancelUrl' => '/',
             'body' => '',
             'saveValue' => 'Sauver',
-            'deleteUrl' => null,
+            'deleteUrl' => '/?SomePage/deletepage',
             'preview' => false,
             'hasContent' => false,
             'fieldsBeforeContent' => [],
@@ -255,6 +255,14 @@ class EditBarTest extends YesWikiTestCase
                 '/<a href="[^"]+"[^>]*class="[^"]*link-cancel/',
                 $withoutPreview
             );
+
+            // ...and every action is said twice: floating in the corner, and again at the
+            // foot of the form where a form's buttons have always been. One macro renders
+            // both, so a button that appears once has lost one of its two homes.
+            foreach (['value="Sauver"', 'link-cancel', 'link-deletepage'] as $action) {
+                $this->assertSame(2, substr_count($withoutPreview, $action), "{$action} belongs in both places");
+            }
+            $this->assertStringContainsString('class="form-actions"', $withoutPreview);
         } finally {
             $config['preview_before_save'] = $before;
         }

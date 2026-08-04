@@ -33,21 +33,31 @@ YesWikiLoader::loadEnv();
  * because a command listed but unable to run is worse than one that is honestly absent.
  */
 $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
-$insideAnInstance = file_exists($configFile);
-$services = null;
-
-if ($insideAnInstance) {
+$yeswikiConfig = [];
+if (file_exists($configFile)) {
     include_once $configFile;
     // config files written before the rename define $wakkaConfig instead
     $yeswikiConfig = (isset($yeswikiConfig) && is_array($yeswikiConfig)) ? $yeswikiConfig : ($wakkaConfig ?? []);
     // environment overrides (BASE_URL, ROOT_PAGE...) apply to this pre-read like everywhere else
     $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
+}
+
+// Whether the file EXISTS is not the question -- whether it configures a wiki is. A
+// `yeswiki.config.php` that is a placeholder, half-written, or left behind by an install
+// that never finished has no `base_url`, and booting on it gets as far as connecting to a
+// database with no credentials: "Access denied for user ''@'localhost'", four warnings
+// deep, from a command that was only asked to list itself.
+$configuredWiki = !empty($yeswikiConfig['base_url']);
+$insideAnInstance = $configuredWiki;
+$services = null;
+
+if ($insideAnInstance) {
     // fake $_SERVER vars
-    $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . $yeswikiConfig['root_page'];
+    $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . ($yeswikiConfig['root_page'] ?? '');
     $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
     $_SERVER['REQUEST_METHOD'] = 'GET';
     // fake wiki page
-    $_GET['wiki'] = $yeswikiConfig['root_page'];
+    $_GET['wiki'] = $yeswikiConfig['root_page'] ?? '';
 
     $wiki = YesWikiLoader::getWiki();
     $services = $wiki->services;
@@ -56,7 +66,7 @@ if ($insideAnInstance) {
 // create Application
 $application = new Application(
     'YesWiki',
-    $insideAnInstance ? 'in ' . YESWIKI_INSTANCE_DIR : 'source tree ' . YESWIKI_SOURCE_DIR . ' (no wiki here)'
+    ($insideAnInstance ? 'in ' : 'no wiki in ') . YESWIKI_INSTANCE_DIR
 );
 
 // ... register commands
@@ -121,14 +131,22 @@ if (!$insideAnInstance && ($asked === '' || $asked === 'list' || $asked === 'hel
     // where the answer is "make a wiki", and a wiki folder nobody has installed yet, where
     // the answer is "install it".
     $inTheSourceTree = realpath(YESWIKI_INSTANCE_DIR) === realpath(YESWIKI_SOURCE_DIR);
-    fwrite(STDERR, $inTheSourceTree
-        ? "\e[33mNo yeswiki.config.php here: this is a YesWiki source tree, not a wiki.\e[0m\n"
+    $halfWritten = file_exists($configFile) && !$configuredWiki;
+    if ($halfWritten) {
+        $reason = "\e[33mThere is a " . basename($configFile) . ' in ' . YESWIKI_INSTANCE_DIR
+            . ", but it configures no wiki (no base_url).\e[0m\n"
+            . "An install that never finished leaves one behind. Finish it in a browser, or remove the file.\n\n";
+    } elseif ($inTheSourceTree) {
+        $reason = "\e[33mNo yeswiki.config.php here: this is a YesWiki source tree, not a wiki.\e[0m\n"
             . "Only the commands that need no wiki are listed. Run this from a wiki folder for the rest,\n"
             // `yeswicli`, not $argv[0]: that is this script deep in src/commands/, and the
             // wrapper is what a person types
-            . "or make one here: \e[32m./yeswicli core:create-instance <path>\e[0m\n\n"
-        : "\e[33mNo yeswiki.config.php in " . YESWIKI_INSTANCE_DIR . ": this wiki is not installed yet.\e[0m\n"
-            . "Visit it in a browser to install it; every command below the installer needs is listed then.\n\n");
+            . "or make one here: \e[32m./yeswicli core:create-instance <path>\e[0m\n\n";
+    } else {
+        $reason = "\e[33mNo yeswiki.config.php in " . YESWIKI_INSTANCE_DIR . ": this wiki is not installed yet.\e[0m\n"
+            . "Visit it in a browser to install it; every command below the installer needs is listed then.\n\n";
+    }
+    fwrite(STDERR, $reason);
 }
 
 $application->run();
