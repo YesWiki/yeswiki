@@ -209,24 +209,67 @@ class AssetPublisher
     }
 
     /**
-     * The stamp appended to the published version, or '' before anything has ever gone stale.
+     * The stamp appended to the published version: how old the published set is, as a plain
+     * mtime. '' only while nothing has been published at all.
      *
-     * Read straight from the instance's cache rather than kept anywhere: this runs before the
-     * container on the interception path, and the file is the only thing both sides share.
+     * Derived from what is on disk, never from having caught the moment of an update. A first
+     * attempt bumped it when a file was found stale, which is a transition -- and a transition
+     * can be missed: an instance whose copies were refreshed by an earlier YesWiki has nothing
+     * stale left to notice, so the stamp never appeared, the URL never moved, and every
+     * browser went on serving the modules it had cached under the old one. For good, since
+     * there was no second transition coming.
+     *
+     * So when there is no stamp, read it off the tree: published copies carry their source's
+     * mtime, so the newest of them IS the age of the set. One walk, once, then the file.
+     *
+     * Read from the cache rather than held anywhere: this is also reachable before the
+     * container exists, and the file is the only thing both sides share.
      */
     public static function publishedStamp(): string
     {
-        $stamp = @file_get_contents(getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/') . '/' . self::STAMP_FILE);
-        if ($stamp === false) {
+        $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
+        $stamp = trim((string)@file_get_contents($assetsDir . '/' . self::STAMP_FILE));
+        if (preg_match('/^[0-9]{1,20}$/', $stamp)) {
+            return $stamp;
+        }
+
+        $newest = self::newestPublishedFile($assetsDir);
+        if ($newest === 0) {
             return '';
         }
-        $stamp = trim($stamp);
+        self::bumpStamp($assetsDir, $newest);
 
-        return preg_match('/^[0-9]{1,20}$/', $stamp) ? $stamp : '';
+        return (string)$newest;
     }
 
     /**
-     * Record that the sources moved on. Takes effect on the next request, never this one:
+     * mtime of the most recently published file, across every version folder present. 0 when
+     * nothing has been published yet.
+     */
+    private static function newestPublishedFile(string $assetsDir): int
+    {
+        if (!is_dir($assetsDir)) {
+            return 0;
+        }
+
+        $newest = 0;
+        foreach (glob($assetsDir . '/*', GLOB_ONLYDIR) ?: [] as $versionDir) {
+            if (!self::isValidVersion(basename($versionDir))) {
+                continue;
+            }
+            $tree = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($versionDir, \FilesystemIterator::SKIP_DOTS));
+            foreach ($tree as $file) {
+                if ($file instanceof \SplFileInfo && $file->isFile()) {
+                    $newest = max($newest, (int)$file->getMTime());
+                }
+            }
+        }
+
+        return $newest;
+    }
+
+    /**
+     * Record how new the published set is. Takes effect on the next request, never this one:
      * the version is settled once per request, and URLs within one page must agree -- an
      * import resolves against the URL of the module that made it.
      */
@@ -334,11 +377,6 @@ class AssetPublisher
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return $target;
         }
-        if (is_file($target)) {
-            // it was published, and the source has moved on since: the sources were updated,
-            // so the URLs must move too or no browser will ever ask again (see stampFor())
-            self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
-        }
 
         if (!is_dir($assetsDir . '/' . $version)) {
             self::removeStaleVersions($assetsDir, $version);
@@ -359,6 +397,9 @@ class AssetPublisher
             return is_file($target) ? $target : null;
         }
 
+        // every copy, not only one replacing a stale file: the stamp is the age of the
+        // published set, and missing an update is how a browser ends up stuck on old code
+        self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
         self::publishReferences($version, $relPath, $sourceFile);
 
         return $target;
@@ -504,6 +545,7 @@ class AssetPublisher
 
             return false;
         }
+        self::bumpStamp(getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/'), (int)filemtime($sourceFile));
 
         return true;
     }

@@ -413,6 +413,12 @@ class DbService
                 $errorInfo = $this->link->errorInfo();
                 throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
             }
+        } catch (\PDOException $failed) {
+            // PDO is in ERRMODE_EXCEPTION, so query() throws rather than returning false and
+            // the branch above never runs: every database failure reached the operator as a
+            // bare "SQLSTATE[42S21]: Duplicate column name 'tag'" with no hint of which
+            // statement, in which table, from which migration. Say what failed.
+            throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query), (int)$failed->getCode(), $failed);
         } finally {
             if ($this->params->get('debug')) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start);
@@ -420,6 +426,25 @@ class DbService
         }
 
         return $result;
+    }
+
+    /**
+     * A failing statement, in a form that is safe to put in front of whoever is looking.
+     *
+     * Schema statements go in whole -- they are the ones worth reading, and they carry no
+     * data. Anything else is cut to its opening clause: an operator needs to know that an
+     * UPDATE on `pages` failed, not what was being written into it, and this message reaches
+     * the browser of whoever tripped over it. In debug the whole query goes, as it already
+     * does in the query log at the foot of every page.
+     */
+    private function describeQuery(string $query): string
+    {
+        $query = trim((string)preg_replace('/\s+/', ' ', $query));
+        if ($this->params->get('debug') || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
+            return $query;
+        }
+
+        return mb_strlen($query) > 120 ? mb_substr($query, 0, 120) . ' [...]' : $query;
     }
 
     protected function getMicroTime()

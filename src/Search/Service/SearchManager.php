@@ -31,6 +31,18 @@ class SearchManager
     /** Result column carrying each row's `TYPE_URI` triple value (empty when untyped). */
     private const CONTENT_TRIPLE_COLUMN = 'yw_content_triple';
 
+    /**
+     * What `p.*` brings into the search CTE, and therefore the names a field's column may not
+     * take. See renameJSONPathVariable().
+     */
+    private const PAGES_COLUMNS = [
+        'id', 'tag', 'time', 'body', 'body_r', 'owner', 'user', 'latest', 'handler',
+        'comment_on', 'metadata',
+    ];
+
+    /** Given to a field whose name collides with one of those. */
+    private const FIELD_COLUMN_PREFIX = 'yw_field__';
+
     public function __construct(
         ContainerInterface $container,
         DbService $dbService,
@@ -927,7 +939,7 @@ class SearchManager
                             . 'SELECT '
                                 . 'id, '
                                 . '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, '
-                                . 'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, '
+                                . 'TRIM(SUBSTRING_INDEX(' . $this->renameJSONPathVariable($vFieldName) . ', \',\', 1)) AS elt, '
                                 . 'CASE '
                                     . 'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' '
                                     . 'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) '
@@ -1734,6 +1746,21 @@ class SearchManager
      */
     protected function renameJSONPathVariable($pPath)
     {
-        return str_replace('.', '__', $pPath);
+        $renamed = str_replace('.', '__', (string)$pPath);
+
+        // A field may be called whatever its author called it, and `pages` has short, ordinary
+        // column names -- `tag`, `time`, `body`, `user`, `owner`. The CTE selects `p.*` and
+        // then one alias per field, so a field named after any of them declares that column
+        // twice. MySQL refuses the whole query ("SQLSTATE[42S21] ... Duplicate column name
+        // 'tag'") and the wiki answers an error page; SQLite accepts it and quietly lets the
+        // extracted field win, so `$page['tag']` becomes the field's value instead of the
+        // page's and results end up keyed by it. An error on one driver, wrong data on
+        // another, from the same query -- and the suite runs on SQLite, so neither showed.
+        //
+        // Every reference to a field's column goes through this function, so prefixing here
+        // renames it in the SELECT, in the WHERE and in the multiple-value CTEs at once.
+        return in_array(strtolower($renamed), self::PAGES_COLUMNS, true)
+            ? self::FIELD_COLUMN_PREFIX . $renamed
+            : $renamed;
     }
 }

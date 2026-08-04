@@ -203,6 +203,36 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     }
 
     /**
+     * An instance published by a YesWiki that had no stamp gets one from what is on disk.
+     *
+     * This is the state the first attempt left behind, and it could not get out of it: the
+     * stamp was written when a published file was *caught* going stale, and an instance whose
+     * copies had already been refreshed had nothing stale left to catch. No stamp, so the URL
+     * never moved, so every browser kept serving the modules it had cached -- for good, since
+     * no second update to those files was coming. Published copies carry their source's
+     * mtime, so the tree can say how old it is without being asked at the right moment.
+     */
+    public function testATreeWithNoStampGetsOneFromItsOwnFiles(): void
+    {
+        AssetPublisher::publishedUrl('styles/yw-core.css', '1');
+        $stampFile = $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . '.sources-changed';
+        $this->assertFileExists($stampFile);
+
+        // an instance published before any of this existed: files current, no stamp
+        unlink($stampFile);
+
+        $stamp = AssetPublisher::publishedStamp();
+
+        $this->assertNotSame('', $stamp, 'read off the published files themselves');
+        $this->assertSame(
+            (string)filemtime(\YESWIKI_SOURCE_DIR . '/styles/yw-core.css'),
+            $stamp,
+            'and it is how new the published set is'
+        );
+        $this->assertFileExists($stampFile, 'written down, so the walk happens once');
+    }
+
+    /**
      * No file of ours points above the source tree.
      *
      * `javascripts/entries-index-dynamic.js` opened with
