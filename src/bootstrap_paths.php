@@ -38,3 +38,38 @@ unset($yeswikiDataFolder, $yeswikiDataDir);
 if (!is_file(YESWIKI_INSTANCE_DIR . '/private/.htaccess') && is_file(YESWIKI_SOURCE_DIR . '/private/.htaccess')) {
     @copy(YESWIKI_SOURCE_DIR . '/private/.htaccess', YESWIKI_INSTANCE_DIR . '/private/.htaccess');
 }
+
+/*
+ * A few assets are written as bare source paths, in markup and in scripts, and so are asked
+ * for at the instance's own docroot rather than at a published URL. The icon sprite is the
+ * one that matters: some 250 `<use href="src/assets/icons.svg#name">` across templates, PHP
+ * and JS -- every icon in the interface. Rewriting all of them to a published URL would not
+ * even cover the scripts, which build that markup in the browser.
+ *
+ * On a farm instance those paths point at a docroot that holds no sources, so they answered
+ * only where the vhost sends missing files through index.php. Give the instance the file
+ * instead: 40K, refreshed when the source changes, and every one of those references works
+ * whatever the webserver does. Standalone installs already have it and are left alone.
+ */
+if (YESWIKI_INSTANCE_DIR !== YESWIKI_SOURCE_DIR) {
+    foreach (['src/assets/icons.svg'] as $yeswikiBareAsset) {
+        $yeswikiBareSource = YESWIKI_SOURCE_DIR . '/' . $yeswikiBareAsset;
+        $yeswikiBareTarget = YESWIKI_INSTANCE_DIR . '/' . $yeswikiBareAsset;
+        if (!is_file($yeswikiBareSource)
+            || (is_file($yeswikiBareTarget) && filemtime($yeswikiBareTarget) >= filemtime($yeswikiBareSource))) {
+            continue;
+        }
+        if (!is_dir(\dirname($yeswikiBareTarget))) {
+            @mkdir(\dirname($yeswikiBareTarget), 0755, true);
+        }
+        // through a temp name, so a request never reads a half-written sprite
+        $yeswikiBareTmp = $yeswikiBareTarget . '.' . getmypid() . '.tmp';
+        if (@copy($yeswikiBareSource, $yeswikiBareTmp)) {
+            @touch($yeswikiBareTmp, filemtime($yeswikiBareSource) ?: time());
+            if (!@rename($yeswikiBareTmp, $yeswikiBareTarget)) {
+                @unlink($yeswikiBareTmp);
+            }
+        }
+    }
+    unset($yeswikiBareAsset, $yeswikiBareSource, $yeswikiBareTarget, $yeswikiBareTmp);
+}

@@ -25,6 +25,9 @@ class AssetPublisher
 {
     public const PUBLISHED_PREFIX = 'cache/assets/';
 
+    /** Beside the version folders, not inside one: it outlives them. */
+    private const STAMP_FILE = '.sources-changed';
+
     protected const ALLOWED_PREFIXES = [
         'src/assets/',
         'styles/',
@@ -205,6 +208,41 @@ class AssetPublisher
         return $target === null ? null : self::PUBLISHED_PREFIX . $version . '/' . $relPath;
     }
 
+    /**
+     * The stamp appended to the published version, or '' before anything has ever gone stale.
+     *
+     * Read straight from the instance's cache rather than kept anywhere: this runs before the
+     * container on the interception path, and the file is the only thing both sides share.
+     */
+    public static function publishedStamp(): string
+    {
+        $stamp = @file_get_contents(getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/') . '/' . self::STAMP_FILE);
+        if ($stamp === false) {
+            return '';
+        }
+        $stamp = trim($stamp);
+
+        return preg_match('/^[0-9]{1,20}$/', $stamp) ? $stamp : '';
+    }
+
+    /**
+     * Record that the sources moved on. Takes effect on the next request, never this one:
+     * the version is settled once per request, and URLs within one page must agree -- an
+     * import resolves against the URL of the module that made it.
+     */
+    private static function bumpStamp(string $assetsDir, int $sourceMtime): void
+    {
+        $file = $assetsDir . '/' . self::STAMP_FILE;
+        $current = is_file($file) ? (int)trim((string)@file_get_contents($file)) : 0;
+        if ($sourceMtime <= $current) {
+            return;
+        }
+        if (!is_dir($assetsDir)) {
+            @mkdir($assetsDir, 0755, true);
+        }
+        @file_put_contents($file, (string)$sourceMtime, LOCK_EX);
+    }
+
     public static function sanitizeVersion(string $version): string
     {
         $version = preg_replace('/[^A-Za-z0-9._-]/', '-', $version);
@@ -295,6 +333,11 @@ class AssetPublisher
         // the is_file() above just filled PHP's cache for this path.
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return $target;
+        }
+        if (is_file($target)) {
+            // it was published, and the source has moved on since: the sources were updated,
+            // so the URLs must move too or no browser will ever ask again (see stampFor())
+            self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
         }
 
         if (!is_dir($assetsDir . '/' . $version)) {

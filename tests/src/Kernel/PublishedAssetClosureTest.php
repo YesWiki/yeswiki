@@ -167,6 +167,42 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     }
 
     /**
+     * ...and the URL moves with it, or no browser will ever ask for the new copy.
+     *
+     * Published assets are served `immutable, max-age=1 year`: the version folder in the path
+     * IS the cache key. Keyed on the release string alone it never moves on an instance
+     * following a branch -- the update lands on disk, the URL stays, and every returning
+     * visitor goes on running the code they cached. A stamp records that the sources moved on
+     * and lands in the next request's URLs.
+     */
+    public function testTheUrlMovesWhenTheSourceChanges(): void
+    {
+        $dir = $this->instance . '/custom/closure';
+        mkdir($dir, 0755, true);
+        file_put_contents($dir . '/moving.css', ".before { color: red }\n");
+        touch($dir . '/moving.css', time() - 120);
+
+        $this->assertSame('', AssetPublisher::publishedStamp(), 'nothing has gone stale yet');
+        $first = AssetPublisher::publishedUrl('custom/closure/moving.css', '1');
+
+        file_put_contents($dir . '/moving.css', ".after { color: blue }\n");
+        touch($dir . '/moving.css', time());
+        AssetPublisher::publishedUrl('custom/closure/moving.css', '1'); // the request that notices
+
+        $stamp = AssetPublisher::publishedStamp();
+        $this->assertNotSame('', $stamp, 'the sources moving on is recorded');
+
+        // the next request asks under the stamped version, which no browser has seen
+        $second = AssetPublisher::publishedUrl('custom/closure/moving.css', '1-' . $stamp);
+        $this->assertNotSame($first, $second);
+        $this->assertStringContainsString(
+            '.after',
+            (string)file_get_contents($this->instance . '/' . $second),
+            'and it serves the new content'
+        );
+    }
+
+    /**
      * No file of ours points above the source tree.
      *
      * `javascripts/entries-index-dynamic.js` opened with

@@ -67,6 +67,9 @@ class AssetRegistry
     /** @var list<AssetSet> open capture scopes, innermost last */
     private array $scopes = [];
 
+    /** Settled once per request: see assetsVersion(). */
+    private ?string $assetsVersion = null;
+
     public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter)
     {
         $this->urlFormatter = $urlFormatter;
@@ -272,11 +275,33 @@ class AssetRegistry
             && YESWIKI_SOURCE_DIR !== YESWIKI_INSTANCE_DIR;
     }
 
+    /**
+     * The folder published assets live under, and with it the cache key every browser holds
+     * them by -- they are served immutable, so a URL that does not move is a file that never
+     * changes again as far as a returning visitor is concerned.
+     *
+     * The release string alone is that key only for an instance that follows releases. On one
+     * following a branch it never moves: the wiki republishes the updated file on disk, keeps
+     * offering it at the same URL, and every browser that has been there goes on running the
+     * code it cached. A fix that is deployed, correct, and invisible.
+     *
+     * So the release carries a stamp that AssetPublisher bumps when it finds a published file
+     * older than its source, i.e. when the sources were updated. Memoized: within one request
+     * every URL must name the same folder, or the imports resolving between them break.
+     */
     private function assetsVersion(): string
     {
-        $release = $this->container->get(RuntimeConfig::class)->getValue('yeswiki_release');
+        if ($this->assetsVersion !== null) {
+            return $this->assetsVersion;
+        }
 
-        return AssetPublisher::sanitizeVersion($release !== '' ? $release : 'dev');
+        $release = $this->container->get(RuntimeConfig::class)->getValue('yeswiki_release');
+        $version = AssetPublisher::sanitizeVersion($release !== '' ? $release : 'dev');
+        $stamp = AssetPublisher::publishedStamp();
+
+        return $this->assetsVersion = AssetPublisher::sanitizeVersion(
+            $stamp === '' ? $version : $version . '-' . $stamp
+        );
     }
 
     private function mapFilePath(string $file): string
