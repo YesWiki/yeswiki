@@ -120,6 +120,32 @@ class AssetPublisher
             chdir($instanceDir);
         }
 
+        // A wiki reached under a URL prefix that is not a directory here -- an `alias`, an
+        // nginx `location`, a reverse proxy mounting it at /ecto -- leaves that prefix in the
+        // path with nothing to match it against: SCRIPT_NAME says `/index.php`, and the walk
+        // above finds no `ecto/index.php` because there is no such folder. The asset request
+        // then fell through to the wiki, which answered a stylesheet with an HTML page
+        // saying it had no handler by that name.
+        //
+        // So: drop leading segments until what is left is an asset these sources really
+        // have. Nothing new becomes reachable -- the very same files already answer at the
+        // unprefixed path -- and a path that resolves to no file is left alone, because the
+        // wiki may well have a page by that name.
+        if (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
+            $rest = $uriPath;
+            while (($slash = strpos($rest, '/')) !== false) {
+                $rest = substr($rest, $slash + 1);
+                if (str_starts_with($rest, self::PUBLISHED_PREFIX)) {
+                    $uriPath = $rest;
+                    break;
+                }
+                if (self::isServablePath($rest) && self::resolveSourceFile($rest) !== null) {
+                    $uriPath = $rest;
+                    break;
+                }
+            }
+        }
+
         if (str_starts_with($uriPath, self::PUBLISHED_PREFIX)) {
             // cache/assets/{version}/{relPath} : materialize from sources, serve immutable
             $rest = substr($uriPath, strlen(self::PUBLISHED_PREFIX));
