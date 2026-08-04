@@ -125,8 +125,7 @@ class ListController extends YesWikiController
             if ($this->getRequest()->getMethod() === 'POST') {
                 $req = $this->getRequest()->request;
                 $list = json_decode($req->get('jsonlist'), true);
-                dump($list['extralang']);
-                dump($id);
+
                 $this->listManager->update($id, $list['title'], $list['nodes'], $list['extralang'] ?? []);
 
 

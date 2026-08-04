@@ -62,7 +62,7 @@ class SelectEntryField extends EnumField
             if (!empty($this->optionsUrls[$value])) {
                 $entryUrl = $this->optionsUrls[$value];
             } else {
-                $entryUrl = $baseUrl . $value;
+                $entryUrl = $this->baseUrl . $value;
             }
         } else {
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);

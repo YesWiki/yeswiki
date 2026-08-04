@@ -90,6 +90,16 @@ class ConvertTableNature2Pages extends YesWikiMigration
                     isset($field['linkedObjectName'])
                 ) {
                     $id = $field['type'] . $field['linkedObjectName'];
+                    if (is_numeric($field['linkedObjectName'])) {
+                        if ($this->dbService->loadSingle('SELECT tag from yeswikigarden__pages WHERE tag in (select resource from yeswikigarden__triples where value = "fiche_bazar") and json_value(body, "$.id_typeannonce") = ' . $form['bn_id_nature'] .' and body like "%listefiche' . $field['linkedObjectName']. '%" limit 1') != null) {
+                            $field['id'] = $field['name'] = 'listefiche'. $field['linkedObjectName'];
+                        }
+
+                    } else {
+                        if ($this->dbService->loadSingle('SELECT tag from yeswikigarden__pages WHERE tag in (select resource from yeswikigarden__triples where value = "fiche_bazar") and json_value(body, "$.id_typeannonce") = ' . $form['bn_id_nature'] .' and body like "%listeListe' . $field['linkedObjectName']. '%" limit 1') != null) {
+                            $field['id'] = $field['name'] = 'listeListe'. $field['linkedObjectName'];
+                        }
+                    }
                 } else {
                     $id = $field['name'] ?? $field['type'] . '__' . $i;
                 }
@@ -99,7 +109,6 @@ class ConvertTableNature2Pages extends YesWikiMigration
                 $fieldExploded = explode('\\', $classType);
                 $field['field_type'] = array_pop($fieldExploded);
                 $form_array[$id] = $field;
-                error_log(json_encode($form_array));
             }
             $slug = getAvailableSlug($form['bn_label_nature']); //TODO changer pour slug et ajouter mettre les droits d'admin.
             $newform = [

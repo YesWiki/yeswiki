@@ -45,7 +45,7 @@ abstract class EnumField extends BazarField
         if (!empty($this->getLinkedObjectName())) {
             $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
             $this->options = [];
-            foreach ($list['nodes'] ?? [] as $node) {
+            foreach ($list['nodes'] ?? [] as $key => $node) {
                 $this->loadOptionsFromListNode($node);
                 if (isset($node['children']) && count($node['children']) > 0) {
                     $this->optionsTree = $list['nodes'];
@@ -59,7 +59,7 @@ abstract class EnumField extends BazarField
     {
         $this->options[$node['id']] = $parentLabel . $node['label'];
         if (!empty($node['children'])) {
-            foreach ($node['children'] as $childNode) {
+            foreach ($node['children'] as $key => $childNode) {
                 $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
             }
         }

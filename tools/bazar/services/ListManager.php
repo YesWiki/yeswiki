@@ -51,6 +51,13 @@ class ListManager
 
     public function getOne($id, $parent = null, $lang='default'): ?array
     {
+        if (is_numeric($id)) {
+            $id = $this->getPageTagFromId($id);
+            if($id == null) {
+                return null;
+            }
+        }
+
         if (isset($this->cachedLists[$id. $lang]) && $parent === null) { // we cache all information, not just a level
             return $this->cachedLists[$id. $lang];
         }
@@ -194,6 +201,12 @@ class ListManager
 
             return $node;
         }, $nodes);
+    }
+
+    public function getPageTagFromId($id): ?String {
+        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName . ' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id. ';';
+        $tag = $this->dbService->loadSingle($request);
+        return $tag['tag'] ?? null;
     }
 
     /**

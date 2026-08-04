@@ -424,8 +424,7 @@ class FormManager
             $previous = $this->getOne($tag, 'all');
 
             $form['extralang'] = $previous['extralang'] ?? '';
-            dump("update form");
-            dump($form);
+
 
           return $this->__createOrUpdate($form, $tag);
         }
