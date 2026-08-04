@@ -7,6 +7,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Exception\LoginException;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -26,6 +27,16 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         return 'login';
     }
 
+    /**
+     * The query parameter carrying "come back here once I have signed in".
+     *
+     * The account button puts the page it was clicked from in it, and the sign-in that
+     * follows reads it back -- the two are on different pages (the button is in the
+     * navbar, the form is on /user), so the URL is the only thing that travels between
+     * them. Never trusted as given: see UrlFormatter::isInternal().
+     */
+    public const RETURN_PARAM = 'return';
+
     protected $authenticationService;
     protected $pageManager;
     protected $templateEngine;
@@ -35,9 +46,13 @@ class LoginAction extends YesWikiAction implements RegisteredAction
     public function formatArguments($arg)
     {
         $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->getService(RuntimeConfig::class)->getValue('noSignupButton', false);
+        // `?? $this->getIncomingUrlFromRequest()`: a supplied `incomingurl=` that does not
+        // resolve to a link is no address at all, and everything downstream of this --
+        // where the form posts, where signing in ends -- needs one
         $incomingurl = !empty($arg['incomingurl'])
-            ? $this->getService(UrlFormatter::class)->generateLink($arg['incomingurl'])
+            ? ($this->getService(UrlFormatter::class)->generateLink($arg['incomingurl']) ?? $this->getIncomingUrlFromRequest())
         : $this->getIncomingUrlFromRequest();
+        $returnurl = $this->getReturnUrlFromRequest();
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
@@ -58,8 +73,15 @@ class LoginAction extends YesWikiAction implements RegisteredAction
 
             'incomingurl' => $incomingurl,
 
+            // where the account button sends someone who is not signed in: the sign-in
+            // screen, carrying the page they were on so it can send them back
+            'accounturl' => $this->getAccountUrl($incomingurl),
+
+            // `?return=` outranks "back to where the form was submitted", which on the
+            // sign-in screen is the sign-in screen. An explicit `loggedinurl=` still wins
+            // over both: a page that says where sign-in leads means it.
             'loggedinurl' => empty($arg['loggedinurl'])
-                ? $incomingurl
+                ? ($returnurl ?? $incomingurl)
                 : $this->getService(UrlFormatter::class)->generateLink($arg['loggedinurl']),
 
             'loggedouturl' => empty($arg['loggedouturl'])
@@ -85,10 +107,17 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
+            // The default is the account button -- an icon, or your face. A caller that
+            // wants the fields asks for `login-form.twig` by name.
+            //
+            // There is deliberately no template called `default`: the name meant the form
+            // until this release, and a page still naming it would have silently become a
+            // button. It resolves to nothing, so it lands here instead, and the migration
+            // that renames it says so out loud.
             'template' => (empty($arg['template'])
                 || empty(basename($arg['template']))
                 || !$this->templateEngine->hasTemplate('@core/' . basename($arg['template'])))
-                ? 'default.twig'
+                ? 'account-button.twig'
                 : basename($arg['template']),
         ];
     }
@@ -138,6 +167,45 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         return $decodedPath . $queryPart;
     }
 
+    /**
+     * The `?return=` of the current request, once it has been established that it points
+     * back into this wiki. Anything else -- another site, a `javascript:` URL, nothing at
+     * all -- answers null, and the caller falls back to its own default.
+     */
+    private function getReturnUrlFromRequest(): ?string
+    {
+        $request = $this->getRequest();
+        // ->all() rather than ->get(): the parameter is whatever a URL carried, and
+        // `?return[]=x` makes Symfony's get() throw on a value it was promised was scalar
+        $candidate = $request->request->all()[self::RETURN_PARAM]
+            ?? $request->query->all()[self::RETURN_PARAM]
+            ?? null;
+
+        return $this->getService(UrlFormatter::class)->isInternal($candidate) ? (string)$candidate : null;
+    }
+
+    /**
+     * The sign-in screen, carrying the page to come back to.
+     *
+     * Not added when the visitor is already on an account screen: `/user?return=/user` is
+     * a round trip to where they are, and it would be the first thing they see in the
+     * address bar of the page they came to sign in on.
+     */
+    private function getAccountUrl(string $incomingurl): string
+    {
+        $urlFormatter = $this->getService(UrlFormatter::class);
+        $accounturl = $urlFormatter->href('', 'user');
+
+        // an account screen is `…/user`, `…/user/pages`, `…/user&x=1` -- and NOT a page
+        // whose tag merely starts with those four letters
+        $onAccountScreen = $incomingurl === $accounturl
+            || preg_match('#^' . preg_quote($accounturl, '#') . '[/&?]#', $incomingurl) === 1;
+
+        return $onAccountScreen
+            ? $accounturl
+            : $urlFormatter->href('', 'user', [self::RETURN_PARAM => $incomingurl], false);
+    }
+
     private function getIncomingUrlFromRequest(): string
     {
         $request = $this->getRequest();
@@ -176,11 +244,17 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             $error = _t('LOGIN_COOKIES_ERROR');
         }
 
+        $userName = $user['name'] ?? $this->getRequest()->request->get('name', '');
+
         $output = $this->render("@core/{$this->arguments['template']}", [
             'connected' => $connected,
-            'user' => $user['name'] ?? $this->getRequest()->request->get('name', ''),
+            'user' => $userName,
+            // only for a session there is: an avatar for a name typed into a form that has
+            // not been submitted yet would draw a stranger's face on the wiki
+            'avatar' => $connected ? $this->getService(AvatarService::class)->forName((string)$userName) : null,
             'email' => $user['email'] ?? $this->getRequest()->request->get('email', ''),
             'incomingurl' => $this->arguments['incomingurl'],
+            'accounturl' => $this->arguments['accounturl'],
             'signupurl' => $this->arguments['signupurl'],
             'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
             'profileurl' => $this->arguments['profileurl'],
@@ -202,6 +276,8 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         if (empty($incomingurl)) {
             $incomingurl = $this->arguments['incomingurl'];
         }
+        // where a successful sign-in ends, settled inside the try and acted on after it
+        $destination = $incomingurl;
         try {
             $post = $this->getRequest()->request;
             $emailFallback = $post->get('email', '');
@@ -244,11 +320,10 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             $this->authenticationService->login($user, $remember);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
-                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $user['name']));
-            } else {
-                $this->getService(Redirector::class)->redirect($this->arguments['loggedinurl']);
-            }
+            $destination = (($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user')
+                && $this->pageManager->getOne($user['name'])
+                ? $this->getService(UrlFormatter::class)->href('', $user['name'])
+                : $this->arguments['loggedinurl'];
         } catch (LoginException $ex) {
             // on affiche une erreur sur le NomWiki sinon
             $this->getService(FlashMessageService::class)->setMessage($ex->getMessage());
@@ -259,6 +334,13 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             Flash::error($ex->getMessage());
             $this->getService(Redirector::class)->redirect($incomingurl);
         }
+
+        // OUTSIDE the try: redirecting throws (Redirector), ExitException is an ordinary
+        // \Exception, and the catch-all above was therefore catching the successful
+        // sign-in's own redirect -- flashing an empty error and redirecting a second time,
+        // to $incomingurl. Invisible while the two addresses were always the same one;
+        // it is what swallowed the first `?return=` that differed from it.
+        $this->getService(Redirector::class)->redirect($destination);
     }
 
     private function logout()

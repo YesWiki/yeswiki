@@ -4,6 +4,10 @@ namespace YesWiki\Identity\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Entity\User;
@@ -12,6 +16,7 @@ use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
@@ -19,6 +24,7 @@ use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -176,6 +182,8 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 'referrer' => $this->referrer,
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,
+                'avatar' => $user === null ? null : $this->getService(AvatarService::class)->forName((string)$user['name']),
+                'profileFields' => $user === null ? [] : $this->renderProfileFields($user),
             ]);
         }
         $captcha = $this->captchaController->renderCaptchaField();
@@ -194,6 +202,129 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
             'captcha' => $captcha,
             'regexUserName' => UserOperationsService::PATTERN_USER_NAME,
         ]);
+    }
+
+    /**
+     * The User form's own fields, minus the three this screen already asks for by hand.
+     *
+     * An account is a form like everything else (ticket 10), and this is the screen where
+     * its owner fills that form in -- the profile picture core declares, and whatever a
+     * webmaster added beside it. Username, password and e-mail are left out because they
+     * are not ordinary values: the username *is* the row's tag, the password goes through
+     * the hasher, and a new e-mail has to be checked against every other account's.
+     *
+     * @return list<BazarField>
+     */
+    private function profileFields(): array
+    {
+        $form = $this->getService(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
+        $handledSeparately = [
+            ContentTypeSchema::tagMirrorField(ContentTypeSchema::TYPE_USER),
+            'password',
+            'email',
+        ];
+
+        $fields = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if (!$field instanceof BazarField) {
+                continue;
+            }
+            $propertyName = $field->getPropertyName();
+            if ($propertyName === '' || in_array($propertyName, $handledSeparately, true)) {
+                continue;
+            }
+            $fields[] = $field;
+        }
+
+        return $fields;
+    }
+
+    private function renderProfileFields(User $user): string
+    {
+        $entry = $this->accountAsEntry($user);
+
+        return (string)$this->asAccountPage($user, function () use ($entry) {
+            $rendered = '';
+            foreach ($this->profileFields() as $field) {
+                $rendered .= (string)$field->renderInputIfPermitted($entry);
+            }
+
+            return $rendered;
+        });
+    }
+
+    /**
+     * What those fields make of the submission -- an uploaded picture moved into place and
+     * named, a plain field taken as typed.
+     *
+     * @param array<string, mixed> $post
+     *
+     * @return array<string, scalar>
+     */
+    private function postedProfileValues(array $post, User $user): array
+    {
+        // the stored body first, so a field the submission does not mention (one whose ACL
+        // hid it from this visitor) keeps what it had rather than being cleared
+        $entry = array_merge($this->accountAsEntry($user), $post, ['tag' => $user['name']]);
+
+        return (array)$this->asAccountPage($user, function () use ($entry) {
+            $values = [];
+            foreach ($this->profileFields() as $field) {
+                foreach ($field->formatValuesBeforeSaveIfEditable($entry) as $key => $value) {
+                    // a file field answers with the keys to DROP as well as the ones to
+                    // write (`oldimage_x`, the input that carried the previous filename):
+                    // those are instructions about the submission, not body content
+                    if ($key === 'fields-to-remove' || !is_scalar($value)) {
+                        continue;
+                    }
+                    $values[$key] = $value;
+                }
+            }
+
+            return $values;
+        });
+    }
+
+    /**
+     * The account in the shape a field reads an entry in: its stored body, its tag, and
+     * the form that describes it.
+     *
+     * @return array<string, mixed>
+     */
+    private function accountAsEntry(User $user): array
+    {
+        $name = (string)$user['name'];
+        $page = $this->getService(PageManager::class)->getOne($name, null, true, true);
+        $body = is_array($page['body'] ?? null) ? $page['body'] : [];
+        $form = $this->getService(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
+
+        return array_merge($body, ['tag' => $name, 'form_id' => $form['id'] ?? null]);
+    }
+
+    /**
+     * Run $work with the account as the current page.
+     *
+     * A file field answers "where does this upload live?" with the page being rendered --
+     * outside safe mode, each page owns a directory under files/. The page being rendered
+     * here is `user`, the account screen, and the account's picture belongs to the account.
+     * Without this, an upload was written under the account's tag (formatValuesBeforeSave()
+     * swaps the context itself, to name the file) and then looked for under `user`, so the
+     * picture saved and vanished in the same request.
+     */
+    private function asAccountPage(User $user, callable $work): mixed
+    {
+        $pageContext = $this->getService(PageContext::class);
+        $previousTag = $pageContext->getTag();
+        $previousPage = $pageContext->getPage();
+        $pageContext->setTag((string)$user['name']);
+        $pageContext->setPage($this->getService(PageManager::class)->getOne((string)$user['name'], null, true, true));
+
+        try {
+            return $work();
+        } finally {
+            $pageContext->setTag($previousTag);
+            $pageContext->setPage($previousPage);
+        }
     }
 
     private function logout()
@@ -236,9 +367,12 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     return is_scalar($item) ? $item : '';
                 }, $post);
 
+                // the User form's own fields go through the fields themselves, not through
+                // the raw POST: an uploaded picture arrives in $_FILES and is a filename
+                // only once the field has moved it into place
                 $this->userOperationsService->update(
                     $user,
-                    $sanitizedPost
+                    array_merge($sanitizedPost, $this->postedProfileValues($post, $user))
                 );
 
                 $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
@@ -257,6 +391,12 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 } else { // Unable to update
                     throw new \Exception('');
                 }
+            } catch (ExitException $th) {
+                // redirecting throws (Redirector) and ExitException is an ordinary
+                // \Exception, so the catch-all below was swallowing the SUCCESSFUL update
+                // leaving the page -- and answering "e-mail non modifié" to someone whose
+                // settings had just been saved. signup() has always had this guard.
+                throw $th;
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
             } catch (UserEmailAlreadyUsedException $th) {
@@ -289,6 +429,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                         $this->authenticationService->login($user);
                     }
                     $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
+                } catch (ExitException $ex) {
+                    // the redirect above, which is the password having been changed --
+                    // not a \Throwable this handler is for (see update())
+                    throw $ex;
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
                 } catch (BadFormatPasswordException|\Throwable $ex) {

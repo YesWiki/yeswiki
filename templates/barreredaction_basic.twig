@@ -1,139 +1,172 @@
+{# What you can do to this page, and what it says about itself -- two regions, because
+   they are two different things and were being read as one long strip of links.
+
+   **The cluster** floats in the top-right corner and follows you down the page: editing is
+   the errand people come back for, so it is one click away wherever they are in a long
+   page. Collapsed it is the edit button alone; the rarer verbs (duplicate, files, delete)
+   appear when the pointer is on it. Only someone who may write this page gets one at all --
+   a reader has nothing to open it for.
+
+   **The line** sits at the bottom, quiet and small: who wrote this, when, and the links
+   that belong to those facts -- permissions and comments next to the owner, the revisions
+   next to the dates. Sharing and the favourite star are there too, because they are the
+   two things a reader who cannot edit still wants.
+
+   Everything is CSS: the reveal is `:hover`/`:focus-within`, and where there is no pointer
+   to hover with (a phone) the cluster stops floating and shows every action at once. See
+   `styles/yw-core.css`. #}
 <div class="{{ class }}">
     {% if linkedit is defined %}
-        <a title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}"
-           href="{{ linkedit }}"
-           class="link-edit">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#pencil" />
-            </svg>
-            <span>{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}</span>
-        </a>
-    {% endif %}
-    {% if userIsAdminOrOwner %}
-        <a title="{{ _t("TEMPLATES_SEE_ATTACHED_FILES") }}"
-           href="{{ url({"handler": "filemanager"}) }}"
-           class="link-filemanager">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#folder-open" />
-            </svg>
-        </a>
-    {% endif %}
-    {#<span class="dropup">#}
-    {% if userIsAdmin %}
-        <a
-            title="{{ _t("TEMPLATE_DUPLICATE_PAGE") ~ ' ' ~ page }}"
-            class="link-duplicate {#dropdown-toggle#}"
-            id="duplicate-dropup"
-            href="{{ linkduplicate }}"
-            {# data-toggle="dropdown"
-      aria-haspopup="true"
-      aria-expanded="false" #}
-            >
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#copy" />
-            </svg>
-            <span>{{ _t("TEMPLATE_DUPLICATE") }}</span>
-            {#<span class="caret"></span>#}
-        </a>
-    {% endif %}
-    {#<ul class="dropdown-menu" aria-labelledby="duplicate-dropup">
-      <li>
-        <a href="{{ linkduplicate }}" title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}">
-          {{ _t('TEMPLATE_DUPLICATE_LOCALLY') }}
-        </a>
-      </li>
-      <li>
-        <a href="{{ linkduplicate ~ '&toUrl=1'}}" title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}">
-          {{ _t('TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI') }}
-        </a>
-      </li>
-    </ul>
-  </span>#}
-    {% if linkdeletepage is defined %}
-        <a href="{{ linkdeletepage }}"
-           class="link-deletepage modalbox"
-           title="{{ _t("TEMPLATE_DELETE_PAGE") ~ ' ' ~ page }}">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#trash" />
-            </svg>
-            <span>{{ _t("TEMPLATE_DELETE") }}</span>
-        </a>
-    {% endif %}
-    {% if time is defined %}
-        <a title="{{ _t("TEMPLATE_CLICK_TO_SEE_REVISIONS") ~ ' ' ~ page }}"
-           href="{{ linkrevisions }}"
-           class="link-revisions">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#history" />
-            </svg>
-            <span>{{ _t("TEMPLATE_LAST_UPDATE") }} {{ time }}</span>
-        </a>
-    {% endif %}
-    {% if linkacls is defined %}
-        <a class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}"
-           href="{{ linkacls }}"
-           title="{{ _t("TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS") ~ ' ' ~ page }}">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#lock-open" />
-            </svg>
-            <span>{{ owner ?? '' }}</span>
-        </a>
-    {% endif %}
-    {% if linkclosecomments is defined %}
-        <a class="link-comments"
-           href="{{ linkclosecomments }}"
-           title="{{ _t("TEMPLATE_CLICK_TO_CLOSE_COMMENTS") }}">
-            <svg class="yw-icon" aria-hidden="true">
-                <use href="src/assets/icons.svg#message-circle-off" />
-            </svg>
-            <span>{{ _t("TEMPLATE_CLOSE_COMMENTS") }}</span>
-        </a>
-    {% endif %}
-    {% if linkopencomments is defined %}
-        <span class="dropup">
-            <a href="#"
-               class="link-comments dropdown-toggle"
-               id="opencommentsdropup"
-               data-toggle="dropdown"
-               aria-haspopup="true"
-               aria-expanded="false">
-                <svg class="yw-icon" aria-hidden="true">
-                    <use href="src/assets/icons.svg#message-circle" />
-                </svg>
-                <span>{{ _t("TEMPLATE_OPEN_COMMENTS") }}</span>
-                <span class="caret"></span>
+        <nav class="yw-page-actions" aria-label="{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}">
+            <a title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}"
+               href="{{ linkedit }}"
+               class="yw-btn yw-page-actions__edit link-edit">
+                {{ icon('pencil') }}
+                <span>{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}</span>
             </a>
-            <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
-                <li>
-                    <a href="{{ linkopencomments ~ '&list=' ~ ('+')|e("url") }}">{{ _t("TEMPLATE_FOR_CONNECTED_PEOPLE") }}</a>
-                </li>
-                {% for g in wikigroups %}
-                    <li>
-                        <a href="{{ linkopencomments ~ '&list=' ~ g }}">{{ _t("TEMPLATE_FOR_MEMBERS_OF_GROUP") }} {{ g }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </span>
+            <div class="yw-page-actions__more">
+                {% if userIsAdmin %}
+                    <a title="{{ _t("TEMPLATE_DUPLICATE_PAGE") ~ ' ' ~ page }}"
+                       href="{{ linkduplicate }}"
+                       class="yw-btn yw-btn--sm link-duplicate">
+                        {{ icon('copy') }}
+                        <span>{{ _t("TEMPLATE_DUPLICATE") }}</span>
+                    </a>
+                {% endif %}
+                <a title="{{ _t("TEMPLATE_SEE_SHARING_OPTIONS") ~ ' ' ~ page }}"
+                   href="{{ linkshare }}"
+                   class="yw-btn yw-btn--sm link-share modalbox">
+                    {{ icon('share') }}
+                    <span>{{ _t("TEMPLATE_SHARE") }}</span>
+                </a>
+                {% if currentuser is not empty %}
+                    {{ include_javascript("javascripts/favorites.js") }}
+                    <a href="#"
+                       title="{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}"
+                       data-resource="{{ page }}"
+                       data-user="{{ currentuser }}"
+                       class="yw-btn yw-btn--sm favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+                        {{ (isUserFavorite) ? icon("star-filled") : icon('star') }}
+                        <span>{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}</span>
+                    </a>
+                {% endif %}
+                {% if linkdeletepage is defined %}
+                    <a href="{{ linkdeletepage }}"
+                       title="{{ _t("TEMPLATE_DELETE_PAGE") ~ ' ' ~ page }}"
+                       class="yw-btn yw-btn--sm yw-btn--danger link-deletepage modalbox">
+                        {{ icon('trash') }}
+                        <span>{{ _t("TEMPLATE_DELETE") }}</span>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
     {% endif %}
-    <a title="{{ _t("TEMPLATE_SEE_SHARING_OPTIONS") ~ ' ' ~ page }}"
-       href="{{ linkshare }}"
-       class="link-share modalbox">
-        <svg class="yw-icon" aria-hidden="true">
-            <use href="src/assets/icons.svg#share" />
-        </svg>
-        <span>{{ _t("TEMPLATE_SHARE") }}</span>
-    </a>
-    {% if currentuser is not empty %}
-        {{ include_javascript("javascripts/favorites.js") }}
-        <a href="#"
-           title="{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}"
-           data-resource="{{ page }}"
-           data-user="{{ currentuser }}"
-           data-toggle="tooltip"
-           data-placement="top"
-           class="btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
-            {{ (isUserFavorite) ? icon("star-filled") : icon('star') }}
-            <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}</span>
-        </a>
-    {% endif %}
+
+    <div class="yw-page-info">
+        <div class="yw-page-info__facts">
+            {# who wrote it, and the two things that are about *who* -- permissions and
+               comments -- on the same line as the name they qualify.
+
+               <div>, not <p>: the comments control is a dropdown whose menu is a <ul>, and
+               a <ul> inside a <p> makes the HTML parser close the paragraph early. That
+               left the menu outside `.dropup` -- where the toggle looks for it, so opening
+               the comments did nothing -- and a stray empty <p> behind it. #}
+            {% set showAuthor = userIsAdmin and author is not empty %}
+            {% if showAuthor or linkacls is defined or linkclosecomments is defined or linkopencomments is defined %}
+                <div class="yw-page-info__line">
+                    {% if showAuthor %}
+                        <span class="yw-page-info__author">
+                            {{ _t("BAZ_ECRITE") }} {{ author }}{% if contentLabel is not empty %} <span class="yw-page-info__type">({{ contentLabel }})</span>{% endif %}
+                        </span>
+                    {% endif %}
+                    {% if linkacls is defined %}
+                        <a class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}"
+                           href="{{ linkacls }}"
+                           title="{{ _t("TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS") ~ ' ' ~ page }}">
+                            {{ icon('lock-open') }}
+                            <span>{{ owner ?? '' }}</span>
+                        </a>
+                    {% endif %}
+                    {% if linkclosecomments is defined %}
+                        <a class="link-comments"
+                           href="{{ linkclosecomments }}"
+                           title="{{ _t("TEMPLATE_CLICK_TO_CLOSE_COMMENTS") }}">
+                            {{ icon('message-circle-off') }}
+                            <span>{{ _t("TEMPLATE_CLOSE_COMMENTS") }}</span>
+                        </a>
+                    {% endif %}
+                    {% if linkopencomments is defined %}
+                        <span class="dropup">
+                            <a href="#"
+                               class="link-comments dropdown-toggle"
+                               id="opencommentsdropup"
+                               data-toggle="dropdown"
+                               aria-haspopup="true"
+                               aria-expanded="false">
+                                {{ icon('message-circle') }}
+                                <span>{{ _t("TEMPLATE_OPEN_COMMENTS") }}</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
+                                <li>
+                                    <a href="{{ linkopencomments ~ '&list=' ~ ('+')|e("url") }}">{{ _t("TEMPLATE_FOR_CONNECTED_PEOPLE") }}</a>
+                                </li>
+                                {% for g in wikigroups %}
+                                    <li>
+                                        <a href="{{ linkopencomments ~ '&list=' ~ g }}">{{ _t("TEMPLATE_FOR_MEMBERS_OF_GROUP") }} {{ g }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            {% if createdAt is not empty or updatedAt is not empty or time is defined %}
+                <div class="yw-page-info__line">
+                    {% if createdAt is not empty %}
+                        <span class="date_creation">{{ _t("BAZ_DATE_CREATION")|capitalize }} {{ createdAt }}</span>
+                    {% endif %}
+                    {# the dates and the history are one fact: the link is the whole phrase,
+                       so "when was this last touched" and "by what" are the same click #}
+                    {% if time is defined %}
+                        <a title="{{ _t("TEMPLATE_CLICK_TO_SEE_REVISIONS") ~ ' ' ~ page }}"
+                           href="{{ linkrevisions }}"
+                           class="link-revisions">
+                            {{ icon('history') }}
+                            <span>{{ _t("TEMPLATE_LAST_UPDATE") }} {{ updatedAt is not empty ? updatedAt : time }}</span>
+                        </a>
+                    {% elseif updatedAt is not empty %}
+                        <span class="date_mise_a_jour">{{ _t("BAZ_DATE_MAJ")|capitalize }} {{ updatedAt }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# Sharing and the star are in the cluster for anyone who has one. A reader who
+           cannot edit has none -- and they are the two things a reader still wants -- so
+           for them, and only them, they stay down here. #}
+        {% if linkedit is not defined %}
+        <div class="yw-page-info__actions">
+            <a title="{{ _t("TEMPLATE_SEE_SHARING_OPTIONS") ~ ' ' ~ page }}"
+               href="{{ linkshare }}"
+               class="link-share modalbox">
+                {{ icon('share') }}
+                <span>{{ _t("TEMPLATE_SHARE") }}</span>
+            </a>
+            {% if currentuser is not empty %}
+                {{ include_javascript("javascripts/favorites.js") }}
+                <a href="#"
+                   title="{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}"
+                   data-resource="{{ page }}"
+                   data-user="{{ currentuser }}"
+                   data-toggle="tooltip"
+                   data-placement="top"
+                   class="btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+                    {{ (isUserFavorite) ? icon("star-filled") : icon('star') }}
+                    <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}</span>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
 </div>

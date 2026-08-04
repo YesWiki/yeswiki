@@ -78,6 +78,10 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction
         'herse_id' => 'herse',
         'herse_password' => 'herse',
 
+        // formerly contributed via yeswiki-extension-importer's config.yaml's
+        // importer_editable_config_params
+        'sync_secret' => 'import',
+
         'password_for_editing' => 'security',
         'password_for_editing_message' => 'security',
         'htmlPurifierActivated' => 'security',

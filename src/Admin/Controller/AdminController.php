@@ -66,12 +66,6 @@ class AdminController extends YesWikiController
         return $this->page('@core/admin/content.twig', 'admin/content');
     }
 
-    #[Route('/admin/lists', options: ['acl' => self::ADMIN_ACL])]
-    public function lists(): Response
-    {
-        return $this->page('@core/admin/lists.twig', 'admin/lists');
-    }
-
     #[Route('/admin/imports', options: ['acl' => self::ADMIN_ACL])]
     public function imports(): Response
     {
@@ -120,12 +114,6 @@ class AdminController extends YesWikiController
     public function groups(): Response
     {
         return $this->page('@core/admin/groups.twig', 'admin/groups');
-    }
-
-    #[Route('/admin/permissions', options: ['acl' => self::ADMIN_ACL])]
-    public function permissions(): Response
-    {
-        return $this->page('@core/admin/permissions.twig', 'admin/permissions');
     }
 
     #[Route('/admin/reactions', options: ['acl' => self::ADMIN_ACL])]

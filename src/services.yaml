@@ -143,3 +143,20 @@ services:
   YesWiki\Search\Service\SearchIndexSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }
+  # imports the data sources flagged syncOnMaintenance, on the wiki's own housekeeping
+  YesWiki\Content\Service\MaintenanceSyncSubscriber:
+    tags:
+      - { name: yeswiki.event_subscriber }
+
+  # An importer is constructed per data source, with that source's config key -- a scalar no
+  # container can autowire. These definitions exist so ImporterManager can *find* them by
+  # service id (any id ending in "Importer"); it constructs them itself. An extension adding
+  # an importer declares it the same way.
+  YesWiki\Content\Service\RssImporter:
+    autowire: false
+  YesWiki\Content\Service\ImapImporter:
+    autowire: false
+  YesWiki\Content\Service\YesWikiListImporter:
+    autowire: false
+  YesWiki\Content\Service\YesWikiToYesWikiImporter:
+    autowire: false

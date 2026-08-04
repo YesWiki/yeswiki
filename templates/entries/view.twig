@@ -17,7 +17,15 @@
     </div>
   {% endif %}
   {{ renderedEntry|raw }}
-  {% if showFooter %}
+  {# `canShow` is "this Content is not the page you are on" -- it is true only when the
+     entry is being rendered inside something else (a modal, an iframe, a list that asks
+     for one full entry). That is exactly when this footer is the only way to act on it.
+
+     On its own page there is an edit bar for it, and since ticket 10 made pages render
+     through a form there is one for *pages* too -- so every page grew a second strip of
+     buttons above the first, saying nearly the same things. The edit bar wins there: it
+     knows the permissions, the comments and the history, which this never did. #}
+  {% if showFooter and canShow %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info">    
       {% if isAdmin %}
@@ -26,15 +34,22 @@
           {{ owner|raw }}
           <span class="category"> ({{form.label ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.label:'') }})
           {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
-          <br />          
-          <span class="date_creation">
-            {{ _t('BAZ_DATE_CREATION')|capitalize }}
-            {{ entry.created_at|date('d/m/Y à H:i') }},
-          </span>
-          <span class="date_mise_a_jour">
-            {{ _t('BAZ_DATE_MAJ') }}
-            {{ entry.updated_at|date('d/m/Y à H:i') }}
-          </span>
+          <br />
+          {# only dates the Content actually stores: `|date` on a null is Twig's word for
+             *now*, so Content that keeps no timestamps claimed to have been created and
+             updated the second you looked at it #}
+          {% if entry.created_at is not empty %}
+            <span class="date_creation">
+              {{ _t('BAZ_DATE_CREATION')|capitalize }}
+              {{ entry.created_at|date('d/m/Y à H:i') }}{% if entry.updated_at is not empty %},{% endif %}
+            </span>
+          {% endif %}
+          {% if entry.updated_at is not empty %}
+            <span class="date_mise_a_jour">
+              {{ _t('BAZ_DATE_MAJ') }}
+              {{ entry.updated_at|date('d/m/Y à H:i') }}
+            </span>
+          {% endif %}
         </span>
       {% endif %}
 

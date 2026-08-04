@@ -92,6 +92,7 @@
   "suggest": {
     "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
     "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
-    "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL"
+    "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL",
+    "php-imap/php-imap": "Required by the IMAP importer to read a mailbox (also needs ext-imap)"
   }
 }

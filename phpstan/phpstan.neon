@@ -13,6 +13,15 @@ parameters:
     dynamicConstantNames:
         - YW_CHARSET
 
+    # php-imap is a *suggested* dependency (composer.json): it needs ext-imap, which PHP has
+    # been moving out of core, so a wiki that imports no mailbox installs neither. ImapImporter
+    # therefore has to name classes that are legitimately absent here -- it checks for them at
+    # runtime and says so plainly (see ImapImporter::authenticate()).
+    ignoreErrors:
+        -
+            message: '#PhpImap\\Exceptions\\ConnectionException#'
+            path: ../src/Content/Service/ImapImporter.php
+
     paths:
         - ../src
         # Only the bundled sample extension is repo content. extensions/* is gitignored

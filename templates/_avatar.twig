@@ -1,0 +1,19 @@
+{# An account's face, at whatever size the caller sets `--yw-avatar-size` to.
+
+   One partial for both cases -- a picture and a pair of initials -- because a caller
+   drawing "who this is" does not want to know which of the two it got, and because the
+   round frame, the size and the way it sits on a line have to be identical either way or
+   the navbar moves when someone uploads a photo.
+
+   The two colours are inline because they are data, not design: they are computed from the
+   account's name (AvatarService), so there is no stylesheet that could know them. #}
+{# Takes `avatar` (a YesWiki\Identity\Entity\Avatar) and an optional `class`. #}
+<span class="yw-avatar{{ class|default('') ? ' ' ~ class }}"
+      {% if not avatar.hasImage %}style="--yw-avatar-bg: {{ avatar.background }}; --yw-avatar-fg: {{ avatar.foreground }};"{% endif %}
+      aria-hidden="true">
+  {%- if avatar.hasImage -%}
+    <img class="yw-avatar__image" src="{{ avatar.imageUrl }}" alt="" loading="lazy" />
+  {%- else -%}
+    <span class="yw-avatar__initials">{{ avatar.initials }}</span>
+  {%- endif -%}
+</span>

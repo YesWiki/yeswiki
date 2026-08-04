@@ -6,6 +6,10 @@
 		{{ _t('BAZ_INTRO_AJOUT_LISTE')|raw }}
 	</div>
 {% else %}
+  {# A column of empty cells under a heading called "Actions" is a promise the table does
+     not keep: a reader who may change none of these lists has no actions here. Asked of
+     the whole table rather than per row, so the columns still line up. #}
+  {% set hasActions = lists|filter(list => (list.canDuplicate ?? false) or (list.canEdit ?? false) or (list.canDelete ?? false))|length > 0 %}
   <div class="table-responsive">
   <table id="existing-lists-table" class="yw-table" data-yw-datatable>
     <thead>
@@ -13,7 +17,7 @@
         <th>{{ _t('BAZ_TITLE') }}</th>
         <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
         <th style="width:180px;">{{ _t('BAZ_ID') }}</th>
-        <th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+        {% if hasActions %}<th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>{% endif %}
     </tr>
     </thead>
     <tbody>
@@ -33,6 +37,7 @@
           {% endif %}
         </td>
         <td>{{ key }}</td>
+        {% if hasActions %}
         <td>
           {% if list.canDuplicate %}
           <a class="yw-btn yw-btn--sm" href="{{ url({ params: { view: 'listes', action: 'duplicate', listid: key }}) }}">
@@ -53,7 +58,8 @@
             <svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
           </a>
           {% endif %}
-      </td>
+        </td>
+        {% endif %}
     </tr>
     {% endfor %}
     </tbody>
@@ -61,7 +67,12 @@
 </div>
 {% endif %}
 
-<a href="{{ url({ params: { view: 'listes', action: 'saisir_liste'}})|raw }}" class="yw-btn yw-btn--primary" {% if not canCreate %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}" {% endif %}>
+{# Everyone reads this screen; only someone who may add a list is offered the two ways to
+   add one. Not a disabled button either: an offer a visitor cannot take is noise on a page
+   they came to read. `canCreate` is ListController's answer, and the same answer refuses
+   the POST -- hiding a control has never been a permission. #}
+{% if canCreate %}
+<a href="{{ url({ params: { view: 'listes', action: 'saisir_liste'}})|raw }}" class="yw-btn yw-btn--primary">
 	<svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 	{{ _t('BAZ_NOUVELLE_LISTE') }}
 </a>
@@ -76,9 +87,9 @@
 		<span class="add-on input-group-addon">
 			<svg class="yw-icon icon-globe" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg>
 		</span>
-		<input id="url-import-lists" class="yw-input input-xxlarge" {% if not loggedUser %} disabled {% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
+		<input id="url-import-lists" class="yw-input input-xxlarge" placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
 		<span class="input-group-btn">
-			<button id="btn-import-lists" {% if not loggedUser %} disabled {% endif %} class="yw-btn yw-btn--primary" type="submit">
+			<button id="btn-import-lists" class="yw-btn yw-btn--primary" type="submit">
 				{{ _t('BAZ_GO') }}&nbsp;!
 			</button>
 		</span>
@@ -116,6 +127,7 @@
 		{{ _t('BAZ_IMPORT_SELECTION') }}
 	</button>
 </form>
+{% endif %}
 <div
   id="list-translations"
   data-nblistsfound="{{ _t('BAZ_NBLISTSFOUND') }}"

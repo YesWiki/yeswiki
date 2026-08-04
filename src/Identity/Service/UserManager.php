@@ -11,6 +11,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
@@ -441,18 +443,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $newKeys = array_keys($newValues);
-        $authorizedKeys = array_filter($newKeys, function ($key) {
-            return in_array($key, [
-                'changescount',
-                'doubleclickedit',
-                'email',
-                'motto',
-                // 'name', // name not currently updateable
-                // 'password', // password not updateable by this method
-                'revisioncount',
-                'show_comments',
-            ]);
+        $updatable = $this->updatableKeys();
+        $authorizedKeys = array_filter(array_keys($newValues), function ($key) use ($updatable) {
+            return in_array($key, $updatable, true);
         });
         if (isset($newValues['email'])) {
             if (empty($newValues['email'])) {
@@ -479,6 +472,46 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         return true;
+    }
+
+    /**
+     * The body keys update() will write -- core's own account preferences, plus whatever
+     * the User form says an account holds.
+     *
+     * The form half is what makes the profile picture (and any field a webmaster adds
+     * beside it) more than decoration: without it, the settings screen would offer inputs
+     * whose values this method silently dropped. It stays an allow-list all the same --
+     * this method takes a raw submission, and three keys must never be reachable through
+     * one: the tag the account is stored under, the password hash (AuthenticationService
+     * sets that, through the hasher) and the activation state that decides whether the
+     * account may sign in at all.
+     *
+     * @return list<string>
+     */
+    private function updatableKeys(): array
+    {
+        $keys = [
+            'changescount',
+            'doubleclickedit',
+            'email',
+            'motto',
+            'revisioncount',
+            'show_comments',
+        ];
+
+        $form = $this->container->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_USER);
+        $never = ['name', 'username', 'password', 'activation_status', 'activation_key'];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if (!$field instanceof BazarField) {
+                continue;
+            }
+            $propertyName = $field->getPropertyName();
+            if ($propertyName !== '' && !in_array($propertyName, $never, true)) {
+                $keys[] = $propertyName;
+            }
+        }
+
+        return array_values(array_unique($keys));
     }
 
     /**

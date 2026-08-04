@@ -58,7 +58,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
+                    . $this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig" signupurl="0"}}' . "\n\n")
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         } elseif (!empty($this->getRequest()->request->all())) {

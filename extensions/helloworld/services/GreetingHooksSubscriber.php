@@ -3,6 +3,7 @@
 namespace YesWiki\HelloWorld\Service;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -14,10 +15,16 @@ use YesWiki\Render\Service\TemplateEngine;
  * -- and it instantiated a whole action object just to adjust an argument. Subscribe to
  * `action.<name>.before` / `.after` instead. Core no longer hooks itself at all: its own
  * callbacks were merged into the classes they wrapped. This mechanism exists for extensions.
+ *
+ * The same subscriber is where an extension hangs work on the wiki's own housekeeping:
+ * `maintenance.before` / `maintenance.after` (YesWikiRuntime::maintenance()).
  */
 class GreetingHooksSubscriber implements EventSubscriberInterface
 {
     private TemplateEngine $templateEngine;
+
+    /** @var list<array<string, mixed>> */
+    private array $maintenanceSeen = [];
 
     public function __construct(TemplateEngine $templateEngine)
     {
@@ -30,7 +37,46 @@ class GreetingHooksSubscriber implements EventSubscriberInterface
             'action.greeting.before' => 'prepareArguments',
             'action.greeting.after' => 'appendSuffix',
             'handler.hello.after' => 'rewriteHelloOutput',
+            'maintenance.before' => 'onMaintenanceStarting',
+            'maintenance.after' => 'onMaintenanceDone',
         ];
+    }
+
+    /**
+     * Housekeeping of an extension's own, on the wiki's schedule.
+     *
+     * The event carries `startedAt`, `interval` and `previousRun` -- the last being how an
+     * extension with its own rhythm decides whether this run is one of its own: core runs
+     * every half hour, and "once a day" is `startedAt - myLastRun > 86400`, kept in the
+     * extension's own storage.
+     *
+     * Two things this listener must not do, and neither is enforced: take its time, or
+     * matter. It runs inside a page view somebody else asked for, and whatever it throws
+     * is swallowed so their page still renders -- so anything long, or anything that must
+     * be *known* to have happened, belongs in a command instead.
+     */
+    public function onMaintenanceStarting(Event $event): void
+    {
+        $this->maintenanceSeen[] = ['phase' => 'before'] + $event->getData();
+    }
+
+    public function onMaintenanceDone(Event $event): void
+    {
+        $this->maintenanceSeen[] = ['phase' => 'after'] + $event->getData();
+    }
+
+    /**
+     * What this listener saw, for the test that pins the contract.
+     *
+     * A sample that wrote to the log or to a file would be doing real work in a stranger's
+     * page view on every wiki that installs it -- which is the one thing the note above
+     * asks extensions not to do.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function maintenanceSeen(): array
+    {
+        return $this->maintenanceSeen;
     }
 
     /** What the old __GreetingAction::formatArguments() did. */

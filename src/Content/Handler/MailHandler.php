@@ -107,7 +107,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
                     : (_t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') . '<br />'
                         . _t('CONTACT_LOGIN_IF_CONNECTED')),
             ]);
-            $output .= $this->getService(MarkdownFormatterService::class)->format('{{login}}') . "\n";
+            $output .= $this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig"}}') . "\n";
         }
 
         if ($aclService->hasAccess('read') && ($this->getService(AuthenticationService::class)->getLoggedUser() || !empty($field))) {

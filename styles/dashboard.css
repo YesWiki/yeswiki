@@ -319,12 +319,5 @@
   font-size: 0.9em;
 }
 
-/* the navbar's account button: the name can be long, the bar cannot grow */
-.account-link__label {
-  display: inline-block;
-  max-width: 12rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  white-space: nowrap;
-}
+/* the navbar's account button is styled in yw-core.css: it renders on every page of the
+   wiki, and this stylesheet only loads on the dashboard and account screens */

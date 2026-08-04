@@ -1,0 +1,321 @@
+<h1>{{ _t('IMPORTER_ADMIN_TITLE') }}</h1>
+
+{% if message is not null %}
+<div class="yw-alert yw-alert--success">{{ message }}</div>
+{% endif %}
+
+{% if dataSources is not empty %}
+<table class="yw-table">
+  <thead>
+    <tr>
+      <th>{{ _t('IMPORTER_SOURCE_TYPE') }}</th>
+      <th>{{ _t('IMPORTER_SOURCE_URL') }}</th>
+      <th>{{ _t('IMPORTER_LAST_SYNC') }}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for id, source in dataSources %}
+    <tr>
+      <td>{{ _t('IMPORTER_' ~ (source.importer|default(''))|upper) }}</td>
+      <td>{{ source.url|default('') }}</td>
+      <td>
+        {% if lastSync[id].last is null %}
+        {{ _t('IMPORTER_SYNC_NEVER') }}
+        {% else %}
+        <a href="#" class="importer-sync-log" data-id="{{ id }}">{{ lastSync[id].last.time|date('d/m/Y H:i') }}</a>
+        {% endif %}
+        {% if lastSync[id].enabled %}
+        <svg class="yw-icon" aria-hidden="true"><title>{{ _t('IMPORTER_FIELD_SYNCONMAINTENANCE') }}</title><use href="src/assets/icons.svg#repeat"/></svg>
+        {% endif %}
+      </td>
+      <td>
+        <form method="POST" action="{{ currentUrl }}" class="importer-inline-form">
+          <input type="hidden" name="syncSource" value="{{ id }}">
+          <button class="yw-btn yw-btn--sm" type="submit" title="{{ _t('IMPORTER_SYNC_RUN') }}">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#refresh"/></svg>
+          </button>
+        </form>
+        <button type="button" class="yw-btn yw-btn--sm importer-edit-btn" data-id="{{ id }}" title="{{ _t('BAZ_MODIFIER') }}">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
+        </button>
+        <form method="POST" action="{{ currentUrl }}" class="importer-inline-form importer-delete-form">
+          <input type="hidden" name="delete" value="{{ id }}">
+          <button class="yw-btn yw-btn--sm yw-btn--danger" type="submit" title="{{ _t('BAZ_SUPPRIMER') }}">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% if syncedSourceId == id %}
+    <tr>
+      <td colspan="4"><pre>{{ syncOutput }}</pre></td>
+    </tr>
+    {% endif %}
+    {% if lastSync[id].last is not null %}
+    <tr class="importer-sync-log-row hide" data-id="{{ id }}">
+      <td colspan="4"><pre>{{ lastSync[id].last.output }}</pre></td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2 id="importer-form-title">{{ _t('IMPORTER_ADD_SOURCE') }}</h2>
+<form method="POST" action="{{ currentUrl }}" id="importer-form">
+  <input type="hidden" id="id" name="id">
+  <div class="yw-form-group">
+    {% for name, class in importers %}
+    <label class="yw-form-label">
+      <input type="radio" name="importer" id="importer_{{ name }}" value="{{ name }}" class="importer-radio">
+      <span>{{ _t('IMPORTER_' ~ name|upper) }}</span>
+    </label>
+    {% endfor %}
+  </div>
+
+  {% for name, fields in importerFields %}
+  <div id="form_{{ name }}" class="importer-form hide">
+    {% for key, field in fields %}
+    {% set fieldLabel = _t(field.label|default('IMPORTER_FIELD_' ~ key|upper)) %}
+    <div class="yw-form-group">
+      {% if field.type == 'checkbox' %}
+      <label class="yw-form-label" for="{{ key }}{{ name }}">
+        <input type="checkbox" name="{{ key }}{{ name }}" id="{{ key }}{{ name }}" value="1"> {{ fieldLabel }}
+      </label>
+      {% elseif field.type == 'select' %}
+      <label class="yw-form-label" for="{{ key }}{{ name }}">{{ fieldLabel }}</label>
+      <select class="yw-input{{ field.required ? ' conditional-required' : '' }}" name="{{ key }}{{ name }}" id="{{ key }}{{ name }}">
+        {% for optValue, optLabelKey in field.options %}
+        <option value="{{ optValue }}">{{ _t(optLabelKey) }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <label class="yw-form-label" for="{{ key }}{{ name }}">{{ fieldLabel }}</label>
+      <input type="{{ field.type }}" class="yw-input{{ field.required ? ' conditional-required' : '' }}" name="{{ key }}{{ name }}" id="{{ key }}{{ name }}" placeholder="{{ fieldLabel }}">
+      {% endif %}
+      {% if field.help is defined %}
+      <span class="yw-form-help">{{ _t(field.help) }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <div id="form_group_formId" class="yw-form-group hide">
+    <label class="yw-form-label" for="formId">{{ _t('IMPORTER_BAZAR_ID') }}</label>
+    <select required class="yw-input" id="formId" name="formId">
+      <option value="new">{{ _t('IMPORTER_FORM_NEW') }}</option>
+      {% for formId, form in forms %}
+      <option value="{{ formId }}">{{ form.label|default(formId) }} ({{ formId }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div id="field-mapping-container"></div>
+
+  <button class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_SAVE') }}</button>
+  <button class="yw-btn hide" type="button" id="importer-cancel-edit">{{ _t('IMPORTER_CANCEL_EDIT') }}</button>
+</form>
+
+<script type="module">
+  // importers that do not create Content, so no formId is needed
+  const importersWithoutForm = {{ importersWithoutForm|json_encode|raw }}
+  const importerFields = {{ importerFields|json_encode|raw }}
+  const dataSources = {{ dataSourcesJson|raw }}
+  // importer(s) that can offer a field-mapping table when an existing form is picked
+  // (either a fixed own field list, or a remote form fetched live)
+  const importersWithFieldMapping = {{ importersWithFieldMapping|json_encode|raw }}
+  const labels = {
+    mappingTitle: {{ _t('IMPORTER_FIELD_MAPPING_TITLE')|json_encode|raw }},
+    mappingRemote: {{ _t('IMPORTER_FIELD_MAPPING_REMOTE')|json_encode|raw }},
+    mappingLocal: {{ _t('IMPORTER_FIELD_MAPPING_LOCAL')|json_encode|raw }},
+    mappingSkip: {{ _t('IMPORTER_FIELD_MAPPING_SKIP')|json_encode|raw }},
+    mappingFailed: {{ _t('IMPORTER_MAPPING_FETCH_FAILED')|json_encode|raw }},
+    confirmDelete: {{ _t('IMPORTER_CONFIRM_DELETE')|json_encode|raw }},
+    editTitle: {{ _t('IMPORTER_EDIT_SOURCE')|json_encode|raw }},
+    addTitle: {{ _t('IMPORTER_ADD_SOURCE')|json_encode|raw }},
+  }
+
+  const form = document.getElementById('importer-form')
+  const formIdSelect = document.getElementById('formId')
+  const mappingContainer = document.getElementById('field-mapping-container')
+  const formTitle = document.getElementById('importer-form-title')
+  const cancelButton = document.getElementById('importer-cancel-edit')
+
+  function checkedImporter() {
+    const checked = form.querySelector('.importer-radio:checked')
+    return checked ? checked.value : null
+  }
+
+  function showImporterForm(name) {
+    // a hidden field cannot be required: the browser cannot focus it to report the error
+    document.querySelectorAll('.importer-form').forEach(function (block) {
+      block.classList.add('hide')
+      block.querySelectorAll('.conditional-required').forEach(function (field) { field.required = false })
+    })
+    const block = document.getElementById('form_' + name)
+    if (block) {
+      block.classList.remove('hide')
+      block.querySelectorAll('.conditional-required').forEach(function (field) { field.required = true })
+    }
+    const needsForm = !importersWithoutForm.includes(name)
+    document.getElementById('form_group_formId').classList.toggle('hide', !needsForm)
+    formIdSelect.required = needsForm
+  }
+
+  // built from scratch every time, with textContent rather than markup: the remote field
+  // labels and keys come from an arbitrary remote wiki
+  function renderFieldMapping(fieldMapping, preselected) {
+    mappingContainer.replaceChildren()
+    if (!fieldMapping) {
+      return
+    }
+    preselected = preselected || {}
+    const title = document.createElement('h2')
+    title.textContent = labels.mappingTitle
+    const table = document.createElement('table')
+    table.className = 'yw-table'
+    const headRow = document.createElement('tr')
+    for (const text of [labels.mappingRemote, labels.mappingLocal]) {
+      const th = document.createElement('th')
+      th.textContent = text
+      headRow.append(th)
+    }
+    const thead = document.createElement('thead')
+    thead.append(headRow)
+    const tbody = document.createElement('tbody')
+    fieldMapping.remote.forEach(function (remoteField) {
+      const select = document.createElement('select')
+      select.className = 'yw-input'
+      select.name = 'fieldsMapping[' + remoteField.key + ']'
+      const skip = document.createElement('option')
+      skip.value = ''
+      skip.textContent = labels.mappingSkip
+      select.append(skip)
+      const selectedValue = preselected[remoteField.key] !== undefined ? preselected[remoteField.key] : remoteField.key
+      fieldMapping.local.forEach(function (localField) {
+        const option = document.createElement('option')
+        option.value = localField.key
+        option.textContent = localField.label + ' (' + localField.key + ')'
+        option.selected = localField.key === selectedValue
+        select.append(option)
+      })
+      const labelCell = document.createElement('td')
+      labelCell.textContent = remoteField.label + ' '
+      const code = document.createElement('code')
+      code.textContent = remoteField.key
+      labelCell.append(code)
+      const selectCell = document.createElement('td')
+      selectCell.append(select)
+      const row = document.createElement('tr')
+      row.append(labelCell, selectCell)
+      tbody.append(row)
+    })
+    table.append(thead, tbody)
+    mappingContainer.append(title, table)
+  }
+
+  // fetches the remote/local field lists for the selected importer + formId and rebuilds the
+  // mapping table live, instead of requiring a full submit and reload
+  async function fetchFieldMapping(preselected) {
+    const importer = checkedImporter()
+    mappingContainer.replaceChildren()
+    if (!importer || !importersWithFieldMapping.includes(importer) || !formIdSelect.value || formIdSelect.value === 'new') {
+      return
+    }
+    // an importer fetching its fields from a remote form can only answer once its url and
+    // credentials are filled in: stay silent until they are, warn once they are
+    const urlField = document.getElementById('url' + importer)
+    const hasUrl = !!(urlField && urlField.value)
+    try {
+      const response = await fetch('?api/import/mapping-fields', { method: 'POST', body: new FormData(form) })
+      const data = await response.json()
+      if (data.fieldMapping) {
+        renderFieldMapping(data.fieldMapping, preselected)
+      } else if (hasUrl) {
+        const warning = document.createElement('div')
+        warning.className = 'yw-alert yw-alert--warning'
+        warning.textContent = labels.mappingFailed
+        mappingContainer.append(warning)
+      }
+    } catch (failed) {
+      // a mapping table we could not build is not a reason to break the page: the source can
+      // still be saved, and its fields mapped once the credentials are right
+    }
+  }
+
+  document.querySelectorAll('.importer-radio').forEach(function (radio) {
+    radio.addEventListener('click', function () {
+      showImporterForm(radio.value)
+      fetchFieldMapping()
+    })
+  })
+
+  formIdSelect.addEventListener('change', function () { fetchFieldMapping() })
+
+  document.querySelectorAll('.importer-delete-form').forEach(function (deleteForm) {
+    deleteForm.addEventListener('submit', function (event) {
+      if (!window.confirm(labels.confirmDelete)) {
+        event.preventDefault()
+      }
+    })
+  })
+
+  // the last sync's output is rendered folded: it is only of interest when something looks
+  // wrong with a source nobody was watching
+  document.querySelectorAll('.importer-sync-log').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault()
+      document.querySelectorAll('.importer-sync-log-row[data-id="' + link.dataset.id + '"]')
+        .forEach(function (row) { row.classList.toggle('hide') })
+    })
+  })
+
+  document.querySelectorAll('.importer-edit-btn').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const source = dataSources[button.dataset.id]
+      if (!source) {
+        return
+      }
+      document.getElementById('id').value = button.dataset.id
+      document.getElementById('importer_' + source.importer).checked = true
+      showImporterForm(source.importer)
+      const fields = importerFields[source.importer] || {}
+      Object.keys(fields).forEach(function (key) {
+        const field = fields[key]
+        const input = document.getElementById(key + source.importer)
+        if (!input) {
+          return
+        }
+        const value = key.indexOf('auth_') === 0 ? (source.auth || {})[key.substring(5)] : source[key]
+        if (field.type === 'checkbox') {
+          input.checked = !!value
+        } else if (field.type === 'select') {
+          // a source saved before this field existed has no value for it: back to its default
+          input.value = value || input.options[0].value
+        } else {
+          input.value = value || ''
+        }
+      })
+      formIdSelect.value = source.formId || 'new'
+      formTitle.textContent = labels.editTitle
+      cancelButton.classList.remove('hide')
+      fetchFieldMapping(source.fieldsMapping || {})
+      form.scrollIntoView({ behavior: 'smooth' })
+    })
+  })
+
+  cancelButton.addEventListener('click', function () {
+    form.reset()
+    document.getElementById('id').value = ''
+    document.querySelectorAll('.importer-form').forEach(function (block) {
+      block.classList.add('hide')
+      block.querySelectorAll('.conditional-required').forEach(function (field) { field.required = false })
+    })
+    document.getElementById('form_group_formId').classList.add('hide')
+    formIdSelect.required = false
+    mappingContainer.replaceChildren()
+    formTitle.textContent = labels.addTitle
+    cancelButton.classList.add('hide')
+  })
+</script>

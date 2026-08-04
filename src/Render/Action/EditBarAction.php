@@ -2,7 +2,9 @@
 
 namespace YesWiki\Render\Action;
 
+use Carbon\Carbon;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -90,7 +92,14 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
 
             if ($this->getService(AclService::class)->hasAccess('write')) {
                 // on ajoute le lien d'édition si l'action est autorisée
-                if ($this->getService(AclService::class)->hasAccess('write', $page) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
+                //
+                // ...unless this *is* the edit screen for this page: the editor renders its
+                // own cluster in the same corner (save, preview, delete), and "edit this
+                // page" offered to someone already editing it is a link to where they are.
+                // Without `linkedit` there is no cluster here at all -- see the template.
+                if ($this->getService(AclService::class)->hasAccess('write', $page)
+                    && !$this->getService(HibernationService::class)->isWikiHibernated()
+                    && !$this->isEditingThisPage($page)) {
                     $options['linkedit'] = $this->getService(UrlFormatter::class)->href('edit', $page);
                 }
 
@@ -98,7 +107,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
                     // hack to hide E_STRICT error if no timezone set
                     date_default_timezone_set(@date_default_timezone_get());
                     $options['linkrevisions'] = $this->getService(UrlFormatter::class)->href('revisions', $page);
-                    $options['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
+                    $options['time'] = $this->day($time);
                 }
 
                 // if this page exists
@@ -140,6 +149,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
             }
             $options['linkduplicate'] = $this->getService(UrlFormatter::class)->href('duplicate', $page);
             $options['linkshare'] = $this->getService(UrlFormatter::class)->href('share', $page);
+            $options += $this->contentFacts($page, $content);
             $options['userIsOwner'] = $this->getService(AclService::class)->isOwner($page);
             $options['userIsAdmin'] = $this->getService(AclService::class)->isAdmin();
             $options['userIsAdminOrOwner'] = $this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner($page);
@@ -152,5 +162,118 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
             echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $options);
             echo ' <!-- /.footer -->' . "\n";
         }
+    }
+
+    /**
+     * What the Content itself says about its own making: who wrote it, what kind of
+     * Content it is, when it was created and last changed.
+     *
+     * This used to be the bazar entry footer's job, which is why every *page* grew one
+     * when ticket 10 made pages render through a form -- two bars saying overlapping
+     * things, one above the other. The facts belong with the links about them (the owner
+     * with permissions, the dates with the revisions), so they are gathered here and the
+     * entry footer keeps them only where there is no edit bar: an entry embedded in some
+     * other page.
+     *
+     * @param array<string, mixed>|null $content the page row, body already decoded
+     *
+     * @return array<string, mixed>
+     */
+    private function contentFacts(string $page, ?array $content): array
+    {
+        if (empty($content)) {
+            return [];
+        }
+
+        $body = is_array($content['body'] ?? null) ? $content['body'] : [];
+        $form = $this->getService(ContentTypeResolver::class)->formFor($page);
+
+        return [
+            // the *owner*, which is who a wiki records as having written a page. An
+            // anonymous edit records an IP address; that is not a name to print
+            'author' => $this->authorName((string)$this->getService(PageManager::class)->getOwner($page)),
+            'contentLabel' => $form['label'] ?? '',
+            // A bazar entry keeps `created_at`/`updated_at` in its body; a page keeps
+            // neither, and its creation date is the date of its *first revision* -- a fact
+            // the `pages` table has always held. What a page must never do is what the
+            // entry footer did with it: `entry.created_at|date(…)` on a body without the
+            // key is Twig's date filter on null, which is **now**, so a page five years
+            // old claimed to have been created the second you looked at it.
+            'createdAt' => $this->moment(
+                $body['created_at'] ?? $this->getService(PageManager::class)->getCreateTime($page)
+            ),
+            // ...and when it keeps no `updated_at` either, the revision being served is
+            // when it was last changed. `time` says the same thing to the day; this says
+            // it to the minute, so the two dates on the line are the same shape.
+            'updatedAt' => $this->moment($body['updated_at'] ?? ($content['time'] ?? null)),
+        ];
+    }
+
+    /**
+     * Whether the request being served is the edit screen *of this page*.
+     *
+     * `{{editbar page="SomethingElse"}}` on an edit screen is a bar for another page, and
+     * that one still offers to edit it.
+     */
+    private function isEditingThisPage(string $page): bool
+    {
+        $pageContext = $this->getService(PageContext::class);
+
+        // getMethod(), not getRawMethod(): `editiframe` is the edit screen too
+        return $pageContext->getMethod() === 'edit' && $page === $pageContext->getTag();
+    }
+
+    private function authorName(string $owner): string
+    {
+        $isIpAddress = $owner !== '' && preg_replace('/([0-9]|\.)/', '', $owner) === '';
+
+        return ($owner === '' || $isIpAddress) ? '' : $owner;
+    }
+
+    /** A stored timestamp as a date and a time of day: "4 juillet 2026 19:54". */
+    private function moment(mixed $stamp): ?string
+    {
+        return $this->inTheReadersLanguage($stamp, 'LLL');
+    }
+
+    /** The same, to the day: "4 juillet 2026". */
+    private function day(mixed $stamp): ?string
+    {
+        return $this->inTheReadersLanguage($stamp, 'LL');
+    }
+
+    /**
+     * A date written the way the reader's language writes dates.
+     *
+     * Through Carbon (already a dependency) rather than `date(_t('TEMPLATE_DATE_FORMAT'))`,
+     * which is what this used to do. That asked translators to write PHP format letters,
+     * and three of the nine catalogs answered by translating the *letters*: `'z L A'`
+     * renders "215 0 AM", and Tamil's renders three Tamil numerals. Every other one said
+     * `d M Y`, which prints English month names in every language -- "04 Jul 2026" in a
+     * French wiki, which is what sent me here. A date formatter that knows the locale gets
+     * all nine right and asks nobody to translate anything.
+     *
+     * The old key is left in the catalogs: it costs nothing there, and an extension may
+     * still be reading it.
+     */
+    private function inTheReadersLanguage(mixed $stamp, string $format): ?string
+    {
+        if (!is_string($stamp) || trim($stamp) === '') {
+            return null;
+        }
+
+        try {
+            $moment = Carbon::parse($stamp);
+        } catch (\Throwable) {
+            // a stored value that is not a date at all: say nothing rather than something
+            return null;
+        }
+
+        // as a statement, not chained: `locale()` with no argument is the getter, so its
+        // declared return type is `static|string` and a chained call is not statically a
+        // Carbon. It sets the locale on this instance either way.
+        $moment->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
+
+        return $moment->isoFormat($format);
     }
 }

@@ -12,7 +12,16 @@
    administration is another, so /user lists the account screens and nothing else while the
    dashboard lists the wiki. Both `shell_scope` and `is_admin` come from the DashboardShell
    trait -- derived from the route being rendered, which is why no screen can show one
-   section's entries while claiming to be in the other. #}
+   section's entries while claiming to be in the other.
+
+   Administration is what is *in* the wiki -- its content, its words, its people. System is
+   the wiki itself: the config file, the code, the backups, the bulk in and out, and the
+   mess to clean up. Two errands, so two lists rather than one long one.
+
+   The permissions have no entry at all: they render on the Content screen, being
+   permissions *over content*. The lists sit with the forms whose fields choose from them,
+   and are public like those forms -- what a list says is already visible in every field
+   that uses it, and who may change one is ListController's to answer. #}
 {% set sections = [
   {
     label: _t('DASHBOARD_SECTION_ACCOUNT'),
@@ -30,11 +39,12 @@
     scope: 'wiki',
     admin: false,
     items: [
-      { route: 'dashboard/activity', icon: 'history', label: _t('DASHBOARD_ACTIVITY') },
+      { route: 'dashboard/activity', icon: 'history',   label: _t('DASHBOARD_ACTIVITY') },
       { route: 'dashboard/forms',    icon: 'briefcase', label: _t('DASHBOARD_FORMS') },
-      { route: 'dashboard/export',   icon: 'download', label: _t('DASHBOARD_EXPORT') },
-      { route: 'doc',                icon: 'help',     label: _t('DASHBOARD_DOC') },
-      { route: 'api',                icon: 'code',     label: _t('DASHBOARD_API') }
+      { route: 'dashboard/lists',    icon: 'list',      label: _t('DASHBOARD_ADMIN_LISTS') },
+      { route: 'dashboard/export',   icon: 'download',  label: _t('DASHBOARD_EXPORT') },
+      { route: 'doc',                icon: 'help',      label: _t('DASHBOARD_DOC') },
+      { route: 'api',                icon: 'code',      label: _t('DASHBOARD_API') }
     ]
   },
   {
@@ -43,19 +53,24 @@
     admin: true,
     items: [
       { route: 'admin/content',       icon: 'file',        label: _t('DASHBOARD_ADMIN_CONTENT') },
-      { route: 'admin/lists',         icon: 'list',        label: _t('DASHBOARD_ADMIN_LISTS') },
-      { route: 'admin/imports',       icon: 'upload',      label: _t('DASHBOARD_ADMIN_IMPORTS') },
       { route: 'admin/keywords',      icon: 'tags',        label: _t('DASHBOARD_ADMIN_KEYWORDS') },
       { route: 'admin/special-pages', icon: 'layout-grid', label: _t('DASHBOARD_ADMIN_SPECIAL_PAGES') },
       { route: 'admin/appearance',    icon: 'brush',       label: _t('DASHBOARD_ADMIN_APPEARANCE') },
       { route: 'admin/users',         icon: 'user',        label: _t('DASHBOARD_ADMIN_USERS') },
       { route: 'admin/groups',        icon: 'users',       label: _t('DASHBOARD_ADMIN_GROUPS') },
-      { route: 'admin/permissions',   icon: 'lock',        label: _t('DASHBOARD_ADMIN_PERMISSIONS') },
-      { route: 'admin/reactions',     icon: 'thumb-up',    label: _t('DASHBOARD_ADMIN_REACTIONS') },
-      { route: 'admin/spam',          icon: 'trash',       label: _t('DASHBOARD_ADMIN_SPAM') },
-      { route: 'admin/config',        icon: 'settings',    label: _t('DASHBOARD_ADMIN_CONFIG') },
-      { route: 'admin/updates',       icon: 'refresh',     label: _t('DASHBOARD_ADMIN_UPDATES') },
-      { route: 'admin/backups',       icon: 'database',    label: _t('DASHBOARD_ADMIN_BACKUPS') }
+      { route: 'admin/reactions',     icon: 'thumb-up',    label: _t('DASHBOARD_ADMIN_REACTIONS') }
+    ]
+  },
+  {
+    label: _t('DASHBOARD_SECTION_SYSTEM'),
+    scope: 'wiki',
+    admin: true,
+    items: [
+      { route: 'admin/config',   icon: 'settings', label: _t('DASHBOARD_ADMIN_CONFIG') },
+      { route: 'admin/updates',  icon: 'refresh',  label: _t('DASHBOARD_ADMIN_UPDATES') },
+      { route: 'admin/backups',  icon: 'database', label: _t('DASHBOARD_ADMIN_BACKUPS') },
+      { route: 'admin/imports',  icon: 'upload',   label: _t('DASHBOARD_ADMIN_IMPORTS') },
+      { route: 'admin/spam',     icon: 'trash',    label: _t('DASHBOARD_ADMIN_SPAM') }
     ]
   }
 ] %}

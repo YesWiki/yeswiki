@@ -12,7 +12,10 @@ import { ADMIN_PASSWORD, ADMIN_USERNAME, logout } from '../helpers/login'
  * the session was created anyway, so every check *after* the sign-in still looked right.
  * Only watching the sign-in response itself catches that.
  */
-const SIGN_IN_FORM = '.yw-account__login .login-form'
+// `.yw-account-guest__card` is the centred shell a signed-out account screen renders in;
+// the form inside it is the login action's own. (This said `.yw-account__login`, a class
+// nothing has ever emitted, so every assertion using it was passing by never matching.)
+const SIGN_IN_FORM = '.yw-account-guest__card .login-form'
 const RAIL_SECTION = '.yw-dashboard__section'
 
 test.describe('the account routes', () => {
@@ -79,8 +82,39 @@ test.describe('the account routes', () => {
 
     await expect(page.locator('#LoginModal'), 'the login modal is gone').toHaveCount(0)
     await expect(
-      page.locator('#yw-topnav a[href$="?user"]'),
+      page.locator('#yw-topnav a.account-link'),
       'the navbar must offer a way to the account'
     ).toHaveCount(1)
+    // an icon and a link, not a form: the whole sign-in form used to be in the navigation
+    // bar of every page whether or not anyone would ever open it
+    await expect(page.locator('#yw-topnav input[name="password"]')).toHaveCount(0)
+  })
+
+  /**
+   * The one thing a PHP test cannot show: the round trip. The button remembers the page it
+   * was clicked from, the form on /user carries that through its own POST, and the browser
+   * ends up back where it started -- three requests, two of them redirects.
+   */
+  test('signing in from the navbar comes back to the page you were on', async ({ page }) => {
+    await page.goto('/?ReglesDeFormatage')
+
+    const accountLink = page.locator('#yw-topnav a.account-link')
+    await expect(accountLink).toHaveAttribute('href', /return=/)
+    await accountLink.click()
+
+    await expect(page.locator(SIGN_IN_FORM)).toBeVisible()
+    await page.fill(`${SIGN_IN_FORM} input[name="name"]`, ADMIN_USERNAME)
+    await page.fill(`${SIGN_IN_FORM} input[name="password"]`, ADMIN_PASSWORD)
+    await page.click(`${SIGN_IN_FORM} button[type="submit"]`)
+
+    // ends WITH the page, rather than merely containing its name: the sign-in screen's own
+    // URL carries `?return=…ReglesDeFormatage`, so "contains" is true before signing in too
+    await expect(page).toHaveURL(/ReglesDeFormatage$/)
+    // and the button is now a face, on the page it brought us back to
+    await expect(page.locator('#yw-topnav a.account-link .yw-avatar')).toBeVisible()
+    await expect(
+      page.locator('#yw-topnav a.account-link'),
+      'signed in, the button goes straight to the account'
+    ).toHaveAttribute('href', /\?user$/)
   })
 })

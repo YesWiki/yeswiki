@@ -1,3 +1,9 @@
+{# The sign-in form itself: the fields, the "remember me", the way out again.
+
+   Asked for by name, and never the default, because a form is what a *screen* about
+   signing in wants -- /user, `PageLogin`, the "you have to sign in to edit this" block a
+   handler renders in place of what it refused. Everywhere else in the wiki wants
+   `@core/account-button.twig`, which is what `{{login}}` renders on its own. #}
 {% if class is empty %}
     {% block main %}
         {% if connected %}
@@ -35,10 +41,16 @@
                         {{ error }}
                     </div>
                 {% endif %}
+                {# hx-boost="false": signing in ends in a redirect somewhere else (the page
+                   you came from, via `?return=`). Boosted, htmx follows that redirect
+                   inside a fetch and swaps the body, but the address bar keeps the URL it
+                   POSTed to -- so the browser showed the page you came back to while
+                   claiming to be on the sign-in screen. This form wants a real submit. #}
                 {% block form %}
                     <form class="{% block formClass %}login-form{% endblock %}"
                           action="{{ incomingurl }}"
-                          method="post">
+                          method="post"
+                          hx-boost="false">
                         {% block formContent %}
                             {% block formTitle %}<h2>{{ _t("LOGIN_LOGIN") }}</h2>{% endblock %}
                             {% block wikiNameInputGroup %}

@@ -1,0 +1,10 @@
+<form method="POST" action="{{ currentUrl }}">
+  <input type="hidden" name="sync" value="1">
+  <button class="yw-btn yw-btn--primary" type="submit">
+    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#refresh"/></svg>
+    {{ _t('IMPORTER_SYNC_RUN') }}
+  </button>
+</form>
+{% if output is not null %}
+<pre class="{{ returnCode ? 'yw-alert yw-alert--danger' : '' }}">{{ output }}</pre>
+{% endif %}

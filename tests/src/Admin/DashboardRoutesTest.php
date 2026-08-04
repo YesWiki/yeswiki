@@ -91,6 +91,7 @@ class DashboardRoutesTest extends YesWikiTestCase
             foreach ([
                 'activity' => 'DASHBOARD_ACTIVITY',
                 'forms' => 'DASHBOARD_FORMS',
+                'lists' => 'DASHBOARD_ADMIN_LISTS',
                 'export' => 'DASHBOARD_EXPORT',
             ] as $method => $key) {
                 $body = (string)$dashboard->{$method}()->getContent();
@@ -113,9 +114,8 @@ class DashboardRoutesTest extends YesWikiTestCase
 
             $adminController = $wiki->services->get(AdminController::class);
             $screens = [
-                'content', 'lists', 'imports', 'keywords', 'specialPages', 'appearance',
-                'users', 'groups', 'permissions', 'reactions', 'spam', 'config', 'updates',
-                'backups',
+                'content', 'imports', 'keywords', 'specialPages', 'appearance',
+                'users', 'groups', 'reactions', 'spam', 'config', 'updates', 'backups',
             ];
             foreach ($screens as $method) {
                 $body = (string)$adminController->{$method}()->getContent();
@@ -127,5 +127,90 @@ class DashboardRoutesTest extends YesWikiTestCase
             $authentication->logout();
             unset($GLOBALS['wiki']);
         }
+    }
+
+    /**
+     * The rail groups screens by the errand that brings someone to them.
+     *
+     * Administration is what is *in* the wiki; System is the wiki itself. Two screens have
+     * no entry of their own at all: the permissions render on the Content screen (they are
+     * permissions over content) and the lists sit with the Forms they belong to.
+     */
+    #[Depends('testWikiExisting')]
+    public function testTheRailGroupsScreensByErrand(YesWikiRuntime $wiki): void
+    {
+        $GLOBALS['yeswikiServices'] = $wiki->services;
+        $authentication = $wiki->services->get(AuthenticationService::class);
+        $acl = $wiki->services->get(AclService::class);
+        $admin = current(array_filter(
+            $wiki->services->get(UserManager::class)->getAll(),
+            fn ($u) => $acl->isAdmin($u['name'])
+        ));
+        $this->assertNotFalse($admin, 'the admin rail needs an admin to render for');
+
+        try {
+            $authentication->login($admin);
+            $rail = (string)$wiki->services->get(AdminController::class)->content()->getContent();
+
+            $this->assertStringContainsString(_t('DASHBOARD_SECTION_SYSTEM'), $rail);
+            $this->assertStringNotContainsString(
+                _t('DASHBOARD_ADMIN_PERMISSIONS'),
+                $rail,
+                'the permissions are a section of the content screen now, not an entry of their own'
+            );
+
+            // ...and the content screen is where they went
+            foreach (['ADMIN_PERMISSIONS_PAGES', 'ADMIN_PERMISSIONS_ACTIONS', 'ADMIN_PERMISSIONS_HANDLERS'] as $key) {
+                $this->assertStringContainsString(_t($key), $rail, "the content screen carries {$key}");
+            }
+
+            $this->assertSame(
+                ['dashboard/forms', 'dashboard/lists', 'dashboard/export'],
+                $this->railOrder($rail, ['dashboard/export', 'dashboard/lists', 'dashboard/forms']),
+                'the lists sit with the forms they belong to'
+            );
+            $this->assertSame(
+                ['admin/config', 'admin/updates', 'admin/backups', 'admin/imports', 'admin/spam'],
+                $this->railOrder($rail, ['admin/spam', 'admin/imports', 'admin/backups', 'admin/updates', 'admin/config']),
+                'System reads from the file that configures the wiki to the mess to clean up'
+            );
+
+            // a visitor gets the public half of the rail, lists included: what a list says
+            // is already visible in every field that uses it
+            $authentication->logout();
+            $visitor = (string)$wiki->services->get(DashboardController::class)->activity()->getContent();
+            $this->assertStringContainsString('dashboard/lists', $visitor);
+            $this->assertStringNotContainsString(_t('DASHBOARD_SECTION_ADMIN'), $visitor, 'and none of the admin half');
+        } finally {
+            $authentication->logout();
+            unset($GLOBALS['wiki']);
+        }
+    }
+
+    /**
+     * The given routes, in the order the rail actually lists them.
+     *
+     * @param list<string> $routes
+     *
+     * @return list<string>
+     */
+    private function railOrder(string $page, array $routes): array
+    {
+        // the rail only: the canvas beside it is full of links to these same routes, and
+        // an order read across both would be an order of whatever the screen happens to
+        // render today
+        $from = strpos($page, 'yw-dashboard__sidebar');
+        $this->assertNotFalse($from, 'the premise: this screen renders the rail');
+        $rail = substr($page, $from, (int)strpos($page, '</nav>', $from) - $from);
+
+        $positions = [];
+        foreach ($routes as $route) {
+            $at = strpos($rail, $route . '"');
+            $this->assertNotFalse($at, "{$route} is missing from the rail");
+            $positions[$route] = $at;
+        }
+        asort($positions);
+
+        return array_keys($positions);
     }
 }

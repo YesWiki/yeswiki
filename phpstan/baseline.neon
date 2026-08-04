@@ -4765,12 +4765,6 @@ parameters:
 			path: ../src/Content/Controller/ListController.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Controller\\ListController\:\:\$authenticationService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Controller/ListController.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Controller\\ListController\:\:\$fieldFactory has no type specified\.$#'
 			identifier: missingType.property
 			count: 1

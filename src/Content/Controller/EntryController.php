@@ -865,7 +865,7 @@ class EntryController extends YesWikiController
                     'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),
                 ]);
                 $pageLogin = $this->pageManager->GetOne('PageLogin');
-                $results['output'] .= $this->getService(MarkdownFormatterService::class)->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login}}');
+                $results['output'] .= $this->getService(MarkdownFormatterService::class)->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login template="login-form.twig"}}');
             } elseif (!empty($loggerUser)) {
                 $userName = $loggerUser['name'];
 

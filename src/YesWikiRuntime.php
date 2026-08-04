@@ -195,8 +195,41 @@ class YesWikiRuntime
     protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
     protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
 
+    /** When maintenance last ran, read before this run claimed the lock. Null if unknown. */
+    private ?int $previousMaintenanceRun = null;
+
+    /**
+     * The wiki's housekeeping, and the one place an extension can hang its own on.
+     *
+     * `maintenance.before` fires before any of it and `maintenance.after` once all of it is
+     * done, both through `yesWikiDispatch()` -- which swallows whatever a listener throws.
+     * That is deliberate: this runs inside some visitor's page view, on a request that had
+     * nothing to do with any of this, and an extension with a bad afternoon must not turn
+     * their page into an error. It is the same bargain `drainSearchIndexQueue()` takes.
+     *
+     * For the same reason a listener is asked to be *quick*. There is no budget enforced
+     * here, but anything unbounded belongs in a command the wiki spawns, not on the clock
+     * of somebody who came to read a page.
+     *
+     * Both events carry:
+     *  - `startedAt`   unix time this run began
+     *  - `interval`    the seconds core waits between runs (MAINTENANCE_INTERVAL)
+     *  - `previousRun` unix time of the run before this one, or null when nothing recorded
+     *                  one -- which is what tells a listener how much time it is covering
+     * and `maintenance.after` adds `duration`, the seconds core's own housekeeping took.
+     */
     public function maintenance()
     {
+        $startedAt = time();
+        $began = microtime(true);
+        $context = [
+            'startedAt' => $startedAt,
+            'interval' => self::MAINTENANCE_INTERVAL,
+            'previousRun' => $this->previousMaintenanceRun,
+        ];
+
+        $this->service(EventDispatcher::class)->yesWikiDispatch('maintenance.before', $context);
+
         // purge referrers
         $this->service(ReferrerService::class)->purge();
         // purge old page revisions
@@ -207,6 +240,11 @@ class YesWikiRuntime
         $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
         // reindex a bounded slice of whatever is queued for search (ticket 18)
         $this->drainSearchIndexQueue();
+
+        $this->service(EventDispatcher::class)->yesWikiDispatch(
+            'maintenance.after',
+            $context + ['duration' => microtime(true) - $began]
+        );
     }
 
     /**
@@ -242,6 +280,9 @@ class YesWikiRuntime
         if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
             return false;
         }
+        // read before the touch below claims the lock, because afterwards the file says
+        // "now" and a listener asking how long it has been gets zero
+        $this->previousMaintenanceRun = $lastRun ?: null;
         if (!is_dir('cache')) {
             mkdir('cache', 0777, true);
         }

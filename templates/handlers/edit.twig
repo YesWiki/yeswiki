@@ -65,24 +65,50 @@
     {% endfor %}
   {% endif %}
 
-  <div class="form-actions">
-    {# Save Button #}
-    {% set action = (not bodyPreview and config['preview_before_save']) ? 'preview' : saveValue %}
-    <button type="submit" name="submit" value="{{ action }}" class="btn btn-primary">
-      {{ _t('TEMPLATE_SAVE') }}
-    </button>
+  {# The same floating cluster the page has in read mode, saying what you can do while
+     editing instead: save, preview it first if this wiki asks for that, walk away, or
+     delete the thing outright. `{{editbar}}` renders no cluster on an edit screen -- one
+     corner, one set of actions -- and this one lives in the editor's own template rather
+     than in the bar so that the only way to save a page is never in a template a theme
+     may leave out.
 
+     Inside the <form>, so the buttons submit it without naming it. #}
+  <nav class="yw-page-actions yw-page-actions--editing" aria-label="{{ _t('TEMPLATE_SAVE') }}">
+    <button type="submit" name="submit" value="{{ saveValue }}" class="yw-btn yw-page-actions__edit">
+      {{ icon('device-floppy') }}
+      <span>{{ _t('TEMPLATE_SAVE') }}</span>
+    </button>
+    <div class="yw-page-actions__more">
+      {% if config['preview_before_save'] and not preview %}
+        <button type="submit" name="submit" value="preview" class="yw-btn yw-btn--sm">
+          {{ icon('eye') }}
+          <span>{{ _t('EDIT_PREVIEW') }}</span>
+        </button>
+      {% endif %}
+      {# leaving, then destroying: the two ways out, in that order, and the one that keeps
+         the page comes first #}
+      <a href="{{ cancelUrl }}" class="yw-btn yw-btn--sm link-cancel">
+        {{ icon('x') }}
+        <span>{{ _t('TEMPLATE_CANCEL') }}</span>
+      </a>
+      {% if deleteUrl %}
+        <a href="{{ deleteUrl }}"
+           title="{{ _t('TEMPLATE_DELETE_PAGE') }}"
+           class="yw-btn yw-btn--sm yw-btn--danger link-deletepage modalbox">
+          {{ icon('trash') }}
+          <span>{{ _t('TEMPLATE_DELETE') }}</span>
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="form-actions">
     {# Reedit Button #}
     {% if preview %}
       <button type="submit" name="submit" value="reedit" class="btn btn-primary">
         {{ _t('TEMPLATE_REEDIT') }}
       </button>
     {% endif %}
-
-    {# Cancel Button #}
-    <a class="btn btn-default" onclick="document.location = '{{ cancelUrl }}'">
-      {{ _t('TEMPLATE_CANCEL') }}
-    </a>
 
     {# Theme Button #}
     {% if not preview %}

@@ -132,4 +132,67 @@ class UrlFormatter
     {
         return (bool)preg_match('/^' . $type . '$/u', $text);
     }
+
+    /**
+     * Whether $url addresses this wiki -- the question to ask before sending a visitor
+     * somewhere a *request* asked for.
+     *
+     * "Come back here after signing in" arrives as a query parameter, and a query
+     * parameter is whatever the last person to send the link typed. Redirecting to it
+     * unchecked is the open redirect: `?user&return=https://not-your-wiki.example` is a
+     * sign-in form on your domain that lands on someone else's site.
+     *
+     * The scheme is deliberately not compared -- a wiki configured with `http://` and
+     * served over `https://` is one wiki, and refusing the return there breaks sign-in on
+     * exactly the installs that got TLS right. The host and the path prefix are compared,
+     * and the path must continue at a boundary so `example.org/wiki-evil` is not taken for
+     * a page of `example.org/wiki`.
+     */
+    public function isInternal(mixed $url): bool
+    {
+        if (!is_string($url) || trim($url) === '') {
+            return false;
+        }
+        $url = trim($url);
+
+        // `//host/path` is a URL to another host that merely looks relative -- and so is
+        // `/\host/path`, which browsers normalise to it
+        if (preg_match('#^/[/\\\\]#', $url) === 1) {
+            return false;
+        }
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return false;
+        }
+        if (isset($parts['scheme']) && !in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+
+        $base = parse_url($this->getBaseUrl());
+        if (!is_array($base)) {
+            return false;
+        }
+        $basePath = rtrim((string)($base['path'] ?? ''), '/');
+
+        // no host at all: a path on this server, which still has to be under the wiki
+        if (empty($parts['host'])) {
+            $path = (string)($parts['path'] ?? '');
+
+            return str_starts_with($path, '/') && $this->isUnder($path, $basePath);
+        }
+
+        return strcasecmp($parts['host'], (string)($base['host'] ?? '')) === 0
+            && ($parts['port'] ?? null) == ($base['port'] ?? null)
+            && $this->isUnder((string)($parts['path'] ?? ''), $basePath);
+    }
+
+    /** A path inside $prefix, counting the prefix itself and refusing `/wiki-evil`. */
+    private function isUnder(string $path, string $prefix): bool
+    {
+        if ($prefix === '') {
+            return true;
+        }
+
+        return $path === $prefix || str_starts_with($path, $prefix . '/');
+    }
 }

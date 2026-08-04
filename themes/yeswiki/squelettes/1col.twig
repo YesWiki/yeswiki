@@ -93,9 +93,12 @@
       <div class="yw-main-content alone">
         {{ page_content|raw }}
       </div>
+      {# inside #yw-main, which is what gives the page its column: the line of facts the
+         edit bar ends with is a footnote to the page and lines up with it. (The cluster of
+         actions is `position: fixed`, so where it sits in the markup changes nothing about
+         where it lands.) #}
+      {{ action('editbar')|raw }}
     </div>
-
-    {{ action('editbar')|raw }}
 
     <footer id="yw-footer">
       <div class="container">

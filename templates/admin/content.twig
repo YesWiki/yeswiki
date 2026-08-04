@@ -1,6 +1,27 @@
 {% extends "@core/dashboard/layout.twig" %}
 
+{# The wiki's content, and who may do what to it.
+
+   The permissions used to be a rail entry of their own ("Droits d'accès"), which asked an
+   admin to know in advance that page, action and handler ACLs are three names for one
+   question about the thing they were already looking at. They are permissions *over
+   content*, so they are here, under the content they govern. #}
 {% block dashboard_content %}
   <h1>{{ _t('DASHBOARD_ADMIN_CONTENT') }}</h1>
   {{ renderAction('admincontent')|raw }}
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_PAGES') }}</h2>
+    {{ renderAction('adminacls')|raw }}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_ACTIONS') }}</h2>
+    {{ renderAction('editactionsacls')|raw }}
+  </section>
+
+  <section class="yw-dashboard__card yw-dashboard__card--wide">
+    <h2>{{ _t('ADMIN_PERMISSIONS_HANDLERS') }}</h2>
+    {{ renderAction('edithandlersacls')|raw }}
+  </section>
 {% endblock %}

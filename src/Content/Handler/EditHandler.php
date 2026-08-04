@@ -175,6 +175,26 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
+     * Where "delete this page" goes, for whoever may -- or null.
+     *
+     * The editor carries it because the editor is where the actions are while you are
+     * editing: `{{editbar}}` steps aside there (offering "edit this page" to someone
+     * already editing it is an offer to go where they are), and deleting what you are
+     * looking at is the one thing you might want instead of saving it. Same rule the edit
+     * bar applies in read mode: the owner, an admin, and not while the wiki is hibernated.
+     */
+    private function deleteUrl(): ?string
+    {
+        $tag = $this->getService(PageContext::class)->getTag();
+        $aclService = $this->getService(AclService::class);
+        if ($this->isWikiHibernated() || !($aclService->isOwner($tag) || $aclService->isAdmin())) {
+            return null;
+        }
+
+        return $this->getService(UrlFormatter::class)->href('deletepage', $tag);
+    }
+
+    /**
      * The fields of the form describing **this row's own Content type**, split around the
      * one holding the markup.
      *
@@ -281,6 +301,14 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 continue;
             }
             foreach ($field->formatValuesBeforeSaveIfEditable($posted) as $key => $value) {
+                // A file field answers with the keys to DROP as well as the ones to write
+                // -- `oldimage_x`, the hidden input carrying the previous filename. That is
+                // an instruction about the submission, not body content: written through,
+                // it became a `fields-to-remove` key in the saved body (EntryManager acts
+                // on it and unsets it; nothing here did)
+                if ($key === 'fields-to-remove') {
+                    continue;
+                }
                 // An empty value for a key the body does not have yet writes nothing:
                 // the form posts every field on every save, so a page seeded without a
                 // `title` would otherwise gain `title => ''` the first time it is saved.
@@ -398,7 +426,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 . '<div class="yw-alert yw-alert--danger">'
                 . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
                 . '</div><!-- end .alert -->' . "\n"
-                . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
+                . $this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig" signupurl="0"}}' . "\n\n")
                 . '</div><!-- end .page -->' . "\n";
             $output = $this->getService(TemplateEngine::class)->renderHead()
                 . '<body class="login-body">' . "\n" . $body . "\n</body>\n</html>";
@@ -428,7 +456,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             // `content` attribute of the loaded page's body (ticket 09)
             $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
 
-            $cancelUrl = addslashes($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
+            // no addslashes: this is an href now, not a string inside an onclick. Cancel
+            // used to be an <a> with no href at all, which is not focusable -- and a link
+            // the keyboard cannot reach is no way out of an editor.
+            $cancelUrl = $this->getService(UrlFormatter::class)->href(testUrlInIframe());
 
             // the Page form's own fields (ticket 10). Once the form has been sent back
             // they take the posted values, so a preview or an edit conflict re-renders
@@ -453,6 +484,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'preview' => true,
                     'bodyPreview' => $this->getService(MarkdownFormatterService::class)->format($body),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
+                    'deleteUrl' => $this->deleteUrl(),
                     'hasContent' => $pageFields['hasContent'],
                     'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
                     'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
@@ -535,6 +567,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'cancelUrl' => $cancelUrl,
                         'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                         'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
+                        'deleteUrl' => $this->deleteUrl(),
                         'preview' => false,
                         'hasContent' => $pageFields['hasContent'],
                         'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),

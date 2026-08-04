@@ -5,6 +5,9 @@
   <div class="alert alert-danger">{{ errorUpdate }}</div>
 {% endif %}
 
+{# enctype/hx-boost: the User form may carry a file field -- the profile picture does --
+   and a boosted form posts through fetch(), which sends the fields and drops the files.
+   The upload then silently did nothing (ticket 25). #}
 <form
   action="{{ url({tag: ''}|merge((
     adminIsActing
@@ -12,14 +15,26 @@
     : {}
     ))) }}"
   method="post"
+  enctype="multipart/form-data"
+  hx-boost="false"
   class="">
   <input type="hidden" name="usersettings_action" value="update{{ adminIsActing ? 'ByAdmin' : '' }}" />
+  {% if avatar %}
+    <div class="yw-account-face">
+      {% include '@core/_avatar.twig' with { avatar: avatar } only %}
+      <span class="yw-account-face__name">{{ user.name }}</span>
+    </div>
+  {% endif %}
   <div class="yw-form-group">
         <label class="yw-form-label">{{ _t('USER_EMAIL_ADDRESS') }}</label>
         <div class="controls">
             <input class="yw-input" name="email" value="{{ user.email }}" size="40" />
         </div>
     </div>
+  {# the User form's own fields -- the profile picture core declares, and anything a
+     webmaster added beside it. Rendered by the fields themselves, so they look and behave
+     exactly as they do everywhere else a form is filled in. #}
+  {{ profileFields|raw }}
   {# <div class="yw-form-group">
     <label class="yw-form-label">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
     <div class="controls">

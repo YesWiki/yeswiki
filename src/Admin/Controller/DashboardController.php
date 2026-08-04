@@ -47,6 +47,26 @@ class DashboardController extends YesWikiController
         return $this->page('@core/dashboard/forms.twig', 'dashboard/forms');
     }
 
+    /**
+     * The lists a form's checkbox, radio and select fields draw their options from.
+     *
+     * Public, like the forms they belong to: what a list *says* is already visible in
+     * every field that uses it. What is not public is changing one, and that is settled by
+     * ListController rather than by this route -- see the note there on why the route's
+     * ACL used to be the only check in the whole screen.
+     *
+     * A route of its own rather than a section of the forms screen, even though that is
+     * where it sits in the rail: BazaR reads `view` from the URL, and the forms screen's
+     * own links carry `view=consulter|saisir|formulaire`. Two `{{bazar}}` on one route
+     * would each answer to the other's links -- opening a list editor turned the forms
+     * table above it into a second list editor.
+     */
+    #[Route('/dashboard/lists', options: ['acl' => ['public']])]
+    public function lists(): Response
+    {
+        return $this->page('@core/dashboard/lists.twig', 'dashboard/lists');
+    }
+
     #[Route('/dashboard/export', options: ['acl' => ['public']])]
     public function export(): Response
     {

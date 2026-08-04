@@ -439,6 +439,12 @@ class Init
             'contact_debug' => 0, // debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
             'contact_passphrase' => '', // passphrase pour envoyer des mail (cron-triggered digests)
             'contact_disable_email_for_password' => false, // pour désactiver l'envoie d'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)
+            // import config (formerly yeswiki-extension-importer's config.yaml). Each entry of
+            // dataSources says where Content is imported from and by which importer; there is
+            // deliberately no default source. sync_secret guards /api/import/sync and, empty,
+            // leaves that route refusing every call.
+            'dataSources' => [],
+            'sync_secret' => '',
             // autoupdate config (ticket 19, formerly tools/autoupdate's config.yaml): pages
             // re-provisioned from the default install content after a core upgrade, in case
             // their default content changed between versions

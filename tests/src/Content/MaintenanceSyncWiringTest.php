@@ -1,0 +1,56 @@
+<?php
+
+namespace YesWiki\Test\Content;
+
+use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Content\Service\MaintenanceSyncSubscriber;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\YesWikiRuntime;
+
+require_once 'tests/YesWikiTestCase.php';
+
+/**
+ * The automatic import is wired to the wiki's housekeeping, and only to it.
+ *
+ * There is nothing to see when this breaks: no error, no log, just data sources that quietly
+ * stop importing until somebody runs the command by hand. So the subscription itself is the
+ * assertion -- if `maintenance.after` is ever renamed, or the subscriber loses its tag in
+ * services.yaml, this fails instead of the feature silently going away.
+ */
+class MaintenanceSyncWiringTest extends YesWikiTestCase
+{
+    public function testWikiExisting(): YesWikiRuntime
+    {
+        $wiki = $this->getWiki();
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
+
+        return $wiki->services->get(YesWikiRuntime::class);
+    }
+
+    #[Depends('testWikiExisting')]
+    public function testTheSchedulerListensToMaintenance(YesWikiRuntime $wiki): void
+    {
+        $listeners = $wiki->services->get(EventDispatcher::class)->getListeners('maintenance.after');
+
+        $subscribed = array_filter($listeners, function ($listener) {
+            return is_array($listener) && $listener[0] instanceof MaintenanceSyncSubscriber;
+        });
+
+        $this->assertCount(1, $subscribed, 'nothing imports data sources when the wiki does its housekeeping');
+    }
+
+    #[Depends('testWikiExisting')]
+    public function testHousekeepingImportsNothingWhenNoSourceAsksForIt(YesWikiRuntime $wiki): void
+    {
+        // the default configuration declares no data source: a maintenance sweep on a wiki
+        // that imports nothing must be exactly as quiet as before this existed
+        $errors = $wiki->services->get(EventDispatcher::class)->yesWikiDispatch('maintenance.after', [
+            'startedAt' => time(),
+            'interval' => 1800,
+            'previousRun' => null,
+        ]);
+
+        $this->assertSame([], $errors);
+    }
+}

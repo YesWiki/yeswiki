@@ -162,6 +162,175 @@ span.missingpage,
   text-align: left;
 }
 
+/* ---- the page's own actions, and what the page says about itself ------------
+   `{{editbar}}` renders both (templates/barreredaction_basic.twig): a cluster of verbs
+   that floats in the corner, and a quiet line of facts at the bottom. */
+
+/* The cluster follows the reader down the page -- fixed rather than sticky, because the
+   edit bar renders after the main content and a sticky box only sticks inside its own
+   parent, which by then is a strip at the very bottom. Under the navbar's z-index, so
+   scrolling tucks it behind the bar rather than over it. */
+.yw-page-actions {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  /* every button as wide as the widest label, so the revealed stack has one edge rather
+     than a ragged one; the cluster itself still shrink-wraps to that width */
+  align-items: stretch;
+  text-align: left;
+}
+
+/* Light, whatever the theme's primary colour is. A floating control sits on top of the
+   page's own text, so it has to read against it rather than compete with it -- and the
+   primary fill inverts to a pale background on hover, which is exactly when this thing is
+   being looked at. */
+.yw-page-actions .yw-btn {
+  background: var(--main-container-bg-color, #fff);
+  border-color: var(--neutral-soft-color, #e5e5e5);
+  color: var(--main-text-color, #333);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  white-space: nowrap;
+}
+
+.yw-page-actions .yw-btn:hover,
+.yw-page-actions .yw-btn:focus {
+  background: var(--neutral-light-color, #f5f5f5);
+  color: var(--main-text-color, #333);
+  filter: none;
+}
+
+/* Deleting says so in its colour, not in a block of it -- the same shape the form
+   designer's destructive buttons already use. */
+.yw-page-actions .yw-btn--danger {
+  color: var(--danger-color);
+}
+
+.yw-page-actions .yw-btn--danger:hover,
+.yw-page-actions .yw-btn--danger:focus {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: #fff;
+}
+
+/* No gap between the button and what it reveals: a gap is a dead zone the pointer falls
+   through on its way down, closing the thing it was reaching for. The spacing is padding
+   inside the revealed panel instead. */
+.yw-page-actions__more {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding-top: 0.35rem;
+}
+
+.yw-page-actions__more .yw-btn {
+  text-align: left;
+}
+
+/* Collapsed to the edit button, and only where there is a pointer to expand it with.
+   A touch screen has no hover: rather than hiding actions behind a gesture that does not
+   exist there, the cluster stops floating and shows everything, at the foot of the page
+   where the bar already was. */
+@media (hover: hover) and (min-width: 768px) {
+  .yw-page-actions__more {
+    display: none;
+  }
+
+  .yw-page-actions:hover .yw-page-actions__more,
+  .yw-page-actions:focus-within .yw-page-actions__more {
+    display: flex;
+  }
+}
+
+@media not all and (hover: hover), (max-width: 767px) {
+  .yw-page-actions {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .yw-page-actions__more {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding-top: 0;
+  }
+}
+
+@media print {
+  .yw-page-actions {
+    display: none;
+  }
+}
+
+/* The facts, at the bottom: small, muted, left-aligned prose rather than a row of
+   buttons. Each link sits with the fact it is about -- permissions with the owner, the
+   history with the dates. No rule above it: it is a footnote to the page, not a section
+   of it, and it lines up with the content rather than with the window (the squelette
+   renders the edit bar inside #yw-main for that). */
+.yw-page-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  margin-top: 2.5rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  text-align: left;
+  color: var(--neutral-color, #666);
+}
+
+.yw-page-info__line {
+  margin: 0;
+}
+
+/* the links in here are prose, not buttons: no padding of their own beyond what keeps
+   them apart, and underlined on hover like any other link in a sentence */
+.yw-page-info a {
+  color: inherit;
+  padding: 0;
+  margin-right: 0.75rem;
+}
+
+.yw-page-info a:hover,
+.yw-page-info a:focus {
+  color: var(--link-color, inherit);
+  text-decoration: underline;
+}
+
+.yw-page-info .yw-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+.yw-page-info__author {
+  margin-right: 0.75rem;
+}
+
+.yw-page-info__type {
+  opacity: 0.75;
+}
+
+.yw-page-info__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.yw-page-info__actions a {
+  margin-right: 0;
+}
+
 /* Ajustements mode édition */
 #ACEditor .form-actions {
   margin: 15px 0;
@@ -270,6 +439,7 @@ span.missingpage,
   align-items: center;
   flex-wrap: wrap;
   justify-content: end;
+  margin-right: -2em;
 }
 
 #yw-topnav
@@ -288,6 +458,72 @@ span.missingpage,
 #yw-topnav.fixable {
   position: sticky;
   top: 0;
+}
+
+/* ---- an account's face, and the navbar button that wears it ----------------
+   Here rather than in dashboard.css, which is loaded by the dashboard and account
+   layouts only: the account button is in the navigation bar of every page, so its
+   styling has to travel with every page too. The size is a custom property because the
+   navbar wants one size and the account screen another, and the only thing that must
+   never differ between them is the shape. */
+.yw-avatar {
+  --yw-avatar-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--yw-avatar-size);
+  height: var(--yw-avatar-size);
+  border-radius: 50%;
+  overflow: hidden;
+  vertical-align: middle;
+  background: var(--yw-avatar-bg, var(--neutral-soft-color, #e5e5e5));
+  color: var(--yw-avatar-fg, inherit);
+  /* the initials fill the disc without touching it, whatever the disc's size */
+  font-size: calc(var(--yw-avatar-size) * 0.42);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* a portrait is rarely square: cover the disc rather than letterbox it */
+.yw-avatar__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.yw-avatar__initials {
+  /* nudge off the descender line: two capitals read low in a circle otherwise */
+  transform: translateY(0.03em);
+}
+
+/* The account button holds one round thing and nothing else, so it is as tight around it
+   as the navbar's other buttons are around their icons. */
+.account-link {
+  line-height: 1;
+}
+
+/* Your face and your name at the top of your own settings. Here rather than in
+   dashboard.css because `{{usersettings}}` renders on ordinary wiki pages too, and a
+   screen where you upload a picture has to show you the picture you uploaded. */
+.yw-account-face {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.yw-account-face .yw-avatar {
+  --yw-avatar-size: 4rem;
+}
+
+.yw-account-face__name {
+  font-weight: 700;
+  font-size: 1.1em;
 }
 
 /* retour à la ligne pour les éléments flottants */
