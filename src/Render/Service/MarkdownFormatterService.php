@@ -7,6 +7,7 @@ use League\CommonMark\Environment\EnvironmentInterface;
 use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
+use League\CommonMark\Extension\Footnote\FootnoteExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkProcessor;
@@ -16,6 +17,7 @@ use League\CommonMark\Node\StringContainerInterface;
 use League\CommonMark\Parser\MarkdownParser;
 use Psr\Container\ContainerInterface;
 use YesWiki\Render\Formatter\ActionExtension;
+use YesWiki\Render\Formatter\AlertExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
 
@@ -167,6 +169,15 @@ class MarkdownFormatterService
                     'id_prefix' => 'toc',
                     'fragment_prefix' => 'toc',
                 ],
+                // one page can render another (an {{include}}, a list of full entries), and
+                // two documents' footnotes then land in the same HTML: prefixing the ids per
+                // render keeps `fn:1` from meaning two different notes on one page
+                'footnote' => [
+                    'container_add_hr' => true,
+                    'ref_class' => 'yw-footnote-ref',
+                    'backref_class' => 'yw-footnote-backref',
+                    'container_class' => 'yw-footnotes',
+                ],
                 'disallowed_raw_html' => [
                     'disallowed_tags' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', [
                         'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
@@ -186,6 +197,12 @@ class MarkdownFormatterService
             $environment->addExtension(new AttributesExtension());
             $environment->addExtension(new CommentExtension());
             $environment->addExtension(new ProgressExtension());
+            // `text[^1]` with `[^1]: the note` at the foot of the page. CommonMark's own, so
+            // the backlinks, the numbering and the id collisions between two pages rendered
+            // into one document are all somebody else's solved problem.
+            $environment->addExtension(new FootnoteExtension());
+            // HedgeDoc's `:::info` ... `:::` callouts, rendered as the wiki's own alert boxes
+            $environment->addExtension(new AlertExtension());
             $actionRunner = $this->actionRunner;
             $linkRenderer = $this->linkRenderer;
             $environment->addExtension(new ActionExtension(

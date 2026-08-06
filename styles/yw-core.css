@@ -1902,6 +1902,63 @@ textarea.yw-input {
   border-color: var(--danger-color);
   color: var(--danger-color);
 }
+
+/* ---- alerts and quotes as PROSE ---------------------------------------------
+   `.yw-alert` was written for a flash message: one line, in the accent colour, with room on
+   the right for a close button. Since `:::info` (ticket 30) the same box also holds paragraphs,
+   lists and links, and a paragraph set in the accent colour on a tinted ground is hard work to
+   read. So the tint and the border keep carrying the meaning and the text goes back to the
+   page's own colour -- which is an improvement for the admin screens that use these too.
+
+   The left border is thicker than the rest: it is what makes a callout read as an aside at a
+   glance, and it is the one thing a quote and an alert have in common. */
+.yw-alert--info,
+.yw-alert--success,
+.yw-alert--warning,
+.yw-alert--danger {
+  color: inherit;
+  border-left-width: 4px;
+}
+
+/* A box of prose should not open with a gap or end with one: the padding is the box's job,
+   the margins belong to the paragraphs *between*. */
+.yw-alert > :first-child,
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+.yw-alert > :last-child,
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Quotes had no styling of their own at all -- a `>` line came out as the browser's bare
+   `<blockquote>`, which is nothing but an indent, so a quotation was indistinguishable from
+   an indented paragraph. A rule down the left and quieter text is the least that says
+   "someone else said this". */
+blockquote {
+  margin: 1rem 0;
+  padding: 0.4rem 0 0.4rem 1rem;
+  border-left: 4px solid var(--neutral-soft-color, #ddd);
+  color: var(--neutral-color, #777);
+}
+
+/* A quote inside a quote is a reply: it steps in again rather than doubling the rule. */
+blockquote blockquote {
+  margin: 0.6rem 0;
+}
+
+/* `> — someone`, the conventional attribution line: last child, so it needs no markup of its
+   own to be recognised, and it reads as the source rather than as more of the quotation. */
+blockquote > p:last-child > em:only-child,
+blockquote > footer,
+blockquote > cite {
+  display: block;
+  margin-top: 0.4rem;
+  font-style: normal;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
 .yw-close {
   position: absolute;
   top: 6px;
