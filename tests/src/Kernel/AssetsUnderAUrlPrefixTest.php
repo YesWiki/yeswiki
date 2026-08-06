@@ -61,8 +61,8 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
             foreach (['styles/bazar/entries/index.css' => 'text/css',
                 'javascripts/link-panel.js' => 'text/javascript'] as $path => $type) {
                 $asset = $this->fetch('/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/' . $path);
-                $this->assertStringContainsString('200', $asset['status'], $this->diag($path));
-                $this->assertStringContainsString($type, $asset['type'], $this->diag($path));
+                $this->assertStringContainsString('200', $asset['status'], $this->diag($path, $asset));
+                $this->assertStringContainsString($type, $asset['type'], $this->diag($path, $asset));
             }
         });
     }
@@ -83,8 +83,8 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
                 'no version at all' => '/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'yw-core.css',
             ] as $label => $url) {
                 $answer = $this->fetch($url);
-                $this->assertStringContainsString('404', $answer['status'], $this->diag($label));
-                $this->assertStringNotContainsString('text/html', $answer['type'], $this->diag($label));
+                $this->assertStringContainsString('404', $answer['status'], $this->diag($label, $answer));
+                $this->assertStringNotContainsString('text/html', $answer['type'], $this->diag($label, $answer));
             }
         });
     }
@@ -122,8 +122,16 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         // CI failure here unactionable -- the workflow dumps the *main* server's log, which
         // knows nothing of this one. Surfaced by diag() in the assertion messages below.
         $this->serverLog = $root . '/server.log';
+        // An ARRAY, not a command string. A string is run through `/bin/sh -c`, so the child
+        // this handle refers to is the shell -- `proc_terminate()` below killed *that*, and
+        // left `php -S` orphaned and still bound to the port. The next test then deleted and
+        // recreated $root under the surviving server, whose cwd became a stale inode, so it
+        // answered every request with "Failed opening required 'router.php'": a page where a
+        // stylesheet was expected, and a 500 wherever display_errors is off. Every test here
+        // shares one port and one $root, which is what made a leaked server everyone else's
+        // failure. An array form execs the binary directly, so the handle is the server.
         $server = proc_open(
-            sprintf('%s -S 127.0.0.1:%d router.php', escapeshellarg(PHP_BINARY), self::PORT),
+            [PHP_BINARY, '-S', '127.0.0.1:' . self::PORT, 'router.php'],
             [1 => ['file', $this->serverLog, 'w'], 2 => ['file', $this->serverLog, 'a']],
             $pipes,
             $root
@@ -138,20 +146,48 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         } finally {
             proc_terminate($server);
             proc_close($server);
+            // ...and only then take the directory away: the next test binds this same port,
+            // and starting it while its predecessor still holds the socket is the other half
+            // of the same race.
+            $this->waitForPortToClose();
             exec('rm -rf ' . escapeshellarg($root));
         }
     }
 
     private string $serverLog = '';
 
-    /** A label with whatever the served instance said on its way to failing. */
-    private function diag(string $label): string
+    /**
+     * A label with whatever the served instance said on its way to failing: its log, and the
+     * first of whatever it answered with.
+     *
+     * @param array{status: string, type: string, body: string}|null $answer
+     */
+    private function diag(string $label, ?array $answer = null): string
     {
         $log = $this->serverLog !== '' && is_file($this->serverLog)
             ? trim((string)file_get_contents($this->serverLog))
             : '';
+        if ($log !== '') {
+            $label .= "\n--- served instance log ---\n" . $log;
+        }
+        if ($answer !== null && $answer['body'] !== '') {
+            $label .= "\n--- answered with ---\n" . substr($answer['body'], 0, 600);
+        }
 
-        return $log === '' ? $label : $label . "\n--- served instance log ---\n" . $log;
+        return $label;
+    }
+
+    /** Block until nothing answers on the port, so the next test starts from a clean one. */
+    private function waitForPortToClose(): void
+    {
+        for ($attempt = 0; $attempt < 50; $attempt++) {
+            $probe = @fsockopen('127.0.0.1', self::PORT, $errno, $error, 0.2);
+            if ($probe === false) {
+                return;
+            }
+            fclose($probe);
+            usleep(100000);
+        }
     }
 
     private function waitForServer(): void
@@ -168,18 +204,22 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         $this->markTestSkipped('the web server never came up');
     }
 
-    /** @return array{status: string, type: string} */
+    /** @return array{status: string, type: string, body: string} */
     private function fetch(string $path): array
     {
         $context = stream_context_create(['http' => ['ignore_errors' => true, 'timeout' => 5]]);
         // PHP fills $http_response_header in this scope as a side effect of the fetch
         $http_response_header = [];
-        @file_get_contents('http://127.0.0.1:' . self::PORT . $path, false, $context);
+        $body = @file_get_contents('http://127.0.0.1:' . self::PORT . $path, false, $context);
         $headers = $http_response_header;
 
         return [
             'status' => (string)($headers[0] ?? ''),
             'type' => implode(' ', array_filter($headers, fn ($h) => stripos($h, 'content-type:') === 0)),
+            // kept for diag(): when this answers a page instead of a stylesheet, *which* page
+            // it is names the cause, and the served instance's own log stays empty because
+            // nothing went wrong as far as it is concerned
+            'body' => (string)$body,
         ];
     }
 }

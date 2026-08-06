@@ -100,8 +100,17 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
 
         $stored = 'image-field-own-files-test.png';
         $path = FileManager::STORAGE_DIR . '/' . $stored;
+        // Created here rather than assumed: nothing in a fresh checkout makes `private/files`,
+        // and a wiki that has never taken an upload does not have it either. Where it was
+        // missing, `imagepng()` wrote nothing, `getPhysicalPath()` found no bytes and the
+        // route answered 404 -- a failure about the download route, three steps from the
+        // directory that was actually absent. It passes on any machine that has ever uploaded
+        // a file, which is every developer's and no CI runner's.
+        if (!is_dir(FileManager::STORAGE_DIR) && !mkdir(FileManager::STORAGE_DIR, 0o755, true)) {
+            $this->markTestSkipped('could not create ' . FileManager::STORAGE_DIR);
+        }
         $image = imagecreatetruecolor(600, 400);
-        imagepng($image, $path);
+        $this->assertTrue(imagepng($image, $path), 'the fixture image must reach the disk');
         $entry = $fileManager->create('picture.png', $stored, 'SomeEntry', (int)filesize($path), 'image/png');
         $tag = $entry['tag'] ?? self::FILE_TAG;
 
