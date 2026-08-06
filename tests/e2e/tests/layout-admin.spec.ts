@@ -237,8 +237,13 @@ test('the three chrome pages that are still pages are linked, not replaced', asy
   await page.goto('/?admin/layout')
 
   // PageHeader, PageMenu and PageFooter hold arbitrary wiki content, so this screen's job for
-  // them is being the place you remember they exist
+  // them is being the place you remember they exist.
+  //
+  // Scoped to the card. `a[href*="PageHeader"]` also matches the pencil now sitting on the
+  // banner itself, and on a wiki whose banner is empty that pencil is inside a header the
+  // theme collapses -- so the unscoped selector resolved to a hidden element and read as this
+  // screen having lost its links.
   for (const tag of ['PageHeader', 'PageMenu', 'PageFooter']) {
-    await expect(page.locator(`a[href*="${tag}"]`).first()).toBeVisible()
+    await expect(page.locator(`.yw-dashboard__links a[href*="${tag}"]`).first()).toBeVisible()
   }
 })
