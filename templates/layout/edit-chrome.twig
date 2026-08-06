@@ -7,7 +7,12 @@
    Icon only, with the label as its accessible name: this sits inside the wiki's own chrome
    on every page, and a labelled button there would compete with the site's actual
    navigation. It is only rendered for someone who may follow it -- TemplateEngine checks
-   before this template is reached, so there is no disabled state to explain. #}
-<a class="yw-chrome-edit" href="{{ href }}" title="{{ label }}" aria-label="{{ label }}">
+   before this template is reached, so there is no disabled state to explain.
+
+   `yw-btn` as well as `yw-chrome-edit`: these are the same control as the floating action
+   button in the corner, so they are the same button -- same shape, same weight, same faded
+   -> solid on hover. Four affordances that do one kind of thing should not look like four
+   different ideas. #}
+<a class="yw-btn yw-chrome-edit" href="{{ href }}" title="{{ label }}" aria-label="{{ label }}">
   {{ icon('pencil') }}
 </a>

@@ -70,18 +70,20 @@
   gap: 8px;
 }
 
-/* top-bar buttons sit flat on the bar (margot light.css look) */
-#yw-topnav .yw-topnav-fast-access .yw-btn,
-#yw-topnav .yw-topnav-fast-access .btn {
+/* top-bar buttons sit flat on the bar (margot light.css look) -- except the chrome pencil,
+   which is deliberately the same raised button as the floating action cluster and the two
+   other pencils, and would otherwise be flattened by this far more specific rule */
+#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit),
+#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit) {
   background: transparent;
   border-color: transparent;
   color: var(--navbar-link-color);
 }
 
-#yw-topnav .yw-topnav-fast-access .yw-btn:hover,
-#yw-topnav .yw-topnav-fast-access .yw-btn:focus,
-#yw-topnav .yw-topnav-fast-access .btn:hover,
-#yw-topnav .yw-topnav-fast-access .btn:focus {
+#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):hover,
+#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):focus,
+#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):hover,
+#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):focus {
   color: var(--navbar-link-hover-color);
   filter: none;
 }

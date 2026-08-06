@@ -36,9 +36,11 @@
     {% if preview %}
       <input type="hidden" name="body" value="{{ body|raw }}" />
     {% else %}
-      {# no saveButton: `content` is one field among the form's own (ticket 10), and the
-         form already has its Save below -- two save buttons on one form is one too many #}
-      {{ renderAction('aceditor', { name: 'body', value: body })|raw }}
+      {# `saveButton`: it was dropped when ticket 10 made `content` one field among the
+         form's own, on the reasoning that the form's own Save below was enough. Asked for
+         back -- the toolbar is where your hands already are while writing, and reaching the
+         foot of a long page to save is the reach the floating cluster exists to avoid. #}
+      {{ renderAction('aceditor', { name: 'body', value: body, saveButton: true })|raw }}
     {% endif %}
   {% endif %}
 
@@ -143,7 +145,10 @@
     {{ icon('x') }}
     <span>{{ _t('TEMPLATE_CANCEL') }}</span>
   </a>
-  {% if deleteUrl %}
+  {# Delete only in the floating cluster, never in the row at the foot of the form. A red
+     button sitting beside Save, at exactly the spot the eye lands after filling a form in,
+     is an accident waiting to be had -- and deleting a page is not part of editing it. #}
+  {% if deleteUrl and floating %}
     <a href="{{ deleteUrl }}"
        title="{{ _t('TEMPLATE_DELETE_PAGE') }}"
        class="yw-btn {{ size }} yw-btn--danger link-deletepage modalbox">

@@ -225,11 +225,36 @@ span.missingpage,
   text-align: left;
 }
 
+/* One lane down the right-hand edge, in order: the top bar's pencil, the banner's pencil,
+   the floating cluster, then any docked rail. Everything below the banner's pencil steps down
+   to clear it -- the pencil is pinned to the top of the banner, so it always ends at the same
+   height whatever the banner holds.
+
+   **The rail has to move with the cluster, and its height has to move with it.** Shifting the
+   cluster alone put it over `.yw-designer__sidebar` and swallowed the rail's close button;
+   shifting the rail without touching `max-height: 85vh` pushed its bottom past the fold and
+   made the items inside it unreachable. Both were caught by the browser suite, both after the
+   change looked right. Anything that moves in this corner moves what is under it.
+
+   Only for someone who gets a pencil: a reader has none, so nothing moves for them. */
+body:has(#yw-header .yw-chrome-edit) .yw-page-actions {
+  top: calc(var(--yw-navbar-height) + 3.5rem);
+}
+
+body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
+  top: calc(var(--sticky-toolbar-top) + 64px + 2.25rem);
+  /* bottom-anchored instead of a viewport-height cap, so the rail ends on screen wherever it
+     starts and scrolls inside itself rather than off the page */
+  max-height: none;
+  bottom: 1rem;
+}
+
 /* Light, whatever the theme's primary colour is. A floating control sits on top of the
    page's own text, so it has to read against it rather than compete with it -- and the
    primary fill inverts to a pale background on hover, which is exactly when this thing is
    being looked at. */
-.yw-page-actions .yw-btn {
+.yw-page-actions .yw-btn,
+.yw-chrome-edit {
   background: var(--main-container-bg-color, #fff);
   border-color: var(--neutral-soft-color, #e5e5e5);
   color: var(--main-text-color, #333);
@@ -239,7 +264,9 @@ span.missingpage,
 }
 
 .yw-page-actions .yw-btn:hover,
-.yw-page-actions .yw-btn:focus {
+.yw-page-actions .yw-btn:focus,
+.yw-chrome-edit:hover,
+.yw-chrome-edit:focus {
   background: var(--neutral-light-color, #f5f5f5);
   color: var(--main-text-color, #333);
   filter: none;
@@ -516,7 +543,9 @@ span.missingpage,
   width: max-content;
 }
 
-#yw-topnav > .container > .yw-topnav-fast-access .yw-btn {
+/* except the chrome pencil, which is the same raised button as the floating cluster and the
+   other two pencils -- it is not one of the bar's own flat controls */
+#yw-topnav > .container > .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit) {
   border: none;
 }
 
@@ -3622,26 +3651,73 @@ ul.nav-tabs li.active a {
    is discoverability: which page or screen is behind each of these is the thing people had
    to be told, and being told is what a screen (or a pencil) is for.
 
-   Quiet by default and only fully itself on hover, because it sits on every page of the
-   wiki: it must be findable when looked for and invisible when not. */
+   They carry `yw-btn` too, so the shape and weight come from the button styles and only the
+   square icon-sized padding is set here. All four edit affordances on a page -- these three
+   and the floating action cluster -- are one control in four places, so they are one button;
+   the faded-until-hovered treatment they share is declared once, below. */
 .yw-chrome-edit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  color: inherit;
-  opacity: 0.35;
-  transition:
-    opacity 0.15s ease,
-    background-color 0.15s ease;
+  padding: 6px;
+  line-height: 1;
 }
 
-.yw-chrome-edit:hover,
-.yw-chrome-edit:focus-visible {
-  opacity: 1;
-  background: rgb(0 0 0 / 0.06);
-  color: inherit;
+/* Faint until reached for, solid once you are on it. Shared by the floating cluster and the
+   three chrome pencils, because they are the same control: each sits on top of the page's own
+   content on every page of the wiki, so each has to be findable when looked for and quiet
+   when not.
+
+   Only where there is a pointer to hover with. On a touch screen the fade would be permanent
+   -- an affordance at 55% that never resolves -- so there they stay solid, which is also
+   where the cluster stops floating and shows everything. */
+@media (hover: hover) and (min-width: 768px) {
+  .yw-page-actions,
+  .yw-chrome-edit {
+    opacity: 0.55;
+    transition: opacity 0.15s ease;
+  }
+
+  .yw-page-actions:hover,
+  .yw-page-actions:focus-within,
+  .yw-chrome-edit:hover,
+  .yw-chrome-edit:focus-visible {
+    opacity: 1;
+  }
+}
+
+/* The navbar's pencil leaves the centred container and joins the others in the gutter.
+   `.container` is `position: static`, so this resolves against `#yw-topnav` -- which is
+   `position: sticky`, and therefore a containing block. Without it the pencil sat at the
+   container's right edge, ~85px left of the floating cluster and the other two pencils:
+   four buttons doing one job, on two different vertical lines. */
+#yw-topnav .yw-chrome-edit {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  /* above the sticky bar's own stacking, so it is not the bar that receives the click */
+  z-index: 1;
+}
+
+/* ...and once the container is no longer narrower than the window there is no gutter left to
+   sit in, so room is reserved rather than letting the pencil land on the account button. */
+/* Below that width the centred container fills the window, so there is no gutter for the
+   pencil to sit in and it would land on the account button. The block that holds that button
+   is pulled in instead.
+
+   `padding`, not `margin`: the block already carries `margin-right: -2em` a few rules up (it
+   pulls the flat top-bar buttons flush with the container edge), which is why it sits ~30px
+   past that edge and why a margin of my own simply lost to a more specific selector. Padding
+   pulls its contents in without touching where its box sits. The selector is the same shape
+   as that rule for the same reason.
+
+   5rem is measured: the box ends ~15px past the window's content edge, the pencil starts
+   49px before the window edge, so the contents have to stop ~64px earlier than the box does. */
+@media (max-width: 1250px) {
+  #yw-topnav > .container > .yw-topnav-fast-access {
+    padding-right: 5rem;
+  }
 }
 
 /* On the banner and the footer it floats in the corner of the region rather than sitting in
@@ -3655,11 +3731,15 @@ ul.nav-tabs li.active a {
    and footer pencils sit on the same vertical line as the floating action cluster. Both
    regions are full-bleed (the pencil hangs off `#yw-header` / `#yw-footer`, never off the
    centred `.container` inside them), which is what makes that line hold at any window width. */
+/* Above `.yw-page-actions` (z-index 90), because on a page whose banner is short the two
+   land within a few pixels of each other in the same corner -- and there the pencil has to
+   win: it is the only way to reach the banner, while the floating cluster's own actions are
+   reachable from anywhere on the page. */
 .yw-chrome-editable > .yw-chrome-edit {
   position: absolute;
   top: 4px;
   right: 1rem;
-  z-index: 2;
+  z-index: 91;
 }
 
 /* nothing in the chrome is worth printing, and least of all its edit affordances */

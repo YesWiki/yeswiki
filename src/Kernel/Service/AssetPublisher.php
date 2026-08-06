@@ -92,6 +92,25 @@ class AssetPublisher
             $uriPath = substr($uriPath, strlen('index.php/'));
         }
 
+        // ...and YesWiki's own historical rewrite, `RewriteRule ^(.*)$ index.php?$1`, which
+        // puts the requested path in the QUERY STRING. Where the vhost passes the rewritten
+        // request through (rather than Apache's original REQUEST_URI), everything above sees
+        // nothing but the entry script: no asset path to match, so this returned silently,
+        // the wiki booted, and a stylesheet came back as an HTML page saying it had no
+        // handler by that name. Which is what a farm instance served this way did with every
+        // asset except the icon sprite -- that one is a real file in the docroot
+        // (src/bootstrap_paths.php), so the webserver answered it without ever reaching here.
+        //
+        // A page request leaves `?PageName` or `?a=b` in there too, so only a value that goes
+        // on to resolve to a real asset is used; anything else falls through untouched and the
+        // wiki handles it exactly as before.
+        if ($uriPath === '' || $uriPath === 'index.php') {
+            $fromQuery = ltrim(rawurldecode(explode('&', (string)($_SERVER['QUERY_STRING'] ?? ''), 2)[0]), '/');
+            if ($fromQuery !== '' && !str_contains($fromQuery, '=')) {
+                $uriPath = $fromQuery;
+            }
+        }
+
         // farm fallback: a docroot-wide rewrite (e.g. Caddy's php_server, Apache fallback in
         // the farm root) sends a missing /instance/asset to this shared index.php instead of
         // the instance's own one. Walk into the deepest instance dir the path traverses so
