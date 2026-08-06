@@ -56,6 +56,24 @@ html {
   font-size: var(
     --main-text-fontsize
   ) !important; /* the base the whole UI computes rem units from */
+
+  /* Where a fragment link lands. The top bar is `position: sticky`, so it covers whatever the
+     browser scrolls to -- a footnote backlink dropped you at the line the reference is on and
+     the bar sat on top of it. `scroll-padding-top` on the scrolling element fixes every
+     fragment at once: footnote references and backlinks, heading permalinks, the table of
+     contents, and any `#anchor` a page author writes by hand.
+
+     From the bar's own height, so it follows the Layout screen's slider (ticket 30) rather
+     than being a number that is right at exactly one setting. Not `--sticky-toolbar-top`:
+     that one drops to 0 when the bar hides itself on scroll, and the bar is back in place by
+     the time you have landed.
+
+     `max(..., 4rem)` because that variable is a **min-height**: below roughly 55px the bar
+     renders taller than its setting (its own contents decide), so reading the setting alone
+     under-shoots and the target lands behind the bar again -- measured at the slider's 32px
+     end, where it was 8px short. The floor is in `rem` so it tracks the wiki's base font
+     size, which is also what makes the bar taller in the first place. */
+  scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 1em);
 }
 
 /* Mise en forme */
