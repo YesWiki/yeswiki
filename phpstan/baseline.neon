@@ -16949,20 +16949,8 @@ parameters:
 			path: ../src/Kernel/Service/DbService.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:loadAll\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:loadSingle\(\) has parameter \$query with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:loadSingle\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Kernel/Service/DbService.php
 

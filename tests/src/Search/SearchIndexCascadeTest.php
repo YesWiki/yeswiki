@@ -177,7 +177,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         $rows = $wiki->services->get(\YesWiki\Kernel\Service\DbService::class)
             ->loadAll("SELECT tag FROM {$schema->queueTable()}");
 
-        return array_values(array_map(static fn (array $row): string => (string)$row['tag'], $rows));
+        return array_map(static fn (array $row): string => (string)$row['tag'], $rows);
     }
 
     public static function tearDownAfterClass(): void

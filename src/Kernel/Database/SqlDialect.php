@@ -36,7 +36,14 @@ interface SqlDialect
     /** SQL aggregating a column's distinct values into one comma-separated string. */
     public function groupConcat(string $column, ?string $orderBy = null): string;
 
-    /** Quote a table or column name, for reserved words like `user`, `time`, `order`. */
+    /**
+     * Quote a table or column name, for reserved words like `user`, `time`, `order`.
+     *
+     * Quotes the name and escapes the quote character within it. What it does NOT do is make an
+     * arbitrary string into a safe identifier: an identifier cannot be bound as a parameter, so
+     * a name that came from user data has to be constrained before it gets here (see
+     * `SearchManager::asSafeIdentifier()`, which does that for form field names).
+     */
     public function quoteIdentifier(string $identifier): string;
 
     /** Collation clause for case-insensitive comparison ('' where the driver needs none). */

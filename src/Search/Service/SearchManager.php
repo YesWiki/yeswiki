@@ -16,6 +16,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 class SearchManager
@@ -242,7 +243,7 @@ class SearchManager
                                 if ($vIsRegExp) {
                                     $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator() . ' \'' . $this->dbService->escape($this->extractRegExp($vOR)) . '\'';
                                 } else {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' LIKE \'%' . $this->dbService->escape($vOR) . '%\'';
+                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vOR)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX;
                                 }
 
                                 break;
@@ -255,7 +256,7 @@ class SearchManager
                                 if ($vIsRegExp) {
                                     $vORRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator() . ' \'^' . $this->dbService->escape($this->extractRegExp($vOR)) . '$\')';
                                 } else {
-                                    $vORRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' LIKE \'%' . $this->dbService->escape($vOR) . '%\')';
+                                    $vORRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vOR)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
                                 }
 
                                 break;
@@ -305,9 +306,9 @@ class SearchManager
                             // Add a field condition adapted to a regexp or not
 
                             if ($vIsRegExp) {
-                                $vExcludedRequest = $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator(true) . ' \'' . $this->dbService->escape($this->extractRegExp($vExcluded)) . '\'';
+                                $vExcludedRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator(true) . ' \'' . $this->dbService->escape($this->extractRegExp($vExcluded)) . '\'';
                             } else {
-                                $vExcludedRequest = $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' NOT LIKE \'%' . $this->dbService->escape($vExcluded) . '%\'';
+                                $vExcludedRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' NOT LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vExcluded)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX;
                             }
 
                             break;
@@ -320,7 +321,7 @@ class SearchManager
                             if ($vIsRegExp) {
                                 $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator(true) . ' \'^' . $this->dbService->escape($this->extractRegExp($vExcluded)) . '$\')';
                             } else {
-                                $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' NOT LIKE \'%' . $this->dbService->escape($vExcluded) . '%\')';
+                                $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' NOT LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vExcluded)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
                             }
 
                             break;
@@ -447,7 +448,7 @@ class SearchManager
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp
 
                             if ($vIsRegExp) {
-                                $vValueConditions[] = $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' ' . $vRegExpOperator . ' \'' . $this->dbService->escape($this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vRegExpOperator . ' \'' . $this->dbService->escape($this->extractRegExp($vValue)) . '\'';
                             }
 
                             // else let's just compare using the appropriated comparison operator
@@ -455,12 +456,12 @@ class SearchManager
                             else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
-                                        $vValueConditions[] = 'CAST(' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . $this->dbService->escape($vValue);
+                                        $vValueConditions[] = 'CAST(' . $this->renameJSONPathVariable($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . $this->dbService->escape($vValue);
                                     } else {
-                                        $vValueConditions[] = '(' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(' . $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
                                 } else {
-                                    $vValueConditions[] = $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'' . $this->dbService->escape($vValue) . '\'';
+                                    $vValueConditions[] = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'' . $this->dbService->escape($vValue) . '\'';
                                 }
                             }
 
@@ -475,7 +476,7 @@ class SearchManager
                                 $vValueConditions[] = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $vRegExpOperator . ' \'' . $this->dbService->escape($this->extractRegExp($vValue)) . '\')';
                             } else { // else let's just check in the value belongs (or NOT) to the set of values
                                 $needle = '\'' . $this->dbService->escape($vValue) . '\'';
-                                $haystack = $this->dbService->escape($this->renameJSONPathVariable($vFieldName));
+                                $haystack = $this->renameJSONPathVariable($vFieldName);
                                 $vValueConditions[] = $this->dbService->findInSet($needle, $haystack, $vFindInSetNot);
                             }
 
@@ -883,7 +884,7 @@ class SearchManager
                 // Extract it if it is not yet done
 
                 $vSQLNom = $this->dbService->escape($vFieldName);
-                $vRenamedSQLNom = $this->dbService->escape($this->renameJSONPathVariable($vFieldName));
+                $vRenamedSQLNom = $this->renameJSONPathVariable($vFieldName);
 
                 $vSelectRequest[] = $this->dbService->jsonExtract('body', '$.' . $vSQLNom) . ' AS ' . $vRenamedSQLNom;
 
@@ -1729,7 +1730,7 @@ class SearchManager
      */
     protected function renameJSONPathVariable($pPath)
     {
-        $renamed = str_replace('.', '__', (string)$pPath);
+        $renamed = self::asSafeIdentifier(str_replace('.', '__', (string)$pPath));
 
         // A field may be called whatever its author called it, and `pages` has short, ordinary
         // column names -- `tag`, `time`, `body`, `user`, `owner`. The CTE selects `p.*` and
@@ -1745,5 +1746,43 @@ class SearchManager
         return in_array(strtolower($renamed), self::PAGES_COLUMNS, true)
             ? self::FIELD_COLUMN_PREFIX . $renamed
             : $renamed;
+    }
+
+    /**
+     * A field name reduced to something that is certainly a SQL identifier.
+     *
+     * This function is the reason the surrounding query builder is safe, so it is worth being
+     * explicit about why quoting is not the answer here. A field name is *user data* -- the
+     * form designer stores whatever the webmaster typed, with no validation anywhere -- and it
+     * reaches the generated SQL in five different positions: a column alias (`... AS x`), a
+     * bare column reference in a WHERE, a CTE name (with a `_multiple` suffix glued on), a
+     * value inside `s.champ = '...'`, and a JSON path inside a string literal.
+     *
+     * `SqlDialect::quoteIdentifier()` cannot cover that. It wraps a name in backticks or double
+     * quotes without escaping what is inside, so it is only safe for names the code already
+     * trusts; and a quoted alias would have to be quoted identically at every one of the
+     * reference sites, while `"name" . '_multiple'` is not even valid syntax. Constraining the
+     * name once, here, covers all five positions at their source instead.
+     *
+     * A name that is already an identifier comes back untouched -- which is every field name in
+     * every real wiki, so no alias changes and no result-set key a caller reads by name moves.
+     * Anything else is reduced to one, with a short hash of the original appended so that two
+     * different odd names cannot collapse onto the same column.
+     */
+    private static function asSafeIdentifier(string $name): string
+    {
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name) === 1) {
+            return $name;
+        }
+
+        $reduced = (string)preg_replace('/[^A-Za-z0-9_]/', '_', $name);
+        if ($reduced === '' || preg_match('/^[0-9]/', $reduced) === 1) {
+            $reduced = '_' . $reduced;
+        }
+
+        // MySQL caps an identifier at 64 characters and the CTE adds `_multiple` to it, so the
+        // reduced form is trimmed to leave room. Only this branch is trimmed: shortening a
+        // long-but-valid name would change the key its caller reads it back by.
+        return substr($reduced, 0, 40) . '_' . substr(md5($name), 0, 8);
     }
 }

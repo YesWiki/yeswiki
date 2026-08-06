@@ -43,7 +43,11 @@ class MySqlDialect implements SqlDialect
 
     public function quoteIdentifier(string $identifier): string
     {
-        return '`' . $identifier . '`';
+        // A backtick inside the name is doubled, which is how MySQL spells an escaped one. It
+        // costs nothing for the reserved words this is actually called with (`time`, `type`,
+        // `user`) and stops the method from being a way to break out of the quoting it looks
+        // like it guarantees -- it used to wrap the name and inspect nothing.
+        return '`' . str_replace('`', '``', $identifier) . '`';
     }
 
     public function collateClause(): string

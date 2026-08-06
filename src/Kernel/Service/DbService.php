@@ -6,8 +6,10 @@ use DateInterval;
 use Exception;
 use PDO;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Database\PreparedStatement;
 use YesWiki\Kernel\Database\SqlDialect;
 use YesWiki\Kernel\Database\SqlDialectFactory;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
 
 class DbService
@@ -370,10 +372,20 @@ class DbService
         return $this->queryLog;
     }
 
-    public function addQueryLog($query, $time)
+    /**
+     * Record a query for the debug footer.
+     *
+     * A parameterised statement is logged with its values spliced back in, because a footer
+     * showing `WHERE tag = ?` and never saying which tag would take away the only reason the
+     * log is there. That rendering is for reading only and is never executed --
+     * SqlParameters::interpolateForDisplay() says so at more length.
+     *
+     * @param array<array-key, mixed> $params
+     */
+    public function addQueryLog($query, $time, array $params = [])
     {
         $this->queryLog[] = [
-            'query' => $query,
+            'query' => SqlParameters::interpolateForDisplay((string)$query, $params),
             'time' => $time,
         ];
     }
@@ -393,11 +405,25 @@ class DbService
         return substr($quoted, 1, -1);
     }
 
-    /*	Returns a PDOStatement on success, throws Exception on failure.
-        For SELECT, SHOW, DESCRIBE or EXPLAIN queries, returns a PDOStatement that can be used to fetch results.
-        For other queries (INSERT, UPDATE, DELETE), returns a PDOStatement (use rowCount() for affected rows).
-    */
-    public function query($query)
+    /**
+     * Returns a PDOStatement on success, throws Exception on failure.
+     * For SELECT, SHOW, DESCRIBE or EXPLAIN queries, returns a PDOStatement that can be used to fetch results.
+     * For other queries (INSERT, UPDATE, DELETE), returns a PDOStatement (use rowCount() for affected rows).
+     *
+     * Pass $params to send values as values instead of splicing them into the SQL text. A
+     * query with placeholders is not merely safer than one built with escape() -- the values
+     * also reach the database as the types they are, which escape()'s `(string)` cast cannot
+     * do (see SqlParameters). Both placeholder styles work:
+     *
+     *     query('... WHERE tag = ? AND latest = ?', [$tag, 'Y'])
+     *     query('... WHERE tag = :tag', ['tag' => $tag])
+     *
+     * Omitting $params runs exactly the statement it is given, unchanged: the parameterless
+     * path below is byte-for-byte what it always was, so no existing caller is affected.
+     *
+     * @param array<array-key, mixed> $params
+     */
+    public function query($query, array $params = [])
     {
         if (!preg_match('/^\s*SELECT\b/i', $query)) {
             $this->readCache = [];
@@ -408,7 +434,13 @@ class DbService
         }
 
         try {
-            $result = $this->link->query($query);
+            if ($params === []) {
+                $result = $this->link->query($query);
+            } else {
+                $result = $this->link->prepare($query);
+                SqlParameters::bind($result, $params);
+                $result->execute();
+            }
             if ($result === false) {
                 $errorInfo = $this->link->errorInfo();
                 throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
@@ -418,14 +450,46 @@ class DbService
             // the branch above never runs: every database failure reached the operator as a
             // bare "SQLSTATE[42S21]: Duplicate column name 'tag'" with no hint of which
             // statement, in which table, from which migration. Say what failed.
-            throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query), (int)$failed->getCode(), $failed);
+            throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query, $params !== []), (int)$failed->getCode(), $failed);
         } finally {
             if ($this->params->get('debug')) {
-                $this->addQueryLog($query, $this->getMicroTime() - $start);
+                $this->addQueryLog($query, $this->getMicroTime() - $start, $params);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * A statement prepared once, to be executed many times with different values.
+     *
+     * For loops only -- a one-off query should call query($sql, $params), which prepares and
+     * executes in one step. See PreparedStatement for why a loop wants the difference.
+     */
+    public function prepare(string $query): PreparedStatement
+    {
+        $statement = $this->link->prepare($query);
+        if ($statement === false) {
+            $errorInfo = $this->link->errorInfo();
+
+            throw new \Exception('Prepare failed: ' . $query . ' (' . $errorInfo[2] . ')');
+        }
+
+        // A prepared INSERT/UPDATE invalidates reads the same way an inline one does, and it
+        // does it once here rather than on every execution.
+        if (!preg_match('/^\s*SELECT\b/i', $query)) {
+            $this->readCache = [];
+        }
+
+        return new PreparedStatement(
+            $statement,
+            $query,
+            function (string $sql, float $elapsed, array $params): void {
+                if ($this->params->get('debug')) {
+                    $this->addQueryLog($sql, $elapsed, $params);
+                }
+            }
+        );
     }
 
     /**
@@ -436,11 +500,15 @@ class DbService
      * UPDATE on `pages` failed, not what was being written into it, and this message reaches
      * the browser of whoever tripped over it. In debug the whole query goes, as it already
      * does in the query log at the foot of every page.
+     *
+     * A parameterised statement needs none of that care and gets none: its text holds
+     * placeholders where the data would be, so there is nothing in it to withhold. That is
+     * the second thing bindings buy -- an error message that names the whole query.
      */
-    private function describeQuery(string $query): string
+    private function describeQuery(string $query, bool $parameterised = false): string
     {
         $query = trim((string)preg_replace('/\s+/', ' ', $query));
-        if ($this->params->get('debug') || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
+        if ($parameterised || $this->params->get('debug') || preg_match('/^\s*(CREATE|ALTER|DROP|TRUNCATE|RENAME)\b/i', $query)) {
             return $query;
         }
 
@@ -454,26 +522,37 @@ class DbService
         return (float)$usec + (float)$sec;
     }
 
-    /*
+    /**
      * Returns the first result of the query
-     * If query fails returns null
+     * If query fails returns null.
+     *
+     * $params is optional and behaves as in query(): supplied, the values are bound; omitted,
+     * the statement runs exactly as given.
+     *
+     * @param array<array-key, mixed> $params
+     *
+     * @return array<string, mixed>|null
      */
-    public function loadSingle($query): ?array
+    public function loadSingle($query, array $params = []): ?array
     {
-        if ($data = $this->LoadAll($query)) {
+        if ($data = $this->loadAll($query, $params)) {
             return $data[0];
         }
 
         return null;
     }
 
-    /*
+    /**
      * Fills and returns a table with the results of the query
-     * Frees the SQL results set afterwards
+     * Frees the SQL results set afterwards.
+     *
+     * @param array<array-key, mixed> $params
+     *
+     * @return list<array<string, mixed>>
      */
-    public function loadAll($query): array
+    public function loadAll($query, array $params = []): array
     {
-        $stmt = $this->query($query);
+        $stmt = $this->query($query, $params);
         if ($stmt) {
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
@@ -487,10 +566,12 @@ class DbService
      * Note what this is not: it does **not** read a `SELECT COUNT(*)`. Handed one of those it
      * returns 1, because that query returns one row -- and 1 is plausible enough to survive
      * review. Use scalar() for an aggregate.
+     *
+     * @param array<array-key, mixed> $params
      */
-    public function count($query): int
+    public function count($query, array $params = []): int
     {
-        $stmt = $this->query($query);
+        $stmt = $this->query($query, $params);
         if ($stmt) {
             return count($stmt->fetchAll(\PDO::FETCH_ASSOC));
         }
@@ -503,10 +584,15 @@ class DbService
      *
      * Added by ticket 18, whose "result counts are exact" claim rests on actually reading the
      * aggregate rather than counting the row it arrives in (see count() above).
+     *
+     * $params comes last here rather than second, because $default was already there. The rule
+     * across all of these is the same read either way: the values are the final argument.
+     *
+     * @param array<array-key, mixed> $params
      */
-    public function scalar(string $query, mixed $default = null): mixed
+    public function scalar(string $query, mixed $default = null, array $params = []): mixed
     {
-        $row = $this->loadSingle($query);
+        $row = $this->loadSingle($query, $params);
         if ($row === null || $row === []) {
             return $default;
         }

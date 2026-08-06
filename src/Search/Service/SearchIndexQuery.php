@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Service;
 
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 /**
@@ -403,7 +404,12 @@ class SearchIndexQuery
         foreach ($groups as $alternatives) {
             $any = [];
             foreach ($alternatives as $term) {
-                $any[] = "{$table}.title{$collate} LIKE '%{$this->dbService->escape($term)}%'";
+                // The wildcards have to be defused deliberately: escape() and binding both
+                // leave `%` and `_` alone, quite correctly -- inside a LIKE they are pattern
+                // syntax, not data. Left alone, searching `100%` scored a title hit against
+                // any title starting "100", and `a_b` against `aXb`.
+                $pattern = $this->dbService->escape(SqlParameters::likeContains($term));
+                $any[] = "{$table}.title{$collate} LIKE '{$pattern}'" . SqlParameters::LIKE_CLAUSE_SUFFIX;
             }
             $tests[] = '(' . implode(' OR ', $any) . ')';
         }

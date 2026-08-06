@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Service;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Entity\IndexedContent;
 
@@ -24,7 +25,14 @@ use YesWiki\Search\Entity\IndexedContent;
  */
 class SearchIndexer
 {
-    /** Rows written per INSERT. Kept modest: some hosts cap max_allowed_packet hard. */
+    /**
+     * How many tags one statement handles.
+     *
+     * It used to be "rows per INSERT", kept modest because some hosts cap max_allowed_packet
+     * hard. Inserts are prepared now and no longer grow with their data, so what is left to
+     * bound is the *placeholder* count of a `tag IN (...)`: drivers cap those too (SQLite's
+     * default is 999), and a query built from a count still has to keep the count sane.
+     */
     private const INSERT_BATCH = 100;
 
     private DbService $dbService;
@@ -57,7 +65,8 @@ class SearchIndexer
             "SELECT tag, body, owner, {$this->dbService->quoteIdentifier('time')}, metadata, parent,"
             . " {$this->dbService->quoteIdentifier('type')}"
             . " FROM {$this->dbService->prefixTable('pages')}"
-            . " WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1"
+            . " WHERE tag = ? AND latest = 'Y' LIMIT 1",
+            [$tag]
         );
 
         $this->delete($tag);
@@ -77,7 +86,8 @@ class SearchIndexer
             return;
         }
         $this->dbService->query(
-            "DELETE FROM {$this->schema->table()} WHERE tag = '{$this->dbService->escape($tag)}'"
+            "DELETE FROM {$this->schema->table()} WHERE tag = ?",
+            [$tag]
         );
     }
 
@@ -88,8 +98,8 @@ class SearchIndexer
             return;
         }
         $this->dbService->query(
-            "UPDATE {$this->schema->table()} SET tag = '{$this->dbService->escape($newTag)}'"
-            . " WHERE tag = '{$this->dbService->escape($oldTag)}'"
+            "UPDATE {$this->schema->table()} SET tag = ? WHERE tag = ?",
+            [$newTag, $oldTag]
         );
         // the title of an untitled Content *is* its tag, so it moved too
         $this->enqueue([$newTag]);
@@ -106,19 +116,26 @@ class SearchIndexer
             return;
         }
 
+        // `now()` is a driver-specific SQL *expression* (NOW(), datetime('now'), ...), not a
+        // value: it has to be evaluated by the database, so it stays in the statement text
+        // where a bound parameter would arrive as the literal string "NOW()".
         $now = $this->dbService->now();
+        $insert = $this->dbService->prepare(
+            "INSERT INTO {$this->schema->queueTable()} (tag, queued_at) VALUES (?, {$now})"
+        );
+
         foreach (array_chunk(array_values(array_unique($tags)), self::INSERT_BATCH) as $chunk) {
             // delete-then-insert instead of an upsert: ON CONFLICT / ON DUPLICATE KEY is
             // spelled three different ways across the drivers, and re-queueing an already
             // queued tag only has to end with exactly one row either way
-            $list = implode(', ', array_map(fn (string $tag): string => "'{$this->dbService->escape($tag)}'", $chunk));
-            $this->dbService->query("DELETE FROM {$this->schema->queueTable()} WHERE tag IN ({$list})");
-
-            $values = implode(', ', array_map(
-                fn (string $tag): string => "('{$this->dbService->escape($tag)}', {$now})",
+            $this->dbService->query(
+                "DELETE FROM {$this->schema->queueTable()} WHERE tag IN (" . SqlParameters::placeholders(count($chunk)) . ')',
                 $chunk
-            ));
-            $this->dbService->query("INSERT INTO {$this->schema->queueTable()} (tag, queued_at) VALUES {$values}");
+            );
+
+            foreach ($chunk as $tag) {
+                $insert->execute([$tag]);
+            }
         }
     }
 
@@ -132,10 +149,11 @@ class SearchIndexer
         $pages = $this->dbService->prefixTable('pages');
         $formIdExpr = $this->dbService->jsonExtract('body', '$.form_id');
         $rows = $this->dbService->loadAll(
-            "SELECT tag FROM {$pages} WHERE latest = 'Y' AND {$formIdExpr} = '{$this->dbService->escape($formId)}'"
+            "SELECT tag FROM {$pages} WHERE latest = 'Y' AND {$formIdExpr} = ?",
+            [$formId]
         );
 
-        $tags = array_values(array_map(static fn (array $row): string => (string)$row['tag'], $rows));
+        $tags = array_map(static fn (array $row): string => (string)$row['tag'], $rows);
         $this->enqueue($tags);
 
         return count($tags);
@@ -222,15 +240,16 @@ class SearchIndexer
                 break;
             }
 
-            $tags = array_values(array_map(static fn (array $row): string => (string)$row['tag'], $queued));
-            $list = implode(', ', array_map(fn (string $tag): string => "'{$this->dbService->escape($tag)}'", $tags));
+            $tags = array_map(static fn (array $row): string => (string)$row['tag'], $queued);
+            $inList = SqlParameters::placeholders(count($tags));
 
             // ticket 27: the row states its own type, so what used to be a LEFT JOIN on
             // `triples` -- the whole cost of a rebuild at a million Contents -- is a column
             $rows = $this->dbService->loadAll(
                 "SELECT tag, body, owner, {$timeCol} AS {$timeCol}, metadata, parent, {$typeCol}"
                 . " FROM {$pages}"
-                . " WHERE latest = 'Y' AND tag IN ({$list})"
+                . " WHERE latest = 'Y' AND tag IN ({$inList})",
+                $tags
             );
 
             $contents = [];
@@ -245,7 +264,7 @@ class SearchIndexer
             // every queued tag is cleared out of the index first, including the ones that
             // turned out to have no row (deleted since queueing) and the ones that index to
             // nothing -- otherwise a Content that became empty would keep its old text
-            $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$list})");
+            $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
             $this->write($contents);
             $this->dequeue($tags);
 
@@ -275,26 +294,37 @@ class SearchIndexer
             // who may see it. `extract()` has already dropped the ones that are truly empty.
             $buckets = $content->buckets === [] ? ['' => ''] : $content->buckets;
             foreach ($buckets as $acl => $text) {
-                $rows[] = '('
-                    . "'{$this->dbService->escape($content->tag)}', "
-                    . "'{$this->dbService->escape((string)$acl)}', "
-                    . "'" . md5((string)$acl) . "', "
-                    . "'{$this->dbService->escape($content->pageReadAcl)}', "
-                    . "'{$this->dbService->escape($content->owner)}', "
-                    . "'{$this->dbService->escape($content->contentType)}', "
-                    . "'{$this->dbService->escape($content->formId)}', "
-                    . "'{$this->dbService->escape($content->title)}', "
-                    . "'{$this->dbService->escape($text)}', "
-                    . "'{$this->dbService->escape($content->updatedAt)}')";
+                $rows[] = [
+                    $content->tag,
+                    (string)$acl,
+                    md5((string)$acl),
+                    $content->pageReadAcl,
+                    $content->owner,
+                    $content->contentType,
+                    $content->formId,
+                    $content->title,
+                    (string)$text,
+                    $content->updatedAt,
+                ];
             }
         }
 
-        foreach (array_chunk($rows, self::INSERT_BATCH) as $chunk) {
-            $this->dbService->query(
-                "INSERT INTO {$this->schema->table()}"
-                . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
-                . ' VALUES ' . implode(', ', $chunk)
-            );
+        if ($rows === []) {
+            return;
+        }
+
+        // One prepared INSERT executed per row, rather than N rows concatenated into one
+        // statement. The batching this replaced existed to amortise parsing a literal
+        // statement; a prepared one is parsed once no matter how many rows follow, and its
+        // text does not grow with the data -- so `max_allowed_packet` stops being a
+        // consideration here at all.
+        $insert = $this->dbService->prepare(
+            "INSERT INTO {$this->schema->table()}"
+            . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
+            . ' VALUES (' . SqlParameters::placeholders(10) . ')'
+        );
+        foreach ($rows as $row) {
+            $insert->execute($row);
         }
     }
 
@@ -305,8 +335,10 @@ class SearchIndexer
             return;
         }
         foreach (array_chunk($tags, self::INSERT_BATCH) as $chunk) {
-            $list = implode(', ', array_map(fn (string $tag): string => "'{$this->dbService->escape($tag)}'", $chunk));
-            $this->dbService->query("DELETE FROM {$this->schema->queueTable()} WHERE tag IN ({$list})");
+            $this->dbService->query(
+                "DELETE FROM {$this->schema->queueTable()} WHERE tag IN (" . SqlParameters::placeholders(count($chunk)) . ')',
+                $chunk
+            );
         }
     }
 }

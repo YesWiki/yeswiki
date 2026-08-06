@@ -108,4 +108,32 @@ class SqlDialectTest extends TestCase
         $this->assertNotSame($d->regexpOperator(false), $d->regexpOperator(true));
         $this->assertNotSame($d->findInSet("'x'", 'c', false), $d->findInSet("'x'", 'c', true));
     }
+
+    /**
+     * The quote character inside a name is escaped, not merely wrapped around.
+     *
+     * quoteIdentifier() used to concatenate delimiters and inspect nothing, so a name carrying
+     * the delimiter closed the quoting early -- a method whose whole job is to make a name safe
+     * to interpolate, that did not. No caller passes such a name today (they pass literals like
+     * `time`), which is exactly why nothing would have caught it.
+     *
+     * Note what this still does NOT make safe: an arbitrary user-supplied identifier. An
+     * identifier cannot be bound, so it has to be constrained before it arrives -- see
+     * SearchManager::asSafeIdentifier() and FieldNameIsNotSqlTest.
+     */
+    #[DataProvider('dialects')]
+    public function testQuoteIdentifierEscapesItsOwnDelimiter(SqlDialect $d, string $driver): void
+    {
+        $delimiter = $driver === 'mysql' ? '`' : '"';
+
+        $quoted = $d->quoteIdentifier('a' . $delimiter . 'b');
+
+        $this->assertSame(
+            $delimiter . 'a' . $delimiter . $delimiter . 'b' . $delimiter,
+            $quoted,
+            "$driver must double a $delimiter inside the name rather than let it end the quoting"
+        );
+        // the delimiters are balanced, which is what "cannot break out" means in practice
+        $this->assertSame(0, substr_count($quoted, $delimiter) % 2);
+    }
 }

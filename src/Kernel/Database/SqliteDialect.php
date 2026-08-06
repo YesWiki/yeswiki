@@ -43,7 +43,9 @@ class SqliteDialect implements SqlDialect
 
     public function quoteIdentifier(string $identifier): string
     {
-        return '"' . $identifier . '"';
+        // Doubled, which is how SQL spells an escaped double quote. See MySqlDialect for why
+        // this is worth doing even though every caller passes a literal column name.
+        return '"' . str_replace('"', '""', $identifier) . '"';
     }
 
     public function collateClause(): string
