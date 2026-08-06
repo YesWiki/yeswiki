@@ -320,3 +320,114 @@ test('the three chrome pages that are still pages are linked, not replaced', asy
     ).toBeVisible()
   }
 })
+
+/**
+ * Moving a menu entry moves its submenu with it.
+ *
+ * The rows are a flat list, and a move used to swap a row with the one next to it -- so
+ * moving a parent left its children where they were, and whichever entry landed above them
+ * adopted them. The list still read as valid, nothing complained, and the menu came out
+ * rearranged in a way nobody asked for.
+ */
+test('moving an entry takes its submenu with it', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?admin/layout')
+
+  const rows = page.locator(
+    '[data-yw-layout-rows="navbar"] [data-yw-layout-row]',
+  )
+  // the seeded navbar: a plain entry, then "Menu exemple" with its children indented under it
+  const labels = () =>
+    rows.evaluateAll((list) =>
+      list.map((row) => ({
+        label: row.querySelector('.yw-layout__label')?.value,
+        child: row.classList.contains('yw-layout__row--child'),
+      })),
+    )
+
+  const before = await labels()
+  const parentIndex = before.findIndex(
+    (row, index) => !row.child && before[index + 1]?.child,
+  )
+  expect(
+    parentIndex,
+    'the seeded navbar must have a submenu to move',
+  ).toBeGreaterThan(-1)
+  const children = before
+    .slice(parentIndex + 1)
+    .filter((row, index, all) => all.slice(0, index + 1).every((r) => r.child))
+    .map((row) => row.label)
+  expect(children.length).toBeGreaterThan(0)
+
+  // send the parent up, over whatever group is above it
+  await rows.nth(parentIndex).locator('[data-yw-layout-move="-1"]').click()
+
+  const after = await labels()
+  const movedTo = after.findIndex(
+    (row) => row.label === before[parentIndex].label,
+  )
+  expect(movedTo, 'the parent moved up').toBeLessThan(parentIndex)
+  expect(
+    after
+      .slice(movedTo + 1, movedTo + 1 + children.length)
+      .map((row) => row.label),
+    'its submenu came along, in order',
+  ).toEqual(children)
+  expect(
+    after
+      .slice(movedTo + 1, movedTo + 1 + children.length)
+      .every((row) => row.child),
+    'and they are still submenu entries',
+  ).toBe(true)
+})
+
+/**
+ * The indent button points the way the row can actually go, and the link field suggests the
+ * wiki's own pages rather than leaving the name to be remembered and typed.
+ */
+test('the indent button turns around, and links suggest pages', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?admin/layout')
+
+  const rows = page.locator(
+    '[data-yw-layout-rows="navbar"] [data-yw-layout-row]',
+  )
+  const topLevel = rows.filter({
+    hasNot: page.locator('.yw-layout__row--child'),
+  })
+  const second = rows.nth(1)
+  const indent = second.locator('[data-yw-layout-indent]')
+  const arrow = () => indent.locator('use').getAttribute('href')
+
+  const wasChild = await second.evaluate((row) =>
+    row.classList.contains('yw-layout__row--child'),
+  )
+  expect(await arrow()).toContain(wasChild ? '#arrow-left' : '#arrow-right')
+  await indent.click()
+  expect(
+    await arrow(),
+    'the arrow turns around: it shows the move that is now available',
+  ).toContain(wasChild ? '#arrow-right' : '#arrow-left')
+
+  // page suggestions on the link field, from the wiki's own pages
+  const link = rows.first().locator('.yw-layout__link')
+  await link.click()
+  await link.fill('Page')
+  const suggestions = rows.first().locator('.yw-suggestions')
+  await expect(suggestions).toBeVisible()
+  await expect(suggestions.locator('button').first()).toContainText(/Page/)
+
+  // it follows the field, not the row. The shared dropdown is `width: 100%` of its positioned
+  // ancestor, which here is the whole row -- it came out 893px over a 350px field, wider than
+  // the row itself.
+  const width = await rows.first().evaluate((row) => ({
+    field: row.querySelector('.yw-layout__link').getBoundingClientRect().width,
+    list: row.querySelector('.yw-suggestions').getBoundingClientRect().width,
+  }))
+  expect(width.list).toBeLessThan(width.field + 20)
+  await suggestions.locator('button').first().click()
+  await expect(link, 'picking a suggestion fills the field').toHaveValue(/Page/)
+  await expect(topLevel.first()).toBeVisible()
+})

@@ -121,7 +121,16 @@ jobs:
       # ApiControllerFormPreviewTest). Runs before the wiki is exercised, not just before
       # `test-js` -- which needs nothing installed and so never revealed this.
       - name: Install JS dependencies (populates javascripts/vendor via postinstall)
-        run: yarn install --frozen-lockfile
+        # `gogocarto-js` depends on a fork of leaflet.markercluster and names it by its
+        # *https* GitHub URL, but Yarn v1 canonicalises GitHub URLs to SSH when it resolves
+        # them, so yarn.lock pins `git+ssh://git@github.com/…`. A runner has no key for
+        # github.com, and the install dies on "Permission denied (publickey)" before it
+        # fetches anything. Undo that one rewrite rather than hand-editing the lock entry,
+        # which the next ordinary `yarn install` would put straight back.
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          yarn install --frozen-lockfile
 
       - name: Run JS unit tests
         run: yarn run test-js

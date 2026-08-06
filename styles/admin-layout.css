@@ -66,6 +66,12 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+  /* the page suggestions on the link field are absolutely positioned by
+     javascripts/yw-autocomplete.js, which measures `field.offsetTop` *before* it makes the
+     parent relative -- so a row that is not already positioned is measured against some
+     ancestor and the list lands away from the field. Stating it here settles the
+     measurement rather than relying on that order. */
+  position: relative;
 }
 
 /* the whole of what "child of the row above" looks like: indented, and marked with a rule
@@ -78,6 +84,17 @@
 
 .yw-layout__row .yw-input {
   min-width: 0;
+}
+
+/* The shared dropdown (javascripts/yw-autocomplete.js) is styled `width: 100%` of its
+   positioned ancestor. In the tag input that ancestor is a small wrapper around the field, so
+   100% *is* the field; here it is the whole row, and the list came out 893px wide over a
+   350px field -- wider than the row itself. The helper already sets `min-width` inline from
+   the field, so `auto` is what follows it: at least as wide as the field, growing only with
+   the longest name, and capped so a pathological page name cannot span the row either. */
+.yw-layout__row .yw-suggestions {
+  width: auto;
+  max-width: 24rem;
 }
 
 .yw-layout__label {

@@ -17,8 +17,17 @@
          placeholder="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}" aria-label="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}">
 
   <div class="yw-layout__row-tools">
+    {# One button, and which way it points is which way this row can go: right to become a
+       submenu of the entry above, left to come back to the top level. There is only one
+       level, so a row is always in exactly one of those two states and the other action
+       never applies. Both titles are carried here rather than looked up in JavaScript --
+       admin-layout.js swaps between them, and a translated string that only exists in a
+       template cannot go missing from the browser catalogue. #}
     <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-indent
-            title="{{ _t('ADMIN_LAYOUT_ENTRY_INDENT') }}">{{ icon('arrow-forward-up') }}</button>
+            data-yw-layout-title-indent="{{ _t('ADMIN_LAYOUT_ENTRY_INDENT') }}"
+            data-yw-layout-title-outdent="{{ _t('ADMIN_LAYOUT_ENTRY_OUTDENT') }}"
+            title="{{ row.child ? _t('ADMIN_LAYOUT_ENTRY_OUTDENT') : _t('ADMIN_LAYOUT_ENTRY_INDENT') }}"
+            >{{ icon(row.child ? 'arrow-left' : 'arrow-right') }}</button>
     <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-move="-1"
             title="{{ _t('ADMIN_LAYOUT_ENTRY_UP') }}">{{ icon('arrow-up') }}</button>
     <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-move="1"

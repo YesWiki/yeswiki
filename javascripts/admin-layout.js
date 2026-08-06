@@ -17,10 +17,67 @@
 // more here than on most screens: the live preview makes the page *look* as though the
 // change has taken effect, and only Save writes it.
 import './unsaved-changes.js'
+// Imported, not merely used: `window.ywAutocomplete` is a core asset on every page, but this
+// module is a *module* and the core scripts are deferred classics -- both execute in document
+// order after parsing, and the template emits this one first. So the helper genuinely was not
+// defined yet when this ran, the link fields were skipped, and nothing said so. An import is
+// evaluated before the importing module's body, which settles it. The classic copy loads
+// afterwards and reassigns the same global from the cache-busted URL, so this cannot pin a
+// stale version.
+import './yw-autocomplete.js'
 
 /** The rows of one list, in document order. */
 function rowsOf(list) {
   return [...list.querySelectorAll('[data-yw-layout-row]')]
+}
+
+/**
+ * The wiki's page names, fetched once and shared by every link field on the screen.
+ *
+ * `?api/pages`, with the `?` -- `wiki.url('/api/…')` redirects to the home page and the
+ * suggestions silently never arrive.
+ */
+let pageNames = null
+function pages() {
+  pageNames ??= fetch(wiki.url('?api/pages'))
+    .then((response) =>
+      response.ok ? response.json() : Promise.reject(response),
+    )
+    .then((data) =>
+      Object.values(data)
+        .map((page) => page.tag)
+        .filter(Boolean),
+    )
+    // a screen with no suggestions still edits the menu: the field is free text, and a link
+    // may just as well be an external address
+    .catch(() => [])
+
+  return pageNames
+}
+
+/**
+ * Offer those names on every link field in `root`, the way the editor's own link rail does.
+ *
+ * Marked as it goes: rows are added after this first runs, and wiring the same field twice
+ * would stack two dropdowns over each other.
+ */
+function suggestPagesIn(root) {
+  root
+    .querySelectorAll('.yw-layout__link:not([data-yw-layout-suggested])')
+    .forEach((field) => {
+      field.dataset.ywLayoutSuggested = '1'
+      pages().then((names) => {
+        window.ywAutocomplete(field, {
+          items: 6,
+          // 0 would drop the whole wiki over the field the moment it takes focus
+          minLength: 1,
+          source: (query) =>
+            names.filter((name) =>
+              name.toLowerCase().includes(query.toLowerCase()),
+            ),
+        })
+      })
+    })
 }
 
 /**
@@ -49,10 +106,80 @@ function setChild(row, child) {
   if (!flag) return
   flag.value = child ? '1' : '0'
   row.classList.toggle('yw-layout__row--child', child)
+
+  // the button points the way this row can now go: right to become a submenu, left to come
+  // back out. Both titles were rendered onto it by the template.
+  const button = row.querySelector('[data-yw-layout-indent]')
+  if (!button) return
+  const use = button.querySelector('use')
+  if (use) {
+    const href = use.getAttribute('href') || ''
+    use.setAttribute(
+      'href',
+      href.replace(/#.*$/, child ? '#arrow-left' : '#arrow-right'),
+    )
+  }
+  const title = child
+    ? button.dataset.ywLayoutTitleOutdent
+    : button.dataset.ywLayoutTitleIndent
+  if (title) button.title = title
 }
 
 function isChild(row) {
   return row.querySelector('[data-yw-layout-child]')?.value === '1'
+}
+
+/**
+ * The rows a move has to carry as one: a top-level row takes the submenu entries under it.
+ *
+ * Moving the parent alone left its children behind, adopted by whichever entry happened to
+ * land above them -- the list still *read* as valid, so nothing complained, and the menu
+ * came out rearranged in a way nobody asked for.
+ */
+function groupOf(row) {
+  const group = [row]
+  if (isChild(row)) return group
+  let next = row.nextElementSibling
+  while (next && isChild(next)) {
+    group.push(next)
+    next = next.nextElementSibling
+  }
+  return group
+}
+
+/** Move `row` one place, taking its submenu with it and stepping over whole groups. */
+function moveRow(list, row, step) {
+  const up = step < 0
+
+  // A submenu entry moves among its own siblings only: above its parent is not a position
+  // it can hold, and past the next parent would silently re-parent it.
+  if (isChild(row)) {
+    const sibling = up ? row.previousElementSibling : row.nextElementSibling
+    if (!sibling || !isChild(sibling)) return
+    list.insertBefore(up ? row : sibling, up ? sibling : row)
+
+    return
+  }
+
+  const group = groupOf(row)
+  if (up) {
+    // back up over the previous group to reach the entry it hangs off
+    let target = group[0].previousElementSibling
+    if (!target) return
+    while (isChild(target) && target.previousElementSibling) {
+      target = target.previousElementSibling
+    }
+    group.forEach((member) => list.insertBefore(member, target))
+
+    return
+  }
+
+  const following = group[group.length - 1].nextElementSibling
+  if (!following) return
+  const nextGroup = groupOf(following)
+  // null appends, which is the right answer when that group ends the list
+  const anchor = nextGroup[nextGroup.length - 1].nextElementSibling
+  group.forEach((member) => list.insertBefore(member, anchor))
 }
 
 function refresh(list) {
@@ -70,6 +197,7 @@ document.querySelectorAll('[data-yw-layout-rows]').forEach((list) => {
       if (!template) return
       list.appendChild(template.content.cloneNode(true))
       refresh(list)
+      suggestPagesIn(list)
       // the label of the row just added: adding an entry is followed by naming it
       rowsOf(list).at(-1)?.querySelector('input[type="text"]')?.focus()
     })
@@ -86,14 +214,8 @@ document.querySelectorAll('[data-yw-layout-rows]').forEach((list) => {
 
     const move = event.target.closest('[data-yw-layout-move]')
     if (move) {
-      const step = Number(move.dataset.ywLayoutMove)
-      const up = step < 0
-      const sibling = up ? row.previousElementSibling : row.nextElementSibling
-      if (sibling) {
-        // insertBefore of the row *after* the sibling is the same move in both directions
-        list.insertBefore(up ? row : sibling, up ? sibling : row)
-        refresh(list)
-      }
+      moveRow(list, row, Number(move.dataset.ywLayoutMove))
+      refresh(list)
       return
     }
 
@@ -106,6 +228,7 @@ document.querySelectorAll('[data-yw-layout-rows]').forEach((list) => {
   })
 
   refresh(list)
+  suggestPagesIn(list)
 })
 
 // The logo: a hidden field, a preview of it, and two buttons.
