@@ -39,7 +39,7 @@
       {{ _t('BAZ_RECHERCHER') }}
     </a>
     {# a built-in type's form creates Content like any other form (ticket 13): what it
-       creates is a page, an account or a file rather than a fiche_bazar row, which is
+       creates is a page, an account or a file rather than an entry row, which is
        ContentCreator's job. The File type is still missing its upload field, so it says
        so rather than offering a button that would write a row pointing at nothing. #}
     {% if form.canCreateContent %}

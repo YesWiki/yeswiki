@@ -3,7 +3,6 @@
 namespace YesWiki\Search\Service;
 
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Entity\IndexedContent;
 
@@ -55,7 +54,8 @@ class SearchIndexer
         }
 
         $row = $this->dbService->loadSingle(
-            "SELECT tag, body, owner, {$this->dbService->quoteIdentifier('time')}, metadata, comment_on"
+            "SELECT tag, body, owner, {$this->dbService->quoteIdentifier('time')}, metadata, parent,"
+            . " {$this->dbService->quoteIdentifier('type')}"
             . " FROM {$this->dbService->prefixTable('pages')}"
             . " WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1"
         );
@@ -209,9 +209,8 @@ class SearchIndexer
         $startedAt = microtime(true);
         $queue = $this->schema->queueTable();
         $pages = $this->dbService->prefixTable('pages');
-        $triples = $this->dbService->prefixTable('triples');
         $timeCol = $this->dbService->quoteIdentifier('time');
-        $typeUri = TripleStore::TYPE_URI;
+        $typeCol = $this->dbService->quoteIdentifier('type');
 
         $done = 0;
         while ($done < $limit) {
@@ -226,20 +225,18 @@ class SearchIndexer
             $tags = array_values(array_map(static fn (array $row): string => (string)$row['tag'], $queued));
             $list = implode(', ', array_map(fn (string $tag): string => "'{$this->dbService->escape($tag)}'", $tags));
 
-            // the type triple is joined in rather than looked up per row: at a million
-            // Contents that lookup is the whole cost of a rebuild
+            // ticket 27: the row states its own type, so what used to be a LEFT JOIN on
+            // `triples` -- the whole cost of a rebuild at a million Contents -- is a column
             $rows = $this->dbService->loadAll(
-                "SELECT p.tag, p.body, p.owner, p.{$timeCol} AS {$timeCol}, p.metadata, p.comment_on,"
-                . ' tp.value AS type_triple'
-                . " FROM {$pages} p"
-                . " LEFT JOIN {$triples} tp ON tp.resource = p.tag AND tp.property = '{$typeUri}'"
-                . " WHERE p.latest = 'Y' AND p.tag IN ({$list})"
+                "SELECT tag, body, owner, {$timeCol} AS {$timeCol}, metadata, parent, {$typeCol}"
+                . " FROM {$pages}"
+                . " WHERE latest = 'Y' AND tag IN ({$list})"
             );
 
             $contents = [];
             foreach ($rows as $row) {
                 $row['body'] = PageBody::decode($row['body'] ?? null);
-                $content = $this->extractor->extract($row, (string)($row['type_triple'] ?? ''));
+                $content = $this->extractor->extract($row);
                 if ($content !== null) {
                     $contents[] = $content;
                 }

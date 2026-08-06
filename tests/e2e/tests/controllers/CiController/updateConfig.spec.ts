@@ -14,7 +14,8 @@ test('Admins should modify config', async({ page }) => {
   const res = await page.request.post(TARGET, { data: { yeswiki_name: 'New site name' } })
   expect(res.status()).toBe(200)
   await page.goto('/')
-  // the site name shows in the document title; the navbar brand includes the PageTitre
-  // page, so it never reflected this setting
+  // the site name shows in the document title, and since ticket 30 in the navbar brand
+  // too: `layout_title` is empty on a seeded wiki, and an empty title falls back to this
   await expect(page).toHaveTitle(/New site name/)
+  await expect(page.locator('.navbar-brand').first()).toContainText('New site name')
 })

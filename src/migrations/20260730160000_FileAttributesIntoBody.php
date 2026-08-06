@@ -1,8 +1,8 @@
 <?php
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FileManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 
@@ -33,13 +33,11 @@ class FileAttributesIntoBody extends YesWikiMigration
     {
         $dbService = $this->getService(DbService::class);
         $pages = trim($dbService->prefixTable('pages'));
-        $triples = trim($dbService->prefixTable('triples'));
 
         $rows = $dbService->loadAll(
-            "SELECT p.id, p.body, p.metadata FROM {$pages} p"
-            . " WHERE EXISTS (SELECT 1 FROM {$triples} t WHERE t.resource = p.tag"
-            . " AND t.property = '" . $dbService->escape(TripleStore::TYPE_URI) . "'"
-            . " AND t.value = '" . $dbService->escape(FileManager::TRIPLES_FILE_TYPE) . "')"
+            "SELECT id, body, metadata FROM {$pages}"
+            . ' WHERE ' . $dbService->quoteIdentifier('type')
+            . " = '" . $dbService->escape(PageType::FILE) . "'"
         );
 
         foreach ($rows as $row) {

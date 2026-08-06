@@ -209,7 +209,6 @@ $yeswikiConfig = array ( // tableau de configuration
   'header_action' => 'header',
   'footer_action' => 'footer',
   'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
-  'referrers_purge_time' => 24,
   'pages_purge_time' => 90, // nbr de jours après lesquels les révisions sont effacées
   'default_write_acl' => '*', // droits d'écriture par défaut des pages
   'default_read_acl' => '*', // droits de lecture par défaut des pages

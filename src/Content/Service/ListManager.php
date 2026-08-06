@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -15,9 +16,6 @@ class ListManager
     protected $pageManager;
     protected $params;
     protected $hibernationService;
-    protected $tripleStore;
-
-    public const TRIPLES_LIST_ID = 'liste';
 
     protected $cachedLists;
     protected AclService $aclService;
@@ -28,12 +26,10 @@ class ListManager
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        TripleStore $tripleStore,
         AclService $aclService
     ) {
         $this->aclService = $aclService;
         $this->dbService = $dbService;
-        $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
         $this->htmlPurifierService = $htmlPurifierService;
         $this->params = $params;
@@ -44,7 +40,7 @@ class ListManager
 
     public function isList($id): bool
     {
-        return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
+        return $this->pageManager->isType((string)$id, PageType::LIST);
     }
 
     public function getOne($id, $parent = null): ?array
@@ -54,7 +50,7 @@ class ListManager
         }
 
         // Ensure a list exist with this ID
-        if (!$this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '')) {
+        if (!$this->isList($id)) {
             return null;
         }
 
@@ -117,11 +113,9 @@ class ListManager
 
     public function getAll($parent = null): array
     {
-        $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
-
         $result = [];
-        foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
+        foreach ($this->pageManager->tagsOfType(PageType::LIST) as $listId) {
+            $result[$listId] = $this->getOne($listId, $parent);
         }
 
         return $result;
@@ -139,12 +133,11 @@ class ListManager
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
         ];
-        $this->pageManager->save($id, $body);
+        $this->pageManager->save($id, $body, '', false, null, PageType::LIST);
+        $this->pageManager->cacheType($id, PageType::LIST);
 
         $data = $this->loadBody($body, $id);
         $this->cachedLists[$id] = $data;
-
-        $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         return $id;
     }
@@ -179,10 +172,11 @@ class ListManager
             throw new \Exception('Unauthorized');
         }
 
+        // deleteOrphaned() already drops every triple keyed on the tag, and the type is a
+        // column on the row it just deleted
         $this->pageManager->deleteOrphaned($id);
 
         unset($this->cachedLists[$id]);
-        $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
     public function getLabel($idList, $key): string

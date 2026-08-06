@@ -47,7 +47,7 @@ class NuagetagActionTest extends YesWikiTestCase
     public function testInjectionPayloadsDoNotLeakData(string $payload)
     {
         $wiki = $this->getWiki();
-        $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', true, ['tags' => $payload]);
+        $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', ['tags' => $payload]);
 
         $this->assertStringNotContainsString(self::SECRET_VALUE, $html, "payload leaked secret data: $payload");
         $this->assertStringNotContainsString(self::SECRET_RESOURCE, $html, "payload leaked secret data: $payload");
@@ -84,7 +84,7 @@ class NuagetagActionTest extends YesWikiTestCase
         // proves the test fixture/seeding actually exercises the query (a query that always
         // failed would make the injection assertions above vacuous)
         $wiki = $this->getWiki();
-        $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', true, ['tags' => self::LEGIT_TAG_VALUE]);
+        $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', ['tags' => self::LEGIT_TAG_VALUE]);
 
         $this->assertStringContainsString(self::LEGIT_RESOURCE, $html);
     }
@@ -101,7 +101,7 @@ class NuagetagActionTest extends YesWikiTestCase
         $tripleStore->create($xssResource, '', $xssTagValue, '', self::TAG_PROPERTY);
 
         try {
-            $html = $this->getWiki()->services->get(ActionRunner::class)->action('tagcloud', true, ['tags' => $xssTagValue]);
+            $html = $this->getWiki()->services->get(ActionRunner::class)->action('tagcloud', ['tags' => $xssTagValue]);
 
             // no raw <script>/<img onerror=...> anywhere in the page HTML
             $this->assertDoesNotMatchRegularExpression('/<script\b/i', $html);

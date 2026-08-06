@@ -7,6 +7,7 @@ namespace YesWiki\Identity\Action;
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
@@ -154,13 +155,9 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
         $search = '';
         if (!empty($filter)) {
             $filter = strval($filter);
+            $typeCol = $this->dbService->quoteIdentifier('type');
             if ($filter === 'pages') {
-                $search = <<<SQL
-              AND tag NOT IN (
-              SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
-              WHERE value = 'fiche_bazar'
-            )
-            SQL;
+                $search = " AND {$typeCol} <> '" . PageType::ENTRY . "'";
             } elseif ($filter === 'specialpages') {
                 $search = <<<SQL
                AND tag IN ('BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour','GererUtilisateurs',
@@ -169,25 +166,10 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
                 'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
-                $requete_pages_wiki_bazar_fiches = <<<SQL
-              SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
-              WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type'
-              ORDER BY resource ASC
-            SQL;
-
-                $search = <<<SQL
-              AND body LIKE '%"form_id":"{$this->dbService->escape($filter)}"%'
-              AND tag IN ($requete_pages_wiki_bazar_fiches)
-            SQL;
+                $search = " AND body LIKE '%\"form_id\":\"{$this->dbService->escape($filter)}\"%'"
+                    . " AND {$typeCol} = '" . PageType::ENTRY . "'";
             } elseif ($filter === 'lists') {
-                $requete_pages_wiki_listes = <<<SQL
-                SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
-                WHERE value = 'liste' AND property = 'http://outils-reseaux.org/_vocabulary/type'
-                ORDER BY resource ASC
-              SQL;
-                $search = <<<SQL
-                AND tag IN ($requete_pages_wiki_listes)
-              SQL;
+                $search = " AND {$typeCol} = '" . PageType::LIST . "'";
             } else {
                 $filter = '';
             }

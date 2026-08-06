@@ -74,7 +74,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
                         }
 
                         // echo entry
-                        echo "&nbsp;&nbsp;&nbsp;($time) (",$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),"<br />\n";
+                        echo "&nbsp;&nbsp;&nbsp;($time) (",$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history'),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
 
                         $my_edits_count++;
                     }
@@ -107,7 +107,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
                             }
 
                             // echo entry
-                            echo '&nbsp;&nbsp;&nbsp;(',$page['time'],') (',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),"<br />\n";
+                            echo '&nbsp;&nbsp;&nbsp;(',$page['time'],') (',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history'),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
 
                             $my_edits_count++;
                         }

@@ -93,9 +93,11 @@
 
         <fieldset>
             <h4>{{ _t('CHOOSE_PAGE_FOR') }}: </h4>
+            {# The three chrome roles that are still pages (ticket 30). The title bar, the
+               horizontal menu and the quick-access buttons are no longer among them: they
+               are `layout_*` configuration now, and naming another page for them would be
+               naming a page that nothing reads. #}
             {% for tag,t in {
-                PageMenuHaut: 'HORIZONTAL_MENU_PAGE',
-                PageRapideHaut: 'FAST_ACCESS_RIGHT_PAGE',
                 PageHeader: 'HEADER_PAGE',
                 PageFooter: 'FOOTER_PAGE',
                 PageMenu: 'VERTICAL_MENU_PAGE',

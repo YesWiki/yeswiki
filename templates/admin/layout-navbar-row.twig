@@ -1,0 +1,29 @@
+{# One navbar entry. The tree is edited as a flat list of rows, each saying whether it is a
+   child of the one above -- which is how a nested list reads, and the only shape a form can
+   post. AdminController::saveLayout rebuilds the tree from that flag.
+
+   `index` is the row's position in the list and is part of every field name, so the whole
+   row arrives as one array server-side. admin-layout.js renumbers after any add, remove or
+   move; a page whose JavaScript never arrived still posts what was rendered. #}
+<li class="yw-layout__row{{ row.child ? ' yw-layout__row--child' : '' }}" data-yw-layout-row>
+  <input type="hidden" name="navbar[{{ index }}][child]" value="{{ row.child ? 1 : 0 }}" data-yw-layout-child>
+
+  <input type="text" class="yw-input yw-layout__label" name="navbar[{{ index }}][label]"
+         value="{{ row.label }}" autocomplete="off"
+         placeholder="{{ _t('ADMIN_LAYOUT_ENTRY_LABEL') }}" aria-label="{{ _t('ADMIN_LAYOUT_ENTRY_LABEL') }}">
+
+  <input type="text" class="yw-input yw-layout__link" name="navbar[{{ index }}][link]"
+         value="{{ row.link }}" autocomplete="off" spellcheck="false"
+         placeholder="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}" aria-label="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}">
+
+  <div class="yw-layout__row-tools">
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-indent
+            title="{{ _t('ADMIN_LAYOUT_ENTRY_INDENT') }}">{{ icon('arrow-forward-up') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-move="-1"
+            title="{{ _t('ADMIN_LAYOUT_ENTRY_UP') }}">{{ icon('arrow-up') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-move="1"
+            title="{{ _t('ADMIN_LAYOUT_ENTRY_DOWN') }}">{{ icon('arrow-down') }}</button>
+    <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" data-yw-layout-remove
+            title="{{ _t('ADMIN_LAYOUT_ENTRY_REMOVE') }}">{{ icon('trash') }}</button>
+  </div>
+</li>

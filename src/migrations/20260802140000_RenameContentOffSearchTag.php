@@ -49,7 +49,7 @@ class RenameContentOffSearchTag extends YesWikiMigration
             }
 
             $db->query("UPDATE {$pages} SET tag = '{$db->escape($newTag)}' WHERE tag = '{$db->escape($oldTag)}'");
-            $db->query("UPDATE {$pages} SET comment_on = '{$db->escape($newTag)}' WHERE comment_on = '{$db->escape($oldTag)}'");
+            $db->query("UPDATE {$pages} SET parent = '{$db->escape($newTag)}' WHERE parent = '{$db->escape($oldTag)}'");
             $db->query("UPDATE {$triples} SET resource = '{$db->escape($newTag)}' WHERE resource = '{$db->escape($oldTag)}'");
 
             // the tag moved in `pages` directly rather than through renameTag(), so nothing

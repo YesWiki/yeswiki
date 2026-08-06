@@ -117,10 +117,11 @@ class DashboardController extends YesWikiController
     {
         $urlFormatter = $this->getService(UrlFormatter::class);
         $forms = [];
-        // getAll() is already keyed by a numeric form id and filtered to real forms
-        foreach ($this->getService(FormManager::class)->getAll() as $id => $form) {
+        // getAllLabels(), not getAll(): a label and an id is the whole of what this needs,
+        // and it already falls back to the pre-rename body key the way getAll() would
+        foreach ($this->getService(FormManager::class)->getAllLabels() as $id => $label) {
             $forms[] = [
-                'label' => (string)($form['label'] ?? $form['bn_label_nature'] ?? $id),
+                'label' => $label !== '' ? $label : (string)$id,
                 'baseUrl' => $urlFormatter->href('', "api/forms/{$id}/entries/"),
             ];
         }

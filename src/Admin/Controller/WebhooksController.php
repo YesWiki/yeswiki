@@ -201,7 +201,9 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         return $this->render('@core/webhooks/webhooks_form.twig', [
             'url' => getAbsoluteUrl(),
             'webhooks' => $this->get_all_webhooks(),
-            'forms' => $this->formManager->getAll(),
+            // the picker below is a list of names; the semantic check further down is what
+            // still needs whole forms
+            'forms' => $this->formManager->getAllLabels(),
             'formats' => $this->params->get('webhooks_formats'),
             'showComment' => $this->showComments(),
         ]);

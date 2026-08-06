@@ -1,0 +1,149 @@
+{# `@shipped`, not `@core` -- and this is the safety net, not a style choice.
+
+   `custom/templates/core/` is searched *before* `templates/` on the `@core` namespace, so
+   `@core/admin/custom-templates.twig` is itself overridable: a webmaster could override the
+   screen that edits overrides, break it, and be left with FTP as the only way back. The
+   `@shipped` namespace has only `templates/` on it (TemplateEngine), so this file and the
+   shell it extends are the two templates in the wiki that always render as shipped. #}
+{% extends "@shipped/dashboard/layout.twig" %}
+
+{# The templates this instance overrides (ticket 30).
+
+   Overriding a template has always been possible -- drop a file in `custom/templates/` and
+   it wins. What was missing was any way to *see* that from inside the wiki: which templates
+   are overridden, what is in them, and how to put one back. Hence a list, an editor, and a
+   revert.
+
+   No sandbox, measured rather than assumed: Twig's sandbox propagates into `{% extends %}`,
+   so an override cannot be sandboxed without sandboxing the core template it extends, which
+   dies on its first method call. A custom template is code. The boundary is the route's
+   `@admins`, and the screen says so rather than implying a safety it does not have. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_TEMPLATES') }}</h1>
+
+  <p class="yw-dashboard__intro">
+    {{ _t('ADMIN_TEMPLATES_INTRO') }} <code>{{ directory }}</code>
+  </p>
+
+  {# said plainly, and not in small print: what is written here runs #}
+  <div class="yw-alert yw-alert--warning yw-templates__warning">
+    {{ icon('alert-triangle') }} {{ _t('ADMIN_TEMPLATES_WARNING') }}
+  </div>
+
+  {% if not writable %}
+    <div class="yw-alert yw-alert--danger">
+      {{ _t('ADMIN_TEMPLATES_NOT_WRITABLE')|replace({'{path}': directory}) }}
+    </div>
+  {% endif %}
+
+  {% if editing %}
+    {# One override, open. The list is still below, so leaving is one click and there is no
+       "back" to get wrong. #}
+    <section class="yw-dashboard__card">
+      <h2><code>{{ editing }}</code></h2>
+
+      <form method="post" action="{{ url({ tag: 'admin/custom-templates' }) }}" hx-boost="false">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+        <input type="hidden" name="file" value="{{ editing }}">
+
+        {# the textarea is the field the form posts; admin-custom-templates.js layers ACE
+           over it and writes back into it, so a page where that module fails to load still
+           has a working editor rather than an uneditable template #}
+        <textarea id="yw-template-source" name="contents" class="yw-input yw-templates__editor"
+                  rows="28" spellcheck="false" autocomplete="off"
+                  {{ writable ? '' : 'readonly' }}>{{ contents }}</textarea>
+
+        <div class="yw-templates__actions">
+          <button type="submit" class="yw-btn yw-btn--primary" {{ writable ? '' : 'disabled' }}>
+            {{ _t('SAVE') }}
+          </button>
+          {# "revert" is delete, and the word is honest: the shipped template was never
+             modified, so removing the file in front of it is all it takes to get it back #}
+          <button type="submit" name="revert" value="1" class="yw-btn yw-btn--danger"
+                  {{ writable ? '' : 'disabled' }}
+                  onclick="return confirm('{{ _t('ADMIN_TEMPLATES_REVERT_CONFIRM')|e('js') }}')">
+            {{ icon('arrow-back-up') }} {{ _t('ADMIN_TEMPLATES_REVERT') }}
+          </button>
+          <a class="yw-btn" href="{{ url({ tag: 'admin/custom-templates' }) }}">{{ _t('ADMIN_TEMPLATES_CANCEL') }}</a>
+        </div>
+      </form>
+
+      {% if original is not null %}
+        {# the shipped original, beside it: "what did I change here" is otherwise a question
+           you can only answer with a checkout of the release #}
+        <details class="yw-templates__original">
+          <summary>{{ _t('ADMIN_TEMPLATES_ORIGINAL') }}</summary>
+          <pre class="yw-templates__original-source"><code>{{ original }}</code></pre>
+        </details>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <section class="yw-dashboard__card">
+    <h2>{{ _t('ADMIN_TEMPLATES_LIST') }}</h2>
+
+    {% if overrides is empty %}
+      <p class="yw-templates__empty">{{ _t('ADMIN_TEMPLATES_NONE') }}</p>
+    {% else %}
+      <table class="yw-table yw-templates__table">
+        <thead>
+          <tr>
+            <th>{{ _t('ADMIN_TEMPLATES_FILE') }}</th>
+            <th>{{ _t('ADMIN_TEMPLATES_OVERRIDES') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for override in overrides %}
+            <tr{{ override.path == editing ? ' class="yw-templates__row--editing"' : '' }}>
+              <td><code>{{ override.path }}</code></td>
+              <td>
+                {% if override.shipped or override.namespace != 'core' %}
+                  {# an extension's or a theme's namespace is shown without a claim: whether
+                     there is an original behind it depends on which extensions are installed
+                     right now, and a "missing!" that only means "switched off today" is worse
+                     than saying nothing #}
+                  <code>@{{ override.namespace }}/{{ override.target }}</code>
+                {% else %}
+                  {# core, and no template of that name ships: that IS the shape a misspelled
+                     override takes, and it is the commonest way to write one that quietly
+                     does nothing #}
+                  <em class="yw-templates__unmatched">{{ _t('ADMIN_TEMPLATES_NO_ORIGINAL') }}</em>
+                {% endif %}
+              </td>
+              <td class="yw-templates__row-tools">
+                <a class="yw-btn yw-btn--sm"
+                   href="{{ url({ tag: 'admin/custom-templates', params: {file: override.path} }) }}">
+                  {{ icon('pencil') }} {{ _t('ADMIN_TEMPLATES_EDIT') }}
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </section>
+
+  <section class="yw-dashboard__card">
+    <h2>{{ _t('ADMIN_TEMPLATES_START') }}</h2>
+    <p class="yw-templates__hint">{{ _t('ADMIN_TEMPLATES_START_HINT') }}</p>
+
+    <form method="post" action="{{ url({ tag: 'admin/custom-templates' }) }}" hx-boost="false"
+          class="yw-templates__start">
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+      {# a <select> of 270-odd names, so it carries a datalist-style filter via the browser's
+         own type-ahead; a free-text field would invite a path that matches nothing #}
+      <select name="shipped" class="yw-input" {{ writable ? '' : 'disabled' }}>
+        {% for name in shippedTemplates %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="create" value="1" class="yw-btn" {{ writable ? '' : 'disabled' }}>
+        {{ icon('copy') }} {{ _t('ADMIN_TEMPLATES_COPY') }}
+      </button>
+    </form>
+  </section>
+
+  {{ include_css('styles/admin-custom-templates.css') }}
+  {{ include_javascript('javascripts/admin-custom-templates.js', false, true) }}
+{% endblock %}

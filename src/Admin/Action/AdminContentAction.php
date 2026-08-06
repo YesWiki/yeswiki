@@ -36,7 +36,8 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
         // Forms for the type filter dropdown
         $forms = [];
         try {
-            $forms = $this->getService(\YesWiki\Content\Service\FormManager::class)->getAll();
+            // the dropdown shows a name per form and nothing else
+            $forms = $this->getService(\YesWiki\Content\Service\FormManager::class)->getAllLabels();
         } catch (\Throwable $e) {
             // bazar not available
         }
@@ -44,7 +45,7 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
         // Distinct owners for the filter dropdown
         $ownersRows = $dbService->loadAll(
             "SELECT DISTINCT owner FROM {$dbService->prefixTable('pages')}"
-            . " WHERE latest='Y' AND comment_on='' AND owner != '' ORDER BY owner ASC"
+            . " WHERE latest='Y' AND parent='' AND owner != '' ORDER BY owner ASC"
         );
         $owners = array_column($ownersRows ?? [], 'owner');
 

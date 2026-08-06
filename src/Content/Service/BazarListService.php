@@ -444,9 +444,8 @@ class BazarListService
     public function getIDs($pIDs)
     {
         if ($pIDs === null) {
-            $vLocalIDs = array_map(function ($pForm) {
-                return $pForm['id'];
-            }, $this->formManager->getAll());
+            // just the ids: getAll() would prepare every form in the wiki to read one key
+            $vLocalIDs = $this->formManager->getAllIds();
             $vExternalIDs = [];
         } else {
             $vIDs = $this->parseIDs($pIDs);

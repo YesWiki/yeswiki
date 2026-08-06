@@ -3,8 +3,6 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -30,7 +28,7 @@ class CoreAssets
     public function __construct(
         private readonly AssetRegistry $assets,
         private readonly ThemeManager $themeManager,
-        private readonly PageManager $pageManager,
+        private readonly CustomCssService $customCss,
         private readonly RuntimeConfig $config,
         private readonly PageContext $pageContext,
         private readonly CsrfTokenManager $csrfTokenManager,
@@ -97,12 +95,20 @@ class CoreAssets
             $this->assets->addCssFile($styleFile, '', '', 'id="mainstyle"');
         }
         if ($favoriteStyle !== 'none' && $presetsActivated && str_ends_with($favoritePreset, '.css')) {
-            $this->assets->addCssFile($presetFile);
+            // named, like the main style above, so that the Personnalisation screen can
+            // switch it off while previewing another preset over the page
+            $this->assets->addCssFile($presetFile, '', '', 'id="wikipreset"');
         }
 
-        // css files in the instance's custom styles directory
-        foreach ($this->filesIn('custom/styles', '.css') as $file) {
-            $this->assets->addCssFile($file);
+        // css files in the instance's custom styles directory. The wiki's own stylesheet is
+        // excluded here and added last, below: it used to be the `PageCss` page, inlined
+        // after every other stylesheet, and that is the cascade position it has to keep --
+        // scandir() would otherwise file it alphabetically among a webmaster's own files.
+        $customCss = $this->customCss->path();
+        foreach ($this->filesIn(CustomCssService::DIRECTORY, '.css') as $file) {
+            if ($file !== $customCss) {
+                $this->assets->addCssFile($file);
+            }
         }
 
         // relocated from the per-tool linkstyle__.php hooks as each tool became core:
@@ -114,12 +120,12 @@ class CoreAssets
 
         $this->registerBackgroundImage();
 
-        // if it exists and is not empty, the 'PageCss' wiki page's content is added to the
-        // styles. Inlined rather than linked from the /raw handler: raw serves text/plain,
-        // and browsers in standards mode reject a stylesheet link that is not text/css.
-        $pageCss = $this->pageManager->getOne('PageCss');
-        if ($pageCss && !empty($pageCss['body'])) {
-            $this->assets->addCss(PageBody::content($pageCss['body']));
+        // The wiki's own stylesheet, last so it still wins (ticket 30). It was the `PageCss`
+        // page until this release, and had to be *inlined* because the /raw handler serves
+        // text/plain and browsers reject a stylesheet link that is not text/css. A file is
+        // an ordinary cacheable <link>.
+        if ($this->customCss->exists()) {
+            $this->assets->addCssFile($customCss);
         }
     }
 

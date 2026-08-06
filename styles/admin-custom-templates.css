@@ -1,0 +1,110 @@
+/* The Custom Templates screen (ticket 30): a list of overrides, and one open in an editor. */
+
+/* Not small print. What is written on this screen runs, and the screen says so where it
+   cannot be missed rather than in a footnote under the box. */
+.yw-templates__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.yw-templates__hint,
+.yw-templates__empty {
+  margin: 0 0 1rem;
+  color: var(--neutral-color, #777);
+  font-size: 0.9em;
+}
+
+/* A template is code, so it gets a code box: monospace, tall enough to hold a block, and
+   no wrapping -- an indented Twig block that wraps is unreadable. */
+.yw-templates__editor {
+  width: 100%;
+  min-height: 28em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* `hidden` has to actually hide: `textarea.yw-input` declares a `display`, which beats the
+   UA sheet's `[hidden] { display: none }`. Same trap the CSS screen, the file picker and the
+   preset rail each hit once. */
+.yw-templates__editor[hidden] {
+  display: none;
+}
+
+/* The ACE surface admin-custom-templates.js puts over the textarea. Sized here rather than
+   by ACE's own minLines so the box does not jump when the editor replaces the textarea. */
+.yw-templates__ace {
+  width: 100%;
+  min-height: 28em;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.yw-templates__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+/* The shipped original, collapsed. Scrolls inside its own box: a 400-line template must not
+   make the page scroll sideways. */
+.yw-templates__original {
+  margin-top: 1.5rem;
+}
+
+.yw-templates__original summary {
+  cursor: pointer;
+  color: var(--neutral-color, #777);
+}
+
+.yw-templates__original-source {
+  max-height: 32em;
+  overflow: auto;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 4px;
+  background: var(--neutral-light-color, #f8f8f8);
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.yw-templates__table {
+  width: 100%;
+}
+
+.yw-templates__row-tools {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.yw-templates__row--editing {
+  background: var(--neutral-light-color, #f8f8f8);
+}
+
+.yw-templates__unmatched {
+  color: var(--neutral-color, #777);
+}
+
+/* the picker and its button on one line, the select taking what is left: template paths are
+   long, and a 12em select showing "admin/cust…" picks the wrong one */
+.yw-templates__start {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.yw-templates__start .yw-input {
+  flex: 1 1 20em;
+  min-width: 0;
+}

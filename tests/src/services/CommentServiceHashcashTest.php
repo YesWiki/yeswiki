@@ -31,7 +31,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     /**
      * The success case below posts a real comment, and a comment is a page row: without
      * this the suite left one behind on every run, 786 of them by the time anyone looked.
-     * deleteOrphaned() takes the page's comments with it (`OR comment_on = tag`), so the
+     * deleteOrphaned() takes the page's comments with it (`OR parent = tag`), so the
      * index rows are collected first -- they are keyed by the comment's own tag.
      */
     public static function tearDownAfterClass(): void

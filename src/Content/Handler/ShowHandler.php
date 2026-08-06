@@ -233,10 +233,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 );
             } else {
                 // comment header?
-                if ($this->getService(PageContext::class)->getPage()['comment_on']) {
+                if ($this->getService(PageContext::class)->getPage()['parent']) {
                     echo '<div class="commentinfo">' . str_replace(
                         ['{tag}', '{user}', '{time}'],
-                        [$this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getPage()['comment_on'], '', '', 0), $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['user']), $this->getService(PageContext::class)->getPage()['time']],
+                        [$this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getPage()['parent'], '', ''), $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['user']), $this->getService(PageContext::class)->getPage()['time']],
                         _t('COMMENT_INFO')
                     ) . '</div>';
                 }

@@ -16,6 +16,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Entity\LayoutChrome;
 
 class TemplateEngine
 {
@@ -100,6 +101,14 @@ class TemplateEngine
                 $this->twigLoader->addPath($path, 'core');
             }
         }
+
+        // The templates as shipped -- `custom/templates/` is deliberately NOT on this
+        // namespace (ticket 30). One screen needs it: the one that edits the overrides. A
+        // broken override takes out every page, and if it also takes out the screen that
+        // fixes it, the only way back is FTP. `@shipped/admin/custom-templates.twig` and the
+        // shell it extends are therefore the two templates in the wiki that cannot be
+        // overridden -- which is the whole safety net, so do not "tidy" this into @core.
+        $this->twigLoader->addPath(YESWIKI_SOURCE_DIR . '/templates/', 'shipped');
 
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
@@ -334,6 +343,189 @@ class TemplateEngine
         $this->addTwigHelper('fileUrl', function ($fileName) {
             return $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
         });
+
+        // ticket 30: the wiki's chrome, from configuration rather than from the three pages
+        // `PageTitre` / `PageMenuHaut` / `PageRapideHaut`. A squelette calls these three; the
+        // three chrome pages that are still pages keep going through {{include}}.
+        $this->addTwigHelper('layout_chrome', fn () => $this->renderLayoutChrome());
+        // ...and the root style attribute the whole document wears, which is where the
+        // navbar height lives. Separate from the chrome because it goes on <html>.
+        $this->addTwigHelper('layout_root_style', fn () => $this->layoutRootStyle());
+        // ...and the pencil that opens whichever bit of the chrome it sits on, for whoever
+        // may follow it. `''` for everyone else, so a squelette needs no permission test.
+        $this->addTwigHelper('layout_edit', fn (string $part) => $this->renderChromeEditLink($part));
+        // ...and which page a squelette should include for a chrome role, which is the
+        // canonical name unless the page being rendered names another one for itself
+        $this->addTwigHelper(
+            'layout_page',
+            fn (string $role) => $this->container->get(LayoutService::class)->pageFor($role)
+        );
+    }
+
+    /**
+     * The whole top bar: the menu toggle, the brand, the navbar and the quick menu.
+     *
+     * One call rather than three, because it is one swap: the live preview on `/admin/layout`
+     * replaces this block wholesale with the same fragment rendered from the posted form
+     * (AdminController::layoutPreview). A squelette gets the configured chrome by passing
+     * nothing.
+     */
+    public function renderLayoutChrome(?LayoutChrome $chrome = null): string
+    {
+        $chrome ??= $this->container->get(LayoutService::class)->current();
+
+        return $this->render('@core/layout/chrome.twig', [
+            'brand' => $this->renderLayout('brand', $chrome),
+            'navbar' => $this->renderLayout('navbar', $chrome),
+            'quickMenu' => $this->renderLayout('quick-menu', $chrome),
+        ]);
+    }
+
+    /**
+     * The `style` attribute the document's root element wears.
+     *
+     * Where the navbar height goes, and an inline style is the point rather than a shortcut:
+     * a custom property declared here beats the same property declared in *any* stylesheet,
+     * preset or hand-written, without needing `!important` anywhere. Which is what the
+     * setting means -- a number typed on the Layout screen has the last word over what a
+     * preset happens to say (ticket 30).
+     */
+    public function layoutRootStyle(?LayoutChrome $chrome = null): string
+    {
+        $chrome ??= $this->container->get(LayoutService::class)->current();
+
+        return '--yw-navbar-height: ' . $chrome->navbarHeight . 'px';
+    }
+
+    /**
+     * One of the three chrome parts, rendered from a LayoutChrome.
+     *
+     * From a value object rather than from LayoutService, because the live preview on
+     * `/admin/layout` renders a *draft* -- the chrome a posted form describes, which has not
+     * been saved. Passing it in is what lets the preview go through this exact code path
+     * instead of a second one that would drift.
+     *
+     * The links are resolved here rather than in LayoutService: what an entry stores is what
+     * someone typed -- a page name, a route, or a full URL -- and turning that into an href
+     * is UrlFormatter's job, which the service has no business holding for a value that is
+     * only ever needed at render time.
+     */
+    private function renderLayout(string $part, LayoutChrome $chrome): string
+    {
+        $current = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+
+        if ($part === 'brand') {
+            $logo = $chrome->logo;
+
+            return $this->render('@core/layout/brand.twig', [
+                'mode' => $chrome->brandMode,
+                'title' => $chrome->title,
+                // an address is used as it stands -- the file picker stores the file's own
+                // `api/files/…/download` URL, and a wiki may point at an image elsewhere.
+                // Anything else is an instance-relative path (files/logo.png) and is resolved
+                // against the base URL, so it survives path-shaped page URLs.
+                'logo' => ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
+                    ? $logo
+                    : $this->urlFormatter->getBaseUrl() . '/' . $logo,
+                'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page']),
+            ]);
+        }
+
+        if ($part === 'navbar') {
+            $entries = [];
+            foreach ($chrome->navbar as $entry) {
+                $children = [];
+                foreach ($entry['children'] as $child) {
+                    $children[] = $child + [
+                        'href' => $this->layoutHref($child['link']),
+                        'active' => $child['link'] === $current,
+                    ];
+                }
+                $entries[] = [
+                    'label' => $entry['label'],
+                    'href' => $entry['link'] === '' ? '' : $this->layoutHref($entry['link']),
+                    'active' => $entry['link'] === $current,
+                    'children' => $children,
+                ];
+            }
+
+            return $this->render('@core/layout/navbar.twig', ['entries' => $entries]);
+        }
+
+        $entries = [];
+        foreach ($chrome->quickMenu as $entry) {
+            $entries[] = [
+                'label' => $entry['label'],
+                'href' => $this->layoutHref($entry['link']),
+                // stored icons may be sprite names or historic FontAwesome classes
+                'glyph' => $this->legacyIconToSprite($entry['icon']),
+            ];
+        }
+
+        return $this->render('@core/layout/quick-menu.twig', [
+            'entries' => $entries,
+            // last inside this block, which is what puts it at the extreme right: the block
+            // itself is floated right, so a sibling *after* it would land to its LEFT
+            'editChrome' => $this->renderChromeEditLink('navbar'),
+            'account' => $chrome->accountButton,
+        ]);
+    }
+
+    /**
+     * The pencil that opens the screen or page behind a piece of chrome.
+     *
+     * **Admins only, all three of them.** The navbar one has no choice -- `/admin/layout` is
+     * admin-gated, so anyone else would follow it into a refusal. The banner and the footer
+     * could in principle use write access to the page, and that would be wrong here: a
+     * default YesWiki is an open wiki, so `hasAccess('write')` is true for anonymous visitors
+     * and every reader of every page would get two pencils on the site's furniture. Editing
+     * those pages is still open to whoever may write them -- the includes carry
+     * `doubleclick="1"` -- this is only about who is *offered* it unprompted.
+     *
+     * Returns '' rather than a disabled control when the answer is no: an affordance nobody
+     * can use is worse than none, and it saves every squelette a permission test.
+     */
+    private function renderChromeEditLink(string $part): string
+    {
+        if (!$this->container->get(AclService::class)->isAdmin()) {
+            return '';
+        }
+
+        if ($part === 'navbar') {
+            return $this->render('@core/layout/edit-chrome.twig', [
+                'href' => $this->urlFormatter->href('', 'admin/layout'),
+                'label' => _t('LAYOUT_EDIT_NAVBAR'),
+            ]);
+        }
+
+        $roles = ['header' => 'PageHeader', 'menu' => 'PageMenu', 'footer' => 'PageFooter'];
+        if (!isset($roles[$part])) {
+            return '';
+        }
+
+        // the *resolved* page, because a page may name a different banner for itself
+        $tag = $this->container->get(LayoutService::class)->pageFor($roles[$part]);
+
+        return $this->render('@core/layout/edit-chrome.twig', [
+            'href' => $this->urlFormatter->href('edit', $tag),
+            'label' => _t('LAYOUT_EDIT_' . strtoupper($part)),
+        ]);
+    }
+
+    /**
+     * What someone typed into a layout entry, as an address.
+     *
+     * Anything with a scheme, an anchor or a leading slash is already an address and is left
+     * alone -- a menu entry to another site is an ordinary thing to want. Everything else is
+     * a page name or a route of this wiki (`BacASable`, `search`, `dashboard/forms`).
+     */
+    private function layoutHref(string $link): string
+    {
+        if ($link === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/|#)~i', $link) === 1) {
+            return $link;
+        }
+
+        return $this->urlFormatter->href('', $link);
     }
 
     private function addTwigFilters(): void
@@ -525,6 +717,25 @@ class TemplateEngine
     public function hasTemplate($templatePath): bool
     {
         return $this->twigLoader->exists(self::resolveLegacyTemplateName($templatePath));
+    }
+
+    /**
+     * Whether a template *compiles*, without rendering it or writing it anywhere.
+     *
+     * For the Custom Templates screen (ticket 30), which must not accept an override that
+     * cannot parse: the failure would not show up where it was made but as a 500 on every
+     * page that renders the template.
+     *
+     * It has to be **this** environment rather than a throwaway one. Twig 3 resolves filters
+     * and functions at parse time, so a bare environment would reject `{{ _t(…) }}`,
+     * `{{ action(…) }}` and every other helper as unknown -- reporting a syntax error in
+     * templates that are perfectly correct.
+     *
+     * @throws \Twig\Error\Error which carries the line number
+     */
+    public function parseTemplateSource(string $name, string $source): void
+    {
+        $this->twig->parse($this->twig->tokenize(new \Twig\Source($source, $name)));
     }
 
     /**

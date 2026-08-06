@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiController;
@@ -18,11 +19,10 @@ use YesWiki\Render\Service\ThemeManager;
 class AdminPagesApiController extends YesWikiController
 {
     private const ALLOWED_SORTS = ['tag', 'time', 'owner', 'type'];
-    private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'tp.value'];
+    private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'page_type'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
     private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
     private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
-    private const TYPE_PROPERTY = 'http://outils-reseaux.org/_vocabulary/type';
     private const SPECIAL_PAGES = [
         'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
         'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
@@ -54,7 +54,8 @@ class AdminPagesApiController extends YesWikiController
         $pT = $dbService->prefixTable('pages');
         $trT = $dbService->prefixTable('triples');
         $tagProp = self::TAG_PROPERTY;
-        $typeProp = self::TYPE_PROPERTY;
+        $typeCol = $dbService->quoteIdentifier('type');
+        $entryType = PageType::ENTRY;
         $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.form_id');
         $tagsAggExpr = $dbService->groupConcat('tg.value');
 
@@ -63,21 +64,20 @@ class AdminPagesApiController extends YesWikiController
                 p.tag,
                 p.time,
                 p.owner,
-                p.comment_on,
+                p.parent,
                 p.user AS last_editor,
                 p.metadata AS page_metadata,
-                tp.value AS page_type,
+                p.{$typeCol} AS page_type,
                 MIN(CASE
-                    WHEN tp.value = 'fiche_bazar' THEN
+                    WHEN p.{$typeCol} = '{$entryType}' THEN
                         {$idTypeAnnonceExpr}
                     ELSE NULL
                 END) AS form_id,
                 {$tagsAggExpr} AS page_tags
             FROM {$pT} p
             LEFT JOIN {$trT} tg ON tg.resource = p.tag AND tg.property = '{$tagProp}'
-            LEFT JOIN {$trT} tp ON tp.resource = p.tag AND tp.property = '{$typeProp}'
             WHERE {$whereClause}
-            GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, p.metadata, tp.value
+            GROUP BY p.tag, p.time, p.owner, p.parent, p.user, p.metadata, p.{$typeCol}
             {$having}
             ORDER BY {$sortCol} {$dirSql}
             LIMIT {$perpage} OFFSET {$offset}
@@ -113,7 +113,7 @@ class AdminPagesApiController extends YesWikiController
                 'acl_read' => $acls['read'] ?? $defaultRead,
                 'acl_write' => $acls['write'] ?? $defaultWrite,
                 'acl_comment' => $acls['comment'] ?? $defaultComment,
-                'comment_on' => $r['comment_on'] ?? '',
+                'parent' => $r['parent'] ?? '',
                 'page_type' => $r['page_type'] ?? '',
                 'form_id' => $r['form_id'] ?? '',
                 'tags' => !empty($r['page_tags']) ? explode(',', $r['page_tags']) : [],
@@ -231,12 +231,6 @@ class AdminPagesApiController extends YesWikiController
                     $errors[] = $tag . ' (not found)';
                     continue;
                 }
-                if (!$pageManager->isOrphaned($tag)) {
-                    $dbService->query(
-                        "DELETE FROM {$dbService->prefixTable('links')}"
-                        . " WHERE to_tag = '" . $dbService->escape($tag) . "'"
-                    );
-                }
                 $pageOperationsService->delete($tag);
                 $success[] = $tag;
             } catch (\Throwable $th) {
@@ -340,7 +334,7 @@ class AdminPagesApiController extends YesWikiController
 
     private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = '', string $themeFilter = ''): array
     {
-        $conditions = ["p.latest = 'Y'", $type === 'comments' ? "p.comment_on != ''" : "p.comment_on = ''"];
+        $conditions = ["p.latest = 'Y'", $type === 'comments' ? "p.parent != ''" : "p.parent = ''"];
         $having = '';
 
         if ($search !== '') {
@@ -353,22 +347,20 @@ class AdminPagesApiController extends YesWikiController
             $conditions[] = "p.owner = '{$escaped}'";
         }
 
-        $trT = $db->prefixTable('triples');
-        $typeProp = self::TYPE_PROPERTY;
+        $typeCol = 'p.' . $db->quoteIdentifier('type');
 
         switch ($type) {
             case 'pages':
-                $conditions[] = "p.tag NOT IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'fiche_bazar' AND property = '{$typeProp}')";
-                $conditions[] = "p.tag NOT IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'liste' AND property = '{$typeProp}')";
+                $conditions[] = "{$typeCol} NOT IN ('" . PageType::ENTRY . "', '" . PageType::LIST . "')";
                 break;
             case 'bazar':
-                $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'fiche_bazar' AND property = '{$typeProp}')";
+                $conditions[] = "{$typeCol} = '" . PageType::ENTRY . "'";
                 break;
             case 'comments':
-                // base condition already set to comment_on != ''
+                // base condition already set to parent != ''
                 break;
             case 'lists':
-                $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'liste' AND property = '{$typeProp}')";
+                $conditions[] = "{$typeCol} = '" . PageType::LIST . "'";
                 break;
             case 'special':
                 $sp = implode("','", self::SPECIAL_PAGES);
@@ -377,7 +369,7 @@ class AdminPagesApiController extends YesWikiController
             default:
                 if (ctype_digit((string)$type) && (int)$type > 0) {
                     $escaped = $db->escape($type);
-                    $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'fiche_bazar' AND property = '{$typeProp}')";
+                    $conditions[] = "{$typeCol} = '" . PageType::ENTRY . "'";
                     $conditions[] = "p.body LIKE '%\"form_id\":\"{$escaped}\"%'";
                 }
                 break;
@@ -450,7 +442,8 @@ class AdminPagesApiController extends YesWikiController
     private function getForms(): array
     {
         try {
-            return $this->getService(\YesWiki\Content\Service\FormManager::class)->getAll();
+            // id => label: the two templates fed from here read nothing else off a form
+            return $this->getService(\YesWiki\Content\Service\FormManager::class)->getAllLabels();
         } catch (\Throwable $e) {
             return [];
         }

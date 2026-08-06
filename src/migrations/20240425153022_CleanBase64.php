@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -17,14 +18,10 @@ class CleanBase64 extends YesWikiMigration
     private function searchPagesWithBase64(): array
     {
         $anchor = '%src=\\\\\\\\\\"data:image\\\\\\\\/%;base64,%';
-        $select_entries_filter =
-            'SELECT DISTINCT resource FROM ' . $this->dbService->prefixTable('triples') .
-            " WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type' " .
-            'ORDER BY resource ASC';
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . ' ' .
             "WHERE body LIKE '{$anchor}' " .
-            'AND tag IN (' . $select_entries_filter . ')';
+            'AND ' . $this->dbService->quoteIdentifier('type') . " = '" . PageType::ENTRY . "'";
 
         $pages = $this->dbService->loadAll($sql);
 

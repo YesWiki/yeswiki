@@ -2,7 +2,6 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
@@ -62,7 +61,6 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
             // follow-up): one entry carrying {{redirect}} used to 302 the whole list.
             $pageContext = $this->getService(PageContext::class);
             if ($pageContext->getMethod() == 'show' && $pageContext->isRenderingRequestedPage()) {
-                $this->getService(LinkTracker::class)->forceAddIfNotIncluded($redirPageName);
                 if (!isset($_SESSION['redirects'])) {
                     $_SESSION['redirects'] = [];
                 }

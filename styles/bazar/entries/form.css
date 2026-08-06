@@ -32,13 +32,6 @@
   margin-left: 1rem;
 }
 
-/* Image input when there is already an image loaded */
-.yw-form-group.input-image:not(.file) .yw-form-label {
-  position: relative;
-  padding: 0;
-  margin: 0 -15px;
-}
-
 .yw-form-group.input-image:not(.file) .yw-form-label::before {
   content: none;
 }
@@ -97,6 +90,10 @@
 
 .file-url-tabs .tab-pane input {
   max-width: 100%;
+}
+
+.file-or-url .image-url-input {
+  max-width: 15em;
 }
 
 .url-indicator {

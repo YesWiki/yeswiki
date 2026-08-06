@@ -10,6 +10,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /**
@@ -34,7 +35,7 @@ class InstallationController
         'wakka_name' => 'yeswiki_name',
     ];
 
-    private const TABLE_NAMES = ['links', 'pages', 'referrers', 'triples'];
+    private const TABLE_NAMES = ['pages', 'triples'];
 
     /** A database backup at this location (instance-relative) can be restored instead of the default content. */
     public const BACKUP_SQL_FILE = 'private/backups/content.sql';
@@ -569,6 +570,8 @@ class InstallationController
             }
         }
 
+        $this->config += $this->defaultLayout();
+
         try {
             $configurationService = new ConfigurationService();
             $configuration = $configurationService->getConfiguration($this->configFile);
@@ -583,6 +586,43 @@ class InstallationController
             throw new \Exception(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt> :<br />' . _t('CONFIGURATION_FILE_NOT_CREATED') . '. ' . _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE') . '.<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
         }
         $this->pass(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt>');
+    }
+
+    /**
+     * The chrome a fresh wiki wears, as configuration (ticket 30).
+     *
+     * This is what the seeded `PageTitre`, `PageMenuHaut` and `PageRapideHaut` used to hold,
+     * and the reason those three pages are no longer seeded. No title: the field is empty and
+     * LayoutService falls back to `yeswiki_name`, which is what the seeded `PageTitre`
+     * (`{{configuration param="yeswiki_name"}}`) said in the longest possible way.
+     *
+     * Written here rather than declared as a default in YesWikiInit, deliberately: a default
+     * would make every existing wiki look like it already had a layout, and the migration that
+     * reads the three pages skips a wiki that does.
+     *
+     * @return array<string, mixed>
+     */
+    private function defaultLayout(): array
+    {
+        return [
+            LayoutService::TITLE => '',
+            LayoutService::LOGO => '',
+            LayoutService::BRAND => 'text',
+            LayoutService::ACCOUNT_BUTTON => true,
+            LayoutService::NAVBAR => [
+                ['label' => 'Bac à sable', 'link' => 'BacASable', 'children' => []],
+                ['label' => 'Menu exemple', 'link' => '', 'children' => [
+                    ['label' => 'Exemple annuaire', 'link' => 'TrombiAnnuaire'],
+                    ['label' => 'Exemple agenda', 'link' => 'VueActivite'],
+                    ['label' => 'Exemple ressourcerie', 'link' => 'FacetteRessource'],
+                    ['label' => 'Exemple blog', 'link' => 'VoirBlog'],
+                ]],
+            ],
+            LayoutService::QUICK_MENU => [
+                ['icon' => 'search', 'label' => 'Rechercher', 'link' => 'search'],
+                ['icon' => 'gauge', 'label' => 'Tableau de bord', 'link' => 'dashboard'],
+            ],
+        ];
     }
 
     /**

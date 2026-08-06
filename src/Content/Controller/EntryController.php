@@ -118,7 +118,7 @@ class EntryController extends YesWikiController
             $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering)
                 // a page, an account and a file are described by a form too (ticket 10), so
                 // they render here the same way, through the same fields in the same
-                // declared order -- EntryManager only answers for `fiche_bazar` rows
+                // declared order -- EntryManager only answers for `entry` rows
                 ?? $this->builtInContentAsEntry((string)$entryId, $time === '' ? null : $time, $userNameForRendering);
             if (!$entry) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
@@ -841,7 +841,7 @@ class EntryController extends YesWikiController
             );
         }
 
-        return $this->getService(ActionRunner::class)->action('entrylist', false, $params);
+        return $this->getService(ActionRunner::class)->action('entrylist', $params);
     }
 
     /**

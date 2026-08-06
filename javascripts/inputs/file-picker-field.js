@@ -7,9 +7,11 @@
 // ImageField/FileField about where a value comes from, and the URL box beside the button
 // is the same box, still hand-typeable for a file that lives somewhere else entirely.
 //
-// The panel itself is on the page already: every entry form includes
-// @core/aceditor-rails.twig, which carries all three rails whether or not anything on the
-// form is an editor.
+// The panel itself has to be on the page: whatever template renders this field must also
+// include @core/aceditor-rails.twig, which carries all three rails whether or not anything
+// on the form is an editor. That is not automatic -- it is a rule a template can forget,
+// and usersettings.twig did: the button rendered, the panel did not, and FilePickerPanel's
+// `if (!this.panel) return` guard turned the click into silence.
 import FilePickerPanel from '../file-picker-panel.js'
 
 /** One panel per page, shared by every field on the form (they open it in turn). */

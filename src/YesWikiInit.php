@@ -233,7 +233,6 @@ class Init
             'meta_keywords' => '',
             'meta_description' => '',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
-            'referrers_purge_time' => 24,
             'pages_purge_time' => 365,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
@@ -459,7 +458,6 @@ class Init
                 'GererConfig',
                 'GererUtilisateurs',
                 'TableauDeBord',
-                'LookWiki',
                 'GererSauvegardes',
             ],
             // bazar generic config (ticket 24, formerly tools/bazar's config.yaml)

@@ -1,0 +1,13 @@
+{# "Edit this bit of the chrome", shown on the bit itself.
+
+   The navbar, the banner and the footer are the three things people ask how to change, and
+   until now the answer was a route or a page name you had to be told (ticket 30 exists
+   because of exactly that). A pencil where the thing is says it without being told.
+
+   Icon only, with the label as its accessible name: this sits inside the wiki's own chrome
+   on every page, and a labelled button there would compete with the site's actual
+   navigation. It is only rendered for someone who may follow it -- TemplateEngine checks
+   before this template is reached, so there is no disabled state to explain. #}
+<a class="yw-chrome-edit" href="{{ href }}" title="{{ label }}" aria-label="{{ label }}">
+  {{ icon('pencil') }}
+</a>

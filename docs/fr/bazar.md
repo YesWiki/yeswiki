@@ -718,8 +718,9 @@ cet ajout, ou cette modfication, auront les droits que vous avez définis.
 ### 1.2.23. Config thème de la fiche
 
 Permet de définir un thème graphique spécifique à associer à toutes les fiches
-du formulaire, cela peut être un jeu de couleur que vous définissez dans la page
-LookWiki
+du formulaire, cela peut être un préréglage de couleurs que vous définissez dans
+le tableau de bord, section _Apparence_ → **Personnalisation**
+(`?admin/preset`)
 
 ### 1.2.24. Liste des fiches liées
 

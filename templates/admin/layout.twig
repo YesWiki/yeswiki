@@ -1,0 +1,198 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The wiki's chrome, as fields (ticket 30).
+
+   Three wiki pages became configuration -- the brand (`PageTitre`) and the two menus
+   (`PageMenuHaut`, `PageRapideHaut`) -- so a menu entry is a label and a link rather than a
+   line of markdown somebody has to write correctly. The other three chrome pages are still
+   pages, and are listed at the bottom: this screen is where you remember they exist.
+
+   One form for the whole screen, because it is one save: the brand, both menus and the
+   account button are all `layout_*` config keys written in a single pass (LayoutService),
+   and a screen with four save buttons would be four ways to leave half of it applied. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_LAYOUT') }}</h1>
+
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_LAYOUT_INTRO') }}</p>
+
+  {# said before anything is typed rather than discovered on save #}
+  {% if not configWritable %}
+    <div class="alert alert-danger">{{ _t('ADMIN_LAYOUT_CONFIG_NOT_WRITABLE') }}</div>
+  {% endif %}
+
+  {# The live preview, and why it is htmx rather than JavaScript rebuilding the markup:
+     `#yw-layout-chrome` is the REAL top bar of this very page, and the fragment that replaces
+     it comes from @core/layout/chrome.twig -- the same template the squelette renders. So the
+     preview cannot drift from the thing it previews, and no navbar markup is duplicated in JS.
+
+     `hx-trigger` names the events explicitly, which also removes `submit` from the list: with
+     no hx-trigger a form posts over htmx when submitted, and Save must be an ordinary POST
+     that redirects. Nothing here writes anything -- the preview route saves nothing, and
+     leaving without pressing Save leaves the wiki exactly as it was. #}
+  <form method="post" action="{{ url({ tag: 'admin/layout' }) }}" hx-boost="false" class="yw-layout-form"
+        data-yw-unsaved-guard
+        hx-post="{{ url({ tag: 'admin/layout/preview' }) }}"
+        hx-trigger="input delay:300ms, change delay:150ms, yw:layout-preview delay:150ms"
+        hx-target="#yw-layout-chrome" hx-swap="innerHTML">
+    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('ADMIN_LAYOUT_BRAND') }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_BRAND_HINT') }}</p>
+      <p class="yw-layout__hint yw-layout__live">{{ icon('eye') }} {{ _t('ADMIN_LAYOUT_LIVE_HINT') }}</p>
+
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-title">{{ _t('ADMIN_LAYOUT_TITLE') }}</label>
+        {# the placeholder is what an empty box means: the wiki's own name, which is already
+           the name in the browser tab. Two fields saying the same thing is what this avoids #}
+        <input type="text" class="yw-input" id="yw-layout-title" name="layout_title"
+               value="{{ title }}" placeholder="{{ fallbackTitle }}" autocomplete="off">
+        <small class="yw-form-hint">{{ _t('ADMIN_LAYOUT_TITLE_HINT') }}</small>
+      </div>
+
+      {# The logo is picked, not typed. There was a URL box here beside the button, and it
+         was the wrong offer twice over: what goes in it is an `api/files/…/download` address
+         nobody composes by hand, and a box wide enough to show one dominated the card. The
+         value lives in a hidden input -- the picker writes into it, the preview reads it, and
+         the form still posts one field called `layout_logo`. #}
+      <div class="yw-form-group">
+        <span class="yw-form-label">{{ _t('ADMIN_LAYOUT_LOGO') }}</span>
+        <input type="hidden" id="yw-layout-logo" name="layout_logo" value="{{ logo }}"
+               data-yw-layout-logo>
+
+        <div class="yw-layout__logo-field">
+          <img class="yw-layout__logo-preview" src="{{ logo }}" alt=""
+               data-yw-layout-logo-preview{{ logo ? '' : ' hidden' }}>
+          {# the same rail the editors and the bazar file fields open. Two things make this
+             button work and both are easy to leave out: @core/aceditor-rails.twig, at the
+             bottom of this template, which puts the panel on the page -- and the module
+             below, which is what binds the click. Without it the button is silent. #}
+          <button type="button" class="yw-btn" data-yw-file-picker-field="yw-layout-logo"
+                  data-yw-file-picker-only="image">
+            {{ icon('photo') }} {{ _t('ADMIN_LAYOUT_LOGO_CHOOSE') }}
+          </button>
+          <button type="button" class="yw-btn yw-layout__logo-remove" data-yw-layout-logo-remove
+                  {{ logo ? '' : 'hidden' }}>
+            {{ icon('x') }} {{ _t('ADMIN_LAYOUT_LOGO_REMOVE') }}
+          </button>
+        </div>
+      </div>
+
+      <fieldset class="yw-form-group yw-layout__modes">
+        <legend class="yw-form-label">{{ _t('ADMIN_LAYOUT_BRAND_MODE') }}</legend>
+        {% for mode in brandModes %}
+          <label class="yw-layout__mode">
+            <input type="radio" name="layout_brand" value="{{ mode }}"
+                   {{ mode == brandMode ? 'checked' : '' }}>
+            <span class="yw-layout__mode-label">{{ _t('ADMIN_LAYOUT_BRAND_MODE_' ~ mode|upper|replace({'-': '_'})) }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+
+      {# The bar's height, and the logo's with it: the logo is sized from this in CSS with
+         `width: auto`, so a wordmark keeps its proportions instead of needing a second
+         number that can disagree with this one.
+
+         The slider moves the custom property on <html> directly (admin-layout.js) rather
+         than waiting for the round trip -- height is the one setting where a lag between
+         dragging and seeing makes the control useless. #}
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-layout-navbar-height">
+          {{ _t('ADMIN_LAYOUT_NAVBAR_HEIGHT') }}
+        </label>
+        <div class="yw-layout__slider">
+          <input type="range" id="yw-layout-navbar-height" name="layout_navbar_height"
+                 min="{{ navbarHeightMin }}" max="{{ navbarHeightMax }}" step="2"
+                 value="{{ navbarHeight }}" data-yw-layout-height>
+          <output for="yw-layout-navbar-height" data-yw-layout-height-value>{{ navbarHeight }}px</output>
+        </div>
+        <small class="yw-form-hint">{{ _t('ADMIN_LAYOUT_NAVBAR_HEIGHT_HINT') }}</small>
+      </div>
+    </section>
+
+    {# The two menus are the same editor twice over: a list of rows, add at the end, remove,
+       move. They differ in what a row carries, so each declares its own <template> row and
+       admin-layout.js is told nothing about either. #}
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('ADMIN_LAYOUT_NAVBAR') }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_NAVBAR_HINT') }}</p>
+
+      <ul class="yw-layout__rows" data-yw-layout-rows="navbar">
+        {% for row in navbarRows %}
+          {{ include('@core/admin/layout-navbar-row.twig', { row: row, index: loop.index0 }) }}
+        {% endfor %}
+      </ul>
+
+      {# the row a new entry is cloned from; its index is rewritten on insertion #}
+      <template data-yw-layout-template="navbar">
+        {{ include('@core/admin/layout-navbar-row.twig', {
+          row: { label: '', link: '', child: false }, index: 0
+        }) }}
+      </template>
+
+      <button type="button" class="yw-btn" data-yw-layout-add="navbar">
+        {{ icon('plus') }} {{ _t('ADMIN_LAYOUT_ADD_ENTRY') }}
+      </button>
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h2>{{ _t('ADMIN_LAYOUT_QUICK_MENU') }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_QUICK_MENU_HINT') }}</p>
+
+      <ul class="yw-layout__rows" data-yw-layout-rows="quick">
+        {% for row in quickMenu %}
+          {{ include('@core/admin/layout-quick-row.twig', { row: row, index: loop.index0 }) }}
+        {% endfor %}
+      </ul>
+
+      <template data-yw-layout-template="quick">
+        {{ include('@core/admin/layout-quick-row.twig', {
+          row: { icon: '', label: '', link: '' }, index: 0
+        }) }}
+      </template>
+
+      <button type="button" class="yw-btn" data-yw-layout-add="quick">
+        {{ icon('plus') }} {{ _t('ADMIN_LAYOUT_ADD_ENTRY') }}
+      </button>
+
+      <label class="yw-layout__checkbox">
+        <input type="checkbox" name="layout_account_button" {{ accountButton ? 'checked' : '' }}>
+        {{ _t('ADMIN_LAYOUT_ACCOUNT_BUTTON') }}
+      </label>
+    </section>
+
+    <div class="yw-layout__save">
+      <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
+    </div>
+  </form>
+
+  {# Outside the form on purpose: these are links to other screens, not fields of this one.
+     They are the chrome that stayed wiki content -- arbitrary sections, actions and images
+     is what people put in them, and that is what a page is for. #}
+  <section class="yw-dashboard__card">
+    <h2>{{ _t('ADMIN_LAYOUT_PAGES') }}</h2>
+    <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_PAGES_HINT') }}</p>
+
+    <ul class="yw-dashboard__links">
+      {% for page in pages %}
+        <li>
+          <a href="{{ url({ tag: page.tag, handler: 'edit' }) }}">{{ icon('pencil') }} {{ page.label }}</a>
+          {# a wiki missing one gets "create" rather than a link into nothing #}
+          {% if not page.exists %}
+            <em class="yw-layout__missing">{{ _t('ADMIN_LAYOUT_PAGE_MISSING') }}</em>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {# the file rail the logo button opens -- a template rendering a file field must ship it #}
+  {{ include('@core/aceditor-rails.twig') }}
+
+  {{ include_css('styles/admin-layout.css') }}
+  {# ...and the rail is only half of it: this module is what turns the button's click into an
+     open panel. The bazar file and image fields each ship it beside their own button for the
+     same reason; a template that renders the button and not this gets silence. #}
+  {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
+  {{ include_javascript('javascripts/admin-layout.js', false, true) }}
+{% endblock %}

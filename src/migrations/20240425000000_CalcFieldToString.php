@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\CalcField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
@@ -40,23 +41,17 @@ class CalcFieldToString extends YesWikiMigration
                         $regexpOp = $this->dbService->regexpOperator();
 
                         // Quote identifiers for cross-database compatibility
-                        $commentOnCol = $this->dbService->quoteIdentifier('comment_on');
+                        $commentOnCol = $this->dbService->quoteIdentifier('parent');
                         $bodyCol = $this->dbService->quoteIdentifier('body');
-                        $tagCol = $this->dbService->quoteIdentifier('tag');
-                        $resourceCol = $this->dbService->quoteIdentifier('resource');
-                        $valueCol = $this->dbService->quoteIdentifier('value');
-                        $propertyCol = $this->dbService->quoteIdentifier('property');
+                        $typeCol = $this->dbService->quoteIdentifier('type');
+                        $entryType = PageType::ENTRY;
                         $idCol = $this->dbService->quoteIdentifier('id');
 
                         $sql = <<<SQL
                             SELECT DISTINCT * FROM {$this->dbService->prefixTable('pages')}
                             WHERE $commentOnCol = ''
                             AND $bodyCol LIKE '%"id_typeannonce":"{$this->dbService->escape(strval($formId))}"%'
-                            AND $tagCol IN (
-                                    SELECT DISTINCT $resourceCol FROM {$this->dbService->prefixTable('triples')}
-                                    WHERE $valueCol = 'fiche_bazar' AND $propertyCol = 'http://outils-reseaux.org/_vocabulary/type'
-                                    ORDER BY $resourceCol ASC
-                            )
+                            AND $typeCol = '{$entryType}'
                             AND $bodyCol $regexpOp '"($fieldsNamesList)":-?[0-9]'
                         SQL;
                         $results = $this->dbService->loadAll($sql);

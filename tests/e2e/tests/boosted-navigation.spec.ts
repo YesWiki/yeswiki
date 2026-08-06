@@ -275,8 +275,10 @@ test.describe('boosted navigation', () => {
     expect(linksBefore, 'this wiki has no navbar menu, so there is nothing to lose').toBeGreaterThan(0)
 
     for (let round = 0; round < 2; round += 1) {
-      await railLink('api').click()
-      await page.waitForFunction(() => window.location.href.includes('api'), null, { timeout: 10000 })
+      // any other dashboard screen will do -- this was `api` until ticket 30 took the API
+      // out of the rail and listed it on Export, where it belongs
+      await railLink('dashboard/export').click()
+      await page.waitForFunction(() => window.location.href.includes('export'), null, { timeout: 10000 })
       await railLink('doc').click()
       await page.waitForFunction(() => window.location.href.includes('doc'), null, { timeout: 10000 })
       await page.waitForTimeout(1500)

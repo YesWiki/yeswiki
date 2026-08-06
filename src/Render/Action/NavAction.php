@@ -2,7 +2,6 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -90,7 +89,6 @@ class NavAction extends YesWikiAction implements RegisteredAction
                 $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($links[$key]);
                 [$url, $method, $params] = ['', '', ''];
                 if ($linkParts) {
-                    $this->getService(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag'] ?? '');
                     $method = $linkParts['method'];
                     $params = $linkParts['params'];
                     $url = $this->getService(UrlFormatter::class)->href($method, $linkParts['tag'], $params);

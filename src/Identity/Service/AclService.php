@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -18,6 +19,18 @@ class AclService
     protected ContainerInterface $container;
 
     protected $cache;
+    /**
+     * tag => the `acls` sub-object of its `metadata`, as stored.
+     *
+     * The privilege cache above cannot stand in for this one: `load()` with
+     * `$useDefaults = false` empties `$this->cache[$tag]` and refills it from storage, so
+     * the two modes evicted each other and the same `SELECT metadata` ran on every call --
+     * three times per page render, before anything asked a second question. This caches the
+     * read itself, which is the part that hits the database whichever mode asked.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $metadataAclsCache = [];
 
     public function __construct(
         AuthenticationService $authenticationService,
@@ -220,20 +233,38 @@ class AclService
      */
     private function readMetadataAcls(string $tag): array
     {
-        $page = $this->dbService->loadSingle("SELECT metadata FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
-        if (empty($page['metadata'])) {
-            return [];
+        if (array_key_exists($tag, $this->metadataAclsCache)) {
+            return $this->metadataAclsCache[$tag];
         }
 
-        $metadata = json_decode($page['metadata'], true);
+        // asked of PageManager rather than read again: the page whose ACLs are being
+        // checked has, in all but the first case, just been loaded in full, metadata
+        // included. Its unredacted cache answers this without touching the database, and a
+        // read taken *during* that load (checkEntriesACL calls straight back into here)
+        // still finds it, because the row is remembered before it is redacted.
+        $page = $this->container->get(PageManager::class)->getOne($tag, null, true, true);
+        $metadata = $page['metadatas'] ?? null;
 
-        return $metadata['acls'] ?? [];
+        return $this->metadataAclsCache[$tag] = is_array($metadata) ? ($metadata['acls'] ?? []) : [];
+    }
+
+    /**
+     * Forget what this page's stored ACLs were.
+     *
+     * Called by whoever writes a `pages` row behind this service's back -- PageManager, when
+     * it creates a page (whose first revision carries the default ACLs) or reverts one.
+     * Without it a lookup made *before* the row existed would answer for the rest of the
+     * request from a cache that predates the page.
+     */
+    public function forget(string $tag): void
+    {
+        unset($this->metadataAclsCache[$tag], $this->cache[$tag]);
     }
 
     /**
      * Writes the `acls` sub-object back into `metadata`, versioned the same way any other
      * metadata change is (ADR-0002): marks the current revision non-latest and inserts a new
-     * one carrying `body`/`owner`/`comment_on` forward unchanged, alongside every other
+     * one carrying `body`/`owner`/`parent` forward unchanged, alongside every other
      * `metadata` key untouched.
      *
      * This duplicates the shape of PageManager::setMetadata() rather than calling it:
@@ -258,11 +289,13 @@ class AclService
             return;
         }
         $metadata['acls'] = $acls;
+        // the row below replaces the stored value this service may have cached
+        unset($this->metadataAclsCache[$tag]);
 
         $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
         $userCol = $this->dbService->quoteIdentifier('user');
-        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
+        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
         $values = [
             "'" . $this->dbService->escape($tag) . "'",
             $this->dbService->now(),
@@ -272,14 +305,20 @@ class AclService
             // raw SQL row, so the body is still the stored JSON text -- carry it forward
             // verbatim rather than decoding and re-encoding it
             "'" . $this->dbService->escape((string)$current['body']) . "'",
-            "''",
+            // carried forward: changing a page's ACLs is not retyping it, and a revision
+            // defaulting to 'page' would turn every account, file and entry into a page the
+            // first time its permissions were touched
+            "'" . $this->dbService->escape((string)($current['type'] ?? PageType::DEFAULT)) . "'",
             "'" . $this->dbService->escape(json_encode($metadata)) . "'",
         ];
-        if (!empty($current['comment_on'])) {
-            $columns[] = 'comment_on';
-            $values[] = "'" . $this->dbService->escape($current['comment_on']) . "'";
+        if (!empty($current['parent'])) {
+            $columns[] = 'parent';
+            $values[] = "'" . $this->dbService->escape($current['parent']) . "'";
         }
         $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
+
+        // a new revision of the row PageManager may be holding a copy of
+        $this->container->get(PageManager::class)->forget($tag);
     }
 
     /**

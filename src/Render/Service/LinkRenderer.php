@@ -3,7 +3,6 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -17,20 +16,17 @@ class LinkRenderer
 {
     protected UrlFormatter $urlFormatter;
     protected PageManager $pageManager;
-    protected LinkTracker $linkTracker;
     protected PageContext $pageContext;
     protected ParameterBagInterface $params;
 
     public function __construct(
         UrlFormatter $urlFormatter,
         PageManager $pageManager,
-        LinkTracker $linkTracker,
         PageContext $pageContext,
         ParameterBagInterface $params
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->pageManager = $pageManager;
-        $this->linkTracker = $linkTracker;
         $this->pageContext = $pageContext;
         $this->params = $params;
     }
@@ -39,14 +35,13 @@ class LinkRenderer
      * Create an HTML link.
      *
      * linkTo("WikiPage")
-     * linkTo("WikiPage", "My page", ["track" => false])
      * linkTo("WikiPage", "", ["method" => "xml"])
      * linkTo("WikiPage/edit?params=2", "ma page")
      * linkTo("https://test.fr", "mon lien", ["class" => "yeah"])
      *
      * @param string       $link    URL, or wiki tag / short link
      * @param string       $text
-     * @param array<mixed> $options HTML attributes, plus 'track', 'method', 'params' and 'html'
+     * @param array<mixed> $options HTML attributes, plus 'method', 'params' and 'html'
      *                              (when truthy, $text is already-safe HTML and is not escaped)
      *
      * @return string HTML link
@@ -79,13 +74,6 @@ class LinkRenderer
             $options['data-method'] = $method ?? 'show';
             unset($options['method']);
             unset($options['params']);
-
-            // Trackable
-            if (!empty($options['track'])) {
-                $this->linkTracker->add(explode('?', (string)$tag)[0]);
-                $options['data-tracked'] = true;
-            }
-            unset($options['track']);
 
             // General URL
             $link = $this->urlFormatter->href($method, $tag, $params, false);
@@ -137,20 +125,19 @@ class LinkRenderer
     /**
      * Positional tag/method/text convenience over linkTo() (historic ComposeLinkToPage()).
      */
-    public function linkToPage(mixed $tag, mixed $method = '', mixed $text = '', mixed $track = 1): string
+    public function linkToPage(mixed $tag, mixed $method = '', mixed $text = ''): string
     {
-        return $this->linkTo((string)$tag, (string)$text, ['method' => $method, 'track' => $track]);
+        return $this->linkTo((string)$tag, (string)$text, ['method' => $method]);
     }
 
     /**
      * Positional tag/method/params/text convenience over linkTo() (historic Link()).
      */
-    public function link(mixed $tag, mixed $method = null, mixed $params = null, mixed $text = null, mixed $track = 1, bool $forcedLink = false): string
+    public function link(mixed $tag, mixed $method = null, mixed $params = null, mixed $text = null, bool $forcedLink = false): string
     {
         return $this->linkTo((string)$tag, (string)$text, [
             'method' => $method,
             'params' => $params,
-            'track' => $track,
             'class' => $forcedLink ? 'forced-link' : '',
         ]);
     }

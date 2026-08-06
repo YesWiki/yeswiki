@@ -97,7 +97,7 @@ class YesWikiTestCase extends TestCase
             $time = $dbService->quoteIdentifier('time');
             $rows = $dbService->loadAll(
                 "SELECT DISTINCT tag FROM {$dbService->prefixTable('pages')}"
-                . " WHERE comment_on <> '' AND {$time} >= '{$dbService->escape(self::$runStartedAt)}'"
+                . " WHERE parent <> '' AND {$time} >= '{$dbService->escape(self::$runStartedAt)}'"
             );
         } catch (\Throwable $t) {
             return;

@@ -3,8 +3,8 @@
 namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
@@ -32,12 +32,11 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testCreateStoresUserAsAPageTypedViaTripleNotAUsersRow()
+    public function testCreateStoresUserAsAPageTypedByItsColumnNotAUsersRow(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
         $pageManager = $wiki->services->get(PageManager::class);
-        $tripleStore = $wiki->services->get(TripleStore::class);
 
         $name = 'UserManagerContentTestCreate';
         $this->cleanupUser($userManager, $name);
@@ -50,8 +49,8 @@ class UserManagerContentTest extends YesWikiTestCase
             $page = $pageManager->getOne($name, null, true, true);
             $this->assertIsArray($page);
 
-            $typeTriple = $tripleStore->getOne($name, TripleStore::TYPE_URI, '', '');
-            $this->assertSame(UserManager::TRIPLES_USER_TYPE, $typeTriple);
+            $this->assertSame(PageType::USER, $page['type'], 'the row states it is an account');
+            $this->assertSame(PageType::USER, $pageManager->typeOf($name));
 
             // the account owns itself, and default_write_acl ('*') is overridden
             $this->assertSame($name, $page['owner']);

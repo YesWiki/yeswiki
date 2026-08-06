@@ -72,10 +72,12 @@ export default class {
   loadToken = 0
   files = []
   family = ''
+  /** 'browse' | 'upload' | 'chosen' -- see showView(). */
+  view = 'browse'
 
   get panel() { return document.getElementById('YesWikiFilePickerPanel') }
-  get tabExisting() { return this.panel.querySelector('[data-yw-file-picker-tab="existing"]') }
-  get tabUpload() { return this.panel.querySelector('[data-yw-file-picker-tab="upload"]') }
+  get uploadOpenBtn() { return this.panel.querySelector('[data-yw-file-picker-upload-open]') }
+  get backBtn() { return this.panel.querySelector('[data-yw-file-picker-back]') }
   get paneExisting() { return this.panel.querySelector('[data-yw-file-picker-pane="existing"]') }
   get paneUpload() { return this.panel.querySelector('[data-yw-file-picker-pane="upload"]') }
   get searchInput() { return this.panel.querySelector('input[name="search"]') }
@@ -111,8 +113,8 @@ export default class {
     // all of them. That was harmless while every instance behaved identically; it stopped
     // being harmless when they gained settings of their own, and an upload into a rail
     // pinned to images was performed by some other instance that was pinned to nothing.
-    this.tabExisting.addEventListener('click', () => this.isOpen && this.showTab('existing'))
-    this.tabUpload.addEventListener('click', () => this.isOpen && this.showTab('upload'))
+    this.uploadOpenBtn.addEventListener('click', () => this.isOpen && this.showView('upload'))
+    this.backBtn.addEventListener('click', () => this.isOpen && this.goBack())
     this.searchInput.addEventListener('input', () => this.isOpen && this.applyFilters())
     this.extensionSelect.addEventListener('change', () => this.isOpen && this.applyFilters())
     this.panel.querySelector('.btn-do-upload').addEventListener('click', () => this.isOpen && this.uploadNewFile())
@@ -141,14 +143,9 @@ export default class {
     this.onComplete = options.onComplete
     this.onPick = options.onPick ?? null
     this.format = options.format === 'markdown' ? 'markdown' : 'wiki'
-    this.selectedTag = null
-    this.selectedEntry = null
-    this.optionsForm.hidden = true
-    this.selectedBox.hidden = true
+    this.clearSelection()
     this.uploadError.hidden = true
     this.uploadInput.value = ''
-    this.insertBtn.disabled = true
-    this.optionsForm.reset()
     this.searchInput.value = ''
     this.extensionSelect.value = ''
     this.only = options.only ?? ''
@@ -156,7 +153,7 @@ export default class {
     this.uploadInput.accept = FAMILY_MIME_PREFIX[this.only] ? `${FAMILY_MIME_PREFIX[this.only]}*` : ''
     this.files = []
     this.applyFilters()
-    this.showTab('existing')
+    this.showView('browse')
     this.loadFiles()
     // the same button ends two different sentences: an editor inserts the file into what
     // it is writing, a form field simply uses it
@@ -188,11 +185,48 @@ export default class {
     this.isOpen = false
   }
 
-  showTab(tab) {
-    this.tabExisting.classList.toggle('yw-btn--primary', tab === 'existing')
-    this.tabUpload.classList.toggle('yw-btn--primary', tab === 'upload')
-    this.paneExisting.hidden = tab !== 'existing'
-    this.paneUpload.hidden = tab !== 'upload'
+  /**
+   * The rail is in exactly one of three states, and each one owns the whole panel.
+   *
+   * `browse`  the wiki's files, with the filters that narrow them
+   * `upload`  sending a new one -- the list is not a thing you also do here
+   * `chosen`  the file that was picked and how to insert it; the list is behind the
+   *           back button, which is also how the choice is undone
+   *
+   * It used to be two panes plus a "selected" box appended under a list still showing
+   * every other candidate, which is why a 340px rail needed to be scrolled to find out
+   * what it had been told.
+   */
+  showView(view) {
+    this.view = view
+    this.paneExisting.hidden = view !== 'browse'
+    this.paneUpload.hidden = view !== 'upload'
+    this.uploadOpenBtn.hidden = view !== 'browse'
+    this.backBtn.hidden = view === 'browse'
+    this.selectedBox.hidden = view !== 'chosen'
+    // a form field takes the file itself: alignment and caption configure an insertion
+    // into prose and mean nothing to it (see open())
+    this.optionsForm.hidden = view !== 'chosen' || this.onPick !== null
+  }
+
+  /** Back out of uploading, or out of a choice -- which unmakes it. */
+  goBack() {
+    if (this.view === 'chosen') {
+      this.clearSelection()
+    }
+    this.uploadError.hidden = true
+    this.showView('browse')
+    this.applyFilters()
+  }
+
+  clearSelection() {
+    this.selectedTag = null
+    this.selectedEntry = null
+    this.insertBtn.disabled = true
+    // the options describe the file that was chosen, and several of them are defaults
+    // *derived* from it -- `attach_link_text` is filled from the filename, and only when
+    // empty, so without this a second choice kept the first file's name as its link text
+    this.optionsForm.reset()
   }
 
   async loadFiles() {
@@ -386,7 +420,6 @@ export default class {
 
     this.uploadInput.value = ''
     this.selectEntry(body)
-    this.showTab('existing')
     // the new file has to reach this.files before it can be found in the list, and it is
     // what the picker now points at: clear the filters that would hide it -- all but the
     // one the caller pinned, which is not a filter the person chose and not theirs to lose
@@ -400,12 +433,12 @@ export default class {
     this.selectedTag = entry.tag
     this.selectedEntry = entry
     this.selectedName.textContent = entry.original_filename
-    this.selectedBox.hidden = false
-    this.optionsForm.hidden = this.onPick !== null
     this.insertBtn.disabled = false
     if (!this.onPick) this.configureOptionsFor(entry)
-    // re-render from the already-fetched list so the newly picked row gets highlighted
+    // re-rendered even though the list is now behind the back button: it is what shows,
+    // on the way back, which row the rail is pointing at
     this.applyFilters()
+    this.showView('chosen')
   }
 
   configureOptionsFor(entry) {

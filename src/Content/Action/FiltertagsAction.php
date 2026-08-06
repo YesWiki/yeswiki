@@ -81,7 +81,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         $userCol = $dbService->quoteIdentifier('user');
         $req = "SELECT DISTINCT tag, time, $userCol, owner, body
         FROM " . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages, ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "triples tags
-        WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->getService(InclusionStack::class)->getAll()) . "') ORDER BY tag ASC";
+        WHERE latest = 'Y' AND parent = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->getService(InclusionStack::class)->getAll()) . "') ORDER BY tag ASC";
         $pages = $this->getService(DbService::class)->loadAll($req);
 
         echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';

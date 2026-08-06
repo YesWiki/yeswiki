@@ -29,12 +29,25 @@
   --success-color: #26a69a;
   --danger-color: #ff006e;
   --warning-color: #ffc300;
+  /* How tall the top bar is. A setting since ticket 30 (/admin/layout): the squelette writes
+     this same property inline on <html>, which beats this declaration and every other one.
+     Declared here in core rather than in a theme, because core stylesheets derive from it. */
+  --yw-navbar-height: 48px;
+
   /* How far down a sticky editor toolbar parks: clear of the sticky top bar. Shared,
-     because a form can carry both an ACeditor and a Vditor and the two have to agree. */
-  --sticky-toolbar-top: 46px;
+     because a form can carry both an ACeditor and a Vditor and the two have to agree.
+
+     DERIVED, not a second setting. This was `46px` -- a hard-coded guess at the bar's height,
+     which was right only while the bar had one fixed height. Once the height became a slider,
+     every sticky thing on the page (the dashboard rail, the editor toolbars, the docs nav)
+     kept parking at 46px and the taller bar covered them. The fallback is for a theme that
+     declares no bar height of its own. */
+  --sticky-toolbar-top: var(--yw-navbar-height, 48px);
 }
 
-/* once the top bar has taken itself away, the toolbar takes its place */
+/* once the top bar has taken itself away, the toolbar takes its place. This is why the two
+   are not one variable: "how tall the bar is" and "how far down to park" differ exactly here,
+   when the bar has scrolled off and there is nothing to clear. */
 body.nav-up {
   --sticky-toolbar-top: 0px;
 }
@@ -187,10 +200,21 @@ span.missingpage,
 /* The cluster follows the reader down the page -- fixed rather than sticky, because the
    edit bar renders after the main content and a sticky box only sticks inside its own
    parent, which by then is a strip at the very bottom. Under the navbar's z-index, so
-   scrolling tucks it behind the bar rather than over it. */
+   scrolling tucks it behind the bar rather than over it.
+
+   Which is exactly why `top` has to be derived rather than a number. It was `4.5rem` -- about
+   67px, chosen to clear a bar that was always ~48px tall. Once the bar's height became a
+   setting (ticket 30), a taller bar simply covered the cluster: it is *meant* to sit under
+   the bar, so there was nothing to see and no clue why.
+
+   From `--yw-navbar-height` and NOT from `--sticky-toolbar-top`, which is the other variable
+   and looks interchangeable here. It is not: `--sticky-toolbar-top` drops to 0 on
+   `body.nav-up`, when the bar has scrolled away, and a *fixed* box reading it would jump
+   upward into the bar's own strip every time the bar hid itself. Sticky boxes want the
+   parking offset; this one wants the bar's height. */
 .yw-page-actions {
   position: fixed;
-  top: 4.5rem;
+  top: calc(var(--yw-navbar-height) + 1.25rem);
   right: 1rem;
   z-index: 90;
   display: flex;
@@ -210,6 +234,7 @@ span.missingpage,
   border-color: var(--neutral-soft-color, #e5e5e5);
   color: var(--main-text-color, #333);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  margin-top: 0.25em;
   white-space: nowrap;
 }
 
@@ -257,6 +282,20 @@ span.missingpage,
     display: none;
   }
 
+  /* Collapsed, the cluster is the pencil and nothing else -- a single small mark in the
+     corner rather than a labelled button parked over the page's own text. The word arrives
+     with the rest of the verbs, on hover, when you have shown you are reaching for them.
+     The label is still in the accessible name (`title` and `aria-label` on the link), so
+     hiding it costs a screen reader nothing. */
+  .yw-page-actions__edit span {
+    display: none;
+  }
+
+  .yw-page-actions:hover .yw-page-actions__edit span,
+  .yw-page-actions:focus-within .yw-page-actions__edit span {
+    display: inline;
+  }
+
   .yw-page-actions:hover .yw-page-actions__more,
   .yw-page-actions:focus-within .yw-page-actions__more {
     display: flex;
@@ -286,6 +325,15 @@ span.missingpage,
   .yw-page-actions {
     display: none;
   }
+}
+
+/* The one red thing in the facts line. `.yw-btn--danger` would make it a button, which is
+   what this line deliberately is not -- so only the colour carries the warning, and only on
+   the action that cannot be undone. */
+.yw-page-info__danger,
+.yw-page-info__danger:hover,
+.yw-page-info__danger:focus {
+  color: var(--danger-color);
 }
 
 /* The facts, at the bottom: small, muted, left-aligned prose rather than a row of
@@ -1237,7 +1285,7 @@ td.users-table-break-word {
 .yw-btn {
   display: inline-block;
   padding: 6px 12px;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
   text-align: center;
@@ -1866,7 +1914,7 @@ textarea.yw-input {
 
 .yw-designer__sidebar {
   position: fixed;
-  top: calc(var(--sticky-toolbar-top) - 1);
+  top: calc(var(--sticky-toolbar-top) + 64px);
   border-radius: 6px 0 0 6px;
   right: 0;
   z-index: 10;
@@ -1911,7 +1959,7 @@ textarea.yw-input {
   justify-content: space-between;
   gap: 8px;
   position: sticky;
-  top: 0;
+  top: -12px;
   z-index: 1;
   margin: -12px -12px 10px;
   padding: 10px 12px;
@@ -2712,6 +2760,27 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   transition: width 0.3s ease;
 }
 
+/* The `[35%]` wiki syntax writes a real <progress> (ProgressExtension), which is the same
+   bar drawn by the browser rather than by two nested divs -- so it is the one every page
+   author gets, and {{progressbar}} was retired in its favour (ticket 30). A progress
+   element ignores the class above until `appearance: none`, and its filled part is a
+   pseudo-element rather than a child, which is what these three rules are for. */
+progress.yw-progressbar {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  vertical-align: middle;
+}
+progress.yw-progressbar::-webkit-progress-bar {
+  background: var(--neutral-light-color, #f5f5f5);
+}
+progress.yw-progressbar::-webkit-progress-value {
+  background: var(--primary-color);
+}
+progress.yw-progressbar::-moz-progress-bar {
+  background: var(--primary-color);
+}
+
 /* ---- Breadcrumb (ticket 12: replaces Bootstrap's .breadcrumb) ---- */
 .yw-breadcrumb {
   display: flex;
@@ -2833,7 +2902,9 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 /* ---- TOC (ticket 13: replaces tools/toc's jQuery scrollspy/animate follow-scroll script) ---- */
 .yw-toc {
   position: sticky;
-  top: 50px;
+  /* derived, like everything else that parks below the bar: `50px` was a guess at the bar's
+     height, right only while the bar had one (ticket 30) */
+  top: calc(var(--sticky-toolbar-top) + 2px);
   z-index: 5;
 }
 .yw-toc__menu {
@@ -3539,4 +3610,57 @@ ul.nav-tabs li.active a {
 #yw-main:focus:not(:focus-visible),
 #yw-main h1:focus:not(:focus-visible) {
   outline: none;
+}
+
+#yw-topnav .yw-brand {
+  align-content: center;
+  align-items: center;
+}
+
+/* ---- "edit this bit of the chrome" (ticket 30) -------------------------------
+   A pencil on the navbar, the banner and the footer, for whoever may follow it. The point
+   is discoverability: which page or screen is behind each of these is the thing people had
+   to be told, and being told is what a screen (or a pencil) is for.
+
+   Quiet by default and only fully itself on hover, because it sits on every page of the
+   wiki: it must be findable when looked for and invisible when not. */
+.yw-chrome-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.35;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.yw-chrome-edit:hover,
+.yw-chrome-edit:focus-visible {
+  opacity: 1;
+  background: rgb(0 0 0 / 0.06);
+  color: inherit;
+}
+
+/* On the banner and the footer it floats in the corner of the region rather than sitting in
+   the flow: those hold arbitrary wiki content, and a pencil pushed into that content would
+   move the page's own layout around. */
+.yw-chrome-editable {
+  position: relative;
+}
+
+.yw-chrome-editable > .yw-chrome-edit {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+}
+
+/* nothing in the chrome is worth printing, and least of all its edit affordances */
+@media print {
+  .yw-chrome-edit {
+    display: none;
+  }
 }

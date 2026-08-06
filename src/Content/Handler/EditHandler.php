@@ -8,7 +8,6 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Controller\CaptchaController;
@@ -27,6 +26,7 @@ use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
+use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
@@ -406,7 +406,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_SERVER['HTTP_REFERER']);
             if ($this->getService(UrlFormatter::class)->isWikiName($pagetag) && in_array(
                 $pagetag,
-                ['PageFooter', 'PageHeader', 'PageTitre', 'PageRapideHaut', 'PageMenuHaut', 'PageMenu']
+                LayoutService::PAGES
             )) {
                 $hidden = '<input type="hidden" name="returnto" value="' . $this->getService(UrlFormatter::class)->href('', $pagetag) . '" />' . "\n";
             }
@@ -526,7 +526,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
                         // add page (revisions)
-                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
+                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['parent']) ? $this->getService(PageContext::class)->getPage()['parent'] : '');
 
                         // the keyword index is derived from the body it was just saved
                         // with, never the other way round (ticket 09)
@@ -535,15 +535,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                             TagsManager::keywordsOf(['body' => $newBody])
                         );
 
-                        // now we render it internally so we can write the updated link table.
-                        $page = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());
-                        if (is_array($page)) {
-                            $this->getService(LinkTracker::class)->registerLinks($page, false, false);
-                        }
-
                         // forward
-                        if (($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) {
-                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) . '#' . $this->getService(PageContext::class)->getTag());
+                        if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
                             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                         }

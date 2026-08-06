@@ -1,35 +1,14 @@
-{# What `{{login}}` renders when nobody asked for anything else: the account button.
-
-   Signed out it is an icon, signed in it is your face -- one control, in the corner of
-   every page, that says whether the wiki knows who you are and takes you to /user either
-   way. What it is NOT is a form: `@core/login-form.twig` is that, and a page dedicated to
-   signing in asks for it by name. A whole set of fields inlined into the navigation bar of
-   every page, for the one visitor in a hundred who is about to use it, is what this
-   replaced.
-
-   No visible label, so the button is the width of the disc wherever it lands; the name it
-   would have shown is on the link instead, where a screen reader and a hover both find it.
-
-   Signed out, the link carries the page it was clicked from in `?return=`, so signing in
-   ends where it started rather than on the account screen. LoginAction builds that URL --
-   whether a return is worth carrying is a question about the current request, not about
-   markup (see getAccountUrl()).
-
-   Still the `{{login}}` action rather than a plain link in the squelette, because only the
-   action knows whether there is a session, whose name to show and which face to draw. #}
 {% if class is empty %}
     {% block main %}
         {% set label = connected ? _t('LOGIN_CONNECTED_AS') ~ ' ' ~ user : _t('LOGIN_LOGIN') %}
         <a class="navbar-btn account-link {{ not nobtn ? 'yw-btn ' ~ btnclass : '' }}"
-           href="{{ connected ? url({ tag: 'user' }) : accounturl }}"
-           data-tooltip="tooltip"
-           data-placement="bottom"
+           href="{{ connected ? url({"tag": "user"}) : accounturl }}"
            title="{{ label }}"
            aria-label="{{ label }}">
             {%- if connected -%}
                 {% include '@core/_avatar.twig' with { avatar: avatar } only %}
             {%- else -%}
-                {{ icon('user') }}
+                {{ icon("user") }}
             {%- endif -%}
         </a>
     {% endblock %}

@@ -54,16 +54,17 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
 
         // merged from actions/linkrss__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/linkrss__.php (ticket 24)
-        $forms = $this->getService(FormManager::class)->getAll();
         $list = '';
 
         if ($this->getService(ModuleAclService::class)->checkModuleAcl('rss', 'handler')) {
-            if (count($forms) > 0) {
-                foreach ($forms as $form) {
-                    $list .= '  <link rel="alternate" type="application/rss+xml" '
-                        . 'title="' . htmlspecialchars($form['label'] ?? '') . '" '
-                        . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->getService(PageContext::class)->getTag(), 'id=' . $form['id']) . '">' . "\n";
-                }
+            // getAllLabels(), not getAll(): this runs in the document head of every single
+            // page, and all it needs is a name and an id per form. getAll() would load and
+            // fully prepare every form -- every field object, every list behind a `liste`
+            // field, every default image re-read off disk -- to print a title attribute.
+            foreach ($this->getService(FormManager::class)->getAllLabels() as $formId => $label) {
+                $list .= '  <link rel="alternate" type="application/rss+xml" '
+                    . 'title="' . htmlspecialchars($label) . '" '
+                    . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->getService(PageContext::class)->getTag(), 'id=' . $formId) . '">' . "\n";
             }
 
             echo '  <link rel="alternate" type="application/rss+xml" title="' . htmlspecialchars(_t('BAZ_FLUX_RSS_GENERAL')) . '" '

@@ -52,7 +52,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                   // store lists
                   $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'read', $_POST['read_acl']);
                   $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'write', $_POST['write_acl']);
-                  $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'comment', $this->getService(PageContext::class)->getPage()['comment_on'] ? '' : $_POST['comment_acl']);
+                  $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'comment', $this->getService(PageContext::class)->getPage()['parent'] ? '' : $_POST['comment_acl']);
                   $message = _t('YW_ACLS_UPDATED');
 
                   // change owner?
@@ -93,7 +93,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                 </div>
               </div>
 
-              <?php if (!$this->getService(PageContext::class)->getPage()['comment_on']) { ?>
+              <?php if (!$this->getService(PageContext::class)->getPage()['parent']) { ?>
                 <input type="hidden" name="comment_acl" value="<?php echo $commentACL['list'] ?? ''; ?>">
               <?php } ?>
 

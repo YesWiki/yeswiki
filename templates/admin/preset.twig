@@ -1,0 +1,230 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The wiki's colours and type (ticket 30).
+
+   Presets, and nothing else. The theme/squelette/style selector and the wiki's default
+   theme are going to the configuration file, and per-page themes are a property of the
+   content -- so this screen is a list of presets, a rail to edit one, and the gallery to
+   judge the result against.
+
+   The gallery is the point: a preset is a set of colours and sizes, and the only honest
+   way to judge one is against real components, because a contrast that works on a
+   paragraph can fail on a button. The rail previews live -- it writes the variables onto
+   the document -- so changing a colour repaints everything below without a round trip. #}
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_PRESET') }}</h1>
+
+  {# What a preset is, and what clicking one does: said once, at the top, where the screen is
+     explained. The second sentence used to sit over the list -- which is now a narrow column,
+     where a paragraph reads as a wall in front of the cards it is about. #}
+  <p class="yw-dashboard__intro">
+    {{ _t('ADMIN_PRESET_INTRO') }}
+    {{ _t('ADMIN_PRESET_TRY_HINT') }}
+  </p>
+
+  {# said before anything is attempted rather than discovered on save: an instance whose
+     config file or custom/ is read-only can still be told why nothing will stick #}
+  {% if not configWritable %}
+    <div class="alert alert-danger">{{ _t('ADMIN_PRESET_CONFIG_NOT_WRITABLE') }}</div>
+  {% endif %}
+  {% if not presetsWritable %}
+    <div class="alert alert-warning">{{ _t('ADMIN_PRESET_DIR_NOT_WRITABLE') }}</div>
+  {% endif %}
+
+  {# The list on the left, the gallery on the right, side by side: clicking a preset repaints
+     the gallery, and a list stacked above it would put the change off screen at the moment
+     it happens. One preset per row, so choosing is a look down a column. #}
+  <div class="yw-preset-layout">
+    <section class="yw-dashboard__card yw-preset-layout__list">
+      <div class="yw-preset-list__header">
+        <h2>{{ _t('ADMIN_PRESET_LIST') }}</h2>
+        {# opens the rail on the current preset's values under a new name: a preset is almost
+           always made by adjusting one that nearly works, not from black on white #}
+        <button type="button" class="yw-btn yw-btn--primary yw-btn--block" data-yw-preset-new
+                data-preset-values="{{ defaultValues|json_encode }}">
+          {{ icon('plus') }} {{ _t('ADMIN_PRESET_NEW') }}
+        </button>
+      </div>
+
+      {# Clicking a card TRIES the preset on -- it restyles this page and nothing else, and
+         never leaves the browser. Making it the wiki's is the separate starred button below,
+         because those are two different intentions and one of them changes every page. #}
+      <ul class="yw-preset-cards">
+        {# the way back to the theme's own colours -- without it, a preset applied once could
+           be swapped but never taken off #}
+        <li class="yw-preset-card{{ defaultPreset == '' ? ' yw-preset-card--default' : '' }}"
+            data-yw-preset-card="">
+          <button type="button" class="yw-preset-card__choose" data-yw-preset-try data-preset-href="">
+            <span class="yw-preset-card__swatches yw-preset-card__swatches--none">{{ icon('ban') }}</span>
+            <span class="yw-preset-card__label">
+              <span class="yw-preset-card__name">{{ _t('ADMIN_PRESET_NONE') }}</span>
+              <span class="yw-preset-card__badge">{{ _t('ADMIN_PRESET_NONE_HINT') }}</span>
+            </span>
+          </button>
+
+          <div class="yw-preset-card__tools">
+            {# "no preset" is a state, not a preset: when it is the one in use its star is the
+               same filled mark as everywhere else, but there is nothing to toggle off, so it
+               is a mark rather than a button #}
+            {% if defaultPreset == '' %}
+              <span class="yw-preset-card__star yw-preset-card__star--on"
+                    title="{{ _t('ADMIN_PRESET_IS_DEFAULT') }}">{{ icon('star-filled') }}</span>
+            {% else %}
+              <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false">
+                <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                <input type="hidden" name="preset_action" value="select">
+                <input type="hidden" name="preset" value="">
+                <button type="submit" class="yw-btn yw-btn--sm yw-preset-card__star"
+                        title="{{ _t('ADMIN_PRESET_SET_DEFAULT') }}">{{ icon('star') }}</button>
+              </form>
+            {% endif %}
+          </div>
+        </li>
+
+        {% for preset in presets %}
+          <li class="yw-preset-card{{ preset.default ? ' yw-preset-card--default' : '' }}"
+              data-yw-preset-card="{{ preset.id }}">
+            <button type="button" class="yw-preset-card__choose" data-yw-preset-try
+                    data-preset-href="{{ preset.href }}">
+              <span class="yw-preset-card__swatches">
+                {% for swatch in swatches %}
+                  <span class="yw-preset-card__swatch" style="background: {{ preset.values[swatch] }}"></span>
+                {% endfor %}
+              </span>
+              <span class="yw-preset-card__label">
+                {# the name is drawn in the preset's own type, at its own size: half of what a
+                   preset decides is the typography, which no swatch shows #}
+                <span class="yw-preset-card__name"
+                      style="font-family: {{ preset.values['main-title-fontfamily'] }}; font-size: {{ preset.values['main-text-fontsize'] }}">
+                  {{ preset.name }}
+                </span>
+                <span class="yw-preset-card__badge">
+                  {{ preset.custom ? _t('ADMIN_PRESET_BADGE_CUSTOM') : _t('ADMIN_PRESET_BADGE_THEME') }}
+                </span>
+              </span>
+            </button>
+
+            <div class="yw-preset-card__tools">
+              {% if preset.custom %}
+                <button type="button" class="yw-btn yw-btn--sm" data-yw-preset-edit
+                        data-preset-id="{{ preset.id }}"
+                        data-preset-name="{{ preset.name }}"
+                        data-preset-values="{{ preset.values|json_encode }}"
+                        title="{{ _t('ADMIN_PRESET_EDIT') }}">
+                  {{ icon('pencil') }}
+                </button>
+
+                <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
+                      data-yw-preset-delete-form
+                      data-confirm="{{ _t('ADMIN_PRESET_DELETE_CONFIRM')|replace({'{name}': preset.name}) }}">
+                  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                  <input type="hidden" name="preset_action" value="delete">
+                  <input type="hidden" name="preset" value="{{ preset.id }}">
+                  <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger"
+                          title="{{ _t('ADMIN_PRESET_DELETE') }}">{{ icon('trash') }}</button>
+                </form>
+              {% else %}
+                {# A theme preset is not editable: themes/ is code, shared between farm
+                   instances and replaced on upgrade, so an edit made there would be silently
+                   undone by the next update. Copying it into the wiki is the way in. #}
+                <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
+                      data-yw-preset-duplicate-form>
+                  <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                  <input type="hidden" name="preset_action" value="duplicate">
+                  <input type="hidden" name="preset" value="{{ preset.id }}">
+                  <button type="submit" class="yw-btn yw-btn--sm"
+                          title="{{ _t('ADMIN_PRESET_DUPLICATE') }}">{{ icon('copy') }}</button>
+                </form>
+              {% endif %}
+
+              {# The one button here that changes what every other page wears, and it is on every
+                 card: a filled star on the preset in use, an outline on the others, so which one
+                 the wiki wears is read off the list rather than off a small mark in a corner.
+                 Filled, it posts an empty id -- clicking the star of the preset in use takes it
+                 off and puts the theme's own colours back.
+                 Last of the tools because it is the one that stays visible when the others are
+                 not: at the end of the row it stands in the space kept clear for it. #}
+              <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false">
+                <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+                <input type="hidden" name="preset_action" value="select">
+                <input type="hidden" name="preset" value="{{ preset.default ? '' : preset.id }}">
+                <button type="submit"
+                        class="yw-btn yw-btn--sm yw-preset-card__star{{ preset.default ? ' yw-preset-card__star--on' : '' }}"
+                        title="{{ preset.default ? _t('ADMIN_PRESET_UNSET_DEFAULT') : _t('ADMIN_PRESET_SET_DEFAULT') }}">
+                  {{ preset.default ? icon('star-filled') : icon('star') }}
+                </button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# The components and nothing else: no heading, no caption, and no dashboard card around
+       them. The gallery is full of panels and sections, and a frame around a frame makes it
+       read as a widget on a page rather than as the page itself -- which is exactly what is
+       being judged. Rendered through the formatter, so it comes out of the same pipeline as a
+       page body rather than from hand-written markup that could drift from it. #}
+    <div class="yw-preset-preview page">
+      {{ format(include('@core/admin/preset-preview.twig'))|raw }}
+    </div>
+  </div>
+
+  {# The rail, same idiom as the actions builder and the file picker: docked on the right,
+     `hidden` is the whole of its state, and .yw-rail__footer holds what writes the change.
+     Outside every card's form -- its inputs configure a preset, they are not fields of the
+     select-this-one forms above. #}
+  <aside class="yw-designer__sidebar yw-preset-rail" id="yw-preset-rail" hidden>
+    <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false">
+      <div class="yw-rail__header">
+        {# both titles rendered here rather than assembled in the JS: a string built in
+           JavaScript never reaches the translation catalogue #}
+        <h2 class="yw-rail__title" data-yw-preset-rail-title
+            data-edit-label="{{ _t('ADMIN_PRESET_EDIT') }}"
+            data-new-label="{{ _t('ADMIN_PRESET_NEW') }}">{{ _t('ADMIN_PRESET_EDIT') }}</h2>
+        <button type="button" class="yw-close" data-yw-preset-close aria-label="close">&times;</button>
+      </div>
+
+      <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+      <input type="hidden" name="preset_action" value="save">
+      {# which preset is being rewritten -- empty only when the rail was opened by "create a
+         preset". A save replaces this one, renaming included; it never leaves a second copy
+         behind, because someone fixing a typo in a name wants the name different, not two
+         near-identical presets to choose between. #}
+      <input type="hidden" name="preset" value="" data-yw-preset-id>
+
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-preset-name">{{ _t('ADMIN_PRESET_NAME') }}</label>
+        <input type="text" class="yw-input" id="yw-preset-name" name="preset_name" required
+               autocomplete="off" pattern="[A-Za-z0-9_\- ]+">
+      </div>
+
+      {% for name, variable in variables %}
+        <div class="yw-form-group">
+          <label class="yw-form-label" for="yw-preset-{{ name }}">{{ _t(variable.label) }}</label>
+          {% if variable.kind == 'color' %}
+            {# two controls, one field: the text input is what posts, so a value a colour
+               picker cannot parse survives untouched unless the picker is actually used --
+               a native picker silently reads anything it does not understand as black #}
+            <div class="yw-preset-rail__color">
+              <input type="color" class="yw-preset-rail__picker" data-yw-preset-picker="{{ name }}"
+                     aria-label="{{ _t(variable.label) }}">
+              <input type="text" class="yw-input" id="yw-preset-{{ name }}" name="{{ name }}"
+                     data-yw-preset-field="{{ name }}" autocomplete="off" spellcheck="false">
+            </div>
+          {% else %}
+            <input type="text" class="yw-input" id="yw-preset-{{ name }}" name="{{ name }}"
+                   data-yw-preset-field="{{ name }}" autocomplete="off" spellcheck="false">
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="yw-rail__footer">
+        <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
+      </div>
+    </form>
+  </aside>
+
+  {{ include_css('styles/admin-preset.css') }}
+  {{ include_javascript('javascripts/admin-preset.js', false, true) }}
+{% endblock %}

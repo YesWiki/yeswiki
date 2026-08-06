@@ -50,9 +50,9 @@ class RenameContentOffReservedTagsTest extends YesWikiTestCase
 
         try {
             $dbService->query(
-                "INSERT INTO {$pages} (tag, time, body, body_r, owner, user, latest, comment_on)"
+                "INSERT INTO {$pages} (tag, time, body, owner, user, latest, parent)"
                 . " VALUES ('{$dbService->escape($reserved)}', '2026-01-01 00:00:00',"
-                . " '" . $dbService->escape('{"content":"content stranded on a reserved tag"}') . "', '',"
+                . " '" . $dbService->escape('{"content":"content stranded on a reserved tag"}') . "',"
                 . " '', '', 'Y', '')"
             );
             $dbService->query(

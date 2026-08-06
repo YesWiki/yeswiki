@@ -127,14 +127,13 @@ class CleanOldCartoGoogle extends YesWikiMigration
         // add new revision
         $userCol = $this->dbService->quoteIdentifier('user');
         $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} " .
-            "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
+            "(tag, time, owner, $userCol, latest, body) VALUES (" .
             "'{$this->dbService->escape($data['id_fiche'])}', " .
             "'{$this->dbService->escape($data['date_maj_fiche'])}', " .
             "'{$this->dbService->escape($owner)}', " .
             "'{$this->dbService->escape($user)}', " .
             "'Y', " .
-            "'" . $this->dbService->escape(json_encode($data)) . "', " .
-            "'')");
+            "'" . $this->dbService->escape(json_encode($data)) . "')");
     }
 
     private function getMapFieldValue($field, $entry)

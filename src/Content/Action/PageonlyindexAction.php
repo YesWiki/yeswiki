@@ -48,7 +48,7 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction
 
         @licence: AGPL
         */
-        if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body not LIKE \'{"%\' ORDER BY tag')) {
+        if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages WHERE latest = \'Y\' AND parent=\'\' AND body not LIKE \'{"%\' ORDER BY tag')) {
             foreach ($pages as $page) {
                 // XXX: strtoupper is locale dependent
                 $firstChar = strtoupper($page['tag'][0]);
@@ -64,7 +64,7 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction
                     $curChar = $firstChar;
                 }
 
-                echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', false),"<br />\n";
+                echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
             }
         } else {
             echo '<i>' . _t('NO_PAGE_FOUND') . '.</i>';

@@ -136,7 +136,17 @@ final class ActionBlockStartParser implements BlockStartParserInterface
             return BlockStart::none();
         }
 
-        if (!\preg_match('/^\{\{(.*)\}\}[ \t]*$/s', $cursor->getRemainder(), $matches) || \trim($matches[1]) === '') {
+        // ONE tag and nothing else on the line -- hence the tempered dot, which stops the
+        // capture at the first `}}` rather than running to the last one on the line.
+        //
+        // `(.*)` was greedy, so a line holding a *pair* of tags matched as a single one:
+        // `{{label}}texte{{end elem="label"}}` came out as the action `label}}texte{{end
+        // elem="label"`, which the runner read as `label` and ran, silently eating both the
+        // text between the tags and the closing tag. Six of those in a row -- the way
+        // anyone writes a row of labels -- left six unclosed spans nesting the rest of the
+        // document inside them. A pair written mid-sentence was always fine, because the
+        // inline parser (below) handles that one, and it is where such a line belongs.
+        if (!\preg_match('/^\{\{((?:(?!\}\}).)*)\}\}[ \t]*$/s', $cursor->getRemainder(), $matches) || \trim($matches[1]) === '') {
             return BlockStart::none();
         }
 

@@ -40,7 +40,7 @@ class EditBarOnRoutesTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $wiki->services->get(PageContext::class)->setTag($tag);
 
-        return trim($wiki->services->get(ActionRunner::class)->action('editbar', false, $arguments));
+        return trim($wiki->services->get(ActionRunner::class)->action('editbar', $arguments));
     }
 
     public function testARoutedNameGetsNoPageActions(): void

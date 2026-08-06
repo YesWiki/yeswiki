@@ -14,14 +14,25 @@
    trait -- derived from the route being rendered, which is why no screen can show one
    section's entries while claiming to be in the other.
 
-   Administration is what is *in* the wiki -- its content, its words, its people. System is
-   the wiki itself: the config file, the code, the backups, the bulk in and out, and the
-   mess to clean up. Two errands, so two lists rather than one long one.
+   Administration is what is *in* the wiki -- its content, then who is in it, then the two
+   things people leave on content. System is the wiki itself: the config file, the code, the
+   backups, the bulk in and out, and the mess to clean up. Two errands, so two lists rather
+   than one long one.
 
-   The permissions have no entry at all: they render on the Content screen, being
+   Appearance is everything that decides how the wiki looks (ticket 30). It was spread
+   between `admin/appearance` and `admin/special-pages`, both now retired: knowing that
+   `PageCss` was the stylesheet and `LookWiki` the colours is something you had to be told,
+   which is precisely what a screen is for -- so those are the Preset and Custom CSS screens
+   now, and the remaining chrome pages are ordinary content on the Content screen. It reads
+   outwards from what everyone sees to what almost nobody touches: the shape of every page,
+   its colours, a stylesheet, and finally the templates themselves.
+
+   Three screens have no entry at all. The permissions render on the Content screen, being
    permissions *over content*. The lists sit with the forms whose fields choose from them,
    and are public like those forms -- what a list says is already visible in every field
-   that uses it, and who may change one is ListController's to answer. #}
+   that uses it, and who may change one is ListController's to answer. And the API is one of
+   the ways content comes *out* of the wiki, so it is listed on Export beside the feeds and
+   the per-form formats rather than being a heading of its own. #}
 {% set sections = [
   {
     label: _t('DASHBOARD_SECTION_ACCOUNT'),
@@ -43,8 +54,18 @@
       { route: 'dashboard/forms',    icon: 'briefcase', label: _t('DASHBOARD_FORMS') },
       { route: 'dashboard/lists',    icon: 'list',      label: _t('DASHBOARD_ADMIN_LISTS') },
       { route: 'dashboard/export',   icon: 'download',  label: _t('DASHBOARD_EXPORT') },
-      { route: 'doc',                icon: 'help',      label: _t('DASHBOARD_DOC') },
-      { route: 'api',                icon: 'code',      label: _t('DASHBOARD_API') }
+      { route: 'doc',                icon: 'help',      label: _t('DASHBOARD_DOC') }
+    ]
+  },
+  {
+    label: _t('DASHBOARD_SECTION_APPEARANCE'),
+    scope: 'wiki',
+    admin: true,
+    items: [
+      { route: 'admin/layout',           icon: 'layout-rows', label: _t('DASHBOARD_ADMIN_LAYOUT') },
+      { route: 'admin/preset',           icon: 'brush',       label: _t('DASHBOARD_ADMIN_PRESET') },
+      { route: 'admin/custom-css',       icon: 'code',        label: _t('ADMIN_CUSTOM_CSS') },
+      { route: 'admin/custom-templates', icon: 'file',        label: _t('DASHBOARD_ADMIN_TEMPLATES') }
     ]
   },
   {
@@ -53,11 +74,9 @@
     admin: true,
     items: [
       { route: 'admin/content',       icon: 'file',        label: _t('DASHBOARD_ADMIN_CONTENT') },
-      { route: 'admin/keywords',      icon: 'tags',        label: _t('DASHBOARD_ADMIN_KEYWORDS') },
-      { route: 'admin/special-pages', icon: 'layout-grid', label: _t('DASHBOARD_ADMIN_SPECIAL_PAGES') },
-      { route: 'admin/appearance',    icon: 'brush',       label: _t('DASHBOARD_ADMIN_APPEARANCE') },
       { route: 'admin/users',         icon: 'user',        label: _t('DASHBOARD_ADMIN_USERS') },
       { route: 'admin/groups',        icon: 'users',       label: _t('DASHBOARD_ADMIN_GROUPS') },
+      { route: 'admin/keywords',      icon: 'tags',        label: _t('DASHBOARD_ADMIN_KEYWORDS') },
       { route: 'admin/reactions',     icon: 'thumb-up',    label: _t('DASHBOARD_ADMIN_REACTIONS') }
     ]
   },

@@ -148,6 +148,43 @@ class TripleStore
             // LoadAll($sql) return an empty array when no result, do the same.
             return [];
         }
+        $this->loadResource($res);
+        if (isset($this->cacheByResource[$res][$prop])) {
+            return $this->cacheByResource[$res][$prop];
+        }
+
+        return [];
+    }
+
+    /**
+     * Whether this resource carries any triple at all, whatever the property.
+     *
+     * Answered from the same per-resource cache `getAll()` fills, which is the point:
+     * `GroupManager::groupExists()` asked it through `getMatching()` instead, whose cache is
+     * a different one keyed by SQL text. The two never shared, so checking a group existed
+     * and then reading its members ran the identical
+     * `SELECT * FROM triples WHERE resource = 'ThisWikiGroup:admins'` twice -- on every
+     * `isInGroup()`, which is every ACL check on every page.
+     */
+    public function hasAnyProperty(?string $resource, string $re_prefix = THISWIKI_PREFIX): bool
+    {
+        $res = empty($resource) ? '' : $re_prefix . $resource;
+        $this->loadResource($res);
+
+        return $this->cacheByResource[$res] !== [];
+    }
+
+    /**
+     * Read every triple of one resource into the cache, once. One query per resource, not
+     * one per property: a resource has a handful of triples and the caller almost always
+     * goes on to ask about another of them.
+     */
+    private function loadResource(string $res): void
+    {
+        if (isset($this->cacheByResource[$res])) {
+            return;
+        }
+
         $this->cacheByResource[$res] = [];
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE ';
         if (empty($res)) { // get everything if no resource given
@@ -161,11 +198,6 @@ class TripleStore
             }
             $this->cacheByResource[$res][$triple['property']][] = ['id' => $triple['id'], 'value' => $triple['value'], 'resource' => $triple['resource']];
         }
-        if (isset($this->cacheByResource[$res][$prop])) {
-            return $this->cacheByResource[$res][$prop];
-        }
-
-        return [];
     }
 
     /**

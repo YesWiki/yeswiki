@@ -5,6 +5,7 @@ namespace YesWiki\Search\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Service\DbService;
@@ -149,18 +150,18 @@ class TagsManager
     public function reindexAll(): int
     {
         $pages = trim($this->dbService->prefixTable('pages'));
-        $triples = trim($this->dbService->prefixTable('triples'));
-        $untyped = "NOT EXISTS (SELECT 1 FROM {$triples} t WHERE t.resource = p.tag"
-            . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "')";
+        $typeCol = $this->dbService->quoteIdentifier('type');
 
         $rows = $this->dbService->loadAll(
-            "SELECT p.tag AS tag, p.body AS body FROM {$pages} p"
-            . " WHERE p.latest = 'Y' AND p.comment_on = '' AND {$untyped}"
+            "SELECT tag, body FROM {$pages}"
+            . " WHERE latest = 'Y' AND parent = '' AND {$typeCol} = '" . $this->dbService->escape(PageType::PAGE) . "'"
         );
 
+        $triples = trim($this->dbService->prefixTable('triples'));
         $this->dbService->query(
             "DELETE FROM {$triples} WHERE property = '" . $this->dbService->escape(self::TAG_PROPERTY) . "'"
-            . " AND resource IN (SELECT p.tag FROM {$pages} p WHERE p.latest = 'Y' AND {$untyped})"
+            . " AND resource IN (SELECT tag FROM {$pages}"
+            . " WHERE latest = 'Y' AND {$typeCol} = '" . $this->dbService->escape(PageType::PAGE) . "')"
         );
 
         $indexed = 0;
@@ -303,18 +304,18 @@ class TagsManager
                 $req .= ' ORDER BY time DESC ';
             }
 
-            $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and comment_on = '' " . $req;
+            $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and parent = '' " . $req;
 
             return $this->dbService->loadAll($requete);
         }
         // recuperation des pages wikis
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
-        $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
+        $sql .= " WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 
         if ($type == 'wiki') {
-            $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
+            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . " = '" . $this->dbService->escape(PageType::PAGE) . "' ";
         } elseif ($type == 'bazar') {
-            $sql .= ' AND tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
+            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . " = '" . $this->dbService->escape(PageType::ENTRY) . "'";
         }
 
         $sql .= ' ORDER BY tag ASC';

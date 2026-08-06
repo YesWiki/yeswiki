@@ -146,7 +146,7 @@ abstract class YesWikiPerformable
         // that get_class() broke on namespacing (after the action name and the ACL key).
         $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
 
-        return $this->getService(ActionRunner::class)->action($action, false, $arguments);
+        return $this->getService(ActionRunner::class)->action($action, $arguments);
     }
 
     protected function getRequest(): Request

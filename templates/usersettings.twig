@@ -56,6 +56,13 @@
     </div>
 </form>
 
+{# The editor rails, including the file picker the profile-picture field's button opens.
+   A form field needs the picker rail exactly as an editor does, and this form renders the
+   User form's fields without rendering an editor -- so the rails have to be asked for here
+   rather than inherited from an {{aceditor}} that is not on this page (the button was
+   rendered, the panel was not, and clicking it did nothing at all). #}
+{{ include('@core/aceditor-rails.twig') }}
+
 {# FORM DELETE #}
 {% if adminIsActing %}
   <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">

@@ -25,7 +25,8 @@
   flex: 0 0 340px;
   max-width: 340px;
   position: sticky;
-  top: 58px;
+  /* below the top bar, whatever height it is set to (ticket 30) -- this was `58px` */
+  top: calc(var(--sticky-toolbar-top) + 10px);
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 6px;
   padding: 12px;

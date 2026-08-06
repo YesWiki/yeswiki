@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\ReservedTagException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -32,6 +33,21 @@ class PageManager
 
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
     protected $pageCache;
+    /** @var array<string, string|null> tag => `pages`.`type`, or null for a tag with no row */
+    protected array $typeCache = [];
+    /**
+     * tag => the latest revision as stored, before any Field ACL redaction.
+     *
+     * Deliberately separate from $pageCache, and **only ever served to a caller that asked
+     * to bypass ACLs**. Those callers -- UserManager resolving an account, FormManager
+     * loading a form, FileManager reading a file -- were re-reading the same row on every
+     * call because the existing cache refuses to hold an unredacted row, which is right: a
+     * display path must never be handed one. Two caches, one per shape, rather than one
+     * cache that has to remember which shape it holds.
+     *
+     * @var array<string, array<string, mixed>|null>
+     */
+    private array $rawPageCache = [];
     /** lazily fetches AdministrativeLogService: it depends on PageManager, so injecting it directly would be a constructor cycle */
     protected ContainerInterface $container;
 
@@ -72,6 +88,9 @@ class PageManager
     public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         // retrieve from cache
+        if ($bypassAcls && !$time && $cache && array_key_exists($tag, $this->rawPageCache)) {
+            return $this->rawPageCache[$tag];
+        }
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
             $page = $cachedPage;
         } else {
@@ -92,6 +111,12 @@ class PageManager
                 // revision's metadata (ACLs, theme, ...), not the current one
                 $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
                 $page['body'] = PageBody::decode($page['body'] ?? null);
+            }
+
+            // remembered before redaction, and by both paths: a filtered read has already
+            // paid for the row, so the next unredacted caller should not pay again
+            if (!$time) {
+                $this->rawPageCache[$tag] = $page;
             }
 
             if (!$bypassAcls) {
@@ -182,9 +207,9 @@ class PageManager
     }
 
     /**
-     * Renames a Content row's identity: updates `tag` (and any `comment_on` referencing it)
+     * Renames a Content row's identity: updates `tag` (and any `parent` referencing it)
      * across every revision, preserving history under the new identity. A generic `pages`
-     * primitive -- deliberately narrow, it doesn't touch `links`/`referrers`/`triples`, since
+     * primitive -- deliberately narrow, it doesn't touch `triples`, since
      * whether/how those need updating is specific to the Content type doing the renaming
      * (e.g. a form moves its own TYPE_URI triple and records a former-tag alias itself, see
      * FormManager::renameTag()).
@@ -207,9 +232,15 @@ class PageManager
         }
 
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = '{$this->dbService->escape($newTag)}' WHERE tag = '{$this->dbService->escape($oldTag)}'");
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET comment_on = '{$this->dbService->escape($newTag)}' WHERE comment_on = '{$this->dbService->escape($oldTag)}'");
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET parent = '{$this->dbService->escape($newTag)}' WHERE parent = '{$this->dbService->escape($oldTag)}'");
 
         unset($this->pageCache[$oldTag]);
+        unset($this->rawPageCache[$oldTag]);
+        unset($this->typeCache[$oldTag]);
+        // both names: the ACLs left the old tag and arrived at the new one, and anything
+        // that asked about either before the rename now holds an answer about the wrong row
+        $this->aclService->forget($oldTag);
+        $this->aclService->forget($newTag);
         unset($this->ownersCache[$oldTag]);
 
         // a rename fires no page.* event -- nothing about the Content changed, only its
@@ -257,6 +288,87 @@ class PageManager
         if (!empty($page['tag']) && isset($page['owner'])) {
             $this->ownersCache[$page['tag']] = $page['owner'];
         }
+        // a loaded row already carries its type, so asking what kind of Content it is costs
+        // nothing after this -- which is the point of the column (ticket 27): rendering a
+        // list of fifty entries reads fifty rows and asks zero type questions of the database
+        if (!empty($page['tag']) && isset($page['type'])) {
+            $this->typeCache[$page['tag']] = (string)$page['type'];
+        }
+    }
+
+    /**
+     * What kind of Content this tag holds -- `PageType::PAGE`, `ENTRY`, `USER`, ... -- or
+     * null when no row has that tag (ticket 27).
+     *
+     * ACL-blind on purpose: the *kind* of a Content is not a secret, and every caller
+     * (EntryManager::isEntry(), UserManager::isUserTag(), the router) needs the answer before
+     * it can decide who may see the thing. Reading it through getOne() would also make an
+     * unreadable page indistinguishable from a missing one.
+     */
+    public function typeOf(string $tag): ?string
+    {
+        if ($tag === '') {
+            return null;
+        }
+        if (!array_key_exists($tag, $this->typeCache)) {
+            // a row already read this request answers this, and so does a row already found
+            // to be missing: `cacheOwner()` can only remember a page that exists, so without
+            // this a getOne() that came back empty was followed by a second query asking the
+            // type of the same absent page -- which is what `checkEntriesACL()` does, inside
+            // that very getOne()
+            if (array_key_exists($tag, $this->rawPageCache)) {
+                $known = $this->rawPageCache[$tag];
+                $this->typeCache[$tag] = $known === null ? null : (string)($known['type'] ?? PageType::DEFAULT);
+            } else {
+                $row = $this->dbService->loadSingle(
+                    "SELECT {$this->dbService->quoteIdentifier('type')} FROM {$this->dbService->prefixTable('pages')}"
+                    . " WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1"
+                );
+                $this->typeCache[$tag] = $row === null ? null : (string)$row['type'];
+            }
+        }
+
+        return $this->typeCache[$tag];
+    }
+
+    public function isType(string $tag, string $type): bool
+    {
+        return $this->typeOf($tag) === $type;
+    }
+
+    /**
+     * Every tag of a given type.
+     *
+     * @return list<string>
+     */
+    public function tagsOfType(string $type): array
+    {
+        $rows = $this->dbService->loadAll(
+            "SELECT tag FROM {$this->dbService->prefixTable('pages')}"
+            . " WHERE latest = 'Y' AND {$this->dbService->quoteIdentifier('type')} = '{$this->dbService->escape($type)}'"
+            . ' ORDER BY tag'
+        );
+
+        return array_values(array_map(static fn (array $row): string => (string)$row['tag'], $rows));
+    }
+
+    /**
+     * Forget everything remembered about this tag.
+     *
+     * For whoever writes a `pages` row without going through this service --
+     * AclService::writeMetadataAcls() inserts its own revision, because PageManager depends
+     * on AclService and the reverse would be a cycle. Each side tells the other when it
+     * writes behind its back; this is that call in the other direction.
+     */
+    public function forget(string $tag): void
+    {
+        unset($this->pageCache[$tag], $this->rawPageCache[$tag], $this->typeCache[$tag], $this->ownersCache[$tag]);
+    }
+
+    /** Remembered so a freshly created row answers typeOf() without another query. */
+    public function cacheType(string $tag, ?string $type): void
+    {
+        $this->typeCache[$tag] = $type;
     }
 
     private function unsetCacheOwner($page)
@@ -312,7 +424,7 @@ class PageManager
             throw new \Exception("Revision '$revisionId' does not belong to page '$tag'");
         }
 
-        $result = $this->save($tag, $target['body'], $target['comment_on'] ?? '');
+        $result = $this->save($tag, $target['body'], $target['parent'] ?? '');
 
         if ($fullRevert) {
             $this->replaceMetadata($tag, $target['metadatas']);
@@ -332,6 +444,9 @@ class PageManager
         $encoded = empty($metadata) ? 'NULL' : "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'";
         $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET metadata = {$encoded} WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
         unset($this->pageCache[$tag]);
+        unset($this->rawPageCache[$tag]);
+        unset($this->typeCache[$tag]);
+        $this->aclService->forget($tag);
     }
 
     public function getRevisions($pageTag, $limit = 10000)
@@ -370,16 +485,11 @@ class PageManager
         ");
     }
 
-    public function getLinkingTo($tag)
-    {
-        return $this->dbService->loadAll('select from_tag as tag from' . $this->dbService->prefixTable('links') . "where to_tag = '" . $this->dbService->escape($tag) . "' order by tag");
-    }
-
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
         $userCol = $this->dbService->quoteIdentifier('user');
         if (!empty($minDate)) {
-            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
+            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and parent = '' and time >= '$minDate' order by time desc")) {
                 // foreach ($pages as $page) {
                 //    $this->cache($page);
                 // }
@@ -388,7 +498,7 @@ class PageManager
         } else {
             $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
-            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
+            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and parent = '' order by time desc limit $limit")) {
                 // foreach ($pages as $page) {
                 //    $this->cache($page);
                 // }
@@ -441,7 +551,7 @@ class PageManager
     {
         $sql = 'SELECT time FROM ' . $this->dbService->prefixTable('pages')
             . " WHERE tag = '" . $this->dbService->escape($pageTag) . "'"
-            . " AND comment_on = ''"
+            . " AND parent = ''"
             . ' ORDER BY time ASC LIMIT 1';
         $page = $this->dbService->loadSingle($sql);
         if ($page) {
@@ -449,23 +559,6 @@ class PageManager
         }
 
         return null;
-    }
-
-    public function getWanted(): array
-    {
-        $r = 'SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM ' . $this->dbService->prefixTable('links') . ' as l LEFT JOIN ' . $this->dbService->prefixTable('pages') . ' as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC';
-
-        return $this->dbService->loadAll($r);
-    }
-
-    public function getOrphaned(): array
-    {
-        return $this->dbService->loadAll('select distinct tag from ' . $this->dbService->prefixTable('pages') . 'as p left join ' . $this->dbService->prefixTable('links') . "as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' order by tag");
-    }
-
-    public function isOrphaned($tag): bool
-    {
-        return !is_null($this->dbService->loadSingle('select distinct tag from ' . $this->dbService->prefixTable('pages') . 'as p left join ' . $this->dbService->prefixTable('links') . "as l on p.tag = l.to_tag where l.to_tag is NULL and p.latest = 'Y' and tag = '" . $this->dbService->escape($tag) . "'"));
     }
 
     public function deleteOrphaned($tag)
@@ -480,12 +573,13 @@ class PageManager
         // regression this caused: a page recreated with the same tag right after deletion
         // returns the deleted page's data from cache instead of the fresh one)
         unset($this->pageCache[$tag]);
+        unset($this->rawPageCache[$tag]);
+        unset($this->typeCache[$tag]);
+        $this->aclService->forget($tag);
         // ACLs live in the pages row's own metadata column now, not a separate acls table --
         // deleting the row (below) already removes them, no separate ACL delete needed
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR parent='{$this->dbService->escape($tag)}'");
         $this->tripleStore->deleteAll($tag, '');
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
 
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
@@ -497,22 +591,23 @@ class PageManager
      * SavePage
      * Sauvegarde un contenu dans une page donnee.
      *
-     * @param string                  $body
-     *                                             Contenu a sauvegarder dans la page
-     * @param string                  $tag
-     *                                             Nom de la page
-     * @param string                  $comment_on
-     *                                             Indication si c'est un commentaire
-     * @param bool                    $bypass_acls
-     *                                             Indication si on bypasse les droits d'ecriture
-     * @param bool                    $forcedDate
-     *                                             if null use current date for page creation time, otherwise use this value
+     * @param string                  $tag         Nom de la page
      * @param array<array-key, mixed> $body        decoded body -- one shape for every Content type
      *                                             (ticket 09). Wiki markup goes under `content`.
+     * @param string                  $parent      the page this one comments on, if any
+     * @param bool                    $bypass_acls Indication si on bypasse les droits d'ecriture
+     * @param string|null             $forcedDate  if null use current date for page creation time,
+     *                                             otherwise use this value
+     * @param string|null             $type        the row's PageType (ticket 27). Null means
+     *                                             "whatever it already is" -- so an ordinary edit
+     *                                             cannot silently retype a Content, and only the
+     *                                             manager that creates a kind of row names it.
+     *                                             A brand-new row with no type named is a page,
+     *                                             or a comment when it has a parent.
      *
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function save($tag, array $body, $comment_on = '', $bypass_acls = false, $forcedDate = null): int
+    public function save($tag, array $body, $parent = '', $bypass_acls = false, $forcedDate = null, ?string $type = null): int
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -528,9 +623,9 @@ class PageManager
         $user = $this->authenticationService->getLoggedUserName();
 
         // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess(
+        $rights = $bypass_acls || ($parent ? $this->aclService->hasAccess(
             'comment',
-            $comment_on
+            $parent
         ) : $this->aclService->hasAccess('write', $tag));
 
         if ($rights) {
@@ -549,9 +644,9 @@ class PageManager
                 $initialMetadata = ['acls' => [
                     // empty write ACL for comments: only the comment's author, via `owner`
                     // below, per the pre-existing comment-ACL convention
-                    'write' => $comment_on ? $user : $defaultWrite,
+                    'write' => $parent ? $user : $defaultWrite,
                     'read' => $defaultRead,
-                    'comment' => $comment_on ? '' : $defaultComment,
+                    'comment' => $parent ? '' : $defaultComment,
                 ]];
 
                 // current user is owner; if user is logged in! otherwise, no owner.
@@ -560,14 +655,21 @@ class PageManager
                 } else {
                     $owner = '';
                 }
+
+                $type ??= $parent ? PageType::COMMENT : PageType::DEFAULT;
             } else {
                 // aha! page isn't new. keep owner!
                 $owner = $oldPage['owner'];
 
-                // ...and comment_on, eventualy?
-                if ($comment_on == '') {
-                    $comment_on = $oldPage['comment_on'];
+                // ...and parent, eventualy?
+                if ($parent == '') {
+                    $parent = $oldPage['parent'];
                 }
+
+                // an edit is not a retyping: every revision of a Content is the same kind of
+                // thing, so the type rides forward with the owner rather than being
+                // recomputed from whatever this particular caller happened to pass
+                $type ??= (string)($oldPage['type'] ?? PageType::DEFAULT);
 
                 // don't save if body didn't change. Compared decoded and key-order-blind:
                 // a string compare on JSON would both invent revisions out of a re-encode
@@ -588,7 +690,7 @@ class PageManager
 
             // add new revision
             $userCol = $this->dbService->quoteIdentifier('user');
-            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
+            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
             $values = [
                 "'" . $this->dbService->escape($tag) . "'",
                 $time,
@@ -596,21 +698,24 @@ class PageManager
                 "'" . $this->dbService->escape($user) . "'",
                 "'Y'",
                 "'" . $this->dbService->escape(PageBody::encode($body)) . "'",
-                "''",
+                "'" . $this->dbService->escape((string)$type) . "'",
                 // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
-                // revision's value forward unchanged, same as owner/comment_on above (or the
+                // revision's value forward unchanged, same as owner/parent above (or the
                 // freshly-computed default ACLs for a brand-new page, see above)
                 $initialMetadata !== null
                     ? "'" . $this->dbService->escape($this->encodeMetadata($initialMetadata)) . "'"
                     : (empty($oldPage['metadata']) ? 'NULL' : "'" . $this->dbService->escape($oldPage['metadata']) . "'"),
             ];
-            if ($comment_on) {
-                $columns[] = 'comment_on';
-                $values[] = "'" . $this->dbService->escape($comment_on) . "'";
+            if ($parent) {
+                $columns[] = 'parent';
+                $values[] = "'" . $this->dbService->escape($parent) . "'";
             }
             $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
 
             unset($this->pageCache[$tag]);
+            unset($this->rawPageCache[$tag]);
+            unset($this->typeCache[$tag]);
+            $this->aclService->forget($tag);
             $this->ownersCache[$tag] = $owner;
 
             $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [
@@ -618,7 +723,7 @@ class PageManager
                 'data' => [
                     'tag' => $tag,
                     'body' => $body,
-                    'comment_on' => $comment_on,
+                    'parent' => $parent,
                     'owner' => $owner,
                     'user' => $user,
                 ],
@@ -664,13 +769,23 @@ class PageManager
 
         $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
         $this->ownersCache[$tag] = $user;
+        // the row just changed, and both page caches hold a copy of it: keeping only
+        // ownersCache current left every other reader with the previous owner. Latent while
+        // the unredacted path re-read the row every time; a real bug the moment it stopped
+        // (an account's `owner` is set right after its row is created, so the caller that
+        // reads it back is the very next line).
+        unset($this->pageCache[$tag], $this->rawPageCache[$tag]);
     }
 
     public function getMetadata($tag): ?array
     {
-        $page = $this->dbService->loadSingle("SELECT metadata FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
+        // through getOne(), which has already decoded this row's metadata if anything has
+        // read the page this request -- and almost always something has, since metadata is
+        // asked about a page being rendered. A column-only SELECT of a row already in hand
+        // is the shape that made a page render read `metadata` eight extra times.
+        $page = $this->getOne($tag, null, true, true);
 
-        return $this->decodeMetadata($page['metadata'] ?? null);
+        return $page === null ? null : ($page['metadatas'] ?? null);
     }
 
     /**
@@ -703,7 +818,7 @@ class PageManager
         $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
         $userCol = $this->dbService->quoteIdentifier('user');
-        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
+        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
         $values = [
             "'" . $this->dbService->escape($tag) . "'",
             $this->dbService->now(),
@@ -711,23 +826,29 @@ class PageManager
             "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
             "'Y'",
             "'" . $this->dbService->escape(PageBody::encode($oldPage['body'])) . "'",
-            "''",
+            // carried forward, like owner and parent: writing metadata is not retyping the
+            // Content, and a revision that defaulted to 'page' would turn every account,
+            // file and entry into a page the first time its ACLs were touched
+            "'" . $this->dbService->escape((string)($oldPage['type'] ?? PageType::DEFAULT)) . "'",
             "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'",
         ];
-        if (!empty($oldPage['comment_on'])) {
-            $columns[] = 'comment_on';
-            $values[] = "'" . $this->dbService->escape($oldPage['comment_on']) . "'";
+        if (!empty($oldPage['parent'])) {
+            $columns[] = 'parent';
+            $values[] = "'" . $this->dbService->escape($oldPage['parent']) . "'";
         }
         $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
 
         unset($this->pageCache[$tag]);
+        unset($this->rawPageCache[$tag]);
+        unset($this->typeCache[$tag]);
+        $this->aclService->forget($tag);
 
         $this->eventDispatcher->yesWikiDispatch('page.updated', [
             'id' => $tag,
             'data' => [
                 'tag' => $tag,
                 'body' => $oldPage['body'],
-                'comment_on' => $oldPage['comment_on'] ?? '',
+                'parent' => $oldPage['parent'] ?? '',
                 'owner' => $oldPage['owner'],
                 'user' => $this->authenticationService->getLoggedUserName(),
             ],

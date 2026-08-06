@@ -31,8 +31,19 @@ const openPicker = async(page: Page) => {
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeVisible()
 }
 
+const backToList = async(page: Page) => {
+  const back = page.locator('#YesWikiFilePickerPanel [data-yw-file-picker-back]')
+  if (await back.isVisible()) {
+    await back.click()
+  }
+  await expect(page.locator('#YesWikiFilePickerPanel [data-yw-file-picker-pane="existing"]')).toBeVisible()
+}
+
 const uploadThroughPicker = async(page: Page, name: string, mimeType: string, buffer: Buffer) => {
-  await page.locator('[data-yw-file-picker-tab="upload"]').click()
+  // the rail is a state machine now: the upload action lives on the list view, so a
+  // previous upload (which lands on the file it just made) has to be backed out of first
+  await backToList(page)
+  await page.locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]').click()
   await page.locator('#YesWikiFilePickerPanel input[name="upFile"]').setInputFiles({name, mimeType, buffer})
   await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
   // the upload lands the file in the list and selects it
@@ -47,6 +58,7 @@ test('the picker lists the files already uploaded, and filters them', async({pag
 
   await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
   await uploadThroughPicker(page, 'minutes.txt', 'text/plain', Buffer.from('some notes'))
+  await backToList(page)
 
   // both are in the list without reopening anything -- the regression this covers is an
   // empty list, so the count matters more than the order
@@ -73,11 +85,77 @@ test('the picker lists the files already uploaded, and filters them', async({pag
   await expect(page.locator('[data-yw-file-picker-empty]')).toBeVisible()
 })
 
+/**
+ * The rail shows one thing at a time.
+ *
+ * It used to show a "choose an existing file" tab beside an "upload" one -- the first
+ * switching to the view already on screen -- then append the chosen file *under* a list
+ * still offering every other candidate, in a 340px column, above a footer split between
+ * Cancel and Insert. This asserts the shape that replaced it, because every part of it is
+ * invisible to phpunit: it is all in what the browser shows.
+ */
+test('the rail shows the list, the upload or the choice -- never two at once', async({page}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openPicker(page)
+
+  const panel = page.locator('#YesWikiFilePickerPanel')
+  const list = panel.locator('[data-yw-file-picker-pane="existing"]')
+  const uploadPane = panel.locator('[data-yw-file-picker-pane="upload"]')
+  const uploadOpen = panel.locator('[data-yw-file-picker-upload-open]')
+  const back = panel.locator('[data-yw-file-picker-back]')
+
+  // the tab that chose the view already on screen is gone, and so is the second way out
+  await expect(panel.locator('[data-yw-file-picker-tab]')).toHaveCount(0)
+  await expect(panel.locator('.btn-cancel-upload')).toHaveCount(0)
+
+  // browsing: the list and one action, no way back from where you already are
+  await expect(list).toBeVisible()
+  await expect(uploadOpen).toBeVisible()
+  await expect(back).toBeHidden()
+  await expect(uploadOpen.locator('svg use')).toHaveAttribute('href', /#upload$/)
+
+  // uploading takes the whole rail
+  await uploadOpen.click()
+  await expect(uploadPane).toBeVisible()
+  await expect(list).toBeHidden()
+  await expect(back).toBeVisible()
+
+  await back.click()
+  await expect(list).toBeVisible()
+  await expect(uploadPane).toBeHidden()
+
+  // the search and the extension filter share one line
+  const searchBox = panel.locator('.file-picker-search input[name="search"]')
+  const extensions = panel.locator('[data-yw-file-picker-extensions]')
+  await expect(searchBox).toBeVisible()
+  const searchTop = (await searchBox.boundingBox()).y
+  const extensionsTop = (await extensions.boundingBox()).y
+  expect(Math.abs(searchTop - extensionsTop)).toBeLessThan(8)
+
+  await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
+  await backToList(page)
+
+  // choosing one takes the whole rail too, and the row it came from says so
+  const chosen = panel.locator('.file-picker__result').first()
+  await chosen.click()
+  await expect(list).toBeHidden()
+  await expect(panel.locator('.file-picker-selected')).toBeVisible()
+  await expect(back).toBeVisible()
+  await expect(panel.locator('.btn-insert-upload')).toBeEnabled()
+
+  // going back unmakes the choice, and the row shows which one it was
+  await back.click()
+  await expect(list).toBeVisible()
+  await expect(panel.locator('.btn-insert-upload')).toBeDisabled()
+  await expect(panel.locator('.file-picker__result--selected')).toHaveCount(0)
+})
+
 test('picking a file inserts an attach action for it', async({page}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)
 
   await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
+  await backToList(page)
   await page.locator('#YesWikiFilePickerPanel .file-picker__result').first().click()
   await page.locator('#YesWikiFilePickerPanel .btn-insert-upload').click()
 
@@ -104,6 +182,7 @@ test('the Vditor toolbar opens the same picker and inserts Markdown', async({pag
   await openVditorPicker(page)
 
   await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
+  await backToList(page)
   await page.locator('#YesWikiFilePickerPanel .file-picker__result').first().click()
 
   // an alignment or a PDF display mode has nowhere to go in Markdown, so it is not offered

@@ -299,40 +299,43 @@ pour activer, `0` pour désactiver)
 
 #### 7.1.1 Par défaut une page wiki contient :
 
-- une **Page Titre** : c'est le nom du wiki
-- une **Page Menu Haut** : on peut y ajouter des liens vers les pages du wiki
-  (menu et sous-menu)
-- une **Page Rapide Haut** : il s'agit des pages d'administration du wiki, la
-  roue crantée en haut à droite
-- une **Page Header** : c'est une partie utile pour écrire le titre donné au
-  wiki, ajouter une description, un logo...
-- une **Page Footer** : autrement dit un pied de page, où se trouvent diverses
-  informations au sujet due wiki
+Une partie de cet habillage est un **réglage** du wiki, éditable dans le tableau
+de bord, section _Apparence_ → **Mise en page** (`?admin/layout`) :
+
+- le **titre** : le nom du wiki, en haut à gauche. S'il est laissé vide, c'est le
+  nom du wiki (`yeswiki_name`) qui s'affiche
+- un **logo**, à afficher seul, ou à côté du titre, ou au-dessus
+- le **menu du haut** : une liste de liens, avec un niveau de sous-menus
+- les **boutons d'accès rapide** : les boutons à droite de la barre de menu, dont
+  le bouton de compte
+
+L'autre partie reste du **contenu wiki**, dans des pages ordinaires, parce que ce
+qu'on y met est arbitraire (sections, actions, inclusions) :
+
+- une **Page Header** : le bandeau affiché en haut de toutes les pages
+- une **Page Menu** : le menu vertical
+- une **Page Footer** : le pied de page
 
 ![image composition_page.jpg](images/composition_page.jpg)
 
-Pour modifier ces pages spéciales, allez dans la roue crantée puis "Gestion du
-site"
+Le tableau de bord donne accès aux deux : la section _Apparence_ pour les
+réglages, et un lien vers l'éditeur de chacune des trois pages.
 
-### 7.2 Zoom sur la PageMenuHaut
+### 7.2 Zoom sur le menu du haut
 
-La PageMenuHaut est organisée comme une liste de liens ou de boutons.
+Le menu du haut est une liste d'entrées, chacune avec un intitulé et un lien, que
+l'on ajoute et déplace dans l'écran _Mise en page_.
 
-- Les puces de premier niveau (un seul espace avant le tiret) seront toujours
-  apparents dans le menu.
-- Les puces de deuxième niveau (deux espaces avant le tiret) permettent de créer
-  des sous menus
+- une entrée sans lien devient un **menu déroulant** : son intitulé ouvre le menu
+- le bouton d'indentation range une entrée **sous celle du dessus**. Il n'y a
+  qu'un seul niveau de sous-menu
+- un lien peut être un nom de page (`BacASable`), une route (`search`) ou une
+  adresse complète (`https://…`)
 
-```yeswiki
- - [[PageDemo Démo]]
- - Test
-  - [[Pagetest1 Sous menu 1]]
-  - [[PageTest2 Sous menu 2]]
- - {{button icon="fas fa-leaf" link="PageMargot" text="Margot" }}
-```
-
-!> A noter : lorsque que vous souhaitez mettre en place un menu déroulant, un
-simple mot suffira en premier niveau de liste à puce et non une page wiki.
+!> Avant cette version, ce menu était une page wiki nommée `PageMenuHaut`, écrite
+comme une liste à puces. Les wikis existants sont convertis automatiquement à la
+mise à jour, et ce qui n'a pas pu être converti est signalé dans le journal des
+actions administratives — la page, elle, est conservée telle quelle.
 
 ### 7.3 Visite de la roue crantée
 

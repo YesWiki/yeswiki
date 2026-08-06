@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
@@ -48,7 +49,7 @@ class PageKeywordsIntoBody extends YesWikiMigration
             }
             // a bazar entry's tags are an ordinary form field, already in its body under
             // the name the webmaster chose -- not `keywords`, and not this migration's business
-            if ($tripleStore->exist($tag, TripleStore::TYPE_URI, null, '', '') !== null) {
+            if ($pageManager->typeOf($tag) !== PageType::PAGE) {
                 continue;
             }
 

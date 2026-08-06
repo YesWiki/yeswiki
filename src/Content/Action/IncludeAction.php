@@ -4,7 +4,6 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
@@ -179,8 +178,11 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // et le nom de classe CSS soient bien identiques
         $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 
-        // on ajoute pour le menu du haut la classe nav
-        if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr($class, 'horizontal-dropdown-menu')) {
+        // a page included as the top menu gets the nav classes and its nested lists turned
+        // into dropdowns. Asked for by class rather than by page name since ticket 30: the
+        // squelette's own navbar is `layout_*` configuration now and no longer comes through
+        // here, so `PageMenuHaut` is just a page someone may still be including themselves.
+        if (strstr($class, 'topnavpage') && !strstr($class, 'horizontal-dropdown-menu')) {
             $plugin_output_new = (string)preg_replace('/\<ul\>/Ui', '<ul class="yw-nav">', $plugin_output_new, 1);
 
             // TODO: a faire pour toutes les pages ou juste le menu???
@@ -327,7 +329,6 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         }
         // Affichage de la page quand il n'y a pas d'erreur
         elseif ($this->getService(AclService::class)->hasAccess('read', $incPageName)) {
-            $this->getService(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
             $this->getService(InclusionStack::class)->register($incPageName);
             $output = $this->getService(MarkdownFormatterService::class)->format(PageBody::content($incPage['body']));
             if (isset($classes)) {

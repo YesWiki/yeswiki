@@ -19,12 +19,18 @@ class ThemeManager implements EventSubscriberInterface
     public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
     public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
     public const CUSTOM_FONT_PATH = 'custom/fonts';
+    /**
+     * What a page may say about its own chrome, beside the theme it wears.
+     *
+     * Three page names and a preset. `PageTitre`, `PageMenuHaut` and `PageRapideHaut` were
+     * here too until ticket 30 made them configuration: "wear another page's title bar" has
+     * no meaning once the title bar is a title, a logo and two lists of links. The override
+     * survives for the three items that are still pages, and LayoutService::pageFor() is
+     * what reads it back.
+     */
     public const SPECIAL_METADATA = [
         'PageFooter',
         'PageHeader',
-        'PageTitre',
-        'PageRapideHaut',
-        'PageMenuHaut',
         'PageMenu',
         'favorite_preset',
     ];

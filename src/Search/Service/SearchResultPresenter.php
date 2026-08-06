@@ -104,7 +104,7 @@ class SearchResultPresenter
     }
 
     /**
-     * `comment_on` for the comments in this page of results, in one query.
+     * `parent` for the comments in this page of results, in one query.
      *
      * Deliberately not a column on the index: it is needed for a handful of rows on a page
      * a visitor is looking at, and only for one content type. Denormalising it would cost a
@@ -133,13 +133,13 @@ class SearchResultPresenter
             $commentTags
         ));
         $found = $this->dbService->loadAll(
-            "SELECT tag, comment_on FROM {$this->dbService->prefixTable('pages')}"
+            "SELECT tag, parent FROM {$this->dbService->prefixTable('pages')}"
             . " WHERE latest = 'Y' AND tag IN ({$list})"
         );
 
         $parents = [];
         foreach ($found as $row) {
-            $parents[(string)$row['tag']] = (string)$row['comment_on'];
+            $parents[(string)$row['tag']] = (string)$row['parent'];
         }
 
         return $parents;

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -57,7 +56,6 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
         $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($link);
         if ($linkParts) {
             $link = $this->getService(UrlFormatter::class)->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
-            $this->getService(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag'] ?? '');
         }
         // change short yeswiki urls in real links
         $link = $this->getService(UrlFormatter::class)->generateLink($link);

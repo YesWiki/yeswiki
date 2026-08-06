@@ -1,4 +1,24 @@
 /* ---- top bar ---- */
+
+/* The bar's height is a setting (ticket 30, /admin/layout). `--yw-navbar-height` is declared
+   in styles/yw-core.css, because core stylesheets derive `--sticky-toolbar-top` from it; the
+   squelette then writes it inline on <html>, which beats every stylesheet including this one.
+
+   `min-height` on the bar itself with `box-sizing: border-box`, so the number is the height you
+   can measure (plus the 1px bottom border, which it has always had: 48 renders 49). `min-` and
+   not a fixed height, because the bar must still grow when its contents wrap on a narrow screen.
+
+   **The contents are NOT flex-centred, and that is deliberate.** Both obvious ways to centre
+   them change how the bar lays out, so extra height falls below the contents instead:
+
+     - `display: flex` on `#yw-topnav` -- it is `position: sticky`, and its `.container` child
+       (auto margins, max-width, width 100%) then settles on fractional widths.
+     - `display: flex` on `#yw-topnav > .container` -- `.yw-topnav-fast-access` is placed with
+       `pull-right`, i.e. a float, and **floats are ignored on flex items**, so the whole
+       right-hand block of the bar moves.
+
+   Centring them means first giving the fast-access block a placement that does not depend on
+   floating; that is a separate change with its own before/after, not a line to slip in here. */
 #yw-topnav {
   background: var(--navbar-bg-color);
   color: var(--navbar-text-color);
@@ -7,6 +27,8 @@
   box-shadow: var(--navbar-shadow);
   padding: 6px 0;
   z-index: 100;
+  box-sizing: border-box;
+  min-height: var(--yw-navbar-height);
 }
 
 #yw-topnav .navbar-brand {
@@ -17,6 +39,35 @@
   color: var(--primary-color);
   text-decoration: none;
   white-space: nowrap;
+}
+
+/* The logo is sized from the bar, width auto: one number decides both, so a wordmark keeps
+   its proportions and cannot be stretched by a second setting disagreeing with the first.
+   The 12px is the bar's own padding, top and bottom -- without it the logo touches the edge
+   at every height. */
+#yw-topnav .yw-brand__logo {
+  height: calc(var(--yw-navbar-height) - 12px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ...except stacked, where the logo shares the height with the name under it */
+#yw-topnav .yw-brand--logo-text-below {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+#yw-topnav .yw-brand--logo-text-below .yw-brand__logo {
+  height: calc(var(--yw-navbar-height) * 0.6);
+}
+
+#yw-topnav .yw-brand--logo-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* top-bar buttons sit flat on the bar (margot light.css look) */

@@ -218,7 +218,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         // add new revision
                         $userCol = $dbService->quoteIdentifier('user');
                         $this->getService(DbService::class)->query('INSERT INTO ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages ' .
-                  "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
+                  "(tag, time, owner, $userCol, latest, body) VALUES (" .
                   "'" . $dbService->escape($revision['tag']) . "', " .
                   $dbService->now() . ', ' .
                   "'" . $dbService->escape($revision['owner']) . "', " .
@@ -226,8 +226,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                   "'Y', " .
                   // the revision is a raw row, so its body is re-encoded rather than copied
                   // over verbatim: a row left in the legacy shape lands in the new one
-                  "'" . $dbService->escape(PageBody::encode(PageBody::decode($revision['body']))) . "', " .
-                  "'')");
+                  "'" . $dbService->escape(PageBody::encode(PageBody::decode($revision['body']))) . "')");
                     }
                 }
                 $restoredPages = trim($restoredPages, ', ');

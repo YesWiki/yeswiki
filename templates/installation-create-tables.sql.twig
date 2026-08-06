@@ -6,27 +6,6 @@
 <% set q = driver == 'mysql' ? '`' : '"' %>
 <% set now = driver == 'sqlite' ? "datetime('now')" : 'NOW()' %>
 
-<# Table: links #>
-CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}links[[ q ]] (
-<% if driver == 'sqlite' %>
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "from_tag" TEXT NOT NULL,
-  "to_tag" TEXT NOT NULL,
-  UNIQUE ("from_tag", "to_tag")
-<% elseif driver == 'pgsql' %>
-  "id" SERIAL PRIMARY KEY,
-  "from_tag" VARCHAR(191) NOT NULL,
-  "to_tag" VARCHAR(191) NOT NULL,
-  UNIQUE ("from_tag", "to_tag")
-<% else %>
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `from_tag` VARCHAR(191) NOT NULL,
-  `to_tag` VARCHAR(191) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `from_tag` (`from_tag`, `to_tag`)
-<% endif %>
-)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
-
 <# Table: pages #>
 CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
 <% if driver == 'sqlite' %>
@@ -34,42 +13,40 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   "tag" TEXT NOT NULL,
   "time" TEXT NOT NULL,
   "body" TEXT NOT NULL,
-  "body_r" TEXT NOT NULL,
   "owner" TEXT NOT NULL,
   "user" TEXT NOT NULL,
   "latest" TEXT NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
-  "handler" TEXT NOT NULL DEFAULT 'page',
-  "comment_on" TEXT NOT NULL DEFAULT '',
+  "type" TEXT NOT NULL DEFAULT 'page',
+  "parent" TEXT NOT NULL DEFAULT '',
   "metadata" TEXT DEFAULT NULL
 <% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "tag" VARCHAR(191) NOT NULL,
   "time" TIMESTAMP NOT NULL,
   "body" TEXT NOT NULL,
-  "body_r" TEXT NOT NULL,
   "owner" VARCHAR(191) NOT NULL,
   "user" VARCHAR(191) NOT NULL,
   "latest" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
-  "handler" VARCHAR(30) NOT NULL DEFAULT 'page',
-  "comment_on" VARCHAR(191) NOT NULL DEFAULT '',
+  "type" VARCHAR(30) NOT NULL DEFAULT 'page',
+  "parent" VARCHAR(191) NOT NULL DEFAULT '',
   "metadata" TEXT DEFAULT NULL
 <% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `tag` VARCHAR(191) NOT NULL,
   `time` DATETIME NOT NULL,
   `body` LONGTEXT NOT NULL,
-  `body_r` TEXT NOT NULL,
   `owner` VARCHAR(191) NOT NULL,
   `user` VARCHAR(191) NOT NULL,
   `latest` ENUM('Y','N') NOT NULL DEFAULT 'N',
-  `handler` VARCHAR(30) NOT NULL DEFAULT 'page',
-  `comment_on` VARCHAR(191) NOT NULL DEFAULT '',
+  `type` VARCHAR(30) NOT NULL DEFAULT 'page',
+  `parent` VARCHAR(191) NOT NULL DEFAULT '',
   `metadata` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tag` (`tag`),
   KEY `idx_time` (`time`),
   KEY `idx_latest` (`latest`),
-  KEY `idx_comment_on` (`comment_on`)
+  KEY `idx_parent` (`parent`),
+  KEY `idx_type` (`type`)
 <# ticket 18: `body` used to carry a FULLTEXT index for a search that read it directly.
    Search reads its own index table now (ADR-0015), and nothing ever queried this one with
    MATCH ... AGAINST even before that -- all it did was amplify writes on a LONGTEXT column,
@@ -81,35 +58,8 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_tag" ON "{{prefix}}pages" ("tag");
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_time" ON "{{prefix}}pages" ("time");
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_latest" ON "{{prefix}}pages" ("latest");
-CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_comment_on" ON "{{prefix}}pages" ("comment_on");
-<% endif %>
-
-<# Table: referrers #>
-CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}referrers[[ q ]] (
-<% if driver == 'sqlite' %>
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "page_tag" TEXT NOT NULL,
-  "referrer" TEXT NOT NULL,
-  "time" TEXT NOT NULL
-<% elseif driver == 'pgsql' %>
-  "id" SERIAL PRIMARY KEY,
-  "page_tag" VARCHAR(191) NOT NULL,
-  "referrer" TEXT NOT NULL,
-  "time" TIMESTAMP NOT NULL
-<% else %>
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `page_tag` VARCHAR(191) NOT NULL,
-  `referrer` TEXT NOT NULL,
-  `time` DATETIME NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_page_tag` (`page_tag`),
-  KEY `idx_time` (`time`)
-<% endif %>
-)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
-
-<% if driver != 'mysql' %>
-CREATE INDEX IF NOT EXISTS "{{prefix}}referrers_idx_page_tag" ON "{{prefix}}referrers" ("page_tag");
-CREATE INDEX IF NOT EXISTS "{{prefix}}referrers_idx_time" ON "{{prefix}}referrers" ("time");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_parent" ON "{{prefix}}pages" ("parent");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_type" ON "{{prefix}}pages" ("type");
 <% endif %>
 
 <# Table: triples #>
@@ -140,24 +90,18 @@ CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_resource" ON "{{prefix}}triple
 CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_property" ON "{{prefix}}triples" ("property");
 <% endif %>
 
-<# Insert admin group and user -- the admin account is a `pages` row typed via the #>
-<# TYPE_URI='user' triple (see UserManager), not a standalone `users` table row #>
+<# Insert admin group and user -- the admin account is a `pages` row of type 'user' #>
+<# (see UserManager), not a standalone `users` table row #>
 <% if driver == 'mysql' %>
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]id[[ q ]], [[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
-('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '', '{{adminUserMetadata}}');
-
-INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
-('{{WikiName}}', 'http://outils-reseaux.org/_vocabulary/type', 'user');
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]type[[ q ]], [[ q ]]parent[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
+('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '{{WikiName}}', '{{WikiName}}', 'Y', 'user', '', '{{adminUserMetadata}}');
 <% else %>
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
-('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '', '{{adminUserMetadata}}');
-
-INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
-('{{WikiName}}', 'http://outils-reseaux.org/_vocabulary/type', 'user');
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]type[[ q ]], [[ q ]]parent[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
+('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '{{WikiName}}', '{{WikiName}}', 'Y', 'user', '', '{{adminUserMetadata}}');
 <% endif %>

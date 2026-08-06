@@ -1,0 +1,286 @@
+/* The Personnalisation screen: the preset list, the rail that edits one, and the frame
+   around the component gallery (ticket 30). */
+
+/* The list is a column beside the gallery, not a wall above it. Clicking a preset repaints
+   the components, and that is the whole screen -- so what changes has to still be on screen
+   when it changes. The list column is narrow on purpose: a preset is a name and six
+   swatches, and the width belongs to what it does. */
+.yw-preset-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* the gallery is long: the list follows it down rather than being scrolled away from, and
+   scrolls inside itself when a wiki has more presets than the viewport is tall */
+.yw-preset-layout__list {
+  position: sticky;
+  top: var(--sticky-toolbar-top);
+  max-height: calc(100vh - var(--sticky-toolbar-top) - 2rem);
+  overflow-y: auto;
+}
+
+/* one above the other once the two columns no longer both fit: side by side in a column
+   too narrow for the components would be worse than stacked */
+@media (max-width: 900px) {
+  .yw-preset-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .yw-preset-layout__list {
+    position: static;
+    max-height: none;
+  }
+}
+
+.yw-preset-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.yw-preset-list__header h2 {
+  margin: 0;
+}
+
+/* Cards rather than a select: a preset IS its colours, and a list of names says nothing
+   about what choosing one does. One per row, in the column: presets are compared with each
+   other, and a grid makes that a scan around a wall rather than down a list. */
+.yw-preset-cards {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* One row per preset: its colours, its name, and the buttons that act on it, all on the same
+   line. Stacking the buttons under the name made every card three lines tall, which turned a
+   list of five presets into a scroll.
+   The background is a variable because the tools sit ON this line, over the end of it: they
+   need the card's own background to mask a name they overlap, and it has to follow the hover
+   tint or they read as a lighter patch. */
+.yw-preset-card {
+  --yw-preset-card-bg: var(--neutral-light-color, #f8f8f8);
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--yw-preset-card-bg);
+}
+
+.yw-preset-card:hover,
+.yw-preset-card:focus-within {
+  --yw-preset-card-bg: color-mix(
+    in srgb,
+    var(--neutral-color, #777) 10%,
+    var(--neutral-light-color, #f8f8f8)
+  );
+}
+
+/* Two different states, and they must not be confusable: `--default` is the preset the
+   whole wiki wears, `--trying` is the one this page is wearing right now and nobody else
+   is. Both have to survive not having colour to say it with -- a tint would be swallowed
+   by a preset's own palette -- so they are an outline, solid against dashed. Which one is
+   the wiki's is said a second time by the filled star in the card's tools; there is no
+   corner mark, because a glyph that small was the thing nobody saw. */
+.yw-preset-card--default {
+  outline: 2px solid var(--primary-color, #0c5d6a);
+  outline-offset: -2px;
+}
+
+.yw-preset-card--trying {
+  outline: 2px dashed var(--secondary-color-1, #d8604c);
+  outline-offset: -2px;
+}
+
+/* both at once is the ordinary case once you try on what is already the default */
+.yw-preset-card--trying.yw-preset-card--default {
+  outline-style: solid;
+}
+
+/* the whole card is the button: a swatch strip is a target people aim at, and a small
+   "select" link beside it would be a smaller one for no reason. The right padding is the
+   room the star sits in, so the mark never lands on top of a name. */
+.yw-preset-card__choose {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  /* 44px is one small button plus the tools' own inset: what the star stands in */
+  padding: 6px 44px 6px 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.yw-preset-card__swatches {
+  display: flex;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 26px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+}
+
+.yw-preset-card__swatch {
+  flex: 1 1 0;
+}
+
+/* the "no preset" card has nothing to show, so it shows that rather than an empty strip */
+.yw-preset-card__swatches--none {
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-color, #777);
+}
+
+/* beside the swatches, not under them: `min-width: 0` is what lets the name ellipsis rather
+   than push the row wider than the column */
+.yw-preset-card__label {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.yw-preset-card__name {
+  display: block;
+  font-weight: bold;
+  line-height: 1.2;
+  /* a preset can name a font this browser does not have and a size in any unit: the card
+     must not grow to whatever that turns out to be */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-preset-card__badge {
+  display: block;
+  font-size: 0.8em;
+  line-height: 1.2;
+  color: var(--neutral-color, #777);
+}
+
+/* The buttons sit at the right end of the name's line, and only while the card is under the
+   pointer or holds focus: five rows each showing four icons is a wall of buttons, and what
+   is being compared here is the colours. They overlay the line rather than reserve room on
+   it, so nothing moves when they appear -- hence the card's own background behind them.
+   `visibility` rather than `display`, so the star below can claim itself back (see there). */
+.yw-preset-card__tools {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 5px;
+  background: var(--yw-preset-card-bg);
+  visibility: hidden;
+}
+
+.yw-preset-card:hover .yw-preset-card__tools,
+.yw-preset-card:focus-within .yw-preset-card__tools {
+  visibility: visible;
+}
+
+/* the delete button sits in a form of its own -- two forms per card, because one submit
+   button can only say one thing */
+.yw-preset-card__tools form {
+  margin: 0;
+}
+
+/* The star is on every card, and reads as on or off: filled and in the wiki's primary
+   colour for the preset in use, a plain outline for the rest. Bigger than the tools beside
+   it because it is the only one of them that says something about the current state --
+   and, filled, the way back to no preset at all. */
+.yw-preset-card__star .yw-icon {
+  width: 1.3em;
+  height: 1.3em;
+  vertical-align: -0.3em;
+}
+
+/* The one button that is not hidden until the pointer arrives: which preset the wiki wears
+   has to be readable off the list at rest, and a mark you have to go looking for is the
+   thing this screen already got wrong once. `visibility` is inherited, so an element can
+   take itself back out of a hidden ancestor -- which is why the tools are hidden that way.
+   It is last in the tools, so at rest it stands at the right end of the row, in the space
+   the card's right padding keeps clear of the name. */
+.yw-preset-card__star--on {
+  visibility: visible;
+  color: var(--primary-color, #0c5d6a);
+}
+
+/* the "no preset" card's own star when it is the one in use: the same mark in the same
+   place, but nothing to click -- there is no preset to take off */
+span.yw-preset-card__star {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
+}
+
+/* A swatch and the literal side by side: the picker is convenient, the text is the truth.
+   See admin-preset.js -- the text input is the field that posts. */
+.yw-preset-rail__color {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.yw-preset-rail__picker {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.yw-preset-rail__copy-notice {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--neutral-light-color, #f1f1f1);
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  font-size: 0.9em;
+}
+
+/* `hidden` has to actually hide. This one is a paragraph, so the UA rule would win -- but
+   it is stated anyway, beside the rail whose own [hidden] is overridden on purpose in
+   yw-core.css, so the two are not read as disagreeing. */
+.yw-preset-rail__copy-notice[hidden] {
+  display: none;
+}
+
+/* The Preset screen's component gallery (ticket 30) -- the whole right-hand column, with no
+   card around it and nothing said above it.
+
+   Deliberately almost empty: the gallery exists to show what the *theme and preset* do to
+   ordinary components, so anything styled here is a lie told to the person judging them.
+   What is left is the frame around the gallery, which is not part of what it previews. */
+.yw-preset-preview {
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 4px;
+  padding: 1rem;
+  /* a section with `full-width` breaks out of its container by design; inside a preview it
+     must stay in the box rather than run across the dashboard */
+  overflow-x: auto;
+  margin: 0.75em 0 !important;
+}
+
+/* the gallery repeats headings for scale, so the first one must not carry the page-title
+   margin that assumes it is alone at the top */
+.yw-preset-preview > h1:first-child {
+  margin-top: 0;
+}

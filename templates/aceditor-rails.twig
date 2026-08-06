@@ -7,6 +7,11 @@
    editor's JavaScript builds all three rails on startup, so a page that shipped two of
    them used to break on the third. See javascripts/editor-rails.js.
 
+   **A file or image field needs the file rail too**, with no editor anywhere on the page:
+   its button opens the same picker (javascripts/inputs/file-picker-field.js). So the rule
+   is "every template that renders an editor OR a form field that can attach a file",
+   which is why usersettings.twig includes this despite rendering no editor.
+
    They belong OUTSIDE the edited form -- each carries inputs of its own, which configure
    what is being written rather than being fields of the page -- and, where there is one,
    inside .yw-designer as a sibling of the canvas. #}

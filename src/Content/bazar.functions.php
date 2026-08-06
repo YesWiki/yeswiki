@@ -67,9 +67,7 @@ function formAndListIds()
     $lists = array_map(function ($list) {
         return $list['title'];
     }, $lists);
-    foreach ($GLOBALS['yeswikiServices']->get(FormManager::class)->getAll() as $form) {
-        $forms[$form['id']] = $form['label'];
-    }
+    $forms = $GLOBALS['yeswikiServices']->get(FormManager::class)->getAllLabels();
 
     return ['lists' => $lists, 'forms' => $forms];
 }

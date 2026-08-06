@@ -1,7 +1,7 @@
 <?php
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
 /**
@@ -26,9 +26,8 @@ class ConvertFormTemplatesToJson extends YesWikiMigration
 
         $rows = $this->dbService->loadAll(
             'SELECT id, tag, body FROM ' . $this->dbService->prefixTable('pages')
-            . " WHERE latest = 'Y' AND tag IN (SELECT resource FROM " . $this->dbService->prefixTable('triples')
-            . " WHERE property = '" . $this->dbService->escape(TripleStore::TYPE_URI)
-            . "' AND value = '" . $this->dbService->escape(FormManager::TRIPLES_FORM_TYPE) . "')"
+            . " WHERE latest = 'Y' AND " . $this->dbService->quoteIdentifier('type')
+            . " = '" . $this->dbService->escape(PageType::FORM) . "'"
         );
 
         foreach ($rows as $row) {

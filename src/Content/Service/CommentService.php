@@ -89,7 +89,7 @@ class CommentService implements EventSubscriberInterface
                 // find number
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
                     . ' FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
-                    . " WHERE comment_on != ''";
+                    . " WHERE parent != ''";
                 if ($lastComment = $this->dbService->loadSingle($sql)) {
                     $num = $lastComment['comment_id'] + 1;
                 } else {
@@ -121,7 +121,7 @@ class CommentService implements EventSubscriberInterface
 
             $comment = $this->pageManager->getOne($idComment);
             $com['tag'] = $comment['tag'];
-            $com['commentOn'] = $comment['comment_on'];
+            $com['commentOn'] = $comment['parent'];
             $com['rawbody'] = PageBody::content($comment['body']);
             // Do the page change in any case (useful for attach or grid)
             $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
@@ -214,9 +214,9 @@ class CommentService implements EventSubscriberInterface
     {
         $query = 'SELECT * FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
         if (empty($tag)) {
-            $query .= "comment_on != '' ";
+            $query .= "parent != '' ";
         } else {
-            $query .= "comment_on = '{$this->dbService->escape($tag)}' ";
+            $query .= "parent = '{$this->dbService->escape($tag)}' ";
         }
         if (!empty($username)) {
             $userCol = $this->dbService->quoteIdentifier('user');
@@ -241,7 +241,7 @@ class CommentService implements EventSubscriberInterface
         if (!$bypassAcls) {
             // filter on read acl on parent page
             $comments = array_filter($comments, function ($com) {
-                return !empty($com['comment_on']) && $this->aclService->hasAccess('read', $com['comment_on']);
+                return !empty($com['parent']) && $this->aclService->hasAccess('read', $com['parent']);
             });
         }
 
@@ -258,7 +258,7 @@ class CommentService implements EventSubscriberInterface
         if ($comments) {
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
-                $com['comments'][$i]['commentOn'] = $comment['comment_on'];
+                $com['comments'][$i]['commentOn'] = $comment['parent'];
                 // loadComments() reads the rows straight from SQL, so the body is still stored text
                 $com['comments'][$i]['rawbody'] = PageBody::content(PageBody::decode($comment['body']));
                 $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['comments'][$i]['rawbody']);
@@ -283,7 +283,7 @@ class CommentService implements EventSubscriberInterface
     {
         return $this->dbService->count("
             SELECT * FROM {$this->dbService->prefixTable('pages')}
-            WHERE comment_on = '{$this->dbService->escape($tag)}' AND latest = 'Y'
+            WHERE parent = '{$this->dbService->escape($tag)}' AND latest = 'Y'
         ");
     }
 
@@ -300,7 +300,7 @@ class CommentService implements EventSubscriberInterface
 
         return $this->dbService->loadAll(
             'select * from ' . $this->dbService->prefixTable('pages')
-            . ' where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim
+            . ' where parent != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim
         );
     }
 
@@ -315,21 +315,21 @@ class CommentService implements EventSubscriberInterface
         $pages = [];
 
         // load ids of the first revisions of latest comments
-        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . ' where comment_on != "" group by tag order by id desc')) {
+        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . ' where parent != "" group by tag order by id desc')) {
             // load complete comments
             $num = 0;
             $comments = [];
             foreach ($ids as $id) {
                 $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . " where id = '" . $id['id'] . "' limit 1");
-                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
-                    $comments[$comment['comment_on']] = $comment;
+                if (!isset($comments[$comment['parent']]) && $num < $limit) {
+                    $comments[$comment['parent']] = $comment;
                     $num++;
                 }
             }
 
             // now using these ids, load the actual pages
             foreach ($comments as $comment) {
-                $page = $this->pageManager->getOne($comment['comment_on']);
+                $page = $this->pageManager->getOne($comment['parent']);
                 $page['comment_user'] = $comment['user'];
                 $page['comment_time'] = $comment['time'];
                 $page['comment_tag'] = $comment['tag'];
@@ -369,7 +369,7 @@ class CommentService implements EventSubscriberInterface
                     $hashCashCode = $hashCash->getJavascriptCode('post-comment');
                 }
                 $page = $this->pageManager->getOne($tag);
-                $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
+                $commentOn = !empty($page['parent']) ? $page['parent'] : $page['tag'];
                 $tempTag = ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
@@ -588,15 +588,15 @@ class CommentService implements EventSubscriberInterface
         $page = $this->pageManager->getOne($commentTag);
         if (empty($page)) {
             return null;
-        } elseif (empty($page['comment_on'])) {
+        } elseif (empty($page['parent'])) {
             return $page;
-        } elseif (in_array($page['comment_on'], $alreadyFoundTags)) {
+        } elseif (in_array($page['parent'], $alreadyFoundTags)) {
             // prevent infinite loop
             return null;
         }
         $foundTags = $alreadyFoundTags;
         $foundTags[] = $commentTag;
 
-        return $this->getParentPage($page['comment_on'], $foundTags);
+        return $this->getParentPage($page['parent'], $foundTags);
     }
 }

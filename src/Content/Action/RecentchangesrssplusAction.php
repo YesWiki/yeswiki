@@ -68,7 +68,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
         // the 500 first characters used to be cut in SQL (LEFT/substr on body); on a JSON
         // body that would truncate the container rather than the prose, so the cut moved
         // onto the decoded markup below
-        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and parent = '' order by time desc limit " . $max)) {
             if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                 $link = $this->getService(RuntimeConfig::class)['root_page'];
             }

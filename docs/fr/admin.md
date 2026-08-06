@@ -743,8 +743,9 @@ modifier les informations de cet espace.
 ### Paramètres principaux
 
 - **Titre de votre wiki - yeswiki_name** : c'est le titre donné à la création de
-  votre wiki et qui s'affiche, de base, dans la page "PageTitre" et apparaît en
-  haut à gauche sur la page d'accueil. Ce titre sera aussi utilisé par les
+  votre wiki et qui s'affiche en haut à gauche de toutes les pages, tant que
+  l'écran _Mise en page_ (`?admin/layout`) ne lui donne pas un titre à lui. Ce
+  titre sera aussi utilisé par les
   moteurs de recherche comme titre de votre site. Il peut être modifié à tout
   moment.
 - **Nom de la page d'accueil - root_page** : à la création du wiki, le nom donné
@@ -817,9 +818,9 @@ voir d'autres façons de gérer les droits d'accès, voir le paragraphe
 
 - **Autoriser le double-clic pour éditer les menus et pages spéciales (true ou
   false) - allow_doubleclic** : par défaut, le double-clic utilisé pour
-  l'édition des pages a été retiré pour les menus et les pages spéciales
-  (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient
-  spammées. Pour autoriser ce double-clic, mettre `true` pour ce paramètre.
+  l'édition des pages a été retiré pour les pages spéciales (PageHeader,
+  PageMenu, PageFooter) afin d'éviter que ces pages soient spammées. Pour
+  autoriser ce double-clic, mettre `true` pour ce paramètre.
 
 ### Envoi des e-mails
 

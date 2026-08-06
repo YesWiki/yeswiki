@@ -12,10 +12,10 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
             return;
         }
 
-        foreach ([['pages', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['links', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['nature', 'bn_id_nature', 'int(10) UNSIGNED NOT NULL AUTO_INCREMENT'], ['referrers', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['triples', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT']] as $data) {
+        foreach ([['pages', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['nature', 'bn_id_nature', 'int(10) UNSIGNED NOT NULL AUTO_INCREMENT'], ['triples', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT']] as $data) {
             $this->checkThenUpdateColumnAutoincrement($data[0], $data[1], $data[2]);
         }
-        foreach ([['pages', 'id', ['id']], ['links', 'id', ['id']], ['nature', 'bn_id_nature', ['bn_id_nature']], ['referrers', 'id', ['id']], ['triples', 'id', ['id']], ['users', 'name', ['name']], ['acls', 'page_tag', ['page_tag', 'privilege']], ['acls', 'privilege', ['page_tag', 'privilege']]] as $data) {
+        foreach ([['pages', 'id', ['id']], ['nature', 'bn_id_nature', ['bn_id_nature']], ['triples', 'id', ['id']], ['users', 'name', ['name']], ['acls', 'page_tag', ['page_tag', 'privilege']], ['acls', 'privilege', ['page_tag', 'privilege']]] as $data) {
             $this->checkThenUpdateColumnPrimary($data[0], $data[1], $data[2]);
         }
     }

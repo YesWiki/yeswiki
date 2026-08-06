@@ -72,8 +72,47 @@
                left the menu outside `.dropup` -- where the toggle looks for it, so opening
                the comments did nothing -- and a stray empty <p> behind it. #}
             {% set showAuthor = userIsAdmin and author is not empty %}
-            {% if showAuthor or linkacls is defined or linkclosecomments is defined or linkopencomments is defined %}
+            {% if showAuthor or linkedit is defined or linkacls is defined or linkclosecomments is defined or linkopencomments is defined %}
                 <div class="yw-page-info__line">
+                    {# The same verbs the floating cluster carries, as plain links at the foot
+                       of the page and *before* the owner. The cluster is collapsed to a single
+                       icon and only opens on hover, which is fine for the errand you came for
+                       and no good at all for finding out what you are allowed to do here --
+                       these say it in words, in the line that already lists the page's facts.
+                       Links rather than buttons: this line is prose about the page, and a row
+                       of buttons in the middle of it would read as a second toolbar. #}
+                    {# `TEMPLATE_EDIT` ("Éditer"), not `TEMPLATE_EDIT_THIS_PAGE`: the short
+                       verb reads better in a line of prose, and it keeps this link from
+                       having the *same accessible name* as the floating cluster's button.
+                       Two links called "Éditer la page" on one page is a thing a screen
+                       reader announces twice with no way to tell them apart. #}
+                    {% if linkedit is defined %}
+                        <a class="link-edit"
+                           href="{{ linkedit }}"
+                           title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}">
+                            {{ icon('pencil') }}
+                            <span>{{ _t("TEMPLATE_EDIT") }}</span>
+                        </a>
+                    {% endif %}
+                    {% if userIsAdmin and linkduplicate is defined %}
+                        <a class="link-duplicate"
+                           href="{{ linkduplicate }}"
+                           title="{{ _t("TEMPLATE_DUPLICATE_PAGE") ~ ' ' ~ page }}">
+                            {{ icon('copy') }}
+                            <span>{{ _t("TEMPLATE_DUPLICATE") }}</span>
+                        </a>
+                    {% endif %}
+                    {# red, and shown only to someone who may actually delete: `linkdeletepage`
+                       is defined by the action only when the permission is there, so the colour
+                       never advertises something that would be refused #}
+                    {% if linkdeletepage is defined %}
+                        <a class="link-deletepage yw-page-info__danger modalbox"
+                           href="{{ linkdeletepage }}"
+                           title="{{ _t("TEMPLATE_DELETE_PAGE") ~ ' ' ~ page }}">
+                            {{ icon('trash') }}
+                            <span>{{ _t("TEMPLATE_DELETE") }}</span>
+                        </a>
+                    {% endif %}
                     {% if showAuthor %}
                         <span class="yw-page-info__author">
                             {{ _t("BAZ_ECRITE") }} {{ author }}{% if contentLabel is not empty %} <span class="yw-page-info__type">({{ contentLabel }})</span>{% endif %}

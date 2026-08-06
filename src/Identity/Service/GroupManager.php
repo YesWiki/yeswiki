@@ -22,7 +22,9 @@ class GroupManager
      */
     public function groupExists(string $group_name): bool
     {
-        return $this->tripleStore->getMatching(GROUP_PREFIX . $group_name, null, null, '=') != null || $this->userManager->userExist($group_name);
+        // hasAnyProperty(), not getMatching(): it shares the per-resource cache getMembers()
+        // fills a line later, so existence and members are one query rather than two
+        return $this->tripleStore->hasAnyProperty($group_name, GROUP_PREFIX) || $this->userManager->userExist($group_name);
     }
 
     /**

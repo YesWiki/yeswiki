@@ -114,7 +114,10 @@ class DashboardRoutesTest extends YesWikiTestCase
 
             $adminController = $wiki->services->get(AdminController::class);
             $screens = [
-                'content', 'imports', 'keywords', 'specialPages', 'appearance',
+                'content', 'imports', 'keywords',
+                // `appearance` is retired: its two blocks live on `preset` now (ticket 30),
+                // beside the component gallery a colour preset is actually judged against
+                'layout', 'preset', 'customCss', 'customTemplates',
                 'users', 'groups', 'reactions', 'spam', 'config', 'updates', 'backups',
             ];
             foreach ($screens as $method) {
@@ -122,6 +125,8 @@ class DashboardRoutesTest extends YesWikiTestCase
                 $this->assertStringContainsString('yw-dashboard__canvas', $body, "admin/{$method} renders");
                 // an action that no longer exists renders as its own name in a comment
                 $this->assertStringNotContainsString('does not exist', $body, "admin/{$method} runs its action");
+                $this->assertNoUntranslatedKeys($body, "admin/{$method}");
+                $this->assertFilePickerIsWiredUp($body, "admin/{$method}");
             }
         } finally {
             $authentication->logout();
@@ -169,6 +174,42 @@ class DashboardRoutesTest extends YesWikiTestCase
                 $this->railOrder($rail, ['dashboard/export', 'dashboard/lists', 'dashboard/forms']),
                 'the lists sit with the forms they belong to'
             );
+            // Appearance is its own errand (ticket 30) and reads outwards: the layout is the
+            // shape of every page, the preset its colours, and the CSS what you reach for
+            // when neither of the two can say it
+            $this->assertStringContainsString(_t('DASHBOARD_SECTION_APPEARANCE'), $rail);
+            $this->assertSame(
+                ['admin/layout', 'admin/preset', 'admin/custom-css', 'admin/custom-templates'],
+                $this->railOrder($rail, [
+                    'admin/custom-templates', 'admin/custom-css', 'admin/preset', 'admin/layout',
+                ]),
+                'Appearance reads outwards: the shape, the theme, a stylesheet, the templates'
+            );
+            $this->assertStringNotContainsString(
+                'admin/appearance',
+                $rail,
+                'the appearance screen is retired: its blocks are on the preset screen'
+            );
+
+            // Administration reads people-ward: what is in the wiki, who is in it, how they
+            // are grouped, then the two things that describe and answer content
+            $this->assertSame(
+                ['admin/content', 'admin/users', 'admin/groups', 'admin/keywords', 'admin/reactions'],
+                $this->railOrder($rail, [
+                    'admin/reactions', 'admin/keywords', 'admin/groups', 'admin/users', 'admin/content',
+                ]),
+                'Administration reads from the content to the people to what they leave on it'
+            );
+
+            // The API has no entry of its own: it is one of the ways the wiki's content comes
+            // out, so it is listed on the Export screen with the feeds and the per-form formats.
+            // The route itself still renders (see testEveryDashboardRouteRenders).
+            $this->assertStringNotContainsString(
+                '<span>' . _t('DASHBOARD_API') . '</span>',
+                $rail,
+                'the API is reached from Exports, not from a rail entry'
+            );
+
             $this->assertSame(
                 ['admin/config', 'admin/updates', 'admin/backups', 'admin/imports', 'admin/spam'],
                 $this->railOrder($rail, ['admin/spam', 'admin/imports', 'admin/backups', 'admin/updates', 'admin/config']),
@@ -185,6 +226,60 @@ class DashboardRoutesTest extends YesWikiTestCase
             $authentication->logout();
             unset($GLOBALS['wiki']);
         }
+    }
+
+    /**
+     * A file-picker button needs two other things on the page, and both are easy to forget.
+     *
+     * The panel (`@core/aceditor-rails.twig`) and the module that binds the click
+     * (`javascripts/inputs/file-picker-field.js`). Miss either and the button renders,
+     * looks right, and does nothing -- there is no error anywhere, which is why this went
+     * unnoticed on the Layout screen until someone clicked it. `usersettings.twig` shipped
+     * the button without the panel once, for the same reason.
+     *
+     * Asserted as a rule over every screen rather than on the one that broke: the next
+     * screen to add a picker will forget the same two lines.
+     */
+    private function assertFilePickerIsWiredUp(string $body, string $screen): void
+    {
+        if (!str_contains($body, 'data-yw-file-picker-field')) {
+            return;
+        }
+
+        $this->assertStringContainsString(
+            'YesWikiFilePickerPanel',
+            $body,
+            "{$screen} renders a file-picker button but not the panel it opens"
+            . ' -- include @core/aceditor-rails.twig'
+        );
+        $this->assertStringContainsString(
+            'inputs/file-picker-field.js',
+            $body,
+            "{$screen} renders a file-picker button but not the module that binds it"
+            . ' -- include_javascript javascripts/inputs/file-picker-field.js'
+        );
+    }
+
+    /**
+     * A key that has no translation renders as itself, which reads as a label nobody wrote.
+     *
+     * The Layout screen shipped a button labelled `ATTACH_FILE_PICKER_CHOOSE_EXISTING` --
+     * a key that exists in no catalogue, so `_t()` handed back the key. Nothing fails, and
+     * it looks like a translation that has not been done yet rather than a name that was
+     * never defined.
+     */
+    private function assertNoUntranslatedKeys(string $body, string $screen): void
+    {
+        // an all-caps token of three or more underscore-separated words, in text position:
+        // narrow enough not to trip on CSS class names, JS constants or SQL
+        preg_match_all('/>\s*([A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,})\s*</', $body, $found);
+
+        $this->assertSame(
+            [],
+            array_values(array_unique($found[1])),
+            "{$screen} shows what looks like an untranslated key: _t() hands back the key it "
+            . 'was given when no catalogue defines it'
+        );
     }
 
     /**

@@ -69,7 +69,7 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction
                 }
 
                 // echo entry
-                echo '&nbsp;&nbsp;&nbsp;(',$comment['time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $comment['comment_on'], 'show_comments=1'),'#',$comment['tag'],'">',$comment['comment_on'],'</a> . . . . ',$this->getService(MarkdownFormatterService::class)->format($comment['user']),"<br />\n";
+                echo '&nbsp;&nbsp;&nbsp;(',$comment['time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $comment['parent'], 'show_comments=1'),'#',$comment['tag'],'">',$comment['parent'],'</a> . . . . ',$this->getService(MarkdownFormatterService::class)->format($comment['user']),"<br />\n";
             }
         } else {
             echo '<i>' . _t('NO_RECENT_COMMENTS') . '.</i>';

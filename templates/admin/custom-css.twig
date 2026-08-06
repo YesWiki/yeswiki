@@ -1,0 +1,43 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{# The wiki's own stylesheet (ticket 30). What `PageCss` carried, as a file under
+   custom/styles/ that CoreAssets links last -- so it still wins over every other
+   stylesheet, which is the position the inlined page had.
+
+   The textarea below is the real field -- it is what the form posts. ACE is layered over it
+   by admin-custom-css.js in `ace/mode/css`, and writes back into it; if that module never
+   loads, the box is still a working editor rather than a stylesheet nobody can reach.
+   Not the ACeditor proper: that one writes wiki markup and carries a wiki toolbar, which
+   over a CSS file would be an offer of the wrong thing. #}
+{% block dashboard_content %}
+  <h1>{{ _t('ADMIN_CUSTOM_CSS') }}</h1>
+
+  <p class="yw-dashboard__intro">
+    {{ _t('ADMIN_CUSTOM_CSS_INTRO') }}
+    <code>{{ path }}</code>
+  </p>
+
+  {% if not writable %}
+    {# said before the box rather than discovered on save: an instance whose custom/ is
+       read-only can still be told why its stylesheet will not stick #}
+    <div class="alert alert-danger">
+      {{ _t('ADMIN_CUSTOM_CSS_NOT_WRITABLE')|replace({'{path}': path}) }}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ url({ tag: 'admin/custom-css' }) }}" hx-boost="false">
+    <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+    <div class="yw-form-group">
+      <label class="yw-form-label" for="custom_css">{{ _t('ADMIN_CUSTOM_CSS_LABEL') }}</label>
+      <textarea id="custom_css" name="custom_css" class="yw-input yw-custom-css__editor"
+                rows="24" spellcheck="false" autocomplete="off"
+                {{ writable ? '' : 'readonly' }}>{{ css }}</textarea>
+    </div>
+    <button type="submit" class="yw-btn yw-btn--primary" {{ writable ? '' : 'disabled' }}>
+      {{ _t('SAVE') }}
+    </button>
+  </form>
+
+  {{ include_css('styles/admin-custom-css.css') }}
+  {{ include_javascript('javascripts/admin-custom-css.js', false, true) }}
+{% endblock %}

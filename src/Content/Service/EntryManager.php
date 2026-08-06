@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
@@ -38,10 +39,6 @@ class EntryManager
     protected AdministrativeLogService $administrativeLogService;
     protected $params;
     protected $searchManager;
-
-    private $cachedEntriestags;
-
-    public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
     public const VALIDATE_FLAG_ANTISPAM = 1 << 0;
     public const VALIDATE_FLAG_TITLE = 1 << 1;
@@ -82,7 +79,6 @@ class EntryManager
         $this->hibernationService = $hibernationService;
         $this->activityPubService = $activityPubService;
         $this->administrativeLogService = $administrativeLogService;
-        $this->cachedEntriestags = [];
     }
 
     /**
@@ -93,11 +89,8 @@ class EntryManager
         if (empty($tag)) {
             return false;
         }
-        if (!isset($this->cachedEntriestags[$tag])) {
-            $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
-        }
 
-        return $this->cachedEntriestags[$tag];
+        return $this->pageManager->isType((string)$tag, PageType::ENTRY);
     }
 
     /**
@@ -105,18 +98,7 @@ class EntryManager
      */
     public function getAllEntriesTags(): array
     {
-        $result = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID);
-        if (is_array($result)) {
-            $result = array_filter(array_map(function ($item) {
-                return $item['resource'] ?? null;
-            }, $result), function ($item) {
-                return !empty($item);
-            });
-        } else {
-            $result = [];
-        }
-
-        return $result;
+        return $this->pageManager->tagsOfType(PageType::ENTRY);
     }
 
     /**
@@ -134,11 +116,19 @@ class EntryManager
      */
     public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
-        if (!$this->isEntry($tag)) {
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
+        // the row states its own type (ticket 27), so loading it answers "is this an entry?"
+        // as well. Asking first cost a `SELECT type` before the `SELECT *` that followed --
+        // per entry, so a list of fifty paid fifty of them.
+        //
+        // Only when there is no row to read does this fall back to asking: the page may
+        // exist and be unreadable to this visitor, and that has always returned an empty
+        // entry rather than "no such entry", which is a distinction the caller acts on.
+        $isEntry = $page === null ? $this->isEntry($tag) : (($page['type'] ?? null) === PageType::ENTRY);
+        if (!$isEntry) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
         $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
@@ -354,8 +344,8 @@ class EntryManager
 
         // A built-in Content type's form does not describe entries: a page is created by
         // editing a page, an account by signing up, a file by uploading it. Creating an
-        // "entry" here would produce a row typed fiche_bazar carrying a Page form's id --
-        // which belongs to no list at all, since the Page form owns the untyped rows
+        // "entry" here would produce a row typed `entry` carrying a Page form's id --
+        // which belongs to no list at all, since the Page form owns the rows typed `page`
         // (ticket 10).
         if (ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
             throw new \Exception("Form '{$data['form_id']}' describes the built-in '" . $form[ContentTypeSchema::CONTENT_TYPE] . "' Content type: it has no entries to create");
@@ -395,20 +385,11 @@ class EntryManager
             $data,
             '',
             $ignoreAcls, // Ignore les ACLs
-            $data['updated_at']
+            $data['updated_at'],
+            PageType::ENTRY
         );
 
-        // on cree un triple pour specifier que la page wiki creee est une fiche
-        // bazar
         if ($saved == 0) {
-            $this->tripleStore->create(
-                $data['tag'],
-                TripleStore::TYPE_URI,
-                self::TRIPLES_ENTRY_ID,
-                '',
-                ''
-            );
-
             // Form properties needing the saved page: entry ACLs (+ the author's
             // comments-toggle choice) and presentation metadata -- they write to the
             // page's metadata, not into the entry body (ADR-0010)
@@ -436,7 +417,7 @@ class EntryManager
             }
         }
 
-        $this->cachedEntriestags[$data['tag']] = true;
+        $this->pageManager->cacheType($data['tag'], PageType::ENTRY);
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, true);
@@ -655,8 +636,6 @@ class EntryManager
             // Notify followers about the deleted object
             $this->activityPubService->notifyFollowers($form, $entryToDelete, 'Delete');
         }
-
-        unset($this->cachedEntriestags[$tag]);
     }
 
     /*

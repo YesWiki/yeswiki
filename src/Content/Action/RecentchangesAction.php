@@ -9,15 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
-use YesWiki\Render\Service\MarkdownFormatterService;
 
-/**
- * `{{recentchanges}}` -- converted from the procedural actions/recentchanges.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
 class RecentchangesAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -31,10 +23,6 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -85,7 +73,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction
             if ($this->getService(PerformableArguments::class)->get('max')) {
                 foreach ($pages as $i => $page) {
                     // echo entry
-                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $page['time'] . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->getService(MarkdownFormatterService::class)->format($page['user']), "</small><br>\n";
+                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $page['time'] . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),' <small>' . _t('BY') . ' ', $this->getService(LinkRenderer::class)->linkToPage($page['user'], '', ''), "</small><br>\n";
                 }
             } else {
                 $curday = '';
@@ -100,7 +88,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction
                         $curday = $day;
                     }
                     // echo entry
-                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $time . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->getService(MarkdownFormatterService::class)->format($page['user']), "</small><br>\n";
+                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $time . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),' <small>' . _t('BY') . ' ', $this->getService(LinkRenderer::class)->linkToPage($page['user'], '', ''), "</small><br>\n";
                 }
             }
         }

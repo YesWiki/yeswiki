@@ -1,0 +1,17 @@
+{# The wiki's brand: what `PageTitre` used to hold (ticket 30).
+
+   One <a> to the home page, carrying a logo, a name, or both -- `mode` says which and
+   where, because a logo beside a name and a logo above it are different designs and
+   picking one is a decision rather than a fallback (LayoutService::BRAND_MODES).
+
+   The mode is on the element as a class as well, so a theme can restyle any of the four
+   without needing to know which fields the wiki filled in. #}
+<a class="navbar-brand yw-brand yw-brand--{{ mode }}" href="{{ home }}">
+  {% if mode != 'text' and logo %}
+    {# alt is the title, not "logo": read aloud, this link is the wiki's name #}
+    <img class="yw-brand__logo" src="{{ logo }}" alt="{{ title }}">
+  {% endif %}
+  {% if mode != 'logo' %}
+    <span class="yw-brand__title">{{ title }}</span>
+  {% endif %}
+</a>

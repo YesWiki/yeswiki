@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\DiffService;
 use YesWiki\Content\Service\DuplicationManager;
 use YesWiki\Content\Service\EntryManager;
@@ -27,11 +28,12 @@ class PageApiController extends YesWikiController
     {
         $dbService = $this->getService(DbService::class);
         $aclService = $this->getService(AclService::class);
+        $pageType = PageType::PAGE;
         // recuperation des pages wikis
         $sql = <<<SQL
             SELECT * FROM {$dbService->prefixTable('pages')}
-            WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%'
-            AND tag NOT IN (SELECT resource FROM {$dbService->prefixTable('triples')} WHERE property='http://outils-reseaux.org/_vocabulary/type')
+            WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%'
+            AND {$dbService->quoteIdentifier('type')} = '{$pageType}'
             ORDER BY tag ASC
         SQL;
         $pages = $dbService->loadAll($sql);
@@ -156,9 +158,6 @@ class PageApiController extends YesWikiController
                 $tag = isset($page['tag']) ? $page['tag'] : $tag;
                 $result['notDeleted'] = [$tag];
                 if ($this->getService(AclService::class)->isOwner($tag) || $this->getService(AclService::class)->isAdmin()) {
-                    if (!$pageManager->isOrphaned($tag)) {
-                        $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '{$dbService->escape($tag)}'");
-                    }
                     $done = $pageOperationsService->delete($tag);
                     if (!$done || !empty($pageManager->getOne($tag, null, false))) {
                         $code = Response::HTTP_INTERNAL_SERVER_ERROR;

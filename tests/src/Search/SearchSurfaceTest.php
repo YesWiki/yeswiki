@@ -89,7 +89,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
     public function testTheActionRendersAFormAndAResultsContainer(): void
     {
-        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
         $this->assertStringContainsString('id="yw-search-form"', $html);
         $this->assertStringContainsString('id="yw-search-results"', $html);
@@ -102,7 +102,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
     public function testTheActionUsesTheSharedSearchBox(): void
     {
-        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
         // one component for every search field in the wiki -- the surface must not grow its
         // own markup again, which is how it ended up with a class that had no CSS at all
@@ -117,7 +117,7 @@ class SearchSurfaceTest extends YesWikiTestCase
      */
     public function testTheTypeFilterIsNotOfferedBeforeAnySearch(): void
     {
-        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+        $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
         $this->assertStringNotContainsString('yw-facets', $html);
         $this->assertStringNotContainsString('<select', $html);
@@ -126,7 +126,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     public function testAnEmbeddedBoxCanBeScopedToOneTypeAndSuppressItsFacets(): void
     {
         $scoped = $this->getWiki()->services->get(ActionRunner::class)
-            ->action('search', false, ['filters' => '0', 'type' => 'entry']);
+            ->action('search', ['filters' => '0', 'type' => 'entry']);
 
         // the type travels so the embedded box stays scoped ...
         $this->assertStringContainsString('name="type"', $scoped);
@@ -219,7 +219,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
         // the switcher itself lives in the FORM, not in the fragment: it says how to read
         // whatever comes back, so it must not appear and disappear with the results
-        $action = $this->getWiki()->services->get(ActionRunner::class)->action('search', false);
+        $action = $this->getWiki()->services->get(ActionRunner::class)->action('search');
         $this->assertStringContainsString('yw-display-switch', $action);
 
         $list = $this->fragment(['q' => 'ciboulette']);
@@ -333,7 +333,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     public function testTheRetiredActionsAreGone(): void
     {
         foreach (['newtextsearch', 'searchform'] as $retired) {
-            $html = $this->getWiki()->services->get(ActionRunner::class)->action($retired, false);
+            $html = $this->getWiki()->services->get(ActionRunner::class)->action($retired);
             $this->assertStringNotContainsString(
                 'yw-search-form',
                 $html,

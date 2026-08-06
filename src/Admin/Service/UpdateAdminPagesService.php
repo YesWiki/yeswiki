@@ -6,25 +6,21 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Entity\Messages;
 
 class UpdateAdminPagesService
 {
     private ContainerInterface $container;
-    private $linkTracker;
     private $pageManager;
     private $params;
 
     public function __construct(
         ContainerInterface $container,
-        LinkTracker $linkTracker,
         PageManager $pageManager,
         ParameterBagInterface $params
     ) {
         $this->container = $container;
-        $this->linkTracker = $linkTracker;
         $this->pageManager = $pageManager;
         $this->params = $params;
     }
@@ -88,9 +84,6 @@ class UpdateAdminPagesService
                     $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
                     if ($this->pageManager->save($page, [PageBody::CONTENT => $pageContent]) !== 0) {
                         $output .= (!empty($output) ? ', ' : '') . _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE') . $page;
-                    } else {
-                        // save links
-                        $this->linkTracker->registerLinks($this->pageManager->getOne($page));
                     }
                 }
                 $messages->add($page, 'AU_OK');

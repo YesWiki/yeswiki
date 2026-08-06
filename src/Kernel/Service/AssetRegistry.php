@@ -128,6 +128,19 @@ class AssetRegistry
     }
 
     /**
+     * The URL a file would be served from, for callers that need the address rather than a
+     * tag -- a screen handing paths to its JavaScript, say. Null when there is no such file.
+     *
+     * The same resolution every other method here uses, so a farm instance gets its
+     * cache/assets/{version}/ path and not a source-tree one that only exists on the shared
+     * code tree.
+     */
+    public function urlFor(string $file): ?string
+    {
+        return $this->resolveUrl($file);
+    }
+
+    /**
      * A stylesheet link rendered straight to markup rather than registered, for the few
      * callers that place their own tags and need to control the order themselves.
      */

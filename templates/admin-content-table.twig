@@ -115,11 +115,11 @@
                             </small>
                         </td>
                         <td class="col-type">
-                            {%- if page.comment_on is not empty -%}
+                            {%- if page.parent is not empty -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_COMMENT") -}}
-                            {%- elseif page.page_type == 'fiche_bazar' -%}
-                                {{- forms[page.form_id].label ?? _t("ADMIN_CONTENT_TYPE_BAZAR_ID") |replace({'{id}': page.form_id}) -}}
-                            {%- elseif page.page_type == 'liste' -%}
+                            {%- elseif page.page_type == 'entry' -%}
+                                {{- forms[page.form_id] ?? _t("ADMIN_CONTENT_TYPE_BAZAR_ID") |replace({'{id}': page.form_id}) -}}
+                            {%- elseif page.page_type == 'list' -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_LIST") -}}
                             {%- elseif page.is_special -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_SPECIAL_PAGE") -}}

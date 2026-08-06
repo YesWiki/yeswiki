@@ -126,7 +126,6 @@ class DbCommand extends Command
                         "{$tablePrefix}pages", // tables
                         "{$tablePrefix}triples", // tables
                         "{$tablePrefix}links", // tables
-                        "{$tablePrefix}referrers", // tables
                     ]
                 ), // args
                 '', // subfolder

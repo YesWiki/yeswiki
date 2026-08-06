@@ -5,14 +5,13 @@ namespace YesWiki\Search\Service;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -28,16 +27,13 @@ class SearchManager
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
 
-    /** Result column carrying each row's `TYPE_URI` triple value (empty when untyped). */
-    private const CONTENT_TRIPLE_COLUMN = 'yw_content_triple';
-
     /**
      * What `p.*` brings into the search CTE, and therefore the names a field's column may not
      * take. See renameJSONPathVariable().
      */
     private const PAGES_COLUMNS = [
-        'id', 'tag', 'time', 'body', 'body_r', 'owner', 'user', 'latest', 'handler',
-        'comment_on', 'metadata',
+        'id', 'tag', 'time', 'body', 'owner', 'user', 'latest', 'type',
+        'parent', 'metadata',
     ];
 
     /** Given to a field whose name collides with one of those. */
@@ -534,24 +530,21 @@ class SearchManager
         return implode(' AND ', $vQueriesConditions);
     }
 
-    /** A predicate matching the rows carrying a given `TYPE_URI` triple. */
-    private function typedAs(string $tripleValue): string
+    /** A predicate matching the rows of a given PageType. */
+    private function typedAs(string $type): string
     {
-        return 'EXISTS (SELECT 1 FROM ' . $this->dbService->prefixTable('triples') . ' t'
-            . ' WHERE t.resource = p.tag'
-            . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'"
-            . " AND t.value = '" . $this->dbService->escape($tripleValue) . "')";
+        return 'p.' . $this->dbService->quoteIdentifier('type')
+            . " = '" . $this->dbService->escape($type) . "'";
     }
 
     /**
      * The predicate selecting the rows that belong to these forms.
      *
      * Which rows a form owns is decided by its **Content type** (ticket 10), not by a
-     * column: a bazar form owns the `fiche_bazar` rows carrying its id, the User form owns
-     * the rows marked as users, the File form the ones marked as files, and the Page form
-     * owns the *untyped* rows -- carrying no type triple at all is exactly what makes a row
-     * a page. Reading a form's id out of `body.form_id` only ever worked for bazar entries,
-     * which is why a list of Pages came back empty however it was written.
+     * form_id: a bazar form owns the `entry` rows carrying its id, the User form owns the
+     * rows typed `user`, the File form the ones typed `file`, and the Page form the ones
+     * typed `page`. Reading a form's id out of `body.form_id` only ever worked for bazar
+     * entries, which is why a list of Pages came back empty however it was written.
      *
      * With no form filter at all, a search means what it has always meant: every bazar
      * entry in the wiki.
@@ -561,7 +554,7 @@ class SearchManager
     private function rowsBelongingTo(array $formIds): string
     {
         if (empty($formIds)) {
-            return $this->typedAs(EntryManager::TRIPLES_ENTRY_ID);
+            return $this->typedAs(PageType::ENTRY);
         }
 
         $forms = $this->container->get(FormManager::class)->getMany($formIds);
@@ -576,18 +569,16 @@ class SearchManager
         foreach ($idsByContentType as $contentType => $ids) {
             switch ($contentType) {
                 case ContentTypeSchema::TYPE_PAGE:
-                    $clauses[] = 'NOT EXISTS (SELECT 1 FROM ' . $this->dbService->prefixTable('triples') . ' t'
-                        . ' WHERE t.resource = p.tag'
-                        . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "')";
+                    $clauses[] = $this->typedAs(PageType::PAGE);
                     break;
                 case ContentTypeSchema::TYPE_USER:
-                    $clauses[] = $this->typedAs(UserManager::TRIPLES_USER_TYPE);
+                    $clauses[] = $this->typedAs(PageType::USER);
                     break;
                 case ContentTypeSchema::TYPE_FILE:
-                    $clauses[] = $this->typedAs(FileManager::TRIPLES_FILE_TYPE);
+                    $clauses[] = $this->typedAs(PageType::FILE);
                     break;
                 default:
-                    $clauses[] = '(' . $this->typedAs(EntryManager::TRIPLES_ENTRY_ID)
+                    $clauses[] = '(' . $this->typedAs(PageType::ENTRY)
                         . ' AND ' . $this->dbService->jsonExtract('body', '$.form_id')
                         . ' IN (' . implode(',', array_map(fn ($formId) => "'" . (int)$formId . "'", $ids)) . '))';
                     break;
@@ -879,12 +870,6 @@ class SearchManager
         = [
             'p.*',
             $this->dbService->jsonExtract('body', '$.form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
-            // the row's Content type, so search() can tell which form describes a row that
-            // carries no form_id of its own -- a page, a user, a file (ticket 10)
-            '(SELECT t.value FROM ' . $this->dbService->prefixTable('triples') . ' t'
-                . ' WHERE t.resource = p.tag'
-                . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'"
-                . ' LIMIT 1) AS ' . self::CONTENT_TRIPLE_COLUMN,
         ];
 
         // - Extract all fields ("single" and "multiple" mode)
@@ -1031,7 +1016,7 @@ class SearchManager
                                     // on their Content type -- see rowsBelongingTo()
                                     . 'WHERE '
                                         . ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ')
-                                        . 'p.comment_on = \'\''
+                                        . 'p.parent = \'\''
                                         . ($vUserRequest !== '' ? ' AND ' . $vUserRequest : '')
                                         . ($vPeriodRequest !== '' ? ' AND ' . $vPeriodRequest : '')
                                         . ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '')
@@ -1140,10 +1125,8 @@ class SearchManager
             // everything downstream reads a row the one way.
             if (!isset($page['body']['form_id'])) {
                 $resolver = $this->container->get(ContentTypeResolver::class);
-                $shaped = $resolver->asEntry(
-                    $page,
-                    $resolver->typeOfTriple((string)($page[self::CONTENT_TRIPLE_COLUMN] ?? ''))
-                );
+                // `p.*` already brought the row's type along, so this costs no query
+                $shaped = $resolver->asEntry($page, $resolver->formBacked((string)($page['type'] ?? '')));
                 if ($shaped === null) {
                     continue;
                 }

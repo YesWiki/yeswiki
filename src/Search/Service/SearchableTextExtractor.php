@@ -6,12 +6,9 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\TextareaField;
-use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\UserManager;
 use YesWiki\Search\Entity\IndexedContent;
 
 /**
@@ -28,28 +25,8 @@ use YesWiki\Search\Entity\IndexedContent;
  */
 class SearchableTextExtractor
 {
-    /** A form is Content too, and searchable, but it is not a ContentTypeSchema type. */
-    public const TYPE_FORM = 'form';
-
-    /** Not a triple at all -- a comment is a `pages` row with `comment_on` set. */
-    public const TYPE_COMMENT = 'comment';
-
-    /**
-     * `TYPE_URI` triple value => the `content_type` the index stores.
-     *
-     * The stored triple values are user data and stay as they are (`fiche_bazar`), but the
-     * index is core's own and uses the English names the rest of the rewrite settled on, so
-     * that a content-type filter reads `entry` rather than `fiche_bazar`. A triple this map
-     * does not know is stored verbatim -- `liste` arrives that way -- rather than dropped,
-     * because an unknown type is still a type and a filter can still offer it.
-     */
-    private const TYPE_BY_TRIPLE = [
-        '' => ContentTypeSchema::TYPE_PAGE,
-        EntryManager::TRIPLES_ENTRY_ID => ContentTypeSchema::TYPE_ENTRY,
-        UserManager::TRIPLES_USER_TYPE => ContentTypeSchema::TYPE_USER,
-        FileManager::TRIPLES_FILE_TYPE => ContentTypeSchema::TYPE_FILE,
-        FormManager::TRIPLES_FORM_TYPE => self::TYPE_FORM,
-    ];
+    public const TYPE_FORM = PageType::FORM;
+    public const TYPE_COMMENT = PageType::COMMENT;
 
     private ContainerInterface $container;
     private ParameterBagInterface $params;
@@ -61,14 +38,13 @@ class SearchableTextExtractor
     }
 
     /**
-     * @param array<string, mixed> $row        a raw `pages` row: tag, body, owner, time, metadata, comment_on
-     * @param string|null          $typeTriple the row's TYPE_URI triple value when the caller
-     *                                         already has it (the bulk reindex joins it in);
-     *                                         looked up per row otherwise
+     * @param array<string, mixed> $row a raw `pages` row: tag, type, body, owner, time,
+     *                                  metadata, parent. Since ticket 27 the row states its
+     *                                  own type, so nothing is looked up or translated here.
      *
      * @return IndexedContent|null null when the row contributes nothing at all
      */
-    public function extract(array $row, ?string $typeTriple = null): ?IndexedContent
+    public function extract(array $row): ?IndexedContent
     {
         $tag = (string)($row['tag'] ?? '');
         if ($tag === '') {
@@ -76,10 +52,7 @@ class SearchableTextExtractor
         }
 
         $body = is_array($row['body'] ?? null) ? $row['body'] : PageBody::decode($row['body'] ?? null);
-        $typeTriple ??= $this->tripleOf($tag);
-        $contentType = trim((string)($row['comment_on'] ?? '')) !== ''
-            ? self::TYPE_COMMENT
-            : (self::TYPE_BY_TRIPLE[(string)$typeTriple] ?? (string)$typeTriple);
+        $contentType = (string)($row['type'] ?? PageType::DEFAULT);
 
         $buckets = $this->bucketsFor($contentType, $body);
 
@@ -248,10 +221,5 @@ class SearchableTextExtractor
         $default = $this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*';
 
         return is_scalar($default) ? (string)$default : '*';
-    }
-
-    private function tripleOf(string $tag): string
-    {
-        return (string)$this->container->get(TripleStore::class)->getOne($tag, TripleStore::TYPE_URI, '', '');
     }
 }

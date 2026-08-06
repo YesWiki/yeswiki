@@ -2,11 +2,11 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\ActivityPubService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -38,7 +38,6 @@ class FormManagerContentTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
         $pageManager = $wiki->services->get(PageManager::class);
-        $tripleStore = $wiki->services->get(TripleStore::class);
         $entryManager = $wiki->services->get(EntryManager::class);
 
         try {
@@ -57,9 +56,9 @@ class FormManagerContentTest extends YesWikiTestCase
             $page = $pageManager->getOne($tag, null, true, true);
             $this->assertIsArray($page);
 
-            // ... typed via the same TYPE_URI-triple convention EntryManager uses for entries
-            $typeTriple = $tripleStore->getOne($tag, TripleStore::TYPE_URI, '', '');
-            $this->assertSame(FormManager::TRIPLES_FORM_TYPE, $typeTriple);
+            // ... whose own `type` column says what kind of Content it is (ticket 27)
+            $this->assertSame(PageType::FORM, $page['type']);
+            $this->assertSame(PageType::FORM, $pageManager->typeOf($tag));
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }

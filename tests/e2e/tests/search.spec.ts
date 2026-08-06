@@ -17,7 +17,8 @@ test.beforeEach(async() => {
 test('the top bar search button opens /search', async({ page }) => {
   await page.goto('/')
 
-  // PageRapideHaut ships {{button icon="loupe" link="search"}} since ticket 26 -- the old
+  // the quick menu ships a search button (`layout_quick_menu`, ticket 30, which is where
+  // ticket 26 put it back when it was still the PageRapideHaut page) -- the old
   // reveal-panel {{searchform}} is gone, and `search` is a routed name, not a page
   await page.getByRole('link', { name: /Rechercher/i }).first().click()
 
@@ -180,7 +181,9 @@ test('the search page offers no page actions in its footer', async({ page }) => 
 })
 
 test('the retired search actions are gone from the seeded wiki', async({ page }) => {
-  await page.goto('/?PageRapideHaut')
+  // the quick menu, which is chrome on every page since ticket 30 -- so any page will do,
+  // and PageRapideHaut, where this used to look, is no longer seeded
+  await page.goto('/')
 
   const body = await page.locator('body').innerText()
   expect(body).not.toContain('newtextsearch')

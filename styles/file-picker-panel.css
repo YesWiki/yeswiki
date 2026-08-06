@@ -5,27 +5,72 @@
    ACeditor's: the rail is included by whatever page carries an editor, and the Vditor
    toolbar opens the same one on a form that renders no ACeditor at all -- where these
    rules used to be, they simply were not loaded and a thumbnail rendered at full size. */
-/* two long labels in a 340px rail: they share the width and wrap, rather than the
-   second one running off the edge of the panel */
-#YesWikiFilePickerPanel .file-picker-tabs {
+/* The two view-changing actions, each on its own line and each reading as one thing to
+   do: send a file, or go back to the list. */
+#YesWikiFilePickerPanel .file-picker-upload-open,
+#YesWikiFilePickerPanel .file-picker-back {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
   margin-bottom: 1rem;
-}
-
-#YesWikiFilePickerPanel .file-picker-tabs .yw-btn {
-  flex: 1 1 0;
-  min-width: 0;
   white-space: normal;
   line-height: 1.2;
 }
 
-/* stacked: a search box and an extension select side by side in a 340px rail leave a
-   few characters each */
+#YesWikiFilePickerPanel .file-picker-back {
+  justify-content: flex-start;
+}
+
+/* `.yw-btn` already declares a `display`, and **any** author rule beats the user agent's
+   `[hidden] { display: none }` whatever its specificity -- so a hidden button stays on
+   screen until an author rule says otherwise. The same trap .form-card[hidden] documents
+   in yw-core.css, and the reason the back button showed on the list view. */
+#YesWikiFilePickerPanel .file-picker-upload-open[hidden],
+#YesWikiFilePickerPanel .file-picker-back[hidden] {
+  display: none;
+}
+
+/* One row, not two: the filter and the extension are the same question asked twice, and
+   stacking them pushed the list itself below the fold of a 340px rail. The select takes
+   what it needs for ".jpeg" and the search takes the rest. */
 #YesWikiFilePickerPanel .file-picker-filters {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
   margin-bottom: 0.5rem;
+}
+
+#YesWikiFilePickerPanel .file-picker-search {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#YesWikiFilePickerPanel .file-picker-search .yw-icon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#YesWikiFilePickerPanel .file-picker-search .yw-input {
+  width: 100%;
+  padding-left: 1.9rem;
+}
+
+#YesWikiFilePickerPanel .file-picker-extensions {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 45%;
+  font-size: 0.85em;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 #YesWikiFilePickerPanel .file-picker-families {
@@ -82,9 +127,17 @@
   cursor: pointer;
 }
 
-#YesWikiFilePickerPanel .file-picker__result:hover,
-#YesWikiFilePickerPanel .file-picker__result.file-picker__result--selected {
+#YesWikiFilePickerPanel .file-picker__result:hover {
   background: var(--neutral-light-color);
+}
+
+/* The chosen row has to be findable on the way back from the options, so it says so in
+   the panel's own colour rather than in a grey a hover also produces. */
+#YesWikiFilePickerPanel .file-picker__result--selected,
+#YesWikiFilePickerPanel .file-picker__result--selected:hover {
+  background: var(--neutral-light-color);
+  box-shadow: inset 3px 0 0 var(--primary-color);
+  font-weight: 600;
 }
 
 /* a fixed box so a list of mixed portrait/landscape thumbnails still reads as a list */
@@ -130,10 +183,19 @@
 }
 
 #YesWikiFilePickerPanel .file-picker-selected {
-  margin: 1rem 0;
+  margin: 0 0 1rem;
   padding: 0.5rem 0.75rem;
   background: var(--neutral-light-color);
+  border-left: 3px solid var(--primary-color);
   border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+/* the footer holds one button now, and it is the one the rail exists to reach */
+#YesWikiFilePickerPanel .yw-rail__footer .btn-insert-upload {
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 #YesWikiFilePickerPanel .file-picker-options {

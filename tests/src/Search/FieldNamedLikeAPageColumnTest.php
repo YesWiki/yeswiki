@@ -31,8 +31,8 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
 
     /** Every column `p.*` contributes; a field may take none of these names. */
     private const PAGES_COLUMNS = [
-        'id', 'tag', 'time', 'body', 'body_r', 'owner', 'user', 'latest', 'handler',
-        'comment_on', 'metadata',
+        'id', 'tag', 'time', 'body', 'owner', 'user', 'latest', 'type',
+        'parent', 'metadata',
     ];
 
     public static function tearDownAfterClass(): void

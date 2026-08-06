@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
@@ -16,10 +17,6 @@ use YesWiki\Search\Service\SearchManager;
 
 class FormManager
 {
-    // Forms are `pages` rows typed via this triple, the same convention EntryManager
-    // already uses for bazar entries (TRIPLES_ENTRY_ID).
-    public const TRIPLES_FORM_TYPE = 'form';
-
     // A form's tag is renameable; when it's renamed, the old tag is kept resolvable via
     // this triple (resource=old tag, value=new tag) so previously published references to
     // it (e.g. an ActivityPub actor URL that was ever built from the tag rather than the
@@ -43,6 +40,8 @@ class FormManager
     protected $aclService;
     protected $cachedForms;
     protected $cacheValidatedForAll;
+    /** @var array<string, string|null> content type => the tag of its form, false-free memo */
+    private array $cachedContentTypeTags = [];
     protected AttachedFilePaths $paths;
     protected ImageResizer $resizer;
 
@@ -74,6 +73,7 @@ class FormManager
 
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
         $this->hibernationService = $hibernationService;
         $this->paths = $this->container->get(AttachedFilePaths::class);
         $this->resizer = $this->container->get(ImageResizer::class);
@@ -222,17 +222,6 @@ class FormManager
         return $row['tag'] ?? null;
     }
 
-    private function resolveIdFromTag(string $tag): ?string
-    {
-        $jsonExtract = $this->dbService->jsonExtract('body', '$.id');
-        $sql = "SELECT {$jsonExtract} AS id FROM {$this->dbService->prefixTable('pages')}
-            WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'
-            LIMIT 1";
-        $row = $this->dbService->loadSingle($sql);
-
-        return $row['id'] ?? null;
-    }
-
     /**
      * Converts a fetched `pages` row (as returned by PageManager) for a form into the
      * flat form array (plain-English keys, ADR-0010). ActivityPub credentials, which
@@ -294,6 +283,29 @@ class FormManager
             return null;
         }
 
+        return $this->loadFormFromTag($tag, $formId);
+    }
+
+    /**
+     * The form held by a page whose tag is already known.
+     *
+     * Split out of getOne() for the caller that found the tag by querying `pages` in the
+     * first place: getOne() would put it through resolveTag(), whose non-numeric branch asks
+     * `SELECT 1 FROM pages WHERE tag = …` to find out whether the page exists -- about a page
+     * this caller has just read out of that table, and whose row is loaded on the next line
+     * regardless.
+     *
+     * @param int|string|null $alsoCacheAs the identifier the caller asked by, when it differs
+     *                                     from the form's own id (a tag, or a former tag)
+     *
+     * @return array<string, mixed>|null
+     */
+    private function loadFormFromTag(string $tag, $alsoCacheAs = null): ?array
+    {
+        if (isset($this->cachedForms[$tag])) {
+            return $this->cachedForms[$tag];
+        }
+
         $page = $this->pageManager->getOne($tag, null, true, true);
         if (!$page) {
             return null;
@@ -301,7 +313,9 @@ class FormManager
 
         $form = $this->getFromRawData($this->pageToFormArray($page));
 
-        $this->cachedForms[$formId] = $form;
+        if ($alsoCacheAs !== null) {
+            $this->cachedForms[$alsoCacheAs] = $form;
+        }
         if (!empty($form['id'])) {
             $this->cachedForms[$form['id']] = $form;
         }
@@ -329,9 +343,15 @@ class FormManager
 
     /**
      * The form describing a built-in Content type -- the Page form, the User form, the
-     * File form (ticket 10). There is exactly one per type: which form applies to a row
-     * is decided by the row's own `TYPE_URI` triple, so Content does not carry a
-     * `form_id` the way a bazar entry does.
+     * File form (ticket 10). There is exactly one per type, enforced by create(): which
+     * form applies to a row is decided by the row's `type` column (ticket 27), so Content
+     * does not carry a `form_id` the way a bazar entry does.
+     *
+     * **This is on the render path of every page in the wiki**, through
+     * ContentTypeResolver::formFor(). It used to scan `getAll()`, which fully prepares
+     * every form in the wiki -- 29 queries and ~23 ms on a 14-form wiki -- to find one.
+     * Now it asks which page holds that form and loads that one, so the cost is the form
+     * you asked for rather than all of them.
      *
      * @return array<string, mixed>|null
      */
@@ -339,6 +359,18 @@ class FormManager
     {
         if (!ContentTypeSchema::isKnownType($contentType) || $contentType === ContentTypeSchema::TYPE_ENTRY) {
             return null;
+        }
+
+        if (!$this->cacheValidatedForAll) {
+            // memoised: this runs on every page render, and without it each caller re-asked
+            // which page holds the form. getOne() below has its own cache, so the lookup was
+            // the whole of what repeated
+            if (!array_key_exists($contentType, $this->cachedContentTypeTags)) {
+                $this->cachedContentTypeTags[$contentType] = $this->tagOfContentTypeForm($contentType);
+            }
+            $tag = $this->cachedContentTypeTags[$contentType];
+
+            return $tag === null ? null : $this->loadFormFromTag($tag);
         }
 
         foreach ($this->getAll() as $form) {
@@ -353,9 +385,8 @@ class FormManager
     public function getAll(): array
     {
         if (!$this->cacheValidatedForAll) {
-            $triples = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE);
-            foreach ($triples as $triple) {
-                $page = $this->pageManager->getOne($triple['resource'], null, true, true);
+            foreach ($this->pageManager->tagsOfType(PageType::FORM) as $formTag) {
+                $page = $this->pageManager->getOne($formTag, null, true, true);
                 if (!$page) {
                     continue;
                 }
@@ -379,22 +410,103 @@ class FormManager
         );
     }
 
+    /**
+     * The tag of the single form describing $contentType, or null.
+     *
+     * Ordered by tag and limited to one so that a wiki which somehow holds two forms for
+     * the same built-in type picks the same one this method's getAll() branch would --
+     * create() refuses to make a second, but a restored revision or a hand-edited body can
+     * still produce one, and answering differently depending on which branch ran would be
+     * worse than answering arbitrarily but consistently.
+     */
+    private function tagOfContentTypeForm(string $contentType): ?string
+    {
+        $contentTypeExpr = $this->dbService->jsonExtract('body', '$.' . ContentTypeSchema::CONTENT_TYPE);
+
+        $row = $this->dbService->loadSingle(
+            'SELECT tag FROM ' . $this->dbService->prefixTable('pages')
+            . " WHERE latest = 'Y' AND " . $this->dbService->quoteIdentifier('type')
+            . " = '" . $this->dbService->escape(PageType::FORM) . "'"
+            . " AND {$contentTypeExpr} = '" . $this->dbService->escape($contentType) . "'"
+            . ' ORDER BY tag LIMIT 1'
+        );
+
+        return $row === null ? null : (string)$row['tag'];
+    }
+
+    /**
+     * Every form's id and label, and nothing else -- `id => label`, ordered by tag.
+     *
+     * `getAll()` is the wrong tool for a caller that only wants to name the forms. It loads
+     * each form's page row, normalises legacy body keys, runs the stored template through
+     * ContentTypeSchema::enforce(), re-reads every image field's default off disk to
+     * base64-encode it, and instantiates every field object through FieldFactory -- which
+     * for a `liste` or `checkbox` field loads the list behind it, costing more queries
+     * again. On this wiki's 14 forms that is 29 queries and ~24 ms.
+     *
+     * `{{linkrss}}` paid all of it on **every page load**, to print a `<link>` tag per form
+     * in the document head. This is one query, whatever the wiki holds.
+     *
+     * Reads the shared cache when `getAll()` has already been called this request, so a
+     * screen that genuinely needs whole forms does not pay for a second trip.
+     *
+     * @return array<int, string> id => label. Keyed like getAll(): the ids are numeric
+     *                            strings, so PHP has already coerced them to int.
+     */
+    public function getAllLabels(): array
+    {
+        $labels = [];
+
+        if ($this->cacheValidatedForAll) {
+            foreach ($this->getAll() as $formId => $form) {
+                $labels[(int)$formId] = (string)($form['label'] ?? '');
+            }
+
+            return $labels;
+        }
+
+        // COALESCE onto the pre-ticket-27 key names for the same reason pageToFormArray()
+        // keeps its legacy-key insurance: a form page restored from an old revision can
+        // still be carrying `bn_id_nature` / `bn_label_nature`
+        $id = $this->dbService->jsonExtract('body', '$.id');
+        $legacyId = $this->dbService->jsonExtract('body', '$.bn_id_nature');
+        $label = $this->dbService->jsonExtract('body', '$.label');
+        $legacyLabel = $this->dbService->jsonExtract('body', '$.bn_label_nature');
+
+        $rows = $this->dbService->loadAll(
+            "SELECT COALESCE({$id}, {$legacyId}) AS form_id,"
+            . " COALESCE({$label}, {$legacyLabel}, '') AS form_label"
+            . ' FROM ' . $this->dbService->prefixTable('pages')
+            . " WHERE latest = 'Y' AND " . $this->dbService->quoteIdentifier('type')
+            . " = '" . $this->dbService->escape(PageType::FORM) . "'"
+            . ' ORDER BY tag'
+        );
+
+        foreach ($rows as $row) {
+            $formId = (string)($row['form_id'] ?? '');
+            // same filter as getAll(): a form page without a usable numeric id is not a form
+            // any consumer can address, and every caller here keys off that id
+            if ($formId === '' || (string)intval($formId) !== $formId) {
+                continue;
+            }
+            $labels[(int)$formId] = (string)($row['form_label'] ?? '');
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Every form's id.
+     *
+     * One query, through the same projection getAllLabels() uses -- it was a `tagsOfType()`
+     * plus one `resolveIdFromTag()` per form, so a wiki with fifty forms asked fifty-one
+     * questions to list fifty numbers.
+     *
+     * @return list<int>
+     */
     public function getAllIds(): array
     {
-        if ($this->cacheValidatedForAll) {
-            return array_keys($this->getAll());
-        }
-
-        $triples = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE);
-        $ids = [];
-        foreach ($triples as $triple) {
-            $id = $this->resolveIdFromTag($triple['resource']);
-            if ($id !== null) {
-                $ids[] = $id;
-            }
-        }
-
-        return $ids;
+        return array_keys($this->getAllLabels());
     }
 
     public function getMany($formsIds): array
@@ -539,13 +651,14 @@ class FormManager
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
 
-        $saved = $this->pageManager->save($tag, $this->buildBody($data), '', true);
+        $saved = $this->pageManager->save($tag, $this->buildBody($data), '', true, null, PageType::FORM);
 
         if ($saved === 0) {
+            $this->pageManager->cacheType($tag, PageType::FORM);
             $this->pageManager->setMetadata($tag, ['activitypub' => $this->buildActivitypubMetadata($data, [])]);
             $this->aclService->save($tag, 'write', '@admins');
-            $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
         }
 
         return $saved;
@@ -596,6 +709,7 @@ class FormManager
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
         unset($this->cachedForms[$data['id']], $this->cachedForms[$tag]);
 
         $body = array_merge($existingBody, $this->buildBody($data));
@@ -661,13 +775,14 @@ class FormManager
 
         $newTag = $this->pageManager->suggestFreeTag($desiredNewTag);
 
+        // renameTag() moves the row, and the type is a column on it, so the type moves with
+        // it -- nothing to delete and re-create the way the triple needed
         $this->pageManager->renameTag($oldTag, $newTag);
-        $this->tripleStore->delete($oldTag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
-        $this->tripleStore->create($newTag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
         $this->tripleStore->create($oldTag, self::FORMER_TAG_URI, $newTag, '', '');
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
         $this->cachedForms = [];
 
         return $newTag;
@@ -764,6 +879,7 @@ class FormManager
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        $this->cachedContentTypeTags = [];
         unset($this->cachedForms[$id], $this->cachedForms[$tag]);
 
         $this->dispatchFormEvent('form.deleted', (string)$id, $tag);
@@ -776,12 +892,7 @@ class FormManager
         $jsonExtract = $this->dbService->jsonExtract('p.body', '$.form_id');
         $sql = "SELECT p.tag FROM {$this->dbService->prefixTable('pages')} p
             WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($numericId) . "'
-            AND EXISTS (
-                SELECT 1 FROM {$this->dbService->prefixTable('triples')} t
-                WHERE t.resource = p.tag
-                    AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'
-                    AND t.value = '" . $this->dbService->escape(EntryManager::TRIPLES_ENTRY_ID) . "'
-            )";
+            AND p.{$this->dbService->quoteIdentifier('type')} = '" . $this->dbService->escape(PageType::ENTRY) . "'";
 
         return array_column($this->dbService->loadAll($sql), 'tag');
     }

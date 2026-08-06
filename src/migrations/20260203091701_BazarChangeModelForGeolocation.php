@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
@@ -162,8 +163,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
             $this->report('Processing entries of form ' . $vForm['bn_label_nature'] . ' (' . $vForm['bn_id_nature'] . ')...');
 
             $vEntries = $this->dbService->loadAll('SELECT id, time, body FROM ' . $this->dbService->prefixTable('pages') .
-                ' WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                " WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')");
+                ' WHERE ' . $this->dbService->quoteIdentifier('type') . " = '" . PageType::ENTRY . "'");
 
             $vEntries = array_filter(
                 array_map(

@@ -30,7 +30,11 @@
        keyboard focus and is announced instead of silently replacing the page. #}
 {% block head %}
 <!doctype html>
-<html lang="{{ action('configuration param="lang"') }}">
+{# `--yw-navbar-height` rides on the root element rather than in a stylesheet, and
+   deliberately: an inline custom property beats the same property declared in ANY
+   stylesheet -- preset, theme or custom.css -- with no `!important` anywhere. That is
+   what "the Layout screen has the last word" means (ticket 30). #}
+<html lang="{{ action('configuration param="lang"') }}" style="{{ layout_root_style() }}">
 <head>
   <!-- HTML Metas -->
   <meta charset="{{ action('configuration param="charset"') }}">
@@ -67,26 +71,26 @@
       Aller au contenu principal
     </a>
 
+    {# Ticket 30: the brand, the navbar and the quick menu come from `layout_*` configuration,
+       edited on /admin/layout. They were three wiki pages (`PageTitre`, `PageMenuHaut`,
+       `PageRapideHaut`) included here and re-parsed on every render.
+       The banner, the side menu and the footer are still pages, and still `{{include}}`d:
+       what people put in them is arbitrary wiki content, which is what a page is for.
+       `layout_page()` rather than the name itself, because a page may name a different
+       banner or footer for itself -- the per-page override, which survives for these three. #}
+    {# `id="yw-layout-chrome"` is load-bearing: the live preview on /admin/layout swaps this
+       block's contents for the same fragment rendered from the form being filled in. #}
     <nav id="yw-topnav" class="fixable" role="navigation">
-      <div class="container">
-          <button class="yw-btn btn-menu">{{ icon('menu-2') }}</button>
-          <div class="navbar-header">
-            <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
-              {{ action('include page="PageTitre" doubleclick="1"')|raw }}
-            </a>
-          </div>
-          {{ action('include page="PageMenuHaut" class="yw-topnav topnavpage links-container" doubleclick="1" active="1"')|raw }}
-          {{ action('include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclick="1" active="1"')|raw }}
-        </div>
+      <div class="container" id="yw-layout-chrome">
+        {{ layout_chrome()|raw }}
+      </div>
     </nav>
 
-    <header id="yw-header">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
-          {{ action('include page="PageTitre" doubleclick="1"')|raw }}
-        </a>
-      </div>
-      {{ action('include page="PageHeader" class="yw-headerpage" doubleclick="1"')|raw }}
+    {# The banner and the footer are pages, and the pencil beside each opens that page --
+       for whoever may write it. `layout_edit()` answers '' for everyone else. #}
+    <header id="yw-header" class="yw-chrome-editable">
+      {{ layout_edit('header')|raw }}
+      {{ action('include page="' ~ layout_page('PageHeader') ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
     </header>
 
     <div id="yw-main" role="main" tabindex="-1" {{ action('doubleclick')|raw }}>
@@ -101,8 +105,9 @@
     </div>
 
     <footer id="yw-footer">
-      <div class="container">
-        {{ action('include page="PageFooter" class="footerpage" doubleclick="1"')|raw }}
+      <div class="container yw-chrome-editable">
+        {{ layout_edit('footer')|raw }}
+        {{ action('include page="' ~ layout_page('PageFooter') ~ '" class="footerpage" doubleclick="1"')|raw }}
       </div> <!-- /.container -->
     </footer><!-- /#yw-footer -->
   </div> <!-- /#yw-container -->

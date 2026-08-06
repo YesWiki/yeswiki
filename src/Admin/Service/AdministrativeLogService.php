@@ -3,7 +3,6 @@
 namespace YesWiki\Admin\Service;
 
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 
@@ -15,13 +14,11 @@ use YesWiki\Kernel\Service\DbService;
 class AdministrativeLogService
 {
     protected PageManager $pageManager;
-    protected LinkTracker $linkTracker;
     protected DbService $dbService;
 
-    public function __construct(PageManager $pageManager, LinkTracker $linkTracker, DbService $dbService)
+    public function __construct(PageManager $pageManager, DbService $dbService)
     {
         $this->pageManager = $pageManager;
-        $this->linkTracker = $linkTracker;
         $this->dbService = $dbService;
     }
 
@@ -86,12 +83,6 @@ class AdministrativeLogService
         $body = $page['body'] ?? [];
         $body[PageBody::CONTENT] = PageBody::content($body) . $content;
         $this->pageManager->save($tag, $body, '', true);
-
-        // now we render it internally so we can write the updated link table.
-        $page = $this->pageManager->getOne($tag);
-        if (is_array($page)) {
-            $this->linkTracker->registerLinks($page, false, true);
-        }
 
         return 0;
     }

@@ -29,8 +29,8 @@ use YesWiki\Kernel\Routing\ReservedTags;
  * Idempotent: once nothing sits on a reserved tag, it does nothing.
  *
  * `pages` carries the identity and `triples` keys Content type and keyword index off the
- * same tag, so both move. `links` / `referrers` are a derived index that any later page
- * save rebuilds; they are deliberately left alone rather than half-migrated.
+ * same tag, so both move. `links` was a derived index that any later page save rebuilt; it
+ * was deliberately left alone rather than half-migrated, and ticket 29 removed it entirely.
  */
 class RenameContentOffReservedTags extends YesWikiMigration
 {
@@ -62,8 +62,8 @@ class RenameContentOffReservedTags extends YesWikiMigration
                     . " WHERE tag = '{$this->dbService->escape($oldTag)}'"
                 );
                 $this->dbService->query(
-                    "UPDATE {$pages} SET comment_on = '{$this->dbService->escape($newTag)}'"
-                    . " WHERE comment_on = '{$this->dbService->escape($oldTag)}'"
+                    "UPDATE {$pages} SET parent = '{$this->dbService->escape($newTag)}'"
+                    . " WHERE parent = '{$this->dbService->escape($oldTag)}'"
                 );
                 $this->dbService->query(
                     "UPDATE {$triples} SET resource = '{$this->dbService->escape($newTag)}'"

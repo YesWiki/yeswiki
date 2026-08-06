@@ -20,13 +20,12 @@ use YesWiki\Search\Service\TagsManager;
  * compute the title from `entry_title_template`, slug a free tag from it -- so it stays
  * where it already lived, in EntryManager::formatDataBeforeSave(). What differs is
  * persistence, and it differs enough that it cannot be a parameter: an entry gets a
- * `fiche_bazar` triple and keeps its `form_id`, a page gets **no triple at all** (that
- * absence is what makes it a page) and its keywords reindexed, an account has to go
- * through UserManager or it comes out without the owner, ACL and uniqueness guarantees
- * signup gives it.
+ * entry is typed `entry` and keeps its `form_id`, a page is typed `page` and gets its
+ * keywords reindexed, an account has to go through UserManager or it comes out without the
+ * owner, ACL and uniqueness guarantees signup gives it.
  *
  * EntryManager::create() still refuses a built-in form, and must: that refusal is what
- * stops a `fiche_bazar` row from being written carrying the Pages form's id, which is a
+ * stops an `entry` row from being written carrying the Pages form's id, which is a
  * row belonging to no list at all. This service is the way past it, not a hole in it.
  */
 class ContentCreator

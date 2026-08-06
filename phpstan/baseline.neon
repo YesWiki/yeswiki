@@ -2377,12 +2377,6 @@ parameters:
 			path: ../src/Admin/Service/UpdateAdminPagesService.php
 
 		-
-			message: '#^Property YesWiki\\Admin\\Service\\UpdateAdminPagesService\:\:\$linkTracker has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Admin/Service/UpdateAdminPagesService.php
-
-		-
 			message: '#^Property YesWiki\\Admin\\Service\\UpdateAdminPagesService\:\:\$pageManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -2887,39 +2881,9 @@ parameters:
 			path: ../src/Content/Action/IncludeAction.php
 
 		-
-			message: '#^Cannot access an offset on list\<string\>\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
-			message: '#^Function ShowPageTree not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
-			message: '#^Function YesWiki\\Content\\Action\\ShowPageTree\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
-			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
-			identifier: function.inner
-			count: 1
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
 			message: '#^Loose comparison using \=\= between ''time'' and ''time'' will always evaluate to true\.$#'
 			identifier: equal.alwaysTrue
 			count: 1
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
-			message: '#^Variable \$sql might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
 			path: ../src/Content/Action/ListpagesAction.php
 
 		-
@@ -8047,12 +8011,6 @@ parameters:
 			path: ../src/Content/Field/TextareaField.php
 
 		-
-			message: '#^Undefined variable\: \$msg$#'
-			identifier: variable.undefined
-			count: 1
-			path: ../src/Content/Handler/DeletepageHandler.php
-
-		-
 			message: '#^Variable \$incomingurl might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
@@ -10753,12 +10711,6 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\EntryManager\:\:\$cachedEntriestags has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Service\\EntryManager\:\:\$dbService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -11419,12 +11371,6 @@ parameters:
 			path: ../src/Content/Service/FileManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\FileManager\:\:\$fileTagCache type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/FileManager.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Service\\FileManager\:\:\$pageManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -11618,12 +11564,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\FormManager\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/FormManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\FormManager\:\:getAllIds\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/FormManager.php
@@ -12577,96 +12517,6 @@ parameters:
 			path: ../src/Content/Service/ImportService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:add\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:add\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:clear\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:persist\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:registerLinks\(\) has parameter \$page with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:registerLinks\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\LinkTracker\:\:track\(\) has parameter \$newState with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$dbService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$enabled has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$hibernationService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$links has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$pageManager has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$params has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\LinkTracker\:\:\$userManager has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/LinkTracker.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\ListManager\:\:convertDataStructure\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -12841,12 +12691,6 @@ parameters:
 			path: ../src/Content/Service/ListManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ListManager\:\:\$tripleStore has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ListManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:cache\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -12979,18 +12823,6 @@ parameters:
 			path: ../src/Content/Service/PageManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getLinkingTo\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getLinkingTo\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getMetadata\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -13004,12 +12836,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getOne\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getOrphaned\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/PageManager.php
@@ -13076,18 +12902,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getRevisions\(\) has parameter \$pageTag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:getWanted\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:isOrphaned\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Service/PageManager.php
@@ -16319,12 +16133,6 @@ parameters:
 			path: ../src/Identity/Service/UserManager.php
 
 		-
-			message: '#^Property YesWiki\\Identity\\Service\\UserManager\:\:\$userTagCache type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Service/UserManager.php
-
-		-
 			message: '#^Call to function is_scalar\(\) with non\-falsy\-string will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -16573,7 +16381,7 @@ parameters:
 		-
 			message: '#^Variable \$tablePrefix might not be defined\.$#'
 			identifier: variable.undefined
-			count: 4
+			count: 3
 			path: ../src/Kernel/Command/DbCommand.php
 
 		-
@@ -21820,12 +21628,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../tests/src/services/TemplateHelperServiceTest.php
-
-		-
-			message: '#^Method YesWiki\\Test\\Core\\Service\\UserManagerContentTest\:\:testCreateStoresUserAsAPageTypedViaTripleNotAUsersRow\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../tests/src/services/UserManagerContentTest.php
 
 		-
 			message: '#^Method YesWiki\\Test\\Core\\Service\\UserManagerContentTest\:\:testCreatingWithANameCollidingWithExistingContentUsesSuggestFreeTag\(\) has no return type specified\.$#'

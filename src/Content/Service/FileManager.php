@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -20,8 +21,6 @@ use YesWiki\Kernel\Service\RuntimeConfig;
  */
 class FileManager
 {
-    public const TRIPLES_FILE_TYPE = 'file';
-
     /**
      * The families a list of files can be narrowed to, in the order a picker offers them.
      * Coarser than the extension on purpose: someone looking for a photo they uploaded
@@ -56,8 +55,6 @@ class FileManager
     protected $tripleStore;
     protected $pageManager;
     protected $aclService;
-
-    private array $fileTagCache = [];
 
     public function __construct(
         ContainerInterface $container,
@@ -158,27 +155,22 @@ class FileManager
         if (empty($tag)) {
             return false;
         }
-        if (!isset($this->fileTagCache[$tag])) {
-            $this->fileTagCache[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_FILE_TYPE, '', ''));
-        }
 
-        return $this->fileTagCache[$tag];
+        return $this->pageManager->isType($tag, PageType::FILE);
     }
 
     public function getAllFileTags(): array
     {
-        return array_values(array_filter(array_map(function ($triple) {
-            return $triple['resource'] ?? null;
-        }, $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_FILE_TYPE))));
+        return $this->pageManager->tagsOfType(PageType::FILE);
     }
 
     public function getOne(string $tag): ?array
     {
-        if (!$this->isFileTag($tag)) {
-            return null;
-        }
+        // the row states its own type (ticket 27), so loading it answers "is this a file?"
+        // as well -- asking first cost a `SELECT type` before the `SELECT *` that followed it
+        // every single time, since this method loads the row in every case that matters
         $page = $this->pageManager->getOne($tag, null, true, true);
-        if (empty($page)) {
+        if (empty($page) || ($page['type'] ?? null) !== PageType::FILE) {
             return null;
         }
 
@@ -266,13 +258,11 @@ class FileManager
             'size' => $size,
             'mime_type' => $mimeType,
             'uploaded_from' => $ownerPageTag,
-        ], '', true);
+        ], '', true, null, PageType::FILE);
         if ($saved !== 0) {
             throw new \Exception("Could not save new file entry for '$originalFilename'.");
         }
-
-        $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_FILE_TYPE, '', '');
-        $this->fileTagCache[$tag] = true;
+        $this->pageManager->cacheType($tag, PageType::FILE);
 
         // a file uploaded from its own form has no owning page, so there is no ACL to
         // inherit and the wiki's defaults are the right answer -- asking for the ACLs of
@@ -338,7 +328,6 @@ class FileManager
             }
         }
         $this->pageManager->deleteOrphaned($tag);
-        unset($this->fileTagCache[$tag]);
     }
 
     private function slugForTag(string $originalFilename): string

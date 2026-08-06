@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
@@ -39,11 +40,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $tripleStore;
 
     private array $associatedEntryCache = [];
-    private array $userTagCache = [];
-
-    // Users are `pages` rows typed via this triple, the same convention FormManager uses
-    // for forms (TRIPLES_FORM_TYPE) and EntryManager for bazar entries (TRIPLES_ENTRY_ID).
-    public const TRIPLES_USER_TYPE = 'user';
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
     // stored triple value is "$hashedKey$KEY_VALUE_SEPARATOR$issuedAtTimestamp"
@@ -55,8 +51,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     // already depends on UserManager directly, and AclService depends on UserManager too
     // (its '+' registered-users ACL case calls getOneByName()) -- constructor-injecting
     // either back into UserManager would be a circular dependency. Fetched late via
-    // $this->container->get() instead, the same workaround isInGroup() already uses
-    // for AclService below.
+    // $this->container->get() instead (see pageManager()), the same workaround isInGroup()
+    // already uses for AclService below.
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
@@ -77,23 +73,24 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->tripleStore = $tripleStore;
     }
 
+    /** See the note above the constructor: injecting it would be a cycle. */
+    private function pageManager(): PageManager
+    {
+        return $this->container->get(PageManager::class);
+    }
+
     public function isUserTag(string $tag): bool
     {
         if (empty($tag)) {
             return false;
         }
-        if (!isset($this->userTagCache[$tag])) {
-            $this->userTagCache[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE, '', ''));
-        }
 
-        return $this->userTagCache[$tag];
+        return $this->pageManager()->isType($tag, PageType::USER);
     }
 
     public function getAllUserTags(): array
     {
-        return array_values(array_filter(array_map(function ($triple) {
-            return $triple['resource'] ?? null;
-        }, $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE))));
+        return $this->pageManager()->tagsOfType(PageType::USER);
     }
 
     public function userExist($name): bool
@@ -132,12 +129,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $jsonExtract = $this->dbService->jsonExtract('p.body', '$.email');
         $sql = "SELECT p.tag AS tag FROM {$this->dbService->prefixTable('pages')} p
             WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($email) . "'
-            AND EXISTS (
-                SELECT 1 FROM {$this->dbService->prefixTable('triples')} t
-                WHERE t.resource = p.tag
-                    AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'
-                    AND t.value = '" . $this->dbService->escape(self::TRIPLES_USER_TYPE) . "'
-            )
+            AND p.{$this->dbService->quoteIdentifier('type')} = '" . $this->dbService->escape(PageType::USER) . "'
             LIMIT 1";
         $row = $this->dbService->loadSingle($sql);
 
@@ -291,21 +283,17 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private function persistNewUserPage(string $tag, array $body): bool
     {
         $pageManager = $this->container->get(PageManager::class);
-        $saved = $pageManager->save($tag, $body, '', true);
+        // the row is written as a user in one statement (ticket 27) -- when the type was a
+        // separate triple, it had to be created BEFORE setOwner() below, because setOwner()
+        // verifies its target through getOneByName(), which only recognises a tag as a user
+        // once it is typed. That ordering hazard is gone: a row is never briefly untyped.
+        // PageManager's type cache still has to be told, because getOneByName()'s collision
+        // check ran before this tag existed and cached "no such row".
+        $saved = $pageManager->save($tag, $body, '', true, null, PageType::USER);
         if ($saved !== 0) {
             return false;
         }
-
-        // the TYPE_URI triple must be created BEFORE setOwner(): setOwner() calls
-        // UserManager::getOneByName() internally to verify the target exists, and
-        // getOneByName() only recognizes a tag as a user once this triple is in place --
-        // otherwise setOwner() silently no-ops (found via the migration leaving every
-        // migrated user's `owner` column empty). isUserTag()'s cache must ALSO be updated
-        // explicitly here: migrateLegacyUser()/create() already called isUserTag($tag)
-        // (via getOneByName()'s collision check) before this tag existed, caching a
-        // negative result that creating the triple alone doesn't invalidate.
-        $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE, '', '');
-        $this->userTagCache[$tag] = true;
+        $pageManager->cacheType($tag, PageType::USER);
 
         // the account owns itself -- save()'s auto-owner logic would otherwise leave this
         // empty for a self-registering, not-yet-logged-in user

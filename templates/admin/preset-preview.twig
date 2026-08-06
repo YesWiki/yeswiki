@@ -1,0 +1,136 @@
+{# The component gallery the Preset screen renders (ticket 30).
+
+   Wiki source, not HTML: it goes through MarkdownFormatterService exactly as a page body
+   does, so what a preset is judged against is what the wiki will actually produce. Writing
+   the expected HTML by hand here would make the preview agree with itself rather than with
+   the renderer.
+
+   `{% verbatim %}`, because the whole point is the literal `{{action}}` syntax -- Twig would
+   otherwise read every component as one of its own expressions.
+
+   Each block is titled with the markup that produced it, in the wiki's own syntax. That is
+   deliberate: it is language-neutral, so the gallery needs no translation, and it makes the
+   preview double as a syntax reference -- you see the component and the line that draws it. #}
+{% verbatim %}
+# Titre de niveau 1
+## Titre de niveau 2
+### Titre de niveau 3
+#### Titre de niveau 4
+##### Titre de niveau 5
+###### Titre de niveau 6
+
+Un paragraphe ordinaire, avec du **gras**, de l'*italique*, du ~~texte barré~~, du `code en
+ligne`, et un [lien vers une page](PagePrincipale) à côté d'un
+[lien externe](https://yeswiki.net).
+
+- une liste à puces
+- un deuxième point
+  - un point imbriqué
+- un troisième point
+
+1. une liste numérotée
+2. un deuxième point
+3. un troisième point
+
+> Une citation, pour voir la couleur et la bordure qu'elle prend.
+
+------
+
+| Colonne | Deuxième | Troisième |
+| --- | --- | --- |
+| Ligne 1 | valeur | valeur |
+| Ligne 2 | valeur | valeur |
+
+## `{{button}}`
+
+{{button text="yw-btn" link="PagePrincipale"}}
+{{button class="yw-btn--primary" text="yw-btn--primary" link="PagePrincipale"}}
+{{button class="yw-btn--info" text="yw-btn--info" link="PagePrincipale"}}
+{{button class="yw-btn--success" text="yw-btn--success" link="PagePrincipale"}}
+{{button class="yw-btn--warning" text="yw-btn--warning" link="PagePrincipale"}}
+{{button class="yw-btn--danger" text="yw-btn--danger" link="PagePrincipale"}}
+{{button class="yw-btn--sm" text="yw-btn--sm" link="PagePrincipale"}}
+{{button class="yw-btn--primary" icon="star" text="avec une icône" link="PagePrincipale"}}
+
+{{button class="yw-btn--primary yw-btn--block" text="yw-btn--block" link="PagePrincipale"}}
+
+## `{{label}}`
+
+{{label}}yw-label{{end elem="label"}}
+{{label class="yw-label--primary"}}yw-label--primary{{end elem="label"}}
+{{label class="yw-label--info"}}yw-label--info{{end elem="label"}}
+{{label class="yw-label--success"}}yw-label--success{{end elem="label"}}
+{{label class="yw-label--warning"}}yw-label--warning{{end elem="label"}}
+{{label class="yw-label--danger"}}yw-label--danger{{end elem="label"}}
+
+## `[35%]`
+
+[35%]
+[70%]
+
+## `{{grid}}` et `{{col}}`
+
+{{grid}}
+{{col size="4"}}
+#### Première colonne
+Trois colonnes de largeur 4, qui se replient l'une sous l'autre sur un écran étroit.
+{{end elem="col"}}
+{{col size="4"}}
+#### Deuxième colonne
+Le texte doit rester lisible à toutes les largeurs de colonne.
+{{end elem="col"}}
+{{col size="4"}}
+#### Troisième colonne
+Et les marges entre colonnes doivent rester régulières.
+{{end elem="col"}}
+{{end elem="grid"}}
+
+## `{{panel}}`
+
+{{panel title="Titre par défaut"}}
+Contenu d'un yw-panel.
+{{end elem="panel"}}
+
+{{panel class="yw-panel--primary" title="Titre primary" type="collapsible"}}
+Un panneau qu'on peut replier.
+{{end elem="panel"}}
+
+## `{{accordion}}`
+
+{{accordion}}
+{{panel class="yw-panel--success" title="Titre success"}}
+Contenu yw-panel--success
+{{end elem="panel"}}
+{{panel class="yw-panel--warning" title="Titre warning"}}
+Contenu yw-panel--warning
+{{end elem="panel"}}
+{{panel class="yw-panel--danger" title="Titre danger"}}
+Contenu yw-panel--danger
+{{end elem="panel"}}
+{{end elem="accordion"}}
+
+## `{{tabs}}`
+
+{{tabs titles="Premier onglet, Deuxième onglet, Troisième onglet"}}
+{{tab}}
+Le contenu du premier onglet.
+{{end elem="tab"}}
+{{tab}}
+Le contenu du deuxième onglet.
+{{end elem="tab"}}
+{{tab}}
+Le contenu du troisième onglet.
+{{end elem="tab"}}
+{{end elem="tabs"}}
+
+## `{{section}}`
+
+{{section class="cover black shape-rounded text-center" bgcolor="var(--primary-color)" height="180"}}
+### Une section sur la couleur primaire
+Le texte doit rester lisible sur le fond choisi par le préréglage.
+{{end elem="section"}}
+
+{{section class="full-width text-center" bgcolor="var(--secondary-color-2)" height="180"}}
+### Une section pleine largeur sur la seconde couleur secondaire
+{{end elem="section"}}
+{% endverbatim %}

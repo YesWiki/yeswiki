@@ -2,6 +2,16 @@
 import './vendor/ace/ace.js'
 // Loads html rules cause it's used inside yeswiki mode
 import './vendor/ace/mode-html.js'
+// CSS, for the screens that edit a stylesheet rather than prose (ticket 30). Same
+// side-effect registration; the matching worker-css.js sits beside it so ACE's own loader
+// can fetch it from `basePath` and report a bad rule where it is written.
+import './vendor/ace/mode-css.js'
+// Twig, for the screen that edits template overrides (ticket 30). It brings its own HTML,
+// CSS and JavaScript rules, so a template highlights as markup *and* as Twig -- and its
+// `createWorker` returns early for anything that is not the HTML mode itself, so unlike
+// `ace/mode/html` it spawns no worker and needs none vendored. Which is what you want here:
+// an HTML validator would flag every `{% if %}` inside an attribute as a broken tag.
+import './vendor/ace/mode-twig.js'
 import './vendor/ace/ext-language_tools.js'
 // The wiki syntax mode, imported rather than left to ACE's own loader: a module ACE fetches
 // by URL is a module nothing can see coming, so a farm instance never publishes it and the
@@ -21,15 +31,20 @@ export default class {
   constructor(domElement, options = {}) {
     this.container = domElement
 
-    // Where to find anything ACE still loads on its own (themes, ext-*). Taken from this
-    // module's own URL, not from the wiki's base: a farm instance serves its scripts out of
-    // cache/assets/{version}/, and `${wiki.baseUrl}javascripts` points at a source path that
-    // only exists on the shared code tree.
-    ace.config.set('basePath', new URL('.', import.meta.url).href)
+    // Where to find anything ACE still loads on its own (themes, ext-*, and the syntax
+    // workers a mode spawns). `vendor/ace/`, where those files actually sit -- this module's
+    // own directory only ever held the wrapper, so every such fetch 404'd; nothing noticed
+    // until `ace/mode/css` became the first mode here with a worker to spawn.
+    //
+    // Resolved from this module's URL rather than the wiki's base: a farm instance serves
+    // its scripts out of cache/assets/{version}/, and `${wiki.baseUrl}javascripts` points at
+    // a source path that only exists on the shared code tree.
+    ace.config.set('basePath', new URL('./vendor/ace/', import.meta.url).href)
 
     this.ace = ace.edit(domElement, {
       printMargin: false,
-      mode: 'ace/mode/yeswiki',
+      // wiki prose unless the caller says otherwise: a stylesheet gets `ace/mode/css`
+      mode: options.mode || 'ace/mode/yeswiki',
       showGutter: true,
       wrap: 'free',
       maxLines: Infinity,

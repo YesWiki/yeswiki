@@ -5,7 +5,6 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\ImageResizer;
-use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -99,9 +98,12 @@ class AttachAction extends YesWikiAction implements RegisteredAction
         // `file=` is a FileManager tag on the current path -- resolve it here so the
         // renderers below serve it through the ACL-checked download route rather than a
         // direct static path. Anything else falls through to the legacy filename search.
+        // getOne() answers both questions in one read -- it returns null for a tag that is
+        // not a file, so asking isFileTag() first only bought a `SELECT type` in front of the
+        // `SELECT *` that followed it, for every {{attach}} on the page
         $fileManager = $this->getService(FileManager::class);
-        if ($request->file !== '' && $fileManager->isFileTag($request->file)) {
-            $entry = $fileManager->getOne($request->file);
+        $entry = $request->file === '' ? null : $fileManager->getOne($request->file);
+        if ($entry !== null) {
             $request->fileTag = $request->file;
             $request->file = (string)($entry['original_filename'] ?? '');
         }
@@ -227,7 +229,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction
         if (!empty($request->link)) {
             $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($request->link);
             if (!empty($linkParts['tag'])) {
-                $this->getService(LinkTracker::class)->forceAddIfNotIncluded((string)$linkParts['tag']);
             }
             $link = '<a href="' . $this->getService(UrlFormatter::class)->generateLink($request->link) . '"' . $classDataForLinks . '>';
         } elseif (empty($request->nofullimagelink)) {
@@ -297,7 +298,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction
             $arguments->set('class', $newClass);
         }
 
-        return $this->getService(ActionRunner::class)->action('pdf', false, $arguments->all());
+        return $this->getService(ActionRunner::class)->action('pdf', $arguments->all());
     }
 }
 

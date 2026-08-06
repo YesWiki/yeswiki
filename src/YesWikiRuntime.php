@@ -39,7 +39,6 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Identity\Service\AccountActivationService;
@@ -230,8 +229,6 @@ class YesWikiRuntime
 
         $this->service(EventDispatcher::class)->yesWikiDispatch('maintenance.before', $context);
 
-        // purge referrers
-        $this->service(ReferrerService::class)->purge();
         // purge old page revisions
         $this->purgePages();
         // purge expired password recovery keys

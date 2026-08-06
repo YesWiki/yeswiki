@@ -13,18 +13,33 @@
     <button type="button" class="yw-close" data-yw-file-picker-close aria-label="close">&times;</button>
   </div>
   <div class="file-picker-panel__body">
-        <div class="btn-group file-picker-tabs">
-          <button type="button" class="yw-btn yw-btn--primary" data-yw-file-picker-tab="existing">{{ _t('ATTACH_FILE_PICKER_CHOOSE_EXISTING') }}</button>
-          <button type="button" class="yw-btn" data-yw-file-picker-tab="upload">{{ _t('ATTACH_FILE_PICKER_UPLOAD_NEW') }}</button>
-        </div>
+        {# One action, not a pair of tabs. The rail opens on the wiki's files, so a tab
+           reading "choose an existing file" only ever switched to the view already on
+           screen -- it cost a row of chrome to do nothing. Uploading is the one thing the
+           list is not, so it is the one button. #}
+        <button type="button" class="yw-btn file-picker-upload-open" data-yw-file-picker-upload-open>
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
+          {{ _t('ATTACH_FILE_PICKER_UPLOAD_NEW') }}
+        </button>
+
+        {# The way back from the two views that replace the list -- uploading, and
+           configuring the file that was chosen. Both take the whole rail rather than
+           appearing under a list the choice has already been made from. #}
+        <button type="button" class="yw-btn file-picker-back" data-yw-file-picker-back hidden>
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>
+          {{ _t('GO_BACK') }}
+        </button>
 
         <div data-yw-file-picker-pane="existing">
           <div class="file-picker-filters">
-            <input type="text" name="search" class="yw-input" autocomplete="off"
-              placeholder="{{ _t('ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER') }}">
+            <div class="file-picker-search">
+              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#filter"/></svg>
+              <input type="text" name="search" class="yw-input" autocomplete="off"
+                placeholder="{{ _t('ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER') }}">
+            </div>
             {# the extension list is built from the files themselves: offering ".docx" on a
                wiki where nobody ever uploaded one is offering an empty result #}
-            <select name="extension" class="yw-input" data-yw-file-picker-extensions>
+            <select name="extension" class="yw-input file-picker-extensions" data-yw-file-picker-extensions>
               <option value="">{{ _t('ATTACH_FILE_PICKER_ALL_EXTENSIONS') }}</option>
             </select>
           </div>
@@ -39,7 +54,13 @@
             <input type="file" name="upFile" class="yw-input">
           </div>
           <div class="file-picker-upload-error yw-text-danger" hidden></div>
-          <button type="button" class="yw-btn yw-btn--primary btn-do-upload">{{ _t('UPLOAD_A_FILE') }}</button>
+          {# not UPLOAD_A_FILE: that is the toolbar button's label ("Joindre / Insérer un
+             fichier"), and on the button that performs the upload it named the whole
+             feature rather than what pressing it does #}
+          <button type="button" class="yw-btn yw-btn--primary yw-btn--block btn-do-upload">
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
+            {{ _t('ATTACH_FILE_PICKER_DO_UPLOAD') }}
+          </button>
         </div>
 
         <div class="file-picker-selected" hidden>
@@ -160,8 +181,9 @@
           </div>
         </form>
   </div>
+  {# no Cancel: the rail's own × closes it, and a second way out took half the footer from
+     the one button that does something #}
   <div class="yw-rail__footer">
-    <a href="#" data-yw-file-picker-close class="yw-btn btn-cancel-upload">{{ _t('ATTACH_CANCEL') }}</a>
-    <button type="button" class="yw-btn yw-btn--primary btn-insert-upload" disabled>{{ _t('INSERT') }}</button>
+    <button type="button" class="yw-btn yw-btn--primary yw-btn--block btn-insert-upload" disabled>{{ _t('INSERT') }}</button>
   </div>
 </aside>
