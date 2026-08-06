@@ -61,8 +61,8 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
             foreach (['styles/bazar/entries/index.css' => 'text/css',
                 'javascripts/link-panel.js' => 'text/javascript'] as $path => $type) {
                 $asset = $this->fetch('/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/' . $path);
-                $this->assertStringContainsString('200', $asset['status'], $path);
-                $this->assertStringContainsString($type, $asset['type'], $path);
+                $this->assertStringContainsString('200', $asset['status'], $this->diag($path));
+                $this->assertStringContainsString($type, $asset['type'], $this->diag($path));
             }
         });
     }
@@ -83,8 +83,8 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
                 'no version at all' => '/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'yw-core.css',
             ] as $label => $url) {
                 $answer = $this->fetch($url);
-                $this->assertStringContainsString('404', $answer['status'], $label);
-                $this->assertStringNotContainsString('text/html', $answer['type'], $label);
+                $this->assertStringContainsString('404', $answer['status'], $this->diag($label));
+                $this->assertStringNotContainsString('text/html', $answer['type'], $this->diag($label));
             }
         });
     }
@@ -117,9 +117,14 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
             var_export(\YESWIKI_SOURCE_DIR . '/index.php', true)
         ));
 
+        // Kept, not discarded to /dev/null: when this instance answers 500 the reason is a
+        // PHP fatal that only its own stderr records, and throwing that away is what made a
+        // CI failure here unactionable -- the workflow dumps the *main* server's log, which
+        // knows nothing of this one. Surfaced by diag() in the assertion messages below.
+        $this->serverLog = $root . '/server.log';
         $server = proc_open(
             sprintf('%s -S 127.0.0.1:%d router.php', escapeshellarg(PHP_BINARY), self::PORT),
-            [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            [1 => ['file', $this->serverLog, 'w'], 2 => ['file', $this->serverLog, 'a']],
             $pipes,
             $root
         );
@@ -135,6 +140,18 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
             proc_close($server);
             exec('rm -rf ' . escapeshellarg($root));
         }
+    }
+
+    private string $serverLog = '';
+
+    /** A label with whatever the served instance said on its way to failing. */
+    private function diag(string $label): string
+    {
+        $log = $this->serverLog !== '' && is_file($this->serverLog)
+            ? trim((string)file_get_contents($this->serverLog))
+            : '';
+
+        return $log === '' ? $label : $label . "\n--- served instance log ---\n" . $log;
     }
 
     private function waitForServer(): void

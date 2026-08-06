@@ -125,4 +125,81 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             $_POST = [];
         }
     }
+
+    /**
+     * ... including a page that does not exist yet.
+     *
+     * The fields come from the form describing the row's Content type, and a page being
+     * written for the first time has no row to have a type: the resolver answered null, the
+     * editor took that for "nothing describes this" and fell back to the bare markup box. So
+     * a new page could not be given a title or keywords *while it was being written* -- only
+     * afterwards, by editing it a second time, which is the moment nobody comes back for.
+     */
+    #[Depends('testWikiExisting')]
+    public function testANewPageIsOfferedTheSameFieldsBeforeItExists(YesWikiRuntime $wiki): void
+    {
+        $pageManager = $wiki->services->get(PageManager::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $performer = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class);
+        $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
+        $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
+
+        $tag = self::PAGE_TAG . 'ThatDoesNotExistYet';
+        // `typeOf()` rather than `getOne()`: "no row at all" is exactly the condition under
+        // test, and it keeps this from being the same expression as the getOne() below
+        $this->assertNull($pageManager->typeOf($tag), 'the fixture must start with no such row');
+
+        $admin = current(array_filter(
+            $wiki->services->get(UserManager::class)->getAll(),
+            fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])
+        ));
+        $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
+        $authenticationService->login($admin);
+
+        $pageContext->setTag($tag);
+        $pageContext->setPage(null);
+        $GLOBALS['yeswikiServices'] = $wiki->services;
+
+        try {
+            $_POST = [];
+            $currentRequest->replace(Request::createFromGlobals());
+            $output = $performer->run('edit', 'handler', []);
+
+            $this->assertMatchesRegularExpression(
+                '/<input[^>]*name="' . PageBody::TITLE . '"/s',
+                $output,
+                'a page being created must be offered its title, not only once it exists'
+            );
+            $this->assertStringContainsString(
+                'data-yw-tag-input',
+                $output,
+                'a page being created must be offered its keywords too'
+            );
+
+            // and what is typed into them is what gets saved, on the very first save
+            $_POST = [
+                'submit' => 'Sauver',
+                'body' => 'tout premier contenu',
+                PageBody::TITLE => 'Titre a la creation',
+                PageBody::KEYWORDS => 'neuf, page',
+            ];
+            $currentRequest->replace(Request::createFromGlobals());
+            try {
+                $performer->run('edit', 'handler', []);
+            } catch (ExitException $e) {
+                // the save redirects, which is how it ends
+            }
+
+            $created = $pageManager->getOne($tag);
+            $this->assertIsArray($created, 'the first save must create the page');
+            $this->assertSame('Titre a la creation', $created['body'][PageBody::TITLE]);
+            $this->assertSame('tout premier contenu', trim(PageBody::content($created['body'])));
+            $this->assertSame(['neuf', 'page'], TagsManager::keywordsOf($created));
+        } finally {
+            $pageManager->deleteOrphaned($tag);
+            $wiki->services->get(TagsManager::class)->reindex($tag, []);
+            $authenticationService->logout();
+            $_POST = [];
+        }
+    }
 }

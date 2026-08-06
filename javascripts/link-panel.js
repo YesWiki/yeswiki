@@ -58,6 +58,22 @@ export default class {
         this.close()
       }),
     )
+    // The suggestion list had no way out: it was hidden when a suggestion was picked or when
+    // the field went empty, and by nothing else -- so Escape and a click elsewhere both left
+    // it hanging over the panel. Wired here rather than in open(), which runs on every cursor
+    // move and would stack a new listener each time (the reason open() re-removes its own).
+    this.inputUrl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.suggestions?.hidden) {
+        // the list is what Escape closes while it is up; the rail stays
+        e.stopPropagation()
+        this.hideSuggestions()
+      }
+    })
+    // clicking anywhere else blurs the field -- the list is only ever up while it has focus.
+    // The delay is what lets a click on a suggestion land before the list is torn down.
+    this.inputUrl.addEventListener('blur', () => {
+      setTimeout(() => this.hideSuggestions(), 150)
+    })
   }
 
   open(editor, options) {

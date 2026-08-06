@@ -152,3 +152,41 @@ test('the toolbar button writes a new link over the selection', async ({
     .poll(() => editorContent(page))
     .toBe('hello [world](PagePrincipale)')
 })
+
+/**
+ * The page suggestions are a dropdown, and a dropdown needs a way out. This one had none:
+ * it was hidden when a suggestion was picked or when the field went empty, and by nothing
+ * else -- so Escape did nothing and clicking away left the list sitting over the panel.
+ */
+test('the page suggestions close on Escape and on clicking away', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openEditor(page, 'hello world')
+
+  const url = page.locator(`${PANEL} input[name=url]`)
+  const suggestions = page.locator(`${PANEL} [data-link-panel-suggestions]`)
+
+  const openSuggestions = async () => {
+    await page.locator('.aceditor-btn-link').first().click()
+    await expect(page.locator(PANEL)).toBeVisible()
+    await url.click()
+    await url.fill('Page')
+    await expect(suggestions).toBeVisible()
+  }
+
+  await openSuggestions()
+  await url.press('Escape')
+  await expect(suggestions, 'Escape closes the list').toBeHidden()
+  await expect(
+    page.locator(PANEL),
+    'and closes only the list -- the rail stays put',
+  ).toBeVisible()
+
+  // typing again brings them back, so Escape hid them rather than switching them off
+  await url.fill('PagePr')
+  await expect(suggestions).toBeVisible()
+
+  await page.locator(`${PANEL} input[name=text]`).click()
+  await expect(suggestions, 'clicking away closes the list').toBeHidden()
+})

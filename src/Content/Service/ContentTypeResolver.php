@@ -63,6 +63,34 @@ class ContentTypeResolver
     }
 
     /**
+     * The form describing this row, or -- when there is no row yet -- the form of the type
+     * it will be created with.
+     *
+     * The editor is the caller that needs the difference. A page being written for the first
+     * time has no row, so `typeOf()` answers null and `formFor()` with it; that is the right
+     * answer for anything *reading* Content, but the editor is about to create the row, and
+     * {@see PageManager::save()} creates it as {@see PageType::DEFAULT}. Answering null there
+     * cost a new page its title and keywords inputs -- the editor fell back to the bare
+     * markup box, and the fields only appeared once the page existed.
+     *
+     * `formFor()` returns null for two unrelated reasons and only one of them is this one, so
+     * the raw type is what decides: `PageManager::typeOf()` is null only when no row exists.
+     * A row that *does* exist and is simply not form-backed -- a form, a list, a comment --
+     * still answers null here, because creating one of those is not what this is about.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function formForEditing(string $tag): ?array
+    {
+        $form = $this->formFor($tag);
+        if ($form !== null || $this->pageManager->typeOf($tag) !== null) {
+            return $form;
+        }
+
+        return $this->container->get(FormManager::class)->getByContentType(PageType::DEFAULT);
+    }
+
+    /**
      * A row in the shape everything downstream reads an entry in.
      *
      * Only a bazar entry names its own form (`body.form_id`) and repeats its own tag. A

@@ -117,7 +117,14 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
             $body = (string)ob_get_clean();
 
             $size = getimagesizefromstring($body);
-            $this->assertNotFalse($size, 'the route answered with an image');
+            // the body, not a bare "false is not false": when this fails the answer is some
+            // other response entirely -- an error page, an empty body -- and which one it is
+            // is the whole question. It cost a CI run that could only be guessed at.
+            $this->assertNotFalse($size, sprintf(
+                'the route answered with an image, got %d bytes starting %s',
+                strlen($body),
+                var_export(substr($body, 0, 200), true)
+            ));
             $this->assertLessThan(600, $size[0], 'and a smaller one than was uploaded');
 
             $this->assertFileExists($cached, 'the resized copy is cached');

@@ -114,6 +114,15 @@ jobs:
             -F "submit=Continue" \
             "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install"
 
+      # `javascripts/vendor/` and `styles/vendor/` are gitignored: they are copied out of
+      # node_modules by the `postinstall` hook, so a fresh checkout has neither. Without this
+      # step htmx, Ace and Leaflet are simply absent, and the tests that assert a page links
+      # to them fail on every leg of the matrix (CoreAssetsTest, VendoredAssetsTest,
+      # ApiControllerFormPreviewTest). Runs before the wiki is exercised, not just before
+      # `test-js` -- which needs nothing installed and so never revealed this.
+      - name: Install JS dependencies (populates javascripts/vendor via postinstall)
+        run: yarn install --frozen-lockfile
+
       - name: Run JS unit tests
         run: yarn run test-js
 

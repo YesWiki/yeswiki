@@ -116,6 +116,15 @@ class EnvironmentConfigurationTest extends TestCase
             'ADMIN_EMAIL' => 'me@example.com',
         ]);
 
-        $this->assertSame([], $config);
+        // Named keys, not assertSame([], $config): apply() also consults the *real*
+        // environment for every known name, by design -- that is the documented "real values
+        // win over private/.env" rule a few lines below. Asserting the result is empty
+        // therefore also asserts that the machine running the tests exports none of them,
+        // which is not this test's claim and is not true on CI: the workflow exports
+        // DB_USER=root for the installer, so `db_user => 'root'` appeared here and this was
+        // the one failure in the run that had nothing to do with the code under test.
+        foreach (['yeswiki_config_file', 'admin_name', 'admin_password', 'admin_email'] as $key) {
+            $this->assertArrayNotHasKey($key, $config);
+        }
     }
 }

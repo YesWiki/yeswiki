@@ -215,7 +215,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $split = ['before' => [], 'after' => [], 'hasContent' => false];
 
         $form = $this->getService(ContentTypeResolver::class)
-            ->formFor($this->getService(PageContext::class)->getTag());
+            ->formForEditing($this->getService(PageContext::class)->getTag());
         if ($form === null) {
             // a row this concept does not describe (a form, a list) keeps the plain
             // markup editor it has always had
@@ -262,7 +262,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // fields are written for bazar entries, which carry their own tag and form_id in
         // the body; a page, an account or a file gets them from its row and its type
         $form = $this->getService(ContentTypeResolver::class)
-            ->formFor($this->getService(PageContext::class)->getTag());
+            ->formForEditing($this->getService(PageContext::class)->getTag());
         $entry = array_merge($body, [
             'tag' => $this->getService(PageContext::class)->getTag(),
             'form_id' => $body['form_id'] ?? ($form['id'] ?? null),
