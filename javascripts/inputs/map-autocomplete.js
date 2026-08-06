@@ -1,6 +1,6 @@
 // map-autocomplete.js — postal-code/town suggestions for the map field's address
 // inputs (ticket 16: vanilla, on yw-autocomplete instead of bootstrap3-typeahead)
-(function() {
+;(function () {
   // Ticket 14: keyed on the map field itself rather than on a page-global
   // `autocompleteFieldnames`, and driven by ywInitEach so a map arriving in a fragment gets
   // its autocomplete too. The global could only ever describe one map -- a second map field
@@ -29,7 +29,7 @@
           result.push({
             id: code,
             name: `${code} ${geoloc.town}`,
-            ville: geoloc.town
+            ville: geoloc.town,
           })
         })
       })
@@ -53,10 +53,11 @@
         if (query.length !== 5) {
           return [{ id: query, name: _t('BAZ_POSTAL_CODE_HINT') }]
         }
-        return geolocationHelper.getGelocationDataFromPostalCode('France', query)
+        return geolocationHelper
+          .getGelocationDataFromPostalCode('France', query)
           .then(toSuggestions)
           .catch(() => [{ id: query, name: _t('BAZ_POSTAL_CODE_HINT') }])
-      }
+      },
     })
 
     window.ywAutocomplete(inputTown, {
@@ -65,12 +66,20 @@
       render: (item) => item.name,
       onSelect: applySelection,
       source(query) {
-        return geolocationHelper.getGelocationDataFromTown('France', query)
-          .then((data) => (data.length > 0
-            ? toSuggestions(data)
-            : [{ id: query, name: _t('BAZ_TOWN_NOT_FOUND', { input: query }) }]))
+        return geolocationHelper
+          .getGelocationDataFromTown('France', query)
+          .then((data) =>
+            data.length > 0
+              ? toSuggestions(data)
+              : [
+                  {
+                    id: query,
+                    name: _t('BAZ_TOWN_NOT_FOUND', { input: query }),
+                  },
+                ],
+          )
           .catch(() => [{ id: query, name: _t('BAZ_TOWN_HINT') }])
-      }
+      },
     })
   })
-}())
+})()

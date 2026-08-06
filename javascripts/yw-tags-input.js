@@ -10,7 +10,7 @@
 // swap the map at runtime just by updating the attribute -- no re-init needed).
 // [data-yw-tag-input-closed] additionally restricts tags to that option list
 // (no free-typed tags). [data-yw-tag-input-max="1"] caps the number of tags.
-(function() {
+;(function () {
   function widgetOf(el) {
     return el.closest('[data-yw-tag-input]')
   }
@@ -50,10 +50,16 @@
 
   function addTag(widget, id, label) {
     const tag = (id || '').trim()
-    if (!tag || currentTags(widget).includes(tag) || maxTagsReached(widget)) return
+    if (!tag || currentTags(widget).includes(tag) || maxTagsReached(widget))
+      return
 
     const options = staticOptions(widget)
-    if (widget.hasAttribute('data-yw-tag-input-closed') && options && !(tag in options)) return
+    if (
+      widget.hasAttribute('data-yw-tag-input-closed') &&
+      options &&
+      !(tag in options)
+    )
+      return
 
     const chip = document.createElement('span')
     chip.className = 'yw-tag-input__chip'
@@ -69,7 +75,10 @@
     remove.textContent = '×'
     chip.appendChild(remove)
 
-    widget.insertBefore(chip, widget.querySelector('[data-yw-tag-input-search]'))
+    widget.insertBefore(
+      chip,
+      widget.querySelector('[data-yw-tag-input-search]'),
+    )
     syncValue(widget)
   }
 
@@ -146,18 +155,27 @@
     if (staticOptions(widget)) renderStaticSuggestions(widget, input)
   })
 
-  document.addEventListener('focus', (e) => {
-    const input = e.target.closest && e.target.closest('[data-yw-tag-input-search]')
-    if (!input) return
-    const widget = widgetOf(input)
-    if (staticOptions(widget)) renderStaticSuggestions(widget, input)
-  }, true)
+  document.addEventListener(
+    'focus',
+    (e) => {
+      const input =
+        e.target.closest && e.target.closest('[data-yw-tag-input-search]')
+      if (!input) return
+      const widget = widgetOf(input)
+      if (staticOptions(widget)) renderStaticSuggestions(widget, input)
+    },
+    true,
+  )
 
   document.addEventListener('click', (e) => {
     const suggestion = e.target.closest('[data-yw-tag-input-suggestion]')
     if (suggestion) {
       const widget = widgetOf(suggestion)
-      addTag(widget, suggestion.dataset.id || suggestion.textContent, suggestion.textContent)
+      addTag(
+        widget,
+        suggestion.dataset.id || suggestion.textContent,
+        suggestion.textContent,
+      )
       const search = widget.querySelector('[data-yw-tag-input-search]')
       search.value = ''
       search.focus()
@@ -190,9 +208,14 @@
       if (options && closed) {
         // closed vocabulary: only a listed option may be added
         const list = widget.querySelector('[data-yw-tag-input-suggestions]')
-        const firstSuggestion = list && list.querySelector('[data-yw-tag-input-suggestion]')
+        const firstSuggestion =
+          list && list.querySelector('[data-yw-tag-input-suggestion]')
         if (firstSuggestion) {
-          addTag(widget, firstSuggestion.dataset.id, firstSuggestion.textContent)
+          addTag(
+            widget,
+            firstSuggestion.dataset.id,
+            firstSuggestion.textContent,
+          )
         }
       } else {
         // open vocabulary (with or without suggestions): free-typed tags are fine
@@ -204,4 +227,4 @@
       hideSuggestions(widget)
     }
   })
-}())
+})()

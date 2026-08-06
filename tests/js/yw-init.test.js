@@ -16,7 +16,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const SOURCE = fs.readFileSync(path.join(here, '..', '..', 'javascripts', 'yw-init.js'), 'utf8')
+const SOURCE = fs.readFileSync(
+  path.join(here, '..', '..', 'javascripts', 'yw-init.js'),
+  'utf8',
+)
 
 /**
  * A DOM stub faithful enough for this file: attributes, `matches` including the
@@ -36,9 +39,10 @@ function makeDom() {
     },
     matches(selector) {
       const negated = selector.match(/^([a-z-]+):not\(\[([a-z-]+)\]\)$/)
-      if (negated) return this.tag === negated[1] && !this.hasAttribute(negated[2])
+      if (negated)
+        return this.tag === negated[1] && !this.hasAttribute(negated[2])
       return this.tag === selector
-    }
+    },
   })
 
   const body = makeElement('body')
@@ -52,10 +56,14 @@ function makeDom() {
     },
     querySelectorAll(selector) {
       return [body].filter((element) => element.matches(selector))
-    }
+    },
   }
 
-  return { document, body, fire: (name, event) => (listeners[name] || []).forEach((fn) => fn(event)) }
+  return {
+    document,
+    body,
+    fire: (name, event) => (listeners[name] || []).forEach((fn) => fn(event)),
+  }
 }
 
 let dom
@@ -66,7 +74,11 @@ beforeEach(() => {
   dom = makeDom()
   const scope = { document: dom.document, console }
   // eslint-disable-next-line no-new-func
-  const load = new Function('document', 'console', `${SOURCE}; return { ywInit, ywInitEach }`)
+  const load = new Function(
+    'document',
+    'console',
+    `${SOURCE}; return { ywInit, ywInitEach }`,
+  )
   const exported = load(scope.document, scope.console)
   ywInit = exported.ywInit
   ywInitEach = exported.ywInitEach
@@ -88,18 +100,30 @@ test('an initialiser runs once per element, however many times it is swept', () 
   dom.fire('htmx:load', { target: dom.document })
   dom.fire('htmx:load', { target: dom.document })
 
-  assert.deepStrictEqual(ran, ['once'], 'body survives a navigation, so its setup must not repeat')
+  assert.deepStrictEqual(
+    ran,
+    ['once'],
+    'body survives a navigation, so its setup must not repeat',
+  )
 })
 
 test('ywInit sweeps immediately and on every htmx:load', () => {
   const roots = []
   ywInit((root) => roots.push(root))
 
-  assert.strictEqual(roots.length, 1, 'the immediate sweep is what a fragment-loaded script relies on')
+  assert.strictEqual(
+    roots.length,
+    1,
+    'the immediate sweep is what a fragment-loaded script relies on',
+  )
 
   dom.fire('htmx:load', { target: dom.body })
   assert.strictEqual(roots.length, 2)
-  assert.strictEqual(roots[1], dom.body, 'a swap passes the inserted element, not the document')
+  assert.strictEqual(
+    roots[1],
+    dom.body,
+    'a swap passes the inserted element, not the document',
+  )
 })
 
 /**
@@ -118,7 +142,11 @@ test('an element whose initialiser threw is retried, not written off', () => {
   assert.strictEqual(attempts, 1, 'the first attempt runs and fails')
 
   dom.fire('yw:assets-ready', {})
-  assert.strictEqual(attempts, 2, 'the dependency arrived, so it must try again')
+  assert.strictEqual(
+    attempts,
+    2,
+    'the dependency arrived, so it must try again',
+  )
 
   dom.fire('yw:assets-ready', {})
   assert.strictEqual(attempts, 2, 'once it succeeds it must not run again')

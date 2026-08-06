@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 
-test.beforeEach(async() => {
+test.beforeEach(async () => {
   resetEnv()
 })
 
@@ -43,10 +43,16 @@ const DELETE = '[data-yw-preset-delete-form] button'
 /** What an ordinary page is wearing, as seen from the browser. */
 async function primaryColourOfHomePage(page: Page) {
   await page.goto('/?PagePrincipale')
-  return page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim())
+  return page.evaluate(() =>
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--primary-color')
+      .trim(),
+  )
 }
 
-test('trying a preset on changes this page and leaves the wiki alone', async({page}) => {
+test('trying a preset on changes this page and leaves the wiki alone', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   const before = await primaryColourOfHomePage(page)
 
@@ -55,31 +61,47 @@ test('trying a preset on changes this page and leaves the wiki alone', async({pa
   // Every preset the theme ships is listed, each as its colours, plus the way back to
   // none. Not a count of the cards: an instance can carry presets of its own, and this
   // suite runs against a container that has one.
-  for (const preset of ['default.css', 'fun.css', 'landes.css', 'red.css', 'yellow.css']) {
+  for (const preset of [
+    'default.css',
+    'fun.css',
+    'landes.css',
+    'red.css',
+    'yellow.css',
+  ]) {
     await expect(card(page, preset)).toBeVisible()
   }
   await expect(card(page, '')).toBeVisible()
-  await expect(card(page, 'fun.css').locator('.yw-preset-card__swatch')).toHaveCount(6)
+  await expect(
+    card(page, 'fun.css').locator('.yw-preset-card__swatch'),
+  ).toHaveCount(6)
 
   // clicking the card wears it here...
   await card(page, 'fun.css').locator('[data-yw-preset-try]').click()
   await expect(card(page, 'fun.css')).toHaveClass(/yw-preset-card--trying/)
-  await expect.poll(async() => page.evaluate(
-    () => getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
-  )).not.toBe(before)
+  await expect
+    .poll(async () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--primary-color')
+          .trim(),
+      ),
+    )
+    .not.toBe(before)
 
   // ...and nowhere else. This is the whole distinction the screen is built on.
   expect(await primaryColourOfHomePage(page)).toBe(before)
 })
 
-test('the starred button makes a preset the wiki default', async({page}) => {
+test('the starred button makes a preset the wiki default', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/preset')
 
   await clickTool(page, 'fun.css', STAR)
   await expect(card(page, 'fun.css')).toHaveClass(/yw-preset-card--default/)
   // the star of the preset in use is the filled one, and it is the only one
-  await expect(card(page, 'fun.css').locator('.yw-preset-card__star--on')).toHaveCount(1)
+  await expect(
+    card(page, 'fun.css').locator('.yw-preset-card__star--on'),
+  ).toHaveCount(1)
   await expect(page.locator('.yw-preset-card__star--on')).toHaveCount(1)
 
   await page.goto('/?PagePrincipale')
@@ -90,7 +112,9 @@ test('the starred button makes a preset the wiki default', async({page}) => {
   await page.goto('/?admin/preset')
   await clickTool(page, 'fun.css', STAR)
   await expect(card(page, '')).toHaveClass(/yw-preset-card--default/)
-  await expect(card(page, '').locator('.yw-preset-card__star--on')).toHaveCount(1)
+  await expect(card(page, '').locator('.yw-preset-card__star--on')).toHaveCount(
+    1,
+  )
   await page.goto('/?PagePrincipale')
   await expect(page.locator('link[href*="presets/fun.css"]')).toHaveCount(0)
 
@@ -104,18 +128,24 @@ test('the starred button makes a preset the wiki default', async({page}) => {
   await expect(page.locator('link[href*="presets/fun.css"]')).toHaveCount(0)
 })
 
-test('a theme preset cannot be edited, only copied into the wiki', async({page}) => {
+test('a theme preset cannot be edited, only copied into the wiki', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   page.on('dialog', (dialog) => dialog.accept())
   await page.goto('/?admin/preset')
 
   // themes/ is code: there is no pencil on a preset that lives there
-  await expect(card(page, 'red.css').locator('[data-yw-preset-edit]')).toHaveCount(0)
+  await expect(
+    card(page, 'red.css').locator('[data-yw-preset-edit]'),
+  ).toHaveCount(0)
 
   // the copy button is the way in
   await clickTool(page, 'red.css', COPY)
   await expect(card(page, 'custom/red.css')).toBeVisible()
-  await expect(card(page, 'custom/red.css').locator('[data-yw-preset-edit]')).toHaveCount(1)
+  await expect(
+    card(page, 'custom/red.css').locator('[data-yw-preset-edit]'),
+  ).toHaveCount(1)
 
   // copying twice gives two presets rather than overwriting the first
   await clickTool(page, 'red.css', COPY)
@@ -133,7 +163,7 @@ test('a theme preset cannot be edited, only copied into the wiki', async({page})
   }
 })
 
-test('editing a preset replaces it, renaming included', async({page}) => {
+test('editing a preset replaces it, renaming included', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   page.on('dialog', (dialog) => dialog.accept())
   await page.goto('/?admin/preset')
@@ -152,27 +182,45 @@ test('editing a preset replaces it, renaming included', async({page}) => {
   // live preview: the variable is written onto the document, so the gallery below repaints
   const primary = rail.locator('[data-yw-preset-field="primary-color"]')
   await primary.fill('#010203')
-  await expect.poll(async() => page.evaluate(
-    () => getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
-  )).toBe('#010203')
+  await expect
+    .poll(async () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--primary-color')
+          .trim(),
+      ),
+    )
+    .toBe('#010203')
 
   // renamed on save -- and that must RENAME it, not leave a second copy behind
   await rail.locator('#yw-preset-name').fill('Essai e2e')
   // generous: saving installs the preset's webfonts locally, which is a network round trip
   await rail.locator('button[type="submit"]').click()
-  await expect(card(page, 'custom/essai-e2e.css')).toBeVisible({timeout: 30000})
+  await expect(card(page, 'custom/essai-e2e.css')).toBeVisible({
+    timeout: 30000,
+  })
   await expect(card(page, 'custom/yellow.css')).toHaveCount(0)
 
   // saving does not make it the wiki's -- that is the starred button and nothing else
-  await expect(card(page, 'custom/essai-e2e.css')).not.toHaveClass(/yw-preset-card--default/)
+  await expect(card(page, 'custom/essai-e2e.css')).not.toHaveClass(
+    /yw-preset-card--default/,
+  )
 
   // it really is the edited preset: make it the default and the rule reaches an ordinary page
   await clickTool(page, 'custom/essai-e2e.css', STAR)
   await page.goto('/?PagePrincipale')
-  await expect(page.locator('link[href*="custom/css-presets/essai-e2e.css"]')).toHaveCount(1)
-  await expect.poll(async() => page.evaluate(
-    () => getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
-  )).toBe('#010203')
+  await expect(
+    page.locator('link[href*="custom/css-presets/essai-e2e.css"]'),
+  ).toHaveCount(1)
+  await expect
+    .poll(async () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--primary-color')
+          .trim(),
+      ),
+    )
+    .toBe('#010203')
 
   // deleting removes the file, so the wiki stops wearing it rather than linking nothing
   await page.goto('/?admin/preset')
@@ -183,7 +231,9 @@ test('editing a preset replaces it, renaming included', async({page}) => {
   await expect(page.locator('link[href*="essai-e2e.css"]')).toHaveCount(0)
 })
 
-test('the screen is refused to someone who is not an admin', async({page}) => {
+test('the screen is refused to someone who is not an admin', async ({
+  page,
+}) => {
   await page.goto('/?admin/preset')
   await expect(page.locator('.yw-preset-cards')).toHaveCount(0)
 })

@@ -19,7 +19,8 @@ let filePicker = null
 // The rail lives outside the form (it contains one of its own), so it is included by the
 // page template rather than by the field. A Vditor rendered somewhere that never included
 // it gets its other buttons and no file button, rather than one that throws on click.
-const hasFilePicker = () => document.getElementById('YesWikiFilePickerPanel') !== null
+const hasFilePicker = () =>
+  document.getElementById('YesWikiFilePickerPanel') !== null
 
 /**
  * @param getEditor a getter, not the editor: the toolbar is declared in the options
@@ -37,9 +38,9 @@ const filePickerMenuItem = (getEditor) => ({
     filePicker ??= new FilePickerPanel()
     filePicker.open({
       format: 'markdown',
-      onComplete: (markdown) => getEditor().insertValue(markdown)
+      onComplete: (markdown) => getEditor().insertValue(markdown),
     })
-  }
+  },
 })
 
 function initVditor(textareaParam) {
@@ -64,13 +65,28 @@ function initVditor(textareaParam) {
     width: '100%',
     placeholder: textarea.getAttribute('placeholder') || '',
     toolbar: [
-      'headings', 'bold', 'italic', 'strike', '|',
-      'line', 'list', 'ordered-list', 'check', '|',
-      'quote', 'link', 'table', '|',
+      'headings',
+      'bold',
+      'italic',
+      'strike',
+      '|',
+      'line',
+      'list',
+      'ordered-list',
+      'check',
+      '|',
+      'quote',
+      'link',
+      'table',
+      '|',
       ...(hasFilePicker() ? [filePickerMenuItem(() => editor), '|'] : []),
-      'emoji', '|',
-      'undo', 'redo', '|',
-      'code', 'inline-code'
+      'emoji',
+      '|',
+      'undo',
+      'redo',
+      '|',
+      'code',
+      'inline-code',
     ],
     cache: { enable: false },
     resize: { enable: true },
@@ -98,12 +114,14 @@ function initVditor(textareaParam) {
       textarea.value = editor.getHTML()
       textarea.dispatchEvent(new Event('input', { bubbles: true }))
       textarea.dispatchEvent(new Event('change', { bubbles: true }))
-    }
+    },
   })
 }
 
 function scan(root) {
-  root.querySelectorAll('textarea.vditor-html:not([data-vditor-ready])').forEach(initVditor)
+  root
+    .querySelectorAll('textarea.vditor-html:not([data-vditor-ready])')
+    .forEach(initVditor)
 }
 
 // Ticket 14: one convention. This file used to carry its own MutationObserver -- it was
@@ -111,7 +129,10 @@ function scan(root) {
 // alone. ywInit is that solution generalised, so the observer (which watched every DOM
 // mutation in the document to catch a handful of insertions) is gone.
 ywInit((root) => {
-  if (root.matches && root.matches('textarea.vditor-html:not([data-vditor-ready])')) {
+  if (
+    root.matches &&
+    root.matches('textarea.vditor-html:not([data-vditor-ready])')
+  ) {
     initVditor(root)
   }
   scan(root.querySelectorAll ? root : document)

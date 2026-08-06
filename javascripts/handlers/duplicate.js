@@ -12,7 +12,9 @@ function isValidUrl(string) {
 }
 
 function arrayIncludesAllRequiredFields(arr, fields) {
-  return fields.every((v) => arr.some((i) => i.id === v.id && i.type === v.type))
+  return fields.every((v) =>
+    arr.some((i) => i.id === v.id && i.type === v.type),
+  )
 }
 
 function setMessageState(element, state) {
@@ -78,7 +80,9 @@ function handleLoginResponse(data) {
     checkPageExistence(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}`)
   } else {
     if (loginMessage) {
-      loginMessage.innerHTML = _t('CONNECTED_BUT_NOT_ADMIN', { user: data.user })
+      loginMessage.innerHTML = _t('CONNECTED_BUT_NOT_ADMIN', {
+        user: data.user,
+      })
       setMessageState(loginMessage, 'error')
     }
     setHidden('.duplication-fields', true)
@@ -96,12 +100,15 @@ function setFormMessage(state, text) {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('.duplication-wiki-form, .duplication-login-form, #form-duplication', (form) => {
-  form.addEventListener('submit', (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-  })
-})
+ywInitEach(
+  '.duplication-wiki-form, .duplication-login-form, #form-duplication',
+  (form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+  },
+)
 
 const urlWiki = document.getElementById('url-wiki')
 if (urlWiki) {
@@ -121,13 +128,20 @@ document.querySelectorAll('.btn-distant-login').forEach((button) => {
       method: 'POST',
       body: new URLSearchParams({
         username: username ? username.value : '',
-        password: password ? password.value : ''
-      })
+        password: password ? password.value : '',
+      }),
     })
-      .then((response) => response.json()
-        .then((data) => (response.ok
-          ? data
-          : Promise.reject(Object.assign(new Error(), { status: response.status, data })))))
+      .then((response) =>
+        response
+          .json()
+          .then((data) =>
+            response.ok
+              ? data
+              : Promise.reject(
+                  Object.assign(new Error(), { status: response.status, data }),
+                ),
+          ),
+      )
       .then(handleLoginResponse)
       .catch((error) => {
         if (error.data && error.data.error) {
@@ -157,11 +171,11 @@ document.querySelectorAll('[name="duplicate-action"]').forEach((button) => {
     fetch(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}/duplicate`, {
       method: 'POST',
       headers: { accept: 'application/json' },
-      body: new URLSearchParams(new FormData(form))
+      body: new URLSearchParams(new FormData(form)),
     })
-      .then((response) => (response.ok
-        ? response.json()
-        : Promise.reject(response.status)))
+      .then((response) =>
+        response.ok ? response.json() : Promise.reject(response.status),
+      )
       .then((d) => {
         if (btnAction === 'open') {
           document.location = `${shortUrl}/?${d.newTag}`
@@ -173,11 +187,7 @@ document.querySelectorAll('[name="duplicate-action"]').forEach((button) => {
         }
       })
       .catch((status) => {
-        toastMessage(
-          `${_t('ERROR')} ${status}`,
-          3000,
-          'alert alert-danger'
-        )
+        toastMessage(`${_t('ERROR')} ${status}`, 3000, 'alert alert-danger')
       })
   })
 })
@@ -198,15 +208,16 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
       toastMessage(_t('NOT_VALID_URL', { url }), 3000, 'alert alert-danger')
       return
     }
-    const taburl = url.search('wakka.php') > -1 ? url.split('wakka.php') : url.split('?')
+    const taburl =
+      url.search('wakka.php') > -1 ? url.split('wakka.php') : url.split('?')
     shortUrl = taburl[0].replace(/\/+$/g, '')
     const baseUrlHolder = document.getElementById('base-url')
     if (baseUrlHolder) baseUrlHolder.textContent = `${shortUrl}/?`
     url = `${shortUrl}/?api/auth/me`
     fetch(url)
-      .then((response) => (response.ok
-        ? response.json()
-        : Promise.reject(response.status)))
+      .then((response) =>
+        response.ok ? response.json() : Promise.reject(response.status),
+      )
       .then((data) => {
         handleLoginResponse(data)
 
@@ -216,29 +227,38 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
         const formId = formIdInput ? formIdInput.value : undefined
         if (typeof formId !== 'undefined') {
           fetch(`${shortUrl}/?api/forms/${formId}`)
-            .then((response) => (response.ok
-              ? response.json()
-              : Promise.reject(response.status)))
+            .then((response) =>
+              response.ok ? response.json() : Promise.reject(response.status),
+            )
             .then((form) => {
               const requiredFields = form.prepared.filter(
-                (field) => field.required === true
+                (field) => field.required === true,
               )
               // we check if the found formId is compatible
               if (
                 arrayIncludesAllRequiredFields(
                   window.sourceForm.prepared,
-                  requiredFields
+                  requiredFields,
                 )
               ) {
-                setFormMessage('success', _t('FORM_ID_IS_COMPATIBLE', { id: formId }))
+                setFormMessage(
+                  'success',
+                  _t('FORM_ID_IS_COMPATIBLE', { id: formId }),
+                )
               } else {
-                setFormMessage('error', _t('FORM_ID_NOT_AVAILABLE', { id: formId }))
+                setFormMessage(
+                  'error',
+                  _t('FORM_ID_NOT_AVAILABLE', { id: formId }),
+                )
               }
             })
             .catch((status) => {
               if (status === 404) {
                 // the formId is available
-                setFormMessage('success', _t('FORM_ID_AVAILABLE', { id: formId }))
+                setFormMessage(
+                  'success',
+                  _t('FORM_ID_AVAILABLE', { id: formId }),
+                )
               }
             })
         }
@@ -254,7 +274,7 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
           toastMessage(
             _t('NOT_WIKI_OR_OLD_WIKI', { url }),
             3000,
-            'alert alert-danger'
+            'alert alert-danger',
           )
         }
       })

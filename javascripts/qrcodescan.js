@@ -37,7 +37,7 @@ function parseVcard(input) {
 
       fields[key].push({
         meta,
-        value: results[3].split(';')
+        value: results[3].split(';'),
       })
     }
   })
@@ -49,7 +49,7 @@ function speak(selector) {
   // cut former speech
   window.speechSynthesis.cancel()
   const toSpeak = new SpeechSynthesisUtterance(
-    document.querySelector(selector).textContent
+    document.querySelector(selector).textContent,
   )
   window.speechSynthesis.speak(toSpeak)
 }
@@ -60,7 +60,7 @@ function showNotif(txt, alertClass) {
   alert.classList.remove(
     'yw-alert--danger',
     'yw-alert--info',
-    'yw-alert--success'
+    'yw-alert--success',
   )
   alert.classList.add(alertClass)
   alert.innerHTML = txt
@@ -94,7 +94,7 @@ function reset() {
   document.querySelector('#qr-container .text-success').innerHTML = ''
   showNotif(
     document.querySelector('#qr-container .step1 .paragraph').textContent,
-    'yw-alert--info'
+    'yw-alert--info',
   )
   return false
 }
@@ -114,18 +114,19 @@ function stepHandler(currentStep, entry) {
     document.querySelector('.step2').classList.add('stepper__row--active')
 
     document.querySelector('.step1 .paragraph').style.display = 'none'
-    document.querySelector('.step1 .text-success').innerHTML = `Premier participant : ${entry.title}`
+    document.querySelector('.step1 .text-success').innerHTML =
+      `Premier participant : ${entry.title}`
     showNotif(
-      `Vous avez été reconnu comme étant ${entry.title}.`
-        + ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
-      'yw-alert--success'
+      `Vous avez été reconnu comme étant ${entry.title}.` +
+        ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
+      'yw-alert--success',
     )
   } else if (step === 2) {
     if (firstpeople.fn === entry.title) {
       showNotif(
-        'Le premier Q.R. Code et le second sont les mêmes,'
-          + ' veuillez utiliser un deuxième Q.R. Code différent.',
-        'yw-alert--danger'
+        'Le premier Q.R. Code et le second sont les mêmes,' +
+          ' veuillez utiliser un deuxième Q.R. Code différent.',
+        'yw-alert--danger',
       )
     } else {
       secondpeople = entry
@@ -141,25 +142,25 @@ function stepHandler(currentStep, entry) {
 
       document.querySelector('.step2 .paragraph').style.display = 'none'
       const secondParticipantMsg = `Second participant : ${entry.title}`
-      document.querySelector('.step2 .text-success').innerHTML = secondParticipantMsg
+      document.querySelector('.step2 .text-success').innerHTML =
+        secondParticipantMsg
 
       document.querySelector('.step3 .paragraph').style.display = 'none'
-      document.querySelector('.step3 .text-success').innerHTML = `Bravo ${firstpeople.title}`
-        + ` et ${secondpeople.title}, vous êtes maintenant reliés !`
+      document.querySelector('.step3 .text-success').innerHTML =
+        `Bravo ${firstpeople.title}` +
+        ` et ${secondpeople.title}, vous êtes maintenant reliés !`
 
       showNotif(
-        `Bravo ${firstpeople.title} et ${secondpeople.title}!! `
-          + 'Vous êtes unis par les liens sacrés du Q.R. code. Un email de contact vous a été envoyé.',
-        'yw-alert--success'
+        `Bravo ${firstpeople.title} et ${secondpeople.title}!! ` +
+          'Vous êtes unis par les liens sacrés du Q.R. code. Un email de contact vous a été envoyé.',
+        'yw-alert--success',
       )
 
       // reset after 10 seconds
       setTimeout(reset, 10000)
 
       // order people by name to have an unique pair in db
-      if (
-        firstpeople.title.toLowerCase() > secondpeople.title.toLowerCase()
-      ) {
+      if (firstpeople.title.toLowerCase() > secondpeople.title.toLowerCase()) {
         const temp = secondpeople
         secondpeople = firstpeople
         firstpeople = temp
@@ -171,7 +172,7 @@ function stepHandler(currentStep, entry) {
       const params = new URLSearchParams()
       params.set(
         'bf_titre',
-        'Relation "{{bf_relation}}" entre {{bf_fiche1}} et {{bf_fiche2}}'
+        'Relation "{{bf_relation}}" entre {{bf_fiche1}} et {{bf_fiche2}}',
       )
       params.set('bf_relation', qrinfos.dataset.relation)
       params.set('bf_fiche1', url1Query)
@@ -199,8 +200,8 @@ function stepHandler(currentStep, entry) {
           message: message1,
           mail: secondpeople.bf_mail,
           subjectprefix: 'Co-construire 2023', // Todo make a param
-          type: 'contact'
-        })
+          type: 'contact',
+        }),
       })
 
       // second mail send
@@ -222,8 +223,8 @@ function stepHandler(currentStep, entry) {
           message: message2,
           mail: firstpeople.bf_mail,
           subjectprefix: 'Co-construire 2023',
-          type: 'contact'
-        })
+          type: 'contact',
+        }),
       })
     }
   }
@@ -234,8 +235,8 @@ function stepHandler(currentStep, entry) {
 function successHandler(data) {
   // do something when code is read and is a string
   if (
-    (typeof data === 'string' || data instanceof String)
-    && data !== 'undefined'
+    (typeof data === 'string' || data instanceof String) &&
+    data !== 'undefined'
   ) {
     const vcard = parseVcard(data)
     if (vcard.fn && vcard.email && vcard.url) {
@@ -270,7 +271,9 @@ let lastResult
 const qrinfos = document.getElementById('qrinfos')
 
 // This method will trigger user permissions
-const qrCodeFormats = { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] }
+const qrCodeFormats = {
+  formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+}
 const html5QrCode = new Html5Qrcode(/* element id */ 'qrreader', qrCodeFormats)
 const config = { fps: 20, qrbox: 250 }
 const qrCodeSuccessCallback = (decodedText) => {
@@ -306,11 +309,12 @@ ywInitEach('#qrinfos', () => {
 
     document.querySelector('.step1 .paragraph').style.display = 'none'
     const firstParticipantMsg = `Premier participant : ${entity.title}`
-    document.querySelector('.step1 .text-success').innerHTML = firstParticipantMsg
+    document.querySelector('.step1 .text-success').innerHTML =
+      firstParticipantMsg
     showNotif(
-      `Vous avez été reconnu comme étant ${entity.title}.`
-        + ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
-      'yw-alert--success'
+      `Vous avez été reconnu comme étant ${entity.title}.` +
+        ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
+      'yw-alert--success',
     )
   }
   if (qrinfos.dataset.speak === 'true') {
@@ -324,7 +328,7 @@ ywInitEach('#qrinfos', () => {
       characterData: false,
       attributes: false,
       childList: true,
-      subtree: false
+      subtree: false,
     }
     observer.observe(target, observerConfig)
 

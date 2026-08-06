@@ -6,7 +6,7 @@ A **field role** inverts that. The role is core's question — "which field hold
 
 ## A role usually needs no configuration
 
-The obvious design is a required role map per form, filled in by the webmaster or by a migration. We rejected making it required, because the answer is already unambiguous almost everywhere: a `listedatedeb` field *is* the start date, an `image` field *is* the image. Those are distinct field types, not naming conventions.
+The obvious design is a required role map per form, filled in by the webmaster or by a migration. We rejected making it required, because the answer is already unambiguous almost everywhere: a `listedatedeb` field _is_ the start date, an `image` field _is_ the image. Those are distinct field types, not naming conventions.
 
 So a role resolves in two steps: the form's explicit `field_roles` map if it has one, otherwise the first field of a compatible type. Existing forms need **no migration and no webmaster action** — including every wiki seeded from the shipped Agenda form, whose fields keep their French names and keep working. The explicit map only has to say something when a form is genuinely ambiguous (two image fields) or when the webmaster wants a different answer than the default.
 
@@ -26,7 +26,7 @@ The selects offer only fields of a compatible type, so the common mistake is unr
 
 Two places in core still branch on a literal field name, and both are honest exceptions rather than misses.
 
-`DateField` and `FileField` special-case `bf_date_fin_evenement` for **recurring events**, whose state lives in a body key literally named `bf_date_fin_evenement_data`. That key is *stored data*: every recurring event on every wiki carries it. Replacing the name with a role would leave the stored key behind, so it is a data migration — which this ticket's own scope rules out — and not a rename.
+`DateField` and `FileField` special-case `bf_date_fin_evenement` for **recurring events**, whose state lives in a body key literally named `bf_date_fin_evenement_data`. That key is _stored data_: every recurring event on every wiki carries it. Replacing the name with a role would leave the stored key behind, so it is a data migration — which this ticket's own scope rules out — and not a rename.
 
 Everything else that read a name has been converted, including the two that were only found by auditing the ADRs against the code afterwards: the entry heading (`TextField`, and the regex in `EntryController` that pairs with it) rendered an `<h1>` only for a field literally called `bf_titre`, so a form naming its entries any other way had no heading at all; and `TemplateHelperService` read `bf_titre` as an entry's title, which CONTEXT.md already claimed nothing did.
 
@@ -40,6 +40,6 @@ Everything else that read a name has been converted, including the two that were
 
 Adding a role is a code change (`FieldRole::DEFAULT_TYPES`) plus the call sites that ask for it, and a label key the designer can show — a role with no label would render an unnamed select.
 
-A feature needing a role a form cannot answer says so: an agenda with no `start_date` and a map with no `geolocation` render a warning naming the missing role instead of an empty list, which reads as "no entries". Only when *no* listed form can answer it — several forms listed together, one of which has no dates, is not a misconfiguration, and those entries simply do not appear.
+A feature needing a role a form cannot answer says so: an agenda with no `start_date` and a map with no `geolocation` render a warning naming the missing role instead of an empty list, which reads as "no entries". Only when _no_ listed form can answer it — several forms listed together, one of which has no dates, is not a misconfiguration, and those entries simply do not appear.
 
 The roles named here (`start_date`, `end_date`, `image`, `email`, `description`, `geolocation`) come from what core actually hardcoded. Latitude and longitude are deliberately **one** `geolocation` role rather than two: since the map field was reworked, one field holds both, and two roles would model a shape that no longer exists.

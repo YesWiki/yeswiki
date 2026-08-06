@@ -14,7 +14,7 @@ That coupling creates a footgun: reverting to an old content revision would sile
 When this decision was taken, `metadata` was described loosely as "user-editable facts that aren't the body itself". In practice it accumulated whatever had nowhere better to go, because `body` could not hold structured data for a wiki page — it was raw markup. Ticket 09 removes that constraint by making `body` a JSON object for **every** Content type, so the boundary can now be stated:
 
 - **`metadata` holds how Content is presented and who may see it**: `acls`, `theme`, `squelette`, `style`, `favorite_preset`, `bgimg`, `lang`. Nothing else.
-- **`body` holds what the Content *is***: its own data, including every webmaster-added field. A field a webmaster can add, rename or delete is a body field by definition.
+- **`body` holds what the Content _is_**: its own data, including every webmaster-added field. A field a webmaster can add, rename or delete is a body field by definition.
 
 Two groups of keys moved out of `metadata` under that rule:
 

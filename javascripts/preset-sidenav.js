@@ -22,41 +22,50 @@ function openNav() {
   } else {
     document.getElementById('preset-sidenav').style.width = '250px'
     document.getElementById('yw-container').style.paddingRight = '250px'
-    const previousActive = Array.from(document.querySelectorAll('.css-preset.active'))
-    document.querySelectorAll('#preset-sidenav .colorpicker').forEach((pickerParam) => {
-      // define values from current set for color picker
-      const picker = pickerParam
-      const value = document.documentElement.style.getPropertyValue(
-        `--${picker.getAttribute('name')}`
-      )
-      if (value) {
-        picker.value = value
-        picker.dispatchEvent(new Event('change', { bubbles: true }))
-      }
-    })
-    document.querySelectorAll('#preset-sidenav .fontpicker').forEach((pickerParam) => {
-      // define values from current set for font picker
-      const picker = pickerParam
-      let value = document.documentElement.style.getPropertyValue(
-        `--${picker.getAttribute('name')}`
-      )
-      if (value) {
-        // extract name
-        const values = value.split(',');
-        [value] = values
-        value = value.replace(/'/g, '')
-        picker.value = value
-        picker.dispatchEvent(new Event('change', { bubbles: true }))
-      }
-    })
-    document.querySelectorAll('#preset-sidenav .form-input[name=main-text-fontsize]')
+    const previousActive = Array.from(
+      document.querySelectorAll('.css-preset.active'),
+    )
+    document
+      .querySelectorAll('#preset-sidenav .colorpicker')
+      .forEach((pickerParam) => {
+        // define values from current set for color picker
+        const picker = pickerParam
+        const value = document.documentElement.style.getPropertyValue(
+          `--${picker.getAttribute('name')}`,
+        )
+        if (value) {
+          picker.value = value
+          picker.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      })
+    document
+      .querySelectorAll('#preset-sidenav .fontpicker')
+      .forEach((pickerParam) => {
+        // define values from current set for font picker
+        const picker = pickerParam
+        let value = document.documentElement.style.getPropertyValue(
+          `--${picker.getAttribute('name')}`,
+        )
+        if (value) {
+          // extract name
+          const values = value.split(',')
+          ;[value] = values
+          value = value.replace(/'/g, '')
+          picker.value = value
+          picker.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      })
+    document
+      .querySelectorAll('#preset-sidenav .form-input[name=main-text-fontsize]')
       .forEach((inputParam) => {
         const input = inputParam
-        let value = document.documentElement.style.getPropertyValue('--main-text-fontsize')
+        let value = document.documentElement.style.getPropertyValue(
+          '--main-text-fontsize',
+        )
 
         if (value) {
-          const values = value.split('px');
-          [value] = values
+          const values = value.split('px')
+          ;[value] = values
           input.value = value
           input.dispatchEvent(new Event('change', { bubbles: true }))
         }
@@ -74,7 +83,7 @@ ywInitEach('.colorpicker', (picker) => {
     const applyColor = () => {
       document.documentElement.style.setProperty(
         `--${picker.getAttribute('name')}`,
-        picker.value
+        picker.value,
       )
     }
     picker.addEventListener('input', () => {
@@ -96,7 +105,7 @@ ywInitEach('.colorpicker', (picker) => {
 
       document.documentElement.style.setProperty(
         `--${fontPicker.getAttribute('name')}`,
-        `'${fontFamily}'`
+        `'${fontFamily}'`,
       )
       deactivatePresets()
     })
@@ -106,7 +115,7 @@ ywInitEach('.colorpicker', (picker) => {
     range.addEventListener('change', () => {
       document.documentElement.style.setProperty(
         `--${range.getAttribute('name')}`,
-        `${range.value}px`
+        `${range.value}px`,
       )
       deactivatePresets()
     })
@@ -128,9 +137,17 @@ ywInitEach('.colorpicker', (picker) => {
       const { mainTextFontfamily } = data
       const { mainTitleFontfamily } = data
       // check all data
-      if (!primaryColor || !secondaryColor1 || !secondaryColor2 || !neutralColor
-            || !neutralSoftColor || !neutralLightColor || !mainTextFontsize
-            || !mainTextFontfamily || !mainTitleFontfamily) {
+      if (
+        !primaryColor ||
+        !secondaryColor1 ||
+        !secondaryColor2 ||
+        !neutralColor ||
+        !neutralSoftColor ||
+        !neutralLightColor ||
+        !mainTextFontsize ||
+        !mainTextFontfamily ||
+        !mainTitleFontfamily
+      ) {
         // error
         const message = themeSelectorTranslation.TEMPLATE_PRESET_ERROR
         if (typeof toastMessage === 'function') {
@@ -141,20 +158,48 @@ ywInitEach('.colorpicker', (picker) => {
         return
       }
       // set values
-      document.documentElement.style.setProperty('--primary-color', primaryColor)
-      document.documentElement.style.setProperty('--secondary-color-1', secondaryColor1)
-      document.documentElement.style.setProperty('--secondary-color-2', secondaryColor2)
-      document.documentElement.style.setProperty('--neutral-color', neutralColor)
-      document.documentElement.style.setProperty('--neutral-soft-color', neutralSoftColor)
-      document.documentElement.style.setProperty('--neutral-light-color', neutralLightColor)
-      document.documentElement.style.setProperty('--main-text-fontsize', mainTextFontsize)
-      document.documentElement.style.setProperty('--main-text-fontfamily', mainTextFontfamily)
-      document.documentElement.style.setProperty('--main-title-fontfamily', mainTitleFontfamily)
+      document.documentElement.style.setProperty(
+        '--primary-color',
+        primaryColor,
+      )
+      document.documentElement.style.setProperty(
+        '--secondary-color-1',
+        secondaryColor1,
+      )
+      document.documentElement.style.setProperty(
+        '--secondary-color-2',
+        secondaryColor2,
+      )
+      document.documentElement.style.setProperty(
+        '--neutral-color',
+        neutralColor,
+      )
+      document.documentElement.style.setProperty(
+        '--neutral-soft-color',
+        neutralSoftColor,
+      )
+      document.documentElement.style.setProperty(
+        '--neutral-light-color',
+        neutralLightColor,
+      )
+      document.documentElement.style.setProperty(
+        '--main-text-fontsize',
+        mainTextFontsize,
+      )
+      document.documentElement.style.setProperty(
+        '--main-text-fontfamily',
+        mainTextFontfamily,
+      )
+      document.documentElement.style.setProperty(
+        '--main-title-fontfamily',
+        mainTitleFontfamily,
+      )
       // set filename
       let filename = data.key || ''
       filename = filename.replace('.css', '')
       if (filename) {
-        document.querySelectorAll('#preset-sidenav input.form-input[name=filename]')
+        document
+          .querySelectorAll('#preset-sidenav input.form-input[name=filename]')
           .forEach((inputParam) => {
             const input = inputParam
             input.value = filename
@@ -176,7 +221,7 @@ function deleteCSSPreset(elem, text, url) {
   // eslint-disable-next-line no-restricted-globals
   event.preventDefault()
   const { key } = elem.dataset
-  // eslint-disable-next-line no-restricted-globals
+  // eslint-disable-next-line no-alert
   const confirmResult = confirm(text)
   if (confirmResult) {
     fetch(url, { method: 'DELETE' })
@@ -185,9 +230,11 @@ function deleteCSSPreset(elem, text, url) {
         console.log(`${key} deleted !`)
         elem.parentElement.remove()
       })
-      .catch(async(response) => {
+      .catch(async (response) => {
         const message = key + themeSelectorTranslation.TEMPLATE_FILE_NOT_DELETED
-        const responseText = response.text ? await response.text().catch(() => '') : ''
+        const responseText = response.text
+          ? await response.text().catch(() => '')
+          : ''
         console.log(`${message} Message :${responseText}`)
         if (typeof toastMessage === 'function') {
           toastMessage(message, 3000, 'alert alert-warning')
@@ -207,7 +254,9 @@ function componentToHex(c) {
 
 function extractFromStringWithRGB(valueParam) {
   let value = valueParam
-  const res = value.match(/\s*rgb\(\s*([0-9]*)\s*,\s*([0-9]*)\s*,\s*([0-9]*)\s*\)/)
+  const res = value.match(
+    /\s*rgb\(\s*([0-9]*)\s*,\s*([0-9]*)\s*,\s*([0-9]*)\s*\)/,
+  )
   if (res && res.length > 3) {
     value = `#${componentToHex(res[1])}${componentToHex(res[2])}${componentToHex(res[3])}`
   }
@@ -244,14 +293,18 @@ function saveCSSPreset(elem, urlParam, rewriteMode) {
   event.preventDefault()
   let url = urlParam
   const previous = elem.previousElementSibling
-  const filenameInput = previous ? previous.querySelector('input[name=filename]') : null
+  const filenameInput = previous
+    ? previous.querySelector('input[name=filename]')
+    : null
   let fileName = filenameInput ? filenameInput.value : ''
   fileName = fileName.replace('.css', '')
   const fullFileName = `${fileName}.css`
   url += fullFileName
   // get values
-  const colorProp = (prop) => extractFromStringWithRGB(getStyleValueEvenIfNotInitialized(prop))
-  const fontProp = (prop) => quoteFontFamily(getStyleValueEvenIfNotInitialized(prop))
+  const colorProp = (prop) =>
+    extractFromStringWithRGB(getStyleValueEvenIfNotInitialized(prop))
+  const fontProp = (prop) =>
+    quoteFontFamily(getStyleValueEvenIfNotInitialized(prop))
   const body = new URLSearchParams({
     'primary-color': colorProp('--primary-color'),
     'secondary-color-1': colorProp('--secondary-color-1'),
@@ -259,9 +312,11 @@ function saveCSSPreset(elem, urlParam, rewriteMode) {
     'neutral-color': colorProp('--neutral-color'),
     'neutral-soft-color': colorProp('--neutral-soft-color'),
     'neutral-light-color': colorProp('--neutral-light-color'),
-    'main-text-fontsize': getStyleValueEvenIfNotInitialized('--main-text-fontsize'),
+    'main-text-fontsize': getStyleValueEvenIfNotInitialized(
+      '--main-text-fontsize',
+    ),
     'main-text-fontfamily': fontProp('--main-text-fontfamily'),
-    'main-title-fontfamily': fontProp('--main-title-fontfamily')
+    'main-title-fontfamily': fontProp('--main-title-fontfamily'),
   })
   fetch(url, { method: 'POST', body })
     .then((response) => (response.ok ? response : Promise.reject(response)))
@@ -271,20 +326,20 @@ function saveCSSPreset(elem, urlParam, rewriteMode) {
       const urlAux = urlwindow.split(`${rewriteMode ? '?' : '&'}theme=`)
       const squelette = selectValue('[name=squelette_select]')
       const style = selectValue('[name=style_select]')
-      window.location = `${urlAux[0]
-                + (rewriteMode ? '?' : '&')}theme=${
-        selectValue('[name=theme_select]')
-      }&squelette=${
-        squelette}${squelette.slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'
-      }&style=${
-        style}${style.slice(-'.css'.length) === '.css' ? '' : '.css'
-      }&preset=${customCSSPresetsPrefix
-      }${fullFileName}`
+      window.location = `${
+        urlAux[0] + (rewriteMode ? '?' : '&')
+      }theme=${selectValue('[name=theme_select]')}&squelette=${squelette}${
+        squelette.slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'
+      }&style=${style}${
+        style.slice(-'.css'.length) === '.css' ? '' : '.css'
+      }&preset=${customCSSPresetsPrefix}${fullFileName}`
     })
-    .catch(async(response) => {
+    .catch(async (response) => {
       let data = null
       let dataMessage = ''
-      const responseText = response.text ? await response.text().catch(() => '') : ''
+      const responseText = response.text
+        ? await response.text().catch(() => '')
+        : ''
       try {
         data = JSON.parse(responseText)
         dataMessage = data.message
@@ -292,7 +347,8 @@ function saveCSSPreset(elem, urlParam, rewriteMode) {
         data = null
         dataMessage = JSON.stringify(responseText)
       }
-      let message = fullFileName + themeSelectorTranslation.TEMPLATE_FILE_NOT_ADDED
+      let message =
+        fullFileName + themeSelectorTranslation.TEMPLATE_FILE_NOT_ADDED
       let duration = 3000
       if (data && data.errorCode === 2) {
         message = `${message}\n${themeSelectorTranslation.TEMPLATE_FILE_ALREADY_EXISTING}`
@@ -329,7 +385,9 @@ function saveTheme(event, url) {
   const form = target.closest('form')
   const theme = selectValue('[name=theme_select]')
   const squelette = selectValue('[name=squelette_select]')
-  const style = form ? (form.querySelector('[name=style_select]') || {}).value : ''
+  const style = form
+    ? (form.querySelector('[name=style_select]') || {}).value
+    : ''
   const preset = getActivePreset()
   const errorMessage = themeSelectorTranslation.TEMPLATE_THEME_NOT_SAVE
   if (theme && squelette && style) {
@@ -343,7 +401,7 @@ function saveTheme(event, url) {
       theme_select: theme,
       squelette_select: squelette,
       style_select: style,
-      preset_select: preset
+      preset_select: preset,
     }
     Object.keys(fields).forEach((name) => {
       const input = document.createElement('input')

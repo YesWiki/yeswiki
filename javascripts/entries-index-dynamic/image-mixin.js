@@ -3,7 +3,7 @@ export default {
     return {
       tokenForImages: null,
       imagesToProcess: [],
-      processingImage: false
+      processingImage: false,
     }
   },
   methods: {
@@ -22,7 +22,7 @@ export default {
             width,
             height,
             mode,
-            node
+            node,
           })
           this.processNextImage()
         } else {
@@ -33,10 +33,12 @@ export default {
           const previousUrl = node.src
           const newUrl = `${baseUrl}/files/${fileName}`
           if (newUrl != previousUrl) {
-            document.querySelectorAll(`img[src="${previousUrl}"]`).forEach((imgParam) => {
-              const img = imgParam
-              img.src = newUrl
-            })
+            document
+              .querySelectorAll(`img[src="${previousUrl}"]`)
+              .forEach((imgParam) => {
+                const img = imgParam
+                img.src = newUrl
+              })
           }
         }
       }
@@ -52,24 +54,23 @@ export default {
       const fileName = entry[fieldName]
       const field = this.fieldInfo(fieldName)
 
-      if (fileName.toLowerCase().endsWith('.svg')) return `${baseUrl}/files/${fileName}`
+      if (fileName.toLowerCase().endsWith('.svg'))
+        return `${baseUrl}/files/${fileName}`
 
       let regExp = new RegExp(
-        `^(${entry.tag}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
+        `^(${entry.tag}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
 
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
-      regExp = new RegExp(
-        `^(${entry.tag}_${field.propertyname}_.*)\\.([^.]+)$`
-      )
+      regExp = new RegExp(`^(${entry.tag}_${field.propertyname}_.*)\\.([^.]+)$`)
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
       }
       // maybe from other entry
       regExp = new RegExp(
-        `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
+        `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
@@ -88,14 +89,15 @@ export default {
         this.imagesToProcess = this.imagesToProcess.slice(1)
         const { fileName, width, height } = newImageParams
         const cacheUrl = wiki.url(
-          `?api/images/${fileName}/cache/${width}/${height}/${newImageParams.mode}`
+          `?api/images/${fileName}/cache/${width}/${height}/${newImageParams.mode}`,
         )
         fetch(cacheUrl, {
           method: 'POST',
-          body: new URLSearchParams({ csrftoken: this.tokenForImages })
+          body: new URLSearchParams({ csrftoken: this.tokenForImages }),
         })
-          .then((response) => response.json()
-            .then((data) => ({ ok: response.ok, data })))
+          .then((response) =>
+            response.json().then((data) => ({ ok: response.ok, data })),
+          )
           .then(({ ok, data }) => {
             if (data != undefined && data.newToken != undefined) {
               this.tokenForImages = data.newToken
@@ -104,26 +106,30 @@ export default {
             const previousUrl = newImageParams.node.src
             const srcFileName = `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`
 
-            document.querySelectorAll(`img[src="${previousUrl}"]`).forEach((imgParam) => {
-              const img = imgParam
-              img.src = srcFileName
+            document
+              .querySelectorAll(`img[src="${previousUrl}"]`)
+              .forEach((imgParam) => {
+                const img = imgParam
+                img.src = srcFileName
 
-              const next = img.nextElementSibling
-              if (next && next.matches('div.area.visual-area[style]')) {
-                const { backgroundImage } = next.style
-                if (backgroundImage && backgroundImage.length) {
-                  next.style.backgroundImage = '' // reset to force update
-                  next.style.backgroundImage = `url("${srcFileName}")`
+                const next = img.nextElementSibling
+                if (next && next.matches('div.area.visual-area[style]')) {
+                  const { backgroundImage } = next.style
+                  if (backgroundImage && backgroundImage.length) {
+                    next.style.backgroundImage = '' // reset to force update
+                    next.style.backgroundImage = `url("${srcFileName}")`
+                  }
                 }
-              }
-            })
+              })
           })
-          .catch(() => { /* image cache generation failed, keep the original src */ })
+          .catch(() => {
+            /* image cache generation failed, keep the original src */
+          })
           .finally(() => {
             this.processingImage = false
             this.processNextImage()
           })
       }
-    }
-  }
+    },
+  },
 }

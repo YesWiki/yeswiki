@@ -1,11 +1,16 @@
-export function drawGeometries(drawnItems, features, popup = '', id = 'unknown') {
+export function drawGeometries(
+  drawnItems,
+  features,
+  popup = '',
+  id = 'unknown',
+) {
   if (features && features.length > 0) {
     features.forEach((feature) => {
       let layer
       if (feature.properties && feature.properties.type === 'circle') {
         const latlng = L.latLng(
           feature.geometry.coordinates[1],
-          feature.geometry.coordinates[0]
+          feature.geometry.coordinates[0],
         )
         const { radius } = feature.properties
 
@@ -20,7 +25,7 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
           circle.bindPopup((layer) => popup)
         }
 
-        circle.on('add', function() {
+        circle.on('add', function () {
           const pathElement = this.getElement()
           if (pathElement) {
             pathElement.setAttribute('stroke', 'blue')
@@ -35,12 +40,16 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
       } else {
         layer = L.geoJSON(feature, {
           style: /* function (feature) {
-			    return */{
+			    return */ {
             color: 'blue',
-            className: `bazar-entry-geometry ${feature.properties.className || ''}`
+            className: `bazar-entry-geometry ${feature.properties.className || ''}`,
           }, // ;
           pointToLayer(feature, latlng) {
-            const customIcon = L.Icon.Default.extend({ options: { className: `bazar-entry-geometry ${feature.properties.className || ''}` } })
+            const customIcon = L.Icon.Default.extend({
+              options: {
+                className: `bazar-entry-geometry ${feature.properties.className || ''}`,
+              },
+            })
 
             return L.marker(latlng, { icon: new customIcon() })
           },
@@ -49,7 +58,7 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
               layer.bindPopup((l) => popup)
             }
             if (layer.getElement) {
-              layer.on('add', function() {
+              layer.on('add', function () {
                 const elem = this.getElement()
                 if (elem) {
                   elem.setAttribute('data-id', id)
@@ -58,7 +67,7 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
               })
             }
             drawnItems.addLayer(layer)
-          }
+          },
         })
       }
       layer.tag = id

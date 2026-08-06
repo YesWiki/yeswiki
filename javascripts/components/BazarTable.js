@@ -17,66 +17,109 @@ const componentParams = {
       fields: {},
       forms: {},
       rows: {},
-      uuid: null
+      uuid: null,
     }
   },
   computed: {
     sumtranslate() {
       return TemplateRenderer.render('BazarTable', this, 'sumtranslate')
-    }
+    },
   },
   methods: {
     addRows(columns, entries, currentusername, isadmin) {
-      const entriesToAdd = entries.filter((entry) => entry?.tag && !(entry.tag in this.rows))
+      const entriesToAdd = entries.filter(
+        (entry) => entry?.tag && !(entry.tag in this.rows),
+      )
       entriesToAdd.forEach((entry) => {
         const formattedData = {}
         columns.forEach((col) => {
           if (!(typeof col.data === 'string')) {
             formattedData[col.data] = ''
           } else if (col.data === '==canDelete==') {
-            formattedData[col.data] = !this.$root.isExternalUrl(entry)
-                            && 'owner' in entry
-                            && (isadmin || (currentusername.length > 0 && entry.owner == currentusername))
+            formattedData[col.data] =
+              !this.$root.isExternalUrl(entry) &&
+              'owner' in entry &&
+              (isadmin ||
+                (currentusername.length > 0 && entry.owner == currentusername))
           } else if (['==adminsbuttons=='].includes(col.data)) {
             formattedData[col.data] = ''
           } else if (col.data == 'geolocation') {
             formattedData[col.geolocationfield] = entry[col.geolocationfield]
-          } else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0) {
-            formattedData[col.data] = (
-              col.firstlevel in entry
-                            && (typeof entry[col.firstlevel] === 'object')
-                            && entry[col.firstlevel] !== null
-                            && col.data in entry[col.firstlevel]
-            ) ? entry[col.firstlevel][col.data] : ''
-          } else if ('checkboxfield' in col && typeof col.checkboxfield === 'string' && col.checkboxfield.length > 0) {
-            formattedData[col.data] = (
-              col.checkboxfield in entry
-                            && 'checkboxkey' in col
-                            && typeof entry[col.checkboxfield] === 'string'
-                            && entry[col.checkboxfield].split(',').includes(col.checkboxkey)
-            ) ? 'X' : ''
+          } else if (
+            'firstlevel' in col &&
+            typeof col.firstlevel === 'string' &&
+            col.firstlevel.length > 0
+          ) {
+            formattedData[col.data] =
+              col.firstlevel in entry &&
+              typeof entry[col.firstlevel] === 'object' &&
+              entry[col.firstlevel] !== null &&
+              col.data in entry[col.firstlevel]
+                ? entry[col.firstlevel][col.data]
+                : ''
+          } else if (
+            'checkboxfield' in col &&
+            typeof col.checkboxfield === 'string' &&
+            col.checkboxfield.length > 0
+          ) {
+            formattedData[col.data] =
+              col.checkboxfield in entry &&
+              'checkboxkey' in col &&
+              typeof entry[col.checkboxfield] === 'string' &&
+              entry[col.checkboxfield].split(',').includes(col.checkboxkey)
+                ? 'X'
+                : ''
           } else if ('displayValOptions' in col) {
-            formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string') ? {
-              display: entry[col.data].split(',').map((v) => (v in col.displayValOptions ? col.displayValOptions[v] : v)).join(',\n'),
-              export: entry[col.data].split(',').map((v) => (v in col.displayValOptions ? `"${col.displayValOptions[v]}"` : v)).join(','),
-              raw: entry[col.data].split(',').map((v) => ({ key: v, title: v in col.displayValOptions ? col.displayValOptions[v] : v }))
-            } : ''
+            formattedData[col.data] =
+              col.data in entry && typeof entry[col.data] === 'string'
+                ? {
+                    display: entry[col.data]
+                      .split(',')
+                      .map((v) =>
+                        v in col.displayValOptions
+                          ? col.displayValOptions[v]
+                          : v,
+                      )
+                      .join(',\n'),
+                    export: entry[col.data]
+                      .split(',')
+                      .map((v) =>
+                        v in col.displayValOptions
+                          ? `"${col.displayValOptions[v]}"`
+                          : v,
+                      )
+                      .join(','),
+                    raw: entry[col.data].split(',').map((v) => ({
+                      key: v,
+                      title:
+                        v in col.displayValOptions
+                          ? col.displayValOptions[v]
+                          : v,
+                    })),
+                  }
+                : ''
             if (formattedData[col.data] !== '' && 'externalBaseUrl' in col) {
               formattedData[col.data].externalBaseUrl = col.externalBaseUrl
-              formattedData[col.data].export = entry[col.data].split(',').map((v) => col.externalBaseUrl + v).join(',')
+              formattedData[col.data].export = entry[col.data]
+                .split(',')
+                .map((v) => col.externalBaseUrl + v)
+                .join(',')
             }
           } else {
-            formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string') ? entry[col.data] : ''
+            formattedData[col.data] =
+              col.data in entry && typeof entry[col.data] === 'string'
+                ? entry[col.data]
+                : ''
             if (formattedData[col.data] !== '' && 'externalBaseUrl' in col) {
               formattedData[col.data] = {
                 display: formattedData[col.data],
                 export: col.externalBaseUrl + formattedData[col.data],
-                externalBaseUrl: col.externalBaseUrl
+                externalBaseUrl: col.externalBaseUrl,
               }
             }
           }
-        });
-        ['tag', 'color', 'icon', 'url'].forEach((key) => {
+        })
+        ;['tag', 'color', 'icon', 'url'].forEach((key) => {
           if (!(key in formattedData)) {
             formattedData[key] = entry[key] || ''
           }
@@ -86,7 +129,8 @@ const componentParams = {
     },
     arraysEqual(a, b) {
       if (a === b) return true
-      if (a == null || b == null || !Array.isArray(a) || !Array.isArray(b)) return false
+      if (a == null || b == null || !Array.isArray(a) || !Array.isArray(b))
+        return false
       if (a.length !== b.length) return false
 
       a.sort()
@@ -99,7 +143,10 @@ const componentParams = {
       // if something to do before showing modal
     },
     getAdminsButtons(entryId, entryTitle, entryUrl, candelete) {
-      const isExternal = this.$root.isExternalUrl({ tag: entryId, url: entryUrl })
+      const isExternal = this.$root.isExternalUrl({
+        tag: entryId,
+        url: entryUrl,
+      })
       return TemplateRenderer.render(
         'BazarTable',
         this,
@@ -109,28 +156,37 @@ const componentParams = {
           entryTitle: 'entryTitle',
           entryUrl: 'entryUrl',
           isExternal,
-          candelete: [true, 'true'].includes(candelete)
+          candelete: [true, 'true'].includes(candelete),
         },
         [
           [/entryId/g, entryId],
           [/entryTitle/g, entryTitle],
-          [/entryUrl/g, entryUrl]
-        ]
+          [/entryUrl/g, entryUrl],
+        ],
       )
     },
     async getColumns() {
       if (this.columns.length == 0) {
         const fields = await Waiter.waitFor('fields', this)
         const params = await Waiter.waitFor('params', this)
-        let columnfieldsids = this.sanitizedParam(params, this.isAdmin, 'columnfieldsids')
-        const defaultcolumnwidth = this.sanitizedParam(params, this.isAdmin, 'defaultcolumnwidth')
+        let columnfieldsids = this.sanitizedParam(
+          params,
+          this.isAdmin,
+          'columnfieldsids',
+        )
+        const defaultcolumnwidth = this.sanitizedParam(
+          params,
+          this.isAdmin,
+          'defaultcolumnwidth',
+        )
         if (columnfieldsids.every((id) => id.length == 0)) {
           // backup: the form's first field, whatever it is called. Was the literal
           // 'bf_titre', so a form without one showed an empty table (ticket 11)
           columnfieldsids = Object.keys(fields).slice(0, 1)
         }
         const data = { columns: [] }
-        const width = defaultcolumnwidth.length > 0 ? { width: defaultcolumnwidth } : {}
+        const width =
+          defaultcolumnwidth.length > 0 ? { width: defaultcolumnwidth } : {}
         if (this.sanitizedParam(params, this.isAdmin, 'displayadmincol')) {
           const uuid = this.getUuid()
           data.columns.push({
@@ -138,38 +194,79 @@ const componentParams = {
               data: '==canDelete==',
               class: 'not-export-this-col',
               orderable: false,
-              render: (data, type, row) => (type === 'display' ? this.getDeleteChekbox(uuid, row.tag, !data) : ''),
+              render: (data, type, row) =>
+                type === 'display'
+                  ? this.getDeleteChekbox(uuid, row.tag, !data)
+                  : '',
               title: this.getDeleteChekboxAll(uuid, 'top'),
-              footer: this.getDeleteChekboxAll(uuid, 'bottom')
+              footer: this.getDeleteChekboxAll(uuid, 'bottom'),
             },
-            ...width
+            ...width,
           })
           data.columns.push({
             ...{
               data: '==adminsbuttons==',
               orderable: false,
               class: 'horizontal-admins-btn not-export-this-col',
-              render: (data, type, row) => (type === 'display' ? this.getAdminsButtons(row.tag, row.title || row.bf_titre || '', row.url || '', row['==canDelete==']) : ''),
+              render: (data, type, row) =>
+                type === 'display'
+                  ? this.getAdminsButtons(
+                      row.tag,
+                      row.title || row.bf_titre || '',
+                      row.url || '',
+                      row['==canDelete=='],
+                    )
+                  : '',
               title: '',
-              footer: ''
+              footer: '',
             },
-            ...width
+            ...width,
           })
         }
         const options = {
-          checkboxfieldsincolumns: this.sanitizedParam(params, this.isAdmin, 'checkboxfieldsincolumns'),
-          columnswidth: this.sanitizedParam(params, this.isAdmin, 'columnswidth'),
+          checkboxfieldsincolumns: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'checkboxfieldsincolumns',
+          ),
+          columnswidth: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'columnswidth',
+          ),
           defaultcolumnwidth,
-          sumfieldsids: this.sanitizedParam(params, this.isAdmin, 'sumfieldsids'),
+          sumfieldsids: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'sumfieldsids',
+          ),
           visible: true,
           printable: true,
           addLink: false,
-          columntitles: this.sanitizedParam(params, this.isAdmin, 'columntitles'),
-          displayimagesasthumbnails: this.sanitizedParam(params, this.isAdmin, 'displayimagesasthumbnails'),
-          displayvaluesinsteadofkeys: this.sanitizedParam(params, this.isAdmin, 'displayvaluesinsteadofkeys'),
-          baseIdx: data.columns.length
+          columntitles: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'columntitles',
+          ),
+          displayimagesasthumbnails: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'displayimagesasthumbnails',
+          ),
+          displayvaluesinsteadofkeys: this.sanitizedParam(
+            params,
+            this.isAdmin,
+            'displayvaluesinsteadofkeys',
+          ),
+          baseIdx: data.columns.length,
         }
-        let fieldsToRegister = ['created_at', 'updated_at', 'owner', 'form_id', 'url']
+        let fieldsToRegister = [
+          'created_at',
+          'updated_at',
+          'owner',
+          'form_id',
+          'url',
+        ]
         columnfieldsids.forEach((id, idx) => {
           if (id.length > 0 && id in fields) {
             this.registerField(data, {
@@ -180,8 +277,8 @@ const componentParams = {
                 printable: true,
                 // the first column carries the link to the entry, like the static
                 // table does when the form's title field is not among the columns
-                addLink: idx === 0
-              }
+                addLink: idx === 0,
+              },
             })
           } else if (fieldsToRegister.includes(id)) {
             fieldsToRegister = fieldsToRegister.filter((e) => e != id)
@@ -198,20 +295,29 @@ const componentParams = {
                   field: fields[id],
                   visible: false,
                   printable: false,
-                  addLink: false
-                }
+                  addLink: false,
+                },
               })
             }
           })
         }
 
-        this.registerSpecialFields(fieldsToRegister, true, params, data, options)
+        this.registerSpecialFields(
+          fieldsToRegister,
+          true,
+          params,
+          data,
+          options,
+        )
         const champField = await this.sanitizedParamAsync('field')
         const ordreField = await this.sanitizedParamAsync('order')
-        const order = (ordreField === 'desc') ? 'desc' : 'asc'
+        const order = ordreField === 'desc' ? 'desc' : 'asc'
         let firstColumnOrderable = 0
         for (let index = 0; index < data.columns.length; index++) {
-          if ('orderable' in data.columns[index] && !data.columns[index].orderable) {
+          if (
+            'orderable' in data.columns[index] &&
+            !data.columns[index].orderable
+          ) {
             firstColumnOrderable += 1
           } else {
             break
@@ -220,7 +326,11 @@ const componentParams = {
         let columnToOrder = firstColumnOrderable
         if (typeof champField === 'string' && champField.length > 0) {
           for (let index = 0; index < data.columns.length; index++) {
-            if ((!('orderable' in data.columns[index]) || data.columns[index].orderable) && data.columns[index].data == champField) {
+            if (
+              (!('orderable' in data.columns[index]) ||
+                data.columns[index].orderable) &&
+              data.columns[index].data == champField
+            ) {
               columnToOrder = index
             }
           }
@@ -238,8 +348,8 @@ const componentParams = {
         { targetId: 'targetId', itemId: 'itemId', disabled },
         [
           [/targetId/g, targetId],
-          [/itemId/g, itemId]
-        ]
+          [/itemId/g, itemId],
+        ],
       )
     },
     getDeleteChekboxAll(targetId, selectAllType) {
@@ -250,24 +360,25 @@ const componentParams = {
         {},
         [
           [/targetId/g, targetId],
-          [/selectAllType/g, selectAllType]
-        ]
+          [/selectAllType/g, selectAllType],
+        ],
       )
     },
     async getJson(url) {
-      return await fetch(url)
-        .then((response) => {
-          if (response.ok) {
-            return response.json()
-          }
-          throw new Error(`reponse was not ok when getting "${url}"`)
-        })
+      return await fetch(url).then((response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw new Error(`reponse was not ok when getting "${url}"`)
+      })
     },
     getUuid() {
       if (this.uuid === null) {
-        this.uuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-          ? crypto.randomUUID()
-          : `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0]}`
+        this.uuid =
+          typeof crypto !== 'undefined' &&
+          typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0]}`
       }
       return this.uuid
     },
@@ -277,23 +388,36 @@ const componentParams = {
       }
       return null
     },
-    registerField(data, {
-      field,
-      checkboxfieldsincolumns = false,
-      sumfieldsids = [],
-      visible = true,
-      printable = true,
-      addLink = false,
-      columnswidth = {},
-      defaultcolumnwidth = '',
-      columntitles = {},
-      baseIdx = 0,
-      displayimagesasthumbnails = false,
-      displayvaluesinsteadofkeys = false
-    }) {
-      if (typeof field.propertyname === 'string' && field.propertyname.length > 0) {
-        const className = (printable ? '' : 'not-printable') + (sumfieldsids.includes(field.propertyname) ? ' sum-activated' : '')
-        const width = field.propertyname in columnswidth ? { width: columnswidth[field.propertyname] } : (defaultcolumnwidth.length > 0 ? { width: defaultcolumnwidth } : {})
+    registerField(
+      data,
+      {
+        field,
+        checkboxfieldsincolumns = false,
+        sumfieldsids = [],
+        visible = true,
+        printable = true,
+        addLink = false,
+        columnswidth = {},
+        defaultcolumnwidth = '',
+        columntitles = {},
+        baseIdx = 0,
+        displayimagesasthumbnails = false,
+        displayvaluesinsteadofkeys = false,
+      },
+    ) {
+      if (
+        typeof field.propertyname === 'string' &&
+        field.propertyname.length > 0
+      ) {
+        const className =
+          (printable ? '' : 'not-printable') +
+          (sumfieldsids.includes(field.propertyname) ? ' sum-activated' : '')
+        const width =
+          field.propertyname in columnswidth
+            ? { width: columnswidth[field.propertyname] }
+            : defaultcolumnwidth.length > 0
+              ? { width: defaultcolumnwidth }
+              : {}
         const titleIdx = data.columns.length - baseIdx
         if (typeof field.type === 'string' && field.type === 'map') {
           data.columns.push({
@@ -302,61 +426,100 @@ const componentParams = {
               data: 'geolocation',
               title: field.label,
               geolocationfield: field.propertyname,
-              render: this.renderCell({ fieldtype: field.type, fieldName: field.propertyname, addLink, idx: titleIdx }),
+              render: this.renderCell({
+                fieldtype: field.type,
+                fieldName: field.propertyname,
+                addLink,
+                idx: titleIdx,
+              }),
               footer: '',
-              visible
+              visible,
             },
-            ...width
+            ...width,
           })
-        } else if (checkboxfieldsincolumns
-                    && typeof field.type === 'string'
-                    && ['checkboxfiche', 'checkbox'].includes(field.type)
-                    && typeof field.options == 'object') {
+        } else if (
+          checkboxfieldsincolumns &&
+          typeof field.type === 'string' &&
+          ['checkboxfiche', 'checkbox'].includes(field.type) &&
+          typeof field.options == 'object'
+        ) {
           Object.keys(field.options).forEach((optionKey, idx) => {
             const name = `${field.propertyname}-${optionKey}`
             data.columns.push({
               ...{
                 class: className,
                 data: name,
-                title: columntitles[name]
-                                    || (
-                                      field.propertyname in columntitles
-                                        ? `${columntitles[field.propertyname]} - ${field.options[optionKey] || optionKey}`
-                                        : undefined
-                                    )
-                                    || columntitles[titleIdx + idx]
-                                    || `${field.label || field.propertyname} - ${field.options[optionKey] || optionKey}`,
+                title:
+                  columntitles[name] ||
+                  (field.propertyname in columntitles
+                    ? `${columntitles[field.propertyname]} - ${field.options[optionKey] || optionKey}`
+                    : undefined) ||
+                  columntitles[titleIdx + idx] ||
+                  `${field.label || field.propertyname} - ${field.options[optionKey] || optionKey}`,
                 checkboxfield: field.propertyname,
                 render: this.renderCell({ addLink, idx: titleIdx + idx }),
                 checkboxkey: optionKey,
                 footer: '',
-                visible
+                visible,
               },
-              ...width
+              ...width,
             })
           })
         } else {
-          const fieldtype = ['link', 'email', 'checkboxfiche', 'listefiche', 'radiofiche'].includes(field.type) ? field.type : ((field.type === 'image' && displayimagesasthumbnails) ? 'image' : '')
-          const fieldName = (fieldtype === 'image' && displayimagesasthumbnails) ? field.propertyname : ''
-          const displayValOptions = (displayvaluesinsteadofkeys && 'options' in field && typeof field.options === 'object')
-            ? { displayValOptions: field.options }
-            : {}
-          if ('linkedObjectName' in field && field.linkedObjectName.match(/^https?:\/\//)) {
-            displayValOptions.externalBaseUrl = field.linkedObjectName.match(/^(https?:\/\/.*)api\/(forms|entries).*$/)
-              ? field.linkedObjectName.replace(/^(https?:\/\/.*)api\/(forms|entries).*$/, '$1')
+          const fieldtype = [
+            'link',
+            'email',
+            'checkboxfiche',
+            'listefiche',
+            'radiofiche',
+          ].includes(field.type)
+            ? field.type
+            : field.type === 'image' && displayimagesasthumbnails
+              ? 'image'
+              : ''
+          const fieldName =
+            fieldtype === 'image' && displayimagesasthumbnails
+              ? field.propertyname
+              : ''
+          const displayValOptions =
+            displayvaluesinsteadofkeys &&
+            'options' in field &&
+            typeof field.options === 'object'
+              ? { displayValOptions: field.options }
+              : {}
+          if (
+            'linkedObjectName' in field &&
+            field.linkedObjectName.match(/^https?:\/\//)
+          ) {
+            displayValOptions.externalBaseUrl = field.linkedObjectName.match(
+              /^(https?:\/\/.*)api\/(forms|entries).*$/,
+            )
+              ? field.linkedObjectName.replace(
+                  /^(https?:\/\/.*)api\/(forms|entries).*$/,
+                  '$1',
+                )
               : ''
           }
           data.columns.push({
             ...{
               class: className,
               data: field.propertyname,
-              title: columntitles[field.propertyname] || columntitles[titleIdx] || field.label || field.propertyname,
-              render: this.renderCell({ fieldtype, addLink, idx: titleIdx, fieldName }),
+              title:
+                columntitles[field.propertyname] ||
+                columntitles[titleIdx] ||
+                field.label ||
+                field.propertyname,
+              render: this.renderCell({
+                fieldtype,
+                addLink,
+                idx: titleIdx,
+                fieldName,
+              }),
               footer: '',
-              visible
+              visible,
             },
             ...width,
-            ...displayValOptions
+            ...displayValOptions,
           })
         }
       }
@@ -366,41 +529,49 @@ const componentParams = {
         const parameters = {
           created_at: {
             paramName: 'displaycreationdate',
-            slotName: 'creationdatetranslate'
+            slotName: 'creationdatetranslate',
           },
           updated_at: {
             paramName: 'displaylastchangedate',
-            slotName: 'modifiydatetranslate'
+            slotName: 'modifiydatetranslate',
           },
           owner: {
             paramName: 'displayowner',
-            slotName: 'ownertranslate'
+            slotName: 'ownertranslate',
           },
           form_id: {
             paramName: '',
-            slotName: 'formidtranslate'
+            slotName: 'formidtranslate',
           },
           url: {
             paramName: '',
-            slotName: 'urltranslate'
-          }
+            slotName: 'urltranslate',
+          },
         }
         fieldsToRegister.forEach((propertyName) => {
           if (propertyName in parameters) {
-            const canPushColumn = (parameters[propertyName].slotName.length > 0)
-              ? (
-                test
-                  ? (
-                    parameters[propertyName].paramName.length > 0
-                                    && this.sanitizedParam(params, this.isadmin, parameters[propertyName].paramName)
-                  )
+            const canPushColumn =
+              parameters[propertyName].slotName.length > 0
+                ? test
+                  ? parameters[propertyName].paramName.length > 0 &&
+                    this.sanitizedParam(
+                      params,
+                      this.isadmin,
+                      parameters[propertyName].paramName,
+                    )
                   : true
-              ) : false
+                : false
             if (canPushColumn) {
               const internalOptions = {
                 data: propertyName,
-                title: options.columntitles[propertyName] || TemplateRenderer.getTemplateFromSlot('BazarTable', this, parameters[propertyName].slotName),
-                footer: ''
+                title:
+                  options.columntitles[propertyName] ||
+                  TemplateRenderer.getTemplateFromSlot(
+                    'BazarTable',
+                    this,
+                    parameters[propertyName].slotName,
+                  ),
+                footer: '',
               }
               if (propertyName === 'url') {
                 internalOptions.render = this.renderCell({ addLink: true })
@@ -412,7 +583,9 @@ const componentParams = {
       }
     },
     removeRows(newIds) {
-      const entryIdsToRemove = Object.keys(this.rows).filter((id) => !newIds.includes(id))
+      const entryIdsToRemove = Object.keys(this.rows).filter(
+        (id) => !newIds.includes(id),
+      )
       entryIdsToRemove.forEach((id) => {
         if (id in this.rows) {
           delete this.rows[id]
@@ -422,9 +595,16 @@ const componentParams = {
     renderCell({ fieldtype = '', fieldName = '', addLink = false, idx = -1 }) {
       return (data, type, row) => {
         if (type === 'sort' || type === 'filter') {
-          return (typeof data === 'object' && 'export' in data) ? data.export : data
+          return typeof data === 'object' && 'export' in data
+            ? data.export
+            : data
         }
-        const formattedData = (typeof data === 'object' && data !== null && 'display' in data) ? data.display : (data === null ? '' : String(data))
+        const formattedData =
+          typeof data === 'object' && data !== null && 'display' in data
+            ? data.display
+            : data === null
+              ? ''
+              : String(data)
         let anchorData = 'anchorData'
         let anchorImageSpecificPart = ''
         let anchorImageOther = ''
@@ -432,32 +612,56 @@ const componentParams = {
         let anchorOtherEntryId = ''
         if (fieldtype === 'image') {
           if (formattedData.length > 0) {
-            let regExp = new RegExp(`^(${row.tag}_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
+            let regExp = new RegExp(
+              `^(${row.tag}_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
+            )
             if (regExp.test(formattedData)) {
               let anchorImageDate1 = ''
-              let anchorImageDate2 = '';
-              [,, anchorImageSpecificPart, anchorImageDate1, anchorImageDate2, anchorImageExt] = formattedData.match(regExp)
+              let anchorImageDate2 = ''
+              ;[
+                ,
+                ,
+                anchorImageSpecificPart,
+                anchorImageDate1,
+                anchorImageDate2,
+                anchorImageExt,
+              ] = formattedData.match(regExp)
               anchorImageOther = `${anchorImageDate1}_${anchorImageDate2}`
-              anchorData = 'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
+              anchorData =
+                'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
             } else {
               regExp = new RegExp(`^(${row.tag}_${fieldName}_)(.*)\\.([^.]+)$`)
               if (regExp.test(formattedData)) {
-                [,, anchorImageSpecificPart, anchorImageExt] = formattedData.match(regExp)
-                anchorData = 'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart.anchorImageExt'
+                ;[, , anchorImageSpecificPart, anchorImageExt] =
+                  formattedData.match(regExp)
+                anchorData =
+                  'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart.anchorImageExt'
               } else {
                 // maybe from other entry
-                regExp = new RegExp(`^([A-Za-z0-9-_]+)(_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
+                regExp = new RegExp(
+                  `^([A-Za-z0-9-_]+)(_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
+                )
                 if (regExp.test(formattedData)) {
                   let anchorImageDate1 = ''
-                  let anchorImageDate2 = '';
-                  [, anchorOtherEntryId,, anchorImageSpecificPart, anchorImageDate1, anchorImageDate2, anchorImageExt] = formattedData.match(regExp)
+                  let anchorImageDate2 = ''
+                  ;[
+                    ,
+                    anchorOtherEntryId,
+                    ,
+                    anchorImageSpecificPart,
+                    anchorImageDate1,
+                    anchorImageDate2,
+                    anchorImageExt,
+                  ] = formattedData.match(regExp)
                   anchorImageOther = `${anchorImageDate1}_${anchorImageDate2}`
-                  anchorData = 'anchorOtherEntryId_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
+                  anchorData =
+                    'anchorOtherEntryId_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
                 } else {
                   // last possible format
                   regExp = new RegExp('^(.*)\\.([^.]+)$')
                   if (regExp.test(formattedData)) {
-                    [, anchorImageSpecificPart, anchorImageExt] = formattedData.match(regExp)
+                    ;[, anchorImageSpecificPart, anchorImageExt] =
+                      formattedData.match(regExp)
                     anchorData = 'anchorImageSpecificPart.anchorImageExt'
                   } else {
                     anchorImageSpecificPart = formattedData
@@ -469,41 +673,50 @@ const componentParams = {
           } else {
             anchorData = ''
           }
-        } else if (typeof fieldtype === 'string' && ['listefiche', 'radiofiche', 'checkboxfiche'].includes(fieldtype) && formattedData.length > 0) {
-          const intFieldType = (typeof data === 'object' && data !== null && 'externalBaseUrl' in data)
-            ? (
-              data.externalBaseUrl.length > 0
+        } else if (
+          typeof fieldtype === 'string' &&
+          ['listefiche', 'radiofiche', 'checkboxfiche'].includes(fieldtype) &&
+          formattedData.length > 0
+        ) {
+          const intFieldType =
+            typeof data === 'object' &&
+            data !== null &&
+            'externalBaseUrl' in data
+              ? data.externalBaseUrl.length > 0
                 ? 'urlnewwindow'
                 : ''
-            ) : 'urlmodal'
-          const formattedArray = (typeof data === 'object' && data !== null && 'raw' in data)
-            ? data.raw
-            : formattedData.split(',').map((key) => ({ key, title: key }))
-          return formattedArray.map(({ key, title }) => this.renderCell({ fieldtype: intFieldType, fieldName, idx })({ display: title }, type, {
-            ...row,
-            ...{
-              tag: key,
-              url: (intFieldType === 'urlmodal')
-                ? wiki.url(`${key}/iframe`)
-                : (
-                  intFieldType === 'urlnewwindow'
-                    ? data.externalBaseUrl + key
-                    : ''
-                )
-            }
-          }).trim()).join(',\n')
+              : 'urlmodal'
+          const formattedArray =
+            typeof data === 'object' && data !== null && 'raw' in data
+              ? data.raw
+              : formattedData.split(',').map((key) => ({ key, title: key }))
+          return formattedArray
+            .map(({ key, title }) =>
+              this.renderCell({ fieldtype: intFieldType, fieldName, idx })(
+                { display: title },
+                type,
+                {
+                  ...row,
+                  ...{
+                    tag: key,
+                    url:
+                      intFieldType === 'urlmodal'
+                        ? wiki.url(`${key}/iframe`)
+                        : intFieldType === 'urlnewwindow'
+                          ? data.externalBaseUrl + key
+                          : '',
+                  },
+                },
+              ).trim(),
+            )
+            .join(',\n')
         } else if (fieldtype === 'map') {
           anchorData = row[fieldName] ?? {}
-          return TemplateRenderer.render(
-            'BazarTable',
-            this,
-            'rendercell',
-            {
-		            fieldtype,
-		            fieldName,
-		            anchorData
-		        }
-          )
+          return TemplateRenderer.render('BazarTable', this, 'rendercell', {
+            fieldtype,
+            fieldName,
+            anchorData,
+          })
         }
 
         return TemplateRenderer.render(
@@ -517,8 +730,12 @@ const componentParams = {
             entryId: 'entryIdAnchor',
             fieldName,
             url: 'anchorUrl',
-            color: (idx === 0 && row?.color && row.color.length > 0) ? 'lightslategray' : '',
-            icon: (idx === 0 && row?.icon && row.icon.length > 0) ? 'iconAnchor' : ''
+            color:
+              idx === 0 && row?.color && row.color.length > 0
+                ? 'lightslategray'
+                : '',
+            icon:
+              idx === 0 && row?.icon && row.icon.length > 0 ? 'iconAnchor' : '',
           },
           [
             [/anchorData/g, formattedData.replace(/\n/g, '<br/>')],
@@ -530,13 +747,17 @@ const componentParams = {
             [/anchorImageSpecificPart/g, anchorImageSpecificPart],
             [/anchorImageOther/g, anchorImageOther],
             [/anchorImageExt/g, anchorImageExt],
-            [/anchorOtherEntryId/g, anchorOtherEntryId]
-          ]
+            [/anchorOtherEntryId/g, anchorOtherEntryId],
+          ],
         )
       }
     },
     async sanitizedParamAsync(name) {
-      return this.sanitizedParam(await Waiter.waitFor('params', this), this.isadmin, name)
+      return this.sanitizedParam(
+        await Waiter.waitFor('params', this),
+        this.isadmin,
+        name,
+      )
     },
     sanitizedParam(params, isAdmin, name) {
       switch (name) {
@@ -544,12 +765,12 @@ const componentParams = {
         case 'displaycreationdate':
         case 'displaylastchangedate':
         case 'displayowner':
-          const paramValue = (
-            name in params
-                            && typeof params[name] === 'string'
-                            && ['yes', 'onlyadmins'].includes(params[name]))
-            ? params[name]
-            : false
+          const paramValue =
+            name in params &&
+            typeof params[name] === 'string' &&
+            ['yes', 'onlyadmins'].includes(params[name])
+              ? params[name]
+              : false
           switch (paramValue) {
             case 'onlyadmins':
               return [1, true, '1', 'true'].includes(isAdmin)
@@ -561,22 +782,27 @@ const componentParams = {
           }
         case 'checkboxfieldsincolumns':
           // default true
-          return name in params ? !([false, 0, '0', 'false'].includes(params[name])) : true
+          return name in params
+            ? ![false, 0, '0', 'false'].includes(params[name])
+            : true
         case 'displayvaluesinsteadofkeys':
         case 'exportallcolumns':
         case 'displayimagesasthumbnails':
           // default false
-          return name in params ? [true, 1, '1', 'true'].includes(params[name]) : false
+          return name in params
+            ? [true, 1, '1', 'true'].includes(params[name])
+            : false
 
         case 'columnfieldsids':
         case 'sumfieldsids':
-          return (name in params && typeof params[name] === 'string')
+          return name in params && typeof params[name] === 'string'
             ? params[name].split(',').map((v) => v.trim())
             : []
         case 'columntitles':
-          const columntitlesastab = (name in params && typeof params[name] === 'string')
-            ? params[name].split(',').map((v) => v.trim())
-            : []
+          const columntitlesastab =
+            name in params && typeof params[name] === 'string'
+              ? params[name].split(',').map((v) => v.trim())
+              : []
           const columntitles = {}
           columntitlesastab.forEach((val, idx) => {
             const match = val.match(/^([A-Za-z0-9\-_]+)=(.+$)/)
@@ -589,15 +815,12 @@ const componentParams = {
           })
           return columntitles
         case 'sumfieldsids':
-          return (name in params && typeof params[name] === 'string')
+          return name in params && typeof params[name] === 'string'
             ? params[name].split(',').map((v) => v.trim())
             : []
         case 'columnswidth':
           const columnswidth = {}
-          if (
-            name in params
-                        && typeof params[name] === 'string'
-          ) {
+          if (name in params && typeof params[name] === 'string') {
             params[name].split(',').forEach((extract) => {
               const [name, value] = extract.split('=', 2)
               if (name && value && name.length > 0 && value.length > 0) {
@@ -633,7 +856,7 @@ const componentParams = {
       if (Object.keys(this.fields).length > 0) {
         Waiter.resolve('fields')
       }
-    }
+    },
   },
   mounted() {
     this.$el.parentNode.addEventListener('dblclick', (e) => {
@@ -659,16 +882,20 @@ const componentParams = {
   watch: {
     entries(newVal, oldVal) {
       this.updateFieldsFromRoot() // because updated in same time than entries (but not reactive)
-      const sanitizedNewVal = newVal.filter((e) => (typeof e === 'object' && e !== null && 'tag' in e))
+      const sanitizedNewVal = newVal.filter(
+        (e) => typeof e === 'object' && e !== null && 'tag' in e,
+      )
       const newIds = sanitizedNewVal.map((e) => e.tag)
-      const oldIds = oldVal.map((e) => e.tag || '').filter((e) => (typeof e === 'string' && e.length > 0))
+      const oldIds = oldVal
+        .map((e) => e.tag || '')
+        .filter((e) => typeof e === 'string' && e.length > 0)
       if (!this.arraysEqual(newIds, oldIds)) {
         this.updateEntries(sanitizedNewVal, newIds).catch(this.manageError)
       }
     },
     params() {
       Waiter.resolve('params')
-    }
+    },
     // multidelete modal open/close hooks are handled by multidelete.js's
     // delegated yw-modal-shown/yw-modal-hidden listeners
   },
@@ -690,7 +917,7 @@ const componentParams = {
         <slot name="spinnerloader" v-bind="{BazarTable:this}"/>
         <slot name="footer" v-bind="{BazarTable:this}"/>
     </div>
-  `
+  `,
 }
 
 if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}

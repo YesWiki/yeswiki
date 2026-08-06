@@ -2,7 +2,9 @@
 function speak(selector) {
   // cut former speech
   window.speechSynthesis.cancel()
-  const toSpeak = new SpeechSynthesisUtterance(document.querySelector(selector).textContent)
+  const toSpeak = new SpeechSynthesisUtterance(
+    document.querySelector(selector).textContent,
+  )
   window.speechSynthesis.speak(toSpeak)
 }
 
@@ -50,8 +52,9 @@ function successHandler(data) {
         const player = document.getElementById('multimedia-player')
         const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
         const audio = `<audio id="audio-player" controls autoplay src="${song}"></audio>`
-        const download = `<a style="display:block" download href="${song}">`
-          + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
+        const download =
+          `<a style="display:block" download href="${song}">` +
+          '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
         player.innerHTML = `<figure>${caption}${audio}${download}</figure>`
       })
   }
@@ -63,7 +66,9 @@ let lastResult
 const qrinfos = document.getElementById('qrinfos')
 
 // This method will trigger user permissions
-const qrCodeFormats = { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] }
+const qrCodeFormats = {
+  formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+}
 const html5QrCode = new Html5Qrcode(/* element id */ 'qrreader', qrCodeFormats)
 const config = { fps: 20, qrbox: 250 }
 const qrCodeSuccessCallback = (decodedText) => {
@@ -94,7 +99,12 @@ ywInitEach('#qrinfos', () => {
 
     const target = document.querySelector('div#qrinfos .yw-alert')
     const observer = new MutationObserver(mutate)
-    const observerConfig = { characterData: false, attributes: false, childList: true, subtree: false }
+    const observerConfig = {
+      characterData: false,
+      attributes: false,
+      childList: true,
+      subtree: false,
+    }
     observer.observe(target, observerConfig)
 
     // first load

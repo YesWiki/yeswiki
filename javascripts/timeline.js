@@ -1,7 +1,7 @@
 // timeline.js — scroll-driven side-slide effect for the timeline bazar template
 // (ticket 16: vanilla rewrite of the jQuery/jQuery-Easing/Modernizr version; the
 // eased page scroll is now the browser's native smooth scrolling)
-(function() {
+;(function () {
   // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
   ywInitEach('#ss-container', () => {
     const container = document.getElementById('ss-container')
@@ -57,18 +57,19 @@
             'translate3d(-75%, 0, 0) rotateY(-90deg) translate3d(-75%, 0, 0)',
             0,
             'left',
-            '-50%'
+            '-50%',
           )
           setSide(
             right,
             'translate3d(75%, 0, 0) rotateY(90deg) translate3d(75%, 0, 0)',
             0,
             'right',
-            '-50%'
+            '-50%',
           )
         } else {
           const height = row.offsetHeight
-          const factor = ((top + height / 2) - winCenter) / (winHeight / 2 + height / 2)
+          const factor =
+            (top + height / 2 - winCenter) / (winHeight / 2 + height / 2)
           const val = Math.max(factor * 50, 0)
 
           showCircle(row, val <= 0)
@@ -81,14 +82,14 @@
             `translate3d(-${t}%, 0, 0) rotateY(-${r}deg) translate3d(-${t}%, 0, 0)`,
             o,
             'left',
-            `${-val}%`
+            `${-val}%`,
           )
           setSide(
             right,
             `translate3d(${t}%, 0, 0) rotateY(${r}deg) translate3d(${t}%, 0, 0)`,
             o,
             'right',
-            `${-val}%`
+            `${-val}%`,
           )
         }
       })
@@ -98,7 +99,8 @@
       link.addEventListener('click', (e) => {
         e.preventDefault()
         const target = document.querySelector(link.getAttribute('href'))
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        if (target)
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     })
 
@@ -106,13 +108,15 @@
       winHeight = window.innerHeight
       setViewportRows()
       rows.forEach((row) => showCircle(row, false))
-      rows.filter((row) => !rowsOutViewport.includes(row)).forEach((row) => {
-        const left = row.querySelector('div.ss-left')
-        const right = row.querySelector('div.ss-right')
-        if (left) left.style.left = '0%'
-        if (right) right.style.right = '0%'
-        showCircle(row, true)
-      })
+      rows
+        .filter((row) => !rowsOutViewport.includes(row))
+        .forEach((row) => {
+          const left = row.querySelector('div.ss-left')
+          const right = row.querySelector('div.ss-right')
+          if (left) left.style.left = '0%'
+          if (right) right.style.right = '0%'
+          showCircle(row, true)
+        })
     })
 
     window.addEventListener('scroll', () => {
@@ -132,7 +136,9 @@
       })
     }
     setViewportRows()
-    rows.filter((row) => !rowsOutViewport.includes(row)).forEach((row) => showCircle(row, true))
+    rows
+      .filter((row) => !rowsOutViewport.includes(row))
+      .forEach((row) => showCircle(row, true))
     placeRows()
   })
-}())
+})()

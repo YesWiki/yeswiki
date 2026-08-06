@@ -20,12 +20,14 @@ const TableHelper = {
       const filterContainer = this.findBazarListFiltersContainer(table)
       const tableFilters = {}
       if (filterContainer) {
-        filterContainer.querySelectorAll('.filter-checkbox:checked').forEach((input) => {
-          const name = input.getAttribute('name')
-          const value = input.getAttribute('value')
-          if (!tableFilters[name]) tableFilters[name] = []
-          tableFilters[name].push(value)
-        })
+        filterContainer
+          .querySelectorAll('.filter-checkbox:checked')
+          .forEach((input) => {
+            const name = input.getAttribute('name')
+            const value = input.getAttribute('value')
+            if (!tableFilters[name]) tableFilters[name] = []
+            tableFilters[name].push(value)
+          })
       }
       res[table.id] = tableFilters
     })
@@ -83,11 +85,14 @@ const TableHelper = {
     })
   },
   init() {
-    this.tables = Array.from(document.querySelectorAll('table.in-tableau-template'))
+    this.tables = Array.from(
+      document.querySelectorAll('table.in-tableau-template'),
+    )
     if (this.tables.length === 0) return
     window.ywDatatableRowFilters = window.ywDatatableRowFilters || {}
     this.tables.forEach((table) => {
-      window.ywDatatableRowFilters[table.id] = (row) => this.rowMatchesFilters(table, row)
+      window.ywDatatableRowFilters[table.id] = (row) =>
+        this.rowMatchesFilters(table, row)
       table.addEventListener('yw-datatable-drawn', (e) => {
         this.updateNBResults(table, e.detail.matchedRows.length)
         this.updateFooter(table, e.detail.matchedRows)
@@ -99,7 +104,7 @@ const TableHelper = {
       }
     })
     this.refreshTables()
-  }
+  },
 }
 
 // ticket 14: TableHelper.init() re-scans the document, and marking each table keeps a

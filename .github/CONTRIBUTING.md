@@ -43,4 +43,5 @@ Then, just go in the browser to start the installation procedure.
 ### Coding standards
 
 It's a work in progress but we try to follow the [PHP PSR-2 standards](https://www.php-fig.org/psr/psr-2/).  
-As for Javascript, a linter (like eslint) can be used to check the code.
+Javascript is formatted by `prettier` and checked by `eslint` — one tool per question.
+`make lint` reports on both (and on PHP) without writing anything; `make fix` applies them.

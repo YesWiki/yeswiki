@@ -1,32 +1,52 @@
-import {Page} from "@playwright/test";
+import { Page } from '@playwright/test'
 
 /**
  * Replace the text in the editor using a callback function.
  * The callback function does not have access to the page context.
  * So only use the value passed as argument and the browser api.
  */
-export const replaceEditorTextCallback = async (page: Page, callback: Function, additionalProperties: object = null) => {
-    await page.waitForLoadState();
+export const replaceEditorTextCallback = async (
+  page: Page,
+  callback: Function,
+  additionalProperties: object = null,
+) => {
+  await page.waitForLoadState()
 
-    // Since ticket 16 an internal link is htmx-boosted, so reaching the editor by clicking
-    // "Éditer la page" swaps the body rather than loading a document: waitForLoadState()
-    // resolves before ywInitEach has built the editor, and window['aceditor-body'] is
-    // still undefined. Wait for the instance itself rather than for the navigation.
-    await page.waitForFunction(() => window['aceditor-body']?.editor !== undefined, null, {timeout: 15000});
+  // Since ticket 16 an internal link is htmx-boosted, so reaching the editor by clicking
+  // "Éditer la page" swaps the body rather than loading a document: waitForLoadState()
+  // resolves before ywInitEach has built the editor, and window['aceditor-body'] is
+  // still undefined. Wait for the instance itself rather than for the navigation.
+  await page.waitForFunction(
+    () => window['aceditor-body']?.editor !== undefined,
+    null,
+    { timeout: 15000 },
+  )
 
-    await page.evaluate(({callbackStr, additionalPropertiesStr}) => {
-        const additionalProperties = JSON.parse(additionalPropertiesStr);
-        const callback = new Function('return ' + callbackStr)();
-        const editor = window['aceditor-body'].editor;
-        const value = editor.getValue();
-        const newValue = callback(value, additionalProperties);
-        editor.setValue(newValue);
-    }, {callbackStr: callback.toString(), additionalPropertiesStr: JSON.stringify(additionalProperties)});
+  await page.evaluate(
+    ({ callbackStr, additionalPropertiesStr }) => {
+      const additionalProperties = JSON.parse(additionalPropertiesStr)
+      const callback = new Function('return ' + callbackStr)()
+      const editor = window['aceditor-body'].editor
+      const value = editor.getValue()
+      const newValue = callback(value, additionalProperties)
+      editor.setValue(newValue)
+    },
+    {
+      callbackStr: callback.toString(),
+      additionalPropertiesStr: JSON.stringify(additionalProperties),
+    },
+  )
 }
 
-
-export const replaceEditorTextNewContent = async (page: Page, newContent: string) => {
-    await replaceEditorTextCallback(page, (value, additionalProperties) => additionalProperties.content, {content: newContent});
+export const replaceEditorTextNewContent = async (
+  page: Page,
+  newContent: string,
+) => {
+  await replaceEditorTextCallback(
+    page,
+    (value, additionalProperties) => additionalProperties.content,
+    { content: newContent },
+  )
 }
 
 /**
@@ -48,11 +68,11 @@ export const replaceEditorTextNewContent = async (page: Page, newContent: string
  * about is whether the save worked, never how fast the server was.
  */
 export const saveEditor = async (page: Page) => {
-    const saved = page.waitForResponse(
-        (response) => response.request().method() === 'POST',
-        {timeout: 30000}
-    );
-    await page.getByRole('button', {name: 'Sauver'}).first().click();
-    await saved;
-    await page.waitForLoadState();
+  const saved = page.waitForResponse(
+    (response) => response.request().method() === 'POST',
+    { timeout: 30000 },
+  )
+  await page.getByRole('button', { name: 'Sauver' }).first().click()
+  await saved
+  await page.waitForLoadState()
 }

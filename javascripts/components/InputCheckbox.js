@@ -4,7 +4,7 @@ export default {
   data() {
     return {
       // boolean internal value cause the real value could be a string when using checkedvalue and uncheckedvalue
-      checked: undefined
+      checked: undefined,
     }
   },
   methods: {
@@ -21,7 +21,7 @@ export default {
         const checkedvalue = this.config.checkedvalue || 'true'
         this.checked = `${value}` == `${checkedvalue}`
       }
-    }
+    },
   },
   mounted() {
     this.setCheckedFromValue(this.value)
@@ -29,14 +29,17 @@ export default {
   watch: {
     checked() {
       let result
-      if (this.config.checkedvalue) result = this.checked ? this.config.checkedvalue : this.config.uncheckedvalue
+      if (this.config.checkedvalue)
+        result = this.checked
+          ? this.config.checkedvalue
+          : this.config.uncheckedvalue
       else result = this.checked
       this.$emit('input', result)
     },
     value() {
       // watch value because it can be affected after mounted
       this.setCheckedFromValue(this.value)
-    }
+    },
   },
   template: `
     <div class="yw-form-group input-group checkbox" :title="config.hint" >
@@ -46,5 +49,5 @@ export default {
         <span>{{ config.label }}</span>
       </label>
       <input-hint :config="config"></input-hint>
-    </div>`
+    </div>`,
 }

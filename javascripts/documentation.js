@@ -12,8 +12,9 @@
  * empty <nav> below -- so docsify then found the wiki's OWN navbar with `find('nav')`,
  * emptied it into `_navbar.md`, and the site navigation disappeared until a full reload.
  */
-(() => {
-  const docRoot = () => document.querySelector('.yw-dashboard__canvas main') ?? document
+;(() => {
+  const docRoot = () =>
+    document.querySelector('.yw-dashboard__canvas main') ?? document
 
   // Docsify builds its navbar with `find('nav') || create('nav')` -- the FIRST <nav> in the
   // document, which on a wiki page is the site's own navigation bar. It would add `app-nav`
@@ -25,7 +26,7 @@
 
   const AVAILABLE_LOCALES = ['fr'] // replace by ['fr', 'en'] when english documentation is available
   // replace by ['fr', 'en', 'es'] when english and spannish documentations are available
-  const FALLBACK_LOCALE = 'fr'// do not change it
+  const FALLBACK_LOCALE = 'fr' // do not change it
   if (!AVAILABLE_LOCALES.includes(locale)) locale = FALLBACK_LOCALE
 
   window.$docsify = {
@@ -39,7 +40,7 @@
     auto2top: true,
     alias: {
       '.*/_sidebar.md': `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-      '.*/_navbar.md': `/docs/${locale}/_navbar.md` // set default _navbar.md to locale language
+      '.*/_navbar.md': `/docs/${locale}/_navbar.md`, // set default _navbar.md to locale language
     },
     search: {
       // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
@@ -60,25 +61,25 @@
         `/docs/${locale}/asso-finances`,
         `/docs/${locale}/semantic`,
         `/docs/${locale}/usage-avance`,
-        ...extensions.map(ext => `/${ext.docPath}`)
-      ]
+        ...extensions.map((ext) => `/${ext.docPath}`),
+      ],
     },
     copyCode: {
       buttonText: {
         '/docs/fr/': 'Copier le code',
-        '/': 'Copy to clipboard' // default to English
+        '/': 'Copy to clipboard', // default to English
       },
       errorText: 'Error',
       successText: {
         '/docs/fr/': 'Copié',
-        '/': 'Copied' // default to English
-      }
+        '/': 'Copied', // default to English
+      },
     },
     plugins: [
       // Docsify appends its navbar to <body>, not into the element it mounts on -- so on a
       // wiki page it lands above the wiki's own navbar, outside the container, unstyled.
       // Moved into the doc's <main> once it exists, where doc.css can reach it.
-      function(hook) {
+      function (hook) {
         const relocateNavbar = () => {
           const nav = document.querySelector('body > .app-nav')
           const main = document.querySelector('.yw-dashboard__canvas main')
@@ -87,7 +88,7 @@
         hook.ready(relocateNavbar)
         hook.doneEach(relocateNavbar)
       },
-      function(hook, vm) {
+      function (hook, vm) {
         // In docsify v5, the active sidebar link detection changed from prefix matching to
         // exact URL matching. The dummy [Doc](/) link no longer matches any page except the
         // root, so the heading-based sub-sidebar is never generated.
@@ -124,8 +125,7 @@
 
           // Build the current URL without the hash
           const currentUrlWithoutHash = new URL(
-            location.origin + location.pathname
-            + location.search
+            location.origin + location.pathname + location.search,
           )
 
           // Get the search parameters from the URL (before the hash)
@@ -155,7 +155,9 @@
                 dd && console.log('Target element ID:', urlId)
                 if (targetElement) {
                   // Check if the target element is within an excluded parent
-                  const excludedParent = targetElement.closest(`.${EXCLUDED_PARENT_CLASS}`)
+                  const excludedParent = targetElement.closest(
+                    `.${EXCLUDED_PARENT_CLASS}`,
+                  )
 
                   if (!excludedParent) {
                     // Use requestAnimationFrame for immediate scroll to the element
@@ -163,12 +165,17 @@
                       // Scroll smoothly to the element's top position
                       window.scrollTo({
                         top:
-                          (targetElement.offsetTop + targetElement.offsetParent?.offsetTop || 0) - 160,
-                        behavior: 'smooth'
+                          (targetElement.offsetTop +
+                            targetElement.offsetParent?.offsetTop || 0) - 160,
+                        behavior: 'smooth',
                       })
                     })
                   } else {
-                    dd && console.log('Target is within an excluded parent:', excludedParent)
+                    dd &&
+                      console.log(
+                        'Target is within an excluded parent:',
+                        excludedParent,
+                      )
                   }
                 } else {
                   dd && console.log('Element not found')
@@ -182,8 +189,14 @@
 
         hook.afterEach((html) => {
           // Lazy load images and iframes
-          html = html.replace(/<img src=([^\s]*)/g, '<img class="lazyload" data-src=$1')
-          html = html.replace(/<iframe(.*) src=([^\s]*)/g, '<iframe$1 class="lazyload" data-src=$2')
+          html = html.replace(
+            /<img src=([^\s]*)/g,
+            '<img class="lazyload" data-src=$1',
+          )
+          html = html.replace(
+            /<iframe(.*) src=([^\s]*)/g,
+            '<iframe$1 class="lazyload" data-src=$2',
+          )
 
           // Adds footer
           if (vm.route.file.match(/^docs\/.*$/)) {
@@ -204,7 +217,9 @@
           // ```yeswiki preview
           // {{button}}
           // `̀`
-          const yeswikiCodes = document.querySelectorAll('pre[data-lang^="yeswiki"]')
+          const yeswikiCodes = document.querySelectorAll(
+            'pre[data-lang^="yeswiki"]',
+          )
           yeswikiCodes.forEach((preDom) => {
             const data = preDom.getAttribute('data-lang')
             preDom.setAttribute('data-lang', data.split(' ')[0])
@@ -248,16 +263,21 @@
           // Back to top button
           const backToTop = document.createElement('button')
           backToTop.classList = 'back-to-top'
-          backToTop.setAttribute('aria-label', locale === 'fr' ? 'Retour en haut' : 'Back to top')
+          backToTop.setAttribute(
+            'aria-label',
+            locale === 'fr' ? 'Retour en haut' : 'Back to top',
+          )
           backToTop.innerHTML = '<i class="gg-arrow-up"></i>'
-          backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }))
+          backToTop.addEventListener('click', () =>
+            window.scrollTo({ top: 0, behavior: 'smooth' }),
+          )
           docRoot().appendChild(backToTop)
           window.addEventListener('scroll', () => {
             backToTop.classList.toggle('visible', window.scrollY > 300)
           })
         })
-      }
-    ]
+      },
+    ],
   }
 
   function insertAfter(referenceNode, newNode) {
@@ -298,7 +318,7 @@
     const menuIcon = document.createElement('div')
     menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
     menuIcon.classList = 'menu-icon'
-    menuIcon.addEventListener('click', function() {
+    menuIcon.addEventListener('click', function () {
       docRoot().querySelector('nav > ul').classList.toggle('open')
       this.classList.toggle('open')
     })

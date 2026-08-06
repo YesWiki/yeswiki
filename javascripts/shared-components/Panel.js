@@ -4,37 +4,37 @@ export default {
   props: {
     color: {
       type: String,
-      default: 'default'
+      default: 'default',
     },
     collapsable: {
       type: Boolean,
-      default: true
+      default: true,
     },
     collapsed: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   emits: ['update:collapsed', 'opened'],
   components: { CollapseTransition },
   data() {
     return {
       // value to work internally, name should not conflict with prop
-      internalCollapsed: true
+      internalCollapsed: true,
     }
   },
   computed: {
     panelClass() {
       const color = this.color || 'default'
       return `panel-${color}`
-    }
+    },
   },
   methods: {
     headerClicked() {
       this.internalCollapsed = !this.internalCollapsed
       this.$emit('update:collapsed', this.internalCollapsed)
       if (!this.internalCollapsed) this.$emit('opened')
-    }
+    },
   },
   beforeMount() {
     this.internalCollapsed = this.collapsed
@@ -52,5 +52,5 @@ export default {
         </div>
       </collapse-transition>
     </div>
-  `
+  `,
 }

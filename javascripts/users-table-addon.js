@@ -45,7 +45,7 @@ const usersTableServiceAddOn = {
       btnType = 'yw-btn--primary'
       btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE')
     }
-    const escapedName = JSON.stringify(name).replace(/(^"|"$)/g, '\'')
+    const escapedName = JSON.stringify(name).replace(/(^"|"$)/g, "'")
     return `
       <button
         class="yw-btn yw-btn--sm ${btnType}"
@@ -62,7 +62,7 @@ const usersTableServiceAddOn = {
           cell.innerHTML = this.renderButton(
             name,
             this.users[name].activatedStatus,
-            this.users[name].isAdmin
+            this.users[name].isAdmin,
           )
         }
       })
@@ -84,7 +84,7 @@ const usersTableServiceAddOn = {
           td.innerHTML = this.renderButton(
             name,
             this.users[name].activatedStatus,
-            this.users[name].isAdmin
+            this.users[name].isAdmin,
           )
         }
         row.appendChild(td)
@@ -128,7 +128,7 @@ const usersTableServiceAddOn = {
       .then((users) => {
         if (!(name in users)) {
           throw new Error(
-            `not possible to ${action} user ${name} because user is not anymore a user !`
+            `not possible to ${action} user ${name} because user is not anymore a user !`,
           )
         }
         this.users[name] = users[name]
@@ -140,7 +140,7 @@ const usersTableServiceAddOn = {
   },
   init() {
     this.tables = Array.from(
-      document.querySelectorAll('#users-table-action table')
+      document.querySelectorAll('#users-table-action table'),
     ).filter((table) => table.tBodies.length > 0)
     if (this.tables.length === 0) return
     this.getUsers()
@@ -149,7 +149,7 @@ const usersTableServiceAddOn = {
         this.appendActivationColumn()
       })
       .catch((error) => console.warn(error))
-  }
+  },
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js

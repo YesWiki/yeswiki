@@ -13,39 +13,96 @@
     "values": "Action PARAMETER names are ticket 22's; parameter VALUES and template filenames are user data and unchanged. {{searchform template=\"moteurrecherche_button.twig\"}} is correct and deliberate: the action moved, the template filename did not."
   },
   "renames": [
-    {"old": "bazarliste", "new": "entrylist", "class": "BazarListeAction -> EntryListAction"},
-    {"old": "bazarcarto", "new": "entrymap", "class": "BazarCartoAction -> EntryMapAction"},
-    {"old": "bazartable", "new": "entrytable", "class": "BazarTableAction -> EntryTableAction"},
-    {"old": "bazarexport", "new": "entryexport", "class": "BazarExportAction -> EntryExportAction"},
-    {"old": "bazarimport", "new": "entryimport", "class": "BazarImportAction -> EntryImportAction"},
-    {"old": "bazarfollow", "new": "entryfollow", "class": "BazarFollowAction -> EntryFollowAction"},
-    {"old": "bazaruserpage", "new": "entryuserpage", "class": "BazarUserPageAction -> EntryUserPageAction"},
-    {"old": "bazarlistecategorie", "new": "entrylistcategory", "class": "BazarListCategoryAction -> EntryListCategoryAction"},
+    {
+      "old": "bazarliste",
+      "new": "entrylist",
+      "class": "BazarListeAction -> EntryListAction"
+    },
+    {
+      "old": "bazarcarto",
+      "new": "entrymap",
+      "class": "BazarCartoAction -> EntryMapAction"
+    },
+    {
+      "old": "bazartable",
+      "new": "entrytable",
+      "class": "BazarTableAction -> EntryTableAction"
+    },
+    {
+      "old": "bazarexport",
+      "new": "entryexport",
+      "class": "BazarExportAction -> EntryExportAction"
+    },
+    {
+      "old": "bazarimport",
+      "new": "entryimport",
+      "class": "BazarImportAction -> EntryImportAction"
+    },
+    {
+      "old": "bazarfollow",
+      "new": "entryfollow",
+      "class": "BazarFollowAction -> EntryFollowAction"
+    },
+    {
+      "old": "bazaruserpage",
+      "new": "entryuserpage",
+      "class": "BazarUserPageAction -> EntryUserPageAction"
+    },
+    {
+      "old": "bazarlistecategorie",
+      "new": "entrylistcategory",
+      "class": "BazarListCategoryAction -> EntryListCategoryAction"
+    },
 
-    {"old": "calendrier", "new": "calendar"},
-    {"old": "abonnement", "new": "subscribe",
-     "note": "the action's own vocabulary moved with it: the `demand` template variable and the ContactApiController `type` it posts back are now subscribe/unsubscribe. The `form-abonnement` CSS class is a class name and stays"},
-    {"old": "desabonnement", "new": "unsubscribe"},
-    {"old": "nuagetag", "new": "tagcloud"},
-    {"old": "valeur", "new": "value"},
-    {"old": "gererdroits", "new": "adminacls", "class": "ManageAclsAction -> AdminAclsAction",
-     "note": "admin* rather than manage*, matching the admintag / admincontent / adminreactions / adminbackups actions already in core"},
-    {"old": "gererthemes", "new": "adminthemes", "class": "ManageThemesAction -> AdminThemesAction"},
-    {"old": "ariane", "new": "breadcrumb"},
-    {"old": "doubleclic", "new": "doubleclick",
-     "note": "the {{include}} parameter of the same name became `doubleclick` in ticket 22; this is the action. The `allow_doubleclic` config key and the `doubleclickedit` user column are stored data and unchanged"},
-    {"old": "barreredaction", "new": "editbar"},
-    {"old": "titrepage", "new": "pagetitle"},
-    {"old": "moteurrecherche", "new": "searchform", "class": "SearchEngineAction -> SearchFormAction",
-     "note": "renders the search FORM. Ticket 18 plans a separate {{search}} action that performs the search; the two must stay distinguishable"}
+    { "old": "calendrier", "new": "calendar" },
+    {
+      "old": "abonnement",
+      "new": "subscribe",
+      "note": "the action's own vocabulary moved with it: the `demand` template variable and the ContactApiController `type` it posts back are now subscribe/unsubscribe. The `form-abonnement` CSS class is a class name and stays"
+    },
+    { "old": "desabonnement", "new": "unsubscribe" },
+    { "old": "nuagetag", "new": "tagcloud" },
+    { "old": "valeur", "new": "value" },
+    {
+      "old": "gererdroits",
+      "new": "adminacls",
+      "class": "ManageAclsAction -> AdminAclsAction",
+      "note": "admin* rather than manage*, matching the admintag / admincontent / adminreactions / adminbackups actions already in core"
+    },
+    {
+      "old": "gererthemes",
+      "new": "adminthemes",
+      "class": "ManageThemesAction -> AdminThemesAction"
+    },
+    { "old": "ariane", "new": "breadcrumb" },
+    {
+      "old": "doubleclic",
+      "new": "doubleclick",
+      "note": "the {{include}} parameter of the same name became `doubleclick` in ticket 22; this is the action. The `allow_doubleclic` config key and the `doubleclickedit` user column are stored data and unchanged"
+    },
+    { "old": "barreredaction", "new": "editbar" },
+    { "old": "titrepage", "new": "pagetitle" },
+    {
+      "old": "moteurrecherche",
+      "new": "searchform",
+      "class": "SearchEngineAction -> SearchFormAction",
+      "note": "renders the search FORM. Ticket 18 plans a separate {{search}} action that performs the search; the two must stay distinguishable"
+    }
   ],
   "unchanged": [
-    {"name": "bazar", "why": "the BazaR admin console, not an entry -- there is no entry* name that describes it. Decided 2026-08-01: `bazar` is the product's own word for this screen, like `wiki`, and `{{bazar}}` is the single most-used action in YesWiki, so it is the one place where not breaking content is worth an inconsistency"},
-    {"name": "every handler", "why": "see handlerPolicy above"},
-    {"name": "bazarcard, bazarcalendar, bazaragenda, bazarannuaire, bazartimeline, bazarcarousel, bazarlistephotobox, bazarlisteliens, bazarblog, bazargogocarto, bazartableau, bazarmapandtable",
-     "why": "actions-builder PRESET ids in docs/actions/entrylist.yaml, not actions. Every one of them emits {{entrylist template=\"...\"}}; they never appear in a page body. They carry YAML anchors and AB_* translation keys, so renaming them is churn with real breakage risk and no user-visible payoff"},
-    {"name": "styles/bazar/bazarcarto.css, moteurrecherche_*.twig, liste_accordeon.twig",
-     "why": "asset and template FILENAMES -- addressable from page bodies, so user data, same rule ticket 21 applied"}
+    {
+      "name": "bazar",
+      "why": "the BazaR admin console, not an entry -- there is no entry* name that describes it. Decided 2026-08-01: `bazar` is the product's own word for this screen, like `wiki`, and `{{bazar}}` is the single most-used action in YesWiki, so it is the one place where not breaking content is worth an inconsistency"
+    },
+    { "name": "every handler", "why": "see handlerPolicy above" },
+    {
+      "name": "bazarcard, bazarcalendar, bazaragenda, bazarannuaire, bazartimeline, bazarcarousel, bazarlistephotobox, bazarlisteliens, bazarblog, bazargogocarto, bazartableau, bazarmapandtable",
+      "why": "actions-builder PRESET ids in docs/actions/entrylist.yaml, not actions. Every one of them emits {{entrylist template=\"...\"}}; they never appear in a page body. They carry YAML anchors and AB_* translation keys, so renaming them is churn with real breakage risk and no user-visible payoff"
+    },
+    {
+      "name": "styles/bazar/bazarcarto.css, moteurrecherche_*.twig, liste_accordeon.twig",
+      "why": "asset and template FILENAMES -- addressable from page bodies, so user data, same rule ticket 21 applied"
+    }
   ],
   "alsoFixed": [
     "LinkTracker::preventNotTrackingActions() matched `gerertheme` (singular, no such action), so theme-management action calls were never actually excluded from link tracking. Corrected to `adminthemes` while renaming.",

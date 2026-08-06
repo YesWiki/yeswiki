@@ -10,8 +10,8 @@
   "scripts": {
     "lint-js": "eslint .",
     "fix-js": "eslint --fix .",
-    "lint-other": "node_modules/.bin/prettier --check '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
-    "fix-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
+    "lint-format": "node_modules/.bin/prettier --check '**/*.js' '**/*.mjs' '**/*.ts' '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
+    "fix-format": "node_modules/.bin/prettier --write '**/*.js' '**/*.mjs' '**/*.ts' '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
     "test-js": "node --test 'tests/js/**/*.test.js'",
     "test-e2e": "playwright test tests/e2e/tests/boosted-navigation.spec.ts",
     "test-e2e-all": "playwright test",
@@ -50,8 +50,7 @@
     "@playwright/test": "^1.62",
     "@types/node": "^22.13.12",
     "eslint": "^9.22.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.31",
+    "eslint-config-prettier": "^10.1.8",
     "globals": "^16.0.0",
     "prettier": "^3.5",
     "sass": "^1.102.0"

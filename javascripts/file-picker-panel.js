@@ -19,7 +19,7 @@ const FAMILY_ICONS = {
   video: 'player-play',
   audio: 'music',
   document: 'file',
-  other: 'paperclip'
+  other: 'paperclip',
 }
 
 /**
@@ -30,13 +30,16 @@ const FAMILY_ICONS = {
  */
 const FAMILIES = ['image', 'video', 'audio', 'document', 'other']
 
-const familyLabel = (family) => ({
-  image: () => _t('ATTACH_FILE_PICKER_FAMILY_IMAGE'),
-  video: () => _t('ATTACH_FILE_PICKER_FAMILY_VIDEO'),
-  audio: () => _t('ATTACH_FILE_PICKER_FAMILY_AUDIO'),
-  document: () => _t('ATTACH_FILE_PICKER_FAMILY_DOCUMENT'),
-  other: () => _t('ATTACH_FILE_PICKER_FAMILY_OTHER')
-}[family] ?? (() => _t('ATTACH_FILE_PICKER_FAMILY_OTHER')))()
+const familyLabel = (family) =>
+  (
+    ({
+      image: () => _t('ATTACH_FILE_PICKER_FAMILY_IMAGE'),
+      video: () => _t('ATTACH_FILE_PICKER_FAMILY_VIDEO'),
+      audio: () => _t('ATTACH_FILE_PICKER_FAMILY_AUDIO'),
+      document: () => _t('ATTACH_FILE_PICKER_FAMILY_DOCUMENT'),
+      other: () => _t('ATTACH_FILE_PICKER_FAMILY_OTHER'),
+    })[family] ?? (() => _t('ATTACH_FILE_PICKER_FAMILY_OTHER'))
+  )()
 
 /**
  * What a rail pinned to one family accepts, in the two vocabularies a browser uses: the
@@ -47,7 +50,7 @@ const familyLabel = (family) => ({
 const FAMILY_MIME_PREFIX = {
   image: 'image/',
   video: 'video/',
-  audio: 'audio/'
+  audio: 'audio/',
 }
 
 const readableSize = (bytes) => {
@@ -75,25 +78,59 @@ export default class {
   /** 'browse' | 'upload' | 'chosen' -- see showView(). */
   view = 'browse'
 
-  get panel() { return document.getElementById('YesWikiFilePickerPanel') }
-  get uploadOpenBtn() { return this.panel.querySelector('[data-yw-file-picker-upload-open]') }
-  get backBtn() { return this.panel.querySelector('[data-yw-file-picker-back]') }
-  get paneExisting() { return this.panel.querySelector('[data-yw-file-picker-pane="existing"]') }
-  get paneUpload() { return this.panel.querySelector('[data-yw-file-picker-pane="upload"]') }
-  get searchInput() { return this.panel.querySelector('input[name="search"]') }
-  get extensionSelect() { return this.panel.querySelector('[data-yw-file-picker-extensions]') }
-  get families() { return this.panel.querySelector('[data-yw-file-picker-families]') }
-  get results() { return this.panel.querySelector('[data-yw-file-picker-results]') }
-  get emptyMessage() { return this.panel.querySelector('[data-yw-file-picker-empty]') }
-  get uploadInput() { return this.panel.querySelector('input[name="upFile"]') }
-  get uploadError() { return this.panel.querySelector('.file-picker-upload-error') }
-  get selectedBox() { return this.panel.querySelector('.file-picker-selected') }
-  get selectedName() { return this.panel.querySelector('[data-yw-file-picker-selected-name]') }
-  get optionsForm() { return this.panel.querySelector('.file-picker-options') }
-  get insertBtn() { return this.panel.querySelector('.btn-insert-upload') }
+  get panel() {
+    return document.getElementById('YesWikiFilePickerPanel')
+  }
+  get uploadOpenBtn() {
+    return this.panel.querySelector('[data-yw-file-picker-upload-open]')
+  }
+  get backBtn() {
+    return this.panel.querySelector('[data-yw-file-picker-back]')
+  }
+  get paneExisting() {
+    return this.panel.querySelector('[data-yw-file-picker-pane="existing"]')
+  }
+  get paneUpload() {
+    return this.panel.querySelector('[data-yw-file-picker-pane="upload"]')
+  }
+  get searchInput() {
+    return this.panel.querySelector('input[name="search"]')
+  }
+  get extensionSelect() {
+    return this.panel.querySelector('[data-yw-file-picker-extensions]')
+  }
+  get families() {
+    return this.panel.querySelector('[data-yw-file-picker-families]')
+  }
+  get results() {
+    return this.panel.querySelector('[data-yw-file-picker-results]')
+  }
+  get emptyMessage() {
+    return this.panel.querySelector('[data-yw-file-picker-empty]')
+  }
+  get uploadInput() {
+    return this.panel.querySelector('input[name="upFile"]')
+  }
+  get uploadError() {
+    return this.panel.querySelector('.file-picker-upload-error')
+  }
+  get selectedBox() {
+    return this.panel.querySelector('.file-picker-selected')
+  }
+  get selectedName() {
+    return this.panel.querySelector('[data-yw-file-picker-selected-name]')
+  }
+  get optionsForm() {
+    return this.panel.querySelector('.file-picker-options')
+  }
+  get insertBtn() {
+    return this.panel.querySelector('.btn-insert-upload')
+  }
   /** Every option whose visibility depends on the chosen file or the target syntax. */
   get conditionalOptions() {
-    return this.panel.querySelectorAll('.image-option, .pdf-option, .file-option, [data-yw-file-picker-wiki-only]')
+    return this.panel.querySelectorAll(
+      '.image-option, .pdf-option, .file-option, [data-yw-file-picker-wiki-only]',
+    )
   }
 
   isOpen = false
@@ -103,21 +140,33 @@ export default class {
     // the rails, and a rail with no panel does nothing rather than throwing
     if (!this.panel) return
     registerRail(this)
-    this.panel.querySelectorAll('[data-yw-file-picker-close]')
-      .forEach((btn) => btn.addEventListener('click', (e) => {
+    this.panel.querySelectorAll('[data-yw-file-picker-close]').forEach((btn) =>
+      btn.addEventListener('click', (e) => {
         e.preventDefault()
         this.close()
-      }))
+      }),
+    )
     // `isOpen` on every one of these, because the panel is ONE element and each editor
     // and each form field builds its own instance around it -- so a click here reaches
     // all of them. That was harmless while every instance behaved identically; it stopped
     // being harmless when they gained settings of their own, and an upload into a rail
     // pinned to images was performed by some other instance that was pinned to nothing.
-    this.uploadOpenBtn.addEventListener('click', () => this.isOpen && this.showView('upload'))
+    this.uploadOpenBtn.addEventListener(
+      'click',
+      () => this.isOpen && this.showView('upload'),
+    )
     this.backBtn.addEventListener('click', () => this.isOpen && this.goBack())
-    this.searchInput.addEventListener('input', () => this.isOpen && this.applyFilters())
-    this.extensionSelect.addEventListener('change', () => this.isOpen && this.applyFilters())
-    this.panel.querySelector('.btn-do-upload').addEventListener('click', () => this.isOpen && this.uploadNewFile())
+    this.searchInput.addEventListener(
+      'input',
+      () => this.isOpen && this.applyFilters(),
+    )
+    this.extensionSelect.addEventListener(
+      'change',
+      () => this.isOpen && this.applyFilters(),
+    )
+    this.panel
+      .querySelector('.btn-do-upload')
+      .addEventListener('click', () => this.isOpen && this.uploadNewFile())
   }
 
   /**
@@ -150,22 +199,35 @@ export default class {
     this.extensionSelect.value = ''
     this.only = options.only ?? ''
     this.family = this.only
-    this.uploadInput.accept = FAMILY_MIME_PREFIX[this.only] ? `${FAMILY_MIME_PREFIX[this.only]}*` : ''
+    this.uploadInput.accept = FAMILY_MIME_PREFIX[this.only]
+      ? `${FAMILY_MIME_PREFIX[this.only]}*`
+      : ''
     this.files = []
     this.applyFilters()
     this.showView('browse')
     this.loadFiles()
     // the same button ends two different sentences: an editor inserts the file into what
     // it is writing, a form field simply uses it
-    this.insertBtn.textContent = this.onPick ? _t('ATTACH_FILE_PICKER_USE_THIS_FILE') : _t('INSERT')
+    this.insertBtn.textContent = this.onPick
+      ? _t('ATTACH_FILE_PICKER_USE_THIS_FILE')
+      : _t('INSERT')
 
-    if (this.insertHandler) this.insertBtn.removeEventListener('click', this.insertHandler)
+    if (this.insertHandler)
+      this.insertBtn.removeEventListener('click', this.insertHandler)
     this.insertHandler = () => {
       if (!this.selectedTag) return
       if (this.onPick) {
-        this.onPick({ tag: this.selectedTag, url: this.downloadUrl(), entry: this.selectedEntry })
+        this.onPick({
+          tag: this.selectedTag,
+          url: this.downloadUrl(),
+          entry: this.selectedEntry,
+        })
       } else {
-        this.onComplete(this.format === 'markdown' ? this.buildMarkdown() : this.buildYesWikiCode())
+        this.onComplete(
+          this.format === 'markdown'
+            ? this.buildMarkdown()
+            : this.buildYesWikiCode(),
+        )
       }
       this.close()
     }
@@ -250,8 +312,11 @@ export default class {
   matchesSearch(entry) {
     const search = this.searchInput.value.trim().toLowerCase()
     if (!search) return true
-    return String(entry.original_filename || '').toLowerCase().includes(search)
-      || String(entry.extension || '').includes(search)
+    return (
+      String(entry.original_filename || '')
+        .toLowerCase()
+        .includes(search) || String(entry.extension || '').includes(search)
+    )
   }
 
   /**
@@ -262,16 +327,22 @@ export default class {
   applyFilters() {
     // `only` narrows before anything else, so every count, every extension and the
     // upload pane's own result are about the one kind of file that was asked for
-    const offered = this.only ? this.files.filter((entry) => entry.family === this.only) : this.files
+    const offered = this.only
+      ? this.files.filter((entry) => entry.family === this.only)
+      : this.files
     const withinSearch = offered.filter((entry) => this.matchesSearch(entry))
     this.renderFamilies(withinSearch)
 
-    const withinFamily = withinSearch.filter((entry) => !this.family || entry.family === this.family)
+    const withinFamily = withinSearch.filter(
+      (entry) => !this.family || entry.family === this.family,
+    )
     this.renderExtensions(withinFamily)
 
     const extension = this.extensionSelect.value
     this.renderResults(
-      extension ? withinFamily.filter((entry) => entry.extension === extension) : withinFamily
+      extension
+        ? withinFamily.filter((entry) => entry.extension === extension)
+        : withinFamily,
     )
   }
 
@@ -291,14 +362,24 @@ export default class {
     // a family the search left empty stops being offered, but the one currently picked
     // stays -- a button that vanishes under the cursor that just pressed it is worse
     // than one that says 0
-    const offered = FAMILIES.filter((family) => counts[family] || family === this.family)
+    const offered = FAMILIES.filter(
+      (family) => counts[family] || family === this.family,
+    )
 
     this.families.innerHTML = ''
     if (!offered.length) return
 
-    this.families.appendChild(this.familyButton('', _t('ATTACH_FILE_PICKER_FAMILY_ALL'), withinSearch.length))
+    this.families.appendChild(
+      this.familyButton(
+        '',
+        _t('ATTACH_FILE_PICKER_FAMILY_ALL'),
+        withinSearch.length,
+      ),
+    )
     offered.forEach((family) => {
-      this.families.appendChild(this.familyButton(family, familyLabel(family), counts[family] || 0))
+      this.families.appendChild(
+        this.familyButton(family, familyLabel(family), counts[family] || 0),
+      )
     })
   }
 
@@ -317,7 +398,9 @@ export default class {
 
   renderExtensions(candidates) {
     const previous = this.extensionSelect.value
-    const extensions = [...new Set(candidates.map((entry) => entry.extension).filter(Boolean))].sort()
+    const extensions = [
+      ...new Set(candidates.map((entry) => entry.extension).filter(Boolean)),
+    ].sort()
     this.extensionSelect.innerHTML = ''
     const all = document.createElement('option')
     all.value = ''
@@ -350,7 +433,10 @@ export default class {
     button.type = 'button'
     button.className = 'file-picker__result'
     button.title = entry.original_filename
-    button.classList.toggle('file-picker__result--selected', entry.tag === this.selectedTag)
+    button.classList.toggle(
+      'file-picker__result--selected',
+      entry.tag === this.selectedTag,
+    )
     button.addEventListener('click', () => this.selectEntry(entry))
 
     const thumbnail = document.createElement('span')
@@ -359,12 +445,16 @@ export default class {
       const image = document.createElement('img')
       // the bytes live under private/, so the ACL-checked download route is the only way
       // to see them; full-size, as {{attach}} itself serves a tagged file (AttachAction)
-      image.src = wiki.url(`api/files/${encodeURIComponent(entry.tag)}/download`)
+      image.src = wiki.url(
+        `api/files/${encodeURIComponent(entry.tag)}/download`,
+      )
       image.alt = ''
       image.loading = 'lazy'
       thumbnail.appendChild(image)
     } else {
-      thumbnail.innerHTML = legacyIconToSprite(FAMILY_ICONS[entry.family] || FAMILY_ICONS.other) || ''
+      thumbnail.innerHTML =
+        legacyIconToSprite(FAMILY_ICONS[entry.family] || FAMILY_ICONS.other) ||
+        ''
     }
     button.appendChild(thumbnail)
 
@@ -373,7 +463,12 @@ export default class {
     name.textContent = entry.original_filename
     const details = document.createElement('span')
     details.className = 'file-picker__details'
-    details.textContent = [entry.extension ? `.${entry.extension}` : '', readableSize(entry.size)].filter(Boolean).join(' · ')
+    details.textContent = [
+      entry.extension ? `.${entry.extension}` : '',
+      readableSize(entry.size),
+    ]
+      .filter(Boolean)
+      .join(' · ')
 
     const meta = document.createElement('span')
     meta.className = 'file-picker__meta'
@@ -406,14 +501,18 @@ export default class {
     let response
     let body
     try {
-      response = await fetch(wiki.url('api/files'), { method: 'POST', body: formData })
+      response = await fetch(wiki.url('api/files'), {
+        method: 'POST',
+        body: formData,
+      })
       body = await response.json()
     } catch {
       response = null
     }
 
     if (!response || !response.ok) {
-      this.uploadError.textContent = (body && body.error) || _t('ERROR_NO_FILE_UPLOADED')
+      this.uploadError.textContent =
+        (body && body.error) || _t('ERROR_NO_FILE_UPLOADED')
       this.uploadError.hidden = false
       return
     }
@@ -445,13 +544,18 @@ export default class {
     // an upload the MIME sniffer could not name is still an image if it is called .png,
     // and the alignment/size options are what makes the picker useful for one
     const isImage = entry.family === 'image'
-    const isPdf = entry.extension === 'pdf' || entry.mime_type === 'application/pdf'
+    const isPdf =
+      entry.extension === 'pdf' || entry.mime_type === 'application/pdf'
 
     // one rule per option rather than one loop per class: an option can be both
     // image-only and wiki-only, and two loops writing the same style property in
     // sequence decide the answer by their order rather than by what the option is
     const hidden = (option) => {
-      if (this.format === 'markdown' && option.hasAttribute('data-yw-file-picker-wiki-only')) return true
+      if (
+        this.format === 'markdown' &&
+        option.hasAttribute('data-yw-file-picker-wiki-only')
+      )
+        return true
       if (option.classList.contains('image-option')) return !isImage
       if (option.classList.contains('pdf-option')) return !isPdf
       if (option.classList.contains('file-option')) return isImage
@@ -463,8 +567,11 @@ export default class {
     })
 
     if (!isImage && !isPdf) {
-      const linkText = this.optionsForm.querySelector('[name="attach_link_text"]')
-      if (linkText && !linkText.value) linkText.value = this.selectedEntry.original_filename
+      const linkText = this.optionsForm.querySelector(
+        '[name="attach_link_text"]',
+      )
+      if (linkText && !linkText.value)
+        linkText.value = this.selectedEntry.original_filename
     }
   }
 
@@ -479,7 +586,8 @@ export default class {
     // early and corrupt the emitted {{attach ...}} action
     const esc = (s) => String(s).replace(/"/g, '&quot;')
 
-    let desc = form.querySelector('[name="attach_alt"]').value || val('attach_link_text')
+    let desc =
+      form.querySelector('[name="attach_alt"]').value || val('attach_link_text')
     if (!desc) desc = this.selectedEntry.original_filename
 
     let result = `{{attach file="${esc(this.selectedTag)}" desc="${esc(desc)}"`
@@ -494,7 +602,9 @@ export default class {
     }
 
     const align = val('attach_align')
-    const checkedEffects = form.querySelectorAll('[name="attach_css_class"]:checked')
+    const checkedEffects = form.querySelectorAll(
+      '[name="attach_css_class"]:checked',
+    )
     const effects = Array.from(checkedEffects).map((el) => el.value)
     if (align || effects.length) {
       result += ` class="${esc([align, ...effects].filter(Boolean).join(' '))}"`
@@ -534,7 +644,9 @@ export default class {
 
   /** Where the chosen file is served from -- the one address that survives a rename. */
   downloadUrl() {
-    return wiki.url(`api/files/${encodeURIComponent(this.selectedTag)}/download`)
+    return wiki.url(
+      `api/files/${encodeURIComponent(this.selectedTag)}/download`,
+    )
   }
 
   buildMarkdown() {
@@ -542,7 +654,8 @@ export default class {
     const isImage = this.selectedEntry.family === 'image'
     const alt = form.querySelector('[name="attach_alt"]').value
     const linkText = form.querySelector('[name="attach_link_text"]').value
-    const label = (isImage ? alt : linkText || alt) || this.selectedEntry.original_filename
+    const label =
+      (isImage ? alt : linkText || alt) || this.selectedEntry.original_filename
     const url = this.downloadUrl()
 
     // a `]` in the label would close the link text early; a `(` or `)` would break the

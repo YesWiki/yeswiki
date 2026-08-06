@@ -630,9 +630,9 @@ Les paramètres ajoutables au yeswiki config
     'use\_captcha' => true,
 
 2. A partir de la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès) Les
-   paramètres ci-dessus sont aussi activables de manière simple via la page de
-   gestion du site, onglet "fichier de conf". Pour le détail, voir la partie
-   ["Fichier de configuration>droits d'accès"](/docs/fr/admin?id=droit-d39accès)
+paramètres ci-dessus sont aussi activables de manière simple via la page de
+gestion du site, onglet "fichier de conf". Pour le détail, voir la partie
+["Fichier de configuration>droits d'accès"](/docs/fr/admin?id=droit-d39accès)
 
 #### Pour les ajouts dans une page isolée
 

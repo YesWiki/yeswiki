@@ -2,7 +2,9 @@ const fps = 20
 const scannerSize = 200
 
 // This method will trigger user permissions
-const qrCodeFormats = { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] }
+const qrCodeFormats = {
+  formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+}
 const html5QrCode = new Html5Qrcode('qrreader', qrCodeFormats)
 const config = { fps, qrbox: scannerSize }
 let lastResult = ''
@@ -15,14 +17,9 @@ const qrCodeSuccessCallback = (decodedText) => {
 }
 // we prefer back camera for scanning from mobile phone
 html5QrCode
-  .start(
-    { facingMode: 'environment' },
-    config,
-    qrCodeSuccessCallback,
-    () => {
-      // parse error, ignore it.
-    }
-  )
+  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {
+    // parse error, ignore it.
+  })
   .catch((err) => {
     // Start failed, handle it.
     console.error(err)
@@ -32,7 +29,9 @@ html5QrCode
 function speak(selector) {
   // cut former speech
   window.speechSynthesis.cancel()
-  const toSpeak = new SpeechSynthesisUtterance(document.querySelector(selector).textContent)
+  const toSpeak = new SpeechSynthesisUtterance(
+    document.querySelector(selector).textContent,
+  )
   window.speechSynthesis.speak(toSpeak)
 }
 
@@ -64,19 +63,24 @@ function successHandler(data) {
           const player = document.getElementById('multimedia-player')
           const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
           const audio = `<audio id="audio-player" controls autoplay autobuffer src="${song}"></audio>`
-          const download = `<a style="display:block" download href="${song}">`
-            + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
+          const download =
+            `<a style="display:block" download href="${song}">` +
+            '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
           player.innerHTML = `<figure>${caption}${audio}${download}</figure>`
-          const activeSelector = '#multimedia-playlist .yw-list-group__item--active'
+          const activeSelector =
+            '#multimedia-playlist .yw-list-group__item--active'
           document.querySelectorAll(activeSelector).forEach((el) => {
             el.classList.remove('yw-list-group__item--active')
           })
-          const songButton = '<button type="button"'
-            + ' class="song yw-list-group__item yw-list-group__item--active"'
-            + ` data-url="${song}">`
-            + `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#music"/></svg> ${cardData.title}`
-            + '</button>'
-          document.getElementById('multimedia-playlist').insertAdjacentHTML('beforeend', songButton)
+          const songButton =
+            '<button type="button"' +
+            ' class="song yw-list-group__item yw-list-group__item--active"' +
+            ` data-url="${song}">` +
+            `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#music"/></svg> ${cardData.title}` +
+            '</button>'
+          document
+            .getElementById('multimedia-playlist')
+            .insertAdjacentHTML('beforeend', songButton)
         }
       })
   }
@@ -99,7 +103,7 @@ ywInitEach('#qrinfos', () => {
       characterData: false,
       attributes: false,
       childList: true,
-      subtree: false
+      subtree: false,
     }
     observer.observe(target, observerConfig)
 
@@ -109,10 +113,12 @@ ywInitEach('#qrinfos', () => {
     // clic on playlist item
     // NB: pre-existing debug leftover carried over unchanged from the source extension --
     // out of scope for a Bootstrap/jQuery-removal ticket to also fix.
-    document.getElementById('multimedia-playlist').addEventListener('click', (e) => {
-      if (e.target.closest('.song')) {
-        alert('coucou')
-      }
-    })
+    document
+      .getElementById('multimedia-playlist')
+      .addEventListener('click', (e) => {
+        if (e.target.closest('.song')) {
+          alert('coucou')
+        }
+      })
   }
 })

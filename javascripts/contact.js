@@ -25,28 +25,31 @@ ywInitEach('body', (body) => {
     let atLeastOneMailFieldNotValid = false
     let firstErrorGroup = null
 
-    form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
-      const group = field.closest('.yw-form-group')
-      if (field.value.length === 0 || field.value === '0') {
-        atLeastOneFieldNotValid = true
-        if (group) {
-          group.classList.add('has-error')
-          if (!firstErrorGroup) firstErrorGroup = group
-          const helpBlock = document.createElement('span')
-          helpBlock.className = 'help-block'
-          helpBlock.textContent = _t('CONTACT_REQUIRED_FIELD')
-          group.appendChild(helpBlock)
+    form
+      .querySelectorAll('input[required], textarea[required]')
+      .forEach((field) => {
+        const group = field.closest('.yw-form-group')
+        if (field.value.length === 0 || field.value === '0') {
+          atLeastOneFieldNotValid = true
+          if (group) {
+            group.classList.add('has-error')
+            if (!firstErrorGroup) firstErrorGroup = group
+            const helpBlock = document.createElement('span')
+            helpBlock.className = 'help-block'
+            helpBlock.textContent = _t('CONTACT_REQUIRED_FIELD')
+            group.appendChild(helpBlock)
+          }
+        } else if (group) {
+          group.classList.remove('has-error')
         }
-      } else if (group) {
-        group.classList.remove('has-error')
-      }
-    })
+      })
 
     form.querySelectorAll('input[type=email]').forEach((field) => {
       const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       const address = field.value
       const group = field.closest('.yw-form-group')
-      const isEmptyOptional = address === '' && field.getAttribute('required') !== 'required'
+      const isEmptyOptional =
+        address === '' && field.getAttribute('required') !== 'required'
       if (reg.test(address) === false && !isEmptyOptional) {
         atLeastOneMailFieldNotValid = true
         if (group) {
@@ -64,7 +67,8 @@ ywInitEach('body', (body) => {
 
     if (atLeastOneFieldNotValid || atLeastOneMailFieldNotValid) {
       if (firstErrorGroup) {
-        const top = firstErrorGroup.getBoundingClientRect().top + window.scrollY - 80
+        const top =
+          firstErrorGroup.getBoundingClientRect().top + window.scrollY - 80
         window.scrollTo({ top, behavior: 'smooth' })
       }
       return

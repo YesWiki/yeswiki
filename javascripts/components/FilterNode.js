@@ -9,7 +9,9 @@ const FilterNode = {
     // A parent node should be displayed if some of it's children has count > 0
     // count is the number of entries in the list have this node value
     displayNode() {
-      return [this.node, ...this.node.descendants].some((node) => node.count > 0)
+      return [this.node, ...this.node.descendants].some(
+        (node) => node.count > 0,
+      )
     },
     someDescendantChecked() {
       return this.node.descendants.some((node) => node.checked)
@@ -18,22 +20,24 @@ const FilterNode = {
       return {
         checked: this.node.checked,
         'some-descendant-checked': this.someDescendantChecked,
-        expanded: this.expanded
+        expanded: this.expanded,
       }
     },
     nodeTitle() {
-      const vLanguage = document.documentElement.getAttribute('lang') ?? undefined
+      const vLanguage =
+        document.documentElement.getAttribute('lang') ?? undefined
       let vLabel
 
       if (vLanguage) {
         const holder = document.createElement('span')
         holder.innerHTML = this.node.label
         vLabel = Array.from(holder.querySelectorAll(`[lang=${vLanguage}]`))
-          .map((el) => el.textContent).join('')
+          .map((el) => el.textContent)
+          .join('')
       } else vLabel = this.node.label
 
       return vLabel
-    }
+    },
   },
   methods: {
     onChecked() {
@@ -50,14 +54,18 @@ const FilterNode = {
       // Why unchecking descendants?
       // If Paris is checked, and I check France. All entries from France will be displayed
       // then no need to have Paris checked, it's misleading
-      this.node.descendants.forEach((node) => { node.checked = false })
-      this.node.parents.forEach((node) => { node.checked = false })
+      this.node.descendants.forEach((node) => {
+        node.checked = false
+      })
+      this.node.parents.forEach((node) => {
+        node.checked = false
+      })
     },
     labelClicked(event) {
       // if has childrne, then cliking expand them, and do not trigger the checkbox
       if (this.node.children.length > 0) event.preventDefault()
       this.expanded = !this.expanded
-    }
+    },
   },
   template: `
     <div class="filter-node-container" v-show="displayNode">
@@ -85,7 +93,7 @@ const FilterNode = {
         </div>
       </collapse-transition>
     </div>
-  `
+  `,
 }
 FilterNode.components.FilterNode = FilterNode
 export default FilterNode

@@ -10,7 +10,15 @@ import InputFormField from './InputFormField.js'
 export default {
   props: ['name', 'value', 'config', 'selectedForms', 'values'],
   emits: ['input'],
-  components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden },
+  components: {
+    InputText,
+    InputCheckbox,
+    InputList,
+    InputIcon,
+    InputColor,
+    InputFormField,
+    InputHidden,
+  },
   mixins: [InputHelper],
   data() {
     return { elements: [] }
@@ -18,7 +26,7 @@ export default {
   computed: {
     propertiesIds() {
       return Object.keys(this.config.subproperties)
-    }
+    },
   },
   mounted() {
     this.parseNewValues(this.values)
@@ -26,11 +34,13 @@ export default {
   methods: {
     addElement() {
       const element = {}
-      this.propertiesIds.forEach((id) => element[id] = '')
+      this.propertiesIds.forEach((id) => (element[id] = ''))
       this.elements.push(element)
     },
     removeElement(group) {
-      this.elements = this.elements.filter((el) => el[this.propertiesIds[0]] != group[this.propertiesIds[0]])
+      this.elements = this.elements.filter(
+        (el) => el[this.propertiesIds[0]] != group[this.propertiesIds[0]],
+      )
     },
     resetValues() {
       this.elements = []
@@ -40,13 +50,15 @@ export default {
     },
     getValues() {
       console.warn('getValues Method should be implement in sub component')
-    }
+    },
   },
   watch: {
     elements: {
-      handler() { this.$emit('input', null) },
-      deep: true
-    }
+      handler() {
+        this.$emit('input', null)
+      },
+      deep: true,
+    },
   },
   template: `
     <div class="multi-input-container" :class="name">
@@ -71,5 +83,5 @@ export default {
         <svg class="yw-icon" aria-hidden="true" v-else><use href="src/assets/icons.svg#plus"/></svg>
       </button>
       <input-hint :config="config"></input-hint>
-    </div>`
+    </div>`,
 }

@@ -30,7 +30,7 @@ Object.assign(window.yesWikiTypes, {
   radiofiche: { type: 'radio-group', subtype2: 'form' },
   fichier: { type: 'file' },
   champs_cache: { type: 'hidden' },
-  listefiches: { type: 'listefichesliees' }
+  listefiches: { type: 'listefichesliees' },
 })
 
 // stored JSON text -> list of { type: designerType, data: attributes } items.
@@ -47,7 +47,10 @@ export function parseFields(text, registry) {
   if (!Array.isArray(stored)) return null
 
   return stored
-    .filter((fieldObject) => fieldObject && typeof fieldObject === 'object' && fieldObject.type)
+    .filter(
+      (fieldObject) =>
+        fieldObject && typeof fieldObject === 'object' && fieldObject.type,
+    )
     .map((fieldObject) => {
       const wikiType = fieldObject.type
       const resolution = window.yesWikiTypes[wikiType]
@@ -57,7 +60,8 @@ export function parseFields(text, registry) {
       const data = { ...fieldObject }
       delete data.type
       data._wikiType = wikiType // eslint-disable-line no-underscore-dangle
-      if (resolution?.subtype && !data.sub_type) data.sub_type = resolution.subtype
+      if (resolution?.subtype && !data.sub_type)
+        data.sub_type = resolution.subtype
       if (resolution?.subtype2) data.subtype2 = resolution.subtype2
 
       return { type, data }
@@ -67,15 +71,22 @@ export function parseFields(text, registry) {
 // designer type (+ sub_type / subtype2 in data) -> stored wiki type keyword
 function resolveWikiType(type, data) {
   const original = data._wikiType // eslint-disable-line no-underscore-dangle
-  const compatible = (resolution) => resolution.type === type
-    && (!data.sub_type || !resolution.subtype || data.sub_type === resolution.subtype)
-    && (!data.subtype2 || data.subtype2 === resolution.subtype2)
+  const compatible = (resolution) =>
+    resolution.type === type &&
+    (!data.sub_type ||
+      !resolution.subtype ||
+      data.sub_type === resolution.subtype) &&
+    (!data.subtype2 || data.subtype2 === resolution.subtype2)
   const entries = Object.entries(window.yesWikiTypes)
 
   // a keyword dedicated to this exact sub_type wins (text+password -> mot_de_passe,
   // text+url -> lien_internet_bis -> lien_internet)
-  const specific = entries.find(([, resolution]) => compatible(resolution)
-    && resolution.subtype && resolution.subtype === data.sub_type)
+  const specific = entries.find(
+    ([, resolution]) =>
+      compatible(resolution) &&
+      resolution.subtype &&
+      resolution.subtype === data.sub_type,
+  )
   if (specific) return specific[0].replace(/_bis$/, '')
 
   // otherwise the field's original keyword is kept as long as it still fits the
@@ -101,7 +112,9 @@ export function serializeFields(fields, registry) {
     Object.entries(data).forEach(([key, value]) => {
       if (key.startsWith('_') || key === 'subtype2') return
       if (config.attributes?.[key]?.transient) return
-      let serialized = Array.isArray(value) ? value.join(',') : String(value ?? '')
+      let serialized = Array.isArray(value)
+        ? value.join(',')
+        : String(value ?? '')
       serialized = serialized.trim()
       if (serialized === '') return
       fieldObject[key] = serialized

@@ -15,23 +15,41 @@ test.describe('the edit bar', () => {
   test.beforeEach(async ({ page }) => {
     await logout(page)
     await page.goto('/?user')
-    await page.fill('.yw-account-guest__card .login-form input[name="name"]', ADMIN_USERNAME)
-    await page.fill('.yw-account-guest__card .login-form input[name="password"]', ADMIN_PASSWORD)
-    await page.click('.yw-account-guest__card .login-form button[type="submit"]')
+    await page.fill(
+      '.yw-account-guest__card .login-form input[name="name"]',
+      ADMIN_USERNAME,
+    )
+    await page.fill(
+      '.yw-account-guest__card .login-form input[name="password"]',
+      ADMIN_PASSWORD,
+    )
+    await page.click(
+      '.yw-account-guest__card .login-form button[type="submit"]',
+    )
   })
 
-  test('the comments dropdown opens, and nothing was reparented out of it', async ({ page }) => {
+  test('the comments dropdown opens, and nothing was reparented out of it', async ({
+    page,
+  }) => {
     await page.goto('/?PagePrincipale')
 
     const menu = page.locator('.yw-page-info .dropup > ul.dropdown-menu')
-    await expect(menu, 'the menu belongs inside the .dropup the toggle searches').toHaveCount(1)
-    await expect(page.locator('.yw-page-info p'), 'no paragraph here -- see the file comment').toHaveCount(0)
+    await expect(
+      menu,
+      'the menu belongs inside the .dropup the toggle searches',
+    ).toHaveCount(1)
+    await expect(
+      page.locator('.yw-page-info p'),
+      'no paragraph here -- see the file comment',
+    ).toHaveCount(0)
 
     await page.locator('.yw-page-info .link-comments').first().click()
     await expect(menu).toBeVisible()
   })
 
-  test('the actions float in the corner and the facts stay at the foot', async ({ page }) => {
+  test('the actions float in the corner and the facts stay at the foot', async ({
+    page,
+  }) => {
     await page.goto('/?PagePrincipale')
 
     // collapsed, the cluster is the edit button alone
@@ -49,7 +67,9 @@ test.describe('the edit bar', () => {
     expect((await cluster.boundingBox())?.y).toBe(before?.y)
   })
 
-  test('editing replaces the reader actions with the editor ones', async ({ page }) => {
+  test('editing replaces the reader actions with the editor ones', async ({
+    page,
+  }) => {
     await page.goto('/?PagePrincipale/edit')
 
     const cluster = page.locator('.yw-page-actions--editing')

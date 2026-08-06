@@ -3,9 +3,12 @@
 const usersTableService = {
   isRunning: false,
   postForm(url, data) {
-    return fetch(url, { method: 'POST', body: new URLSearchParams(data) })
-      .then((response) => response.json()
-        .then((payload) => (response.ok ? payload : Promise.reject(payload))))
+    return fetch(url, { method: 'POST', body: new URLSearchParams(data) }).then(
+      (response) =>
+        response
+          .json()
+          .then((payload) => (response.ok ? payload : Promise.reject(payload))),
+    )
   },
   createUser(elem) {
     const form = elem.closest('form')
@@ -18,7 +21,8 @@ const usersTableService = {
     const inputEmail = form.querySelector('[name=email]')
     const name = inputName ? inputName.value : ''
     const email = inputEmail ? inputEmail.value : ''
-    usersTableService.postForm(wiki.url('api/users'), { name, email })
+    usersTableService
+      .postForm(wiki.url('api/users'), { name, email })
       .then((data) => {
         const userName = data.user.name
         const userEmail = data.user.email
@@ -37,26 +41,29 @@ const usersTableService = {
           })
         }
         if (userLink !== '') {
-          const holder = document.getElementById('users-table-link-change-password')
+          const holder = document.getElementById(
+            'users-table-link-change-password',
+          )
           if (holder) {
-            holder.innerHTML = `<br/><label>${_t('LINK_TO_CHANGE_PASSWORD')}</label><br/>`
-              + `<a href='${userLink}' target='_blank'>${userLink}</a>`
+            holder.innerHTML =
+              `<br/><label>${_t('LINK_TO_CHANGE_PASSWORD')}</label><br/>` +
+              `<a href='${userLink}' target='_blank'>${userLink}</a>`
           }
         }
         toastMessage(
           _t('USERSTABLE_USER_CREATED', { name: userName }),
           1100,
-          'alert alert-success'
+          'alert alert-success',
         )
       })
       .catch((payload) => {
         toastMessage(
           _t('USERSTABLE_USER_NOT_CREATED', {
             name,
-            error: payload && payload.error ? payload.error : ''
+            error: payload && payload.error ? payload.error : '',
           }),
           3000,
-          'alert alert-danger'
+          'alert alert-danger',
         )
       })
       .finally(() => {
@@ -76,10 +83,10 @@ const usersTableService = {
     const targetNode = elem.userTargetNode
     const modal = elem.userModal
 
-    usersTableService.postForm(
-      wiki.url(`api/users/${encodeURIComponent(name)}/delete`),
-      { csrfToken }
-    )
+    usersTableService
+      .postForm(wiki.url(`api/users/${encodeURIComponent(name)}/delete`), {
+        csrfToken,
+      })
       .then(() => {
         if (targetNode) {
           const row = targetNode.closest('tr')
@@ -98,14 +105,15 @@ const usersTableService = {
         multiDeleteService.addErrorMessage(
           modal,
           `${_t('USERSTABLE_USER_NOT_DELETED', { username: name })} : ${
-            payload && payload.error ? payload.error : ''}`
+            payload && payload.error ? payload.error : ''
+          }`,
         )
       })
       .finally(() => {
         multiDeleteService.updateProgressBar(modal, ['test'], 0)
         usersTableService.isRunning = false
       })
-  }
+  },
 }
 
 document.addEventListener('click', (event) => {
@@ -124,10 +132,12 @@ if (userTableDeleteModal) {
   userTableDeleteModal.addEventListener('yw-modal-shown', (event) => {
     const modal = userTableDeleteModal
     multiDeleteService.initProgressBar(modal)
-    modal.querySelectorAll('.yw-modal__body .multi-delete-results').forEach((resultsParam) => {
-      const results = resultsParam
-      results.innerHTML = ''
-    })
+    modal
+      .querySelectorAll('.yw-modal__body .multi-delete-results')
+      .forEach((resultsParam) => {
+        const results = resultsParam
+        results.innerHTML = ''
+      })
     const deleteButton = modal.querySelector('button.start-btn-delete-user')
     if (!deleteButton) return
     deleteButton.removeAttribute('disabled')

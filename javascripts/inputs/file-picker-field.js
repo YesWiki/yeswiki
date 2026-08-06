@@ -31,13 +31,15 @@ const openPicker = (button) => {
       // the field posts `<name>_url`, and a browser only submits what it can see:
       // an input inside a hidden tab pane is submitted, but the person filling the form
       // has to be shown what they just chose
-      const chosen = document.querySelector(`[data-yw-file-picker-chosen="${button.dataset.ywFilePickerField}"]`)
+      const chosen = document.querySelector(
+        `[data-yw-file-picker-chosen="${button.dataset.ywFilePickerField}"]`,
+      )
       if (chosen) {
         chosen.textContent = entry.original_filename
         chosen.hidden = false
       }
       target.dispatchEvent(new Event('change', { bubbles: true }))
-    }
+    },
   })
 }
 

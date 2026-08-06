@@ -6,11 +6,17 @@ import openRemoteModal from '../../../helpers/remote-modal.js'
 // array of field objects; enum fields carry their list/form id as `linked_object`.
 const _listAndFormUserValues = {} // eslint-disable-line no-underscore-dangle
 try {
-  const template = JSON.parse(document.getElementById('form-builder-text')?.value ?? '[]')
+  const template = JSON.parse(
+    document.getElementById('form-builder-text')?.value ?? '[]',
+  )
   if (Array.isArray(template)) {
     template.forEach((field) => {
       const value = field?.linked_object
-      if (value && !(value in formAndListIds.forms) && !(value in formAndListIds.lists)) {
+      if (
+        value &&
+        !(value in formAndListIds.forms) &&
+        !(value in formAndListIds.lists)
+      ) {
         _listAndFormUserValues[value] = value
       }
     })
@@ -26,7 +32,7 @@ export const visibilityOptions = {
   '*': _t('EVERYONE'),
   '+': _t('IDENTIFIED_USERS'),
   '%': _t('BAZ_FORM_EDIT_OWNER_AND_ADMINS'),
-  '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' })
+  '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' }),
 }
 
 // create list of user groups
@@ -40,34 +46,35 @@ export const formattedGroupList = _formattedGroupList
 export const aclsOptions = {
   ...visibilityOptions,
   ...{
-    user:
-    _t('BAZ_FORM_EDIT_USER')
+    user: _t('BAZ_FORM_EDIT_USER'),
   },
-  ...formattedGroupList
+  ...formattedGroupList,
 }
 
 export const aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
-  ...Object.fromEntries(Object.entries(visibilityOptions).filter(([key]) => key !== '*')),
+  ...Object.fromEntries(
+    Object.entries(visibilityOptions).filter(([key]) => key !== '*'),
+  ),
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
-  ...formattedGroupList
+  ...formattedGroupList,
 }
 
 export const readConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'),
   options: { ...visibilityOptions, ...formattedGroupList },
-  multiple: true
+  multiple: true,
 }
 
 export const writeConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'),
   options: { ...visibilityOptions, ...formattedGroupList },
-  multiple: true
+  multiple: true,
 }
 
 export const searchableConf = {
   label: _t('BAZ_FORM_EDIT_SEARCH_LABEL'),
-  options: { '': _t('NO'), 1: _t('YES') }
+  options: { '': _t('NO'), 1: _t('YES') },
 }
 
 // Opens the iframed list editor in a remote modal and resolves its postmessage
@@ -79,7 +86,11 @@ function openListEditorModal(title, url, expectedMsg, onDone) {
   const onMessage = (event) => {
     if (event.data?.msg === expectedMsg) {
       onDone(event.data)
-      toastMessage(_t(expectedMsg === 'list_created' ? 'LIST_CREATED' : 'LIST_UPDATED'), 3000, 'yw-alert yw-alert--success')
+      toastMessage(
+        _t(expectedMsg === 'list_created' ? 'LIST_CREATED' : 'LIST_UPDATED'),
+        3000,
+        'yw-alert yw-alert--success',
+      )
       window.removeEventListener('message', onMessage)
       modal.close()
     }
@@ -102,7 +113,11 @@ function listActionButton(iconClass, onClick) {
 export function enumEditorSetup(api) {
   const updateOptions = () => {
     const source = api.getValue('subtype2') === 'form' ? 'forms' : 'lists'
-    api.setOptions('linked_object', { ...{ '': '' }, ...formAndListIds[source], ...listAndFormUserValues })
+    api.setOptions('linked_object', {
+      ...{ '': '' },
+      ...formAndListIds[source],
+      ...listAndFormUserValues,
+    })
   }
   api.onChange('subtype2', updateOptions)
 
@@ -113,27 +128,31 @@ export function enumEditorSetup(api) {
     const listId = api.getValue('linked_object')
     openListEditorModal(
       _t('LIST_UPDATE_TITLE'),
-      wiki.url(`?BazaR/iframe&view=listes&action=modif_liste&showmenu=0&onsubmit=postmessage&listid=${listId}`),
+      wiki.url(
+        `?BazaR/iframe&view=listes&action=modif_liste&showmenu=0&onsubmit=postmessage&listid=${listId}`,
+      ),
       'list_updated',
       (data) => {
         // update the options (list name might have changed)
         formAndListIds.lists[data.id] = data.title
         updateOptions()
-      }
+      },
     )
   })
 
   const createButton = listActionButton('fa-plus', () => {
     openListEditorModal(
       _t('LIST_CREATE_TITLE'),
-      wiki.url('?BazaR/iframe&view=listes&action=saisir_liste&showmenu=0&onsubmit=postmessage'),
+      wiki.url(
+        '?BazaR/iframe&view=listes&action=saisir_liste&showmenu=0&onsubmit=postmessage',
+      ),
       'list_created',
       (data) => {
         formAndListIds.lists[data.id] = data.title
         updateOptions()
         // select the newly created list
         api.setValue('linked_object', data.id)
-      }
+      },
     )
   })
 
@@ -158,8 +177,8 @@ export const selectConf = {
     label: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL'),
     options: {
       list: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LIST'),
-      form: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_FORM')
-    }
+      form: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_FORM'),
+    },
   },
   linked_object: {
     label: _t('BAZ_FORM_EDIT_SELECT_LIST_FORM_ID'),
@@ -167,14 +186,14 @@ export const selectConf = {
       ...{ '': '' },
       ...formAndListIds.lists,
       ...formAndListIds.forms,
-      ...listAndFormUserValues
-    }
+      ...listAndFormUserValues,
+    },
   },
   default: {
     label: _t('BAZ_FORM_EDIT_SELECT_DEFAULT'),
-    value: ''
+    value: '',
   },
   hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
   read_access: readConf,
-  write_access: writeConf
+  write_access: writeConf,
 }

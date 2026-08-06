@@ -22,7 +22,8 @@ ywInitEach('#btn-import-lists', () => {
     let url = document.getElementById('url-import-lists').value
 
     // expression réguliere pour trouver une url valide
-    const rgHttpUrl = /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-À-ſ]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?(\#([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?)?$/
+    const rgHttpUrl =
+      /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-À-ſ]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?(\#([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?)?$/
 
     if (rgHttpUrl.test(url)) {
       // on formate l url pour acceder au service json de yeswiki
@@ -50,7 +51,7 @@ ywInitEach('#btn-import-lists', () => {
             if (listData.titre_liste) {
               list = {
                 title: listData.titre_liste,
-                nodes: []
+                nodes: [],
               }
               Object.entries(listData.label).forEach(([id, label]) => {
                 list.nodes.push({ id, label, children: [] })
@@ -66,8 +67,9 @@ ywInitEach('#btn-import-lists', () => {
 
             let trclass = ''
             let existingmessage = ''
-            const existingMatch = Array.from(existinglists.querySelectorAll('td'))
-              .some((td) => td.textContent === idlist)
+            const existingMatch = Array.from(
+              existinglists.querySelectorAll('td'),
+            ).some((td) => td.textContent === idlist)
             if (existingMatch) {
               trclass = ' class="error danger"'
               existingmessage = `<br>
@@ -87,7 +89,7 @@ ywInitEach('#btn-import-lists', () => {
                   <td>${idlist + existingmessage}</td>
                   <td>${list.title}</td>
                   <td><select class="yw-input">${select}</select></td>
-                </tr>`
+                </tr>`,
             )
           })
 
@@ -96,7 +98,7 @@ ywInitEach('#btn-import-lists', () => {
             'afterbegin',
             `<div class="yw-alert yw-alert--success">
               ${listtranslations.nblistsfound} : ${count}
-            </div>`
+            </div>`,
           )
         })
         .catch(() => {

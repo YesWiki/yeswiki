@@ -5,7 +5,7 @@
 function toastMessage(
   message,
   duration = 3000,
-  toastClass = 'alert alert-secondary-1'
+  toastClass = 'alert alert-secondary-1',
 ) {
   const innerEl = document.createElement('div')
   innerEl.className = toastClass
@@ -17,8 +17,10 @@ function toastMessage(
   const topnav = document.getElementById('yw-topnav')
   if (topnav) {
     const styles = window.getComputedStyle(topnav)
-    const outerHeight = topnav.offsetHeight
-      + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom)
+    const outerHeight =
+      topnav.offsetHeight +
+      parseFloat(styles.marginTop) +
+      parseFloat(styles.marginBottom)
     toastEl.style.top = `${outerHeight + 20}px`
   }
   toastEl.style.opacity = 1
@@ -44,31 +46,37 @@ function checkAll(state) {
   })
 }
 
-(function() {
+;(function () {
   // Every ancestor of `el` (closest first) matching `selector`, like jQuery .parents()
   function ancestorsOf(el, selector) {
     const found = []
     let current = el.parentElement ? el.parentElement.closest(selector) : null
     while (current) {
       found.push(current)
-      current = current.parentElement ? current.parentElement.closest(selector) : null
+      current = current.parentElement
+        ? current.parentElement.closest(selector)
+        : null
     }
     return found
   }
 
   function requestFailureMessage(payload) {
-    return (payload && payload.error) ? payload.error : _t('ERROR')
+    return payload && payload.error ? payload.error : _t('ERROR')
   }
 
   // POSTs a form (or a plain key/value object) urlencoded, resolving with the
   // parsed JSON body and rejecting with the parsed JSON error body — the same
   // contract the previous jQuery $.ajax(dataType: 'json') calls relied on
   function postForm(url, data) {
-    const body = data instanceof HTMLFormElement
-      ? new URLSearchParams(new FormData(data))
-      : new URLSearchParams(data)
-    return fetch(url, { method: 'POST', body }).then((response) => response.json()
-      .then((payload) => (response.ok ? payload : Promise.reject(payload))))
+    const body =
+      data instanceof HTMLFormElement
+        ? new URLSearchParams(new FormData(data))
+        : new URLSearchParams(data)
+    return fetch(url, { method: 'POST', body }).then((response) =>
+      response
+        .json()
+        .then((payload) => (response.ok ? payload : Promise.reject(payload))),
+    )
   }
 
   // ---- password fields: show/hide toggle ----
@@ -76,8 +84,9 @@ function checkAll(state) {
     const eye = document.createElement('div')
     eye.className = 'far fa-eye'
     eye.setAttribute('title', _t('SHOW_PASSWORD'))
-    eye.style.cssText = 'position: absolute; right: 0%; top: 50%;'
-      + ' transform: translate(0px, -50%); padding-right: 1em; font-size: 1em;'
+    eye.style.cssText =
+      'position: absolute; right: 0%; top: 50%;' +
+      ' transform: translate(0px, -50%); padding-right: 1em; font-size: 1em;'
     eye.addEventListener('click', () => {
       if (field.getAttribute('type') === 'password') {
         field.setAttribute('type', 'text')
@@ -99,7 +108,8 @@ function checkAll(state) {
       const previous = list.previousElementSibling
       if (previous && previous.matches('a')) {
         previous.classList.add('active-parent-link')
-        if (previous.parentElement) previous.parentElement.classList.add('active-list')
+        if (previous.parentElement)
+          previous.parentElement.classList.add('active-list')
       }
     })
   })
@@ -117,12 +127,20 @@ function checkAll(state) {
   })
 
   // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
-  document.addEventListener('dblclick', (e) => {
-    if (e.target.closest('.no-dblclick, form, .page a, button, .yw-dropdown__menu')) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-  }, true)
+  document.addEventListener(
+    'dblclick',
+    (e) => {
+      if (
+        e.target.closest(
+          '.no-dblclick, form, .page a, button, .yw-dropdown__menu',
+        )
+      ) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    },
+    true,
+  )
 
   // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
   document.querySelectorAll('.modal, .yw-modal').forEach((modal) => {
@@ -130,7 +148,9 @@ function checkAll(state) {
   })
 
   // Remove hidden div by ACL
-  document.querySelectorAll('.remove-this-div-on-page-load').forEach((el) => el.remove())
+  document
+    .querySelectorAll('.remove-this-div-on-page-load')
+    .forEach((el) => el.remove())
 
   // Tooltips ([data-toggle="tooltip"]/[data-tooltip="tooltip"] + title) are pure
   // CSS now (yw-core.css) — no init call needed.
@@ -152,9 +172,9 @@ function checkAll(state) {
   if (searchWidget) {
     const closeSearchIfAsked = (e) => {
       if (
-        e.target === searchWidget
-        || e.target.closest('.close-search')
-        || e.key === 'Escape'
+        e.target === searchWidget ||
+        e.target.closest('.close-search') ||
+        e.key === 'Escape'
       ) {
         searchWidget.classList.remove('open')
       }
@@ -185,7 +205,9 @@ function checkAll(state) {
             <div class="yw-modal__body"></div>
           </div>
         </div>`
-      modal.querySelector('.yw-modal__title').textContent = _t('NAVBAR_EDIT_MESSAGE')
+      modal.querySelector('.yw-modal__title').textContent = _t(
+        'NAVBAR_EDIT_MESSAGE',
+      )
       const body = modal.querySelector('.yw-modal__body')
 
       navbar.querySelectorAll('.include').forEach((include) => {
@@ -199,9 +221,10 @@ function checkAll(state) {
         const link = document.createElement('a')
         link.href = href
         link.className = 'yw-btn yw-btn--block'
-        link.innerHTML = '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> '
+        link.innerHTML =
+          '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> '
         link.appendChild(
-          document.createTextNode(`${_t('YESWIKIMODAL_EDIT_MSG')} ${pagewiki}`)
+          document.createTextNode(`${_t('YESWIKIMODAL_EDIT_MSG')} ${pagewiki}`),
         )
         body.appendChild(link)
       })
@@ -237,7 +260,7 @@ function checkAll(state) {
     }
     script.onerror = () => {
       console.log(
-        'Error getting script javascripts/vendor/iframe-resizer/iframeResizer.min.js'
+        'Error getting script javascripts/vendor/iframe-resizer/iframeResizer.min.js',
       )
     }
     document.body.appendChild(script)
@@ -273,10 +296,14 @@ function checkAll(state) {
           el.style.display = '' // eslint-disable-line no-param-reassign
         })
       } else {
-        document.querySelectorAll('.acl-single-container label').forEach((label) => {
-          const select = document.querySelector(`select[name=${label.dataset.input}]`)
-          if (select) label.insertAdjacentElement('afterend', select)
-        })
+        document
+          .querySelectorAll('.acl-single-container label')
+          .forEach((label) => {
+            const select = document.querySelector(
+              `select[name=${label.dataset.input}]`,
+            )
+            if (select) label.insertAdjacentElement('afterend', select)
+          })
         document.querySelectorAll('.acl-simple').forEach((el) => {
           el.style.display = '' // eslint-disable-line no-param-reassign
         })
@@ -301,14 +328,20 @@ function checkAll(state) {
     form.setAttribute('class', '')
     form.setAttribute(
       'action',
-      form.getAttribute('action').replace(/api\/comments(\/.*)/gm, 'api/comments')
+      form
+        .getAttribute('action')
+        .replace(/api\/comments(\/.*)/gm, 'api/comments'),
     )
     const comments = document.querySelector('.yeswiki-page-comments')
     if (comments && comments.parentElement) {
       comments.parentElement.appendChild(form)
     }
-    form.querySelectorAll('label').forEach((label) => label.classList.remove('hide'))
-    document.querySelectorAll('.btn-cancel-comment').forEach((btn) => btn.remove())
+    form
+      .querySelectorAll('label')
+      .forEach((label) => label.classList.remove('hide'))
+    document
+      .querySelectorAll('.btn-cancel-comment')
+      .forEach((btn) => btn.remove())
     const postButton = form.querySelector('.btn-post-comment')
     if (postButton) postButton.textContent = _t('SAVE')
     window['aceditor-body'].editor.setValue('')
@@ -324,7 +357,11 @@ function checkAll(state) {
   // ajax post comment
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-post-comment')
-    if (!button || !button.closest('.yeswiki-page-comments, #post-comment, form')) return
+    if (
+      !button ||
+      !button.closest('.yeswiki-page-comments, #post-comment, form')
+    )
+      return
     e.preventDefault()
     const form = button.closest('form')
     if (!form) return
@@ -395,8 +432,12 @@ function checkAll(state) {
       input.value = com.dataset.tag // eslint-disable-line no-param-reassign
     })
     appendCancelButton(form)
-    com.querySelectorAll('.comment-links').forEach((links) => links.classList.add('hide'))
-    com.querySelectorAll('label').forEach((label) => label.classList.add('hide'))
+    com
+      .querySelectorAll('.comment-links')
+      .forEach((links) => links.classList.add('hide'))
+    com
+      .querySelectorAll('label')
+      .forEach((label) => label.classList.add('hide'))
   })
 
   // ajax edit comment
@@ -422,13 +463,20 @@ function checkAll(state) {
     const form = formcom.querySelector('form')
     if (!form) return
     form.setAttribute('id', `form-comment-${com.dataset.tag}`)
-    form.setAttribute('action', `${form.getAttribute('action')}/${com.dataset.tag}`)
+    form.setAttribute(
+      'action',
+      `${form.getAttribute('action')}/${com.dataset.tag}`,
+    )
     form.classList.remove('hide')
     form.classList.add('temporary-form')
     form.classList.add('comment-modify')
-    formcom.querySelectorAll('label').forEach((label) => label.classList.add('hide'))
+    formcom
+      .querySelectorAll('label')
+      .forEach((label) => label.classList.add('hide'))
     const commentBody = com.querySelector('.comment-body')
-    window['aceditor-body'].editor.setValue(commentBody ? commentBody.value : '')
+    window['aceditor-body'].editor.setValue(
+      commentBody ? commentBody.value : '',
+    )
     formcom.querySelectorAll('[name="pagetag"]').forEach((input) => {
       input.value = com.dataset.commenton // eslint-disable-line no-param-reassign
     })
@@ -468,8 +516,11 @@ function checkAll(state) {
     e.preventDefault()
     if (!window.confirm(_t('DELETE_COMMENT_AND_ANSWERS'))) return
     fetch(link.getAttribute('href'), { method: 'POST' })
-      .then((response) => response.json()
-        .then((payload) => (response.ok ? payload : Promise.reject(payload))))
+      .then((response) =>
+        response
+          .json()
+          .then((payload) => (response.ok ? payload : Promise.reject(payload))),
+      )
       .then((payload) => {
         const comment = link.closest('.yw-comment')
         if (comment) comment.remove()
@@ -503,9 +554,11 @@ function checkAll(state) {
     },
     deleteATag(elem) {
       fetch(elem.getAttribute('href'))
-        .then((response) => (response.ok
-          ? response
-          : response.json().then((payload) => Promise.reject(payload))))
+        .then((response) =>
+          response.ok
+            ? response
+            : response.json().then((payload) => Promise.reject(payload)),
+        )
         .then(() => {
           const row = elem.closest('tr')
           if (row) row.remove()
@@ -513,18 +566,20 @@ function checkAll(state) {
         .catch((payload) => {
           reactionManagementHelper.renderAjaxError(
             'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',
-            payload
+            payload,
           )
         })
     },
     deleteTags(headElem) {
       const table = headElem.closest('table')
       if (table) {
-        table.querySelectorAll('.btn-delete-reaction:not(.btn-delete-all)').forEach((el) => {
-          reactionManagementHelper.deleteATag(el)
-        })
+        table
+          .querySelectorAll('.btn-delete-reaction:not(.btn-delete-all)')
+          .forEach((el) => {
+            reactionManagementHelper.deleteATag(el)
+          })
       }
-    }
+    },
   }
 
   function maxReactionOf(link) {
@@ -538,7 +593,7 @@ function checkAll(state) {
       url: item.getAttribute('href'),
       data: { ...item.dataset },
       nb,
-      nbInit: parseInt(nb.textContent, 10)
+      nbInit: parseInt(nb.textContent, 10),
     }
   }
 
@@ -547,12 +602,15 @@ function checkAll(state) {
     if ('oldId' in data && (data.oldId === true || data.oldId === 'true')) {
       currentReactionId = 'reactionField'
     }
-    const deleteUrl = `${url}/${currentReactionId}/${data.id}/${data.pagetag}/`
-      + `${data.username}/delete`
+    const deleteUrl =
+      `${url}/${currentReactionId}/${data.id}/${data.pagetag}/` +
+      `${data.username}/delete`
     return fetch(deleteUrl, { method: 'POST' })
-      .then((response) => (response.ok
-        ? response
-        : response.json().then((payload) => Promise.reject(payload))))
+      .then((response) =>
+        response.ok
+          ? response
+          : response.json().then((payload) => Promise.reject(payload)),
+      )
       .then(() => {
         nb.textContent = nbInit - 1 // eslint-disable-line no-param-reassign
         link.classList.remove('user-reaction')
@@ -564,7 +622,7 @@ function checkAll(state) {
       .catch((payload) => {
         reactionManagementHelper.renderAjaxError(
           'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',
-          payload
+          payload,
         )
         return Promise.reject(payload)
       })
@@ -596,9 +654,9 @@ function checkAll(state) {
     const maxReaction = maxReactionOf(link)
     const nbReactionLeft = maxReaction ? parseFloat(maxReaction.textContent) : 0
     if (
-      nbReactionLeft === 0
-      && typeof blockReactionRemove !== 'undefined'
-      && blockReactionRemove === true
+      nbReactionLeft === 0 &&
+      typeof blockReactionRemove !== 'undefined' &&
+      blockReactionRemove === true
     ) {
       const flex = link.closest('.reactions-flex')
       const previous = flex ? flex.querySelector('.user-reaction') : null
@@ -607,10 +665,16 @@ function checkAll(state) {
           url: previousUrl,
           data: previousData,
           nb: previousNb,
-          nbInit: previousNbInit
+          nbInit: previousNbInit,
         } = extractReactionData(previous)
         if (previousUrl !== '#') {
-          deleteUserReaction(previousUrl, previousData, previousNb, previousNbInit, previous)
+          deleteUserReaction(
+            previousUrl,
+            previousData,
+            previousNb,
+            previousNbInit,
+            previous,
+          )
             .then(() => {
               link.click()
             })
@@ -633,12 +697,13 @@ function checkAll(state) {
         .catch((payload) => {
           reactionManagementHelper.renderAjaxError(
             'REACTION_NOT_POSSIBLE_TO_ADD_REACTION',
-            payload
+            payload,
           )
         })
     } else {
-      const message = "Vous n'avez plus de choix possibles,"
-        + ' vous pouvez retirer un choix existant pour changer'
+      const message =
+        "Vous n'avez plus de choix possibles," +
+        ' vous pouvez retirer un choix existant pour changer'
       toastMessage(message, 3000, 'alert alert-warning')
     }
   })
@@ -657,15 +722,21 @@ function checkAll(state) {
   })
 
   // ---- comments table: multi-delete modal ----
-  const commentsDeleteModal = document.getElementById('commentsTableDeleteModal')
+  const commentsDeleteModal = document.getElementById(
+    'commentsTableDeleteModal',
+  )
   if (commentsDeleteModal) {
     commentsDeleteModal.addEventListener('yw-modal-shown', (event) => {
       const modal = commentsDeleteModal
       multiDeleteService.initProgressBar(modal)
-      modal.querySelectorAll('.yw-modal__body .multi-delete-results').forEach((results) => {
-        results.innerHTML = '' // eslint-disable-line no-param-reassign
-      })
-      const deleteButton = modal.querySelector('button.start-btn-delete-comment')
+      modal
+        .querySelectorAll('.yw-modal__body .multi-delete-results')
+        .forEach((results) => {
+          results.innerHTML = '' // eslint-disable-line no-param-reassign
+        })
+      const deleteButton = modal.querySelector(
+        'button.start-btn-delete-comment',
+      )
       if (!deleteButton) return
       deleteButton.removeAttribute('disabled')
       const opener = event.detail.relatedTarget // Button that triggered the modal
@@ -681,16 +752,22 @@ function checkAll(state) {
           const commentName = deleteButton.dataset.name
           const targetNode = deleteButton.commentTargetNode
 
-          fetch(wiki.url(`api/comments/${commentName}/delete`), { method: 'POST' })
-            .then((response) => (response.ok
-              ? response
-              : response.json().then((payload) => Promise.reject(payload))))
+          fetch(wiki.url(`api/comments/${commentName}/delete`), {
+            method: 'POST',
+          })
+            .then((response) =>
+              response.ok
+                ? response
+                : response.json().then((payload) => Promise.reject(payload)),
+            )
             .then(() => {
               if (targetNode) {
                 const row = targetNode.closest('tr')
                 if (row) row.remove()
               }
-              const results = modal.querySelector('.yw-modal__body .multi-delete-results')
+              const results = modal.querySelector(
+                '.yw-modal__body .multi-delete-results',
+              )
               if (results) {
                 const done = document.createElement('div')
                 done.textContent = _t('COMMENT_DELETED')
@@ -701,7 +778,8 @@ function checkAll(state) {
               multiDeleteService.addErrorMessage(
                 modal,
                 `${_t('COMMENT_NOT_DELETED', { comment: commentName })} : ${
-                  payload && payload.error ? payload.error : ''}`
+                  payload && payload.error ? payload.error : ''
+                }`,
               )
             })
             .finally(() => {
@@ -727,4 +805,4 @@ function checkAll(state) {
       }, 300)
     })
   }
-}())
+})()

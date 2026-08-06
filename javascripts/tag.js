@@ -22,21 +22,25 @@ ywInitEach('.tag-label', (label) => {
 ywInitEach('body', () => {
   // nuage de mots clés : popover au clic
   function closePopovers() {
-    document.querySelectorAll('.yw-popover.tag-popover').forEach((popover) => popover.remove())
+    document
+      .querySelectorAll('.yw-popover.tag-popover')
+      .forEach((popover) => popover.remove())
   }
 
   document.querySelectorAll('.tag-link').forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault()
-      const alreadyOpen = link.nextElementSibling
-        && link.nextElementSibling.classList.contains('tag-popover')
+      const alreadyOpen =
+        link.nextElementSibling &&
+        link.nextElementSibling.classList.contains('tag-popover')
       closePopovers()
       if (alreadyOpen) return
       const popover = document.createElement('div')
       popover.className = 'yw-popover tag-popover'
-      popover.style.cssText = 'position: absolute; z-index: 1000; max-width: 320px;'
-        + ' background: #fff; border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 6px;'
-        + ' box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); padding: 8px 12px;'
+      popover.style.cssText =
+        'position: absolute; z-index: 1000; max-width: 320px;' +
+        ' background: #fff; border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 6px;' +
+        ' box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); padding: 8px 12px;'
       const title = document.createElement('div')
       title.className = 'tag-popover__title'
       title.innerHTML = link.dataset.title || ''

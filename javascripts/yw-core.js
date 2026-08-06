@@ -1,7 +1,7 @@
 // yw-core.js — core's vanilla-JS behavior for the yw-* design system (ADR-0004/0005).
 // No jQuery, no Bootstrap JS. Delegated listeners so it works for content swapped in
 // later by htmx, not just what's in the DOM at load time.
-(function() {
+;(function () {
   function closeModal(modal) {
     if (modal && modal.classList.contains('yw-modal--open')) {
       modal.classList.remove('yw-modal--open')
@@ -16,7 +16,8 @@
     })
     // legacy Bootstrap markup: parent of a .dropdown-menu gets .open
     document.querySelectorAll('.open > .dropdown-menu').forEach((menu) => {
-      if (menu.parentElement !== except) menu.parentElement.classList.remove('open')
+      if (menu.parentElement !== except)
+        menu.parentElement.classList.remove('open')
     })
   }
 
@@ -121,7 +122,8 @@
       })
     } else {
       body.innerHTML = '<span class="yw-modal__loading"></span>'
-      const fragmentSelector = opener.getAttribute('data-yw-modal-fragment') || '.page'
+      const fragmentSelector =
+        opener.getAttribute('data-yw-modal-fragment') || '.page'
       fetch(url)
         .then((response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -135,7 +137,8 @@
           document.dispatchEvent(new CustomEvent('yw-modal-open'))
         })
         .catch(() => {
-          body.innerHTML = '<div class="yw-alert yw-alert--danger" role="alert"></div>'
+          body.innerHTML =
+            '<div class="yw-alert yw-alert--danger" role="alert"></div>'
         })
     }
 
@@ -145,9 +148,12 @@
   // Resolves the element a toggle points at, reading whichever attribute the
   // markup uses: the yw-* one, legacy Bootstrap's data-target, or a "#id" href.
   function toggleTarget(toggle, ywAttribute) {
-    const selector = toggle.getAttribute(ywAttribute)
-      || toggle.getAttribute('data-target')
-      || (/^#./.test(toggle.getAttribute('href') || '') ? toggle.getAttribute('href') : null)
+    const selector =
+      toggle.getAttribute(ywAttribute) ||
+      toggle.getAttribute('data-target') ||
+      (/^#./.test(toggle.getAttribute('href') || '')
+        ? toggle.getAttribute('href')
+        : null)
     return selector ? document.querySelector(selector) : null
   }
 
@@ -159,11 +165,16 @@
   // buttons) — the nav is then found as the container's preceding tab list.
   function tabNavFor(link, pane) {
     const ownNav = link.closest('ul')
-    if (ownNav && ownNav.querySelector('a[data-toggle="tab"], a[data-yw-tab]')) return ownNav
+    if (ownNav && ownNav.querySelector('a[data-toggle="tab"], a[data-yw-tab]'))
+      return ownNav
     let el = pane.parentElement
     while (el && el.previousElementSibling) {
       el = el.previousElementSibling
-      if (el.matches('ul') && el.querySelector('a[data-toggle="tab"], a[data-yw-tab]')) return el
+      if (
+        el.matches('ul') &&
+        el.querySelector('a[data-toggle="tab"], a[data-yw-tab]')
+      )
+        return el
     }
     return null
   }
@@ -181,7 +192,10 @@
     if (nav) {
       nav.querySelectorAll('li').forEach((item) => {
         const itemLink = item.querySelector('a[href]')
-        item.classList.toggle('active', !!itemLink && itemLink.getAttribute('href') === href)
+        item.classList.toggle(
+          'active',
+          !!itemLink && itemLink.getAttribute('href') === href,
+        )
       })
     }
     // A trigger inside the pane container (next/previous button) scrolls back up
@@ -204,7 +218,7 @@
 
   function tabLinkFor(href) {
     return document.querySelector(
-      `a[data-toggle="tab"][href="${href}"], a[data-yw-tab][href="${href}"]`
+      `a[data-toggle="tab"][href="${href}"], a[data-yw-tab][href="${href}"]`,
     )
   }
 
@@ -250,7 +264,9 @@
   // Open: click on any [data-yw-modal-target="#id"] / legacy [data-toggle="modal"],
   // or a remote-loading "a.modalbox"-style link
   document.addEventListener('click', (e) => {
-    const opener = e.target.closest('[data-yw-modal-target], [data-toggle="modal"]')
+    const opener = e.target.closest(
+      '[data-yw-modal-target], [data-toggle="modal"]',
+    )
     if (opener) {
       const modal = toggleTarget(opener, 'data-yw-modal-target')
       // only claim converted .yw-modal targets — a legacy Bootstrap-markup modal
@@ -260,7 +276,10 @@
         modal.classList.add('yw-modal--open')
         // Replaces Bootstrap's shown.bs.modal + event.relatedTarget contract
         modal.dispatchEvent(
-          new CustomEvent('yw-modal-shown', { bubbles: true, detail: { relatedTarget: opener } })
+          new CustomEvent('yw-modal-shown', {
+            bubbles: true,
+            detail: { relatedTarget: opener },
+          }),
         )
       }
       return
@@ -278,7 +297,9 @@
     // legacy [data-dismiss] markup means the same thing
     const dismisser = e.target.closest('[data-yw-dismiss], [data-dismiss]')
     if (dismisser) {
-      const kind = dismisser.getAttribute('data-yw-dismiss') || dismisser.getAttribute('data-dismiss')
+      const kind =
+        dismisser.getAttribute('data-yw-dismiss') ||
+        dismisser.getAttribute('data-dismiss')
       if (kind === 'modal') {
         closeModal(dismisser.closest('.yw-modal'))
       } else if (kind === 'alert') {
@@ -291,7 +312,9 @@
     }
 
     // Toggle: click on [data-yw-dropdown-toggle] or legacy [data-toggle="dropdown"]
-    const toggle = e.target.closest('[data-yw-dropdown-toggle], [data-toggle="dropdown"]')
+    const toggle = e.target.closest(
+      '[data-yw-dropdown-toggle], [data-toggle="dropdown"]',
+    )
     if (toggle) {
       const dropdown = toggle.closest('.yw-dropdown')
       if (dropdown) {
@@ -299,7 +322,10 @@
         const willOpen = !dropdown.classList.contains('yw-dropdown--open')
         closeDropdowns()
         dropdown.classList.toggle('yw-dropdown--open', willOpen)
-      } else if (toggle.parentElement && toggle.parentElement.querySelector('.dropdown-menu')) {
+      } else if (
+        toggle.parentElement &&
+        toggle.parentElement.querySelector('.dropdown-menu')
+      ) {
         // legacy Bootstrap markup: toggle .open on the .dropdown-menu's parent
         e.preventDefault()
         const parent = toggle.parentElement
@@ -324,23 +350,32 @@
     // container first, mirroring Bootstrap's data-parent exclusive-open behavior.
     // Legacy [data-toggle="collapse"] markup (data-target/href + data-parent) is
     // honored too, driving the same .yw-collapse--open class.
-    const collapseToggle = e.target.closest('[data-yw-collapse-toggle], [data-toggle="collapse"]')
+    const collapseToggle = e.target.closest(
+      '[data-yw-collapse-toggle], [data-toggle="collapse"]',
+    )
     if (collapseToggle) {
       const target = toggleTarget(collapseToggle, 'data-yw-collapse-toggle')
       // legacy Bootstrap .collapse markup toggles its .in class instead
-      if (target && !target.classList.contains('yw-collapse')
-        && target.classList.contains('collapse')) {
+      if (
+        target &&
+        !target.classList.contains('yw-collapse') &&
+        target.classList.contains('collapse')
+      ) {
         e.preventDefault()
         const willOpen = !target.classList.contains('in')
-        const accordionSelector = collapseToggle.getAttribute('data-yw-accordion')
-          || collapseToggle.getAttribute('data-parent')
+        const accordionSelector =
+          collapseToggle.getAttribute('data-yw-accordion') ||
+          collapseToggle.getAttribute('data-parent')
         if (accordionSelector) {
           const accordion = document.querySelector(accordionSelector)
           if (accordion) {
             accordion.querySelectorAll('.collapse.in').forEach((el) => {
               if (el !== target) el.classList.remove('in')
             })
-            accordion.querySelectorAll('[data-toggle="collapse"][aria-expanded="true"]')
+            accordion
+              .querySelectorAll(
+                '[data-toggle="collapse"][aria-expanded="true"]',
+              )
               .forEach((btn) => {
                 if (btn !== collapseToggle) {
                   btn.setAttribute('aria-expanded', 'false')
@@ -350,23 +385,28 @@
           }
         }
         target.classList.toggle('in', willOpen)
-        collapseToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false')
+        collapseToggle.setAttribute(
+          'aria-expanded',
+          willOpen ? 'true' : 'false',
+        )
         collapseToggle.classList.toggle('collapsed', !willOpen)
         return
       }
       if (target && target.classList.contains('yw-collapse')) {
         e.preventDefault()
         const willOpen = !target.classList.contains('yw-collapse--open')
-        const accordionSelector = collapseToggle.getAttribute('data-yw-accordion')
-          || collapseToggle.getAttribute('data-parent')
+        const accordionSelector =
+          collapseToggle.getAttribute('data-yw-accordion') ||
+          collapseToggle.getAttribute('data-parent')
         if (accordionSelector) {
           const accordion = document.querySelector(accordionSelector)
           if (accordion) {
             accordion.querySelectorAll('.yw-collapse--open').forEach((el) => {
               if (el !== target) el.classList.remove('yw-collapse--open')
             })
-            const openToggleSelector = '[data-yw-collapse-toggle][aria-expanded="true"],'
-              + ' [data-toggle="collapse"][aria-expanded="true"]'
+            const openToggleSelector =
+              '[data-yw-collapse-toggle][aria-expanded="true"],' +
+              ' [data-toggle="collapse"][aria-expanded="true"]'
             accordion.querySelectorAll(openToggleSelector).forEach((btn) => {
               if (btn !== collapseToggle) {
                 btn.setAttribute('aria-expanded', 'false')
@@ -376,7 +416,10 @@
           }
         }
         target.classList.toggle('yw-collapse--open', willOpen)
-        collapseToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false')
+        collapseToggle.setAttribute(
+          'aria-expanded',
+          willOpen ? 'true' : 'false',
+        )
         // Legacy Bootstrap markup styles the trigger via a .collapsed class
         collapseToggle.classList.toggle('collapsed', !willOpen)
       }
@@ -391,7 +434,10 @@
     }
 
     // Click on the backdrop itself (not its dialog) closes the modal
-    if (e.target.classList.contains('yw-modal') && e.target.classList.contains('yw-modal--open')) {
+    if (
+      e.target.classList.contains('yw-modal') &&
+      e.target.classList.contains('yw-modal--open')
+    ) {
       closeModal(e.target)
       return
     }
@@ -410,7 +456,7 @@
   function publishViewportWidth() {
     document.documentElement.style.setProperty(
       '--yw-viewport-width',
-      document.documentElement.clientWidth + 'px'
+      document.documentElement.clientWidth + 'px',
     )
   }
 
@@ -430,4 +476,4 @@
       closeDropdowns()
     }
   })
-}())
+})()

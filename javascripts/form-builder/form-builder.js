@@ -47,7 +47,10 @@ function el(html) {
 function splitCsv(value) {
   return Array.isArray(value)
     ? value
-    : String(value ?? '').split(',').map((part) => part.trim()).filter(Boolean)
+    : String(value ?? '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean)
 }
 
 function joinCsv(value) {
@@ -81,7 +84,10 @@ function baseAttributes() {
     label: { label: _t('FORM_BUILDER_LABEL_LABEL'), value: '' },
     name: { label: _t('FORM_BUILDER_NAME_LABEL'), value: '' },
     default: { label: _t('FORM_BUILDER_DEFAULT_LABEL'), value: '' },
-    required: { label: _t('FORM_BUILDER_REQUIRED_LABEL'), options: { '': _t('NO'), 1: _t('YES') } }
+    required: {
+      label: _t('FORM_BUILDER_REQUIRED_LABEL'),
+      options: { '': _t('NO'), 1: _t('YES') },
+    },
   }
 }
 
@@ -108,15 +114,21 @@ function makeField(type, extraData = {}) {
     if (def.value !== undefined && def.value !== '') {
       data[name] = def.value
     } else if (def.options && !('' in def.options) && name !== 'required') {
-      [data[name]] = Object.keys(def.options)
+      ;[data[name]] = Object.keys(def.options)
     }
   })
   Object.assign(data, extraData)
-  if (!data.label && config.field?.label && !((config.disabledAttributes || []).includes('label'))) {
+  if (
+    !data.label &&
+    config.field?.label &&
+    !(config.disabledAttributes || []).includes('label')
+  ) {
     data.label = config.field.label
   }
-  if (!data.name && !((config.disabledAttributes || []).includes('name'))) {
-    data.name = uniqueName(config.defaultIdentifier || `bf_${type.replace(/[^a-z0-9]/gi, '')}`)
+  if (!data.name && !(config.disabledAttributes || []).includes('name')) {
+    data.name = uniqueName(
+      config.defaultIdentifier || `bf_${type.replace(/[^a-z0-9]/gi, '')}`,
+    )
   }
   return { id: newId(), type, data }
 }
@@ -124,7 +136,10 @@ function makeField(type, extraData = {}) {
 // ---------------------------------------------------------------- sync
 
 function serialize() {
-  return serializeFields(fields.map(({ type, data }) => ({ type, data })), registry)
+  return serializeFields(
+    fields.map(({ type, data }) => ({ type, data })),
+    registry,
+  )
 }
 
 function syncToTextarea() {
@@ -175,7 +190,9 @@ function updateTitleSelect() {
 function updateRoleSelects() {
   document.querySelectorAll('[data-yw-field-role]').forEach((selectParam) => {
     const select = selectParam
-    const types = (select.dataset.ywRoleTypes || '').split(',').filter((t) => t.length > 0)
+    const types = (select.dataset.ywRoleTypes || '')
+      .split(',')
+      .filter((t) => t.length > 0)
     const chosen = select.value || select.dataset.ywRoleCurrent || ''
     select.innerHTML = ''
 
@@ -190,7 +207,9 @@ function updateRoleSelects() {
       if (!data.name || (types.length > 0 && !types.includes(type))) return
       const option = document.createElement('option')
       option.value = data.name
-      option.textContent = data.label ? `${data.label} (${data.name})` : data.name
+      option.textContent = data.label
+        ? `${data.label} (${data.name})`
+        : data.name
       option.selected = chosen === data.name
       select.append(option)
     })
@@ -269,13 +288,19 @@ function normalizeForFilter(text) {
 }
 
 function renderPalette() {
-  const filter = el(`<input type="search" class="yw-input yw-fb__filter" placeholder="${esc(_t('FORM_BUILDER_FILTER'))}"/>`)
-  paletteEl.insertBefore(filter, paletteEl.querySelector('.yw-fb__palette-grid'))
+  const filter = el(
+    `<input type="search" class="yw-input yw-fb__filter" placeholder="${esc(_t('FORM_BUILDER_FILTER'))}"/>`,
+  )
+  paletteEl.insertBefore(
+    filter,
+    paletteEl.querySelector('.yw-fb__palette-grid'),
+  )
 
   const grid = paletteEl.querySelector('.yw-fb__palette-grid')
   paletteEntries.forEach(({ type, config }) => {
     const entry = config.set || config.field
-    const item = el(`<button type="button" class="yw-fb__palette-item" data-fb-type="${esc(type)}">
+    const item =
+      el(`<button type="button" class="yw-fb__palette-item" data-fb-type="${esc(type)}">
       <span class="yw-fb__palette-icon">${(config.field || config.set).icon || ''}</span>
       <span class="yw-fb__palette-label">${esc(entry.label)}</span>
     </button>`)
@@ -288,7 +313,10 @@ function renderPalette() {
     const needle = normalizeForFilter(filter.value.trim())
     grid.querySelectorAll('.yw-fb__palette-item').forEach((item) => {
       const label = item.querySelector('.yw-fb__palette-label').textContent
-      item.classList.toggle('hide', needle !== '' && !normalizeForFilter(label).includes(needle))
+      item.classList.toggle(
+        'hide',
+        needle !== '' && !normalizeForFilter(label).includes(needle),
+      )
     })
   })
 
@@ -296,14 +324,15 @@ function renderPalette() {
     window.Sortable.create(grid, {
       group: { name: 'fb', pull: 'clone', put: false },
       sort: false,
-      animation: 150
+      animation: 150,
     })
   }
 }
 
 // narrow screens: the sidebar is a right-side drawer behind a floating button
 function initDrawer() {
-  const toggle = el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
+  const toggle =
+    el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
     aria-expanded="false" title="${esc(_t('FORM_BUILDER_ADD_FIELDS'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg></button>`)
   toggle.addEventListener('click', () => {
     const open = container.classList.toggle('yw-fb--drawer-open')
@@ -353,7 +382,9 @@ let previewPendingAll = false
 let previewPendingIds = new Set()
 
 function previewHolder(field) {
-  return canvasEl.querySelector(`[data-fb-id="${field.id}"] .yw-fb__card-preview`)
+  return canvasEl.querySelector(
+    `[data-fb-id="${field.id}"] .yw-fb__card-preview`,
+  )
 }
 
 // The previews live inside the form-edit <form>: their controls must never be submitted with
@@ -364,11 +395,13 @@ function previewHolder(field) {
 // actual requirement is only that they stay unique within the page. Prefixing with the card
 // id satisfies both, and `for` attributes are remapped so labels keep working.
 function neutralizePreview(holder, fieldId) {
-  holder.querySelectorAll('input, select, textarea, button').forEach((control) => {
-    control.disabled = true // eslint-disable-line no-param-reassign
-    control.removeAttribute('name')
-    control.removeAttribute('required')
-  })
+  holder
+    .querySelectorAll('input, select, textarea, button')
+    .forEach((control) => {
+      control.disabled = true // eslint-disable-line no-param-reassign
+      control.removeAttribute('name')
+      control.removeAttribute('required')
+    })
 
   const prefix = `${fieldId}__`
   holder.querySelectorAll('[id]').forEach((node) => {
@@ -377,15 +410,20 @@ function neutralizePreview(holder, fieldId) {
   })
   holder.querySelectorAll('[for]').forEach((node) => {
     const target = node.getAttribute('for')
-    if (target && !target.startsWith(prefix)) node.setAttribute('for', prefix + target)
+    if (target && !target.startsWith(prefix))
+      node.setAttribute('for', prefix + target)
   })
 }
 
 // some inputs draw nothing by themselves — a hidden field, or a widget the entry
 // form builds in JS the designer does not run — and would leave a blank card body
 function hasVisiblePreview(holder) {
-  return holder.textContent.trim() !== ''
-    || holder.querySelector('input:not([type="hidden"]), select, textarea, img, svg, canvas, iframe') !== null
+  return (
+    holder.textContent.trim() !== '' ||
+    holder.querySelector(
+      'input:not([type="hidden"]), select, textarea, img, svg, canvas, iframe',
+    ) !== null
+  )
 }
 
 function paintPreview(holder, field) {
@@ -432,7 +470,10 @@ async function runPreviews() {
     previewHolder(field)?.classList.add('yw-fb__card-preview--pending')
   })
 
-  const template = serializeFields(targets.map(({ type, data }) => ({ type, data })), registry)
+  const template = serializeFields(
+    targets.map(({ type, data }) => ({ type, data })),
+    registry,
+  )
   const ids = JSON.stringify(targets.map((field) => field.id))
 
   // Ticket 14: the answer is markup, not JSON. htmx distributes it — one out-of-band swap
@@ -444,7 +485,7 @@ async function runPreviews() {
     await htmx.ajax('POST', wiki.url('?api/forms/preview'), {
       source: canvasEl,
       swap: 'none',
-      values: { template, ids }
+      values: { template, ids },
     })
   } catch (error) {
     // keep whatever the cards already show rather than blanking the canvas
@@ -492,29 +533,36 @@ function initCanvasSort() {
       const [moved] = fields.splice(event.oldIndex, 1)
       fields.splice(event.newIndex, 0, moved)
       syncToTextarea()
-    }
+    },
   })
 }
 
 function renderCanvas() {
   canvasEl.innerHTML = ''
   if (fields.length === 0) {
-    canvasEl.append(el(`<div class="yw-fb__empty" data-fb-keep>${_t('FORM_BUILDER_EMPTY')}</div>`))
+    canvasEl.append(
+      el(
+        `<div class="yw-fb__empty" data-fb-keep>${_t('FORM_BUILDER_EMPTY')}</div>`,
+      ),
+    )
   }
   fields.forEach((field) => canvasEl.append(renderCard(field)))
   forgetStalePreviews()
   // cards rebuilt from the cache paint instantly; the ones never previewed yet
   // (just added, duplicated, or reloaded from the code tab) need a render
-  const missing = fields.filter((field) => previewHtml[field.id] === undefined).map((field) => field.id)
+  const missing = fields
+    .filter((field) => previewHtml[field.id] === undefined)
+    .map((field) => field.id)
   if (missing.length > 0) schedulePreviews(missing)
 }
 
 function renderCard(field) {
   const config = configFor(field.type)
   const icon = (config.field || config.set || {}).icon || ''
-  const showLabel = !((config.disabledAttributes || []).includes('label'))
+  const showLabel = !(config.disabledAttributes || []).includes('label')
   const locked = isLocked(field)
-  const card = el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}${locked ? ' yw-fb__card--locked' : ''}" data-fb-id="${field.id}">
+  const card =
+    el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}${locked ? ' yw-fb__card--locked' : ''}" data-fb-id="${field.id}">
     <div class="yw-fb__card-header">
       <span class="yw-fb__card-drag" title="⇕">⠿</span>
       <span class="yw-fb__card-icon">${icon}</span>
@@ -536,7 +584,9 @@ function renderCard(field) {
   if (previewHtml[field.id] !== undefined) paintPreview(holder, field)
 
   card.addEventListener('click', (event) => {
-    const action = event.target.closest('[data-fb-action]')?.getAttribute('data-fb-action')
+    const action = event.target
+      .closest('[data-fb-action]')
+      ?.getAttribute('data-fb-action')
     if (locked && (action === 'delete' || action === 'duplicate')) {
       return
     }
@@ -572,7 +622,10 @@ function refreshCard(field) {
 function selectField(id) {
   selectedId = id
   canvasEl.querySelectorAll('.yw-fb__card').forEach((card) => {
-    card.classList.toggle('yw-fb__card--selected', card.getAttribute('data-fb-id') === id)
+    card.classList.toggle(
+      'yw-fb__card--selected',
+      card.getAttribute('data-fb-id') === id,
+    )
   })
   renderSettings()
   paletteEl.classList.add('hide')
@@ -583,43 +636,67 @@ function closeSettings() {
   selectedId = null
   settingsEl.classList.add('hide')
   paletteEl.classList.remove('hide')
-  canvasEl.querySelectorAll('.yw-fb__card--selected').forEach((card) => card.classList.remove('yw-fb__card--selected'))
+  canvasEl
+    .querySelectorAll('.yw-fb__card--selected')
+    .forEach((card) => card.classList.remove('yw-fb__card--selected'))
 }
 
 function controlFor(name, def, value) {
   if (def.options && def.multiple) {
     const values = splitCsv(value)
-    const group = el(`<div class="yw-fb__checks" data-fb-input="${esc(name)}"></div>`)
+    const group = el(
+      `<div class="yw-fb__checks" data-fb-input="${esc(name)}"></div>`,
+    )
     Object.entries(def.options).forEach(([optionValue, optionLabel]) => {
-      const checkbox = el(`<label class="yw-fb__check"><input type="checkbox" value="${esc(optionValue)}"${values.includes(optionValue) ? ' checked' : ''}/> ${esc(optionLabel)}</label>`)
+      const checkbox = el(
+        `<label class="yw-fb__check"><input type="checkbox" value="${esc(optionValue)}"${values.includes(optionValue) ? ' checked' : ''}/> ${esc(optionLabel)}</label>`,
+      )
       group.append(checkbox)
     })
     return group
   }
   if (def.options) {
-    const select = el(`<select class="yw-input" data-fb-input="${esc(name)}"></select>`)
+    const select = el(
+      `<select class="yw-input" data-fb-input="${esc(name)}"></select>`,
+    )
     Object.entries(def.options).forEach(([optionValue, optionLabel]) => {
-      const option = el(`<option value="${esc(optionValue)}">${esc(optionLabel)}</option>`)
+      const option = el(
+        `<option value="${esc(optionValue)}">${esc(optionLabel)}</option>`,
+      )
       if (String(value ?? '') === String(optionValue)) option.selected = true
       select.append(option)
     })
     return select
   }
   if (def.type === 'textarea') {
-    const area = el(`<textarea class="yw-input" rows="${esc(def.rows || 4)}" data-fb-input="${esc(name)}"></textarea>`)
+    const area = el(
+      `<textarea class="yw-input" rows="${esc(def.rows || 4)}" data-fb-input="${esc(name)}"></textarea>`,
+    )
     area.value = String(value ?? '')
     return area
   }
   if (def.type === 'file') {
-    const wrap = el(`<div class="yw-fb__file" data-fb-input="${esc(name)}"></div>`)
+    const wrap = el(
+      `<div class="yw-fb__file" data-fb-input="${esc(name)}"></div>`,
+    )
     const current = String(value ?? '')
     if (current.includes('|data:')) {
-      wrap.append(el(`<img class="yw-fb__file-preview" src="${esc(current.split('|')[1])}" alt=""/>`))
+      wrap.append(
+        el(
+          `<img class="yw-fb__file-preview" src="${esc(current.split('|')[1])}" alt=""/>`,
+        ),
+      )
     }
-    wrap.append(el(`<input type="file"${def.accept ? ` accept="${esc(def.accept)}"` : ''}/>`))
+    wrap.append(
+      el(
+        `<input type="file"${def.accept ? ` accept="${esc(def.accept)}"` : ''}/>`,
+      ),
+    )
     return wrap
   }
-  const input = el(`<input class="yw-input" type="${def.type === 'number' ? 'number' : 'text'}" data-fb-input="${esc(name)}"${def.placeholder ? ` placeholder="${esc(def.placeholder)}"` : ''}/>`)
+  const input = el(
+    `<input class="yw-input" type="${def.type === 'number' ? 'number' : 'text'}" data-fb-input="${esc(name)}"${def.placeholder ? ` placeholder="${esc(def.placeholder)}"` : ''}/>`,
+  )
   input.value = String(value ?? '')
   return input
 }
@@ -633,18 +710,24 @@ function renderSettings() {
 
   settingsEl.innerHTML = ''
   const title = (config.field || config.set || {}).label || field.type
-  settingsEl.append(el(`<div class="yw-fb__settings-header">
+  settingsEl.append(
+    el(`<div class="yw-fb__settings-header">
     <button type="button" class="yw-btn yw-btn--sm yw-fb__back">← ${_t('FORM_BUILDER_BACK')}</button>
     <h3 class="yw-fb__sidebar-title">${esc(title)}</h3>
-  </div>`))
-  settingsEl.querySelector('.yw-fb__back').addEventListener('click', closeSettings)
+  </div>`),
+  )
+  settingsEl
+    .querySelector('.yw-fb__back')
+    .addEventListener('click', closeSettings)
 
   if (config.editorHint) {
     settingsEl.append(el(`<div class="yw-fb__hint">${config.editorHint}</div>`))
   }
 
   const main = el('<div class="yw-fb__attributes"></div>')
-  const advancedWrap = el(`<details class="yw-fb__advanced"><summary>${_t('FORM_BUILDER_ADVANCED')}</summary></details>`)
+  const advancedWrap = el(
+    `<details class="yw-fb__advanced"><summary>${_t('FORM_BUILDER_ADVANCED')}</summary></details>`,
+  )
   const changeCallbacks = {}
 
   Object.entries(defs).forEach(([name, def]) => {
@@ -652,12 +735,16 @@ function renderSettings() {
       main.append(el('<hr class="yw-fb__separator"/>'))
       return
     }
-    const row = el(`<div class="yw-fb__attribute" data-fb-attribute="${esc(name)}">
+    const row =
+      el(`<div class="yw-fb__attribute" data-fb-attribute="${esc(name)}">
       <label class="yw-form-label">${esc(def.label ?? name)}</label>
     </div>`)
     row.append(controlFor(name, def, field.data[name] ?? def.value ?? ''))
-    if (def.description) row.append(el(`<small class="yw-fb__description">${esc(def.description)}</small>`));
-    (advanced.includes(name) ? advancedWrap : main).append(row)
+    if (def.description)
+      row.append(
+        el(`<small class="yw-fb__description">${esc(def.description)}</small>`),
+      )
+    ;(advanced.includes(name) ? advancedWrap : main).append(row)
   })
 
   settingsEl.append(main)
@@ -668,7 +755,9 @@ function renderSettings() {
     const control = settingsEl.querySelector(`[data-fb-input="${name}"]`)
     if (!control) return undefined
     if (control.classList.contains('yw-fb__checks')) {
-      return Array.from(control.querySelectorAll('input:checked')).map((box) => box.value)
+      return Array.from(control.querySelectorAll('input:checked')).map(
+        (box) => box.value,
+      )
     }
     if (control.classList.contains('yw-fb__file')) return field.data[name] ?? ''
     return control.value
@@ -709,27 +798,43 @@ function renderSettings() {
     setValue: (name, value, { silent = false } = {}) => {
       writeControl(name, value)
       commit(name, value)
-      if (!silent) (changeCallbacks[name] || []).forEach((callback) => callback())
+      if (!silent)
+        (changeCallbacks[name] || []).forEach((callback) => callback())
     },
-    show: (name) => settingsEl.querySelector(`[data-fb-attribute="${name}"]`)?.classList.remove('hide'),
-    hide: (name) => settingsEl.querySelector(`[data-fb-attribute="${name}"]`)?.classList.add('hide'),
+    show: (name) =>
+      settingsEl
+        .querySelector(`[data-fb-attribute="${name}"]`)
+        ?.classList.remove('hide'),
+    hide: (name) =>
+      settingsEl
+        .querySelector(`[data-fb-attribute="${name}"]`)
+        ?.classList.add('hide'),
     setLabel: (name, text) => {
-      const label = settingsEl.querySelector(`[data-fb-attribute="${name}"] > label`)
+      const label = settingsEl.querySelector(
+        `[data-fb-attribute="${name}"] > label`,
+      )
       if (label) label.textContent = text
     },
     // rebuilds a select attribute's option list (the current value stays selected,
     // and is kept as an extra option if the new list doesn't contain it)
     setOptions: (name, options) => {
-      const control = settingsEl.querySelector(`select[data-fb-input="${name}"]`)
+      const control = settingsEl.querySelector(
+        `select[data-fb-input="${name}"]`,
+      )
       if (!control) return
       const current = control.value || String(field.data[name] ?? '')
       const entries = Object.entries(options)
-      if (current && !entries.some(([optionValue]) => optionValue === current)) {
+      if (
+        current &&
+        !entries.some(([optionValue]) => optionValue === current)
+      ) {
         entries.unshift([current, current])
       }
       control.innerHTML = ''
       entries.forEach(([optionValue, optionLabel]) => {
-        const option = el(`<option value="${esc(optionValue)}">${esc(optionLabel)}</option>`)
+        const option = el(
+          `<option value="${esc(optionValue)}">${esc(optionLabel)}</option>`,
+        )
         if (current === String(optionValue)) option.selected = true
         control.append(option)
       })
@@ -738,35 +843,42 @@ function renderSettings() {
     // adjacent controls (e.g. the enum family's create/edit-list buttons)
     getRow: (name) => settingsEl.querySelector(`[data-fb-attribute="${name}"]`),
     onChange: (name, callback) => {
-      (changeCallbacks[name] = changeCallbacks[name] || []).push(callback)
-    }
+      ;(changeCallbacks[name] = changeCallbacks[name] || []).push(callback)
+    },
   }
 
   settingsEl.querySelectorAll('[data-fb-input]').forEach((control) => {
     const name = control.getAttribute('data-fb-input')
     if (control.classList.contains('yw-fb__file')) {
-      control.querySelector('input[type=file]').addEventListener('change', (event) => {
-        const file = event.target.files[0]
-        if (!file) {
-          commit(name, '')
-          return
-        }
-        const reader = new FileReader()
-        reader.onload = () => {
-          commit(name, `${file.name}|${reader.result}`);
-          (changeCallbacks[name] || []).forEach((callback) => callback())
-        }
-        reader.readAsDataURL(file)
-      })
+      control
+        .querySelector('input[type=file]')
+        .addEventListener('change', (event) => {
+          const file = event.target.files[0]
+          if (!file) {
+            commit(name, '')
+            return
+          }
+          const reader = new FileReader()
+          reader.onload = () => {
+            commit(name, `${file.name}|${reader.result}`)
+            ;(changeCallbacks[name] || []).forEach((callback) => callback())
+          }
+          reader.readAsDataURL(file)
+        })
       return
     }
     const handler = () => {
-      commit(name, readControl(name));
-      (changeCallbacks[name] || []).forEach((callback) => callback())
+      commit(name, readControl(name))
+      ;(changeCallbacks[name] || []).forEach((callback) => callback())
     }
-    control.addEventListener(control.matches('select, .yw-fb__checks') ? 'change' : 'input', handler)
+    control.addEventListener(
+      control.matches('select, .yw-fb__checks') ? 'change' : 'input',
+      handler,
+    )
     if (control.classList.contains('yw-fb__checks')) {
-      control.querySelectorAll('input').forEach((box) => box.addEventListener('change', handler))
+      control
+        .querySelectorAll('input')
+        .forEach((box) => box.addEventListener('change', handler))
     }
   })
 
@@ -781,7 +893,11 @@ function bindTabsAndSubmit() {
   // designer state and shows an error.
   document.querySelectorAll('a[href="#formbuilder"]').forEach((link) => {
     link.addEventListener('click', () => {
-      if (textarea.value.trim() === '' || textarea.value.trim() === serialize().trim()) return
+      if (
+        textarea.value.trim() === '' ||
+        textarea.value.trim() === serialize().trim()
+      )
+        return
       if (loadFromTextarea()) {
         clearError()
         closeSettings()

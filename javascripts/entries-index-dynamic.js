@@ -8,7 +8,12 @@ import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateExportLinks } from './export.js'
-import { updateHash, parseSearchParams, mergeSearchParams, serializeSearchParams } from './url.js'
+import {
+  updateHash,
+  parseSearchParams,
+  mergeSearchParams,
+  serializeSearchParams,
+} from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -17,7 +22,9 @@ const { createApp } = Vue
 const load = (domElement) => {
   // Capture dataset before mounting (Vue 3 replaces the mount element)
   const elementDataset = { ...domElement.dataset }
-  const initialParams = elementDataset.params ? JSON.parse(elementDataset.params) : {}
+  const initialParams = elementDataset.params
+    ? JSON.parse(elementDataset.params)
+    : {}
 
   const app = createApp({
     mixins: [BazarSearch, ImageMixin],
@@ -28,7 +35,7 @@ const load = (domElement) => {
       EntryField,
       PopupEntryField,
       FilterNode,
-      BazarMap
+      BazarMap,
     },
     data() {
       return {
@@ -55,7 +62,7 @@ const load = (domElement) => {
         // wether to search for a particular form ID (only used when no
         // form id is defined for the bazar list action)
         searchFormId: '',
-        searchTimer: null // use ot debounce user input
+        searchTimer: null, // use ot debounce user input
       }
     },
     computed: {
@@ -76,7 +83,7 @@ const load = (domElement) => {
       pages() {
         if (this.pagination <= 0) return []
         const pagesCount = Math.ceil(
-          this.filteredEntries.length / parseInt(this.pagination, 10)
+          this.filteredEntries.length / parseInt(this.pagination, 10),
         )
         const start = 0
         const end = pagesCount - 1
@@ -85,7 +92,7 @@ const load = (domElement) => {
           this.currentPage - 1,
           this.currentPage,
           this.currentPage + 1,
-          this.currentPage + 2
+          this.currentPage + 2,
         ]
         pages = pages.filter((page) => page >= start && page <= end)
         if (!pages.includes(start)) {
@@ -97,7 +104,7 @@ const load = (domElement) => {
           pages.push(end)
         }
         return pages
-      }
+      },
     },
     watch: {
       filteredEntriesCount() {
@@ -126,22 +133,23 @@ const load = (domElement) => {
       currentSort() {
         this.sortEntries()
         this.updateHash()
-      }
+      },
     },
     methods: {
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
           // filter based on formId, when no form id is specified
-          result = result.filter(
-            (entry) => entry.form_id == this.searchFormId
-          )
+          result = result.filter((entry) => entry.form_id == this.searchFormId)
         }
 
         let vSearch = this.params.keywords ?? ''
         if (this.search) vSearch += (vSearch != '' ? '|' : '') + this.search
 
-        vSearch = vSearch.split('|').filter((pKeyword) => pKeyword.length >= wiki.minSearchKeywordLength).join('|')
+        vSearch = vSearch
+          .split('|')
+          .filter((pKeyword) => pKeyword.length >= wiki.minSearchKeywordLength)
+          .join('|')
 
         if (vSearch && vSearch.length >= wiki.minSearchKeywordLength) {
           result = this.searchEntries(result, vSearch)
@@ -156,21 +164,31 @@ const load = (domElement) => {
         let result = this.searchedEntries
         Object.entries(this.computedFilters).forEach(([propName, filter]) => {
           result = result.filter((entry) => {
-            if (!entry[propName] || typeof entry[propName] != 'string') return false
+            if (!entry[propName] || typeof entry[propName] != 'string')
+              return false
             return entry[propName]
               .split(',')
-              .map((str) => str
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .toLowerCase()
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;'))
-              .some((value) => filter
-                .map((str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
-                .includes(value))
+              .map((str) =>
+                str
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;'),
+              )
+              .some((value) =>
+                filter
+                  .map((str) =>
+                    str
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')
+                      .toLowerCase(),
+                  )
+                  .includes(value),
+              )
           })
         })
         this.filteredEntries = result
@@ -193,8 +211,26 @@ const load = (domElement) => {
           // Case and accent insensitive sort
 
           return order == 'asc'
-            ? collator.compare(String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
-            : collator.compare(String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+            ? collator.compare(
+                String(valueA)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase(),
+                String(valueB)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase(),
+              )
+            : collator.compare(
+                String(valueB)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase(),
+                String(valueA)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase(),
+              )
         })
 
         this.paginateEntries()
@@ -213,12 +249,12 @@ const load = (domElement) => {
           entry.color = this.colorIconValueFor(
             entry,
             this.params.colorfield,
-            this.params.color
+            this.params.color,
           )
           entry.icon = this.colorIconValueFor(
             entry,
             this.params.iconfield,
-            this.params.icon
+            this.params.icon,
           )
         })
         this.entriesToDisplay = this.paginatedEntries
@@ -230,17 +266,23 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) =>
-                // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-                (value
-                  .normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .toLowerCase()
-                  .replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;')
-                  .replace(/"/g, '&quot;')
-                  .replace(/'/g, '&#039;') == node.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()))
+              return entryValues.some(
+                (value) =>
+                  // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+                  value
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;') ==
+                  node.value
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase(),
+              )
             }).length
           })
         })
@@ -287,7 +329,9 @@ const load = (domElement) => {
 
           if (vQueryEntries.length > 0) {
             vQueryEntries.forEach(([pKey, pCondition]) => {
-              const cFilter = vThis.filters.find((pF) => pF.propName == pCondition.name)
+              const cFilter = vThis.filters.find(
+                (pF) => pF.propName == pCondition.name,
+              )
 
               if (cFilter) {
                 cFilter.flattenNodes.forEach((pNode) => {
@@ -295,8 +339,8 @@ const load = (domElement) => {
                   // like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
                   // ie : Figuier goutte d&#039;or
 
-                  const cFilterValues = pCondition.values
-                    .map((pString) => pString
+                  const cFilterValues = pCondition.values.map((pString) =>
+                    pString
                       .normalize('NFD')
                       .replace(/[\u0300-\u036f]/g, '')
                       .toLowerCase()
@@ -304,16 +348,35 @@ const load = (domElement) => {
                       .replace(/</g, '&lt;')
                       .replace(/>/g, '&gt;')
                       .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#039;'))
+                      .replace(/'/g, '&#039;'),
+                  )
 
-                  if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) pNode.checked = true
+                  if (
+                    cFilterValues.includes(
+                      pNode.value
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .toLowerCase(),
+                    )
+                  )
+                    pNode.checked = true
                 })
               }
             })
           }
         }
 
-        const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
+        const cSort = this.sortOptions.find(
+          (s) =>
+            s.field ==
+              ((vChamp ?? typeof vThis.currentSort != 'undefined')
+                ? vThis.currentSort.field
+                : '') &&
+            s.order ==
+              ((vOrdre ?? typeof vThis.currentSort != 'undefined')
+                ? vThis.currentSort.order
+                : ''),
+        )
         if (cSort) {
           this.currentSort = cSort
         }
@@ -321,7 +384,13 @@ const load = (domElement) => {
       updateHash() {
         if (!this.ready) return
 
-        return updateHash(this.savedHash, this.search, this.currentSort.field, this.currentSort.order, this.computedFilters)
+        return updateHash(
+          this.savedHash,
+          this.search,
+          this.currentSort.field,
+          this.currentSort.order,
+          this.computedFilters,
+        )
       },
       getEntryRender(entry) {
         if (entry.html_render) return
@@ -343,7 +412,7 @@ const load = (domElement) => {
               : {}),
             ...(this.params.showmapinlistview
               ? { showmapinlistview: this.params.showmapinlistview }
-              : {})
+              : {}),
           })
           this.setEntryFromUrl(entry, url).then((html) => {
             this.loadBazarListDynamicIfNeeded(html)
@@ -378,11 +447,12 @@ const load = (domElement) => {
       loadBazarListDynamicIfNeeded(html) {
         if (html.match(/<div class="bazar-list-dynamic-container/)) {
           const unmounted = document.querySelectorAll(
-            '.bazar-list-dynamic-container:not(.mounted)'
+            '.bazar-list-dynamic-container:not(.mounted)',
           )
           unmounted.forEach((element) => {
             // Vue 3: check for __vue_app__ instead of __vue__
-            if (!('__vue__' in element) && !('__vue_app__' in element)) load(element)
+            if (!('__vue__' in element) && !('__vue_app__' in element))
+              load(element)
           })
         }
       },
@@ -415,10 +485,12 @@ const load = (domElement) => {
         // If some filters are checked, and the entry have multiple values, we display
         // the value associated with the checked filter
         if (this.computedFilters[field]) {
-          values = values.filter((val) => this.computedFilters[field].includes(val))
+          values = values.filter((val) =>
+            this.computedFilters[field].includes(val),
+          )
         }
         return mapping[values[0]]
-      }
+      },
     },
     mounted() {
       this.$el.addEventListener('dblclick', (e) => {
@@ -431,116 +503,141 @@ const load = (domElement) => {
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
-      fetch(`${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(this.params)}`).then((response) => response.json()).then((data) => {
-        // process the filters
-        const filters = data.filters || []
-        // Calculate the parents
-        filters.forEach((filter) => {
-          filter.nodes.forEach((rootNode) => recursivelyCalculateRelations(rootNode))
-          filter.flattenNodes = filter.nodes
-            .map((rootNode) => [rootNode, ...rootNode.descendants])
-            .flat()
-          // init some attributes for reactivity
-          filter.flattenNodes.forEach((node) => {
-            node.count = 0
-            node.checked = false
-          })
-        })
-
-        this.params.sortfields.forEach((field, index) => {
-          const label = this.params.sortfieldstitles[index]
-          this.sortOptions.push({ field: field.trim(), label, order: 'asc' })
-          this.sortOptions.push({ field: field.trim(), label, order: 'desc' })
-        })
-
-        if (this.sortOptions.length > 0) {
-          // params "field" is used to choose default sort (backend sort). If present
-          // we do not overwride this backend sort by the front end dynamic sort
-          if (this.params.field) {
-            const sort = this.sortOptions
-              .find((o) => o.field === this.params.field.trim()
-                && o.order === ((typeof (this.params.order) == 'boolean' ? this.params.order : (this.params.order == '1' || this.params.order == 'true' || this.params.order == 'asc')) ? 'asc' : 'desc'))
-
-            if (sort) { this.currentSort = sort } else { this.currentSort = this.sortOptions[0] }
-          }
-        }
-
-        // First display filters cause entries can be a bit long to load
-
-        this.filters = filters
-
-        this.initFromHash(this.savedHash)
-
-        // Auto paginate if large numbers
-        if (data.entries.length > 50 && !this.pagination) this.pagination = 20
-        // Activate cluster for map mode
-        if (data.entries.length > 1000) this.params.cluster = true
-
-        setTimeout(() => {
-          // Transform forms info into a list of field mapping
-          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
-          Object.values(data.forms).forEach((formFields) => {
-            Object.values(formFields).forEach((field) => {
-              this.formFields[field.id] = field
-              Object.entries(this.params.displayfields).forEach(
-                ([fieldId, mappedField]) => {
-                  if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
-                }
-              )
-            })
-          })
-
-          this.entries = data.entries.map((entryAsArray) => {
-            const entry = { color: null, icon: null }
-            // Transform entryAsArray data into object using the fieldMapping
-            Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
-              entry[mapping] = entryAsArray[key]
-            })
-            Object.entries(this.params.displayfields).forEach(
-              ([field, mappedField]) => {
-                if (mappedField) entry[field] = entry[mappedField]
-              }
+      fetch(
+        `${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(this.params)}`,
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          // process the filters
+          const filters = data.filters || []
+          // Calculate the parents
+          filters.forEach((filter) => {
+            filter.nodes.forEach((rootNode) =>
+              recursivelyCalculateRelations(rootNode),
             )
-
-            // In case of Tree, if an entry have only one value down the tree then add all the parent :
-            // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
-            // entryA { checkboxes: "yeswiki" }
-            // => entryA { checkboxes: "yeswiki,website" }
-            this.filters.forEach((filter) => {
-              const { propName } = filter
-              if (entry[propName] && typeof entry[propName] == 'string') {
-                const entryValues = entry[propName].split(',')
-                entryValues.forEach((value) => {
-                  const correspondingNode = filter.flattenNodes.find(
-                    (node) => node.value == value
-                  )
-                  if (correspondingNode) {
-                    correspondingNode.parents.forEach((parent) => {
-                      if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
-                    })
-                  }
-                })
-                entry[propName] = entryValues.join(',')
-              }
+            filter.flattenNodes = filter.nodes
+              .map((rootNode) => [rootNode, ...rootNode.descendants])
+              .flat()
+            // init some attributes for reactivity
+            filter.flattenNodes.forEach((node) => {
+              node.count = 0
+              node.checked = false
             })
-
-            return entry
           })
 
-          this.calculateBaseEntries()
-          this.ready = true
-          this.updateHash()
-          const event = new Event('bazar-list-dynamic-ready')
-          document.dispatchEvent(event)
-        }, 0)
-      })
-    }
+          this.params.sortfields.forEach((field, index) => {
+            const label = this.params.sortfieldstitles[index]
+            this.sortOptions.push({ field: field.trim(), label, order: 'asc' })
+            this.sortOptions.push({ field: field.trim(), label, order: 'desc' })
+          })
+
+          if (this.sortOptions.length > 0) {
+            // params "field" is used to choose default sort (backend sort). If present
+            // we do not overwride this backend sort by the front end dynamic sort
+            if (this.params.field) {
+              const sort = this.sortOptions.find(
+                (o) =>
+                  o.field === this.params.field.trim() &&
+                  o.order ===
+                    ((
+                      typeof this.params.order == 'boolean'
+                        ? this.params.order
+                        : this.params.order == '1' ||
+                          this.params.order == 'true' ||
+                          this.params.order == 'asc'
+                    )
+                      ? 'asc'
+                      : 'desc'),
+              )
+
+              if (sort) {
+                this.currentSort = sort
+              } else {
+                this.currentSort = this.sortOptions[0]
+              }
+            }
+          }
+
+          // First display filters cause entries can be a bit long to load
+
+          this.filters = filters
+
+          this.initFromHash(this.savedHash)
+
+          // Auto paginate if large numbers
+          if (data.entries.length > 50 && !this.pagination) this.pagination = 20
+          // Activate cluster for map mode
+          if (data.entries.length > 1000) this.params.cluster = true
+
+          setTimeout(() => {
+            // Transform forms info into a list of field mapping
+            // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
+            Object.values(data.forms).forEach((formFields) => {
+              Object.values(formFields).forEach((field) => {
+                this.formFields[field.id] = field
+                Object.entries(this.params.displayfields).forEach(
+                  ([fieldId, mappedField]) => {
+                    if (mappedField == field.id)
+                      this.formFields[fieldId] = this.formFields[mappedField]
+                  },
+                )
+              })
+            })
+
+            this.entries = data.entries.map((entryAsArray) => {
+              const entry = { color: null, icon: null }
+              // Transform entryAsArray data into object using the fieldMapping
+              Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
+                entry[mapping] = entryAsArray[key]
+              })
+              Object.entries(this.params.displayfields).forEach(
+                ([field, mappedField]) => {
+                  if (mappedField) entry[field] = entry[mappedField]
+                },
+              )
+
+              // In case of Tree, if an entry have only one value down the tree then add all the parent :
+              // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
+              // entryA { checkboxes: "yeswiki" }
+              // => entryA { checkboxes: "yeswiki,website" }
+              this.filters.forEach((filter) => {
+                const { propName } = filter
+                if (entry[propName] && typeof entry[propName] == 'string') {
+                  const entryValues = entry[propName].split(',')
+                  entryValues.forEach((value) => {
+                    const correspondingNode = filter.flattenNodes.find(
+                      (node) => node.value == value,
+                    )
+                    if (correspondingNode) {
+                      correspondingNode.parents.forEach((parent) => {
+                        if (!entryValues.includes(parent.value))
+                          entryValues.push(parent.value)
+                      })
+                    }
+                  })
+                  entry[propName] = entryValues.join(',')
+                }
+              })
+
+              return entry
+            })
+
+            this.calculateBaseEntries()
+            this.ready = true
+            this.updateHash()
+            const event = new Event('bazar-list-dynamic-ready')
+            document.dispatchEvent(event)
+          }, 0)
+        })
+    },
   })
 
   // Register any components added by external scripts (e.g. BazarCalendar)
-  Object.entries(window._bazarDynamicComponents || {}).forEach(([name, component]) => {
-    app.component(name, component)
-  })
+  Object.entries(window._bazarDynamicComponents || {}).forEach(
+    ([name, component]) => {
+      app.component(name, component)
+    },
+  )
 
   // Expose YesWiki globals to all Vue templates in this app
   app.config.globalProperties.wiki = window.wiki

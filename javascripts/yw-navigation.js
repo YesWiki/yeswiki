@@ -21,7 +21,7 @@
 // renderPage), but round-tripping a 200 MB download only to throw it away is worth avoiding,
 // so the obvious cases are skipped here. This list is allowed to be incomplete — correctness
 // never depends on it.
-(function() {
+;(function () {
   // No page snapshots in sessionStorage.
   //
   // htmx caches the last 10 navigations so the back button can restore instantly. That was
@@ -40,7 +40,8 @@
   }
 
   // handler suffixes that never render a page, and the upload path
-  const NON_PAGE = /\/(raw|xml|rss|tagrss|iframe|editiframe|render|qrcodetroc)(\/|$|\?)/i
+  const NON_PAGE =
+    /\/(raw|xml|rss|tagrss|iframe|editiframe|render|qrcodetroc)(\/|$|\?)/i
   const FILE_PATH = /\/files\//i
 
   document.addEventListener('htmx:confirm', (event) => {
@@ -62,7 +63,9 @@
     // re-setting identical text does not re-announce; clearing first makes repeat
     // navigations to the same title (a refresh, a back) speak
     announcer.textContent = ''
-    window.setTimeout(() => { announcer.textContent = title }, 50)
+    window.setTimeout(() => {
+      announcer.textContent = title
+    }, 50)
   }
 
   function focusNewContent() {
@@ -119,4 +122,4 @@
       toastMessage(message, 3000, 'alert alert-secondary-1')
     }
   })
-}())
+})()

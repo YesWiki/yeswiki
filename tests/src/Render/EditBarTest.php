@@ -256,12 +256,21 @@ class EditBarTest extends YesWikiTestCase
                 $withoutPreview
             );
 
-            // ...and every action is said twice: floating in the corner, and again at the
-            // foot of the form where a form's buttons have always been. One macro renders
-            // both, so a button that appears once has lost one of its two homes.
-            foreach (['value="Sauver"', 'link-cancel', 'link-deletepage'] as $action) {
+            // ...and the ordinary actions are said twice: floating in the corner, and again
+            // at the foot of the form where a form's buttons have always been. One macro
+            // renders both, so a button that appears once has lost one of its two homes.
+            foreach (['value="Sauver"', 'link-cancel'] as $action) {
                 $this->assertSame(2, substr_count($withoutPreview, $action), "{$action} belongs in both places");
             }
+
+            // Delete is the exception, and only in the corner. A red button beside Save, at
+            // the exact spot the eye lands after filling a form in, is an accident waiting to
+            // happen -- and destroying a page is not part of editing one.
+            $this->assertSame(
+                1,
+                substr_count($withoutPreview, 'link-deletepage'),
+                'delete belongs in the floating cluster only'
+            );
             $this->assertStringContainsString('class="form-actions"', $withoutPreview);
         } finally {
             $config['preview_before_save'] = $before;

@@ -1,18 +1,18 @@
 // change-theme.js — dependent theme/squelette/style/preset selects
 // (ticket 16: vanilla JS)
-(function() {
+;(function () {
   // among the siblings of `baseElement`, the select named `type`
   const findSibling = (baseElement, type) => {
     let found = null
-    Array.from(baseElement.parentElement ? baseElement.parentElement.children : []).forEach(
-      (sibling) => {
-        if (found || sibling === baseElement) return
-        const firstSelect = sibling.querySelector('select')
-        if (firstSelect && firstSelect.getAttribute('name') === type) {
-          found = sibling.querySelector(`[name=${type}]`)
-        }
+    Array.from(
+      baseElement.parentElement ? baseElement.parentElement.children : [],
+    ).forEach((sibling) => {
+      if (found || sibling === baseElement) return
+      const firstSelect = sibling.querySelector('select')
+      if (firstSelect && firstSelect.getAttribute('name') === type) {
+        found = sibling.querySelector(`[name=${type}]`)
       }
-    )
+    })
     return found
   }
 
@@ -20,7 +20,7 @@
     if (!value) return {}
     try {
       const parsed = JSON.parse(value)
-      return (typeof parsed === 'object' && parsed !== null) ? parsed : {}
+      return typeof parsed === 'object' && parsed !== null ? parsed : {}
     } catch {
       return {}
     }
@@ -63,18 +63,24 @@
         if (formGroup) formGroup.style.display = 'none'
       } else {
         const currentList = theme.presets
-        const anchor = currentList.map((value) => value.replace(/(\.css)$/, '')).includes(curVal)
+        const anchor = currentList
+          .map((value) => value.replace(/(\.css)$/, ''))
+          .includes(curVal)
           ? curVal
           : favorite
         currentList.forEach((value) => {
           const shortValue = value.replace(/\.css$/, '')
-          element.options.add(new Option(shortValue, shortValue, false, anchor === value))
+          element.options.add(
+            new Option(shortValue, shortValue, false, anchor === value),
+          )
         })
         Object.keys(data.presets).forEach((k) => {
           if (k.slice(0, 'custom/'.length) === 'custom/') {
             const value = data.presets[k]
             const shortValue = value.replace(/\.css$/, '')
-            element.options.add(new Option(shortValue, shortValue, false, anchor === value))
+            element.options.add(
+              new Option(shortValue, shortValue, false, anchor === value),
+            )
           }
         })
         if (formGroup) formGroup.style.display = ''
@@ -82,7 +88,8 @@
     } else if (type in theme) {
       const currentList = theme[type]
       const anchor = Object.values(currentList)
-        .map((value) => value.replace(/(\.css|\.tpl.html)$/, '')).includes(curVal)
+        .map((value) => value.replace(/(\.css|\.tpl.html)$/, ''))
+        .includes(curVal)
         ? curVal
         : favorite
       Object.keys(currentList).forEach((k) => {
@@ -95,9 +102,10 @@
 
   const newUrlFromType = (urlParam, type, currentBase) => {
     let url = urlParam
-    const element = type === 'theme'
-      ? currentBase.querySelector('select')
-      : findSibling(currentBase, `${type}_select`)
+    const element =
+      type === 'theme'
+        ? currentBase.querySelector('select')
+        : findSibling(currentBase, `${type}_select`)
     if (element) {
       let val = element.value
       if (val && typeof val !== 'undefined') {
@@ -106,7 +114,10 @@
           val += ext
         }
         if (url.match(new RegExp(`(\\?|&)${type}=`))) {
-          url = url.replace(new RegExp(`(\\?|&)${type}=[^#&=]+`), `$1${type}=${val}`)
+          url = url.replace(
+            new RegExp(`(\\?|&)${type}=[^#&=]+`),
+            `$1${type}=${val}`,
+          )
         } else {
           url += `${url.includes('?') ? '&' : '?'}${type}=${val}`
         }
@@ -145,18 +156,20 @@
     })
   })
 
-  document.querySelectorAll('[name=style_select],[name=squelette_select]').forEach((select) => {
-    select.addEventListener('change', () => {
-      const currentBase = select.closest('.yw-form-group')
-      if (!currentBase) return
-      const element = findSibling(currentBase, 'theme_select')
-      const realBase = element ? element.closest('.yw-form-group') : null
-      if (!realBase) return
-      const data = extractData(realBase)
+  document
+    .querySelectorAll('[name=style_select],[name=squelette_select]')
+    .forEach((select) => {
+      select.addEventListener('change', () => {
+        const currentBase = select.closest('.yw-form-group')
+        if (!currentBase) return
+        const element = findSibling(currentBase, 'theme_select')
+        const realBase = element ? element.closest('.yw-form-group') : null
+        if (!realBase) return
+        const data = extractData(realBase)
 
-      if (data.updateUrl) {
-        updateUrl(data, realBase)
-      }
+        if (data.updateUrl) {
+          updateUrl(data, realBase)
+        }
+      })
     })
-  })
-}())
+})()

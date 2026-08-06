@@ -15,7 +15,7 @@ const app = createApp({
       message: '',
       messageClass: {
         alert: true,
-        'alert-info': true
+        'alert-info': true,
       },
       selectedArchivesToDelete: [],
       savefiles: true,
@@ -24,7 +24,7 @@ const app = createApp({
       archiveMessage: '',
       archiveMessageClass: {
         alert: true,
-        'alert-info': true
+        'alert-info': true,
       },
       stoppingArchive: false,
       canForceDelete: false,
@@ -32,7 +32,7 @@ const app = createApp({
       packageName: '',
       showReturn: true,
       warnIfNotStarted: true,
-      callAsync: true
+      callAsync: true,
     }
   },
   methods: {
@@ -41,24 +41,32 @@ const app = createApp({
       this.message = _t('ADMIN_BACKUPS_LOADING_LIST')
       this.messageClass = { alert: true, 'alert-info': true }
       return await this.fetch(wiki.url('?api/archives'))
-        .then((data) => {
-          this.archives = {}
-          const archiveNames = []
-          if (Array.isArray(data)) {
-            for (const key of data.keys()) {
-              this.archives[key] = data[key]
-              archiveNames.push(data.filename)
+        .then(
+          (data) => {
+            this.archives = {}
+            const archiveNames = []
+            if (Array.isArray(data)) {
+              for (const key of data.keys()) {
+                this.archives[key] = data[key]
+                archiveNames.push(data.filename)
+              }
             }
-          }
-          this.message = ''
-          this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter((e) => archiveNames.includes(e))
-        }, (pError) => {
-          // on error
-          this.message = _t(`ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
-          this.messageClass = { alert: true, 'alert-danger': true }
-          this.selectedArchivesToDelete = []
-          return Promise.resolve()
-        })
+            this.message = ''
+            this.selectedArchivesToDelete =
+              this.selectedArchivesToDelete.filter((e) =>
+                archiveNames.includes(e),
+              )
+          },
+          (pError) => {
+            // on error
+            this.message = _t(
+              `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+            )
+            this.messageClass = { alert: true, 'alert-danger': true }
+            this.selectedArchivesToDelete = []
+            return Promise.resolve()
+          },
+        )
         .finally(() => {
           this.ready = true
           this.updating = false
@@ -66,22 +74,31 @@ const app = createApp({
     },
     async deleteArchive(archive) {
       this.updating = true
-      this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE', { filename: archive.filename })
+      this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE', {
+        filename: archive.filename,
+      })
       this.messageClass = { alert: true, 'alert-info': true }
-      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'delete' })
+      return await this.fetchPost(
+        wiki.url(`?api/archives/${archive.filename}`),
+        { action: 'delete' },
+      )
         .then((data) => {
           this.message = ''
           if (Array.isArray(data) || !data.main) {
             toastMessage(
-              _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR', { filename: archive.filename }),
+              _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR', {
+                filename: archive.filename,
+              }),
               3000,
-              'alert alert-warning'
+              'alert alert-warning',
             )
           } else {
             toastMessage(
-              _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS', { filename: archive.filename }),
+              _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS', {
+                filename: archive.filename,
+              }),
               3000,
-              'alert alert-success'
+              'alert alert-success',
             )
           }
           return this.loadArchives()
@@ -92,7 +109,11 @@ const app = createApp({
     },
     async deleteSelectedArchives() {
       if (this.selectedArchivesToDelete.length == 0) {
-        toastMessage(_t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'), 2000, 'alert alert-info')
+        toastMessage(
+          _t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'),
+          2000,
+          'alert alert-info',
+        )
       } else {
         this.updating = true
         this.message = _t('ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES')
@@ -106,33 +127,44 @@ const app = createApp({
           formObject.filesnames = ''
         }
         return await this.fetchPost(wiki.url('?api/archives'), formObject)
-          .then((data) => {
-            this.message = ''
-            if (Array.isArray(data) || !data.main) {
+          .then(
+            (data) => {
+              this.message = ''
+              if (Array.isArray(data) || !data.main) {
+                toastMessage(
+                  _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR', {
+                    filename: this.selectedArchivesToDelete.join(',<br/>'),
+                  }),
+                  3000,
+                  'alert alert-warning',
+                )
+              } else {
+                toastMessage(
+                  _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS', {
+                    filename: this.selectedArchivesToDelete.join(',<br/>'),
+                  }),
+                  3000,
+                  'alert alert-success',
+                )
+              }
+              return this.loadArchives()
+            },
+            () => {
               toastMessage(
-                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR', { filename: this.selectedArchivesToDelete.join(',<br/>') }),
+                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR', {
+                  filename: this.selectedArchivesToDelete.join(',<br/>'),
+                }),
                 3000,
-                'alert alert-warning'
+                'alert alert-danger',
               )
-            } else {
-              toastMessage(
-                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS', { filename: this.selectedArchivesToDelete.join(',<br/>') }),
-                3000,
-                'alert alert-success'
-              )
-            }
-            return this.loadArchives()
-          }, () => {
-            toastMessage(
-              _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR', { filename: this.selectedArchivesToDelete.join(',<br/>') }),
-              3000,
-              'alert alert-danger'
-            )
-            this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR', { filename: this.selectedArchivesToDelete.join(',') })
-            this.messageClass = { alert: true, 'alert-danger': true }
-            this.updating = false
-            return this.loadArchives()
-          })
+              this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR', {
+                filename: this.selectedArchivesToDelete.join(','),
+              })
+              this.messageClass = { alert: true, 'alert-danger': true }
+              this.updating = false
+              return this.loadArchives()
+            },
+          )
           .catch((pError) => {
             console.log(pError)
           })
@@ -141,21 +173,24 @@ const app = createApp({
     async fetch(url, options = {}) {
       const cThis = this
 
-      return await fetch(url, options)
-        .then(async (pResponse) => {
-          if (!pResponse.ok) {
-            const cJSON = await pResponse.json()
+      return await fetch(url, options).then(async (pResponse) => {
+        if (!pResponse.ok) {
+          const cJSON = await pResponse.json()
 
-            throw new Error(`${_t('ERROR_CONTACT_ADMIN')} ${pResponse.statusText} (${pResponse.status}) - "${cJSON.error}"`)
-          } else return pResponse.json()
-        })
+          throw new Error(
+            `${_t('ERROR_CONTACT_ADMIN')} ${pResponse.statusText} (${pResponse.status}) - "${cJSON.error}"`,
+          )
+        } else return pResponse.json()
+      })
     },
     async fetchPost(url, formObject, options = {}) {
       const internalOptions = { ...options }
       const formData = new FormData()
       if (typeof formObject === 'object' && formObject !== null) {
         Object.keys(formObject).forEach((key) => {
-          if (['string', 'number', 'boolean'].includes(typeof formObject[key])) {
+          if (
+            ['string', 'number', 'boolean'].includes(typeof formObject[key])
+          ) {
             formData.append(key, formObject[key])
           }
         })
@@ -164,30 +199,58 @@ const app = createApp({
       }
       internalOptions.method = 'POST'
       internalOptions.body = new URLSearchParams(formData)
-      internalOptions.headers = (new Headers()).append('Content-Type', 'application/x-www-form-urlencoded')
+      internalOptions.headers = new Headers().append(
+        'Content-Type',
+        'application/x-www-form-urlencoded',
+      )
       return this.fetch(url, internalOptions)
     },
     toggleSelectedArchive(filename) {
       if (this.selectedArchivesToDelete.includes(filename)) {
-        this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter((e) => (e != filename))
+        this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(
+          (e) => e != filename,
+        )
       } else {
         this.selectedArchivesToDelete.push(filename)
       }
     },
     async restoreArchive(archive) {
-      if (!confirm(_t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }))) { return }
+      if (
+        !confirm(
+          _t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }),
+        )
+      ) {
+        return
+      }
       this.updating = true
-      this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE', { filename: archive.filename })
+      this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE', {
+        filename: archive.filename,
+      })
       this.messageClass = { alert: true, 'alert-info': true }
-      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore' })
+      return await this.fetchPost(
+        wiki.url(`?api/archives/${archive.filename}`),
+        { action: 'restore' },
+      )
         .then(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename })
+          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
+            filename: archive.filename,
+          })
           this.messageClass = { alert: true, 'alert-success': true }
-          toastMessage(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename }), 3000, 'alert alert-success')
-          setTimeout(() => { window.location.href = wiki.url(wiki.pageTag) }, 2000)
+          toastMessage(
+            _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
+              filename: archive.filename,
+            }),
+            3000,
+            'alert alert-success',
+          )
+          setTimeout(() => {
+            window.location.href = wiki.url(wiki.pageTag)
+          }, 2000)
         })
         .catch(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: archive.filename })
+          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', {
+            filename: archive.filename,
+          })
           this.messageClass = { alert: true, 'alert-danger': true }
           this.updating = false
         })
@@ -199,36 +262,74 @@ const app = createApp({
       this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP')
       this.archiveMessageClass = { alert: true, 'alert-info': true }
       return await this.fetch(wiki.url('?api/archives/archivingStatus'))
-        .then((data) => {
-          if (typeof data != 'object' || !data.hasOwnProperty('canArchive')) {
-            this.endStartingUpdateError()
-          } else if (data.canArchive) {
-            if (data.hasOwnProperty('dB') && !data.dB) {
-              console.log(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB', { helpBaseUrl: wiki.url('doc') }))
+        .then(
+          (data) => {
+            if (typeof data != 'object' || !data.hasOwnProperty('canArchive')) {
+              this.endStartingUpdateError()
+            } else if (data.canArchive) {
+              if (data.hasOwnProperty('dB') && !data.dB) {
+                console.log(
+                  _t('ADMIN_BACKUPS_START_BACKUP_NOT_DB', {
+                    helpBaseUrl: wiki.url('doc'),
+                  }),
+                )
+              }
+              this.callAsync =
+                !data.hasOwnProperty('callAsync') || data.callAsync
+              return this.startArchiveNextStep()
+            } else if (data.hasOwnProperty('archiving') && data.archiving) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING',
+                'info',
+              )
+            } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE',
+                'info',
+              )
+            } else if (
+              data.hasOwnProperty('privatePathWritable') &&
+              !data.privatePathWritable
+            ) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',
+                'danger',
+              )
+            } else if (data.hasOwnProperty('canExec') && !data.canExec) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',
+                'info',
+              )
+            } else if (
+              data.hasOwnProperty('notAvailableOnTheInternet') &&
+              !data.notAvailableOnTheInternet
+            ) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE',
+                'danger',
+              )
+            } else if (
+              data.hasOwnProperty('enoughSpace') &&
+              !data.enoughSpace
+            ) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE',
+                'warning',
+              )
+            } else if (data.hasOwnProperty('canArchive') && !data.canArchive) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_CANNOT_ARCHIVE',
+                'danger',
+              )
+            } else {
+              this.endStartingUpdateError()
             }
-            this.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync)
-            return this.startArchiveNextStep()
-          } else if (data.hasOwnProperty('archiving') && data.archiving) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING', 'info')
-          } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE', 'info')
-          } else if (data.hasOwnProperty('privatePathWritable') && !data.privatePathWritable) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE', 'danger')
-          } else if (data.hasOwnProperty('canExec') && !data.canExec) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC', 'info')
-          } else if (data.hasOwnProperty('notAvailableOnTheInternet') && !data.notAvailableOnTheInternet) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE', 'danger')
-          } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE', 'warning')
-          } else if (data.hasOwnProperty('canArchive') && !data.canArchive) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_CANNOT_ARCHIVE', 'danger')
-          } else {
-            this.endStartingUpdateError()
-          }
-        }, (pError) => {
-          // if error
-          this.endStartingUpdateError(pError)
-        })
+          },
+          (pError) => {
+            // if error
+            this.endStartingUpdateError(pError)
+          },
+        )
         .catch((pError) => {
           console.log(pError)
         })
@@ -244,13 +345,16 @@ const app = createApp({
         this.askConfirmationToDelete = false
       }
       if (!this.callAsync) {
-        this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_SYNC').replace(/\n/g, '<br>')
+        this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_SYNC').replace(
+          /\n/g,
+          '<br>',
+        )
         this.archiveMessageClass = { alert: true, 'alert-warning': true }
       }
       const formObject = {
         action: 'startArchive',
         'params[savefiles]': this.savefiles,
-        'params[savedatabase]': this.savedatabase
+        'params[savedatabase]': this.savedatabase,
       }
       formObject.callAsync = this.callAsync
       const options = {}
@@ -262,25 +366,38 @@ const app = createApp({
           controller.abort()
         }, 6000000)
       }
-      return await this.fetchPost(wiki.url('?api/archives'), formObject, options)
-        .then((data) => {
+      return await this.fetchPost(
+        wiki.url('?api/archives'),
+        formObject,
+        options,
+      ).then(
+        (data) => {
           if (this.callAsync) {
             toastMessage(
               _t('ADMIN_BACKUPS_STARTED'),
               2000,
-              'alert alert-success'
+              'alert alert-success',
             )
           }
           this.currentArchiveUid = data.uid
           setTimeout(this.updateStatus, 2000)
-        }, (pError) => {
+        },
+        (pError) => {
           console.log(pError)
-          this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR') + (pError.message.trim() != '' ? ` : ${pError}` : ''))
-        })
+          this.endStartingUpdateError(
+            _t('ADMIN_BACKUPS_START_BACKUP_ERROR') +
+              (pError.message.trim() != '' ? ` : ${pError}` : ''),
+          )
+        },
+      )
     },
     endStartingUpdateError(message = '', className = 'danger') {
-      this.archiveMessage = message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
-      this.archiveMessageClass = { alert: true, [`alert-${className.length > 0 ? className : 'danger'}`]: true }
+      this.archiveMessage =
+        message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
+      this.archiveMessageClass = {
+        alert: true,
+        [`alert-${className.length > 0 ? className : 'danger'}`]: true,
+      }
       this.updating = false
       this.archiving = false
       if (this.isPreupdate) {
@@ -291,11 +408,16 @@ const app = createApp({
       if (name.length === 0) {
         throw new Error('name should not be empty')
       }
-      return this.endStartingUpdateError(_t(name, { helpBaseUrl: wiki.url('doc') }).replace(/\n/g, '<br>'), className)
+      return this.endStartingUpdateError(
+        _t(name, { helpBaseUrl: wiki.url('doc') }).replace(/\n/g, '<br>'),
+        className,
+      )
     },
     async checkFilesToDelete() {
-      return await this.fetchPost(wiki.url('?api/archives'), { action: 'futureDeletedArchives' })
-        .then((data) => {
+      return await this.fetchPost(wiki.url('?api/archives'), {
+        action: 'futureDeletedArchives',
+      }).then(
+        (data) => {
           if (data.files.length == 0) {
             this.canForceDelete = true
             this.askConfirmationToDelete = false
@@ -305,16 +427,25 @@ const app = createApp({
           this.archiving = false
           this.canForceDelete = false
           this.askConfirmationToDelete = true
-          const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-          this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', { files: data.files.map(escHtml).join('<br>') }).replace('\n', '<br>')
+          const escHtml = (s) =>
+            String(s)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+          this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', {
+            files: data.files.map(escHtml).join('<br>'),
+          }).replace('\n', '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
-        }, (error) => {
+        },
+        (error) => {
           // if error
           this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR')
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
           this.updating = false
           this.archiving = false
-        })
+        },
+      )
     },
     toggleconfimationToDeleteFiles() {
       this.canForceDelete = !this.canForceDelete
@@ -329,17 +460,22 @@ const app = createApp({
       this.stoppingArchive = true
       return await this.fetchPost(wiki.url('?api/archives'), {
         action: 'stopArchive',
-        uid: this.currentArchiveUid
+        uid: this.currentArchiveUid,
       })
-        .then((data) => {
-          this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
-          this.archiveMessageClass = { alert: true, 'alert-warning': true }
-          setTimeout(this.checkStopped, 500)
-        }, (pError) => {
-          this.archiveMessage = _t(`ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
-          this.archiveMessageClass = { alert: true, 'alert-danger': true }
-          this.stoppingArchive = false
-        })
+        .then(
+          (data) => {
+            this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
+            this.archiveMessageClass = { alert: true, 'alert-warning': true }
+            setTimeout(this.checkStopped, 500)
+          },
+          (pError) => {
+            this.archiveMessage = _t(
+              `ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+            )
+            this.archiveMessageClass = { alert: true, 'alert-danger': true }
+            this.stoppingArchive = false
+          },
+        )
         .catch((pError) => {
           console.log(pError)
         })
@@ -350,25 +486,33 @@ const app = createApp({
         if (!this.callAsync) {
           getData.forceStarted = true
         }
-        return await this.fetch(wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`, getData))
-          .then((data) => {
-            if (data.stopped) {
-              return true
-            }
-            if (!data.started) {
-              setTimeout(this.checkStopped, 1000)
-            } else if (data.finished) {
-              return true
-            } else if (!data.running) {
-              setTimeout(this.checkStopped, 1000)
+        return await this.fetch(
+          wiki.url(
+            `?api/archives/uidstatus/${this.currentArchiveUid}`,
+            getData,
+          ),
+        )
+          .then(
+            (data) => {
+              if (data.stopped) {
+                return true
+              }
+              if (!data.started) {
+                setTimeout(this.checkStopped, 1000)
+              } else if (data.finished) {
+                return true
+              } else if (!data.running) {
+                setTimeout(this.checkStopped, 1000)
+                return false
+              } else {
+                setTimeout(this.stopArchive, 1000)
+              }
               return false
-            } else {
-              setTimeout(this.stopArchive, 1000)
-            }
-            return false
-          }, () => {
-            setTimeout(this.checkStopped, 1000)
-          })
+            },
+            () => {
+              setTimeout(this.checkStopped, 1000)
+            },
+          )
           .catch((pError) => {
             console.log(pError)
           })
@@ -384,44 +528,72 @@ const app = createApp({
         if (!this.callAsync) {
           getData.forceStarted = true
         }
-        return await this.fetch(wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`, getData))
-          .then((data) => {
-            if (data.stopped) {
-              this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_STOP'), 'success')
-            } else if (!data.started) {
-              this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'), 'warning')
-              if (this.isPreupdate) { this.canForceUpdate = true }
-              setTimeout(this.loadArchives, 3000)
-            } else if (data.finished) {
-              if (this.isPreupdate) {
-                return this.startForcedUpdate(`${_t('ADMIN_BACKUPS_UID_STATUS_FINISHED')}<br/>${_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING')}`)
-              }
-              this.endUpdatingStatus()
-              toastMessage(
-                _t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),
-                3000,
-                'alert alert-success'
-              )
-            } else if (!data.running) {
-              if (this.warnIfNotStarted) {
-                this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'), 'danger')
+        return await this.fetch(
+          wiki.url(
+            `?api/archives/uidstatus/${this.currentArchiveUid}`,
+            getData,
+          ),
+        )
+          .then(
+            (data) => {
+              if (data.stopped) {
+                this.endUpdatingStatus(
+                  _t('ADMIN_BACKUPS_UID_STATUS_STOP'),
+                  'success',
+                )
+              } else if (!data.started) {
+                this.endUpdatingStatus(
+                  _t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'),
+                  'warning',
+                )
+                if (this.isPreupdate) {
+                  this.canForceUpdate = true
+                }
+                setTimeout(this.loadArchives, 3000)
+              } else if (data.finished) {
+                if (this.isPreupdate) {
+                  return this.startForcedUpdate(
+                    `${_t('ADMIN_BACKUPS_UID_STATUS_FINISHED')}<br/>${_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING')}`,
+                  )
+                }
+                this.endUpdatingStatus()
+                toastMessage(
+                  _t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),
+                  3000,
+                  'alert alert-success',
+                )
+              } else if (!data.running) {
+                if (this.warnIfNotStarted) {
+                  this.endUpdatingStatus(
+                    _t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'),
+                    'danger',
+                  )
+                } else {
+                  setTimeout(this.updateStatus, 1000)
+                }
+              } else if (this.stoppingArchive) {
+                this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
+                this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
+                setTimeout(this.updateStatus, 1000)
               } else {
+                this.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING')
+                this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
+                this.archiveMessageClass = {
+                  alert: true,
+                  'alert-secondary-2': true,
+                }
                 setTimeout(this.updateStatus, 1000)
               }
-            } else if (this.stoppingArchive) {
-              this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
-              this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
-              setTimeout(this.updateStatus, 1000)
-            } else {
-              this.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING')
-              this.archiveMessage += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
-              this.archiveMessageClass = { alert: true, 'alert-secondary-2': true }
-              setTimeout(this.updateStatus, 1000)
-            }
-          }, (pError) => {
-            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') + (pError.message.trim() != '' ? ` : ${pError}` : ''), 'danger')
-            setTimeout(this.loadArchives, 3000)
-          })
+            },
+            (pError) => {
+              this.endUpdatingStatus(
+                _t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') +
+                  (pError.message.trim() != '' ? ` : ${pError}` : ''),
+                'danger',
+              )
+              setTimeout(this.loadArchives, 3000)
+            },
+          )
           .catch((pError) => {
             console.log(pError)
           })
@@ -469,27 +641,35 @@ const app = createApp({
     },
     async forceUpdate() {
       return await this.fetch(wiki.url('?api/archives/forcedUpdateToken'))
-        .then((data) => {
-          if (
-            typeof this.packageName != 'string'
-            || this.packageName.length == 0
-            || typeof data != 'object'
-            || !data.hasOwnProperty('token')
-            || typeof data.token != 'string'
-            || data.token.length == 0) {
-            this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
+        .then(
+          (data) => {
+            if (
+              typeof this.packageName != 'string' ||
+              this.packageName.length == 0 ||
+              typeof data != 'object' ||
+              !data.hasOwnProperty('token') ||
+              typeof data.token != 'string' ||
+              data.token.length == 0
+            ) {
+              this.endStartingUpdateErrorWithT(
+                'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE',
+              )
+              this.canForceUpdate = false
+            } else {
+              window.location = wiki.url(wiki.pageTag, {
+                action: 'upgrade',
+                package: this.packageName,
+                forcedUpdateToken: data.token,
+              })
+            }
+          },
+          (pError) => {
+            this.endStartingUpdateErrorWithT(
+              `ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+            )
             this.canForceUpdate = false
-          } else {
-            window.location = wiki.url(wiki.pageTag, {
-              action: 'upgrade',
-              package: this.packageName,
-              forcedUpdateToken: data.token
-            })
-          }
-        }, (pError) => {
-          this.endStartingUpdateErrorWithT(`ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
-          this.canForceUpdate = false
-        })
+          },
+        )
         .catch((pError) => {
           console.log(pError)
         })
@@ -501,17 +681,21 @@ const app = createApp({
         }, 1000)
         return await this.stopArchive()
       }
-      return await this.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'))
+      return await this.startForcedUpdate(
+        _t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'),
+      )
     },
     async startForcedUpdate(message) {
       this.endUpdatingStatus(message, 'success')
       this.showReturn = false
       return await this.forceUpdate()
-    }
+    },
   },
   mounted() {
     const container = this.$el.parentElement || this.$el
-    this.isPreupdate = container.classList.contains('preupdate-backups-container')
+    this.isPreupdate = container.classList.contains(
+      'preupdate-backups-container',
+    )
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
     }
@@ -521,7 +705,7 @@ const app = createApp({
     } else {
       this.loadArchives()
     }
-  }
+  },
 })
 
 app.mount('.admin-backups')

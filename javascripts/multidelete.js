@@ -8,7 +8,8 @@ function checkAllFirstCol(elem) {
   // don't, the table element itself is the scope there
   const scope = elem.closest('.dataTables_wrapper') || elem.closest('table')
   if (!scope) return
-  scope.querySelectorAll('tr > td:first-child input.selectline[type=checkbox]')
+  scope
+    .querySelectorAll('tr > td:first-child input.selectline[type=checkbox]')
     .forEach((checkboxParam) => {
       const checkbox = checkboxParam
       if (checkbox.offsetParent === null) return // hidden
@@ -16,7 +17,10 @@ function checkAllFirstCol(elem) {
       checkbox.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-  scope.querySelectorAll('tr > th:first-child label.check-all-container input[type=checkbox]')
+  scope
+    .querySelectorAll(
+      'tr > th:first-child label.check-all-container input[type=checkbox]',
+    )
     .forEach((checkboxParam) => {
       const checkbox = checkboxParam
       checkbox.checked = newState
@@ -37,20 +41,25 @@ const multiDeleteService = {
   },
   updateProgressBar(modal, items, currentIndex) {
     if (!modal) return
-    const value = (items.length === 0)
-      ? 100
-      : Math.min(100, Math.round(((currentIndex + 1) / items.length) * 100))
-    modal.querySelectorAll(
-      '.modal-footer .progress-bar, .yw-modal__footer .yw-progressbar__bar'
-    ).forEach((barParam) => {
-      const bar = barParam
-      bar.style.width = `${value}%`
-      bar.setAttribute('aria-valuenow', value)
-    })
+    const value =
+      items.length === 0
+        ? 100
+        : Math.min(100, Math.round(((currentIndex + 1) / items.length) * 100))
+    modal
+      .querySelectorAll(
+        '.modal-footer .progress-bar, .yw-modal__footer .yw-progressbar__bar',
+      )
+      .forEach((barParam) => {
+        const bar = barParam
+        bar.style.width = `${value}%`
+        bar.setAttribute('aria-valuenow', value)
+      })
   },
   resultsContainer(modal) {
     return modal
-      ? modal.querySelector('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results')
+      ? modal.querySelector(
+          '.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results',
+        )
       : null
   },
   addErrorMessage(modal, message) {
@@ -72,7 +81,7 @@ const multiDeleteService = {
   },
   deleteNextItem(modal, items, type, currentIndex, target) {
     this.updateProgressBar(modal, items, currentIndex)
-    if ((currentIndex + 1) < items.length) {
+    if (currentIndex + 1 < items.length) {
       this.deleteOneItem(modal, items, type, currentIndex + 1, target)
     } else {
       this.isRunning = false
@@ -86,11 +95,14 @@ const multiDeleteService = {
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
     if (['pages', 'comments', 'users'].indexOf(type) === -1) {
-      this.addErrorMessage(modal, "Unknown type ! Should be 'pages' or 'users' or 'comments'!")
+      this.addErrorMessage(
+        modal,
+        "Unknown type ! Should be 'pages' or 'users' or 'comments'!",
+      )
       return
     }
     const item = items[currentIndex] ?? {}
-    const itemId = (item.id !== undefined) ? item.id : ''
+    const itemId = item.id !== undefined ? item.id : ''
     let csrfToken = item.token !== undefined ? item.token : ''
     if ('antiCsrfToken' in wiki) {
       csrfToken = wiki.antiCsrfToken
@@ -104,8 +116,8 @@ const multiDeleteService = {
       {
         method: 'POST',
         timeout: 30000, // 30 seconds,
-        data: { csrfToken }
-      }
+        data: { csrfToken },
+      },
     )
       .then(() => {
         if (!this.removeLine(target, itemId)) {
@@ -117,13 +129,15 @@ const multiDeleteService = {
           modal,
           _t('MULTIDELETE_ERROR')
             .replace('{itemId}', itemId)
-            .replace('{error}', error)
+            .replace('{error}', error),
         )
         // if error force reload
         this.refreshOnModalClosing[modal.id] = true
       })
       .finally(() => {
-        setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
+        setTimeout(() => {
+          this.deleteNextItem(modal, items, type, currentIndex, target)
+        }, 0)
       })
   },
   deleteItems(elem) {
@@ -132,22 +146,30 @@ const multiDeleteService = {
     const container = document.getElementById(target)
     const modal = elem.closest('.yw-modal, .modal')
     if (!container || !modal) return
-    const inputs = Array.from(container.querySelectorAll(
-      'tr > td:first-child input.selectline[type=checkbox]'
-    )).filter((input) => input.offsetParent !== null && input.checked)
+    const inputs = Array.from(
+      container.querySelectorAll(
+        'tr > td:first-child input.selectline[type=checkbox]',
+      ),
+    ).filter((input) => input.offsetParent !== null && input.checked)
 
     const items = []
     inputs.forEach((input) => {
       const itemId = input.dataset.itemid
       const csrfToken = input.dataset.csrftoken
-      if (itemId && itemId.length > 0 && (csrfToken === undefined || csrfToken.length === 0)) {
+      if (
+        itemId &&
+        itemId.length > 0 &&
+        (csrfToken === undefined || csrfToken.length === 0)
+      ) {
         items.push({ id: itemId })
       } else if (itemId && itemId.length > 0 && csrfToken.length > 0) {
         items.push({ id: itemId, token: csrfToken })
       }
     })
     if (items.length > 0) {
-      setTimeout(() => { this.deleteOneItem(modal, items, type, 0, target) }, 0)
+      setTimeout(() => {
+        this.deleteOneItem(modal, items, type, 0, target)
+      }, 0)
     }
   },
   async localFetchJson(url, options) {
@@ -155,17 +177,24 @@ const multiDeleteService = {
     let resetTimeoutId = null
     if ('timeout' in options && Number(options.timeout) > 0) {
       const abortController = new AbortController()
-      resetTimeoutId = setTimeout(() => abortController.abort(), options.timeout)
+      resetTimeoutId = setTimeout(
+        () => abortController.abort(),
+        options.timeout,
+      )
       internalOptions.signal = abortController.signal
     }
     if ('method' in options && options.method === 'POST') {
       internalOptions.method = 'POST'
-      internalOptions.body = new URLSearchParams(this.prepareFormData(options.data ?? {}))
-      internalOptions.headers = (new Headers())
-        .append('Content-Type', 'application/x-www-form-urlencoded')
+      internalOptions.body = new URLSearchParams(
+        this.prepareFormData(options.data ?? {}),
+      )
+      internalOptions.headers = new Headers().append(
+        'Content-Type',
+        'application/x-www-form-urlencoded',
+      )
     }
     return fetch(url, internalOptions)
-      .then(async(response) => {
+      .then(async (response) => {
         if (response.ok) {
           return response.json()
         }
@@ -175,8 +204,12 @@ const multiDeleteService = {
           if (body && body.error) {
             errorDetail = `: ${body.error}`
           }
-        } catch { /* ignore parse errors */ }
-        throw new Error(`Response is not ok (code ${response.status})${errorDetail}`)
+        } catch {
+          /* ignore parse errors */
+        }
+        throw new Error(
+          `Response is not ok (code ${response.status})${errorDetail}`,
+        )
       })
       .finally(() => {
         if (resetTimeoutId !== null) {
@@ -202,15 +235,18 @@ const multiDeleteService = {
     if (text && target && target.length > 0) {
       const container = document.getElementById(target)
       const nb = container
-        ? Array.from(container.querySelectorAll(
-          'tr > td:first-child input.selectline[type=checkbox]'
-        )).filter((input) => input.offsetParent !== null && input.checked).length
+        ? Array.from(
+            container.querySelectorAll(
+              'tr > td:first-child input.selectline[type=checkbox]',
+            ),
+          ).filter((input) => input.offsetParent !== null && input.checked)
+            .length
         : 0
       text.textContent = nb
     } else if (text) {
       text.textContent = 'error'
     }
-  }
+  },
 }
 
 document.addEventListener('click', (event) => {

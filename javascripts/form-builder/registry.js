@@ -58,7 +58,7 @@ const registry = {
   calc,
   custom,
   // extension-provided configs win over core ones with the same name
-  ...(window.formBuilderFields || {})
+  ...(window.formBuilderFields || {}),
 }
 
 export default registry

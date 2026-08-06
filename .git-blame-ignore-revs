@@ -1,0 +1,12 @@
+# Revisions to skip when running `git blame`.
+#
+# Add a commit here when it changes formatting only, so that blame keeps pointing at whoever
+# last changed the *meaning* of a line. Configure git to use this file once, per clone:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# 2026-08: Prettier took over formatting JavaScript from eslint-config-airbnb-base (which had
+# had no release since 2021 and contradicted Prettier on every line-break question). 171 files
+# reformatted, no behaviour changed -- the lint report was identical afterwards apart from one
+# rule that Prettier's parenthesisation satisfies.
+# <<< append the SHA of that reformat commit here once it exists >>>

@@ -47,13 +47,19 @@ if (rail) {
     }
 
     document.querySelectorAll('[data-yw-preset-card]').forEach((element) => {
-      element.classList.toggle('yw-preset-card--trying', element.dataset.ywPresetCard === id)
+      element.classList.toggle(
+        'yw-preset-card--trying',
+        element.dataset.ywPresetCard === id,
+      )
     })
   }
 
   document.querySelectorAll('[data-yw-preset-try]').forEach((button) => {
     button.addEventListener('click', () => {
-      tryOn(button.dataset.presetHref, button.closest('[data-yw-preset-card]').dataset.ywPresetCard)
+      tryOn(
+        button.dataset.presetHref,
+        button.closest('[data-yw-preset-card]').dataset.ywPresetCard,
+      )
     })
   })
 
@@ -65,7 +71,10 @@ if (rail) {
   /** Paint one variable onto the document, so the gallery below repaints with it. */
   function preview(name, value) {
     if (!beforePreview.has(name)) {
-      beforePreview.set(name, document.documentElement.style.getPropertyValue(`--${name}`))
+      beforePreview.set(
+        name,
+        document.documentElement.style.getPropertyValue(`--${name}`),
+      )
     }
     document.documentElement.style.setProperty(`--${name}`, value)
   }
@@ -114,8 +123,8 @@ if (rail) {
     // Which preset the save rewrites. Empty for a new one -- that is the only case here
     // that creates a file; editing always replaces the one it was opened on, even when the
     // name in the box changes, in which case the file is renamed.
-    idField.value = isNew ? '' : (button.dataset.presetId || '')
-    nameField.value = isNew ? '' : (button.dataset.presetName || '')
+    idField.value = isNew ? '' : button.dataset.presetId || ''
+    nameField.value = isNew ? '' : button.dataset.presetName || ''
 
     title.textContent = isNew ? title.dataset.newLabel : title.dataset.editLabel
 
@@ -156,10 +165,12 @@ if (rail) {
   form?.addEventListener('submit', () => beforePreview.clear())
 
   // Deleting a preset removes a file; every other button here is reversible.
-  document.querySelectorAll('[data-yw-preset-delete-form]').forEach((deleteForm) => {
-    deleteForm.addEventListener('submit', (event) => {
-      // eslint-disable-next-line no-alert
-      if (!window.confirm(deleteForm.dataset.confirm)) event.preventDefault()
+  document
+    .querySelectorAll('[data-yw-preset-delete-form]')
+    .forEach((deleteForm) => {
+      deleteForm.addEventListener('submit', (event) => {
+        // eslint-disable-next-line no-alert
+        if (!window.confirm(deleteForm.dataset.confirm)) event.preventDefault()
+      })
     })
-  })
 }

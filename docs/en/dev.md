@@ -208,8 +208,8 @@ Vue.component('DemoComponent', {
     title() {
       // this.$root will let you access all properties from index-dynamic-templates.js
       if ((this.$root.params.greeting = 'yes'))
-        return `Hello ${this.entry.given_name}`;
-      return this.entry.bf_titre;
+        return `Hello ${this.entry.given_name}`
+      return this.entry.bf_titre
     },
   },
   template: `
@@ -217,7 +217,7 @@ Vue.component('DemoComponent', {
       {{ title }}
     </div>
   `,
-});
+})
 ```
 
 ### Customize any templates from the codebase
@@ -226,11 +226,11 @@ You can override any template used in yeswiki by mimicking the same folder struc
 
 **Examples**:
 
-| File to overwrite                                | File to create inside `custom` folder             |
-| ------------------------------------------------ | ------------------------------------------------- |
-| `templates/comment.twig`                         | `custom/templates/core/comment.twig`              |
-| `tools/login/templates/user-signup-form.twig`    | `custom/templates/login/user-signup-form.twig`    |
-| `templates/notify-email-text.twig`               | `custom/templates/core/notify-email-text.twig`    |
+| File to overwrite                             | File to create inside `custom` folder          |
+| --------------------------------------------- | ---------------------------------------------- |
+| `templates/comment.twig`                      | `custom/templates/core/comment.twig`           |
+| `tools/login/templates/user-signup-form.twig` | `custom/templates/login/user-signup-form.twig` |
+| `templates/notify-email-text.twig`            | `custom/templates/core/notify-email-text.twig` |
 
 ### Custom Javascript
 

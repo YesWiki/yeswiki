@@ -1,6 +1,6 @@
 # Farm-wide updates trigger only from an admin-designated instance
 
-`autoupdate`'s current path resolution is already inconsistent with itself: `PackageTool`/`PackageTheme` target a source-tree-relative path (ignoring `YESWIKI_SOURCE_DIR`), while `PackageCore` targets the currently-executing script's directory — the *instance* dir in a farm setup. The bug is invisible on standalone installs (source dir == instance dir there) but would silently target different places on a farm.
+`autoupdate`'s current path resolution is already inconsistent with itself: `PackageTool`/`PackageTheme` target a source-tree-relative path (ignoring `YESWIKI_SOURCE_DIR`), while `PackageCore` targets the currently-executing script's directory — the _instance_ dir in a farm setup. The bug is invisible on standalone installs (source dir == instance dir there) but would silently target different places on a farm.
 
 We decided core/tools/theme updates consistently target the shared `YESWIKI_SOURCE_DIR` (one update affects every farm instance at once, matching how source-side code is already shared), and that **only an admin-designated instance can trigger a farm-wide update** — not any instance independently.
 

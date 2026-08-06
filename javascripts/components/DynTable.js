@@ -11,35 +11,35 @@ export default {
   props: {
     columns: {
       type: Array,
-      required: true
+      required: true,
     },
     externalSearch: {
       type: String,
-      default: ''
+      default: '',
     },
     extraOptions: { type: Object },
     forceDisplayTotal: {
       type: Boolean,
-      default: false
+      default: false,
     },
     forceRefresh: {
       type: Boolean,
-      default: false
+      default: false,
     },
     rows: {
       type: Object,
-      required: true
+      required: true,
     },
     uuid: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       sortColIdx: null,
       sortDir: 'asc',
-      orderInitialized: false
+      orderInitialized: false,
     }
   },
   computed: {
@@ -52,17 +52,25 @@ export default {
         .filter(({ col }) => col.visible !== false)
     },
     showFooter() {
-      return this.forceDisplayTotal || this.columns.some((col) => col?.class?.match(/sum-activated/))
+      return (
+        this.forceDisplayTotal ||
+        this.columns.some((col) => col?.class?.match(/sum-activated/))
+      )
     },
     formattedRows() {
       return Object.keys(this.rows).map((id) => {
         const rowData = { id, ...this.rows[id] }
         const cells = this.visibleColumns.map(({ col }) => {
-          const raw = typeof col.data === 'string' ? (rowData[col.data] ?? '') : ''
+          const raw =
+            typeof col.data === 'string' ? (rowData[col.data] ?? '') : ''
           return {
             html: this.applyRender(col, raw, 'display', rowData),
-            sortVal: this.plainValue(this.applyRender(col, raw, 'sort', rowData)),
-            searchVal: this.plainValue(this.applyRender(col, raw, 'filter', rowData))
+            sortVal: this.plainValue(
+              this.applyRender(col, raw, 'sort', rowData),
+            ),
+            searchVal: this.plainValue(
+              this.applyRender(col, raw, 'filter', rowData),
+            ),
           }
         })
         return { id, rowData, cells }
@@ -71,13 +79,15 @@ export default {
     matchedRows() {
       const needle = (this.externalSearch || '').trim().toLowerCase()
       if (!needle) return this.formattedRows
-      return this.formattedRows.filter(
-        (row) => row.cells.some((cell) => cell.searchVal.toLowerCase().includes(needle))
+      return this.formattedRows.filter((row) =>
+        row.cells.some((cell) => cell.searchVal.toLowerCase().includes(needle)),
       )
     },
     sortedRows() {
       if (this.sortColIdx === null) return this.matchedRows
-      const position = this.visibleColumns.findIndex(({ idx }) => idx === this.sortColIdx)
+      const position = this.visibleColumns.findIndex(
+        ({ idx }) => idx === this.sortColIdx,
+      )
       if (position === -1) return this.matchedRows
       const direction = this.sortDir === 'desc' ? -1 : 1
       return this.matchedRows.slice().sort((a, b) => {
@@ -86,9 +96,12 @@ export default {
         const an = parseFloat(String(av).replace(',', '.'))
         const bn = parseFloat(String(bv).replace(',', '.'))
         const looksNumeric = /^-?[\d.,]+$/.test(av) && /^-?[\d.,]+$/.test(bv)
-        const result = looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
-          ? an - bn
-          : String(av).localeCompare(String(bv), undefined, { sensitivity: 'base' })
+        const result =
+          looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
+            ? an - bn
+            : String(av).localeCompare(String(bv), undefined, {
+                sensitivity: 'base',
+              })
         return result * direction
       })
     },
@@ -97,8 +110,11 @@ export default {
       let position = -1
       this.visibleColumns.some(({ col }, idx) => {
         const hasFooter = 'footer' in col && col.footer && col.footer.length > 0
-        if (!hasFooter && !col?.class?.match(/not-export-this-col/)
-          && !col?.class?.match(/sum-activated/)) {
+        if (
+          !hasFooter &&
+          !col?.class?.match(/not-export-this-col/) &&
+          !col?.class?.match(/sum-activated/)
+        ) {
           position = idx
           return true
         }
@@ -123,13 +139,14 @@ export default {
         }
         return { kind: 'empty', content: '' }
       })
-    }
+    },
   },
   methods: {
     applyRender(col, value, type, rowData) {
-      const rendered = typeof col.render === 'function'
-        ? col.render(value, type, rowData)
-        : value
+      const rendered =
+        typeof col.render === 'function'
+          ? col.render(value, type, rowData)
+          : value
       return rendered === null || rendered === undefined ? '' : rendered
     },
     plainValue(val) {
@@ -144,7 +161,7 @@ export default {
         // because if orthogonal data is defined, value is an object
         sanitizedValue = val.display || ''
       }
-      return (Number.isNaN(Number(sanitizedValue))) ? 1 : Number(sanitizedValue)
+      return Number.isNaN(Number(sanitizedValue)) ? 1 : Number(sanitizedValue)
     },
     manageError(error) {
       if (wiki.isDebugEnabled) {
@@ -174,7 +191,7 @@ export default {
         this.sortDir = direction === 'desc' ? 'desc' : 'asc'
         this.orderInitialized = true
       }
-    }
+    },
   },
   mounted() {
     this.element.addEventListener('dblclick', (e) => {
@@ -186,7 +203,7 @@ export default {
   watch: {
     extraOptions() {
       this.applyInitialOrder()
-    }
+    },
   },
   template: `
     <div>
@@ -224,5 +241,5 @@ export default {
             </tfoot>
         </table>
     </div>
-  `
+  `,
 }

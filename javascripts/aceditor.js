@@ -36,7 +36,9 @@ class Aceditor {
 
   initialize() {
     // Init Components
-    this.editor = new AceWrapper(this.aceBody, { rows: this.textarea.getAttribute('rows') })
+    this.editor = new AceWrapper(this.aceBody, {
+      rows: this.textarea.getAttribute('rows'),
+    })
     this.linkPanel = new LinkPanel()
     this.filePicker = new FilePickerPanel()
     this.actionsBuilder = new ActionsBuilder()
@@ -54,7 +56,9 @@ class Aceditor {
     setupAceditorKeyBindings(this.aceContainer, this.toolbar)
     this.initToolbar()
     this.initEditionHelpers()
-    this.editor.ace.setOptions({ placeholder: this.textarea.getAttribute('placeholder') })
+    this.editor.ace.setOptions({
+      placeholder: this.textarea.getAttribute('placeholder'),
+    })
   }
 
   initToolbar() {
@@ -70,17 +74,20 @@ class Aceditor {
           this.openLinkPanel({
             action: 'newlink',
             text: this.editor.getSelectedText(),
-            range: this.editor.selectionRange()
+            range: this.editor.selectionRange(),
           })
         } else if (btn.classList.contains('aceditor-btn-newpage')) {
           // New Page Button
-          this.openLinkPanel({ action: 'newpage', range: this.editor.selectionRange() })
+          this.openLinkPanel({
+            action: 'newpage',
+            range: this.editor.selectionRange(),
+          })
         } else if (btn.classList.contains('aceditor-btn-file')) {
           // File Picker Button (ticket 17: replaces the per-button qq.FileUploader init)
           this.filePicker.open({
             onComplete: (result) => {
               this.editor.replaceSelectionBy(result)
-            }
+            },
           })
         } else {
           // Other Buttons
@@ -88,21 +95,23 @@ class Aceditor {
         }
       })
     })
-    this.toolbar.querySelectorAll('.open-actions-builder-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        // the toolbar button adds a component: it always opens the palette. Editing the
-        // one already written is the cursor's job -- see syncRailsWithCursor()
-        this.editor.updateCursor()
-        const insertAt = this.insertionPointFrom(this.editor.cursor)
-        this.actionsBuilder.open(this.editor, { insertAt })
+    this.toolbar
+      .querySelectorAll('.open-actions-builder-btn')
+      .forEach((btn) => {
+        btn.addEventListener('click', () => {
+          // the toolbar button adds a component: it always opens the palette. Editing the
+          // one already written is the cursor's job -- see syncRailsWithCursor()
+          this.editor.updateCursor()
+          const insertAt = this.insertionPointFrom(this.editor.cursor)
+          this.actionsBuilder.open(this.editor, { insertAt })
+        })
       })
-    })
   }
 
   openLinkPanel(options) {
     this.linkPanel.open(this.editor, {
       ...options,
-      onComplete: (result) => this.editor.replaceRange(options.range, result)
+      onComplete: (result) => this.editor.replaceRange(options.range, result),
     })
   }
 
@@ -114,7 +123,11 @@ class Aceditor {
   insertionPointFrom(cursor) {
     if (!cursor) return null
     if (cursor.groupType === 'yw-action' && cursor.groupEnd !== undefined) {
-      return { row: cursor.row, column: this.editor.lineLength(cursor.row), onNewLine: true }
+      return {
+        row: cursor.row,
+        column: this.editor.lineLength(cursor.row),
+        onNewLine: true,
+      }
     }
     return { row: cursor.row || 0, column: cursor.column || 0 }
   }
@@ -132,33 +145,53 @@ class Aceditor {
    * the other half of the same component, and its own parameter is only the name of it.
    */
   actionTargetFrom(cursor) {
-    if (!cursor || cursor.groupType !== 'yw-action' || !cursor.groupData) return null
-    if (cursor.groupStart === undefined || cursor.groupEnd === undefined) return null
+    if (!cursor || cursor.groupType !== 'yw-action' || !cursor.groupData)
+      return null
+    if (cursor.groupStart === undefined || cursor.groupEnd === undefined)
+      return null
     let target = {
       name: cursor.groupData['action-name'],
       text: cursor.groupTextWithoutMarkup,
-      range: this.editor.rangeFor(cursor.row, cursor.groupStart, cursor.groupEnd)
+      range: this.editor.rangeFor(
+        cursor.row,
+        cursor.groupStart,
+        cursor.groupEnd,
+      ),
     }
     if (target.name === 'end') {
       const elem = /elem\s*=\s*["']([^"']+)["']/.exec(target.text || '')
       if (!elem) return null
-      target = this.editor.findOpeningTag(elem[1], cursor.row, cursor.groupStart)
+      target = this.editor.findOpeningTag(
+        elem[1],
+        cursor.row,
+        cursor.groupStart,
+      )
       if (!target) return null
     }
-    if (!this.actionsBuilder.allAvailableActionsWithBackward.includes(target.name)) return null
-    if (this.actionsBuilder.getActionConfiguration(target.name).onlyAdd) return null
+    if (
+      !this.actionsBuilder.allAvailableActionsWithBackward.includes(target.name)
+    )
+      return null
+    if (this.actionsBuilder.getActionConfiguration(target.name).onlyAdd)
+      return null
 
     return target
   }
 
   /** The link this cursor is in, in both the syntaxes the editor writes them in. */
   linkTargetFrom(cursor) {
-    if (!cursor || !['yw-link', 'yw-link-markdown'].includes(cursor.groupType)) return null
-    if (cursor.groupStart === undefined || cursor.groupEnd === undefined) return null
+    if (!cursor || !['yw-link', 'yw-link-markdown'].includes(cursor.groupType))
+      return null
+    if (cursor.groupStart === undefined || cursor.groupEnd === undefined)
+      return null
 
     return {
       data: cursor.groupData || {},
-      range: this.editor.rangeFor(cursor.row, cursor.groupStart, cursor.groupEnd)
+      range: this.editor.rangeFor(
+        cursor.row,
+        cursor.groupStart,
+        cursor.groupEnd,
+      ),
     }
   }
 
@@ -176,8 +209,12 @@ class Aceditor {
     if (!this.cursorDrivesRails) return
     // a rail placing something the document does not have yet was opened from the toolbar,
     // not from the cursor, and owns itself until that thing is written
-    if (this.actionsBuilder.isPlacingNewAction || this.linkPanel.isPlacingNewLink
-        || this.filePicker.isOpen) return
+    if (
+      this.actionsBuilder.isPlacingNewAction ||
+      this.linkPanel.isPlacingNewLink ||
+      this.filePicker.isOpen
+    )
+      return
 
     const action = this.actionTargetFrom(cursor)
     if (action) {
@@ -190,7 +227,7 @@ class Aceditor {
         // WHICH component this is. Same key, same panel: typing inside the one being
         // edited must not tear down its settings and rebuild them under the user
         key: this.railKey(action.range),
-        insertAt: this.insertionPointFrom(cursor)
+        insertAt: this.insertionPointFrom(cursor),
       })
       return
     }
@@ -205,7 +242,7 @@ class Aceditor {
         title: link.data['link-title'],
         extra: link.data['md-extra'],
         range: link.range,
-        key: this.railKey(link.range)
+        key: this.railKey(link.range),
       })
       return
     }
@@ -232,7 +269,7 @@ class Aceditor {
         case 'yw-action': {
           if (cursor.nodeType && cursor.nodeType.includes('action-name')) {
             this.editor.setAutocompletionList(
-              this.actionsBuilder.allAvailableActions
+              this.actionsBuilder.allAvailableActions,
             )
           }
           break

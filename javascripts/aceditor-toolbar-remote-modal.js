@@ -1,6 +1,6 @@
 // Opens a yw-modal loaded with a remote page's content (e.g. the formatting-rules
 // help page), fetched and injected client-side -- the toolbar's "remote" buttons.
-export default function(title, url) {
+export default function (title, url) {
   const modal = document.createElement('div')
   modal.className = 'yw-modal'
   modal.innerHTML = `
@@ -24,8 +24,12 @@ export default function(title, url) {
   fetch(url)
     .then((response) => response.text())
     .then((html) => {
-      const page = new DOMParser().parseFromString(html, 'text/html').querySelector('.page')
-      modal.querySelector('.yw-modal__body').innerHTML = page ? page.innerHTML : html
+      const page = new DOMParser()
+        .parseFromString(html, 'text/html')
+        .querySelector('.page')
+      modal.querySelector('.yw-modal__body').innerHTML = page
+        ? page.innerHTML
+        : html
     })
 
   // Remove the (dynamically created, one-off) modal from the DOM once yw-core.js

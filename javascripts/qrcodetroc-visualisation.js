@@ -36,7 +36,7 @@ function getRelations() {
             random(window.innerHeight),
             random(minSize, maxSize),
             color(random(255), random(255), random(255), 70),
-            dataUsers[key].title
+            dataUsers[key].title,
           )
         }
       })
@@ -125,11 +125,15 @@ class Ball {
       const vFinal = [new p5.Vector(), new p5.Vector()]
 
       // final rotated this.velocity for b[0]
-      vFinal[0].x = ((this.m - other.m) * vTemp[0].x + 2 * other.m * vTemp[1].x) / (this.m + other.m)
+      vFinal[0].x =
+        ((this.m - other.m) * vTemp[0].x + 2 * other.m * vTemp[1].x) /
+        (this.m + other.m)
       vFinal[0].y = vTemp[0].y
 
       // final rotated this.velocity for b[0]
-      vFinal[1].x = ((other.m - this.m) * vTemp[1].x + 2 * this.m * vTemp[0].x) / (this.m + other.m)
+      vFinal[1].x =
+        ((other.m - this.m) * vTemp[1].x + 2 * this.m * vTemp[0].x) /
+        (this.m + other.m)
       vFinal[1].y = vTemp[1].y
 
       // hack to avoid clumping
@@ -150,7 +154,7 @@ class Ball {
       // update balls to screen this.position
       Object.assign(other.position, {
         x: this.position.x + bFinal[1].x,
-        y: this.position.y + bFinal[1].y
+        y: this.position.y + bFinal[1].y,
       })
 
       this.position.add(bFinal[0])
@@ -160,7 +164,7 @@ class Ball {
       this.velocity.y = cosine * vFinal[0].y + sine * vFinal[0].x
       Object.assign(other.velocity, {
         x: cosine * vFinal[1].x - sine * vFinal[1].y,
-        y: cosine * vFinal[1].y + sine * vFinal[1].x
+        y: cosine * vFinal[1].y + sine * vFinal[1].x,
       })
     }
   }
@@ -251,21 +255,21 @@ function draw() {
     noFill()
     stroke(126)
     if (
-      (key in relations)
-      && ('bf_fiche1' in relations[key])
-      && ('bf_fiche2' in relations[key])
-      && (relations[key].bf_fiche1 in balls)
-      && (relations[key].bf_fiche2 in balls)
-      && balls[relations[key].bf_fiche1].position.x
-      && balls[relations[key].bf_fiche1].position.y
-      && balls[relations[key].bf_fiche2].position.x
-      && balls[relations[key].bf_fiche2].position.y
+      key in relations &&
+      'bf_fiche1' in relations[key] &&
+      'bf_fiche2' in relations[key] &&
+      relations[key].bf_fiche1 in balls &&
+      relations[key].bf_fiche2 in balls &&
+      balls[relations[key].bf_fiche1].position.x &&
+      balls[relations[key].bf_fiche1].position.y &&
+      balls[relations[key].bf_fiche2].position.x &&
+      balls[relations[key].bf_fiche2].position.y
     ) {
       line(
         balls[relations[key].bf_fiche1].position.x,
         balls[relations[key].bf_fiche1].position.y,
         balls[relations[key].bf_fiche2].position.x,
-        balls[relations[key].bf_fiche2].position.y
+        balls[relations[key].bf_fiche2].position.y,
       )
     }
   })

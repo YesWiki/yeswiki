@@ -8,20 +8,28 @@ export default {
     parseNewValues(newValues) {
       this.elements = []
       const fields = newValues.sortfields ? newValues.sortfields.split(',') : []
-      const titles = newValues.sortfieldstitles ? newValues.sortfieldstitles.split(',') : []
+      const titles = newValues.sortfieldstitles
+        ? newValues.sortfieldstitles.split(',')
+        : []
       for (let i = 0; i < fields.length; i++) {
         this.elements.push({
           field: fields[i],
-          title: titles[i]
+          title: titles[i],
         })
       }
     },
     getValues() {
       return {
-        sortfields: this.elements.map((g) => g.field).filter((e) => e != '').join(','),
-        sortfieldstitles: this.elements.map((g) => g.title).filter((e) => e != '').join(',')
+        sortfields: this.elements
+          .map((g) => g.field)
+          .filter((e) => e != '')
+          .join(','),
+        sortfieldstitles: this.elements
+          .map((g) => g.title)
+          .filter((e) => e != '')
+          .join(','),
       }
-    }
+    },
   },
   watch: {
     elements: {
@@ -37,7 +45,7 @@ export default {
         })
         this.$emit('input', newElements)
       },
-      deep: true
-    }
-  }
+      deep: true,
+    },
+  },
 }

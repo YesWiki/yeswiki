@@ -1,6 +1,6 @@
 // remote-modal.js — iframe modal helper for the form-builder admin UI
 // (ticket 16: vanilla JS on the yw-modal markup, no Bootstrap modal API)
-export default function(title, url) {
+export default function (title, url) {
   const modal = document.createElement('div')
   modal.className = 'yw-modal'
   modal.innerHTML = `
@@ -24,11 +24,12 @@ export default function(title, url) {
 
   // auto resize iframe height
   let timer = null
-  iframe.onload = function() {
+  iframe.onload = function () {
     const doc = iframe.contentWindow ? iframe.contentWindow.document : null
     if (doc) {
       // remove favorite button and "back/cancel" button in list view
-      doc.querySelectorAll('.btn.favorites, .yw-btn.favorites, .btn-cancel-list')
+      doc
+        .querySelectorAll('.btn.favorites, .yw-btn.favorites, .btn-cancel-list')
         .forEach((el) => el.remove())
     }
     timer = setInterval(() => {

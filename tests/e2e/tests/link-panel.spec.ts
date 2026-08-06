@@ -3,7 +3,7 @@ import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { replaceEditorTextNewContent } from '../helpers/editor'
 
-test.beforeEach(async() => {
+test.beforeEach(async () => {
   resetEnv()
 })
 
@@ -18,38 +18,63 @@ const PANEL = '#YesWikiLinkPanel'
 const ACTIONS = '#actions-builder-panel'
 const MARKER = '.ace-body .ace_marker-layer .yw-active-group'
 
-const editorContent = (page: Page) => page.evaluate(() => window['aceditor-body'].editor.getValue())
+const editorContent = (page: Page) =>
+  page.evaluate(() => window['aceditor-body'].editor.getValue())
 
-const openEditor = async(page: Page, content: string) => {
+const openEditor = async (page: Page, content: string) => {
   await page.goto('/?PagePrincipale/edit')
-  await page.waitForFunction(() => window['aceditor-body']?.editor !== undefined, null, {timeout: 15000})
+  await page.waitForFunction(
+    () => window['aceditor-body']?.editor !== undefined,
+    null,
+    { timeout: 15000 },
+  )
   await replaceEditorTextNewContent(page, content)
 }
 
-const putCursorAt = async(page: Page, row: number, column: number) => {
+const putCursorAt = async (page: Page, row: number, column: number) => {
   await page.locator('.ace-body').click()
-  await page.evaluate(([r, c]) => {
-    window['aceditor-body'].editor.ace.selection.moveCursorTo(r, c)
-  }, [row, column])
+  await page.evaluate(
+    ([r, c]) => {
+      window['aceditor-body'].editor.ace.selection.moveCursorTo(r, c)
+    },
+    [row, column],
+  )
 }
 
-test('putting the cursor in a link opens it, with no button in between', async({page}) => {
+test('putting the cursor in a link opens it, with no button in between', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  await openEditor(page, 'avant [Le lien](PagePrincipale "un titre") après\ndu texte')
+  await openEditor(
+    page,
+    'avant [Le lien](PagePrincipale "un titre") après\ndu texte',
+  )
 
   await expect(page.locator(PANEL)).toBeHidden()
-  await expect(page.locator('.flying-edit-button'), 'the flying pencil is gone').toHaveCount(0)
+  await expect(
+    page.locator('.flying-edit-button'),
+    'the flying pencil is gone',
+  ).toHaveCount(0)
 
   await putCursorAt(page, 0, 12)
 
   await expect(page.locator(PANEL)).toBeVisible()
-  await expect(page.locator(`${PANEL} input[name=url]`)).toHaveValue('PagePrincipale')
+  await expect(page.locator(`${PANEL} input[name=url]`)).toHaveValue(
+    'PagePrincipale',
+  )
   await expect(page.locator(`${PANEL} input[name=text]`)).toHaveValue('Le lien')
-  await expect(page.locator(`${PANEL} input[name=title]`)).toHaveValue('un titre')
-  await expect(page.locator(MARKER), 'and the link is marked in the text').toHaveCount(1)
+  await expect(page.locator(`${PANEL} input[name=title]`)).toHaveValue(
+    'un titre',
+  )
+  await expect(
+    page.locator(MARKER),
+    'and the link is marked in the text',
+  ).toHaveCount(1)
 })
 
-test('leaving the link closes the rail and writes nothing', async({page}) => {
+test('leaving the link closes the rail and writes nothing', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   const text = 'avant [Le lien](PagePrincipale) après\ndu texte'
   await openEditor(page, text)
@@ -63,7 +88,7 @@ test('leaving the link closes the rail and writes nothing', async({page}) => {
   expect(await editorContent(page), 'the change went with it').toBe(text)
 })
 
-test('the rail rewrites the link it is on when asked', async({page}) => {
+test('the rail rewrites the link it is on when asked', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openEditor(page, 'avant [Le lien](PagePrincipale) après')
 
@@ -71,16 +96,21 @@ test('the rail rewrites the link it is on when asked', async({page}) => {
   await page.locator(`${PANEL} input[name=text]`).fill('Un autre texte')
   await page.locator(`${PANEL} .btn-insert`).click()
 
-  await expect.poll(() => editorContent(page)).toBe('avant [Un autre texte](PagePrincipale) après')
+  await expect
+    .poll(() => editorContent(page))
+    .toBe('avant [Un autre texte](PagePrincipale) après')
 })
 
 /** They share one slot on the right, so only one of them can be showing. */
-test('a component and a link never share the rail', async({page}) => {
+test('a component and a link never share the rail', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  await openEditor(page, [
-    'avant [Le lien](PagePrincipale) après',
-    '{{button text="Hello" link="https://yeswiki.net"}}'
-  ].join('\n'))
+  await openEditor(
+    page,
+    [
+      'avant [Le lien](PagePrincipale) après',
+      '{{button text="Hello" link="https://yeswiki.net"}}',
+    ].join('\n'),
+  )
 
   await putCursorAt(page, 0, 12)
   await expect(page.locator(PANEL)).toBeVisible()
@@ -96,20 +126,29 @@ test('a component and a link never share the rail', async({page}) => {
  * button is pressed: the rail is not a modal, so nothing stops the caret moving on before
  * the link is filled in.
  */
-test('the toolbar button writes a new link over the selection', async({page}) => {
+test('the toolbar button writes a new link over the selection', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openEditor(page, 'hello world')
   await page.locator('.ace-body').click()
   await page.evaluate(() => {
-    window['aceditor-body'].editor.ace.selection.setRange(new window['ace'].Range(0, 6, 0, 11))
+    window['aceditor-body'].editor.ace.selection.setRange(
+      new window['ace'].Range(0, 6, 0, 11),
+    )
   })
 
   await page.locator('.aceditor-btn-link').first().click()
 
   await expect(page.locator(PANEL)).toBeVisible()
-  await expect(page.locator(`${PANEL} input[name=text]`), 'the selection is the link text').toHaveValue('world')
+  await expect(
+    page.locator(`${PANEL} input[name=text]`),
+    'the selection is the link text',
+  ).toHaveValue('world')
   await page.locator(`${PANEL} input[name=url]`).fill('PagePrincipale')
   await page.locator(`${PANEL} .btn-insert`).click()
 
-  await expect.poll(() => editorContent(page)).toBe('hello [world](PagePrincipale)')
+  await expect
+    .poll(() => editorContent(page))
+    .toBe('hello [world](PagePrincipale)')
 })

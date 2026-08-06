@@ -11,7 +11,7 @@ With `nature` (forms) and `users` folding into `pages` as Content, a wiki page, 
 
 The rule above governs Content against Content. It said nothing about Content against a **route**, and the gap was real: dispatch reserved `api` and `doc` in one hardcoded list while URL parsing reserved everything matching `^api` in another, and nothing stopped a page, form, entry or account from being created on either name in the first place. Ticket 18's `/search` is the first case where a name a wiki plausibly already uses becomes a route.
 
-The namespace is therefore **unique across Content types *and* routes**. `YesWiki\Kernel\Routing\ReservedTags` is the single declaration both dispatch sites now read.
+The namespace is therefore **unique across Content types _and_ routes**. `YesWiki\Kernel\Routing\ReservedTags` is the single declaration both dispatch sites now read.
 
 - **The route wins, always.** Content may not shadow a route — otherwise anyone able to create a page could switch off the wiki's API by naming a page after it. This was already the de-facto behaviour; it is now the stated one.
 - **Reserved is not the same as taken**, and the two are worded differently wherever a human sees them. "Somebody already has this, here is a free one" sends a webmaster looking for a page; "nobody can ever have this" tells them to pick another name.
@@ -23,7 +23,7 @@ The namespace is therefore **unique across Content types *and* routes**. `YesWik
 
 Where a tag is **generated** (forms, entries, files, and any Content whose tag is derived from something else), `PageManager::suggestFreeTag()` treats reserved exactly like taken and suffixes away from it, so no caller needs to know the list. Where a human **types** one it is refused, and `PageManager::save()` throws as a backstop so no caller can write Content that nothing could ever reach.
 
-Registration is the deliberate exception: it **refuses** rather than suggests, because an account's name *is* its tag (`UserManager::buildBody()` stores no second copy that could drift). Suffixing would hand somebody the account `api-2` after they typed `api` — a silent rewrite of the one field they chose.
+Registration is the deliberate exception: it **refuses** rather than suggests, because an account's name _is_ its tag (`UserManager::buildBody()` stores no second copy that could drift). Suffixing would hand somebody the account `api-2` after they typed `api` — a silent rewrite of the one field they chose.
 
 ### Content already on a reserved tag
 

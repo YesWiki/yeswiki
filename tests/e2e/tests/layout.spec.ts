@@ -32,9 +32,15 @@ test.describe('no page is wider than the window', () => {
       await page.setViewportSize({ width, height: 800 })
       await page.goto('/?PagePrincipale')
       await page.waitForTimeout(300)
-      const overflow = await page.evaluate(() =>
-        document.documentElement.scrollWidth - document.documentElement.clientWidth)
-      expect(overflow, `the page overflows by ${overflow}px at ${width}px wide`).toBe(0)
+      const overflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+      )
+      expect(
+        overflow,
+        `the page overflows by ${overflow}px at ${width}px wide`,
+      ).toBe(0)
     }
   })
 
@@ -48,9 +54,15 @@ test.describe('no page is wider than the window', () => {
       await page.goto('/?LayoutOverflowProbe')
       // the table arrives by htmx after the shell, and it is the table that is wide
       await page.waitForTimeout(1200)
-      const overflow = await page.evaluate(() =>
-        document.documentElement.scrollWidth - document.documentElement.clientWidth)
-      expect(overflow, `the admin screen overflows by ${overflow}px at ${width}px wide`).toBe(0)
+      const overflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+      )
+      expect(
+        overflow,
+        `the admin screen overflows by ${overflow}px at ${width}px wide`,
+      ).toBe(0)
     }
   })
 })

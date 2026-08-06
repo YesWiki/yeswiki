@@ -13,7 +13,7 @@ export default {
         return `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#${value}"/></svg>`
       }
       return legacyIconToSprite(value) || legacyIconToSprite('icons')
-    }
+    },
   },
   template: `
     <div class="yw-form-group" :class="config.type" :title="config.hint" >
@@ -25,5 +25,5 @@ export default {
       </div>
       <input-hint :config="config"></input-hint>
     </div>
-  `
+  `,
 }

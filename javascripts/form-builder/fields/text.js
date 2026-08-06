@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_TEXT_LABEL'),
     name: 'text',
     attrs: { type: 'text' },
-    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#cursor-text"/></svg>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#cursor-text"/></svg>',
   },
   attributes: {
     size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value: '' },
@@ -20,8 +20,8 @@ export default {
         range: _t('BAZ_FORM_EDIT_TEXT_TYPE_RANGE'),
         url: _t('BAZ_FORM_EDIT_TEXT_TYPE_URL'),
         password: _t('BAZ_FORM_EDIT_TEXT_TYPE_PASSWORD'),
-        color: _t('BAZ_FORM_EDIT_TEXT_TYPE_COLOR')
-      }
+        color: _t('BAZ_FORM_EDIT_TEXT_TYPE_COLOR'),
+      },
     },
     placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read_access: readConf,
@@ -29,8 +29,8 @@ export default {
     pattern: {
       label: _t('BAZ_FORM_EDIT_TEXT_PATTERN'),
       value: '',
-      placeholder: `${_t('BAZ_FORM_EDIT_ADVANCED_MODE')} Ex: [0-9]+ ou [A-Za-z]{3}, ...`
-    }
+      placeholder: `${_t('BAZ_FORM_EDIT_ADVANCED_MODE')} Ex: [0-9]+ ou [A-Za-z]{3}, ...`,
+    },
   },
   advancedAttributes: ['placeholder', 'read_access', 'write_access', 'pattern'],
   // disabledAttributes: [],
@@ -54,5 +54,5 @@ export default {
     }
     api.onChange('sub_type', applySubtype)
     applySubtype()
-  }
+  },
 }

@@ -72,7 +72,7 @@ Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représentent
 ```yaml
 label: Texte à Afficher # Nom du champ que l'utilisateur peut remplir
 type: text # Type de champ
-default:  # valeur par défault. Si le parametre est égal à cette valeur par default, il n'est pas inclus dans le code wiki généré
+default: # valeur par défault. Si le parametre est égal à cette valeur par default, il n'est pas inclus dans le code wiki généré
 value: # valeur lors de l'initialisation
 required: true # true/false, est ce que ce champ doit absolument être configuré par l'utilisateur
 advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "paramètres avancés"

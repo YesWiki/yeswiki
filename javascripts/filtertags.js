@@ -16,20 +16,22 @@ ywInitEach('.filter-container', (container) => {
   if (!controls || !controls.classList.contains('controls')) return
 
   const applyFilters = () => {
-    const activeFilters = Array.from(controls.querySelectorAll('.filter.active'))
+    const activeFilters = Array.from(
+      controls.querySelectorAll('.filter.active'),
+    )
       .map((filter) => filter.dataset.filter)
       .filter((value) => value)
     elements.forEach((elementParam) => {
       const element = elementParam
-      const matches = activeFilters.every(
-        (value) => element.classList.contains(value)
+      const matches = activeFilters.every((value) =>
+        element.classList.contains(value),
       )
       element.style.display = matches ? '' : 'none'
     })
     const counter = document.querySelector('.nbfilteredelements')
     if (counter) {
       counter.textContent = elements.filter(
-        (element) => element.style.display !== 'none'
+        (element) => element.style.display !== 'none',
       ).length
     }
   }

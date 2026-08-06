@@ -1,11 +1,14 @@
 function _t(message, replacements = {}) {
-  let translation = typeof wiki !== 'undefined'
-        && wiki.lang !== undefined
-    ? (wiki.lang[message] ?? null) : null
+  let translation =
+    typeof wiki !== 'undefined' && wiki.lang !== undefined
+      ? (wiki.lang[message] ?? null)
+      : null
   if (!translation) {
     translation = message
     if (typeof wiki !== 'undefined' && wiki.isDebugEnabled) {
-      console.warn(`Translation was not found in wiki.lang for "${message}", (wiki.locale = ${wiki.locale})`)
+      console.warn(
+        `Translation was not found in wiki.lang for "${message}", (wiki.locale = ${wiki.locale})`,
+      )
     }
   }
   for (const key in replacements) {
@@ -17,7 +20,7 @@ function _t(message, replacements = {}) {
 }
 
 var wiki = {
-  ...((typeof wiki !== 'undefined') ? wiki : null),
+  ...(typeof wiki !== 'undefined' ? wiki : null),
   ...{
     url(url, params = {}) {
       let result = wiki.baseUrl + url
@@ -33,7 +36,9 @@ var wiki = {
       return result
     },
     cssVar(varName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(varName)
-    }
-  }
+      return getComputedStyle(document.documentElement).getPropertyValue(
+        varName,
+      )
+    },
+  },
 }

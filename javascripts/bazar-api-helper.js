@@ -5,7 +5,9 @@ function addCommaSeparatedString(mainString, stringToAdd) {
     return mainString // Return mainString if stringToAdd is empty
   }
 
-  const mainArray = mainString ? mainString.split(',').map((item) => item.trim()) : []
+  const mainArray = mainString
+    ? mainString.split(',').map((item) => item.trim())
+    : []
   const addArray = stringToAdd.split(',').map((item) => item.trim())
 
   addArray.forEach((item) => {
@@ -27,7 +29,7 @@ async function loadEntry(pageTag) {
   try {
     const response = await fetch(`${BASE_URL}?${pageTag}`, {
       method: 'GET',
-      headers: { Accept: 'application/json' }
+      headers: { Accept: 'application/json' },
     })
 
     if (!response.ok) {
@@ -54,9 +56,9 @@ async function createEntry(formId, data) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json'
+        Accept: 'application/json',
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
 
     if (!response.ok) {
@@ -82,9 +84,9 @@ async function modifyEntry(data) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json'
+        Accept: 'application/json',
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
 
     if (!response.ok) {
@@ -116,7 +118,7 @@ ywInitEach('.page', (pageElement) => {
         targetSel,
         valueSel,
         targetNode,
-        valueNode
+        valueNode,
       })
       return false
     }
@@ -133,7 +135,7 @@ ywInitEach('.page', (pageElement) => {
     if (clicked) {
       validateDataTargets(clicked, {
         execute: true,
-        onValid: async(targetEl, valueEl, action) => {
+        onValid: async (targetEl, valueEl, action) => {
           event.preventDefault()
           event.stopPropagation()
 
@@ -160,7 +162,7 @@ ywInitEach('.page', (pageElement) => {
               console.error('Failed during add operation:', error)
             }
           }
-        }
+        },
       })
     }
     return false

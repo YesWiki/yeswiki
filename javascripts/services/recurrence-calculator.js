@@ -10,7 +10,7 @@ const daysToCodeAssoc = {
   thu: 4,
   fri: 5,
   sat: 6,
-  sun: 7
+  sun: 7,
 }
 const monthsToCodeAssoc = {
   jan: 0,
@@ -24,14 +24,14 @@ const monthsToCodeAssoc = {
   sep: 8,
   oct: 9,
   nov: 10,
-  dec: 11
+  dec: 11,
 }
 const wantedPositionList = {
   fisrtOfMonth: 1,
   secondOfMonth: 2,
   thirdOfMonth: 3,
   forthOfMonth: 4,
-  lastOfMonth: 99
+  lastOfMonth: 99,
 }
 
 function pad(n) {
@@ -75,13 +75,24 @@ function calculateNextMonth(nextStartMonth, currentStartYear, step) {
     : { nextStartMonth: newMonth, currentStartYear }
 }
 
-function findNextStartDate(date, startYear, startMonth, whenInMonth, nth, daysCodes, callback) {
+function findNextStartDate(
+  date,
+  startYear,
+  startMonth,
+  whenInMonth,
+  nth,
+  daysCodes,
+  callback,
+) {
   if (whenInMonth === 'nthOfMonth') {
     let limit = 60
     let currentStartYear = startYear
     let nextStartMonth = startMonth
     const nthValue = Number(nth) || 1
-    while (limit > 0 && nthValue > getNbDaysInMonth(currentStartYear, nextStartMonth)) {
+    while (
+      limit > 0 &&
+      nthValue > getNbDaysInMonth(currentStartYear, nextStartMonth)
+    ) {
       const data = callback(nextStartMonth, currentStartYear)
       nextStartMonth = data?.nextStartMonth ?? nextStartMonth
       currentStartYear = data?.currentStartYear ?? currentStartYear
@@ -114,29 +125,68 @@ function calculateNextWeeklyDate(date, daysCodes, step) {
   const currentStartDayCode = date.getDay() || 7
   const maxDaysCode = daysCodes.reduce((acc, val) => Math.max(acc, val), 1)
   const newDate = new Date(date.getTime())
-  if (!daysCodes.includes(currentStartDayCode) || currentStartDayCode === maxDaysCode) {
+  if (
+    !daysCodes.includes(currentStartDayCode) ||
+    currentStartDayCode === maxDaysCode
+  ) {
     const nextWantedDay = daysCodes.reduce((acc, val) => Math.min(acc, val), 7)
-    newDate.setDate(newDate.getDate() + nextWantedDay + 7 * (step - 1) + 7 - currentStartDayCode)
+    newDate.setDate(
+      newDate.getDate() +
+        nextWantedDay +
+        7 * (step - 1) +
+        7 -
+        currentStartDayCode,
+    )
   } else {
-    const nextWantedDay = daysCodes.filter((d) => d > currentStartDayCode).reduce((acc, val) => Math.min(acc, val), 7)
+    const nextWantedDay = daysCodes
+      .filter((d) => d > currentStartDayCode)
+      .reduce((acc, val) => Math.min(acc, val), 7)
     newDate.setDate(newDate.getDate() + nextWantedDay - currentStartDayCode)
   }
   return newDate
 }
 
-function calculateNextDate(date, repetition, step, daysCodes, monthCode, whenInMonth, nth) {
+function calculateNextDate(
+  date,
+  repetition,
+  step,
+  daysCodes,
+  monthCode,
+  whenInMonth,
+  nth,
+) {
   switch (repetition) {
     case 'y': {
       const nextStartYear = date.getFullYear() + step
       const nextStartMonth = monthCode
-      return findNextStartDate(date, nextStartYear, nextStartMonth, whenInMonth, nth, daysCodes, (m, y) => ({
-        nextStartMonth: m,
-        currentStartYear: y + step
-      }))
+      return findNextStartDate(
+        date,
+        nextStartYear,
+        nextStartMonth,
+        whenInMonth,
+        nth,
+        daysCodes,
+        (m, y) => ({
+          nextStartMonth: m,
+          currentStartYear: y + step,
+        }),
+      )
     }
     case 'm': {
-      const { nextStartMonth, currentStartYear } = calculateNextMonth(date.getMonth(), date.getFullYear(), step)
-      return findNextStartDate(date, currentStartYear, nextStartMonth, whenInMonth, nth, daysCodes, (m, y) => calculateNextMonth(m, y, step))
+      const { nextStartMonth, currentStartYear } = calculateNextMonth(
+        date.getMonth(),
+        date.getFullYear(),
+        step,
+      )
+      return findNextStartDate(
+        date,
+        currentStartYear,
+        nextStartMonth,
+        whenInMonth,
+        nth,
+        daysCodes,
+        (m, y) => calculateNextMonth(m, y, step),
+      )
     }
     case 'w':
       return calculateNextWeeklyDate(date, daysCodes, step)
@@ -163,7 +213,7 @@ function generateOccurrences({
   nth,
   nbmax,
   limitdate,
-  except
+  except,
 }) {
   const start = parseDateString(startDate)
   if (start === null) {
@@ -179,12 +229,18 @@ function generateOccurrences({
     .filter((c) => !!c)
     .sort((a, b) => a - b)
   const usedDays = daysCodes.length > 0 ? daysCodes : [start.getDay() || 7]
-  const monthCode = Object.prototype.hasOwnProperty.call(monthsToCodeAssoc, month)
+  const monthCode = Object.prototype.hasOwnProperty.call(
+    monthsToCodeAssoc,
+    month,
+  )
     ? monthsToCodeAssoc[month]
     : start.getMonth()
 
   const stepInt = Math.max(1, Number(step) || 1)
-  const nbmaxInt = Math.min(Math.max(1, Number(nbmax) || 1), DEFAULT_MAXIMUM_REPETITION)
+  const nbmaxInt = Math.min(
+    Math.max(1, Number(nbmax) || 1),
+    DEFAULT_MAXIMUM_REPETITION,
+  )
   const exceptSet = new Set(Array.isArray(except) ? except : [])
   const limitDateObj = limitdate ? parseDateString(limitdate) : null
   const limitTime = limitDateObj ? limitDateObj.getTime() : null
@@ -195,10 +251,21 @@ function generateOccurrences({
 
   // the anchor occurrence (the entry's own dates) is never subject to `except`,
   // only occurrences computed further in the loop can be skipped
-  occurrences.push({ start: formatDateString(curStart, hasStartTime), end: formatDateString(curEnd, hasEndTime) })
+  occurrences.push({
+    start: formatDateString(curStart, hasStartTime),
+    end: formatDateString(curEnd, hasEndTime),
+  })
 
   for (let i = 1; i <= nbmaxInt; i++) {
-    const nextStart = calculateNextDate(curStart, repetition, stepInt, usedDays, monthCode, whenInMonth, nth)
+    const nextStart = calculateNextDate(
+      curStart,
+      repetition,
+      stepInt,
+      usedDays,
+      monthCode,
+      whenInMonth,
+      nth,
+    )
     if (!nextStart || nextStart.toString() === 'Invalid Date') {
       break
     }
@@ -207,12 +274,18 @@ function generateOccurrences({
     curStart = nextStart
     curEnd = nextEnd
     // limitdate is an exclusive upper bound: an occurrence starting or ending on/after it is dropped, and generation stops
-    if (limitTime !== null && (curStart.getTime() >= limitTime || curEnd.getTime() >= limitTime)) {
+    if (
+      limitTime !== null &&
+      (curStart.getTime() >= limitTime || curEnd.getTime() >= limitTime)
+    ) {
       break
     }
     const startDatePart = `${curStart.getFullYear()}-${pad(curStart.getMonth() + 1)}-${pad(curStart.getDate())}`
     if (!exceptSet.has(startDatePart)) {
-      occurrences.push({ start: formatDateString(curStart, hasStartTime), end: formatDateString(curEnd, hasEndTime) })
+      occurrences.push({
+        start: formatDateString(curStart, hasStartTime),
+        end: formatDateString(curEnd, hasEndTime),
+      })
     }
   }
 
@@ -220,12 +293,14 @@ function generateOccurrences({
 }
 
 function isLegacyRecurrenceChild(value) {
-  return typeof value === 'string' && /^\{"recurrentParentId":"[^"]+"}$/.test(value)
+  return (
+    typeof value === 'string' && /^\{"recurrentParentId":"[^"]+"}$/.test(value)
+  )
 }
 
 if (!window._bazarRecurrenceCalculator) {
   window._bazarRecurrenceCalculator = {
     generateOccurrences,
-    isLegacyRecurrenceChild
+    isLegacyRecurrenceChild,
   }
 }

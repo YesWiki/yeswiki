@@ -20,7 +20,7 @@ const IGNORED = [
   // vditor lazily fetches a theme stylesheet we do not vendor
   /vditor\/dist\/css\/content-theme/i,
   // Firefox/Chrome deprecation notices from vendored libraries
-  /synchronous XMLHttpRequest/i
+  /synchronous XMLHttpRequest/i,
 ]
 
 const isNoise = (text: string) => IGNORED.some((pattern) => pattern.test(text))
@@ -57,9 +57,15 @@ export const watchConsole = (page: Page): ConsoleWatcher => {
 }
 
 /** Attach the collected output to the report, so a failure says what the browser said. */
-export const attachConsole = async (watcher: ConsoleWatcher, testInfo: TestInfo) => {
+export const attachConsole = async (
+  watcher: ConsoleWatcher,
+  testInfo: TestInfo,
+) => {
   const errors = watcher.errors()
   if (errors.length > 0) {
-    await testInfo.attach('browser-console', { body: errors.join('\n'), contentType: 'text/plain' })
+    await testInfo.attach('browser-console', {
+      body: errors.join('\n'),
+      contentType: 'text/plain',
+    })
   }
 }

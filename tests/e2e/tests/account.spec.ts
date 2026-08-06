@@ -23,12 +23,19 @@ test.describe('the account routes', () => {
     await logout(page)
   })
 
-  test('a signed-out visitor gets the sign-in form, not a refusal', async ({ page }) => {
-    for (const route of ['user', 'user/pages', 'user/entries', 'user/reactions']) {
+  test('a signed-out visitor gets the sign-in form, not a refusal', async ({
+    page,
+  }) => {
+    for (const route of [
+      'user',
+      'user/pages',
+      'user/entries',
+      'user/reactions',
+    ]) {
       await page.goto(`/?${route}`)
       await expect(
         page.locator(SIGN_IN_FORM),
-        `/?${route} must offer the sign-in form`
+        `/?${route} must offer the sign-in form`,
       ).toBeVisible()
     }
 
@@ -37,18 +44,24 @@ test.describe('the account routes', () => {
     await expect(page.locator('.yw-account-guest__card')).toBeVisible()
   })
 
-  test('signing up and recovering a password are their own screens', async ({ page }) => {
+  test('signing up and recovering a password are their own screens', async ({
+    page,
+  }) => {
     // the regression these guard: both were rendering the sign-in form instead of
     // themselves, which is a closed door where the door is the point
     await page.goto('/?user/signup')
-    await expect(page.locator('input[name="usersettings_action"][value="signup"]')).toHaveCount(1)
+    await expect(
+      page.locator('input[name="usersettings_action"][value="signup"]'),
+    ).toHaveCount(1)
     await expect(page.locator(SIGN_IN_FORM)).toHaveCount(0)
 
     await page.goto('/?user/lost-password')
     await expect(page.locator(SIGN_IN_FORM)).toHaveCount(0)
   })
 
-  test('signing in from /user lands on the account, not on an error', async ({ page }, testInfo) => {
+  test('signing in from /user lands on the account, not on an error', async ({
+    page,
+  }, testInfo) => {
     const watcher = watchConsole(page)
 
     await page.goto('/?user')
@@ -56,38 +69,59 @@ test.describe('the account routes', () => {
     await page.fill(`${SIGN_IN_FORM} input[name="password"]`, ADMIN_PASSWORD)
 
     const [response] = await Promise.all([
-      page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('?user')),
-      page.click(`${SIGN_IN_FORM} button[type="submit"]`)
+      page.waitForResponse(
+        (r) => r.request().method() === 'POST' && r.url().includes('?user'),
+      ),
+      page.click(`${SIGN_IN_FORM} button[type="submit"]`),
     ])
-    expect(response.status(), 'the sign-in POST must redirect, not fail').toBe(302)
+    expect(response.status(), 'the sign-in POST must redirect, not fail').toBe(
+      302,
+    )
 
-    await expect(page.locator(SIGN_IN_FORM), 'signing in must end the sign-in form').toHaveCount(0)
+    await expect(
+      page.locator(SIGN_IN_FORM),
+      'signing in must end the sign-in form',
+    ).toHaveCount(0)
     // signed in, the rail is the account and nothing else -- not the dashboard's sections,
     // even for an admin
     await expect(page.locator(RAIL_SECTION)).toHaveCount(1)
-    await expect(page.locator('.yw-dashboard__sidebar a[href*="user/pages"]')).toHaveCount(1)
-    await expect(page.locator('.yw-dashboard__sidebar a[href*="admin/"]')).toHaveCount(0)
+    await expect(
+      page.locator('.yw-dashboard__sidebar a[href*="user/pages"]'),
+    ).toHaveCount(1)
+    await expect(
+      page.locator('.yw-dashboard__sidebar a[href*="admin/"]'),
+    ).toHaveCount(0)
     await expect(page.locator('.yw-dashboard__link--current')).toBeVisible()
 
     await page.goto('/?user/logout')
-    await expect(page.locator(SIGN_IN_FORM), 'signing out must bring the form back').toBeVisible()
+    await expect(
+      page.locator(SIGN_IN_FORM),
+      'signing out must bring the form back',
+    ).toBeVisible()
     await expect(page.locator('.yw-dashboard__sidebar')).toHaveCount(0)
 
     await attachConsole(watcher, testInfo)
     expect(watcher.errors(), 'the browser reported errors').toEqual([])
   })
 
-  test('the navbar links to the account instead of opening a modal', async ({ page }) => {
+  test('the navbar links to the account instead of opening a modal', async ({
+    page,
+  }) => {
     await page.goto('/?PagePrincipale')
 
-    await expect(page.locator('#LoginModal'), 'the login modal is gone').toHaveCount(0)
+    await expect(
+      page.locator('#LoginModal'),
+      'the login modal is gone',
+    ).toHaveCount(0)
     await expect(
       page.locator('#yw-topnav a.account-link'),
-      'the navbar must offer a way to the account'
+      'the navbar must offer a way to the account',
     ).toHaveCount(1)
     // an icon and a link, not a form: the whole sign-in form used to be in the navigation
     // bar of every page whether or not anyone would ever open it
-    await expect(page.locator('#yw-topnav input[name="password"]')).toHaveCount(0)
+    await expect(page.locator('#yw-topnav input[name="password"]')).toHaveCount(
+      0,
+    )
   })
 
   /**
@@ -95,7 +129,9 @@ test.describe('the account routes', () => {
    * was clicked from, the form on /user carries that through its own POST, and the browser
    * ends up back where it started -- three requests, two of them redirects.
    */
-  test('signing in from the navbar comes back to the page you were on', async ({ page }) => {
+  test('signing in from the navbar comes back to the page you were on', async ({
+    page,
+  }) => {
     await page.goto('/?ReglesDeFormatage')
 
     const accountLink = page.locator('#yw-topnav a.account-link')
@@ -111,10 +147,12 @@ test.describe('the account routes', () => {
     // URL carries `?return=…ReglesDeFormatage`, so "contains" is true before signing in too
     await expect(page).toHaveURL(/ReglesDeFormatage$/)
     // and the button is now a face, on the page it brought us back to
-    await expect(page.locator('#yw-topnav a.account-link .yw-avatar')).toBeVisible()
+    await expect(
+      page.locator('#yw-topnav a.account-link .yw-avatar'),
+    ).toBeVisible()
     await expect(
       page.locator('#yw-topnav a.account-link'),
-      'signed in, the button goes straight to the account'
+      'signed in, the button goes straight to the account',
     ).toHaveAttribute('href', /\?user$/)
   })
 })

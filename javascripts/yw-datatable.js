@@ -2,7 +2,7 @@
 // jQuery DataTables). Auto-initializes any `<table data-yw-datatable>` already in the
 // document plus any added later (MutationObserver), matching DataTables' old
 // auto-init-any-qualifying-table convenience. No jQuery.
-(function() {
+;(function () {
   const DEFAULT_PAGE_SIZE = 10
   const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
@@ -22,7 +22,9 @@
       .split(',')
       .map((value) => parseInt(value, 10))
       .filter((value) => !Number.isNaN(value) && value > 0)
-    const options = declared.length ? declared : DEFAULT_PAGE_SIZE_OPTIONS.slice()
+    const options = declared.length
+      ? declared
+      : DEFAULT_PAGE_SIZE_OPTIONS.slice()
     if (!options.includes(pageSize)) options.push(pageSize)
     return options.sort((a, b) => a - b)
   }
@@ -33,7 +35,9 @@
 
   function rowMatches(row, needle) {
     if (!needle) return true
-    return Array.from(row.cells).some((cell) => cellText(cell).toLowerCase().includes(needle))
+    return Array.from(row.cells).some((cell) =>
+      cellText(cell).toLowerCase().includes(needle),
+    )
   }
 
   function compareRows(a, b, colIndex, direction) {
@@ -42,9 +46,10 @@
     const an = parseFloat(av.replace(',', '.'))
     const bn = parseFloat(bv.replace(',', '.'))
     const looksNumeric = /^-?[\d.,]+$/.test(av) && /^-?[\d.,]+$/.test(bv)
-    const result = looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
-      ? an - bn
-      : av.localeCompare(bv, undefined, { sensitivity: 'base' })
+    const result =
+      looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
+        ? an - bn
+        : av.localeCompare(bv, undefined, { sensitivity: 'base' })
     return direction === 'desc' ? -result : result
   }
 
@@ -105,7 +110,8 @@
     const allRows = Array.from(tbody.rows)
     const headerCells = table.tHead ? Array.from(table.tHead.rows[0].cells) : []
 
-    let pageSize = parseInt(table.getAttribute('data-yw-page-size'), 10) || DEFAULT_PAGE_SIZE
+    let pageSize =
+      parseInt(table.getAttribute('data-yw-page-size'), 10) || DEFAULT_PAGE_SIZE
     const noSearch = table.hasAttribute('data-yw-no-search')
     const noPaginate = table.hasAttribute('data-yw-no-paginate')
 
@@ -116,7 +122,9 @@
 
     // Optional initial sort, e.g. data-yw-datatable-sort="0,desc" (replaces
     // DataTables' data-order attribute)
-    const initialSort = (table.getAttribute('data-yw-datatable-sort') || '').split(',')
+    const initialSort = (
+      table.getAttribute('data-yw-datatable-sort') || ''
+    ).split(',')
     if (initialSort.length === 2) {
       const initialCol = parseInt(initialSort[0], 10)
       if (!Number.isNaN(initialCol)) {
@@ -138,7 +146,9 @@
         const picker = document.createElement('label')
         picker.className = 'yw-datatable__page-size'
         picker.appendChild(
-          document.createTextNode(translate('DATATABLE_PAGE_SIZE_LABEL', 'Show'))
+          document.createTextNode(
+            translate('DATATABLE_PAGE_SIZE_LABEL', 'Show'),
+          ),
         )
         const select = document.createElement('select')
         select.className = 'yw-input'
@@ -162,7 +172,10 @@
         const search = document.createElement('input')
         search.type = 'search'
         search.className = 'yw-input yw-datatable__search'
-        search.placeholder = translate('DATATABLE_SEARCH_PLACEHOLDER', 'Search…')
+        search.placeholder = translate(
+          'DATATABLE_SEARCH_PLACEHOLDER',
+          'Search…',
+        )
         toolbar.appendChild(search)
         search.addEventListener('input', () => {
           searchTerm = search.value.trim().toLowerCase()
@@ -186,9 +199,12 @@
     emptyCell.className = 'yw-datatable__empty'
     emptyCell.colSpan = Math.max(
       1,
-      headerCells.length || (allRows[0] ? allRows[0].cells.length : 1)
+      headerCells.length || (allRows[0] ? allRows[0].cells.length : 1),
     )
-    emptyCell.textContent = translate('DATATABLE_NO_RESULTS', 'No matching results')
+    emptyCell.textContent = translate(
+      'DATATABLE_NO_RESULTS',
+      'No matching results',
+    )
     emptyRow.appendChild(emptyCell)
 
     headerCells.forEach((th, index) => {
@@ -205,7 +221,7 @@
           if (otherTh.hasAttribute('data-yw-sort')) {
             otherTh.setAttribute(
               'data-yw-sort',
-              otherIndex === sortCol ? sortDir : ''
+              otherIndex === sortCol ? sortDir : '',
             )
           }
         })
@@ -220,7 +236,8 @@
       const filters = window.ywDatatableRowFilters || {}
       const customFilter = table.id ? filters[table.id] : null
       let rows = allRows.filter(
-        (row) => rowMatches(row, searchTerm) && (!customFilter || customFilter(row))
+        (row) =>
+          rowMatches(row, searchTerm) && (!customFilter || customFilter(row)),
       )
 
       if (sortCol !== null) {
@@ -254,10 +271,12 @@
         })
       }
 
-      table.dispatchEvent(new CustomEvent('yw-datatable-drawn', {
-        bubbles: true,
-        detail: { matchedRows: rows }
-      }))
+      table.dispatchEvent(
+        new CustomEvent('yw-datatable-drawn', {
+          bubbles: true,
+          detail: { matchedRows: rows },
+        }),
+      )
     }
 
     // callers that change external filter state ask for a re-render this way
@@ -269,16 +288,19 @@
   function scan(root) {
     root
       .querySelectorAll(
-        'table[data-yw-datatable]:not([data-yw-datatable-ready])'
+        'table[data-yw-datatable]:not([data-yw-datatable-ready])',
       )
       .forEach(initDataTable)
   }
 
   // ticket 14: ywInit replaces the DOMContentLoaded + MutationObserver pair
   ywInit((root) => {
-    if (root.matches && root.matches('table[data-yw-datatable]:not([data-yw-datatable-ready])')) {
+    if (
+      root.matches &&
+      root.matches('table[data-yw-datatable]:not([data-yw-datatable-ready])')
+    ) {
       initDataTable(root)
     }
     scan(root.querySelectorAll ? root : document)
   })
-}())
+})()

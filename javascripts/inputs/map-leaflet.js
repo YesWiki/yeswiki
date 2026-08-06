@@ -13,7 +13,7 @@ ywInit((root) => {
   function drawnItemsToGeoJSON(pDrawnItems) {
     const vData = {
       type: 'FeatureCollection',
-      features: []
+      features: [],
     }
 
     pDrawnItems.eachLayer((pLayer) => {
@@ -26,12 +26,12 @@ ywInit((root) => {
           properties: {
             type: 'circle',
             radius: pLayer.getRadius(),
-            ...pLayer.options
+            ...pLayer.options,
           },
           geometry: {
             type: 'Point', // GeoJSON still sees it as a point
-            coordinates: [cLatLng.lng, cLatLng.lat]
-          }
+            coordinates: [cLatLng.lng, cLatLng.lat],
+          },
         })
       } else {
         vData.features.push(pLayer.toGeoJSON())
@@ -52,8 +52,11 @@ ywInit((root) => {
   }
 
   const scope = root && root.querySelectorAll ? root : document
-  const maps = [...scope.querySelectorAll('.geocode-input:not(.yw-initialized)')]
-  if (scope.matches && scope.matches('.geocode-input:not(.yw-initialized)')) maps.unshift(scope)
+  const maps = [
+    ...scope.querySelectorAll('.geocode-input:not(.yw-initialized)'),
+  ]
+  if (scope.matches && scope.matches('.geocode-input:not(.yw-initialized)'))
+    maps.unshift(scope)
 
   maps.forEach((cMe) => {
     cMe.classList.add('yw-initialized')
@@ -61,15 +64,15 @@ ywInit((root) => {
     const cMapFieldData = parseJsonAttribute(cMe, 'data-map-field-data')
 
     if (
-      typeof cMapFieldData === 'object'
-      && cMapFieldData !== null
-      && 'bazWheelZoom' in cMapFieldData
-      && 'bazShowNav' in cMapFieldData
-      && 'mapProvider' in cMapFieldData
-      && 'mapProviderCredentials' in cMapFieldData
-      && 'bazMapCenterLat' in cMapFieldData
-      && 'bazMapCenterLon' in cMapFieldData
-      && 'bazMapZoom' in cMapFieldData
+      typeof cMapFieldData === 'object' &&
+      cMapFieldData !== null &&
+      'bazWheelZoom' in cMapFieldData &&
+      'bazShowNav' in cMapFieldData &&
+      'mapProvider' in cMapFieldData &&
+      'mapProviderCredentials' in cMapFieldData &&
+      'bazMapCenterLat' in cMapFieldData &&
+      'bazMapCenterLon' in cMapFieldData &&
+      'bazMapZoom' in cMapFieldData
     ) {
       let vGeocodedMarker
 
@@ -92,7 +95,9 @@ ywInit((root) => {
       const cGeometries = cMe.querySelector('.yw-geometries-input')
 
       const cGeolocateButton = cMe.querySelector('.btn-geolocate')
-      const cGeolocateAddressButton = cMe.querySelector('.btn-geolocate-address')
+      const cGeolocateAddressButton = cMe.querySelector(
+        '.btn-geolocate-address',
+      )
       const cMoveToAddressButton = cMe.querySelector('.btn-move-to-address')
 
       const cFieldNames = parseJsonAttribute(cMe, 'data-field-names') || {}
@@ -104,33 +109,35 @@ ywInit((root) => {
         'town',
         'postalCode',
         'county',
-        'state'
-      ]
-        .reduce((pAcc, pName) => {
-          if (pName in cFieldNames && cFieldNames[pName].trim() !== '') {
-            const cField = byId(cFieldNames[pName])
+        'state',
+      ].reduce((pAcc, pName) => {
+        if (pName in cFieldNames && cFieldNames[pName].trim() !== '') {
+          const cField = byId(cFieldNames[pName])
 
-            if (cField) pAcc[pName] = cField // eslint-disable-line no-param-reassign
-          }
+          if (cField) pAcc[pName] = cField // eslint-disable-line no-param-reassign
+        }
 
-          return pAcc
-        }, {})
+        return pAcc
+      }, {})
 
       // Init leaflet map
       const cMap = new L.Map(cMe.querySelector('.yw-geolocation-map'), {
         scrollWheelZoom: cMapFieldData.bazWheelZoom,
-        zoomControl: cMapFieldData.bazShowNav
+        zoomControl: cMapFieldData.bazShowNav,
       })
       const cProvider = L.tileLayer.provider(
         cMapFieldData.mapProvider,
-        cMapFieldData.mapProviderCredentials
+        cMapFieldData.mapProviderCredentials,
       )
 
       cMap.addLayer(cProvider)
 
       cMap.setView(
-        new L.LatLng(cMapFieldData.bazMapCenterLat, cMapFieldData.bazMapCenterLon),
-        cMapFieldData.bazMapZoom
+        new L.LatLng(
+          cMapFieldData.bazMapCenterLat,
+          cMapFieldData.bazMapCenterLon,
+        ),
+        cMapFieldData.bazMapZoom,
       )
 
       if (cMapFieldData.hasGeometries) {
@@ -138,17 +145,31 @@ ywInit((root) => {
 
         L.drawLocal.edit.toolbar.actions.save.title = _t('SAVE_CHANGES_TITLE')
         L.drawLocal.edit.toolbar.actions.save.text = _t('SAVE_BUTTON_TEXT')
-        L.drawLocal.edit.toolbar.actions.cancel.title = _t('CANCEL_EDITING_TITLE')
+        L.drawLocal.edit.toolbar.actions.cancel.title = _t(
+          'CANCEL_EDITING_TITLE',
+        )
         L.drawLocal.edit.toolbar.actions.cancel.text = _t('CANCEL_BUTTON_TEXT')
-        L.drawLocal.edit.toolbar.actions.clearAll.title = _t('CLEAR_ALL_LAYERS_TITLE')
-        L.drawLocal.edit.toolbar.actions.clearAll.text = _t('CLEAR_ALL_BUTTON_TEXT')
+        L.drawLocal.edit.toolbar.actions.clearAll.title = _t(
+          'CLEAR_ALL_LAYERS_TITLE',
+        )
+        L.drawLocal.edit.toolbar.actions.clearAll.text = _t(
+          'CLEAR_ALL_BUTTON_TEXT',
+        )
         L.drawLocal.edit.toolbar.buttons.edit = _t('EDIT_LAYERS_BUTTON')
-        L.drawLocal.edit.toolbar.buttons.editDisabled = _t('EDIT_DISABLED_BUTTON')
+        L.drawLocal.edit.toolbar.buttons.editDisabled = _t(
+          'EDIT_DISABLED_BUTTON',
+        )
         L.drawLocal.edit.toolbar.buttons.remove = _t('DELETE_LAYERS_BUTTON')
-        L.drawLocal.edit.toolbar.buttons.removeDisabled = _t('DELETE_DISABLED_BUTTON')
+        L.drawLocal.edit.toolbar.buttons.removeDisabled = _t(
+          'DELETE_DISABLED_BUTTON',
+        )
         L.drawLocal.edit.handlers.edit.tooltip.text = _t('EDIT_TOOLTIP_TEXT')
-        L.drawLocal.edit.handlers.edit.tooltip.subtext = _t('EDIT_TOOLTIP_SUBTEXT')
-        L.drawLocal.edit.handlers.remove.tooltip.text = _t('REMOVE_TOOLTIP_TEXT')
+        L.drawLocal.edit.handlers.edit.tooltip.subtext = _t(
+          'EDIT_TOOLTIP_SUBTEXT',
+        )
+        L.drawLocal.edit.handlers.remove.tooltip.text = _t(
+          'REMOVE_TOOLTIP_TEXT',
+        )
         L.drawLocal.draw.toolbar.actions.title = _t('CANCEL_DRAWING_TITLE')
         L.drawLocal.draw.toolbar.actions.text = _t('CANCEL_BUTTON_TEXT')
         L.drawLocal.draw.toolbar.finish.title = _t('FINISH_DRAWING_TITLE')
@@ -160,25 +181,49 @@ ywInit((root) => {
         L.drawLocal.draw.toolbar.buttons.rectangle = _t('DRAW_RECTANGLE_BUTTON')
         L.drawLocal.draw.toolbar.buttons.circle = _t('DRAW_CIRCLE_BUTTON')
         L.drawLocal.draw.toolbar.buttons.marker = _t('DRAW_MARKER_BUTTON')
-        L.drawLocal.draw.toolbar.buttons.circlemarker = _t('DRAW_CIRCLE_MARKER_BUTTON')
-        L.drawLocal.draw.handlers.circle.tooltip.start = _t('CIRCLE_TOOLTIP_START')
+        L.drawLocal.draw.toolbar.buttons.circlemarker = _t(
+          'DRAW_CIRCLE_MARKER_BUTTON',
+        )
+        L.drawLocal.draw.handlers.circle.tooltip.start = _t(
+          'CIRCLE_TOOLTIP_START',
+        )
         L.drawLocal.draw.handlers.circle.radius = _t('CIRCLE_RADIUS_LABEL')
-        L.drawLocal.draw.handlers.circlemarker.tooltip.start = _t('CIRCLE_MARKER_TOOLTIP_START')
-        L.drawLocal.draw.handlers.marker.tooltip.start = _t('MARKER_TOOLTIP_START')
-        L.drawLocal.draw.handlers.polygon.tooltip.start = _t('POLYGON_TOOLTIP_START')
-        L.drawLocal.draw.handlers.polygon.tooltip.cont = _t('POLYGON_TOOLTIP_CONT')
-        L.drawLocal.draw.handlers.polygon.tooltip.end = _t('POLYGON_TOOLTIP_END')
+        L.drawLocal.draw.handlers.circlemarker.tooltip.start = _t(
+          'CIRCLE_MARKER_TOOLTIP_START',
+        )
+        L.drawLocal.draw.handlers.marker.tooltip.start = _t(
+          'MARKER_TOOLTIP_START',
+        )
+        L.drawLocal.draw.handlers.polygon.tooltip.start = _t(
+          'POLYGON_TOOLTIP_START',
+        )
+        L.drawLocal.draw.handlers.polygon.tooltip.cont = _t(
+          'POLYGON_TOOLTIP_CONT',
+        )
+        L.drawLocal.draw.handlers.polygon.tooltip.end = _t(
+          'POLYGON_TOOLTIP_END',
+        )
         L.drawLocal.draw.handlers.polyline.error = _t('POLYLINE_ERROR')
-        L.drawLocal.draw.handlers.polyline.tooltip.start = _t('POLYLINE_TOOLTIP_START')
-        L.drawLocal.draw.handlers.polyline.tooltip.cont = _t('POLYLINE_TOOLTIP_CONT')
-        L.drawLocal.draw.handlers.polyline.tooltip.end = _t('POLYLINE_TOOLTIP_END')
-        L.drawLocal.draw.handlers.rectangle.tooltip.start = _t('RECTANGLE_TOOLTIP_START')
-        L.drawLocal.draw.handlers.simpleshape.tooltip.end = _t('SIMPLE_SHAPE_TOOLTIP_END')
+        L.drawLocal.draw.handlers.polyline.tooltip.start = _t(
+          'POLYLINE_TOOLTIP_START',
+        )
+        L.drawLocal.draw.handlers.polyline.tooltip.cont = _t(
+          'POLYLINE_TOOLTIP_CONT',
+        )
+        L.drawLocal.draw.handlers.polyline.tooltip.end = _t(
+          'POLYLINE_TOOLTIP_END',
+        )
+        L.drawLocal.draw.handlers.rectangle.tooltip.start = _t(
+          'RECTANGLE_TOOLTIP_START',
+        )
+        L.drawLocal.draw.handlers.simpleshape.tooltip.end = _t(
+          'SIMPLE_SHAPE_TOOLTIP_END',
+        )
 
         if (cMapFieldData.geometries) {
           vDrawnItems = drawGeometries(
             vDrawnItems,
-            cMapFieldData.geometries.features
+            cMapFieldData.geometries.features,
           )
         }
 
@@ -187,7 +232,7 @@ ywInit((root) => {
             edit: {
               featureGroup: vDrawnItems,
               remove: true,
-              poly: { allowIntersection: false }
+              poly: { allowIntersection: false },
             },
             draw: {
               position: 'topleft',
@@ -196,9 +241,9 @@ ywInit((root) => {
               rectangle: cMapFieldData.chosenGeometries.includes('rectangle'),
               circle: cMapFieldData.chosenGeometries.includes('circle'),
               circlemarker: false,
-              marker: false
-            }
-          })
+              marker: false,
+            },
+          }),
         )
 
         const syncGeometries = () => {
@@ -259,14 +304,14 @@ ywInit((root) => {
             .bindPopup(popupHtml(vGeocodedMarker.getLatLng()), {
               closeButton: false,
               closeOnClick: false,
-              minWidth: 300
+              minWidth: 300,
             })
             .openPopup()
 
           if (cLatitude) cLatitude.value = pPoint.lat
           if (cLongitude) cLongitude.value = pPoint.lng
 
-          vGeocodedMarker.on('dragend', function(ev) {
+          vGeocodedMarker.on('dragend', function (ev) {
             this.openPopup()
             const changedPos = ev.target.getLatLng()
             if (cLatitude) cLatitude.value = changedPos.lat
@@ -314,16 +359,15 @@ ywInit((root) => {
 
         const formattedFields = {}
 
-        Object.keys(cFields)
-          .forEach((pName) => {
-            formattedFields[pName] = cFields[pName].value
-          })
+        Object.keys(cFields).forEach((pName) => {
+          formattedFields[pName] = cFields[pName].value
+        })
 
         let setToTry = []
         const pushStreetVariant = (street) => {
           setToTry.push({
             method: 'geolocate',
-            fields: { ...formattedFields, ...{ street } }
+            fields: { ...formattedFields, ...{ street } },
           })
         }
         const pushWithoutStreet = () => {
@@ -333,27 +377,43 @@ ywInit((root) => {
         }
 
         if (
-          'street' in formattedFields
-          && 'street1' in formattedFields
-          && 'street2' in formattedFields
+          'street' in formattedFields &&
+          'street1' in formattedFields &&
+          'street2' in formattedFields
         ) {
           pushStreetVariant(
-            `${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`
+            `${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`,
           )
-          pushStreetVariant(`${formattedFields.street} ${formattedFields.street1}`)
-          pushStreetVariant(`${formattedFields.street} ${formattedFields.street2}`)
+          pushStreetVariant(
+            `${formattedFields.street} ${formattedFields.street1}`,
+          )
+          pushStreetVariant(
+            `${formattedFields.street} ${formattedFields.street2}`,
+          )
           pushStreetVariant(`${formattedFields.street}`)
-          pushStreetVariant(`${formattedFields.street1} ${formattedFields.street2}`)
+          pushStreetVariant(
+            `${formattedFields.street1} ${formattedFields.street2}`,
+          )
           pushStreetVariant(`${formattedFields.street1}`)
           pushStreetVariant(`${formattedFields.street2}`)
           pushWithoutStreet()
-        } else if ('street' in formattedFields && 'street1' in formattedFields) {
-          pushStreetVariant(`${formattedFields.street} ${formattedFields.street1}`)
+        } else if (
+          'street' in formattedFields &&
+          'street1' in formattedFields
+        ) {
+          pushStreetVariant(
+            `${formattedFields.street} ${formattedFields.street1}`,
+          )
           pushStreetVariant(`${formattedFields.street}`)
           pushStreetVariant(`${formattedFields.street1}`)
           pushWithoutStreet()
-        } else if ('street' in formattedFields && 'street2' in formattedFields) {
-          pushStreetVariant(`${formattedFields.street} ${formattedFields.street2}`)
+        } else if (
+          'street' in formattedFields &&
+          'street2' in formattedFields
+        ) {
+          pushStreetVariant(
+            `${formattedFields.street} ${formattedFields.street2}`,
+          )
           pushStreetVariant(`${formattedFields.street}`)
           pushStreetVariant(`${formattedFields.street2}`)
           pushWithoutStreet()
@@ -366,7 +426,7 @@ ywInit((root) => {
 
         setToTry.push({
           method: 'geolocateRetryWithoutNumberAtBeginningIfNeeded',
-          fields: lAddress
+          fields: lAddress,
         })
 
         let manageData = null
@@ -377,14 +437,16 @@ ywInit((root) => {
           }
           const newSet = setToTry[0]
           setToTry = setToTry.slice(1)
-          return geolocationHelper[newSet.method](newSet.fields).then(manageData)
+          return geolocationHelper[newSet.method](newSet.fields).then(
+            manageData,
+          )
         }
 
         manageData = (pData) => {
           if (
-            pData.length > 0
-            && pData[0].latitude.length > 0
-            && pData[0].longitude.length > 0
+            pData.length > 0 &&
+            pData[0].latitude.length > 0 &&
+            pData[0].longitude.length > 0
           ) {
             return pData
           }
@@ -397,7 +459,9 @@ ywInit((root) => {
             showAddressOk(pData[0].latitude, pData[0].longitude, pMove)
           })
           .catch((error) => {
-            showAddressError(error instanceof Error ? error.message : String(error))
+            showAddressError(
+              error instanceof Error ? error.message : String(error),
+            )
           })
       }
 
@@ -405,16 +469,16 @@ ywInit((root) => {
       const vLongitude = cLongitude ? cLongitude.value : null
 
       if (
-        vLatitude !== null
-          && vLatitude != 0 // eslint-disable-line eqeqeq
-          && vLongitude !== null
-          && vLongitude != 0 // eslint-disable-line eqeqeq
+        vLatitude !== null &&
+        vLatitude != 0 && // eslint-disable-line eqeqeq
+        vLongitude !== null &&
+        vLongitude != 0 // eslint-disable-line eqeqeq
       ) {
         showAddressOk(vLatitude, vLongitude)
       }
 
-      const isCoordinateInput = (target) => target.id === `${cName}_latitude`
-        || target.id === `${cName}_longitude`
+      const isCoordinateInput = (target) =>
+        target.id === `${cName}_latitude` || target.id === `${cName}_longitude`
 
       const sanitizeCoordinate = (e) => {
         if (!isCoordinateInput(e.target)) return
@@ -428,10 +492,17 @@ ywInit((root) => {
       document.body.addEventListener('keyup', sanitizeCoordinate)
       document.body.addEventListener('keypress', sanitizeCoordinate)
 
-      document.body.addEventListener('blur', (e) => {
-        if (!isCoordinateInput(e.target)) return
-        showAddressOk(cLatitude ? cLatitude.value : '', cLongitude ? cLongitude.value : '')
-      }, true)
+      document.body.addEventListener(
+        'blur',
+        (e) => {
+          if (!isCoordinateInput(e.target)) return
+          showAddressOk(
+            cLatitude ? cLatitude.value : '',
+            cLongitude ? cLongitude.value : '',
+          )
+        },
+        true,
+      )
 
       if (cGeolocateButton) {
         cGeolocateButton.addEventListener('click', () => {
@@ -472,8 +543,9 @@ ywInit((root) => {
         if (!popup) return
         const latitudePopup = byId(`${cName}_latitude_popup`)
         const longitudePopup = byId(`${cName}_longitude_popup`)
-        const invalid = (latitudePopup && !latitudePopup.checkValidity())
-          || (longitudePopup && !longitudePopup.checkValidity())
+        const invalid =
+          (latitudePopup && !latitudePopup.checkValidity()) ||
+          (longitudePopup && !longitudePopup.checkValidity())
         if (invalid) {
           if (cLatitude) cLatitude.value = ''
           if (cLongitude) cLongitude.value = ''
@@ -485,10 +557,7 @@ ywInit((root) => {
           if (cLatitude) cLatitude.value = cLatitudePopup
           if (cLongitude) cLongitude.value = cLongitudePopup
 
-          vGeocodedMarker.setLatLng([
-            cLatitudePopup,
-            cLongitudePopup
-          ])
+          vGeocodedMarker.setLatLng([cLatitudePopup, cLongitudePopup])
 
           cMap.panTo(vGeocodedMarker.getLatLng(), { animate: true })
         }

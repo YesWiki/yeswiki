@@ -9,16 +9,18 @@ import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 // `custom/` is the instance's own, and a developer's real overrides live there too.
 const PROBES = ['core/admin/keywords.twig', 'core/admin/custom-templates.twig']
 const clearProbes = () => {
-  const paths = PROBES.map((p) => `/var/www/html/custom/templates/${p}`).join(' ')
+  const paths = PROBES.map((p) => `/var/www/html/custom/templates/${p}`).join(
+    ' ',
+  )
   execSync(`rm -f ${paths}`)
 }
 
-test.beforeEach(async() => {
+test.beforeEach(async () => {
   resetEnv()
   clearProbes()
 })
 
-test.afterEach(async() => {
+test.afterEach(async () => {
   clearProbes()
 })
 
@@ -38,9 +40,13 @@ const FLASH = '[role="alert"]'
  */
 async function typeIntoEditor(page, source: string) {
   await expect(page.locator('.yw-templates__ace')).toBeVisible()
-  await page.waitForFunction(() => typeof window['ace'] !== 'undefined', null, { timeout: 10000 })
+  await page.waitForFunction(() => typeof window['ace'] !== 'undefined', null, {
+    timeout: 10000,
+  })
   await page.evaluate((text) => {
-    window['ace'].edit(document.querySelector('.yw-templates__ace')).setValue(text)
+    window['ace']
+      .edit(document.querySelector('.yw-templates__ace'))
+      .setValue(text)
   }, source)
 }
 
@@ -52,19 +58,29 @@ async function typeIntoEditor(page, source: string) {
  * extends. A custom template is code, the boundary is `@admins`, and what replaces a policy
  * is the four things that actually go wrong -- which is what these cover.
  */
-test('an admin copies a template, edits it, and the wiki renders the edit', async({ page }) => {
+test('an admin copies a template, edits it, and the wiki renders the edit', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/custom-templates')
 
-  await expect(page.locator('.yw-dashboard__sidebar')).toContainText('Apparence')
-  await expect(page.locator('.yw-dashboard__link--current')).toContainText('Gabarits')
+  await expect(page.locator('.yw-dashboard__sidebar')).toContainText(
+    'Apparence',
+  )
+  await expect(page.locator('.yw-dashboard__link--current')).toContainText(
+    'Gabarits',
+  )
   // this override in particular is not there yet. Not "the list is empty": `custom/` is the
   // instance's own directory, and a developer running this suite may well have overrides of
   // their own sitting in it.
-  await expect(page.locator('.yw-templates__table')).not.toContainText('core/admin/keywords.twig')
+  await expect(page.locator('.yw-templates__table')).not.toContainText(
+    'core/admin/keywords.twig',
+  )
 
   // start from the shipped template: the copy is verbatim, so the first save changes nothing
-  await page.locator('.yw-templates__start select').selectOption('admin/keywords.twig')
+  await page
+    .locator('.yw-templates__start select')
+    .selectOption('admin/keywords.twig')
   await page.locator('button[name="create"]').click()
   await expect(page.locator(FLASH)).toContainText(/gabarit/i)
 
@@ -75,40 +91,60 @@ test('an admin copies a template, edits it, and the wiki renders the edit', asyn
 
   // `ace/mode/twig`, vendored beside the HTML and CSS modes: a Twig tag is highlighted as a
   // Twig tag rather than as stray text inside markup
-  const mode = await page.evaluate(() =>
-    window['ace'].edit(document.querySelector('.yw-templates__ace')).session.getMode().$id)
+  const mode = await page.evaluate(
+    () =>
+      window['ace']
+        .edit(document.querySelector('.yw-templates__ace'))
+        .session.getMode().$id,
+  )
   expect(mode).toBe('ace/mode/twig')
 
   // typed through ACE, which is what a person uses, and which must reach the field the form
   // posts -- the textarea is downstream of the editor
   await typeIntoEditor(
     page,
-    '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}OVERRIDE-IS-LIVE{% endblock %}'
+    '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}OVERRIDE-IS-LIVE{% endblock %}',
   )
   await expect(textarea).toHaveValue(/OVERRIDE-IS-LIVE/)
 
-  await page.locator('.yw-templates__actions button[type="submit"]').first().click()
+  await page
+    .locator('.yw-templates__actions button[type="submit"]')
+    .first()
+    .click()
   await expect(page.locator(FLASH)).toContainText(/enregistr/i)
 
   // the part no unit test can see: the wiki is rendering it
   await page.goto('/?admin/keywords')
-  await expect(page.locator('.yw-dashboard__canvas')).toContainText('OVERRIDE-IS-LIVE')
+  await expect(page.locator('.yw-dashboard__canvas')).toContainText(
+    'OVERRIDE-IS-LIVE',
+  )
 
   // and it is listed as an override of a template that ships
   await page.goto('/?admin/custom-templates')
-  await expect(page.locator('.yw-templates__table')).toContainText('core/admin/keywords.twig')
-  await expect(page.locator('.yw-templates__table')).toContainText('@core/admin/keywords.twig')
+  await expect(page.locator('.yw-templates__table')).toContainText(
+    'core/admin/keywords.twig',
+  )
+  await expect(page.locator('.yw-templates__table')).toContainText(
+    '@core/admin/keywords.twig',
+  )
 })
 
-test('a template that does not compile is refused, and the wiki keeps working', async({ page }) => {
+test('a template that does not compile is refused, and the wiki keeps working', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/custom-templates')
 
-  await page.locator('.yw-templates__start select').selectOption('admin/keywords.twig')
+  await page
+    .locator('.yw-templates__start select')
+    .selectOption('admin/keywords.twig')
   await page.locator('button[name="create"]').click()
 
   await typeIntoEditor(page, '{% block never_closed %}broken')
-  await page.locator('.yw-templates__actions button[type="submit"]').first().click()
+  await page
+    .locator('.yw-templates__actions button[type="submit"]')
+    .first()
+    .click()
 
   // Twig's own message, which names the line -- refused before anything was written
   await expect(page.locator(FLASH)).toContainText(/block/i)
@@ -119,19 +155,24 @@ test('a template that does not compile is refused, and the wiki keeps working', 
   await expect(page.locator('.yw-dashboard__canvas')).toBeVisible()
 })
 
-test('reverting puts the shipped template back', async({ page }) => {
+test('reverting puts the shipped template back', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/custom-templates')
 
-  await page.locator('.yw-templates__start select').selectOption('admin/keywords.twig')
+  await page
+    .locator('.yw-templates__start select')
+    .selectOption('admin/keywords.twig')
   await page.locator('button[name="create"]').click()
-  await expect(page.locator('.yw-templates__table')).toContainText('core/admin/keywords.twig')
+  await expect(page.locator('.yw-templates__table')).toContainText(
+    'core/admin/keywords.twig',
+  )
 
   page.on('dialog', (dialog) => dialog.accept())
   await page.locator('button[name="revert"]').click()
 
-  await expect(page.locator('.yw-templates__table, .yw-templates__empty'))
-    .not.toContainText('core/admin/keywords.twig')
+  await expect(
+    page.locator('.yw-templates__table, .yw-templates__empty'),
+  ).not.toContainText('core/admin/keywords.twig')
   await page.goto('/?admin/keywords')
   await expect(page.locator('.yw-dashboard__canvas')).toBeVisible()
 })
@@ -143,7 +184,9 @@ test('reverting puts the shipped template back', async({ page }) => {
  * also what you see when overriding does not work at all, so the control (the same override
  * on another screen, which must take it) is what makes this mean anything.
  */
-test('the screen that fixes overrides renders as shipped, whatever is in custom/templates', async({ page }) => {
+test('the screen that fixes overrides renders as shipped, whatever is in custom/templates', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
 
   for (const target of ['admin/keywords.twig', 'admin/custom-templates.twig']) {
@@ -152,9 +195,12 @@ test('the screen that fixes overrides renders as shipped, whatever is in custom/
     await page.locator('button[name="create"]').click()
     await typeIntoEditor(
       page,
-      '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}HIJACKED{% endblock %}'
+      '{% extends "@shipped/dashboard/layout.twig" %}{% block dashboard_content %}HIJACKED{% endblock %}',
     )
-    await page.locator('.yw-templates__actions button[type="submit"]').first().click()
+    await page
+      .locator('.yw-templates__actions button[type="submit"]')
+      .first()
+      .click()
   }
 
   // the control: an ordinary screen does take it
@@ -163,6 +209,10 @@ test('the screen that fixes overrides renders as shipped, whatever is in custom/
 
   // and this one does not, so it can still remove the override
   await page.goto('/?admin/custom-templates')
-  await expect(page.locator('.yw-dashboard__canvas')).not.toContainText('HIJACKED')
-  await expect(page.locator('.yw-templates__table')).toContainText('core/admin/custom-templates.twig')
+  await expect(page.locator('.yw-dashboard__canvas')).not.toContainText(
+    'HIJACKED',
+  )
+  await expect(page.locator('.yw-templates__table')).toContainText(
+    'core/admin/custom-templates.twig',
+  )
 })

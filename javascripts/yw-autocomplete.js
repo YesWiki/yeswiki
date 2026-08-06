@@ -11,7 +11,7 @@
 //   minLength: 0,                                // don't query below this input length
 //   onSelect: (item) => {}                       // called with the exact item the source provided
 // })
-window.ywAutocomplete = function(fieldParam, options = {}) {
+window.ywAutocomplete = function (fieldParam, options = {}) {
   const field = fieldParam
   const maxItems = options.items || 8
   const minLength = options.minLength || 0
@@ -80,7 +80,9 @@ window.ywAutocomplete = function(fieldParam, options = {}) {
       return
     }
     const result = typeof source === 'function' ? source(query) : source
-    Promise.resolve(result).then((matchedItems) => renderItems(matchedItems || []))
+    Promise.resolve(result).then((matchedItems) =>
+      renderItems(matchedItems || []),
+    )
   }
 
   field.addEventListener('input', handleQuery)

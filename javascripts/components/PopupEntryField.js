@@ -1,7 +1,16 @@
 import EntryField from './EntryField.js'
 
 export default {
-  props: ['entry', 'prop', 'withlabel', 'oneline', 'imagewidth', 'imageheight', 'imagemethod', 'imagetoken'],
+  props: [
+    'entry',
+    'prop',
+    'withlabel',
+    'oneline',
+    'imagewidth',
+    'imageheight',
+    'imagemethod',
+    'imagetoken',
+  ],
   components: { EntryField },
   computed: {
     renderViaEntryField() {
@@ -41,11 +50,17 @@ export default {
         case 'listefichesliees':
         case 'tags':
           const values = value.split(',').map((v) => this.field.options[v])
-          return values.length == 0 ? '' : (values.length == 1 ? values[0] : values)
+          return values.length == 0
+            ? ''
+            : values.length == 1
+              ? values[0]
+              : values
         case 'email':
           return '' // security
         case 'link':
-          return value ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>` : ''
+          return value
+            ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>`
+            : ''
         default:
           return value
       }
@@ -58,7 +73,7 @@ export default {
     },
     label() {
       return this.field.label || ''
-    }
+    },
   },
   template: `
     <div v-if="renderViaEntryField && displayLabel && value" v-bind="$attrs">
@@ -82,5 +97,5 @@ export default {
       <div v-html="value"></div>
     </div>
     <div v-else-if="value" v-html="value" v-bind="$attrs"></div>
-  `
+  `,
 }

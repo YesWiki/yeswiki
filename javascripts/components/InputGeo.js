@@ -7,7 +7,7 @@ export default {
       defaultLatitude: 46.22763,
       defaultLongitude: 2.21374,
       defaultZoom: 5,
-      map: null
+      map: null,
     }
   },
   mounted() {
@@ -17,7 +17,12 @@ export default {
       zoomControl: true,
       scrollWheelZoom: false,
       referrerPolicy: 'strict-origin-when-cross-origin',
-      layers: [L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })]
+      layers: [
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }),
+      ],
     })
 
     this.map.on('load moveend', () => {
@@ -30,7 +35,12 @@ export default {
       this.map.setZoom(this.defaultZoom)
     },
     parseNewValues(newValues) {
-      this.map.panTo(new L.LatLng(newValues.lat || this.defaultLatitude, newValues.lon || this.defaultLongitude))
+      this.map.panTo(
+        new L.LatLng(
+          newValues.lat || this.defaultLatitude,
+          newValues.lon || this.defaultLongitude,
+        ),
+      )
       this.map.setZoom(newValues.zoom || this.defaultZoom)
     },
     getValues() {
@@ -39,9 +49,10 @@ export default {
       const lon = this.map.getCenter().lng.toFixed(5)
       if (lat != this.defaultLatitude) result.lat = lat
       if (lon != this.defaultLongitude) result.lon = lon
-      if (this.map.getZoom() != this.defaultZoom) result.zoom = this.map.getZoom()
+      if (this.map.getZoom() != this.defaultZoom)
+        result.zoom = this.map.getZoom()
       return result
-    }
+    },
   },
   template: `
     <div class="yw-form-group" :class="config.type" :title="config.hint" >
@@ -49,5 +60,5 @@ export default {
       <div ref="mapContainer"></div>
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

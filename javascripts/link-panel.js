@@ -18,12 +18,24 @@ export default class {
   isEditing = false
   openKey = null
 
-  get panel() { return document.getElementById('YesWikiLinkPanel') }
-  get inputUrl() { return this.panel.querySelector('input[name=url]') }
-  get inputText() { return this.panel.querySelector('input[name=text]') }
-  get inputTitle() { return this.panel.querySelector('input[name=title]') }
-  get inputTarget() { return this.panel.querySelector('select[name=target]') }
-  get suggestions() { return this.panel.querySelector('[data-link-panel-suggestions]') }
+  get panel() {
+    return document.getElementById('YesWikiLinkPanel')
+  }
+  get inputUrl() {
+    return this.panel.querySelector('input[name=url]')
+  }
+  get inputText() {
+    return this.panel.querySelector('input[name=text]')
+  }
+  get inputTitle() {
+    return this.panel.querySelector('input[name=title]')
+  }
+  get inputTarget() {
+    return this.panel.querySelector('select[name=target]')
+  }
+  get suggestions() {
+    return this.panel.querySelector('[data-link-panel-suggestions]')
+  }
 
   TARGETS = ['newtab', 'modal']
 
@@ -31,18 +43,21 @@ export default class {
    * True while the rail is writing a link the document does not have yet. It was opened
    * from the toolbar, not from the cursor, so the cursor moving must not close it.
    */
-  get isPlacingNewLink() { return this.isOpen && !this.isEditing }
+  get isPlacingNewLink() {
+    return this.isOpen && !this.isEditing
+  }
 
   constructor() {
     // see the same guard in actions-builder.js: a page can render an editor without
     // the rails, and a rail with no panel does nothing rather than throwing
     if (!this.panel) return
     registerRail(this)
-    this.panel.querySelectorAll('[data-yw-link-panel-close]')
-      .forEach((btn) => btn.addEventListener('click', (e) => {
+    this.panel.querySelectorAll('[data-yw-link-panel-close]').forEach((btn) =>
+      btn.addEventListener('click', (e) => {
         e.preventDefault()
         this.close()
-      }))
+      }),
+    )
   }
 
   open(editor, options) {
@@ -57,8 +72,10 @@ export default class {
     this.openKey = options.key || null
 
     this.extra = new MarkdownExtra(options.extra || '')
-    const target = (this.extra.classes.filter((c) => this.TARGETS.includes(c)))[0]
-    this.extra.classes = this.extra.classes.filter((c) => !this.TARGETS.includes(c))
+    const target = this.extra.classes.filter((c) => this.TARGETS.includes(c))[0]
+    this.extra.classes = this.extra.classes.filter(
+      (c) => !this.TARGETS.includes(c),
+    )
 
     this.inputUrl.value = options.link || ''
     this.inputText.value = options.text || ''
@@ -67,7 +84,8 @@ export default class {
     this.panel.querySelector('.link-error').classList.add('hidden')
 
     const insertBtn = this.panel.querySelector('.btn-insert')
-    if (this.insertHandler) insertBtn.removeEventListener('click', this.insertHandler)
+    if (this.insertHandler)
+      insertBtn.removeEventListener('click', this.insertHandler)
     this.insertHandler = (e) => {
       const code = this.buildYesWikiCode(e)
       if (code !== undefined) {
@@ -82,12 +100,16 @@ export default class {
 
     this.panel.querySelectorAll('[data-show]').forEach((shownFor) => {
       const field = shownFor
-      const shown = field.getAttribute('data-show').split(',').includes(options.action)
+      const shown = field
+        .getAttribute('data-show')
+        .split(',')
+        .includes(options.action)
       field.style.display = shown ? '' : 'none'
     })
 
     this.hideSuggestions()
-    if (this.inputHandler) this.inputUrl.removeEventListener('input', this.inputHandler)
+    if (this.inputHandler)
+      this.inputUrl.removeEventListener('input', this.inputHandler)
     if (options.action === 'newpage') {
       // If page already exists display error message
       this.inputHandler = () => {
@@ -130,7 +152,9 @@ export default class {
       list.hidden = true
       return
     }
-    const matches = pageTags.filter((tag) => tag.toLowerCase().includes(value)).slice(0, 5)
+    const matches = pageTags
+      .filter((tag) => tag.toLowerCase().includes(value))
+      .slice(0, 5)
     if (!matches.length) {
       list.hidden = true
       return

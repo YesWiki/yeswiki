@@ -5,18 +5,18 @@ export default {
     label: _t('FORM_BUILDER_DATE_LABEL'),
     name: 'date',
     attrs: { type: 'date' },
-    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>',
   },
   defaultIdentifier: 'bf_date_debut_evenement',
   attributes: {
     default: {
       label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
-      options: { ' ': _t('NO'), today: _t('YES') }
+      options: { ' ': _t('NO'), today: _t('YES') },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read_access: readConf,
-    write_access: writeConf
+    write_access: writeConf,
   },
-  advancedAttributes: ['read_access', 'write_access', 'default']
+  advancedAttributes: ['read_access', 'write_access', 'default'],
   // disabledAttributes: [],
 }

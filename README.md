@@ -35,10 +35,10 @@ The bundled `yeswiki` theme ships its stylesheets as SCSS sources in
 `themes/yeswiki/scss/`, compiled with [Dart Sass](https://sass-lang.com) (installed
 as a dev dependency, no global install needed).
 
-| Source                                   | Compiled output                                  |
-| ---------------------------------------- | ------------------------------------------------ |
-| `themes/yeswiki/scss/yeswiki.scss`       | `themes/yeswiki/styles/yeswiki.css`              |
-| `themes/yeswiki/scss/colored-navbar.scss`| `themes/yeswiki/styles/colored-navbar.css`       |
+| Source                                    | Compiled output                            |
+| ----------------------------------------- | ------------------------------------------ |
+| `themes/yeswiki/scss/yeswiki.scss`        | `themes/yeswiki/styles/yeswiki.css`        |
+| `themes/yeswiki/scss/colored-navbar.scss` | `themes/yeswiki/styles/colored-navbar.css` |
 
 Partials (files prefixed with `_`, e.g. `_topnav.scss`) are not compiled on their
 own — they are `@use`d by the two entry points above. `colored-navbar.scss` itself
@@ -71,12 +71,21 @@ Please install relevant extension and enable auto formatting on your editor.
 
 Alternatively you can run `make lint`
 
-| Language                    | Linter/Formatter                                             |
-| --------------------------- | ------------------------------------------------------------ |
-| Php                         | `php-cs-fixer`                                               |
-| Javascript                  | `eslint`                                                     |
-| Twig                        | no automatic linter. Couldn't find one which is good enough. |
-| CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
+| Language                    | Formatting     | Rules                                        |
+| --------------------------- | -------------- | -------------------------------------------- |
+| Php                         | `php-cs-fixer` | `phpstan`                                    |
+| Javascript                  | `prettier`     | `eslint`                                     |
+| CSS, Yaml, JSON, Markdown.. | `prettier`     | —                                            |
+| Twig                        | —              | no automatic linter good enough to adopt yet |
+
+**One tool per question.** Prettier decides how a file is laid out; eslint only judges
+whether the code is right. Javascript used to be eslint's on both counts, through
+`eslint-config-airbnb-base` — unreleased since 2021, and contradicting Prettier on every
+line-break question, so writing a file meant satisfying two formatters at once.
+`eslint-config-prettier` now sits last in `eslint.config.mjs` and switches off anything
+stylistic that creeps back in.
+
+`make lint` checks both and writes nothing; `make fix` applies them.
 
 If you use VS Codium, get YesWiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
 

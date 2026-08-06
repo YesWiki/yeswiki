@@ -1,3 +1,8 @@
 **/vendor/**
 # compiled theme CSS (built from themes/yeswiki/scss by `yarn build-theme`)
 themes/yeswiki/styles/
+
+# generated, and regenerated on every build -- formatting it would be undone by
+# `node src/build-icon-sprite.mjs` and is not ours to decide anyway (eslint ignores it too)
+javascripts/yw-icon-map.js
+javascripts/ext-searchbox.js

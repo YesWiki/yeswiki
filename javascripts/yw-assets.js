@@ -13,7 +13,7 @@
 // on a designer canvas is exactly what this exists to prevent.
 //
 // See docs/adr/0014-assets-are-declared-by-a-render-not-accumulated-by-a-request.md
-(function() {
+;(function () {
   const loaded = new Set()
 
   // Normalised so the same file registered as `styles/x.css?v=4.5` and as
@@ -43,7 +43,9 @@
   function seed() {
     document
       .querySelectorAll('link[rel="stylesheet"][href], script[src]')
-      .forEach((node) => remember(node.getAttribute('href') || node.getAttribute('src')))
+      .forEach((node) =>
+        remember(node.getAttribute('href') || node.getAttribute('src')),
+      )
   }
 
   seed()
@@ -65,7 +67,7 @@
    * and rejected as too much machinery. It was the right option; the machinery is 30 lines and
    * it removes a whole class of failure rather than reporting it.
    */
-  const loadInOrder = async(scripts) => {
+  const loadInOrder = async (scripts) => {
     for (const entry of scripts) {
       if (entry.code === null) {
         // eslint-disable-next-line no-await-in-loop
@@ -100,32 +102,42 @@
     const scripts = []
 
     // document order matters: an inline block usually drives the library declared just above it
-    fragment.querySelectorAll('link[rel="stylesheet"][href], script').forEach((node) => {
-      const isScript = node.tagName === 'SCRIPT'
-      const url = node.getAttribute('href') || node.getAttribute('src')
+    fragment
+      .querySelectorAll('link[rel="stylesheet"][href], script')
+      .forEach((node) => {
+        const isScript = node.tagName === 'SCRIPT'
+        const url = node.getAttribute('href') || node.getAttribute('src')
 
-      // an inline block has no URL to deduplicate on, and is always this page's own code
-      if (isScript && !url) {
-        scripts.push({ url: null, code: node.textContent, module: node.getAttribute('type') === 'module' })
-        node.remove()
+        // an inline block has no URL to deduplicate on, and is always this page's own code
+        if (isScript && !url) {
+          scripts.push({
+            url: null,
+            code: node.textContent,
+            module: node.getAttribute('type') === 'module',
+          })
+          node.remove()
 
-        return
-      }
+          return
+        }
 
-      if (has(url)) {
-        node.remove()
-        dropped += 1
+        if (has(url)) {
+          node.remove()
+          dropped += 1
 
-        return
-      }
-      remember(url)
+          return
+        }
+        remember(url)
 
-      if (isScript) {
-        // out of the fragment, into the queue below
-        scripts.push({ url, code: null, module: node.getAttribute('type') === 'module' })
-        node.remove()
-      }
-    })
+        if (isScript) {
+          // out of the fragment, into the queue below
+          scripts.push({
+            url,
+            code: null,
+            module: node.getAttribute('type') === 'module',
+          })
+          node.remove()
+        }
+      })
 
     if (scripts.length > 0) loadInOrder(scripts)
 
@@ -141,4 +153,4 @@
   // Deliberately global: an initialiser that loads an asset by hand (a lazy vendor library,
   // say) can declare it here so a later fragment carrying the same file is not re-fetched.
   window.ywAssets = { has, remember }
-}())
+})()

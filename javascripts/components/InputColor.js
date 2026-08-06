@@ -14,5 +14,5 @@ export default {
       />
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

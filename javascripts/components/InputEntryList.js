@@ -3,7 +3,9 @@ export default {
   emits: ['input'],
   mounted() {
     fetch(wiki.url('?api/entries'))
-      .then((response) => (response.ok ? response.json() : Promise.reject(response)))
+      .then((response) =>
+        response.ok ? response.json() : Promise.reject(response),
+      )
       .then((data) => {
         const pages = []
         for (const key in data) {
@@ -14,13 +16,14 @@ export default {
         }
         window.ywAutocomplete(this.$refs.input, {
           items: 5,
-          source: (query) => pages.filter(
-            (page) => page.toLowerCase().includes(query.toLowerCase())
-          ),
+          source: (query) =>
+            pages.filter((page) =>
+              page.toLowerCase().includes(query.toLowerCase()),
+            ),
           onSelect: (item) => {
             this.$refs.input.value = item
             this.$emit('input', item)
-          }
+          },
         })
       })
       .catch(() => {
@@ -30,7 +33,7 @@ export default {
   watch: {
     value(newVal) {
       this.$emit('input', newVal.replace(/\s+/g, '-'))
-    }
+    },
   },
   template: `
     <div class="yw-form-group input-group" :class="config.type" :title="config.hint" >
@@ -43,5 +46,5 @@ export default {
       />
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

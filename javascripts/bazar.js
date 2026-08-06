@@ -113,8 +113,8 @@ ywInitEach('body', () => {
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
-  const enterTrapSelector = 'form#formulaire .yw-form-group'
-    + ' input.yw-input[type=text]'
+  const enterTrapSelector =
+    'form#formulaire .yw-form-group' + ' input.yw-input[type=text]'
   document.querySelectorAll(enterTrapSelector).forEach((item) => {
     item.addEventListener(
       'keydown',
@@ -124,7 +124,7 @@ ywInitEach('body', () => {
           event.stopPropagation()
         }
       },
-      true
+      true,
     )
   })
 
@@ -140,13 +140,13 @@ ywInitEach('body', () => {
     errorMessagePattern: '',
     // an input hidden only because it sits in a non-active tab pane still counts
     filterVisibleInputs(key = 'requiredInputs') {
-      this[key] = (this[key]).filter((input) => {
+      this[key] = this[key].filter((input) => {
         let checked = input
         if (
-          (input.tagName === 'TEXTAREA'
-            && (input.classList.contains('aceditor-textarea')
-              || input.classList.contains('vditor-html')))
-          || input.closest('[data-yw-tag-input]')
+          (input.tagName === 'TEXTAREA' &&
+            (input.classList.contains('aceditor-textarea') ||
+              input.classList.contains('vditor-html'))) ||
+          input.closest('[data-yw-tag-input]')
         ) {
           checked = input.parentElement
         }
@@ -154,7 +154,10 @@ ywInitEach('body', () => {
         let el = checked
         while (el && el !== document.body && !isVisible(el)) {
           const style = window.getComputedStyle(el)
-          if (style.display === 'none' && el.getAttribute('role') !== 'tabpanel') {
+          if (
+            style.display === 'none' &&
+            el.getAttribute('role') !== 'tabpanel'
+          ) {
             return false
           }
           el = el.parentElement
@@ -225,8 +228,12 @@ ywInitEach('body', () => {
       return true
     },
     emailChecking(input) {
-      // eslint-disable-next-line max-len, no-useless-escape
-      const reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+      /* eslint-disable no-useless-escape -- a block, not `-next-line`: the formatter is
+         free to move this regex onto a line of its own, and a next-line directive then
+         lands on the assignment instead of on the pattern it was written for. */
+      const reg =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+      /* eslint-enable no-useless-escape */
       if (input.required && !this.defaultChecking(input)) {
         return false
       }
@@ -237,7 +244,8 @@ ywInitEach('body', () => {
       return true
     },
     urlChecking(input) {
-      const reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
+      const reg =
+        /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
       if (input.required && !this.defaultChecking(input)) {
         return false
       }
@@ -287,7 +295,9 @@ ywInitEach('body', () => {
     },
     tagsChecking(input) {
       const widget = input.closest('[data-yw-tag-input]')
-      const nbelems = widget ? widget.querySelectorAll('[data-yw-tag-input-chip]') : []
+      const nbelems = widget
+        ? widget.querySelectorAll('[data-yw-tag-input-chip]')
+        : []
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_AUTOCOMPLETE'))
         if (widget) widget.classList.add('invalid')
@@ -301,9 +311,9 @@ ywInitEach('body', () => {
       const longitude = input.querySelector('.yw-longitude-input')
       const geometries = input.querySelector('.yw-geometries-input')
       if (
-        (!latitude || latitude.value === '')
-        && (!longitude || longitude.value === '')
-        && (!geometries || geometries.value === '')
+        (!latitude || latitude.value === '') &&
+        (!longitude || longitude.value === '') &&
+        (!geometries || geometries.value === '')
       ) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
@@ -322,12 +332,12 @@ ywInitEach('body', () => {
       if (typeof this[`${inputType}Checking`] !== 'function') {
         input.classList.add('invalid')
         this.updateErrorMessage(
-          `Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`
+          `Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`,
         )
         if (saveError) {
           this.updateError(index)
         }
-      } else if (!(this[`${inputType}Checking`](input))) {
+      } else if (!this[`${inputType}Checking`](input)) {
         input.classList.add('invalid')
         if (saveError) {
           this.updateError(index)
@@ -362,13 +372,19 @@ ywInitEach('body', () => {
         if (!isVisible(input)) {
           // the input may live in a non-active tab: activate that tab first
           let panel = input.parentElement
-          while (panel && panel !== document.body && isVisible(panel) === false
-            && (!panel.parentElement || !isVisible(panel.parentElement))) {
+          while (
+            panel &&
+            panel !== document.body &&
+            isVisible(panel) === false &&
+            (!panel.parentElement || !isVisible(panel.parentElement))
+          ) {
             panel = panel.parentElement
           }
           const pane = input.closest('[role=tabpanel]')
           if (pane) {
-            const tabLink = document.querySelector(`a[href="#${pane.id}"][role=tab]`)
+            const tabLink = document.querySelector(
+              `a[href="#${pane.id}"][role=tab]`,
+            )
             if (tabLink) tabLink.click()
           }
           if (!isVisible(input)) {
@@ -383,20 +399,24 @@ ywInitEach('body', () => {
       }
     },
     initTextInputsWithPattern(form) {
-      this.textInputsWithPattern = Array.from(form.querySelectorAll('input[type=text][pattern]'))
+      this.textInputsWithPattern = Array.from(
+        form.querySelectorAll('input[type=text][pattern]'),
+      )
       this.errorPattern = -1
     },
     initRequiredInputs(form) {
-      this.requiredInputs = Array.from(form.querySelectorAll(
-        'input[required],'
-        + 'select[required],'
-        + 'textarea[required],'
-        + ':not(.prev-holder) input[type=email],'
-        + ':not(.prev-holder) input[type=url],'
-        + '.chk_required,'
-        + '.radio_required,'
-        + '.geocode-input.required'
-      ))
+      this.requiredInputs = Array.from(
+        form.querySelectorAll(
+          'input[required],' +
+            'select[required],' +
+            'textarea[required],' +
+            ':not(.prev-holder) input[type=email],' +
+            ':not(.prev-holder) input[type=url],' +
+            '.chk_required,' +
+            '.radio_required,' +
+            '.geocode-input.required',
+        ),
+      )
       this.error = -1
     },
     run(form) {
@@ -439,7 +459,10 @@ ywInitEach('body', () => {
       const reqChecking = this
       input.querySelectorAll('input[type=checkbox]').forEach((checkbox) => {
         checkbox.addEventListener('change', (event) => {
-          reqChecking.runWhenUpdated(event.target.closest('.chk_required'), reqChecking)
+          reqChecking.runWhenUpdated(
+            event.target.closest('.chk_required'),
+            reqChecking,
+          )
         })
       })
     },
@@ -447,7 +470,10 @@ ywInitEach('body', () => {
       const reqChecking = this
       input.querySelectorAll('input[type=radio]').forEach((radio) => {
         radio.addEventListener('change', (event) => {
-          reqChecking.runWhenUpdated(event.target.closest('.radio_required'), reqChecking)
+          reqChecking.runWhenUpdated(
+            event.target.closest('.radio_required'),
+            reqChecking,
+          )
         })
       })
     },
@@ -459,11 +485,13 @@ ywInitEach('body', () => {
         const inputType = this.getInputType(input)
         if (['default', 'select', 'textarea', 'tags'].indexOf(inputType) > -1) {
           this.inputInitlistener(input)
-        } else if (['wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1) {
+        } else if (
+          ['wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1
+        ) {
           this[`${inputType}Initlistener`](input)
         }
       })
-    }
+    },
   }
 
   requirementHelper.initListeners()
@@ -485,16 +513,18 @@ ywInitEach('body', () => {
           // handler returns, so a task-boundary later is soon enough to stop a double
           // submit and late enough to keep the field.
           setTimeout(() => {
-            formulaire.querySelectorAll('.form-actions button[type=submit]').forEach((button) => {
-              button.setAttribute('disabled', 'disabled')
-              button.classList.add('submit-disabled')
-              button.setAttribute('title', _t('BAZ_SAVING'))
-              setTimeout(() => {
-                // on réactive le bouton au bout de 10s juste pour permettre de
-                // forcer une nouvelle validation si jamais ça a planté
-                button.removeAttribute('disabled')
-              }, 10000)
-            })
+            formulaire
+              .querySelectorAll('.form-actions button[type=submit]')
+              .forEach((button) => {
+                button.setAttribute('disabled', 'disabled')
+                button.classList.add('submit-disabled')
+                button.setAttribute('title', _t('BAZ_SAVING'))
+                setTimeout(() => {
+                  // on réactive le bouton au bout de 10s juste pour permettre de
+                  // forcer une nouvelle validation si jamais ça a planté
+                  button.removeAttribute('disabled')
+                }, 10000)
+              })
           }, 0)
           return
         }
@@ -510,22 +540,41 @@ ywInitEach('body', () => {
 
   // dates : les <input type="date"> sont natifs maintenant (plus de datepicker) ;
   // on garde la contrainte début/fin via les attributs min/max natifs
-  const startDate = document.querySelector('#formulaire #bf_date_debut_evenement')
+  const startDate = document.querySelector(
+    '#formulaire #bf_date_debut_evenement',
+  )
   const endDate = document.querySelector('#formulaire #bf_date_fin_evenement')
   if (startDate && endDate) {
-    const startAllDay = document.querySelector('select[name="bf_date_debut_evenement_allday"]')
-    const endAllDay = document.querySelector('select[name="bf_date_fin_evenement_allday"]')
-    const startHour = document.querySelector('select[name="bf_date_debut_evenement_hour"]')
-    const startMin = document.querySelector('select[name="bf_date_debut_evenement_minutes"]')
-    const endHour = document.querySelector('select[name="bf_date_fin_evenement_hour"]')
-    const endMin = document.querySelector('select[name="bf_date_fin_evenement_minutes"]')
+    const startAllDay = document.querySelector(
+      'select[name="bf_date_debut_evenement_allday"]',
+    )
+    const endAllDay = document.querySelector(
+      'select[name="bf_date_fin_evenement_allday"]',
+    )
+    const startHour = document.querySelector(
+      'select[name="bf_date_debut_evenement_hour"]',
+    )
+    const startMin = document.querySelector(
+      'select[name="bf_date_debut_evenement_minutes"]',
+    )
+    const endHour = document.querySelector(
+      'select[name="bf_date_fin_evenement_hour"]',
+    )
+    const endMin = document.querySelector(
+      'select[name="bf_date_fin_evenement_minutes"]',
+    )
 
-    const hasTimeEnabled = () => startAllDay && endAllDay
-      && startAllDay.value === '0' && endAllDay.value === '0'
-    const isSameDay = () => startDate.value && endDate.value
-      && startDate.value === endDate.value
-    const getStartMinutes = () => parseInt(startHour.value, 10) * 60 + parseInt(startMin.value, 10)
-    const getEndMinutes = () => parseInt(endHour.value, 10) * 60 + parseInt(endMin.value, 10)
+    const hasTimeEnabled = () =>
+      startAllDay &&
+      endAllDay &&
+      startAllDay.value === '0' &&
+      endAllDay.value === '0'
+    const isSameDay = () =>
+      startDate.value && endDate.value && startDate.value === endDate.value
+    const getStartMinutes = () =>
+      parseInt(startHour.value, 10) * 60 + parseInt(startMin.value, 10)
+    const getEndMinutes = () =>
+      parseInt(endHour.value, 10) * 60 + parseInt(endMin.value, 10)
 
     // sélectionne 5 minutes après l'heure de début
     const adjustEndTime = () => {
@@ -572,11 +621,13 @@ ywInitEach('body', () => {
 
     const timeSelects = [startHour, startMin, startAllDay]
     timeSelects.forEach((select) => {
-      if (select) select.addEventListener('change', () => checkTimeConstraint('start'))
+      if (select)
+        select.addEventListener('change', () => checkTimeConstraint('start'))
     })
     const endSelects = [endHour, endMin, endAllDay]
     endSelects.forEach((select) => {
-      if (select) select.addEventListener('change', () => checkTimeConstraint('end'))
+      if (select)
+        select.addEventListener('change', () => checkTimeConstraint('end'))
     })
   }
 
@@ -604,10 +655,12 @@ ywInitEach('body', () => {
       }
       targets.forEach((targetParam) => {
         const target = targetParam
-        target.querySelectorAll('input[type=checkbox]').forEach((checkboxParam) => {
-          const checkbox = checkboxParam
-          checkbox.checked = selectAll.checked
-        })
+        target
+          .querySelectorAll('input[type=checkbox]')
+          .forEach((checkboxParam) => {
+            const checkbox = checkboxParam
+            checkbox.checked = selectAll.checked
+          })
         if (target.matches('input[type=checkbox]')) {
           target.checked = selectAll.checked
         }
@@ -619,9 +672,12 @@ ywInitEach('body', () => {
 
   // recuperer un parametre donné de l'url
   function getURLParameter(name) {
-    const match = new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`)
-      .exec(window.location.search)
-    return decodeURIComponent((match ? match[1] : '').replace(/\+/g, '%20')) || null
+    const match = new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`).exec(
+      window.location.search,
+    )
+    return (
+      decodeURIComponent((match ? match[1] : '').replace(/\+/g, '%20')) || null
+    )
   }
 
   // modifier un parametre de l'url pour les modifier dynamiquement
@@ -636,30 +692,35 @@ ywInitEach('body', () => {
       window.history.pushState({ filter: true }, null, urlquery)
       // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
-        const iframeurlquery = `${window.top.location.search
-          .replace(`&${name}=`, '')}&${name}=${value}`
+        const iframeurlquery = `${window.top.location.search.replace(
+          `&${name}=`,
+          '',
+        )}&${name}=${value}`
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
     } else {
       if (value !== '') {
-        urlquery = s !== ''
-          ? decodeURIComponent(s).replace(
-            new RegExp(`&${name}=([^&;]+?)(&|#|;|$)`),
-            `&${name}=${value}`
-          )
-          : `?${name}=${value}`
+        urlquery =
+          s !== ''
+            ? decodeURIComponent(s).replace(
+                new RegExp(`&${name}=([^&;]+?)(&|#|;|$)`),
+                `&${name}=${value}`,
+              )
+            : `?${name}=${value}`
       } else {
         urlquery = decodeURIComponent(s).replace(
           new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
-          ''
+          '',
         )
       }
       window.history.pushState({ filter: true }, null, urlquery)
       // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
-        const iframeurlquery = decodeURIComponent(window.top.location.search).replace(
+        const iframeurlquery = decodeURIComponent(
+          window.top.location.search,
+        ).replace(
           new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
-          `&${name}=${value}`
+          `&${name}=${value}`,
         )
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
@@ -671,9 +732,11 @@ ywInitEach('body', () => {
       nbresults: container.querySelectorAll('.nb-results'),
       filterboxes: container.querySelectorAll('.filter-box'),
       entries: Array.from(container.querySelectorAll('.bazar-entry')),
-      geometries: Array.from(container.querySelectorAll('.bazar-entry-geometry')),
+      geometries: Array.from(
+        container.querySelectorAll('.bazar-entry-geometry'),
+      ),
       resultlabel: container.querySelectorAll('.result-label'),
-      resultslabel: container.querySelectorAll('.results-label')
+      resultslabel: container.querySelectorAll('.results-label'),
     }
   }
 
@@ -726,11 +789,11 @@ ywInitEach('body', () => {
     let tabres = []
     if (tabfilters.length > 0) {
       // pour chaque boite de filtre, on fait l'intersection avec la suivante
-      tabres = tabfilters.reduce(
-        (acc, tab) => acc.filter((entry) => tab.indexOf(entry) !== -1)
+      tabres = tabfilters.reduce((acc, tab) =>
+        acc.filter((entry) => tab.indexOf(entry) !== -1),
       )
       document.body.dispatchEvent(
-        new CustomEvent('updatefilters', { detail: { entries: tabres } })
+        new CustomEvent('updatefilters', { detail: { entries: tabres } }),
       )
       data.entries.forEach((entry) => {
         const kept = tabres.indexOf(entry) !== -1
@@ -784,7 +847,7 @@ ywInitEach('body', () => {
     }
 
     document.body.dispatchEvent(
-      new CustomEvent('updatedfilters', { detail: { entries: tabres } })
+      new CustomEvent('updatedfilters', { detail: { entries: tabres } }),
     )
 
     const vParam = new URLSearchParams(document.location.search)
@@ -808,30 +871,36 @@ ywInitEach('body', () => {
 
   // process changes on visible entries according to filters
   setTimeout(() => {
-    document.querySelectorAll('.facette-container:not(.dynamic)').forEach((container) => {
-      const data = facetteData(container)
-      container.querySelectorAll('.filter-checkbox').forEach((checkbox) => {
-        checkbox.addEventListener('click', () => updateFilters(data))
+    document
+      .querySelectorAll('.facette-container:not(.dynamic)')
+      .forEach((container) => {
+        const data = facetteData(container)
+        container.querySelectorAll('.filter-checkbox').forEach((checkbox) => {
+          checkbox.addEventListener('click', () => updateFilters(data))
+        })
+        updateFilters(data)
       })
-      updateFilters(data)
-    })
   }, 500)
 
   // gestion de l'historique : on reapplique les filtres
   window.onpopstate = (e) => {
     if (e.state && e.state.filter) {
       document.querySelectorAll('.facette-container').forEach((container) => {
-        container.querySelectorAll('input[type=checkbox]').forEach((checkboxParam) => {
-          const checkbox = checkboxParam
-          checkbox.checked = false
-        })
+        container
+          .querySelectorAll('input[type=checkbox]')
+          .forEach((checkboxParam) => {
+            const checkbox = checkboxParam
+            checkbox.checked = false
+          })
         const urlParamFacet = getURLParameter('facet')
         if (urlParamFacet) {
           urlParamFacet.split('|').forEach((facet) => {
             const tabfilter = facet.split('=')
             if (tabfilter[1] !== '') {
               tabfilter[1].split(',').forEach((value) => {
-                const checkbox = document.getElementById(`${tabfilter[0]}${value}`)
+                const checkbox = document.getElementById(
+                  `${tabfilter[0]}${value}`,
+                )
                 if (checkbox) checkbox.checked = true
               })
             }
@@ -878,22 +947,27 @@ ywInitEach('body', () => {
         const el = elParam
         el.textContent = nbresults
       })
-      facetteContainer.querySelectorAll('.result-label').forEach(
-        nbresults > 1 ? hideEl : show
-      )
-      facetteContainer.querySelectorAll('.results-label').forEach(
-        nbresults > 1 ? show : hideEl
-      )
+      facetteContainer
+        .querySelectorAll('.result-label')
+        .forEach(nbresults > 1 ? hideEl : show)
+      facetteContainer
+        .querySelectorAll('.results-label')
+        .forEach(nbresults > 1 ? show : hideEl)
     })
   })
 
   // gestion du bouton de réinitialisation des filtres
-  document.querySelectorAll('.facette-container:not(.dynamic) .filters .reset-filters')
+  document
+    .querySelectorAll(
+      '.facette-container:not(.dynamic) .filters .reset-filters',
+    )
     .forEach((reset) => {
       reset.addEventListener('click', () => {
-        document.querySelectorAll(
-          '.facette-container:not(.dynamic) .filters input.filter-checkbox:checked'
-        ).forEach((checkbox) => checkbox.click())
+        document
+          .querySelectorAll(
+            '.facette-container:not(.dynamic) .filters input.filter-checkbox:checked',
+          )
+          .forEach((checkbox) => checkbox.click())
       })
     })
 })
@@ -930,7 +1004,9 @@ ywInitEach('.range-wrap', (wrap) => {
     const { min, max } = target
     const val = target.value
     target.style.backgroundSize = `${((val - min) * 100) / (max - min)}% 100%`
-    const output = target.parentElement ? target.parentElement.querySelector('output') : null
+    const output = target.parentElement
+      ? target.parentElement.querySelector('output')
+      : null
     if (output) output.value = val
   }
 

@@ -1,6 +1,6 @@
 # Page, User and File are forms; their mandatory fields are locked by code, not by a stored flag
 
-Wave one made forms, users and files rows in `pages`; ticket 09 gave every Content type one body shape. Ticket 10 finishes the unification by giving them one *schema* mechanism: Page, User and File are **forms**, with an ordinary form template edited in the ordinary designer, so there is one model, one designer and one storage shape for every kind of Content in the wiki.
+Wave one made forms, users and files rows in `pages`; ticket 09 gave every Content type one body shape. Ticket 10 finishes the unification by giving them one _schema_ mechanism: Page, User and File are **forms**, with an ordinary form template edited in the ordinary designer, so there is one model, one designer and one storage shape for every kind of Content in the wiki.
 
 Each of the three has a mandatory core structure a webmaster cannot break — Page: `title`, `content`, `keywords`; User: `username`, `password`, `email`, `profile_picture`; File: `file_content`, the bytes themselves ([amended](#a-derived-attribute-is-not-an-input), see below). Those fields are **locked**: they cannot be deleted or retyped. Everything else about them is the webmaster's — label, help text, order, Field ACL — and webmaster-added fields sit in the same list beside them with no special casing.
 
@@ -14,17 +14,17 @@ So `ContentTypeSchema` declares the structure in PHP, and a form body carries on
 
 ## The template definition widens, and does not re-admit pseudo-fields
 
-ADR-0010 narrowed the form template to "the entry-input schema and nothing else", having just evicted five pseudo-fields that were really form-level configuration. That narrowing stands. What widens is only *whose* inputs a template may describe: a page's, a user's and a file's, as well as an entry's. Every locked field is a real input with a real value in the body — `content` holds the page's markup, `password` the hash, `file_content` the uploaded bytes. None of them is behaviour smuggled into the schema, which is what ADR-0010 forbade.
+ADR-0010 narrowed the form template to "the entry-input schema and nothing else", having just evicted five pseudo-fields that were really form-level configuration. That narrowing stands. What widens is only _whose_ inputs a template may describe: a page's, a user's and a file's, as well as an entry's. Every locked field is a real input with a real value in the body — `content` holds the page's markup, `password` the hash, `file_content` the uploaded bytes. None of them is behaviour smuggled into the schema, which is what ADR-0010 forbade.
 
 ## A Content type answers for more than its locked fields
 
 Declaring the structure in code turned out to answer three further questions that only have one right answer per type, and that were each getting a wrong one by default.
 
-**Which form describes a row.** A bazar entry says so itself, in `body.form_id`. A page, an account and a file do not: which form describes them is decided by their `TYPE_URI` triple, and for a page by the *absence* of one — carrying no type triple is exactly what makes a row a page. Searching therefore cannot ask for `body.form_id IN (...)` joined to the `fiche_bazar` type, as it always had; it asks the form's Content type what its rows look like (`SearchManager::rowsBelongingTo()`). Until it did, a bazar view of the Pages form came back empty with nothing to explain it.
+**Which form describes a row.** A bazar entry says so itself, in `body.form_id`. A page, an account and a file do not: which form describes them is decided by their `TYPE_URI` triple, and for a page by the _absence_ of one — carrying no type triple is exactly what makes a row a page. Searching therefore cannot ask for `body.form_id IN (...)` joined to the `fiche_bazar` type, as it always had; it asks the form's Content type what its rows look like (`SearchManager::rowsBelongingTo()`). Until it did, a bazar view of the Pages form came back empty with nothing to explain it.
 
 **How a Content of that type is named.** `entry_title_template` (ADR-0010) defaulted to the bazar convention `{{bf_titre}}`, a field no built-in type has, so every page listed under a blank title. A built-in type names itself with one of its own fields — `{{title}}`, `{{username}}`, `{{original_filename}}` — and only an ordinary form falls back to the historical convention. (Two of those three are locked fields; a file's `original_filename` became a plain body key when the amendment below evicted the derived attributes, and the title template resolves against the body either way.)
 
-**Which form properties apply at all.** "Submitting an entry creates a user account" and "install a bookmarklet that files a web page as an entry" describe visitor submissions to a webmaster's form. A page, an account and an uploaded file are not submitted that way — the User form *is* the accounts — so a built-in type drops those properties, on read as well as on write, and the designer does not offer them. A form that presents an option it will not honour is worse than one that hides it.
+**Which form properties apply at all.** "Submitting an entry creates a user account" and "install a bookmarklet that files a web page as an entry" describe visitor submissions to a webmaster's form. A page, an account and an uploaded file are not submitted that way — the User form _is_ the accounts — so a built-in type drops those properties, on read as well as on write, and the designer does not offer them. A form that presents an option it will not honour is worse than one that hides it.
 
 The last two are stripped and defaulted on **read** as well as on write, for the same reason locked fields are enforced on read: a body can arrive carrying the wrong thing by a route that never came through `FormManager`, and the next ordinary write then persists it correct.
 
@@ -32,9 +32,9 @@ A Content type also answers **which of its locked fields restates the row's tag*
 
 ## The editor edits the form of the row's own Content type
 
-The consequence at the other end. Since a page's title and keywords are *fields*, the editor renders them from the form's template rather than hardcoding their markup, and a webmaster who adds a field to that form gets an input for it. Fields declared before `content` render above the ACeditor and those after it below, so the designer lays a page out the same way it lays an entry out. `content` is the one field the editor renders itself.
+The consequence at the other end. Since a page's title and keywords are _fields_, the editor renders them from the form's template rather than hardcoding their markup, and a webmaster who adds a field to that form gets an input for it. Fields declared before `content` render above the ACeditor and those after it below, so the designer lays a page out the same way it lays an entry out. `content` is the one field the editor renders itself.
 
-But *which* form is the row's own, not always Page. An account and an uploaded file have no `content` field, so they get no markup editor and no `content` is written — that is what keeps a page-shaped body off Content that is not a page. `ContentTypeResolver` is the one place that knows how to go from a row to its form: by `body.form_id` for a bazar entry, by the type triple otherwise, and by the *absence* of a triple for a page.
+But _which_ form is the row's own, not always Page. An account and an uploaded file have no `content` field, so they get no markup editor and no `content` is written — that is what keeps a page-shaped body off Content that is not a page. `ContentTypeResolver` is the one place that knows how to go from a row to its form: by `body.form_id` for a bazar entry, by the type triple otherwise, and by the _absence_ of a triple for a page.
 
 "Nothing changed" consequently means the whole body and not just the markup — retitling a page without touching its prose is a real edit, and used to be silently discarded.
 
@@ -44,7 +44,7 @@ But *which* form is the row's own, not always Page. An account and an uploaded f
 
 ## A derived attribute is not an input
 
-*Amended by ticket 13.* The File type was originally given three locked **text fields** —
+_Amended by ticket 13._ The File type was originally given three locked **text fields** —
 `original_filename`, `stored_filename`, `uploaded_from` — on the reasoning below that every
 locked field is a real input with a real value in the body. For a file that reasoning was
 wrong in both directions. Nobody types those values: all of them are computed from an
@@ -64,7 +64,7 @@ really is the hash, both typed in, both locked.
 
 ## ADR-0003 is unchanged and explicitly not amended
 
-The password hash stays in the versioned `body` as a locked field of type `mot_de_passe` (named `password`) under Field ACL. This was re-examined and the conclusion is stronger than before: Field ACL is a property of a *template field*, so moving the hash to `metadata` would remove the very mechanism protecting it and leave protection-by-location — precisely what ADR-0003 rejected. Enforcement applies uniformly to historical revisions, not only the latest, and now covers more render paths than when ADR-0003 was written.
+The password hash stays in the versioned `body` as a locked field of type `mot_de_passe` (named `password`) under Field ACL. This was re-examined and the conclusion is stronger than before: Field ACL is a property of a _template field_, so moving the hash to `metadata` would remove the very mechanism protecting it and leave protection-by-location — precisely what ADR-0003 rejected. Enforcement applies uniformly to historical revisions, not only the latest, and now covers more render paths than when ADR-0003 was written.
 
 ## Considered Options
 

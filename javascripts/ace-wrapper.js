@@ -25,8 +25,14 @@ export default class {
   cursorChangeCallbacks = []
   markerId = null
   langTools
-  classesToIgnoreForData = ['markup', 'md-extra-markup', 'equal', 'space',
-    'attribute-quote-mark', 'title-quote-mark']
+  classesToIgnoreForData = [
+    'markup',
+    'md-extra-markup',
+    'equal',
+    'space',
+    'attribute-quote-mark',
+    'title-quote-mark',
+  ]
 
   constructor(domElement, options = {}) {
     this.container = domElement
@@ -56,7 +62,7 @@ export default class {
       useSoftTabs: false,
       tabSize: 3,
       fontFamily: 'monospace',
-      highlightActiveLine: true
+      highlightActiveLine: true,
     })
 
     this.ace.selection.on('changeCursor', () => {
@@ -68,30 +74,43 @@ export default class {
     this.langTools = ace.require('ace/ext/language_tools')
     this.ace.setOptions({
       enableBasicAutocompletion: true,
-      enableLiveAutocompletion: true
+      enableLiveAutocompletion: true,
     })
   }
 
   // Wrappers methods
-  getValue() { return this.ace.session.getValue() }
-  setValue(val) { return this.ace.session.setValue(val) }
-  getSelectedText() { return this.ace.getSelectedText() }
-  on(event, callback) { return this.ace.on(event, callback) }
+  getValue() {
+    return this.ace.session.getValue()
+  }
+  setValue(val) {
+    return this.ace.session.setValue(val)
+  }
+  getSelectedText() {
+    return this.ace.getSelectedText()
+  }
+  on(event, callback) {
+    return this.ace.on(event, callback)
+  }
 
   onCursorChange(callback) {
     this.cursorChangeCallbacks.push(callback)
   }
 
   setAutocompletionList(wordList) {
-    this.langTools.setCompleters([{
-      getCompletions(editor, session, pos, prefix, callback) {
-        callback(null, wordList.map((word) => ({
-          caption: word,
-          value: word,
-          meta: ''
-        })))
-      }
-    }])
+    this.langTools.setCompleters([
+      {
+        getCompletions(editor, session, pos, prefix, callback) {
+          callback(
+            null,
+            wordList.map((word) => ({
+              caption: word,
+              value: word,
+              meta: '',
+            })),
+          )
+        },
+      },
+    ])
   }
 
   disableAutocompletion() {
@@ -99,8 +118,9 @@ export default class {
   }
 
   get currentLineNodes() {
-    const lineGroup = this.container
-      .querySelector(`.ace_text-layer > .ace_line_group:nth-of-type(${this.cursor.row + 1})`)
+    const lineGroup = this.container.querySelector(
+      `.ace_text-layer > .ace_line_group:nth-of-type(${this.cursor.row + 1})`,
+    )
     const allLineNodes = []
     if (lineGroup) {
       lineGroup.querySelectorAll('.ace_line').forEach((line) => {
@@ -128,7 +148,8 @@ export default class {
         // iterate until we find a full group, or reach the end of line
         if (this.cursor.groupEnd == null) {
           const nodeClasses = (node.className || '')
-            .split(/\s+/).map((cl) => cl.replace('ace_', ''))
+            .split(/\s+/)
+            .map((cl) => cl.replace('ace_', ''))
           const nodeText = node.textContent || ''
 
           nextColumn += nodeText.length
@@ -138,16 +159,24 @@ export default class {
             this.cursor.groupStart = currColumn
             this.cursor.groupData = {}
             this.cursor.groupStartMarkup = nodeText
-            this.cursor.groupType = nodeClasses.find((cl) => cl.startsWith('yw-'))
+            this.cursor.groupType = nodeClasses.find((cl) =>
+              cl.startsWith('yw-'),
+            )
           }
           // Collect data for each node
           if (this.cursor.groupStart !== undefined) {
-            const type = nodeClasses.find((cl) => !this.classesToIgnoreForData.includes(cl))
+            const type = nodeClasses.find(
+              (cl) => !this.classesToIgnoreForData.includes(cl),
+            )
             if (type) this.cursor.groupData[type] = nodeText
           }
           // Detect SelectedNode
-          if (!this.cursor.node && nodeText
-              && currColumn <= this.cursor.column && nextColumn >= this.cursor.column) {
+          if (
+            !this.cursor.node &&
+            nodeText &&
+            currColumn <= this.cursor.column &&
+            nextColumn >= this.cursor.column
+          ) {
             this.cursor.node = node
             this.cursor.nodeStart = currColumn
             this.cursor.nodeEnd = nextColumn
@@ -155,12 +184,17 @@ export default class {
             this.cursor.nodeType = nodeClasses
           }
           // Closing group markup, after finding selectedNode
-          if (this.cursor.node && this.cursor.groupStart !== undefined
-              && nodeClasses.includes('close') && nodeClasses.includes(this.cursor.groupType)) {
+          if (
+            this.cursor.node &&
+            this.cursor.groupStart !== undefined &&
+            nodeClasses.includes('close') &&
+            nodeClasses.includes(this.cursor.groupType)
+          ) {
             this.cursor.groupEnd = nextColumn
             this.cursor.groupEndMarkup = nodeText
             this.cursor.groupText = this.currentGroupText
-            this.cursor.groupTextWithoutMarkup = this.currentGroupTextwithoutMarkup
+            this.cursor.groupTextWithoutMarkup =
+              this.currentGroupTextwithoutMarkup
           }
           currColumn = nextColumn
         }
@@ -173,17 +207,29 @@ export default class {
   }
 
   textFromRange(row, colStart, colEnd) {
-    return this.ace.session.getTextRange(new ace.Range(row, colStart, row, colEnd + 1))
+    return this.ace.session.getTextRange(
+      new ace.Range(row, colStart, row, colEnd + 1),
+    )
   }
 
   get currentGroupText() {
-    return this.textFromRange(this.cursor.row, this.cursor.groupStart, this.cursor.groupEnd - 1)
+    return this.textFromRange(
+      this.cursor.row,
+      this.cursor.groupStart,
+      this.cursor.groupEnd - 1,
+    )
   }
 
   get currentGroupTextwithoutMarkup() {
     return this.currentGroupText
-      .replace(new RegExp(`^${this.escapeRegExp(this.cursor.groupStartMarkup)}`), '')
-      .replace(new RegExp(`${this.escapeRegExp(this.cursor.groupEndMarkup)}$`), '')
+      .replace(
+        new RegExp(`^${this.escapeRegExp(this.cursor.groupStartMarkup)}`),
+        '',
+      )
+      .replace(
+        new RegExp(`${this.escapeRegExp(this.cursor.groupEndMarkup)}$`),
+        '',
+      )
       .trim()
   }
 
@@ -197,11 +243,19 @@ export default class {
   }
 
   selectCurrentNode() {
-    this.selectLineRange(this.cursor.row, this.cursor.nodeStart, this.cursor.nodeEnd)
+    this.selectLineRange(
+      this.cursor.row,
+      this.cursor.nodeStart,
+      this.cursor.nodeEnd,
+    )
   }
 
   selectCurrentGroup() {
-    this.selectLineRange(this.cursor.row, this.cursor.groupStart, this.cursor.groupEnd)
+    this.selectLineRange(
+      this.cursor.row,
+      this.cursor.groupStart,
+      this.cursor.groupEnd,
+    )
   }
 
   selectCurrentGroupAfterEdit() {
@@ -212,7 +266,10 @@ export default class {
   }
 
   surroundSelectionWith(left = '', right = '') {
-    this.ace.session.replace(this.ace.getSelectionRange(), left + this.ace.getSelectedText() + right)
+    this.ace.session.replace(
+      this.ace.getSelectionRange(),
+      left + this.ace.getSelectedText() + right,
+    )
     this.ace.focus()
   }
 
@@ -291,12 +348,18 @@ export default class {
    * line the cursor is on, and the opening tag can be any number of lines above it.
    */
   findOpeningTag(elem, fromRow, fromColumn) {
-    const closesElem = new RegExp(`elem\\s*=\\s*["']${this.escapeRegExp(elem)}["']`)
+    const closesElem = new RegExp(
+      `elem\\s*=\\s*["']${this.escapeRegExp(elem)}["']`,
+    )
     let depth = 0
     for (let row = fromRow; row >= 0; row -= 1) {
-      const tags = [...this.ace.session.getLine(row).matchAll(/\{\{\s*(\w+)([^}]*)\}\}/g)]
+      const tags = [
+        ...this.ace.session.getLine(row).matchAll(/\{\{\s*(\w+)([^}]*)\}\}/g),
+      ]
         // on the row the `end` is on, only what is written before it can open it
-        .filter((tag) => row < fromRow || tag.index + tag[0].length <= fromColumn)
+        .filter(
+          (tag) => row < fromRow || tag.index + tag[0].length <= fromColumn,
+        )
       for (let i = tags.length - 1; i >= 0; i -= 1) {
         const [markup, name, attributes] = tags[i]
         if (name === 'end' && closesElem.test(attributes)) {
@@ -306,7 +369,11 @@ export default class {
             return {
               name,
               text: markup.slice(2, -2).trim(),
-              range: this.rangeFor(row, tags[i].index, tags[i].index + markup.length)
+              range: this.rangeFor(
+                row,
+                tags[i].index,
+                tags[i].index + markup.length,
+              ),
             }
           }
           depth -= 1

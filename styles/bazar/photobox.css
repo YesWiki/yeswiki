@@ -99,7 +99,8 @@
   background-color: rgb(0 0 0 / 60%);
 }
 .msie.pbLoading .pbWrapper {
-  background: url('../../src/assets/images/bazar/loading.gif') no-repeat center center;
+  background: url('../../src/assets/images/bazar/loading.gif') no-repeat center
+    center;
 }
 
 @keyframes pbLoaderFrames {

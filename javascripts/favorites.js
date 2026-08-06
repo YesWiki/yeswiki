@@ -6,19 +6,21 @@ const FavoritesHelper = {
   propertyName: 'https://yeswiki.net/vocabulary/favorite',
   getJson(url, params) {
     const query = new URLSearchParams(params).toString()
-    return fetch(`${url}${url.includes('?') ? '&' : '?'}${query}`)
-      .then((response) => (response.ok ? response.json() : Promise.reject(response.statusText)))
+    return fetch(`${url}${url.includes('?') ? '&' : '?'}${query}`).then(
+      (response) =>
+        response.ok ? response.json() : Promise.reject(response.statusText),
+    )
   },
   postForm(url, params) {
-    return fetch(url, { method: 'POST', body: new URLSearchParams(params) })
-      .then((response) => (response.ok ? response : Promise.reject(response.statusText)))
+    return fetch(url, {
+      method: 'POST',
+      body: new URLSearchParams(params),
+    }).then((response) =>
+      response.ok ? response : Promise.reject(response.statusText),
+    )
   },
   errorToast(error) {
-    toastMessage(
-      _t('FAVORITES_ERROR', { error }),
-      3000,
-      'alert alert-danger'
-    )
+    toastMessage(_t('FAVORITES_ERROR', { error }), 3000, 'alert alert-danger')
   },
   updateElem(elems, mode, withMessage = true) {
     elems.forEach((elem) => {
@@ -41,19 +43,11 @@ const FavoritesHelper = {
     })
     if (mode === 'add') {
       if (withMessage) {
-        toastMessage(
-          _t('FAVORITES_ADDED'),
-          3000,
-          'alert alert-success'
-        )
+        toastMessage(_t('FAVORITES_ADDED'), 3000, 'alert alert-success')
       }
     } else {
       if (withMessage) {
-        toastMessage(
-          _t('FAVORITES_REMOVED'),
-          3000,
-          'alert alert-warning'
-        )
+        toastMessage(_t('FAVORITES_REMOVED'), 3000, 'alert alert-warning')
       }
       // remove linked favorite 1.5s after
       setTimeout(() => {
@@ -75,12 +69,14 @@ const FavoritesHelper = {
     }
   },
   elemsFor(resource) {
-    return Array.from(document.querySelectorAll(`[data-resource="${resource}"]`))
+    return Array.from(
+      document.querySelectorAll(`[data-resource="${resource}"]`),
+    )
   },
   addFavorite(resource, user, elem, checkNotEmpty = false) {
     FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
       property: FavoritesHelper.propertyName,
-      user
+      user,
     })
       .then((data) => {
         if (!Array.isArray(data) || data.length === 0) {
@@ -89,7 +85,7 @@ const FavoritesHelper = {
           } else {
             FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}`), {
               property: FavoritesHelper.propertyName,
-              user
+              user,
             })
               .then(() => {
                 FavoritesHelper.addFavorite(resource, user, elem, true)
@@ -105,24 +101,30 @@ const FavoritesHelper = {
   deleteFavorite(resource, user, elem, checkEmpty = false) {
     FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
       property: FavoritesHelper.propertyName,
-      user
+      user,
     })
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           if (checkEmpty) {
             FavoritesHelper.errorToast('not deleted')
           } else {
-            FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}/delete`), {
-              property: FavoritesHelper.propertyName,
-              user
-            })
+            FavoritesHelper.postForm(
+              wiki.url(`?api/triples/${resource}/delete`),
+              {
+                property: FavoritesHelper.propertyName,
+                user,
+              },
+            )
               .then(() => {
                 FavoritesHelper.deleteFavorite(resource, user, elem, true)
               })
               .catch(FavoritesHelper.errorToast)
           }
         } else {
-          FavoritesHelper.updateElem(FavoritesHelper.elemsFor(resource), 'delete')
+          FavoritesHelper.updateElem(
+            FavoritesHelper.elemsFor(resource),
+            'delete',
+          )
         }
       })
       .catch(FavoritesHelper.errorToast)
@@ -147,40 +149,43 @@ const FavoritesHelper = {
       const { resource } = lastTag
       FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
         property: FavoritesHelper.propertyName,
-        user
+        user,
       })
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             if (previousTag) {
               FavoritesHelper.errorToast('not deleted')
             } else {
-              FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}/delete`), {
-                property: FavoritesHelper.propertyName,
-                user
-              })
+              FavoritesHelper.postForm(
+                wiki.url(`?api/triples/${resource}/delete`),
+                {
+                  property: FavoritesHelper.propertyName,
+                  user,
+                },
+              )
                 .then(() => {
                   FavoritesHelper.deleteFirstFavorite(user, tags, lastTag)
                 })
                 .catch(FavoritesHelper.errorToast)
             }
           } else {
-            FavoritesHelper.updateElem(FavoritesHelper.elemsFor(resource), 'delete', false)
+            FavoritesHelper.updateElem(
+              FavoritesHelper.elemsFor(resource),
+              'delete',
+              false,
+            )
             FavoritesHelper.deleteFirstFavorite(user, tags)
           }
         })
         .catch(FavoritesHelper.errorToast)
     } else {
-      toastMessage(
-        _t('FAVORITES_ALL_DELETED'),
-        3000,
-        'alert alert-success'
-      )
+      toastMessage(_t('FAVORITES_ALL_DELETED'), 3000, 'alert alert-success')
     }
   },
   deleteAll(user) {
     FavoritesHelper.getJson(wiki.url('?api/triples'), {
       property: FavoritesHelper.propertyName,
-      user
+      user,
     })
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -197,7 +202,7 @@ const FavoritesHelper = {
   },
   init() {
     FavoritesHelper.bindLinks()
-  }
+  },
 }
 
 FavoritesHelper.init()

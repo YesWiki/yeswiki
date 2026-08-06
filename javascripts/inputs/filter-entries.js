@@ -3,8 +3,9 @@
 // The .filter-entries input filters its associated option list: the list is either
 // a sibling of the input (radio markup) or a sibling of the input's container
 // (checkbox markup, where the input sits in .filter-and-check-all-container).
-(function() {
-  const listSelector = '.bazar-radio-rows, .bazar-checkbox-cols, .list-bazar-entries'
+;(function () {
+  const listSelector =
+    '.bazar-radio-rows, .bazar-checkbox-cols, .list-bazar-entries'
 
   document.addEventListener('input', (e) => {
     const filter = e.target.closest('.filter-entries')
@@ -21,4 +22,4 @@
       row.style.display = matches ? '' : 'none'
     })
   })
-}())
+})()

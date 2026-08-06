@@ -19,7 +19,7 @@ Conflating the two would have made the architecture test unwritable, because the
 
 ## The known-violations list works like the PHPStan baseline
 
-`KNOWN_VIOLATIONS` records what was already broken when the boundaries were drawn, so a *new* breach fails immediately while the recorded ones are burned down. Entries may be removed, never added, and a test asserts the list contains no stale entries — a violation that gets fixed cannot quietly stay on the list and mask a later regression.
+`KNOWN_VIOLATIONS` records what was already broken when the boundaries were drawn, so a _new_ breach fails immediately while the recorded ones are burned down. Entries may be removed, never added, and a test asserts the list contains no stale entries — a violation that gets fixed cannot quietly stay on the list and mask a later regression.
 
 Eight entries remain. Four are `Mailer` reaching into `Content`, `Identity` and `Render`, which is the standout: a class in `Kernel` that needs an entry, a user, an authentication service and a template engine is arguably not `Kernel` code at all. The others are `DbService`'s SQL-dump generator that never moved to `Admin` with the rest of the backup code, `MigrationService` reaching for `TripleStore`, `Performer` rendering its own output, and `TemplateHelperService` reaching into `EntryController`.
 

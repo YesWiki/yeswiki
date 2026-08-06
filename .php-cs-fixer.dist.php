@@ -6,7 +6,14 @@ $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
     ->exclude('cache')
     ->exclude('files')
-    ->exclude('node_modules');
+    ->exclude('node_modules')
+    // The instance's own config, not source: `yeswiki.config.php` is written by the installer
+    // and rewritten by every screen that saves a setting (ConfigurationService), and
+    // `test.config.php` is its equivalent for the test wiki. Both are gitignored. Without
+    // this, `make lint` reports two files to fix on every working install and can never pass
+    // -- and `make fix` reformats a file the next config write undoes.
+    ->notPath('yeswiki.config.php')
+    ->notPath('test.config.php');
 
 $rules = [
     '@PSR12' => true, // Start with PSR-12 rules

@@ -14,7 +14,7 @@ export default {
         modal.classList.remove('yw-modal--open')
       })
       this.$el.classList.add('yw-modal--open')
-    }
+    },
   },
   template: `
     <div class="yw-modal" role="dialog">
@@ -30,5 +30,5 @@ export default {
         </div>
       </div>
     </div>
-  `
+  `,
 }

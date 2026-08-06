@@ -24,16 +24,17 @@ function updateProgressUI(processed, successful, total) {
 
 async function processEntry(entryCheckbox, counters) {
   const currentEntry = JSON.parse(entryCheckbox.value)
-  const entryIdentifier = currentEntry.title || currentEntry.bf_titre || `#${counters.processed + 1}`
+  const entryIdentifier =
+    currentEntry.title || currentEntry.bf_titre || `#${counters.processed + 1}`
 
   try {
     const response = await fetch(`?api/entries/${formId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json'
+        Accept: 'application/json',
       },
-      body: entryCheckbox.value
+      body: entryCheckbox.value,
     })
 
     if (!response.ok) {
@@ -41,7 +42,9 @@ async function processEntry(entryCheckbox, counters) {
       try {
         const errorData = await response.json()
         errorMessage = errorData.message || JSON.stringify(errorData)
-      } catch (e) { /* Ignore */ }
+      } catch (e) {
+        /* Ignore */
+      }
       throw new Error(errorMessage)
     }
 
@@ -68,50 +71,58 @@ async function processEntry(entryCheckbox, counters) {
     setTimeout(() => {
       importLog.scrollTo({
         top: importLog.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }, 0)
     updateProgressUI(counters.processed, counters.successful, counters.total)
   }
 }
 
-importBtn.addEventListener('click', async(event) => {
-  event.preventDefault()
+importBtn.addEventListener(
+  'click',
+  async (event) => {
+    event.preventDefault()
 
-  const toImport = Array.from(importForm.querySelectorAll('input[name^=importentries]:checked'))
-  const totalEntries = toImport.length
+    const toImport = Array.from(
+      importForm.querySelectorAll('input[name^=importentries]:checked'),
+    )
+    const totalEntries = toImport.length
 
-  if (totalEntries === 0) {
-    alert('Sélectionner au moins une fiche à importer.')
+    if (totalEntries === 0) {
+      alert('Sélectionner au moins une fiche à importer.')
+      return false
+    }
+
+    importBtn.disabled = true
+    progressContainer.style.display = 'block'
+    importStatus.textContent = 'Import en cours...'
+    progressTotal.textContent = totalEntries
+    importLog.innerHTML = ''
+    progressBar.style.backgroundColor = '#4CAF50'
+
+    const counters = {
+      processed: 0,
+      successful: 0,
+      total: totalEntries,
+    }
+
+    updateProgressUI(0, 0, totalEntries)
+
+    for (let i = 0; i < totalEntries; i += CONCURRENCY_LIMIT) {
+      const chunk = toImport.slice(i, i + CONCURRENCY_LIMIT)
+      const promisesInChunk = chunk.map((entryCheckbox) =>
+        processEntry(entryCheckbox, counters),
+      )
+      await Promise.all(promisesInChunk)
+    }
+
+    importStatus.textContent = `Import finalisé. (${counters.successful}/${totalEntries} fiches importées avec succès).`
+    if (counters.successful < totalEntries) {
+      progressBar.style.backgroundColor = '#f44336'
+    }
+    importBtn.disabled = false
+
     return false
-  }
-
-  importBtn.disabled = true
-  progressContainer.style.display = 'block'
-  importStatus.textContent = 'Import en cours...'
-  progressTotal.textContent = totalEntries
-  importLog.innerHTML = ''
-  progressBar.style.backgroundColor = '#4CAF50'
-
-  const counters = {
-    processed: 0,
-    successful: 0,
-    total: totalEntries
-  }
-
-  updateProgressUI(0, 0, totalEntries)
-
-  for (let i = 0; i < totalEntries; i += CONCURRENCY_LIMIT) {
-    const chunk = toImport.slice(i, i + CONCURRENCY_LIMIT)
-    const promisesInChunk = chunk.map((entryCheckbox) => processEntry(entryCheckbox, counters))
-    await Promise.all(promisesInChunk)
-  }
-
-  importStatus.textContent = `Import finalisé. (${counters.successful}/${totalEntries} fiches importées avec succès).`
-  if (counters.successful < totalEntries) {
-    progressBar.style.backgroundColor = '#f44336'
-  }
-  importBtn.disabled = false
-
-  return false
-}, false)
+  },
+  false,
+)

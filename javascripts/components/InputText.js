@@ -4,7 +4,10 @@ export default {
   emits: ['input'],
   mounted() {
     if (!this.value) {
-      if (this.$root.isEditingExistingAction && this.config.default != undefined) {
+      if (
+        this.$root.isEditingExistingAction &&
+        this.config.default != undefined
+      ) {
         // when editing, do not use config.value if `!default` gives `true` (case for '')
         this.$emit('input', '')
       } else if (this.config.value) {
@@ -22,5 +25,5 @@ export default {
       />
       <input-hint :config="config"></input-hint>
     </div>
-    `
+    `,
 }

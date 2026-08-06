@@ -17,8 +17,12 @@ function handleImageUrlInput(evt) {
     img.className = 'img-responsive'
     img.src = url
     img.alt = 'Preview'
-    img.addEventListener('error', () => { img.style.display = 'none' })
-    img.addEventListener('load', () => { img.style.display = 'block' })
+    img.addEventListener('error', () => {
+      img.style.display = 'none'
+    })
+    img.addEventListener('load', () => {
+      img.style.display = 'block'
+    })
     previewEl.replaceChildren(img)
   } else {
     previewEl.replaceChildren()

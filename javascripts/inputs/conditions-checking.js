@@ -11,9 +11,18 @@ const ConditionsChecking = {
   operationsList: ['!(', 'not(', 'not (', '(', ')'],
   operationsListIncludInSpaceParenthesis: ['and', 'or'],
   conditionsList: [
-    'match', '==', '!=', ' in',
-    '|length ==', '|length !=', '|length <', '|length <=', '|length >=', '|length >',
-    ' is empty', ' is not empty'
+    'match',
+    '==',
+    '!=',
+    ' in',
+    '|length ==',
+    '|length !=',
+    '|length <',
+    '|length <=',
+    '|length >=',
+    '|length >',
+    ' is empty',
+    ' is not empty',
   ],
   isVisible(el) {
     return !!el && el.offsetParent !== null
@@ -22,18 +31,21 @@ const ConditionsChecking = {
     el.dispatchEvent(new Event('change', { bubbles: true }))
   },
   pregQuote(input) {
-    return (`${input}`).replace(/[.[\]^(){}!=\\+*?$<>|:]/g, '\\$&')
+    return `${input}`.replace(/[.[\]^(){}!=\\+*?$<>|:]/g, '\\$&')
   },
   updateOperationData(dataParam, rest, condition, element) {
     const data = dataParam
-    const newIndex = (rest === undefined || rest === null) ? -1 : condition.length - rest[0].length
+    const newIndex =
+      rest === undefined || rest === null
+        ? -1
+        : condition.length - rest[0].length
     if (Object.keys(data).length === 0 || data.indexOf === undefined) {
       data.indexOf = -1
     }
     if (newIndex > -1 && (newIndex < data.indexOf || data.indexOf < 0)) {
       data.indexOf = newIndex
-      data.element = element;
-      [, data.fullRest] = rest
+      data.element = element
+      ;[, data.fullRest] = rest
     }
   },
   updateObject(data, condition, names) {
@@ -45,7 +57,9 @@ const ConditionsChecking = {
     } else {
       result[names.current] = condition.substr(0, data.indexOf).trim()
       result[names.element] = data.element
-      result[names.rest] = condition.substr(data.indexOf + data.fullRest.length).trim()
+      result[names.rest] = condition
+        .substr(data.indexOf + data.fullRest.length)
+        .trim()
     }
     return result
   },
@@ -53,28 +67,44 @@ const ConditionsChecking = {
     const condition = parsingObject.restOfCondition.trim()
     const data = {}
     this.operationsList.forEach((element) => {
-      const rest = condition.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = condition.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, condition, element)
     })
     this.operationsListIncludInSpaceParenthesis.forEach((element) => {
-      const rest = condition.match(new RegExp(`((?<= |\\)|^)${element}(?= |\\)))(.*)$`, 'i'))
+      const rest = condition.match(
+        new RegExp(`((?<= |\\)|^)${element}(?= |\\)))(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, condition, element)
     })
-    const names = { current: 'currentCondition', rest: 'restOfCondition', element: 'operation' }
+    const names = {
+      current: 'currentCondition',
+      rest: 'restOfCondition',
+      element: 'operation',
+    }
     return this.updateObject(data, condition, names)
   },
   addCondition(condition) {
     const conditionLocal = condition.trim()
     const data = {}
     this.conditionsList.forEach((element) => {
-      const rest = conditionLocal.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = conditionLocal.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, conditionLocal, element)
     })
     this.boolList.forEach((element) => {
-      const rest = conditionLocal.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = conditionLocal.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, conditionLocal, element)
     })
-    const names = { current: 'leftPart', rest: 'rightPart', element: 'typeOfCondition' }
+    const names = {
+      current: 'leftPart',
+      rest: 'rightPart',
+      element: 'typeOfCondition',
+    }
     return this.updateObject(data, conditionLocal, names)
   },
   getCheckboxValues(nodes) {
@@ -146,9 +176,11 @@ const ConditionsChecking = {
     } else {
       // formulaire affiché avec onglets Téléverser / URL
       const upload = field.querySelector(
-        ':scope > #imagebf_image-upload.yw-tabs__pane.active'
+        ':scope > #imagebf_image-upload.yw-tabs__pane.active',
       )
-      const url = field.querySelector(':scope > #imagebf_image-url.yw-tabs__pane.active')
+      const url = field.querySelector(
+        ':scope > #imagebf_image-url.yw-tabs__pane.active',
+      )
       const pane = upload || url
       if (pane) {
         const input = pane.querySelector('input')
@@ -170,8 +202,12 @@ const ConditionsChecking = {
       }
     } else {
       // formulaire affiché avec onglets Téléverser / URL
-      const upload = field.querySelector(':scope > [id$="-upload"].yw-tabs__pane.active')
-      const url = field.querySelector(':scope > [id$="-url"].yw-tabs__pane.active')
+      const upload = field.querySelector(
+        ':scope > [id$="-upload"].yw-tabs__pane.active',
+      )
+      const url = field.querySelector(
+        ':scope > [id$="-url"].yw-tabs__pane.active',
+      )
       const pane = upload || url
       if (pane) {
         const input = pane.querySelector('input')
@@ -241,19 +277,26 @@ const ConditionsChecking = {
     const { length } = this.getFieldNameValues(fieldName)
     const number = Number(values)
     switch (operation) {
-      case '==': return length === number
-      case '!=': return length !== number
-      case '<': return length < number
-      case '<=': return length <= number
-      case '>': return length > number
-      case '>=': return length >= number
-      default: return false
+      case '==':
+        return length === number
+      case '!=':
+        return length !== number
+      case '<':
+        return length < number
+      case '<=':
+        return length <= number
+      case '>':
+        return length > number
+      case '>=':
+        return length >= number
+      default:
+        return false
     }
   },
   match(fieldName, values) {
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
 
     this.commonForOperations(fieldName, values, extract)
@@ -276,14 +319,14 @@ const ConditionsChecking = {
   },
   isEqual(fieldName, values) {
     if (
-      typeof this.fieldNamesCache[fieldName] !== 'undefined'
-      && !this.fieldNamesCache[fieldName].isArray
+      typeof this.fieldNamesCache[fieldName] !== 'undefined' &&
+      !this.fieldNamesCache[fieldName].isArray
     ) {
       return this.getFieldNameValues(fieldName) == values // eslint-disable-line eqeqeq
     }
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
     if (extract.uniqueValues.length !== extract.uniqueFieldValues.length) {
@@ -302,14 +345,14 @@ const ConditionsChecking = {
   },
   isIn(fieldName, values) {
     if (
-      typeof this.fieldNamesCache[fieldName] !== 'undefined'
-      && !this.fieldNamesCache[fieldName].isArray
+      typeof this.fieldNamesCache[fieldName] !== 'undefined' &&
+      !this.fieldNamesCache[fieldName].isArray
     ) {
       return false
     }
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
     if (extract.uniqueFieldValues.length === 0) {
@@ -330,13 +373,15 @@ const ConditionsChecking = {
     return this.isUnEqual(fieldName, '')
   },
   renderCondition(structuredCondition) {
-    if (typeof structuredCondition.leftPart !== 'undefined'
-            && typeof structuredCondition.rightPart !== 'undefined'
-            && typeof structuredCondition.typeOfCondition !== 'undefined') {
+    if (
+      typeof structuredCondition.leftPart !== 'undefined' &&
+      typeof structuredCondition.rightPart !== 'undefined' &&
+      typeof structuredCondition.typeOfCondition !== 'undefined'
+    ) {
       return this.renderConditionSecured(
         structuredCondition.leftPart.trim(),
         structuredCondition.typeOfCondition.trim(),
-        structuredCondition.rightPart.trim()
+        structuredCondition.rightPart.trim(),
       )
     }
 
@@ -375,34 +420,43 @@ const ConditionsChecking = {
     return ' false '
   },
   renderBadFormatingError(structuredCondition, conditionData) {
-    if (typeof structuredCondition.leftPart !== 'undefined'
-      && structuredCondition.leftPart.length !== 0) {
-      // eslint-disable-next-line max-len
-      console.warn(`Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`)
+    if (
+      typeof structuredCondition.leftPart !== 'undefined' &&
+      structuredCondition.leftPart.length !== 0
+    ) {
+      console.warn(
+        `Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`,
+      )
       return true
     }
     return false
   },
   emptyCheckbox(element) {
-    element.querySelectorAll('input[type=checkbox]').forEach((checkboxParam) => {
-      const checkbox = checkboxParam
-      checkbox.checked = false
-      this.fireChange(checkbox)
-    })
+    element
+      .querySelectorAll('input[type=checkbox]')
+      .forEach((checkboxParam) => {
+        const checkbox = checkboxParam
+        checkbox.checked = false
+        this.fireChange(checkbox)
+      })
   },
   setDefaultCheckbox(element) {
-    element.querySelectorAll('input[type=checkbox]:not([data-default])').forEach((checkboxParam) => {
-      const checkbox = checkboxParam
-      checkbox.checked = false
-      this.fireChange(checkbox)
-    })
-    element.querySelectorAll('input[type=checkbox][data-default]').forEach((checkboxParam) => {
-      const checkbox = checkboxParam
-      if (checkbox.dataset.default === 'checked') {
-        checkbox.checked = true
+    element
+      .querySelectorAll('input[type=checkbox]:not([data-default])')
+      .forEach((checkboxParam) => {
+        const checkbox = checkboxParam
+        checkbox.checked = false
         this.fireChange(checkbox)
-      }
-    })
+      })
+    element
+      .querySelectorAll('input[type=checkbox][data-default]')
+      .forEach((checkboxParam) => {
+        const checkbox = checkboxParam
+        if (checkbox.dataset.default === 'checked') {
+          checkbox.checked = true
+          this.fireChange(checkbox)
+        }
+      })
   },
   emptySelect(element) {
     element.querySelectorAll('select').forEach((selectParam) => {
@@ -437,31 +491,39 @@ const ConditionsChecking = {
     })
   },
   setDefaultRadio(element) {
-    element.querySelectorAll('input[type=radio]:not([data-default])').forEach((radioParam) => {
-      const radio = radioParam
-      radio.checked = false
-      this.fireChange(radio)
-    })
-    element.querySelectorAll('input[type=radio][data-default]').forEach((radioParam) => {
-      const radio = radioParam
-      if (radio.dataset.default === 'checked') {
-        radio.checked = true
+    element
+      .querySelectorAll('input[type=radio]:not([data-default])')
+      .forEach((radioParam) => {
+        const radio = radioParam
+        radio.checked = false
         this.fireChange(radio)
-      }
-    })
+      })
+    element
+      .querySelectorAll('input[type=radio][data-default]')
+      .forEach((radioParam) => {
+        const radio = radioParam
+        if (radio.dataset.default === 'checked') {
+          radio.checked = true
+          this.fireChange(radio)
+        }
+      })
   },
   emptyGeocode(element) {
-    element.querySelectorAll('div[class*="geocode-input"] input[type=hidden]').forEach((inputParam) => {
-      const input = inputParam
-      input.value = ''
-      this.fireChange(input)
-    })
+    element
+      .querySelectorAll('div[class*="geocode-input"] input[type=hidden]')
+      .forEach((inputParam) => {
+        const input = inputParam
+        input.value = ''
+        this.fireChange(input)
+      })
   },
   // yw-tag-input widgets: clearing removes the chips and empties the hidden value;
   // restoring re-creates the chips captured at page load (see snapshotTagsDefaults)
   emptyByTags(element) {
     element.querySelectorAll('[data-yw-tag-input]').forEach((widget) => {
-      widget.querySelectorAll('[data-yw-tag-input-chip]').forEach((chip) => chip.remove())
+      widget
+        .querySelectorAll('[data-yw-tag-input-chip]')
+        .forEach((chip) => chip.remove())
       const hidden = widget.querySelector('[data-yw-tag-input-value]')
       if (hidden) {
         hidden.value = ''
@@ -498,20 +560,26 @@ const ConditionsChecking = {
   },
   snapshotTagsDefaults() {
     document.querySelectorAll('[data-yw-tag-input]').forEach((widget) => {
-      const defaults = Array.from(widget.querySelectorAll('[data-yw-tag-input-chip]'))
-        .map((chip) => ({ id: chip.dataset.tag, label: chip.textContent.replace(/×$/, '') }))
+      const defaults = Array.from(
+        widget.querySelectorAll('[data-yw-tag-input-chip]'),
+      ).map((chip) => ({
+        id: chip.dataset.tag,
+        label: chip.textContent.replace(/×$/, ''),
+      }))
       this.tagsDefaultsCache.set(widget, defaults)
     })
   },
   emptyOthersInputs(element) {
-    element.querySelectorAll(
-      'input:not([type=checkbox]):not([type=radio]):not([type=hidden])'
-    ).forEach((inputParam) => {
-      const input = inputParam
-      if (input.closest('[data-yw-tag-input]')) return
-      input.value = ''
-      this.fireChange(input)
-    })
+    element
+      .querySelectorAll(
+        'input:not([type=checkbox]):not([type=radio]):not([type=hidden])',
+      )
+      .forEach((inputParam) => {
+        const input = inputParam
+        if (input.closest('[data-yw-tag-input]')) return
+        input.value = ''
+        this.fireChange(input)
+      })
   },
   emptyChildren(element) {
     this.emptyCheckbox(element)
@@ -543,7 +611,9 @@ const ConditionsChecking = {
         switch (structuredCondition.operation) {
           case '(':
           case '!(':
-            if (this.renderBadFormatingError(structuredCondition, conditionData)) {
+            if (
+              this.renderBadFormatingError(structuredCondition, conditionData)
+            ) {
               errorFound = true
             } else {
               stringToEval += structuredCondition.operation
@@ -551,15 +621,19 @@ const ConditionsChecking = {
             break
           case 'not(':
           case 'not (':
-            if (this.renderBadFormatingError(structuredCondition, conditionData)) {
+            if (
+              this.renderBadFormatingError(structuredCondition, conditionData)
+            ) {
               errorFound = true
             } else {
               stringToEval = `${stringToEval}!(`
             }
             break
           case ')':
-            stringToEval = stringToEval
-              + this.renderCondition(structuredCondition) + structuredCondition.operation
+            stringToEval =
+              stringToEval +
+              this.renderCondition(structuredCondition) +
+              structuredCondition.operation
             break
           case 'and':
             stringToEval = `${stringToEval + this.renderCondition(structuredCondition)}&&`
@@ -570,8 +644,9 @@ const ConditionsChecking = {
           default:
             if (stack.length > 0) {
               errorFound = true
-              // eslint-disable-next-line max-len
-              console.warn(`Unknown operation '${structuredCondition.operation}' in '${conditionData.condition}'`)
+              console.warn(
+                `Unknown operation '${structuredCondition.operation}' in '${conditionData.condition}'`,
+              )
             }
             stringToEval += this.renderCondition(structuredCondition)
             break
@@ -648,17 +723,23 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const containers = Array.from(document.querySelectorAll(
-      `div[class*="group-checkbox-"][class*="${fieldName}"],`
-      + `ul[class*="group-checkbox-"][class*="${fieldName}"]`
-    )).filter((container) => {
+    const containers = Array.from(
+      document.querySelectorAll(
+        `div[class*="group-checkbox-"][class*="${fieldName}"],` +
+          `ul[class*="group-checkbox-"][class*="${fieldName}"]`,
+      ),
+    ).filter((container) => {
       const classes = (container.getAttribute('class') || '').split(' ')
-      return classes.some((className) => className.slice(-fieldName.length) === fieldName)
+      return classes.some(
+        (className) => className.slice(-fieldName.length) === fieldName,
+      )
     })
     if (containers.length > 0) {
       const inputs = []
       containers.forEach((container) => {
-        container.querySelectorAll('input[type=checkbox]').forEach((input) => inputs.push(input))
+        container
+          .querySelectorAll('input[type=checkbox]')
+          .forEach((input) => inputs.push(input))
       })
       if (inputs.length > 0) {
         result.type = 'checkbox' // eslint-disable-line no-param-reassign
@@ -674,7 +755,9 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const node = document.querySelector(`[data-yw-tag-input-value][name$="${fieldName}"]`)
+    const node = document.querySelector(
+      `[data-yw-tag-input-value][name$="${fieldName}"]`,
+    )
     if (node) {
       result.type = 'checkboxtag' // eslint-disable-line no-param-reassign
       result.nodes = [node] // eslint-disable-line no-param-reassign
@@ -698,7 +781,9 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const inputs = Array.from(document.querySelectorAll(`input[name$=${fieldName}][type=radio]`))
+    const inputs = Array.from(
+      document.querySelectorAll(`input[name$=${fieldName}][type=radio]`),
+    )
     if (inputs.length > 0) {
       result.type = 'radio' // eslint-disable-line no-param-reassign
       result.nodes = inputs // eslint-disable-line no-param-reassign
@@ -712,9 +797,11 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const inputs = Array.from(document.querySelectorAll(
-      `input[name$=${fieldName}][type=text], input[name$=${fieldName}][type=date]`
-    ))
+    const inputs = Array.from(
+      document.querySelectorAll(
+        `input[name$=${fieldName}][type=text], input[name$=${fieldName}][type=date]`,
+      ),
+    )
     if (inputs.length > 0) {
       result.type = 'text' // eslint-disable-line no-param-reassign
       result.isArray = false // eslint-disable-line no-param-reassign
@@ -729,15 +816,19 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const inputs = Array.from(document.querySelectorAll(`textarea[name$=${fieldName}]`))
+    const inputs = Array.from(
+      document.querySelectorAll(`textarea[name$=${fieldName}]`),
+    )
     if (inputs.length > 0) {
       result.type = 'textarea' // eslint-disable-line no-param-reassign
       result.isArray = false // eslint-disable-line no-param-reassign
       result.nodes = inputs // eslint-disable-line no-param-reassign
       inputs.forEach((textarea) => {
         // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
-        if (textarea.classList.contains('aceditor-textarea')
-          || textarea.classList.contains('vditor-html')) {
+        if (
+          textarea.classList.contains('aceditor-textarea') ||
+          textarea.classList.contains('vditor-html')
+        ) {
           let lastValue = textarea.value
           setInterval(() => {
             if (textarea.value !== lastValue) {
@@ -755,8 +846,12 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const uploadDiv = document.querySelector(`div[id$=image${fieldName}-upload]`)
-    const imageOutput = document.querySelector(`output[id$=img-image${fieldName}]`)
+    const uploadDiv = document.querySelector(
+      `div[id$=image${fieldName}-upload]`,
+    )
+    const imageOutput = document.querySelector(
+      `output[id$=img-image${fieldName}]`,
+    )
     if (uploadDiv || imageOutput) {
       result.type = 'image' // eslint-disable-line no-param-reassign
       result.isArray = false // eslint-disable-line no-param-reassign
@@ -776,7 +871,9 @@ const ConditionsChecking = {
     if (result.type !== '') {
       return result
     }
-    const uploadDiv = document.querySelector(`div[id=fichier${fieldName}-upload]`)
+    const uploadDiv = document.querySelector(
+      `div[id=fichier${fieldName}-upload]`,
+    )
     const fileLink = document.querySelector(`a[data-id=${fieldName}]`)
     if (uploadDiv || fileLink) {
       result.type = 'file' // eslint-disable-line no-param-reassign
@@ -799,7 +896,7 @@ const ConditionsChecking = {
       type: '',
       isArray: true,
       nodes: [],
-      conditionIds: []
+      conditionIds: [],
     }
     result = this.findCheckbox(fieldName, result)
     result = this.findCheckboxTag(fieldName, result)
@@ -828,51 +925,58 @@ const ConditionsChecking = {
     this.conditionsCache.push({
       condition,
       node: element,
-      structuredConditions: {}
+      structuredConditions: {},
     })
 
     let parsingObject = {
       restOfCondition: condition,
       currentCondition: '',
-      operation: ''
+      operation: '',
     }
     while (parsingObject.restOfCondition.length > 0) {
       parsingObject = this.getFirstOperation(parsingObject)
       // check condition
       const indexForStructuredCondition = Object.keys(
-        this.conditionsCache[id].structuredConditions
+        this.conditionsCache[id].structuredConditions,
       ).length
       // save in cache
       const newCondition = { operation: parsingObject.operation }
-      this.conditionsCache[id].structuredConditions[indexForStructuredCondition] = newCondition
-      let structuredCondition = this.conditionsCache[id]
-        .structuredConditions[indexForStructuredCondition]
+      this.conditionsCache[id].structuredConditions[
+        indexForStructuredCondition
+      ] = newCondition
+      let structuredCondition =
+        this.conditionsCache[id].structuredConditions[
+          indexForStructuredCondition
+        ]
       if (parsingObject.currentCondition.length > 0) {
-        structuredCondition = this.addCondition(
-          parsingObject.currentCondition
-        )
+        structuredCondition = this.addCondition(parsingObject.currentCondition)
       } else {
         structuredCondition.leftPart = ''
         structuredCondition.rightPart = ''
         structuredCondition.typeOfCondition = ''
       }
       // activate trigger
-      if (typeof structuredCondition.leftPart !== 'undefined'
-        && structuredCondition.leftPart.length > 0) {
+      if (
+        typeof structuredCondition.leftPart !== 'undefined' &&
+        structuredCondition.leftPart.length > 0
+      ) {
         const fieldName = structuredCondition.leftPart.trim()
         this.registerFieldName(fieldName, id)
       }
       Object.keys(structuredCondition).forEach((key) => {
-        this.conditionsCache[id]
-          .structuredConditions[indexForStructuredCondition][key] = structuredCondition[key]
+        this.conditionsCache[id].structuredConditions[
+          indexForStructuredCondition
+        ][key] = structuredCondition[key]
       })
     }
   },
   init() {
     this.snapshotTagsDefaults()
-    document.querySelectorAll('div[data-conditionschecking]').forEach((element) => {
-      this.parseCondition(element)
-    })
+    document
+      .querySelectorAll('div[data-conditionschecking]')
+      .forEach((element) => {
+        this.parseCondition(element)
+      })
     // init conditions
     const elemsToClean = {}
     for (let index = 0; index < this.conditionsCache.length; index += 1) {
@@ -884,7 +988,7 @@ const ConditionsChecking = {
         this.emptyChildren(conditionData.node)
       }
     })
-  }
+  },
 }
 
 ConditionsChecking.init()
