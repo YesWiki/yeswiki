@@ -427,7 +427,8 @@ class TemplateEngine
                 'logo' => ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
                     ? $logo
                     : $this->urlFormatter->getBaseUrl() . '/' . $logo,
-                'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page']),
+                // false, like every other href handed to a template here: Twig escapes it
+                'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page'], null, false),
             ]);
         }
 
@@ -493,7 +494,7 @@ class TemplateEngine
 
         if ($part === 'navbar') {
             return $this->render('@core/layout/edit-chrome.twig', [
-                'href' => $this->urlFormatter->href('', 'admin/layout'),
+                'href' => $this->urlFormatter->href('', 'admin/layout', null, false),
                 'label' => _t('LAYOUT_EDIT_NAVBAR'),
             ]);
         }
@@ -506,8 +507,15 @@ class TemplateEngine
         // the *resolved* page, because a page may name a different banner for itself
         $tag = $this->container->get(LayoutService::class)->pageFor($roles[$part]);
 
+        // `incomingurl`, so saving comes back to the page you were reading rather than
+        // stranding you on `PageHeader` -- which is a page nobody reads, only edits. The
+        // wiki's own convention for this (EntryController, DeletepageHandler); EditHandler
+        // learned to honour it for pages at the same time as this.
         return $this->render('@core/layout/edit-chrome.twig', [
-            'href' => $this->urlFormatter->href('edit', $tag),
+            // `false`: href() HTML-escapes by default, and this value is then escaped AGAIN
+            // by Twig on its way into the attribute -- `&` came out as `&amp;amp;` and the
+            // link led nowhere. Twig does the one escape that is wanted.
+            'href' => $this->urlFormatter->href('edit', $tag, ['incomingurl' => getAbsoluteUrl()], false),
             'label' => _t('LAYOUT_EDIT_' . strtoupper($part)),
         ]);
     }
@@ -525,7 +533,7 @@ class TemplateEngine
             return $link;
         }
 
-        return $this->urlFormatter->href('', $link);
+        return $this->urlFormatter->href('', $link, null, false);
     }
 
     private function addTwigFilters(): void

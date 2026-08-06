@@ -3651,10 +3651,14 @@ ul.nav-tabs li.active a {
   position: relative;
 }
 
+/* `right: 1rem` is not a guess: it is `.yw-page-actions`' own right offset, so the banner
+   and footer pencils sit on the same vertical line as the floating action cluster. Both
+   regions are full-bleed (the pencil hangs off `#yw-header` / `#yw-footer`, never off the
+   centred `.container` inside them), which is what makes that line hold at any window width. */
 .yw-chrome-editable > .yw-chrome-edit {
   position: absolute;
   top: 4px;
-  right: 4px;
+  right: 1rem;
   z-index: 2;
 }
 

@@ -104,9 +104,11 @@
       {{ action('editbar')|raw }}
     </div>
 
-    <footer id="yw-footer">
-      <div class="container yw-chrome-editable">
-        {{ layout_edit('footer')|raw }}
+    <footer id="yw-footer" class="yw-chrome-editable">
+      {# the pencil hangs off the footer itself, not off the centred container: it lines up
+         with the floating action cluster, which is pinned to the viewport #}
+      {{ layout_edit('footer')|raw }}
+      <div class="container">
         {{ action('include page="' ~ layout_page('PageFooter') ~ '" class="footerpage" doubleclick="1"')|raw }}
       </div> <!-- /.container -->
     </footer><!-- /#yw-footer -->

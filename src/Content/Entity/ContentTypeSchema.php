@@ -201,6 +201,20 @@ class ContentTypeSchema
     }
 
     /**
+     * The whole declaration of a locked field, or null if the name is not locked.
+     *
+     * For comparing this definition against the copy of it the installer seeds -- which is
+     * the only way the two are kept in step, and they have drifted twice
+     * (SeededContentTypeFormsTest).
+     *
+     * @return array<string, string>|null
+     */
+    public static function lockedField(?string $contentType, ?string $fieldName): ?array
+    {
+        return self::LOCKED[(string)$contentType][(string)$fieldName] ?? null;
+    }
+
+    /**
      * The default field object for a locked field -- what a template gets when the
      * field is missing entirely.
      *

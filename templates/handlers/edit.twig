@@ -44,6 +44,15 @@
 
   {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
 
+  {# "come back to where I was" survives the POST: the form posts to the editor's own
+     address, so a parameter that only lived in the query string would be gone by the time
+     EditHandler redirects. This is what makes the banner/footer pencils a round trip rather
+     than a one-way ticket to a page nobody was reading. #}
+  {% set incomingUrl = request.request.incomingurl|default(request.get.incomingurl|default('')) %}
+  {% if incomingUrl is not empty %}
+    <input type="hidden" name="incomingurl" value="{{ incomingUrl }}"/>
+  {% endif %}
+
   {% if request.get.newpage is same as '1' and request.get.theme is not empty %}
     <input type="hidden" name="newpage" value="1"/>
     {% for key in [

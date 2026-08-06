@@ -18,6 +18,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
@@ -445,7 +446,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // bare-script handler: $this->services is the container, which exposes the current
         // request as a public property, not via a getRequest() helper (that's only on
         // YesWikiPerformable-derived actions/handlers)
-        $request = $this->getService(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        $request = $this->getService(CurrentRequest::class)->get();
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && !$isWikiHibernated) {
             $submit = $request->request->get('submit') ?: false;
@@ -521,9 +522,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $newBody
                     );
 
+                    // where to land once this is over: the page you came from if the link
+                    // that brought you here said so, this page otherwise
+                    $after = $this->incomingUrl() ?? $this->getService(UrlFormatter::class)->href(testUrlInIframe());
+
                     if ($unchanged) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
-                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
+                        $this->getService(Redirector::class)->redirect($after);
                     } else {
                         // add page (revisions)
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['parent']) ? $this->getService(PageContext::class)->getPage()['parent'] : '');
@@ -535,11 +540,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                             TagsManager::keywordsOf(['body' => $newBody])
                         );
 
-                        // forward
+                        // forward. A comment still goes back to the page it comments on --
+                        // that is not a "where did I come from" question, it is where the
+                        // thing just saved actually lives.
                         if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
                             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
-                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
+                            $this->getService(Redirector::class)->redirect($after);
                         }
                     }
                 // (unreachable: redirect() above always throws)
@@ -585,5 +592,33 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         } else {
             echo $output;
         }
+    }
+
+    /**
+     * Where the link that opened this editor asked to return to, if it may be trusted.
+     *
+     * `incomingurl` is how the rest of the wiki already says "come back here afterwards"
+     * (EntryController, DeletepageHandler). Editing a *page* ignored it, which is what made
+     * the banner and footer pencils a one-way trip: you edit `PageHeader` from an article and
+     * land on `PageHeader`, a page nobody was reading.
+     *
+     * Checked with `isInternal()` before it is used, and that check is the whole point: a
+     * query parameter is whatever the last person to send the link typed, so redirecting to
+     * it unchecked turns every edit URL into an open redirect.
+     *
+     * Read from POST as well as GET: the form posts to the editor's own address, so a
+     * parameter that only lived in the query string would be gone by the time it is needed
+     * (templates/handlers/edit.twig carries it through as a hidden field).
+     */
+    private function incomingUrl(): ?string
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+        $incoming = $request->request->get('incomingurl') ?? $request->query->get('incomingurl');
+
+        if (!is_string($incoming) || trim($incoming) === '') {
+            return null;
+        }
+
+        return $this->getService(UrlFormatter::class)->isInternal($incoming) ? trim($incoming) : null;
     }
 }
