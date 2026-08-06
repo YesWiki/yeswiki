@@ -111,6 +111,9 @@ mkdir -p javascripts/vendor/ace &&
 	copy_js node_modules/ace-builds/src-min-noconflict/mode-html.js javascripts/vendor/ace/mode-html.js &&
 	copy_js node_modules/ace-builds/src-min-noconflict/worker-html.js javascripts/vendor/ace/worker-html.js &&
 	copy_js node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace/mode-markdown.js &&
+	copy_js node_modules/ace-builds/src-min-noconflict/mode-css.js javascripts/vendor/ace/mode-css.js &&
+	copy_js node_modules/ace-builds/src-min-noconflict/worker-css.js javascripts/vendor/ace/worker-css.js &&
+	copy_js node_modules/ace-builds/src-min-noconflict/mode-twig.js javascripts/vendor/ace/mode-twig.js &&
 	copy_js node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace/ext-language_tools.js
 # This one need to be in the same folder than aceditor otherwise it's not working
 copy_js node_modules/ace-builds/src-min-noconflict/ext-searchbox.js javascripts/ext-searchbox.js
