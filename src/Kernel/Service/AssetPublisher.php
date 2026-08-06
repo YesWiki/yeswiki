@@ -104,7 +104,11 @@ class AssetPublisher
         // A page request leaves `?PageName` or `?a=b` in there too, so only a value that goes
         // on to resolve to a real asset is used; anything else falls through untouched and the
         // wiki handles it exactly as before.
-        if ($uriPath === '' || $uriPath === 'index.php') {
+        // `basename`, not an exact match: where the vhost's SCRIPT_NAME is the shared root's
+        // `/index.php` while the request went to `/instance/index.php`, the strip above has
+        // nothing to match and the instance prefix survives -- so the path is
+        // `ecto/index.php`, not `index.php`, and an exact test misses it.
+        if ($uriPath === '' || basename($uriPath) === 'index.php') {
             $fromQuery = ltrim(rawurldecode(explode('&', (string)($_SERVER['QUERY_STRING'] ?? ''), 2)[0]), '/');
             if ($fromQuery !== '' && !str_contains($fromQuery, '=')) {
                 $uriPath = $fromQuery;

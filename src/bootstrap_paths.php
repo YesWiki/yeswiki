@@ -55,8 +55,14 @@ if (YESWIKI_INSTANCE_DIR !== YESWIKI_SOURCE_DIR) {
     foreach (['src/assets/icons.svg'] as $yeswikiBareAsset) {
         $yeswikiBareSource = YESWIKI_SOURCE_DIR . '/' . $yeswikiBareAsset;
         $yeswikiBareTarget = YESWIKI_INSTANCE_DIR . '/' . $yeswikiBareAsset;
+        // `!==`, not `>=`: the copy is stamped with the source's own mtime just below, so
+        // equal means "this is the copy of exactly this source" and anything else means
+        // recopy. `>=` skipped whenever the source was OLDER -- a rollback to a previous
+        // release, an rsync or tar that preserves times, a restore from backup -- and left
+        // the instance serving a sprite from a version it is no longer running, with no way
+        // to notice: a missing icon renders as nothing at all.
         if (!is_file($yeswikiBareSource)
-            || (is_file($yeswikiBareTarget) && filemtime($yeswikiBareTarget) >= filemtime($yeswikiBareSource))) {
+            || (is_file($yeswikiBareTarget) && filemtime($yeswikiBareTarget) === filemtime($yeswikiBareSource))) {
             continue;
         }
         if (!is_dir(\dirname($yeswikiBareTarget))) {

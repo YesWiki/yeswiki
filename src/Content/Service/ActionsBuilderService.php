@@ -28,8 +28,15 @@ class ActionsBuilderService
         }
 
         $data = formAndListIds();
-        // Loads various Yaml file
-        $docFiles = glob('docs/actions/*.yaml');
+        // Loads various Yaml file.
+        //
+        // The core one is SOURCE-relative, like the line under it and like the lang half of
+        // the same directory (YesWikiRuntime registers `YESWIKI_SOURCE_DIR . '/docs/actions/'`).
+        // It was cwd-relative, which is the instance directory on a farm -- and an instance
+        // docroot holds no `docs/`, so the glob found nothing and the components palette came
+        // up **empty** on every farm instance while working perfectly on every standalone
+        // install. `custom/` below stays cwd-relative: that one really is the instance's.
+        $docFiles = glob(YESWIKI_SOURCE_DIR . '/docs/actions/*.yaml');
         $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/extensions/*/actions/documentation.yaml');
         $customDocFiles = glob('custom/actions/documentation.yaml');
         $docFiles = array_merge($docFiles, $extensionDocFiles);
