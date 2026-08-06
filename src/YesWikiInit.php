@@ -484,7 +484,7 @@ class Init
             'BAZ_ENVOI_MAIL_ADMIN' => false,
             'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
             // liste_accordeon.tpl.html and its sibling legacy display modes (agenda, blog,
-            // carousel, gogocarto, tableau, timeline, trombinoscope, etc.) are NOT
+            // carousel, tableau, timeline, trombinoscope, etc.) are NOT
             // dead: the actions-builder wizard's entrylist/bazaragenda/bazartableau/...
             // entries (docs/actions/entrylist.yaml and friends) still default-select these
             // exact template names, so they're relocated as-is rather than dropped.

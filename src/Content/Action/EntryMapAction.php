@@ -50,8 +50,12 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction
         $template = (!$dynamic) ?
             ($arg['template'] ?? 'map.twig') :
             ($arg['template'] ?? 'map');
-        if (strpos($template, 'gogomap') !== false) {
-            $template = 'gogocarto';
+        // `gogomap` and `gogocarto` named the GoGoCartoJs map, whose library is no longer a
+        // dependency. Both still route here through BAZARCARTO_TEMPLATES, so a page body that
+        // asks for one keeps getting a map -- the maintained one -- rather than a missing
+        // template. Page bodies are user data: they are not rewritten, they are answered.
+        if (strpos($template, 'gogomap') !== false || strpos($template, 'gogocarto') !== false) {
+            $template = 'map';
         }
         $spider = (!$dynamic) ?
             ($arg['spider'] ?? 'false') :

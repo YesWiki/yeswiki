@@ -192,7 +192,7 @@ foreach ($phpFiles as $file) {
 //
 // **Counted in PHP and Twig as well as in .js**, and that is the whole point of this counter.
 // It used to look at javascripts/** only, so it read 0 while four initialisers were broken:
-// BazarListeAction's leaflet map, admin-content-action.twig's table, gogocarto.twig and the
+// BazarListeAction's leaflet map, admin-content-action.twig's table and the
 // mermaid rule in ContentAssetScanner all emit their JavaScript from a PHP string or a Twig
 // template, where no linter and no earlier version of this script could see it. The wave-two
 // spec called that gap out; this closes it.

@@ -96,7 +96,7 @@
     },
     { "name": "every handler", "why": "see handlerPolicy above" },
     {
-      "name": "bazarcard, bazarcalendar, bazaragenda, bazarannuaire, bazartimeline, bazarcarousel, bazarlistephotobox, bazarlisteliens, bazarblog, bazargogocarto, bazartableau, bazarmapandtable",
+      "name": "bazarcard, bazarcalendar, bazaragenda, bazarannuaire, bazartimeline, bazarcarousel, bazarlistephotobox, bazarlisteliens, bazarblog, bazartableau, bazarmapandtable",
       "why": "actions-builder PRESET ids in docs/actions/entrylist.yaml, not actions. Every one of them emits {{entrylist template=\"...\"}}; they never appear in a page body. They carry YAML anchors and AB_* translation keys, so renaming them is churn with real breakage risk and no user-visible payoff"
     },
     {

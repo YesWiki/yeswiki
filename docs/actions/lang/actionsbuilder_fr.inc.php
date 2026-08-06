@@ -179,12 +179,6 @@ return [
     'AB_bazarblog_show_author_label' => "Afficher l'auteur, l'autrice",
     'AB_bazarblog_show_date_label' => 'Afficher la date de création',
     'AB_bazarblog_date_creation_fiche_label' => 'Champ pour la date de publication',
-    'AB_bazargogocarto_label' => 'Cartographie 2 - GoGocarto',
-    'AB_bazargogocarto_description' => 'Les fiches seront sous forme de marqueur.',
-    'AB_bazargogocarto_hint' => "Le champ géolocalisation doit être présent dans votre formulaire. \n" .
-        "Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs",
-    'AB_bazargogocarto_height_label' => 'Hauteur de la carte',
-    'AB_bazargogocarto_width_label' => 'Largeur de la carte',
     'AB_bazar_action_label' => 'Afficher un formulaire de création de fiche',
     'AB_bazar_action_description' => "Permet d'afficher le formulaire pour créer une fiche.",
     'AB_bazar_action_redirecturl_label' => "Nom de page de ce wiki ou URL complet à afficher après création d'une fiche",

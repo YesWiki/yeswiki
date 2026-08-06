@@ -50,7 +50,6 @@ actions:
         showExceptFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
@@ -68,7 +67,6 @@ actions:
         showOnlyFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
           - entrylist
           - bazarcalendar
           - bazartableau
@@ -81,7 +79,6 @@ actions:
         showOnlyFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
           - entrylist
           - bazarcalendar
           - bazartimeline
@@ -106,7 +103,6 @@ actions:
         showOnlyFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
           - entrylist
           - bazarcalendar
           - bazartimeline
@@ -119,7 +115,6 @@ actions:
         showOnlyFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
           - entrylist
           - bazarcalendar
           - bazartableau
@@ -166,7 +161,6 @@ actions:
         showExceptFor:
           - entrymap
           - bazarmapandtable
-          - bazargogocarto
 
   # -------------------------------------
   # Champs Communs concernant les filtres
@@ -207,7 +201,6 @@ actions:
           left: _t(AB_LEFT)
         showif: facets
         showExceptFor:
-          - bazargogocarto
       filtercolsize:
         label: _t(AB_bazar_commons2_filtercolsize_label)
         advanced: true
@@ -239,7 +232,6 @@ actions:
         default: true
         showif: facets
         showExceptFor:
-          - bazargogocarto
       resetfiltersbutton:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
@@ -249,7 +241,6 @@ actions:
         uncheckedvalue: '0'
         showif: facets
         showExceptFor:
-          - bazargogocarto
       field:
         intro: <h3>_t(AB_bazar_sort)</h3>
         label: _t(AB_bazar_facettes_field_label)
@@ -262,7 +253,6 @@ actions:
         advanced: true
         showExceptFor:
           - entrymap
-          - bazargogocarto
           - bazarannuaire
           - bazarcalendar
           - bazarcarousel
@@ -276,7 +266,6 @@ actions:
           desc: _t(AB_bazar_commons2_ordre_option_desc)
         showExceptFor:
           - entrymap
-          - bazargogocarto
           - bazarannuaire
           - bazarcalendar
       sortfields:
@@ -297,7 +286,6 @@ actions:
             type: text
         showExceptFor:
           - entrymap
-          - bazargogocarto
           - bazarannuaire
           - bazarcalendar
           - bazarcarousel
@@ -772,38 +760,6 @@ actions:
               - updated_at
             label: _t(AB_bazarblog_date_creation_fiche_label)
             default: ''
-
-  bazargogocarto:
-    label: _t(AB_bazargogocarto_label)
-    description: _t(AB_bazargogocarto_description)
-    hint: _t(AB_bazargogocarto_hint)
-    width: 35%
-    properties:
-      template:
-        value: gogocarto
-      height:
-        label: _t(AB_bazargogocarto_height_label)
-        type: text
-        default: 300px
-      width:
-        advanced: true
-        label: _t(AB_bazargogocarto_width_label)
-        hint: 500px, 100%...
-        type: text
-        default: 100%
-      tilelayer:
-        label: _t(AB_bazarcarto_provider_label)
-        required: true
-        type: list
-        default: cartodb
-        options:
-          - Stadia Bright
-          - Stadia Smooth
-          - cartodb
-          - osmfr
-          - lyrk
-          - stamen
-          - stamenWaterColor
 
   bazartableau:
     label: _t(AB_bazartableau_label)

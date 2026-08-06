@@ -36,6 +36,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
         return 'entrylist';
     }
 
+    // `gogomap` and `gogocarto` are retired names kept here on purpose: the GoGoCartoJs
+    // library is gone, but page bodies still ask for them, and they have to keep reaching
+    // the map action -- which answers them with `map` -- rather than falling through to a
+    // plain list and looking for a template that no longer exists.
     protected const BAZARCARTO_TEMPLATES = ['map', 'gogomap', 'gogocarto', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
     protected const BAZARTABLE_TEMPLATES = ['table', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
     protected const CALENDAR_TEMPLATES = ['calendar']; // liste des templates sans .twig ni .tpl.html
@@ -409,7 +413,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
         $data['resultsInfo'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['entries']) . ' ' . (count($data['entries']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
         $data['params'] = $this->arguments;
         $data['pager_links'] = '';
-        $data['filters'] = $filters; // in case some template need it, like gogocarto
+        $data['filters'] = $filters; // in case some template need it
         $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {

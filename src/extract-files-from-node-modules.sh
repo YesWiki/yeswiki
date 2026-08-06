@@ -41,11 +41,6 @@ mkdir -p javascripts/vendor/leaflet-draw && copy_js node_modules/leaflet-draw/di
 mkdir -p styles/vendor/leaflet-draw && copy_css node_modules/leaflet-draw/dist/leaflet.draw.css styles/vendor/leaflet-draw/leaflet.draw.css
 mkdir -p styles/vendor/leaflet-draw/images && cp -f -r node_modules/leaflet-draw/dist/images/* styles/vendor/leaflet-draw/images
 
-# GoGoCartoJs
-mkdir -p javascripts/vendor/gogocarto && copy_js node_modules/gogocarto-js/dist/gogocarto.js javascripts/vendor/gogocarto/gogocarto.min.js
-mkdir -p styles/vendor/gogocarto && copy_css node_modules/gogocarto-js/dist/gogocarto.css styles/vendor/gogocarto/gogocarto.min.css
-cp -f -r node_modules/gogocarto-js/dist/images styles/vendor/gogocarto
-cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 
 # Vditor (WYSIWYG/Markdown editor, replaces summernote). The main bundle/CSS sit directly
 # under vditor/, matching this script's usual per-library layout; lute.min.js/i18n/icons stay
@@ -135,12 +130,19 @@ mkdir -p javascripts/vendor/iframe-resizer &&
 # Bounded now, and non-fatal: a build that cannot reach the host keeps whatever copy is
 # already vendored and says so, rather than truncating the file to nothing (`>` opens the
 # target before curl runs, so a failed fetch used to leave an empty file behind).
+#
+# `pipefail` is what makes that true, and it is not decoration. A shell pipeline reports the
+# exit status of its LAST command, so `curl … | sed > tmp` succeeded whenever `sed` did --
+# which is always, including when curl died mid-download. `-s tmp` then found a non-empty
+# file and moved it into place: a 15929-byte prefix of a 332965-byte library, syntactically
+# broken, vendored, and silent. Setting it around this one fetch rather than for the whole
+# script keeps the `cp -f -r` calls above free to fail the way they always have.
 mkdir -p javascripts/vendor/opening_hours
 opening_hours_target=javascripts/vendor/opening_hours/opening_hours.js
-if curl -sS --connect-timeout 5 --max-time 30 \
+if (set -o pipefail; curl -sS --connect-timeout 5 --max-time 30 \
 		https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js \
 		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
-		> "${opening_hours_target}.tmp" && [ -s "${opening_hours_target}.tmp" ]; then
+		> "${opening_hours_target}.tmp") && [ -s "${opening_hours_target}.tmp" ]; then
 	mv "${opening_hours_target}.tmp" "${opening_hours_target}"
 else
 	rm -f "${opening_hours_target}.tmp"
