@@ -76,6 +76,9 @@ function ywInit(init) {
 // Elements arriving in a swap are new objects, so they are initialised; <body> survives a
 // boosted navigation, so body-level setup correctly runs once per document rather than once
 // per navigation.
+// This is the file's public surface: a global other scripts call, declared in
+// eslint.config.mjs. ESLint sees each file alone, so the definition reads as unused.
+// eslint-disable-next-line no-unused-vars
 function ywInitEach(selector, init) {
   const initialised = new WeakSet()
 

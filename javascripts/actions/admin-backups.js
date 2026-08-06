@@ -60,7 +60,7 @@ const app = createApp({
           (pError) => {
             // on error
             this.message = _t(
-              `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.messageClass = { alert: true, 'alert-danger': true }
             this.selectedArchivesToDelete = []
@@ -108,7 +108,7 @@ const app = createApp({
         })
     },
     async deleteSelectedArchives() {
-      if (this.selectedArchivesToDelete.length == 0) {
+      if (this.selectedArchivesToDelete.length === 0) {
         toastMessage(
           _t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'),
           2000,
@@ -171,8 +171,6 @@ const app = createApp({
       }
     },
     async fetch(url, options = {}) {
-      const cThis = this
-
       return await fetch(url, options).then(async (pResponse) => {
         if (!pResponse.ok) {
           const cJSON = await pResponse.json()
@@ -208,7 +206,7 @@ const app = createApp({
     toggleSelectedArchive(filename) {
       if (this.selectedArchivesToDelete.includes(filename)) {
         this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(
-          (e) => e != filename,
+          (e) => e !== filename,
         )
       } else {
         this.selectedArchivesToDelete.push(filename)
@@ -264,10 +262,16 @@ const app = createApp({
       return await this.fetch(wiki.url('?api/archives/archivingStatus'))
         .then(
           (data) => {
-            if (typeof data != 'object' || !data.hasOwnProperty('canArchive')) {
+            if (
+              typeof data != 'object' ||
+              !Object.prototype.hasOwnProperty.call(data, 'canArchive')
+            ) {
               this.endStartingUpdateError()
             } else if (data.canArchive) {
-              if (data.hasOwnProperty('dB') && !data.dB) {
+              if (
+                Object.prototype.hasOwnProperty.call(data, 'dB') &&
+                !data.dB
+              ) {
                 console.log(
                   _t('ADMIN_BACKUPS_START_BACKUP_NOT_DB', {
                     helpBaseUrl: wiki.url('doc'),
@@ -275,33 +279,49 @@ const app = createApp({
                 )
               }
               this.callAsync =
-                !data.hasOwnProperty('callAsync') || data.callAsync
+                !Object.prototype.hasOwnProperty.call(data, 'callAsync') ||
+                data.callAsync
               return this.startArchiveNextStep()
-            } else if (data.hasOwnProperty('archiving') && data.archiving) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'archiving') &&
+              data.archiving
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING',
                 'info',
               )
-            } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'hibernated') &&
+              data.hibernated
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE',
                 'info',
               )
             } else if (
-              data.hasOwnProperty('privatePathWritable') &&
+              Object.prototype.hasOwnProperty.call(
+                data,
+                'privatePathWritable',
+              ) &&
               !data.privatePathWritable
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',
                 'danger',
               )
-            } else if (data.hasOwnProperty('canExec') && !data.canExec) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'canExec') &&
+              !data.canExec
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',
                 'info',
               )
             } else if (
-              data.hasOwnProperty('notAvailableOnTheInternet') &&
+              Object.prototype.hasOwnProperty.call(
+                data,
+                'notAvailableOnTheInternet',
+              ) &&
               !data.notAvailableOnTheInternet
             ) {
               this.endStartingUpdateErrorWithT(
@@ -309,14 +329,17 @@ const app = createApp({
                 'danger',
               )
             } else if (
-              data.hasOwnProperty('enoughSpace') &&
+              Object.prototype.hasOwnProperty.call(data, 'enoughSpace') &&
               !data.enoughSpace
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE',
                 'warning',
               )
-            } else if (data.hasOwnProperty('canArchive') && !data.canArchive) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'canArchive') &&
+              !data.canArchive
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_CANNOT_ARCHIVE',
                 'danger',
@@ -386,14 +409,14 @@ const app = createApp({
           console.log(pError)
           this.endStartingUpdateError(
             _t('ADMIN_BACKUPS_START_BACKUP_ERROR') +
-              (pError.message.trim() != '' ? ` : ${pError}` : ''),
+              (pError.message.trim() !== '' ? ` : ${pError}` : ''),
           )
         },
       )
     },
     endStartingUpdateError(message = '', className = 'danger') {
       this.archiveMessage =
-        message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
+        message.length === 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
       this.archiveMessageClass = {
         alert: true,
         [`alert-${className.length > 0 ? className : 'danger'}`]: true,
@@ -418,7 +441,7 @@ const app = createApp({
         action: 'futureDeletedArchives',
       }).then(
         (data) => {
-          if (data.files.length == 0) {
+          if (data.files.length === 0) {
             this.canForceDelete = true
             this.askConfirmationToDelete = false
             return this.startArchiveNextStep()
@@ -438,7 +461,7 @@ const app = createApp({
           }).replace('\n', '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         },
-        (error) => {
+        () => {
           // if error
           this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR')
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
@@ -451,7 +474,7 @@ const app = createApp({
       this.canForceDelete = !this.canForceDelete
     },
     async stopArchive() {
-      if (this.archiving && this.currentArchiveUid.length == 0) {
+      if (this.archiving && this.currentArchiveUid.length === 0) {
         setTimeout(() => {
           this.stopArchive()
         }, 300)
@@ -463,14 +486,14 @@ const app = createApp({
         uid: this.currentArchiveUid,
       })
         .then(
-          (data) => {
+          () => {
             this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
             this.archiveMessageClass = { alert: true, 'alert-warning': true }
             setTimeout(this.checkStopped, 500)
           },
           (pError) => {
             this.archiveMessage = _t(
-              `ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.archiveMessageClass = { alert: true, 'alert-danger': true }
             this.stoppingArchive = false
@@ -588,7 +611,7 @@ const app = createApp({
             (pError) => {
               this.endUpdatingStatus(
                 _t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') +
-                  (pError.message.trim() != '' ? ` : ${pError}` : ''),
+                  (pError.message.trim() !== '' ? ` : ${pError}` : ''),
                 'danger',
               )
               setTimeout(this.loadArchives, 3000)
@@ -612,7 +635,7 @@ const app = createApp({
       }
     },
     formatFileSize(bytes, decimalPoint) {
-      if (bytes == 0) {
+      if (Number(bytes) === 0) {
         return '0'
       }
       const k = 1024
@@ -645,11 +668,11 @@ const app = createApp({
           (data) => {
             if (
               typeof this.packageName != 'string' ||
-              this.packageName.length == 0 ||
+              this.packageName.length === 0 ||
               typeof data != 'object' ||
-              !data.hasOwnProperty('token') ||
+              !Object.prototype.hasOwnProperty.call(data, 'token') ||
               typeof data.token != 'string' ||
-              data.token.length == 0
+              data.token.length === 0
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE',
@@ -665,7 +688,7 @@ const app = createApp({
           },
           (pError) => {
             this.endStartingUpdateErrorWithT(
-              `ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`,
+              `ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
             this.canForceUpdate = false
           },
@@ -699,7 +722,7 @@ const app = createApp({
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
     }
-    container.addEventListener('dblclick', (e) => false)
+    container.addEventListener('dblclick', () => false)
     if (this.isPreupdate) {
       this.startArchive()
     } else {

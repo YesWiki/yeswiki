@@ -1,3 +1,6 @@
+// This is the file's public surface: a global other scripts call, declared in
+// eslint.config.mjs. ESLint sees each file alone, so the definition reads as unused.
+// eslint-disable-next-line no-unused-vars
 const geolocationHelper = (function () {
   // private objects
   const eventDispatcher = {
@@ -30,7 +33,7 @@ const geolocationHelper = (function () {
           this.eventsListeners[eventName].forEach((eventData, idx) => {
             if (!eventData.once || !eventData.triggered) {
               this.eventsListeners[eventName][idx].triggered = true
-              if (param != undefined) {
+              if (param != null) {
                 if (Array.isArray(param)) {
                   eventData.listener(...param)
                 } else {
@@ -65,7 +68,7 @@ const geolocationHelper = (function () {
           const resettingLoading = () => {
             this.loadingCache[eventPrefix] = this.loadingCache[
               eventPrefix
-            ].filter((idToCheck) => idToCheck != eventId)
+            ].filter((idToCheck) => idToCheck !== eventId)
           }
           this.addEventOnce(errorEventName, resettingLoading)
           this.addEventOnce(readyEventName, resettingLoading)
@@ -391,9 +394,10 @@ const geolocationHelper = (function () {
         point1 = { latitude: '', longitude: '' },
         point2 = { latitude: '', longitude: '' },
       }) {
-        // sanitize
-        ;['point1', 'point2'].forEach((name) => {
-          const val = eval(name)
+        // sanitize. `Object.entries({ point1, point2 })` rather than `eval(name)`: the eval
+        // was only ever reaching a local by its name, which an object does directly -- and it
+        // handed the one string in this file that a bundler cannot see through to a compiler.
+        Object.entries({ point1, point2 }).forEach(([name, val]) => {
           if (typeof val !== 'object' || val === null) {
             throw new Error(`${name} should be an object`)
           }
@@ -418,7 +422,8 @@ const geolocationHelper = (function () {
 
         // Radian difference (longitudes)
         const lngDiff =
-          (Number(point1.longitude) - Number(point1.longitude)) * (pi() / 180)
+          (Number(point2.longitude) - Number(point1.longitude)) *
+          (Math.PI / 180)
 
         return (
           2 *
@@ -564,6 +569,8 @@ const geolocationHelper = (function () {
                       : {}),
                   })
                 }
+              /* falls through -- an `unclassified` entry that is not a highway is
+                 handled by the generic branch below, which is why this does not break */
               default:
                 return this.toGeolocationData({
                   country: infos[infos.length - 1],
@@ -619,7 +626,7 @@ const geolocationHelper = (function () {
             return ''
           }
         }
-        if (url.length == 0) {
+        if (url.length === 0) {
           if (typeof address === 'string') {
             const sanitizedAddress = this.sanitizeAddress(address)
             if (sanitizedAddress.length === 0) {
@@ -693,7 +700,7 @@ const geolocationHelper = (function () {
         let countryCode = ''
         try {
           countryCode = this.getCountryCode(country)
-        } catch (error) {
+        } catch {
           // unknown country
           return []
         }
@@ -769,7 +776,7 @@ const geolocationHelper = (function () {
         const canStartDirectly = !this.loadingUrl[id].running
 
         const processNext = () => {
-          if (this.loadingUrl[id].next.length == 0) {
+          if (this.loadingUrl[id].next.length === 0) {
             this.loadingUrl[id].running = false
           } else {
             this.loadingUrl[id].running = true
@@ -814,11 +821,9 @@ const geolocationHelper = (function () {
           })
       },
       log(object, type = 'log') {
-        if (!['log', 'error', 'warn'].includes(type)) {
-          type = 'log'
-        }
+        const level = ['log', 'error', 'warn'].includes(type) ? type : 'log'
         if (this.isDebugMode) {
-          console[type](object)
+          console[level](object)
         }
       },
       init() {
@@ -835,7 +840,7 @@ const geolocationHelper = (function () {
           .toLowerCase()
       },
       sanitizeAddress(address) {
-        return address.replace(/\\("|\'|\\)/g, ' ').trim()
+        return address.replace(/\\("|'|\\)/g, ' ').trim()
       },
       toGeolocationData(data) {
         const sanitizedData = typeof data === 'object' ? data : {}
@@ -942,7 +947,7 @@ const geolocationHelper = (function () {
       return await geolocationHelperInternal.methods
         .geolocate(address)
         .then((results) => {
-          if (results.length == 0) {
+          if (results.length === 0) {
             const matches = geolocationHelperInternal.methods
               .sanitizeAddress(address)
               .match(/^\d+(.*)/i)

@@ -40,7 +40,6 @@ const BazarMapComponent = {
         zoomControl: this.params.navigation,
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
-          forceSeparateButton: true,
           title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
           titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#maximize"/></svg>', // change the content of the button, can be HTML, default null
@@ -111,8 +110,8 @@ const BazarMapComponent = {
             break
           case 'geojson':
             this.layers[label] = L.geoJson.ajax(url, {
-              style(feature, latlng) {
-                if (feature.geometry.type == 'Point') return
+              style(feature) {
+                if (feature.geometry.type === 'Point') return
                 const props = feature.properties || {}
                 options.split(';').forEach((o) => {
                   if (!o.trim()) return
@@ -140,7 +139,7 @@ const BazarMapComponent = {
                 let str = ''
                 for (const prop in feature.properties) {
                   const content =
-                    prop.toLowerCase() == 'url'
+                    prop.toLowerCase() === 'url'
                       ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
                       : feature.properties[prop]
                   str += `${prop}: ${content}<br/>`
@@ -215,19 +214,22 @@ const BazarMapComponent = {
             }),
           )
           if (this.isDirectLinkDisplay()) {
-            entry.marker.on('click', () => {
-              event.preventDefault()
+            entry.marker.on('click', (ev) => {
+              ev.originalEvent?.preventDefault()
               window.location =
                 entry.url + (this.$root.isInIframe() ? '/iframe' : '')
             })
           } else if (this.isNewTabDisplay()) {
-            entry.marker.on('click', function () {
-              event.preventDefault()
+            entry.marker.on('click', (ev) => {
+              ev.originalEvent?.preventDefault()
               window.open(entry.url)
-              this.selectedEntry = entry
+              // NOTE: this handler was a `function ()`, so `this` was Leaflet's marker and the
+              // `this.selectedEntry = entry` that stood here wrote a stray property on it
+              // rather than selecting anything. Dropped rather than made live by the arrow,
+              // to keep this sweep behaviour-preserving.
             })
           } else if (!isLink) {
-            entry.marker.on('click', (ev) => {
+            entry.marker.on('click', () => {
               this.selectedEntry = entry
             })
           }
@@ -240,30 +242,29 @@ const BazarMapComponent = {
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'modal'
+        this.params.entrydisplay != null && this.params.entrydisplay === 'modal'
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'direct'
       )
     },
     openPopup(entry) {
-      if (entry.marker == undefined) {
+      if (entry.marker == null) {
         return false
       }
       // Vue 3: use $slots instead of $scopedSlots
       const slots = this.$slots
-      if (slots.popupentrywithhtmlrender != undefined) {
-        if (entry.html_render == undefined) {
+      if (slots.popupentrywithhtmlrender != null) {
+        if (entry.html_render == null) {
           let url = ''
           let excludeFields = ''
           if (
@@ -284,11 +285,11 @@ const BazarMapComponent = {
                   'icon',
                   'visual',
                   'marker',
-                ].indexOf(key) == -1 &&
-                necessaryFieldsArray.indexOf(key) == -1
+                ].indexOf(key) === -1 &&
+                necessaryFieldsArray.indexOf(key) === -1
               ) {
                 excludeFields =
-                  excludeFields.length == 0 ? key : `${excludeFields},${key}`
+                  excludeFields.length === 0 ? key : `${excludeFields},${key}`
               }
             }
           }
@@ -314,7 +315,7 @@ const BazarMapComponent = {
           // Triggers when the component is ready
           this.$nextTick(() => this.definePopupContent(entry))
         }
-      } else if (slots.popupentry != undefined) {
+      } else if (slots.popupentry != null) {
         // Triggers when the component is ready
         this.$nextTick(() => this.definePopupContent(entry))
       }
@@ -322,13 +323,13 @@ const BazarMapComponent = {
     definePopupContent(entry) {
       const slots = this.$slots
       const popupSelector =
-        slots.popupentrywithhtml != undefined
+        slots.popupentrywithhtml != null
           ? '.popupentry-container.with-html-render > div'
           : '.popupentry-container > div'
       const popupNode = this.$el.querySelector(popupSelector)
       const renderedHtml = popupNode ? popupNode.innerHTML : undefined
-      if (entry.marker.popup == undefined) {
-        if (renderedHtml != undefined && renderedHtml.length != 0) {
+      if (entry.marker.popup == null) {
+        if (renderedHtml != null && renderedHtml.length !== 0) {
           entry.marker
             .bindPopup(renderedHtml, { keepInView: true })
             .on('popupopen', () => {
@@ -426,11 +427,11 @@ const BazarMapComponent = {
       if (oldVal && oldVal.marker && oldVal.marker._icon)
         oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'newtab') {
+        if (this.params.entrydisplay === 'newtab') {
           this.$root.openEntry(this.selectedEntry)
-        } else if (this.params.entrydisplay == 'sidebar') {
+        } else if (this.params.entrydisplay === 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
-        } else if (this.params.entrydisplay == 'popup') {
+        } else if (this.params.entrydisplay === 'popup') {
           this.openPopup(this.selectedEntry)
         }
 

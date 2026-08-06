@@ -1,3 +1,6 @@
+// This is the file's public surface: a global other scripts call, declared in
+// eslint.config.mjs. ESLint sees each file alone, so the definition reads as unused.
+// eslint-disable-next-line no-unused-vars
 function _t(message, replacements = {}) {
   let translation =
     typeof wiki !== 'undefined' && wiki.lang !== undefined

@@ -24,15 +24,15 @@ export function parseSearchParams(pParams) {
     const vValue = vParams.get(cKey)
 
     if (
-      cKey == 'q' ||
-      cKey == 'keywords'
+      cKey === 'q' ||
+      cKey === 'keywords'
     ) // keywords supports for clarity (q parameter is confusing with query parameter)
     {
       if (vValue && vValue.trim() !== '')
         vParseds.keywords = decodeURIComponent(vValue) // privilegiate use of "keywords"
-    } else if (cKey == 'field' || cKey == 'order') {
+    } else if (cKey === 'field' || cKey === 'order') {
       vParseds[cKey] = vValue
-    } else if (cKey == 'query') {
+    } else if (cKey === 'query') {
       if (vValue && vValue.trim() !== '')
         vParseds[cKey] = decodeURIComponent(vValue)
           .split('|')
@@ -60,7 +60,6 @@ export function parseSearchParams(pParams) {
  * @return the concatenated URL parameters as <string> or <object>
  */
 
-/* eslint-disable no-param-reassign */
 /**
  * Deep-merge plain objects/arrays into pTarget (the jQuery $.extend(true, …) shape
  * this file historically relied on — ticket 26 removed the last jQuery usage).
@@ -90,7 +89,6 @@ export function deepMergeParams(pTarget, ...pSources) {
   })
   return pTarget
 }
-/* eslint-enable no-param-reassign */
 
 /**
  * Serialize a (possibly nested) parameters object to an URL query string with
@@ -185,7 +183,7 @@ export function mergeSearchParams(
       ].join('|')
     }
 
-    if (vQuery.trim() != '') vMerged.query = vQuery
+    if (vQuery.trim() !== '') vMerged.query = vQuery
   }
 
   // Merge keywords parameter
@@ -198,17 +196,17 @@ export function mergeSearchParams(
     vKeywords = vParamsObject2.keywords
   }
 
-  if (vKeywords != undefined && vKeywords.trim() != '') {
+  if (vKeywords != null && vKeywords.trim() !== '') {
     // URI encode the keywords
 
     // Remove duplicates and rebuild the query string
 
     vKeywords = [...new Set(vKeywords.split('|'))].join('|')
 
-    if (vKeywords.trim() != '') vMerged.keywords = vKeywords
+    if (vKeywords.trim() !== '') vMerged.keywords = vKeywords
   }
 
-  if (pOptions.returnMode == 'string') return serializeSearchParams(vMerged)
+  if (pOptions.returnMode === 'string') return serializeSearchParams(vMerged)
   return vMerged
 }
 
@@ -229,13 +227,13 @@ export function updateHash(
   const vCurrentParams = {}
   let vMergedParams
 
-  let vSearch = pKeywords != undefined ? pKeywords.trim() : ''
+  let vSearch = pKeywords != null ? pKeywords.trim() : ''
 
   if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 
-  if (vSearch != '') vCurrentParams.keywords = vSearch
-  if (pSortField && pSortField != '') vCurrentParams.field = pSortField
-  if (pSortOrder && pSortOrder != '') vCurrentParams.order = pSortOrder
+  if (vSearch !== '') vCurrentParams.keywords = vSearch
+  if (pSortField && pSortField !== '') vCurrentParams.field = pSortField
+  if (pSortOrder && pSortOrder !== '') vCurrentParams.order = pSortOrder
 
   let bHasFilter = false
 

@@ -62,7 +62,7 @@ const BazarCalendar = {
       info.jsEvent.preventDefault()
       const { entries } = this
       this.selectedEntry = entries.filter(
-        (entry) => entry.tag == info.event.groupId,
+        (entry) => entry.tag === info.event.groupId,
       )[0]
     },
     getEventById(id) {
@@ -73,24 +73,24 @@ const BazarCalendar = {
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay == undefined ||
-        this.params.entrydisplay.length == 0 ||
-        this.params.entrydisplay == 'modal' ||
+        this.params.entrydisplay == null ||
+        this.params.entrydisplay.length === 0 ||
+        this.params.entrydisplay === 'modal' ||
         ['modal', 'newtab', 'direct', 'sidebar'].indexOf(
           this.params.entrydisplay,
-        ) == -1
+        ) === -1
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null &&
+        this.params.entrydisplay === 'direct'
       )
     },
     formatEndDate(entry) {
@@ -98,18 +98,18 @@ const BazarCalendar = {
       // it end one day earlier
       const startDate = this.retrieveTimeZone(entry.bf_date_debut_evenement)
       let endDate = null
-      if (entry.bf_date_fin_evenement != undefined) {
+      if (entry.bf_date_fin_evenement != null) {
         endDate = this.retrieveTimeZone(entry.bf_date_fin_evenement)
         try {
           endDate = new Date(endDate)
-        } catch (error) {
+        } catch {
           endDate = null
         }
       }
       if (
-        entry.bf_date_fin_evenement == undefined ||
+        entry.bf_date_fin_evenement == null ||
         endDate == null ||
-        endDate == 'Invalid Date'
+        endDate === 'Invalid Date'
       ) {
         if (startDate.length <= 10) {
           return startDate
@@ -160,7 +160,7 @@ const BazarCalendar = {
           this.calendarOptions,
         )
         this.calendar.setOption('eventDidMount', this.updateEventData)
-        if (this.params.entrydisplay == 'sidebar') {
+        if (this.params.entrydisplay === 'sidebar') {
           this.calendar.setOption('eventClick', this.displaySideBar)
         }
         this.calendar.render()
@@ -169,7 +169,7 @@ const BazarCalendar = {
     },
     buildEventObject(entry, id, start, end) {
       const backgroundColor =
-        entry.color == undefined || entry.color.length == 0 ? '' : entry.color
+        entry.color == null || entry.color.length === 0 ? '' : entry.color
       return {
         id,
         groupId: entry.tag,
@@ -183,11 +183,11 @@ const BazarCalendar = {
         borderColor: backgroundColor,
         extendedProps: {
           icon:
-            entry.icon == undefined || entry.icon.length == 0
+            entry.icon == null || entry.icon.length === 0
               ? ''
               : `<i class="${entry.icon}">&nbsp;</i>`,
           htmlattributes: `${
-            (entry.html_data != undefined ? entry.html_data : '') +
+            (entry.html_data != null ? entry.html_data : '') +
             (this.isModalDisplay() ? ' data-iframe="1"' : '')
           } data-size="modal-lg"`,
         },
@@ -336,6 +336,8 @@ const BazarCalendar = {
             initialView = extendedList.slice(1) // remove first char
             break
           }
+        // falls through -- an empty `list` means the default view, which is what the next
+        // case does; the fallthrough IS the intent, so it is said rather than left to be read
         case 'dayGridMonth':
         default:
           break
@@ -386,9 +388,9 @@ const BazarCalendar = {
     this.mountCalendar()
   },
   watch: {
-    selectedEntry(newVal, oldVal) {
+    selectedEntry() {
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'sidebar')
+        if (this.params.entrydisplay === 'sidebar')
           this.$root.getEntryRender(this.selectedEntry)
       }
     },

@@ -280,20 +280,20 @@ function checkAll(state) {
   if (aclSwitch) {
     const clearValue = (el) => {
       if (el instanceof HTMLSelectElement) {
-        el.selectedIndex = -1 // eslint-disable-line no-param-reassign
+        el.selectedIndex = -1
       } else if ('value' in el) {
-        el.value = '' // eslint-disable-line no-param-reassign
+        el.value = ''
       }
     }
     const applyAclMode = () => {
       if (aclSwitch.checked) {
         // show advanced
         document.querySelectorAll('.acl-simple').forEach((el) => {
-          el.style.display = 'none' // eslint-disable-line no-param-reassign
+          el.style.display = 'none'
           clearValue(el)
         })
         document.querySelectorAll('.acl-advanced').forEach((el) => {
-          el.style.display = '' // eslint-disable-line no-param-reassign
+          el.style.display = ''
         })
       } else {
         document
@@ -305,10 +305,10 @@ function checkAll(state) {
             if (select) label.insertAdjacentElement('afterend', select)
           })
         document.querySelectorAll('.acl-simple').forEach((el) => {
-          el.style.display = '' // eslint-disable-line no-param-reassign
+          el.style.display = ''
         })
         document.querySelectorAll('.acl-advanced').forEach((el) => {
-          el.style.display = 'none' // eslint-disable-line no-param-reassign
+          el.style.display = 'none'
           clearValue(el)
         })
       }
@@ -429,7 +429,7 @@ function checkAll(state) {
     form.classList.remove('hide')
     form.classList.add('temporary-form')
     formAnswer.querySelectorAll('[name="pagetag"]').forEach((input) => {
-      input.value = com.dataset.tag // eslint-disable-line no-param-reassign
+      input.value = com.dataset.tag
     })
     appendCancelButton(form)
     com
@@ -478,7 +478,7 @@ function checkAll(state) {
       commentBody ? commentBody.value : '',
     )
     formcom.querySelectorAll('[name="pagetag"]').forEach((input) => {
-      input.value = com.dataset.commenton // eslint-disable-line no-param-reassign
+      input.value = com.dataset.commenton
     })
     const postButton = formcom.querySelector('.btn-post-comment')
     if (postButton) postButton.textContent = _t('MODIFY')
@@ -612,7 +612,7 @@ function checkAll(state) {
           : response.json().then((payload) => Promise.reject(payload)),
       )
       .then(() => {
-        nb.textContent = nbInit - 1 // eslint-disable-line no-param-reassign
+        nb.textContent = nbInit - 1
         link.classList.remove('user-reaction')
         const maxReaction = maxReactionOf(link)
         if (maxReaction) {
@@ -732,7 +732,7 @@ function checkAll(state) {
       modal
         .querySelectorAll('.yw-modal__body .multi-delete-results')
         .forEach((results) => {
-          results.innerHTML = '' // eslint-disable-line no-param-reassign
+          results.innerHTML = ''
         })
       const deleteButton = modal.querySelector(
         'button.start-btn-delete-comment',

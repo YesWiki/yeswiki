@@ -7,13 +7,7 @@ import FilterNode from './components/FilterNode.js'
 import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
-import { updateExportLinks } from './export.js'
-import {
-  updateHash,
-  parseSearchParams,
-  mergeSearchParams,
-  serializeSearchParams,
-} from './url.js'
+import { updateHash, parseSearchParams, serializeSearchParams } from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -140,11 +134,13 @@ const load = (domElement) => {
         let result = this.entries
         if (this.searchFormId) {
           // filter based on formId, when no form id is specified
-          result = result.filter((entry) => entry.form_id == this.searchFormId)
+          result = result.filter(
+            (entry) => String(entry.form_id) === String(this.searchFormId),
+          )
         }
 
         let vSearch = this.params.keywords ?? ''
-        if (this.search) vSearch += (vSearch != '' ? '|' : '') + this.search
+        if (this.search) vSearch += (vSearch !== '' ? '|' : '') + this.search
 
         vSearch = vSearch
           .split('|')
@@ -153,7 +149,7 @@ const load = (domElement) => {
 
         if (vSearch && vSearch.length >= wiki.minSearchKeywordLength) {
           result = this.searchEntries(result, vSearch)
-          if (result == undefined) {
+          if (result == null) {
             result = this.entries
           }
         }
@@ -205,12 +201,12 @@ const load = (domElement) => {
           const valueB = deepGet(b, field)
 
           if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return order == 'asc' ? valueA - valueB : valueB - valueA
+            return order === 'asc' ? valueA - valueB : valueB - valueA
           }
 
           // Case and accent insensitive sort
 
-          return order == 'asc'
+          return order === 'asc'
             ? collator.compare(
                 String(valueA)
                   .normalize('NFD')
@@ -277,7 +273,7 @@ const load = (domElement) => {
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;') ==
+                    .replace(/'/g, '&#039;') ===
                   node.value
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
@@ -311,10 +307,10 @@ const load = (domElement) => {
         }
 
         if (vParams.keywords !== undefined && vParams.keywords.trim() !== '') {
-          vSearch = (vSearch != '' ? `${vSearch}|` : '') + vParams.keywords
+          vSearch = (vSearch !== '' ? `${vSearch}|` : '') + vParams.keywords
         }
 
-        if (vSearch != '') this.search = vSearch
+        if (vSearch !== '') this.search = vSearch
 
         if (vParams.field !== undefined && vParams.field.trim() !== '') {
           vChamp = vParams.field
@@ -328,9 +324,9 @@ const load = (domElement) => {
           const vQueryEntries = Object.entries(vParams.query)
 
           if (vQueryEntries.length > 0) {
-            vQueryEntries.forEach(([pKey, pCondition]) => {
+            vQueryEntries.forEach(([, pCondition]) => {
               const cFilter = vThis.filters.find(
-                (pF) => pF.propName == pCondition.name,
+                (pF) => pF.propName === pCondition.name,
               )
 
               if (cFilter) {
@@ -368,11 +364,11 @@ const load = (domElement) => {
 
         const cSort = this.sortOptions.find(
           (s) =>
-            s.field ==
+            s.field ===
               ((vChamp ?? typeof vThis.currentSort != 'undefined')
                 ? vThis.currentSort.field
                 : '') &&
-            s.order ==
+            s.order ===
               ((vOrdre ?? typeof vThis.currentSort != 'undefined')
                 ? vThis.currentSort.order
                 : ''),
@@ -398,7 +394,7 @@ const load = (domElement) => {
           this.getExternalEntry(entry)
         } else {
           let fieldsToExclude = []
-          if (this.params.template == 'list' && this.params.displayfields) {
+          if (this.params.template === 'list' && this.params.displayfields) {
             // In list template (collapsible panels with header and body), the rendered entry
             // is displayed in the body section and we don't want to show the fields
             // that are already displayed in the panel header
@@ -460,7 +456,7 @@ const load = (domElement) => {
         return this.formFields[field] || {}
       },
       openEntry(entry) {
-        if (this.params.entrydisplay == 'newtab') window.open(entry.url)
+        if (this.params.entrydisplay === 'newtab') window.open(entry.url)
         else this.$root.openEntryModal(entry)
       },
       openEntryModal(entry) {
@@ -473,7 +469,7 @@ const load = (domElement) => {
         return entry.url !== wiki.url(entry.tag)
       },
       isInIframe() {
-        return window != window.parent
+        return window !== window.parent
       },
       getExternalEntry(entry) {
         const url = `${entry.url}/iframe`
@@ -542,9 +538,9 @@ const load = (domElement) => {
                     ((
                       typeof this.params.order == 'boolean'
                         ? this.params.order
-                        : this.params.order == '1' ||
-                          this.params.order == 'true' ||
-                          this.params.order == 'asc'
+                        : this.params.order === '1' ||
+                          this.params.order === 'true' ||
+                          this.params.order === 'asc'
                     )
                       ? 'asc'
                       : 'desc'),
@@ -577,7 +573,7 @@ const load = (domElement) => {
                 this.formFields[field.id] = field
                 Object.entries(this.params.displayfields).forEach(
                   ([fieldId, mappedField]) => {
-                    if (mappedField == field.id)
+                    if (mappedField === field.id)
                       this.formFields[fieldId] = this.formFields[mappedField]
                   },
                 )
@@ -606,7 +602,7 @@ const load = (domElement) => {
                   const entryValues = entry[propName].split(',')
                   entryValues.forEach((value) => {
                     const correspondingNode = filter.flattenNodes.find(
-                      (node) => node.value == value,
+                      (node) => String(node.value) === value,
                     )
                     if (correspondingNode) {
                       correspondingNode.parents.forEach((parent) => {

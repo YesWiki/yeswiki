@@ -398,7 +398,7 @@ function neutralizePreview(holder, fieldId) {
   holder
     .querySelectorAll('input, select, textarea, button')
     .forEach((control) => {
-      control.disabled = true // eslint-disable-line no-param-reassign
+      control.disabled = true
       control.removeAttribute('name')
       control.removeAttribute('required')
     })
@@ -406,7 +406,7 @@ function neutralizePreview(holder, fieldId) {
   const prefix = `${fieldId}__`
   holder.querySelectorAll('[id]').forEach((node) => {
     if (node.id.startsWith(prefix)) return
-    node.id = prefix + node.id // eslint-disable-line no-param-reassign
+    node.id = prefix + node.id
   })
   holder.querySelectorAll('[for]').forEach((node) => {
     const target = node.getAttribute('for')
@@ -427,10 +427,9 @@ function hasVisiblePreview(holder) {
 }
 
 function paintPreview(holder, field) {
-  holder.innerHTML = previewHtml[field.id] ?? '' // eslint-disable-line no-param-reassign
+  holder.innerHTML = previewHtml[field.id] ?? ''
   neutralizePreview(holder, field.id)
   if (!hasVisiblePreview(holder)) {
-    // eslint-disable-next-line no-param-reassign
     holder.innerHTML = `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
   }
   holder.classList.remove('yw-fb__card-preview--pending')
@@ -769,7 +768,7 @@ function renderSettings() {
     if (control.classList.contains('yw-fb__checks')) {
       const values = splitCsv(value)
       control.querySelectorAll('input').forEach((box) => {
-        box.checked = values.includes(box.value) // eslint-disable-line no-param-reassign
+        box.checked = values.includes(box.value)
       })
       return
     }

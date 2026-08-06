@@ -114,7 +114,7 @@ ywInit((root) => {
         if (pName in cFieldNames && cFieldNames[pName].trim() !== '') {
           const cField = byId(cFieldNames[pName])
 
-          if (cField) pAcc[pName] = cField // eslint-disable-line no-param-reassign
+          if (cField) pAcc[pName] = cField
         }
 
         return pAcc

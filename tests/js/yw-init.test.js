@@ -73,7 +73,7 @@ let ywInitEach
 beforeEach(() => {
   dom = makeDom()
   const scope = { document: dom.document, console }
-  // eslint-disable-next-line no-new-func
+
   const load = new Function(
     'document',
     'console',

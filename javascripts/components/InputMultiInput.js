@@ -39,13 +39,13 @@ export default {
     },
     removeElement(group) {
       this.elements = this.elements.filter(
-        (el) => el[this.propertiesIds[0]] != group[this.propertiesIds[0]],
+        (el) => el[this.propertiesIds[0]] !== group[this.propertiesIds[0]],
       )
     },
     resetValues() {
       this.elements = []
     },
-    parseNewValues(newValues) {
+    parseNewValues(_newValues) {
       console.warn('parseNewValues Method should be implement in sub component')
     },
     getValues() {

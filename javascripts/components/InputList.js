@@ -22,7 +22,8 @@ export default {
           extraFields,
         )
         const fieldConfig = fields.find(
-          (e) => e.id == this.values[this.config.dataFromFormField],
+          (e) =>
+            String(e.id) === String(this.values[this.config.dataFromFormField]),
         )
         return fieldConfig ? fieldConfig.options : []
       }

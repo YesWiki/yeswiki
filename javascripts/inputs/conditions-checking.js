@@ -742,8 +742,8 @@ const ConditionsChecking = {
           .forEach((input) => inputs.push(input))
       })
       if (inputs.length > 0) {
-        result.type = 'checkbox' // eslint-disable-line no-param-reassign
-        result.nodes = containers // eslint-disable-line no-param-reassign
+        result.type = 'checkbox'
+        result.nodes = containers
         inputs.forEach((input) => {
           ConditionsChecking.registerTrigger(input, fieldName)
         })
@@ -759,8 +759,8 @@ const ConditionsChecking = {
       `[data-yw-tag-input-value][name$="${fieldName}"]`,
     )
     if (node) {
-      result.type = 'checkboxtag' // eslint-disable-line no-param-reassign
-      result.nodes = [node] // eslint-disable-line no-param-reassign
+      result.type = 'checkboxtag'
+      result.nodes = [node]
       ConditionsChecking.registerTrigger(node, fieldName)
     }
     return result
@@ -771,8 +771,8 @@ const ConditionsChecking = {
     }
     const node = document.querySelector(`select[name$=${fieldName}]`)
     if (node) {
-      result.type = 'select' // eslint-disable-line no-param-reassign
-      result.nodes = [node] // eslint-disable-line no-param-reassign
+      result.type = 'select'
+      result.nodes = [node]
       ConditionsChecking.registerTrigger(node, fieldName)
     }
     return result
@@ -785,8 +785,8 @@ const ConditionsChecking = {
       document.querySelectorAll(`input[name$=${fieldName}][type=radio]`),
     )
     if (inputs.length > 0) {
-      result.type = 'radio' // eslint-disable-line no-param-reassign
-      result.nodes = inputs // eslint-disable-line no-param-reassign
+      result.type = 'radio'
+      result.nodes = inputs
       inputs.forEach((input) => {
         ConditionsChecking.registerTrigger(input, fieldName)
       })
@@ -803,9 +803,9 @@ const ConditionsChecking = {
       ),
     )
     if (inputs.length > 0) {
-      result.type = 'text' // eslint-disable-line no-param-reassign
-      result.isArray = false // eslint-disable-line no-param-reassign
-      result.nodes = inputs // eslint-disable-line no-param-reassign
+      result.type = 'text'
+      result.isArray = false
+      result.nodes = inputs
       inputs.forEach((input) => {
         ConditionsChecking.registerTrigger(input, fieldName)
       })
@@ -820,9 +820,9 @@ const ConditionsChecking = {
       document.querySelectorAll(`textarea[name$=${fieldName}]`),
     )
     if (inputs.length > 0) {
-      result.type = 'textarea' // eslint-disable-line no-param-reassign
-      result.isArray = false // eslint-disable-line no-param-reassign
-      result.nodes = inputs // eslint-disable-line no-param-reassign
+      result.type = 'textarea'
+      result.isArray = false
+      result.nodes = inputs
       inputs.forEach((textarea) => {
         // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
         if (
@@ -853,15 +853,15 @@ const ConditionsChecking = {
       `output[id$=img-image${fieldName}]`,
     )
     if (uploadDiv || imageOutput) {
-      result.type = 'image' // eslint-disable-line no-param-reassign
-      result.isArray = false // eslint-disable-line no-param-reassign
+      result.type = 'image'
+      result.isArray = false
       if (uploadDiv) {
-        result.nodes = [uploadDiv.parentElement] // eslint-disable-line no-param-reassign
+        result.nodes = [uploadDiv.parentElement]
         uploadDiv.querySelectorAll('input').forEach((input) => {
           ConditionsChecking.registerTrigger(input, fieldName)
         })
       } else {
-        result.nodes = [imageOutput] // eslint-disable-line no-param-reassign
+        result.nodes = [imageOutput]
         ConditionsChecking.registerTrigger(imageOutput, fieldName)
       }
     }
@@ -876,16 +876,16 @@ const ConditionsChecking = {
     )
     const fileLink = document.querySelector(`a[data-id=${fieldName}]`)
     if (uploadDiv || fileLink) {
-      result.type = 'file' // eslint-disable-line no-param-reassign
-      result.isArray = false // eslint-disable-line no-param-reassign
+      result.type = 'file'
+      result.isArray = false
       if (uploadDiv) {
         const parent = uploadDiv.parentElement
-        result.nodes = [parent] // eslint-disable-line no-param-reassign
+        result.nodes = [parent]
         parent.querySelectorAll('input').forEach((input) => {
           ConditionsChecking.registerTrigger(input, fieldName)
         })
       } else {
-        result.nodes = [fileLink] // eslint-disable-line no-param-reassign
+        result.nodes = [fileLink]
         ConditionsChecking.registerTrigger(fileLink, fieldName)
       }
     }

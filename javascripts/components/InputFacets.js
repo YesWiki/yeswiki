@@ -24,15 +24,15 @@ export default {
       return {
         groups: this.elements
           .map((g) => g.field)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
         titles: this.elements
           .map((g) => g.title)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
         groupicons: this.elements
           .map((g) => g.icon)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
       }
     },

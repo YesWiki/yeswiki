@@ -44,35 +44,6 @@ async function loadEntry(pageTag) {
 }
 
 /**
- * Creates a new entry via the API.
- * @param {string} formId - The ID of the form to create the entry for.
- * @param {object} data - The data for the new entry.
- * @returns {Promise<object>} A promise that resolves with the JSON response from the API.
- * @throws {Error} If the network request fails or the response is not OK.
- */
-async function createEntry(formId, data) {
-  try {
-    const response = await fetch(`${BASE_URL}api/entries/${formId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error creating entry:', error)
-    throw error
-  }
-}
-
-/**
  * Modifies an existing entry via the API.
  * @param {object} data - The updated data for the entry.
  * @returns {Promise<object>} A promise that resolves with the JSON response from the API.

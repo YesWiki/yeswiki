@@ -40,10 +40,10 @@ const componentParams = {
               !this.$root.isExternalUrl(entry) &&
               'owner' in entry &&
               (isadmin ||
-                (currentusername.length > 0 && entry.owner == currentusername))
+                (currentusername.length > 0 && entry.owner === currentusername))
           } else if (['==adminsbuttons=='].includes(col.data)) {
             formattedData[col.data] = ''
-          } else if (col.data == 'geolocation') {
+          } else if (col.data === 'geolocation') {
             formattedData[col.geolocationfield] = entry[col.geolocationfield]
           } else if (
             'firstlevel' in col &&
@@ -137,7 +137,7 @@ const componentParams = {
       b.sort()
       return a.every((val, idx) => a[idx] === b[idx])
     },
-    deleteAllSelected(event) {
+    deleteAllSelected() {
       const uuid = this.getUuid()
       multiDeleteService.updateNbSelected(`MultiDeleteModal${uuid}`)
       // if something to do before showing modal
@@ -166,7 +166,7 @@ const componentParams = {
       )
     },
     async getColumns() {
-      if (this.columns.length == 0) {
+      if (this.columns.length === 0) {
         const fields = await Waiter.waitFor('fields', this)
         const params = await Waiter.waitFor('params', this)
         let columnfieldsids = this.sanitizedParam(
@@ -179,7 +179,7 @@ const componentParams = {
           this.isAdmin,
           'defaultcolumnwidth',
         )
-        if (columnfieldsids.every((id) => id.length == 0)) {
+        if (columnfieldsids.every((id) => id.length === 0)) {
           // backup: the form's first field, whatever it is called. Was the literal
           // 'bf_titre', so a form without one showed an empty table (ticket 11)
           columnfieldsids = Object.keys(fields).slice(0, 1)
@@ -281,7 +281,7 @@ const componentParams = {
               },
             })
           } else if (fieldsToRegister.includes(id)) {
-            fieldsToRegister = fieldsToRegister.filter((e) => e != id)
+            fieldsToRegister = fieldsToRegister.filter((e) => e !== id)
             this.registerSpecialFields([id], false, params, data, options)
           }
         })
@@ -329,7 +329,7 @@ const componentParams = {
             if (
               (!('orderable' in data.columns[index]) ||
                 data.columns[index].orderable) &&
-              data.columns[index].data == champField
+              data.columns[index].data === champField
             ) {
               columnToOrder = index
             }
@@ -764,7 +764,7 @@ const componentParams = {
         case 'displayadmincol':
         case 'displaycreationdate':
         case 'displaylastchangedate':
-        case 'displayowner':
+        case 'displayowner': {
           const paramValue =
             name in params &&
             typeof params[name] === 'string' &&
@@ -780,6 +780,7 @@ const componentParams = {
             default:
               return false
           }
+        }
         case 'checkboxfieldsincolumns':
           // default true
           return name in params
@@ -798,7 +799,7 @@ const componentParams = {
           return name in params && typeof params[name] === 'string'
             ? params[name].split(',').map((v) => v.trim())
             : []
-        case 'columntitles':
+        case 'columntitles': {
           const columntitlesastab =
             name in params && typeof params[name] === 'string'
               ? params[name].split(',').map((v) => v.trim())
@@ -814,11 +815,8 @@ const componentParams = {
             }
           })
           return columntitles
-        case 'sumfieldsids':
-          return name in params && typeof params[name] === 'string'
-            ? params[name].split(',').map((v) => v.trim())
-            : []
-        case 'columnswidth':
+        }
+        case 'columnswidth': {
           const columnswidth = {}
           if (name in params && typeof params[name] === 'string') {
             params[name].split(',').forEach((extract) => {
@@ -829,6 +827,7 @@ const componentParams = {
             })
           }
           return columnswidth
+        }
         case 'defaultcolumnwidth':
           return name in params ? String(params[name]) : ''
         default:

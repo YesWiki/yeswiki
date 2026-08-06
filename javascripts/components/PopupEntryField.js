@@ -31,7 +31,7 @@ export default {
       }
     },
     displayLabel() {
-      return [0, '0', false, 'false'].indexOf(this.withlabel) == -1
+      return [0, '0', false, 'false'].indexOf(this.withlabel) === -1
     },
     displayOnOneLine() {
       return [1, '1', true, 'true'].indexOf(this.oneline) > -1
@@ -48,13 +48,14 @@ export default {
         case 'radiofiche':
         case 'listefiches':
         case 'listefichesliees':
-        case 'tags':
+        case 'tags': {
           const values = value.split(',').map((v) => this.field.options[v])
-          return values.length == 0
+          return values.length === 0
             ? ''
-            : values.length == 1
+            : values.length === 1
               ? values[0]
               : values
+        }
         case 'email':
           return '' // security
         case 'link':
@@ -86,7 +87,7 @@ export default {
       v-else-if="type == 'image' && value" class="popup-visual" 
       v-bind="$attrs"
       :src="$root.urlImage(entry,prop,imagewidth,imageheight,imagemethod)"
-      @error="$root.urlImageResizedOnError(entry,prop,imagewidth,imageheight,imagemethod,imagetoken)">
+      @error="$root.urlImageResizedOnError(entry,prop,imagewidth,imageheight,imagemethod,imagetoken,$event)">
     </img>
     <div v-else-if="displayLabel && displayOnOneLine && value" v-bind="$attrs">
       <strong>{{ label }} :</strong>&nbsp;

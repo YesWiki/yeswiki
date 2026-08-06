@@ -70,7 +70,6 @@
   const loadInOrder = async (scripts) => {
     for (const entry of scripts) {
       if (entry.code === null) {
-        // eslint-disable-next-line no-await-in-loop
         await new Promise((resolve) => {
           const script = document.createElement('script')
           script.src = entry.url

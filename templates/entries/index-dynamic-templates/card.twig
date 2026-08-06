@@ -62,7 +62,7 @@
               class="area visual-area"
               :style="{'object-fit': 'contain'}"
               :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"
-              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }})">
+              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }},$event)">
           {% else %}
             <img
               loading="lazy" 
@@ -70,7 +70,7 @@
               class="area visual-area"
               :style="{'object-fit': 'cover'}"
               :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
-              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ cropToken|json_encode }})">
+              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ cropToken|json_encode }},$event)">
           {% endif %}
 
         </template>

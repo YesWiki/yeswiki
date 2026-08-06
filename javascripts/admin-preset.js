@@ -169,7 +169,6 @@ if (rail) {
     .querySelectorAll('[data-yw-preset-delete-form]')
     .forEach((deleteForm) => {
       deleteForm.addEventListener('submit', (event) => {
-        // eslint-disable-next-line no-alert
         if (!window.confirm(deleteForm.dataset.confirm)) event.preventDefault()
       })
     })

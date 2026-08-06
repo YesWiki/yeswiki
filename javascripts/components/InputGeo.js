@@ -47,9 +47,9 @@ export default {
       const result = {}
       const lat = this.map.getCenter().lat.toFixed(5)
       const lon = this.map.getCenter().lng.toFixed(5)
-      if (lat != this.defaultLatitude) result.lat = lat
-      if (lon != this.defaultLongitude) result.lon = lon
-      if (this.map.getZoom() != this.defaultZoom)
+      if (Number(lat) !== Number(this.defaultLatitude)) result.lat = lat
+      if (Number(lon) !== Number(this.defaultLongitude)) result.lon = lon
+      if (Number(this.map.getZoom()) !== Number(this.defaultZoom))
         result.zoom = this.map.getZoom()
       return result
     },

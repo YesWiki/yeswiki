@@ -22,11 +22,11 @@ export default {
       return {
         sortfields: this.elements
           .map((g) => g.field)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
         sortfieldstitles: this.elements
           .map((g) => g.title)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
       }
     },

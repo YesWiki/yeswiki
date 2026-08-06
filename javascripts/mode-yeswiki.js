@@ -11,7 +11,7 @@ ace.define(
     'ace/mode/text_highlight_rules',
     'ace/mode/html_highlight_rules',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const { TextHighlightRules } = require('./text_highlight_rules')
     const { HtmlHighlightRules } = require('./html_highlight_rules')
@@ -48,7 +48,7 @@ ace.define(
           },
           {
             token: 'constant.language.escape',
-            regex: /\\[\\`*_{}\[\]()#+\-.!]/,
+            regex: /\\[\\`*_{}[\]()#+\-.!]/,
           },
           {
             // pre //
@@ -122,7 +122,7 @@ ace.define(
           {
             // italic markdown *
             token: 'italic',
-            regex: '\\*([^\\*]+)\\*(?!\w)',
+            regex: '\\*([^\\*]+)\\*(?!\\w)',
           },
           {
             // underline __
@@ -240,7 +240,7 @@ ace.define(
     'ace/mode/text_highlight_rules',
     'ace/mode/html_highlight_rules',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const { CstyleBehaviour } = require('./behaviour/cstyle')
     const { TokenIterator } = require('../token_iterator')
@@ -269,7 +269,7 @@ ace.define(
       let id = -1
       if (editor.multiSelect) {
         id = editor.selection.index
-        if (contextCache.rangeCount != editor.multiSelect.rangeCount)
+        if (contextCache.rangeCount !== editor.multiSelect.rangeCount)
           contextCache = { rangeCount: editor.multiSelect.rangeCount }
       }
       if (contextCache[id]) return (context = contextCache[id])
@@ -297,12 +297,12 @@ ace.define(
       }
     }
 
-    const YesWikiBehaviour = function (options) {
+    const YesWikiBehaviour = function (_options) {
       this.add(
         'braces2',
         'insertion',
         (state, action, editor, session, text) => {
-          if (text == '{') {
+          if (text === '{') {
             initContext(editor)
             const selection = editor.getSelectionRange()
             const selected = session.doc.getTextRange(selection)
@@ -316,12 +316,12 @@ ace.define(
                 selection: [1, 1],
               }
             }
-          } else if (text == '}') {
+          } else if (text === '}') {
             initContext(editor)
             const cursor = editor.getCursorPosition()
             const line = session.doc.getLine(cursor.row)
             const rightChar = line.substring(cursor.column, cursor.column + 1)
-            if (rightChar == '}') {
+            if (rightChar === '}') {
               const matching = session.$findOpeningBracket(']', {
                 column: cursor.column + 1,
                 row: cursor.row,
@@ -346,14 +346,14 @@ ace.define(
         'deletion',
         (state, action, editor, session, range) => {
           const selected = session.doc.getTextRange(range)
-          if (!range.isMultiLine() && selected == '[') {
+          if (!range.isMultiLine() && selected === '[') {
             initContext(editor)
             const line = session.doc.getLine(range.start.row)
             const rightChar = line.substring(
               range.start.column + 1,
               range.start.column + 2,
             )
-            if (rightChar == ']') {
+            if (rightChar === ']') {
               range.end.column++
               return range
             }
@@ -365,7 +365,7 @@ ace.define(
         'parens',
         'insertion',
         (state, action, editor, session, text) => {
-          if (text == '(') {
+          if (text === '(') {
             initContext(editor)
             const selection = editor.getSelectionRange()
             const selected = session.doc.getTextRange(selection)
@@ -379,12 +379,12 @@ ace.define(
                 selection: [1, 1],
               }
             }
-          } else if (text == ')') {
+          } else if (text === ')') {
             initContext(editor)
             const cursor = editor.getCursorPosition()
             const line = session.doc.getLine(cursor.row)
             const rightChar = line.substring(cursor.column, cursor.column + 1)
-            if (rightChar == ')') {
+            if (rightChar === ')') {
               const matching = session.$findOpeningBracket(')', {
                 column: cursor.column + 1,
                 row: cursor.row,
@@ -409,14 +409,14 @@ ace.define(
         'deletion',
         (state, action, editor, session, range) => {
           const selected = session.doc.getTextRange(range)
-          if (!range.isMultiLine() && selected == '(') {
+          if (!range.isMultiLine() && selected === '(') {
             initContext(editor)
             const line = session.doc.getLine(range.start.row)
             const rightChar = line.substring(
               range.start.column + 1,
               range.start.column + 2,
             )
-            if (rightChar == ')') {
+            if (rightChar === ')') {
               range.end.column++
               return range
             }
@@ -428,7 +428,7 @@ ace.define(
         'brackets',
         'insertion',
         (state, action, editor, session, text) => {
-          if (text == '[') {
+          if (text === '[') {
             initContext(editor)
             const selection = editor.getSelectionRange()
             const selected = session.doc.getTextRange(selection)
@@ -442,12 +442,12 @@ ace.define(
                 selection: [1, 1],
               }
             }
-          } else if (text == ']') {
+          } else if (text === ']') {
             initContext(editor)
             const cursor = editor.getCursorPosition()
             const line = session.doc.getLine(cursor.row)
             const rightChar = line.substring(cursor.column, cursor.column + 1)
-            if (rightChar == ']') {
+            if (rightChar === ']') {
               const matching = session.$findOpeningBracket(']', {
                 column: cursor.column + 1,
                 row: cursor.row,
@@ -472,14 +472,14 @@ ace.define(
         'deletion',
         (state, action, editor, session, range) => {
           const selected = session.doc.getTextRange(range)
-          if (!range.isMultiLine() && selected == '[') {
+          if (!range.isMultiLine() && selected === '[') {
             initContext(editor)
             const line = session.doc.getLine(range.start.row)
             const rightChar = line.substring(
               range.start.column + 1,
               range.start.column + 2,
             )
-            if (rightChar == ']') {
+            if (rightChar === ']') {
               range.end.column++
               return range
             }
@@ -492,10 +492,10 @@ ace.define(
         'insertion',
         function (state, action, editor, session, text) {
           const quotes = session.$mode.$quotes || defaultQuotes
-          if (text.length == 1 && quotes[text]) {
+          if (text.length === 1 && quotes[text]) {
             if (
               this.lineCommentStart &&
-              this.lineCommentStart.indexOf(text) != -1
+              this.lineCommentStart.indexOf(text) !== -1
             )
               return
             initContext(editor)
@@ -504,7 +504,7 @@ ace.define(
             const selected = session.doc.getTextRange(selection)
             if (
               selected !== '' &&
-              (selected.length != 1 || !quotes[selected]) &&
+              (selected.length !== 1 || !quotes[selected]) &&
               editor.getWrapBehavioursEnabled()
             ) {
               return getWrapped(selection, selected, quote, quote)
@@ -521,7 +521,7 @@ ace.define(
                 cursor.column + 1,
               )
               // We're escaped.
-              if (leftChar == '\\' && token && /escape/.test(token.type))
+              if (leftChar === '\\' && token && /escape/.test(token.type))
                 return null
 
               const stringBefore = token && /string|escape/.test(token.type)
@@ -529,7 +529,7 @@ ace.define(
                 !rightToken || /string|escape/.test(rightToken.type)
 
               let pair
-              if (rightChar == quote) {
+              if (rightChar === quote) {
                 pair = stringBefore !== stringAfter
                 if (pair && /string\.end/.test(rightToken.type)) pair = false
               } else {
@@ -544,8 +544,8 @@ ace.define(
                 if (rightChar && !/[\s;,.})\]\\]/.test(rightChar)) return null // there is rightChar and it isn't closing
                 const charBefore = line[cursor.column - 2]
                 if (
-                  leftChar == quote &&
-                  (charBefore == quote || wordRe.test(charBefore))
+                  leftChar === quote &&
+                  (charBefore === quote || wordRe.test(charBefore))
                 )
                   return null
                 pair = true
@@ -566,14 +566,17 @@ ace.define(
           const quotes = session.$mode.$quotes || defaultQuotes
 
           const selected = session.doc.getTextRange(range)
-          if (!range.isMultiLine() && quotes.hasOwnProperty(selected)) {
+          if (
+            !range.isMultiLine() &&
+            Object.prototype.hasOwnProperty.call(quotes, selected)
+          ) {
             initContext(editor)
             const line = session.doc.getLine(range.start.row)
             const rightChar = line.substring(
               range.start.column + 1,
               range.start.column + 2,
             )
-            if (rightChar == selected) {
+            if (rightChar === selected) {
               range.end.column++
               return range
             }
@@ -667,7 +670,7 @@ ace.define(
         context.maybeInsertedBrackets > 0 &&
         cursor.row === context.maybeInsertedRow &&
         line.substr(cursor.column) === context.maybeInsertedLineEnd &&
-        line.substr(0, cursor.column) == context.maybeInsertedLineStart
+        line.substr(0, cursor.column) === context.maybeInsertedLineStart
       )
     }
 
@@ -703,7 +706,7 @@ ace.define(
     'ace/mode/yeswiki_highlight_rules',
     'ace/mode/yeswiki_behaviour',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const TextMode = require('./text').Mode
     const { YesWikiHighlightRules } = require('./yeswiki_highlight_rules')
@@ -720,7 +723,7 @@ ace.define(
       this.blockComment = { start: '""<!--', end: '-->""' }
       this.$quotes = { '"': '"', '`': '`' }
 
-      this.getNextLineIndent = function (state, line, tab) {
+      this.getNextLineIndent = function (state, line, _tab) {
         const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
         // For lists, add the - on next line, or increment the number for ordered list 1. 2.
         if (match && match.length > 4) {

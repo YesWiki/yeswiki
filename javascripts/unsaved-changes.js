@@ -50,7 +50,7 @@ window.addEventListener('beforeunload', (event) => {
   // Both calls: the current spec says preventDefault() is what raises the dialog, and
   // browsers older than Chrome 119 / Safari 17.4 only honour `returnValue`.
   event.preventDefault()
-  // eslint-disable-next-line no-param-reassign -- mutating the event IS this legacy API
+
   event.returnValue = ''
 })
 
@@ -61,7 +61,6 @@ document.addEventListener('htmx:confirm', (event) => {
   if (guardedFormOf(event.detail.elt)) return
 
   event.preventDefault()
-  // eslint-disable-next-line no-alert -- the same prompt the page editor raises, by design
   if (window.confirm(_t('EDIT_LEAVE_WITHOUT_SAVING'))) {
     dirty = null
     event.detail.issueRequest(true)

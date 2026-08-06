@@ -7,7 +7,18 @@ export default {
     }
   },
   methods: {
-    urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
+    // `event` is passed in by every caller: `$event` from the Vue `@error` handlers, and
+    // the inline handler's own `event` from the one native `onerror` attribute (table.twig).
+    // It used to read the implicit `window.event`, which is only set during native dispatch.
+    urlImageResizedOnError(
+      entry,
+      fieldName,
+      width,
+      height,
+      mode,
+      token,
+      event,
+    ) {
       const node = event.target
       node.removeAttribute('onerror')
       if (entry[fieldName]) {
@@ -32,7 +43,7 @@ export default {
             .replace(/\/$/, '')
           const previousUrl = node.src
           const newUrl = `${baseUrl}/files/${fileName}`
-          if (newUrl != previousUrl) {
+          if (newUrl !== previousUrl) {
             document
               .querySelectorAll(`img[src="${previousUrl}"]`)
               .forEach((imgParam) => {
@@ -62,23 +73,23 @@ export default {
       )
 
       if (regExp.test(fileName)) {
-        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
+        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
       regExp = new RegExp(`^(${entry.tag}_${field.propertyname}_.*)\\.([^.]+)$`)
       if (regExp.test(fileName)) {
-        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
+        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
       }
       // maybe from other entry
       regExp = new RegExp(
         `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
       if (regExp.test(fileName)) {
-        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
+        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
       // last possible format
       regExp = new RegExp('^(.*)\\.([^.]+)$')
       if (regExp.test(fileName)) {
-        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
+        return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
       }
       return `${baseUrl}/files/${fileName}`
     },
@@ -99,7 +110,7 @@ export default {
             response.json().then((data) => ({ ok: response.ok, data })),
           )
           .then(({ ok, data }) => {
-            if (data != undefined && data.newToken != undefined) {
+            if (data != null && data.newToken != null) {
               this.tokenForImages = data.newToken
             }
             if (!ok) return

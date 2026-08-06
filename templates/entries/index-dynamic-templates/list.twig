@@ -18,7 +18,7 @@
                     <div class="visual-area" v-if="entry.visual">
                         <img loading="lazy"
                              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
-                             @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})">
+                             @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }},$event)">
                     </img>
                 </div>
             {% endblock %}

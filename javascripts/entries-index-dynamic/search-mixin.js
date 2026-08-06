@@ -1,15 +1,6 @@
 // TODO better list and translatable
-import {
-  parseCondition,
-  parseKeywords,
-  removeDiacritics,
-  extractRegExp,
-} from '../search.js'
-import {
-  parseSearchParams,
-  mergeSearchParams,
-  serializeSearchParams,
-} from '../url.js'
+import { parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
+import { mergeSearchParams, serializeSearchParams } from '../url.js'
 
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
@@ -122,7 +113,7 @@ export default {
                 if (vMatches) {
                   vMatches.forEach((pMatch) => {
                     vOrScore +=
-                      pField == 'title' || pField == 'bf_titre'
+                      pField === 'title' || pField === 'bf_titre'
                         ? 2 * (pMatch.length + 1)
                         : pMatch.length + 1
                     vMatchedFields++
@@ -138,7 +129,7 @@ export default {
             if (vMatchedFields > 0) vMatchedOrs++
           })
 
-          if (vAndScore == 0) {
+          if (vAndScore === 0) {
             pEntry.searchScore = 0
             return false
           }
@@ -169,7 +160,10 @@ export default {
             const vRegExp = extractRegExp(pExcluded)
 
             if (vFieldValue) {
-              const vMatches = vFieldValue.match(new RegExp(pExcluded, 'g'))
+              // `vRegExp`, not `pExcluded`: the field value has been de-accented just above,
+              // so the raw keyword misses every accented match -- and without `i`, every
+              // difference of case too. Matches the included-keyword path.
+              const vMatches = vFieldValue.match(new RegExp(vRegExp, 'gi'))
 
               if (vMatches) {
                 pEntry.searchScore = 0

@@ -69,6 +69,19 @@ export default defineConfig([
         themeSelectorTranslation: 'readable',
         customCSSPresetsPrefix: 'readable',
         geolocationHelper: 'readable',
+        // page-level config global injected by aceditor.twig (the actions palette)
+        actionsBuilderData: 'readable',
+        // page-level config globals injected by doc.twig
+        locale: 'readable',
+        baseUrl: 'readable',
+        i18n: 'readable',
+        extensions: 'readable',
+        // vendored libraries with a global entry point (javascripts/vendor/)
+        FullCalendar: 'readable',
+        opening_hours: 'readable',
+        // Ace's generated modes end on a CommonJS interop guard (`typeof module == 'object'`),
+        // dead in the browser but not ours to rewrite -- javascripts/mode-yeswiki.js.
+        module: 'writable',
         // page-level config globals injected by reactions templates
         blockReactionRemove: 'readable',
         blockReactionRemoveMessage: 'readable',
@@ -110,20 +123,46 @@ export default defineConfig([
     // stale directive, which ESLint 9 then warns about in turn.
     rules: {
       eqeqeq: ['error', 'smart'],
-      // `props: true`, as airbnb had it: the plain form only catches reassigning the parameter
-      // itself, and every real instance here is assigning to one of its *properties* --
-      // `event.returnValue = ''` in the unsaved-changes guard is the one I wrote. Without it,
-      // the 44 places that deliberately disable this rule become stale directives.
-      'no-param-reassign': ['error', { props: true }],
-      'no-underscore-dangle': 'error',
+      // Plain, NOT airbnb's `props: true`. The two catch different things, and only one of
+      // them is a bug class here.
+      //
+      // Reassigning the parameter itself hides the argument the caller passed: the rest of the
+      // function reads `str` and gets something else. There were three (`documentation.js`,
+      // `search.js`, `map-geolocation-helper.js`), all now holding their working value in a
+      // local, which is what the code meant.
+      //
+      // `props: true` reports writing to a *property* of a parameter, and that is the normal
+      // idiom in this codebase rather than a mistake: 43 of the 110 it flagged are a Vue
+      // transition component setting `el.style.height` -- which IS the transition API -- 16
+      // decorate revision objects in place, and 3 are AMD's own `exports.Mode = Mode`. With 45
+      // pre-existing disables already in the tree, turning it on means 155 suppression sites.
+      // A rule silenced 155 times enforces nothing; it only trains people to add the comment.
+      'no-param-reassign': 'error',
       // A list, not a bare 'error' -- the rule restricts nothing without one. `event` is the
       // one that bites: the implicit `window.event` looks like the handler's parameter and is
       // not, so code that reads it works until it is called any other way.
       'no-restricted-globals': ['error', 'event', 'isNaN', 'isFinite'],
-      // both of these are almost always someone reaching for the quick thing
-      'no-alert': 'warn',
       'no-eval': 'error',
-      'no-await-in-loop': 'warn',
+      // `recommended` already turns this on; the one addition is `argsIgnorePattern`. Most
+      // unused parameters here are simply gone now, but a few must keep their arity because
+      // something else owns the signature -- Ace's `getNextLineIndent(state, line, tab)`, the
+      // AMD `(require, exports, module)` wrapper, an abstract method a sub-component
+      // overrides. `_name` is how those say "required by the caller, unused here".
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+
+      // Deliberately NOT enabled, though airbnb had them and a first pass here did too:
+      //
+      //   no-underscore-dangle   the leading underscore is this project's mark for a global
+      //                          it owns (`_bazarDynamicComponents`) -- and for third-party
+      //                          keys it does not (`_umap_options`). A convention, chosen
+      //                          against.
+      //   no-alert               21 deliberate `confirm()`/`alert()` calls, mostly "are you
+      //                          sure" before something destructive. A rule disabled 21 times
+      //                          enforces nothing; it is ritual.
+      //   no-await-in-loop       one sequential import loop, where sequential is the intent.
+      //
+      // None is a bug class. Adding rules an existing codebase has already decided against,
+      // as a side effect of changing formatter, would be 54 edits that improve nothing.
     },
   },
 ])

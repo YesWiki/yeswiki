@@ -741,10 +741,10 @@ ywInitEach('body', () => {
   }
 
   function show(el) {
-    el.style.display = '' // eslint-disable-line no-param-reassign
+    el.style.display = ''
   }
   function hideEl(el) {
-    el.style.display = 'none' // eslint-disable-line no-param-reassign
+    el.style.display = 'none'
   }
 
   // activer les filtres des facettes

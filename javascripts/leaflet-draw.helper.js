@@ -22,7 +22,7 @@ export function drawGeometries(
         circleOptions.className = `bazar-entry-geometry ${feature.properties.className || ''}`
         const circle = L.circle(latlng, { radius, ...circleOptions })
         if (popup && popup.length > 0) {
-          circle.bindPopup((layer) => popup)
+          circle.bindPopup(() => popup)
         }
 
         circle.on('add', function () {
@@ -55,7 +55,7 @@ export function drawGeometries(
           },
           onEachFeature(f, layer) {
             if (popup && popup.length > 0) {
-              layer.bindPopup((l) => popup)
+              layer.bindPopup(() => popup)
             }
             if (layer.getElement) {
               layer.on('add', function () {

@@ -24,11 +24,11 @@ export default {
       return {
         links: this.elements
           .map((g) => g.link.replace(/\s+/g, '-'))
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
         titles: this.elements
           .map((g) => g.title)
-          .filter((e) => e != '')
+          .filter((e) => e !== '')
           .join(','),
       }
     },

@@ -4,7 +4,7 @@ import openRemoteModal from '../../../helpers/remote-modal.js'
 // When the user adds, via the code tab, a list or a formId that does not exist, keep the
 // value so it can be offered in the select option list. The template is the stored JSON
 // array of field objects; enum fields carry their list/form id as `linked_object`.
-const _listAndFormUserValues = {} // eslint-disable-line no-underscore-dangle
+const _listAndFormUserValues = {}
 try {
   const template = JSON.parse(
     document.getElementById('form-builder-text')?.value ?? '[]',
@@ -37,7 +37,7 @@ export const visibilityOptions = {
 
 // create list of user groups
 // groupsList variable is defined in forms_form.twig
-const _formattedGroupList = {} // eslint-disable-line no-underscore-dangle
+const _formattedGroupList = {}
 groupsList.forEach((group) => {
   _formattedGroupList[`@${group}`] = _t('MEMBER_OF_GROUP', { groupName: group })
 })

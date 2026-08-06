@@ -27,7 +27,11 @@
   const AVAILABLE_LOCALES = ['fr'] // replace by ['fr', 'en'] when english documentation is available
   // replace by ['fr', 'en', 'es'] when english and spannish documentations are available
   const FALLBACK_LOCALE = 'fr' // do not change it
-  if (!AVAILABLE_LOCALES.includes(locale)) locale = FALLBACK_LOCALE
+  // `locale` is injected by doc.twig; narrow it to a locale we actually ship docs for,
+  // into a local -- writing back to a page-injected global is not ours to do.
+  const docLocale = AVAILABLE_LOCALES.includes(locale)
+    ? locale
+    : FALLBACK_LOCALE
 
   window.$docsify = {
     // mounted into the dashboard canvas, not over the whole document: /doc is a wiki page
@@ -39,28 +43,28 @@
     relativePath: true,
     auto2top: true,
     alias: {
-      '.*/_sidebar.md': `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-      '.*/_navbar.md': `/docs/${locale}/_navbar.md`, // set default _navbar.md to locale language
+      '.*/_sidebar.md': `/docs/${docLocale}/_sidebar.md`, // set default _sidebar.md to locale language
+      '.*/_navbar.md': `/docs/${docLocale}/_navbar.md`, // set default _navbar.md to locale language
     },
     search: {
       // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
-      placeholder: locale === 'fr' ? 'Rechercher...' : 'Search...',
-      noData: locale === 'fr' ? 'Pas de résultats' : 'No results',
+      placeholder: docLocale === 'fr' ? 'Rechercher...' : 'Search...',
+      noData: docLocale === 'fr' ? 'Pas de résultats' : 'No results',
       namespace: 'yeswiki-doc',
       depth: 3, // which parent title to display in the search result
       paths: [
-        `/docs/${locale}/README`,
-        `/docs/${locale}/webmaster`,
-        `/docs/${locale}/prise-en-main`,
-        `/docs/${locale}/bazar`,
-        `/docs/${locale}/admin`,
-        `/docs/${locale}/communaute`,
-        `/docs/${locale}/documentation`,
-        `/docs/${locale}/dev`,
-        `/docs/${locale}/activitypub`,
-        `/docs/${locale}/asso-finances`,
-        `/docs/${locale}/semantic`,
-        `/docs/${locale}/usage-avance`,
+        `/docs/${docLocale}/README`,
+        `/docs/${docLocale}/webmaster`,
+        `/docs/${docLocale}/prise-en-main`,
+        `/docs/${docLocale}/bazar`,
+        `/docs/${docLocale}/admin`,
+        `/docs/${docLocale}/communaute`,
+        `/docs/${docLocale}/documentation`,
+        `/docs/${docLocale}/dev`,
+        `/docs/${docLocale}/activitypub`,
+        `/docs/${docLocale}/asso-finances`,
+        `/docs/${docLocale}/semantic`,
+        `/docs/${docLocale}/usage-avance`,
         ...extensions.map((ext) => `/${ext.docPath}`),
       ],
     },
@@ -189,14 +193,12 @@
 
         hook.afterEach((html) => {
           // Lazy load images and iframes
-          html = html.replace(
-            /<img src=([^\s]*)/g,
-            '<img class="lazyload" data-src=$1',
-          )
-          html = html.replace(
-            /<iframe(.*) src=([^\s]*)/g,
-            '<iframe$1 class="lazyload" data-src=$2',
-          )
+          let rendered = html
+            .replace(/<img src=([^\s]*)/g, '<img class="lazyload" data-src=$1')
+            .replace(
+              /<iframe(.*) src=([^\s]*)/g,
+              '<iframe$1 class="lazyload" data-src=$2',
+            )
 
           // Adds footer
           if (vm.route.file.match(/^docs\/.*$/)) {
@@ -206,10 +208,10 @@
               <footer>
                 <a href="${url}" target="_blank">${i18n.DOC_EDIT_THIS_PAGE_ON_GITHUB}</a>
               </footer>`
-            html += footer
+            rendered += footer
           }
 
-          return html
+          return rendered
         })
 
         hook.doneEach(() => {
@@ -250,7 +252,8 @@
         hook.ready(() => {
           // Redirect properly to home page, otherwise we stay on "#/" hash
           // and it cause some translations issues
-          if (location.hash == '#/') location.hash = `/docs/${locale}/README`
+          if (location.hash === '#/')
+            location.hash = `/docs/${docLocale}/README`
 
           // adds backdrop for mobile search menu
           const backdrop = document.createElement('div')
@@ -265,7 +268,7 @@
           backToTop.classList = 'back-to-top'
           backToTop.setAttribute(
             'aria-label',
-            locale === 'fr' ? 'Retour en haut' : 'Back to top',
+            docLocale === 'fr' ? 'Retour en haut' : 'Back to top',
           )
           backToTop.innerHTML = '<i class="gg-arrow-up"></i>'
           backToTop.addEventListener('click', () =>

@@ -221,7 +221,7 @@ function deleteCSSPreset(elem, text, url) {
   // eslint-disable-next-line no-restricted-globals
   event.preventDefault()
   const { key } = elem.dataset
-  // eslint-disable-next-line no-alert
+
   const confirmResult = confirm(text)
   if (confirmResult) {
     fetch(url, { method: 'DELETE' })

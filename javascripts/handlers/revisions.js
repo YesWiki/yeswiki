@@ -63,7 +63,7 @@ const app = createApp({
     },
   },
   mounted() {
-    this.isEntry = elementDataset.isEntry == '1'
+    this.isEntry = elementDataset.isEntry === '1'
     this.revisions = JSON.parse(elementDataset.revisions || '[]').map((rev) => {
       rev.id = parseInt(rev.id)
       rev.phpTime = rev.time
@@ -130,7 +130,9 @@ const app = createApp({
     },
     moveRevision(forward = true) {
       const newNumber = this.selectedRevision.number + (forward ? -1 : 1)
-      const newRevision = this.revisions.find((rev) => rev.number == newNumber)
+      const newRevision = this.revisions.find(
+        (rev) => Number(rev.number) === newNumber,
+      )
       if (newRevision) this.selectedRevision = newRevision
     },
     calculateRevisionsPlaceInTimeLine() {
@@ -161,7 +163,7 @@ const app = createApp({
         this.revisions
           .slice()
           .reverse()
-          .forEach((rev, index) => {
+          .forEach((rev) => {
             if (prevRevision) {
               const minGap = this.minGapBetween(rev, prevRevision)
               rev.placeInTimeLine = Math.max(
@@ -175,7 +177,7 @@ const app = createApp({
     },
     minGapBetween(rev1, rev2) {
       // Bigger gap if different day
-      return rev1.time.setHours(0, 0, 0, 0) == rev2.time.setHours(0, 0, 0, 0)
+      return rev1.time.setHours(0, 0, 0, 0) === rev2.time.setHours(0, 0, 0, 0)
         ? 1.3
         : 3
     },

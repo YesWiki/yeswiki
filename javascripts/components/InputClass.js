@@ -35,19 +35,19 @@ export default {
         let optionsList = []
         for (const propName in this.config.subproperties) {
           const componentDefinition = this.config.subproperties[propName] || {}
-          if (componentDefinition.type == 'list') {
+          if (componentDefinition.type === 'list') {
             optionsList = Object.keys(componentDefinition.options)
             for (const classValue of classesMerged) {
-              if (optionsList.find((o) => o == classValue))
+              if (optionsList.find((o) => o === classValue))
                 this.classValues[propName] = classValue
             }
-          } else if (componentDefinition.type == 'checkbox') {
+          } else if (componentDefinition.type === 'checkbox') {
             const checkedValue = componentDefinition.checkedvalue || ''
             const unCheckedValue = componentDefinition.uncheckedvalue || ''
             for (const classValue of classesMerged) {
               if (
-                (classValue == checkedValue && checkedValue != '') ||
-                (classValue == unCheckedValue && unCheckedValue != '')
+                (classValue === String(checkedValue) && checkedValue !== '') ||
+                (classValue === String(unCheckedValue) && unCheckedValue !== '')
               ) {
                 this.classValues[propName] = classValue
               }

@@ -25,9 +25,10 @@ export default {
         case 'radiofiche':
         case 'listefiches':
         case 'listefichesliees':
-        case 'tags':
+        case 'tags': {
           const values = value.split(',').map((v) => this.field.options[v])
           return values.length <= 1 ? values[0] : values
+        }
         case 'email':
           return '' // security
         default:

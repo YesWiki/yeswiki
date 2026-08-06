@@ -1,10 +1,8 @@
 function hideElement(el) {
-  // eslint-disable-next-line no-param-reassign
   el.style.display = 'none'
 }
 
 function uncheckElement(el) {
-  // eslint-disable-next-line no-param-reassign
   el.checked = false
 }
 

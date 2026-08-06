@@ -59,7 +59,7 @@ export function parseFields(text, registry) {
 
       const data = { ...fieldObject }
       delete data.type
-      data._wikiType = wikiType // eslint-disable-line no-underscore-dangle
+      data._wikiType = wikiType
       if (resolution?.subtype && !data.sub_type)
         data.sub_type = resolution.subtype
       if (resolution?.subtype2) data.subtype2 = resolution.subtype2
@@ -70,7 +70,7 @@ export function parseFields(text, registry) {
 
 // designer type (+ sub_type / subtype2 in data) -> stored wiki type keyword
 function resolveWikiType(type, data) {
-  const original = data._wikiType // eslint-disable-line no-underscore-dangle
+  const original = data._wikiType
   const compatible = (resolution) =>
     resolution.type === type &&
     (!data.sub_type ||

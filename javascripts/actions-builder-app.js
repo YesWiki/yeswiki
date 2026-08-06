@@ -427,14 +427,14 @@ export const appConfig = {
         }
 
         // For bazar action, name is contained inside the template attribute
-        if (newActionId == 'entrylist') {
+        if (newActionId === 'entrylist') {
           for (const actionId in this.actions) {
             const action = this.actions[actionId]
             if (
               action &&
               action.properties &&
               action.properties.template &&
-              action.properties.template.value == this.values.template
+              action.properties.template.value === this.values.template
             ) {
               this.selectedActionId = actionId
             }
@@ -456,10 +456,10 @@ export const appConfig = {
       }
       this.updateActionParams()
       // If only one action available, select it
-      if (Object.keys(this.actions).length == 1) {
+      if (Object.keys(this.actions).length === 1) {
         if (
-          this.selectedActionId == '' &&
-          previousSelectedActionId == Object.keys(this.actions)[0]
+          this.selectedActionId === '' &&
+          previousSelectedActionId === Object.keys(this.actions)[0]
         ) {
           this.selectedActionId = Object.keys(this.actions)[0]
           // force watcher without changing value because VueJs will not detect the change
@@ -475,7 +475,7 @@ export const appConfig = {
     getSelectedFormId() {
       if (
         !(this.selectedFormsIds instanceof Array) ||
-        this.selectedFormsIds.length == 0
+        this.selectedFormsIds.length === 0
       )
         return ''
 
@@ -503,7 +503,7 @@ export const appConfig = {
       if (!this.selectedFormsIds) return
       if (
         this.selectedFormsIds.every((fid) =>
-          this.loadedForms.hasOwnProperty(fid),
+          Object.prototype.hasOwnProperty.call(this.loadedForms, fid),
         )
       ) {
         this.selectedForms = {}
@@ -517,7 +517,7 @@ export const appConfig = {
       } else {
         const idsToSearch = this.selectedFormsIds.filter(
           (fid) =>
-            !this.loadedForms.hasOwnProperty(fid) &&
+            !Object.prototype.hasOwnProperty.call(this.loadedForms, fid) &&
             !this.loadingForms.includes(fid),
         )
         if (idsToSearch.length > 0) {
@@ -539,7 +539,7 @@ export const appConfig = {
             forms.forEach((form) => {
               if (
                 form &&
-                form.id != undefined &&
+                form.id != null &&
                 idsToSearch.includes(`${form.id}`)
               ) {
                 this.loadedForms[form.id] = form
@@ -548,7 +548,9 @@ export const appConfig = {
             // default forms for missing
             idsToSearch.forEach((fid) => {
               // fake empty form
-              if (!this.loadedForms.hasOwnProperty(fid)) {
+              if (
+                !Object.prototype.hasOwnProperty.call(this.loadedForms, fid)
+              ) {
                 this.loadedForms[fid] = { prepared: {} }
               }
             })
@@ -613,9 +615,9 @@ export const appConfig = {
         const config = this.selectedActionAllConfigs[key]
         const value = this.values[key]
         if (
-          result.hasOwnProperty(key) ||
+          Object.prototype.hasOwnProperty.call(result, key) ||
           value === undefined ||
-          (config && config.default && `${value}` == `${config.default}`) ||
+          (config && config.default && `${value}` === `${config.default}`) ||
           typeof value == 'object' ||
           (config && config.mapped === false) ||
           (config && !this.checkConfigDisplay(config))
@@ -631,7 +633,7 @@ export const appConfig = {
         )
 
       // default value for 'entrylist'
-      if (this.selectedActionId == 'entrylist')
+      if (this.selectedActionId === 'entrylist')
         result.template = result.template || 'liste_accordeon'
 
       // put in first position 'id' and 'template' if existing
@@ -658,7 +660,7 @@ export const appConfig = {
       if (
         !oldVal ||
         (val &&
-          (oldVal.length != val.length ||
+          (oldVal.length !== val.length ||
             (Array.isArray(val) && !Array.isArray(oldVal)) ||
             !val.every((e) => oldVal.includes(e))))
       ) {

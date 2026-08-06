@@ -62,8 +62,6 @@ export function parseCondition(pValue) {
  */
 
 export function parseKeywords(pKeywords) {
-  const _t = (key) => 'BAZ_MOT_CLE' // Remplace ça par ton système de traduction si besoin
-
   // Résultat par défaut
   const results = { CNF: [], excludeds: [] }
 
@@ -139,7 +137,7 @@ export function toLowerCaseWithoutAccent(str) {
   if (typeof str !== 'string') return ''
 
   // 1. Lowercase unicode
-  str = str.toLowerCase()
+  let out = str.toLowerCase()
 
   // 2. Remplacer les ligatures
   const replacements = {
@@ -151,15 +149,15 @@ export function toLowerCaseWithoutAccent(str) {
     þ: 'th',
   }
 
-  str = str.replace(/œ|æ|ß|ø|ð|þ/g, (match) => replacements[match])
+  out = out.replace(/œ|æ|ß|ø|ð|þ/g, (match) => replacements[match])
 
   // 3. Décomposition unicode (NFD) + suppression des diacritiques
-  str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  out = out.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 
   // 4. Translitération ASCII (approximative via normalisation)
   // Pas d'équivalent direct à `iconv`, mais `normalize` fait une bonne partie du travail
 
-  return str
+  return out
 }
 
 /**
