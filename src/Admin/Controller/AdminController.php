@@ -255,6 +255,8 @@ class AdminController extends YesWikiController
             'presets' => $presets->all(),
             'variables' => PresetService::VARIABLES,
             'swatches' => PresetService::SWATCHES,
+            // what the two font selects offer, each option drawn in the stack it names
+            'fontStacks' => PresetService::FONT_STACKS,
             'defaultPreset' => $presets->default(),
             // "new" opens on what the wiki is wearing: a preset is almost always made by
             // adjusting one that nearly works, not from black on white

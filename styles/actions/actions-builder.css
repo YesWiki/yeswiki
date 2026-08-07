@@ -49,23 +49,30 @@ input[type='range'] {
   opacity: 0.7;
 }
 
+/* Three to a row, like the form designer's palette this was modelled on -- the rail is the
+   same ~314px of usable width in both, so a component and a field type should not be laid
+   out at two different densities. Three cards of ~100px show half again as many components
+   before you have to scroll, which is what a palette is for: seeing what there is. */
 .actions-builder-panel__palette {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
 
+/* Card sizing follows from the width. At ~100px the 0.8rem label fit about two words a
+   line, so everything read as an ellipsis; the form designer's 0.72rem is what fits, and
+   a smaller icon leaves the room for it. */
 .actions-builder-panel__component {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  padding: 10px 6px;
+  gap: 5px;
+  padding: 8px 4px;
   min-height: 76px;
   text-align: center;
-  font-size: 0.8rem;
-  line-height: 1.2;
+  font-size: 0.72rem;
+  line-height: 1.15;
   cursor: pointer;
   background: #fff;
   border: 1px solid var(--neutral-soft-color);
@@ -79,18 +86,26 @@ input[type='range'] {
 }
 
 .actions-builder-panel__component-icon .yw-icon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   opacity: 0.75;
 }
 
-/* a component name is a label, not prose: two lines, then an ellipsis, so a long one
-   cannot make its card twice the height of the card beside it */
+/* A component name is a label, not prose: three lines, then an ellipsis, so a long one
+   cannot make its card twice the height of the card beside it. Three rather than two,
+   because these names are phrases ("Afficher des encadrés en accordéon") and a third of
+   the rail's width holds two or three words a line -- at two lines nearly every card in
+   the palette ended in an ellipsis, which tells you nothing about what is in it. The whole
+   name is on the card's `title` either way.
+
+   `overflow-wrap`, because a clamp only decides where to stop, not where to break: a name
+   with no space in it that is wider than the card overflows it instead of wrapping. */
 .actions-builder-panel__component-label {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .actions-builder-panel__empty {

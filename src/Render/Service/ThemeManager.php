@@ -782,6 +782,13 @@ class ThemeManager implements EventSubscriberInterface
      */
     private function installAndGetCSSForFont(string $fontFamily): string
     {
+        // A stack of fonts the reader already has is not a webfont, and there is nothing to
+        // fetch for it -- asking anyway costs a curl timeout per user-agent string before
+        // Google answers with nothing. See PresetService::FONT_STACKS.
+        if (PresetService::isSystemStack($fontFamily)) {
+            return '';
+        }
+
         $css = '';
         $fontFamily = $this->cleanFont($fontFamily);
         if (!empty($fontFamily)) {

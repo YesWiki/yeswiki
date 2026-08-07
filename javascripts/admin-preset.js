@@ -92,6 +92,57 @@ if (rail) {
     return rail.querySelector(`[data-yw-preset-picker="${name}"]`)
   }
 
+  /** The slider beside a text field, where the field is a size. */
+  function sliderFor(name) {
+    return rail.querySelector(`[data-yw-preset-slider="${name}"]`)
+  }
+
+  /**
+   * Where the slider sits for a value it may not be able to express.
+   *
+   * The same contract as asHex: the control is only ever *shown* something it can hold, and
+   * the text field beside it keeps the truth. A preset written by hand can say `1.05rem`,
+   * which reads here as 1 and lands on the slider's floor -- until the slider is actually
+   * moved, at which point the person has chosen pixels and the field says so.
+   */
+  function asSliderValue(slider, value) {
+    const min = Number(slider.min)
+    const max = Number(slider.max)
+    const size = parseFloat(String(value ?? '').trim())
+    if (!Number.isFinite(size)) return String(Math.round((min + max) / 2))
+    return String(Math.min(max, Math.max(min, Math.round(size))))
+  }
+
+  /**
+   * Let a font select hold a value that is not one of the offered stacks.
+   *
+   * A preset naming a webfont, or a stack somebody wrote by hand, is a value this select has
+   * no option for -- and a select handed one of those keeps whatever was selected before,
+   * which would rewrite somebody's font the moment the rail opened on it. So the value is
+   * added as an option of its own, showing itself, drawn in itself.
+   *
+   * One at a time: the option is replaced on every open, or editing three presets in a row
+   * would leave the other two's fonts in the list.
+   */
+  function ensureOption(field, value) {
+    if (field.tagName !== 'SELECT') return
+    field.querySelector('[data-yw-preset-own]')?.remove()
+    if (value === '' || [...field.options].some((o) => o.value === value))
+      return
+
+    const option = document.createElement('option')
+    option.value = value
+    option.textContent = value
+    option.style.fontFamily = value
+    option.dataset.ywPresetOwn = ''
+    field.insertBefore(option, field.firstChild)
+  }
+
+  /** A font select shows its own choice, so the preview is there before the list is opened. */
+  function showChosenFont(field) {
+    if (field.tagName === 'SELECT') field.style.fontFamily = field.value
+  }
+
   /**
    * A `#rrggbb` the native picker will accept. It reads anything else as black and then
    * reports black back as the value, which would turn a `var(--x)` or an `rgb()` into
@@ -114,9 +165,14 @@ if (rail) {
 
     for (const field of fields) {
       const name = field.dataset.ywPresetField
+      // before the assignment: a select drops a value it has no option for, silently
+      ensureOption(field, values[name] ?? '')
       field.value = values[name] ?? ''
+      showChosenFont(field)
       const picker = pickerFor(name)
       if (picker) picker.value = asHex(field.value)
+      const slider = sliderFor(name)
+      if (slider) slider.value = asSliderValue(slider, field.value)
       preview(name, field.value)
     }
 
@@ -150,12 +206,21 @@ if (rail) {
   for (const field of fields) {
     const name = field.dataset.ywPresetField
     const picker = pickerFor(name)
+    const slider = sliderFor(name)
     field.addEventListener('input', () => {
       if (picker) picker.value = asHex(field.value)
+      if (slider) slider.value = asSliderValue(slider, field.value)
+      showChosenFont(field)
       preview(name, field.value)
     })
     picker?.addEventListener('input', () => {
       field.value = picker.value
+      preview(name, field.value)
+    })
+    // the slider only ever produces pixels, which is what makes it a slider: a length it
+    // cannot express is one it cannot land on either
+    slider?.addEventListener('input', () => {
+      field.value = `${slider.value}px`
       preview(name, field.value)
     })
   }

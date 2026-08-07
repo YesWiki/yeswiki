@@ -212,6 +212,36 @@
               <input type="text" class="yw-input" id="yw-preset-{{ name }}" name="{{ name }}"
                      data-yw-preset-field="{{ name }}" autocomplete="off" spellcheck="false">
             </div>
+          {% elseif variable.kind == 'size' %}
+            {# Same two-controls-one-field shape as a colour, for the same reason: the slider
+               can only express whole pixels, and a preset file can hold `1.05rem`. So the
+               text box is what posts and what keeps the value, and the slider is how the
+               value is normally chosen -- a body size is judged by looking at the gallery
+               while dragging, not by knowing that 17 is a pixel bigger than 16. #}
+            <div class="yw-preset-rail__size">
+              <input type="range" class="yw-preset-rail__slider" data-yw-preset-slider="{{ name }}"
+                     min="{{ variable.min }}" max="{{ variable.max }}" step="{{ variable.step }}"
+                     aria-label="{{ _t(variable.label) }}">
+              <input type="text" class="yw-input yw-preset-rail__size-value" id="yw-preset-{{ name }}"
+                     name="{{ name }}" data-yw-preset-field="{{ name }}"
+                     autocomplete="off" spellcheck="false">
+            </div>
+          {% elseif variable.kind == 'font' %}
+            {# Each option is drawn in the stack it names, which is the only description of a
+               typeface worth reading. `style` on an <option> is honoured by the desktop
+               browsers this screen is used from; where it is not, the names are still the
+               taxonomy's and the gallery below repaints on every change, so the choice is
+               never made blind.
+
+               A preset that names something else -- a webfont, or a stack somebody wrote by
+               hand -- keeps it: the JS puts the current value in as an option of its own
+               rather than letting a select silently drop what it cannot represent. #}
+            <select class="yw-input yw-preset-rail__font" id="yw-preset-{{ name }}" name="{{ name }}"
+                    data-yw-preset-field="{{ name }}">
+              {% for stackName, stack in fontStacks %}
+                <option value="{{ stack }}" style="font-family: {{ stack }}">{{ stackName }}</option>
+              {% endfor %}
+            </select>
           {% else %}
             <input type="text" class="yw-input" id="yw-preset-{{ name }}" name="{{ name }}"
                    data-yw-preset-field="{{ name }}" autocomplete="off" spellcheck="false">

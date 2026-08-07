@@ -51,9 +51,47 @@ class PresetService
         'neutral-color' => ['kind' => 'color', 'label' => 'ADMIN_PRESET_VAR_NEUTRAL_COLOR'],
         'neutral-soft-color' => ['kind' => 'color', 'label' => 'ADMIN_PRESET_VAR_NEUTRAL_SOFT_COLOR'],
         'neutral-light-color' => ['kind' => 'color', 'label' => 'ADMIN_PRESET_VAR_NEUTRAL_LIGHT_COLOR'],
-        'main-text-fontsize' => ['kind' => 'size', 'label' => 'ADMIN_PRESET_VAR_MAIN_TEXT_FONTSIZE'],
+        // the bounds are the slider's: below 12px body text stops being readable and above
+        // 24px a page of it stops fitting, so the range is where a *body* size can sensibly
+        // land rather than everything a length can be
+        'main-text-fontsize' => ['kind' => 'size', 'label' => 'ADMIN_PRESET_VAR_MAIN_TEXT_FONTSIZE', 'min' => 12, 'max' => 24, 'step' => 1],
         'main-text-fontfamily' => ['kind' => 'font', 'label' => 'ADMIN_PRESET_VAR_MAIN_TEXT_FONTFAMILY'],
         'main-title-fontfamily' => ['kind' => 'font', 'label' => 'ADMIN_PRESET_VAR_MAIN_TITLE_FONTFAMILY'],
+    ];
+
+    /**
+     * The type a preset can be set in: the stacks from modernfontstacks.com, verbatim.
+     *
+     * Every one of these is a list of fonts already on the reader's machine, ending in a
+     * generic -- so a preset that uses one downloads nothing, waits for nothing, and looks
+     * the same on the second page as on the first. That is the whole argument for them here:
+     * the alternative this screen used to offer was a webfont name, which means a file
+     * fetched from Google on save (installAndGetCSSForFont), served from the instance
+     * afterwards, and a paragraph that reflows once it arrives.
+     *
+     * The names are the taxonomy's, not descriptions -- "Didone" and "Neo-Grotesque" are what
+     * these shapes are called -- so they are not translated. What tells you what one looks
+     * like is the option being drawn in it, which no translation improves.
+     *
+     * Order is the site's. Kept as one map so that what the select offers and what
+     * isSystemStack() recognises cannot drift apart.
+     */
+    public const FONT_STACKS = [
+        'System UI' => 'system-ui, sans-serif',
+        'Transitional' => "Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif",
+        'Old Style' => "'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', P052, serif",
+        'Humanist' => "Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif",
+        'Geometric Humanist' => "Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif",
+        'Classical Humanist' => "Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif",
+        'Neo-Grotesque' => "Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif",
+        'Monospace Slab Serif' => "'Nimbus Mono PS', 'Courier New', monospace",
+        'Monospace Code' => "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace",
+        'Industrial' => "Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed, sans-serif",
+        'Rounded Sans' => "ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT', 'Arial Rounded MT Bold', Calibri, source-sans-pro, sans-serif",
+        'Slab Serif' => "Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif",
+        'Antique' => "Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif",
+        'Didone' => "Didot, 'Bodoni MT', 'Noto Serif Display', 'URW Palladio L', P052, Sylfaen, serif",
+        'Handwritten' => "'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive",
     ];
 
     /** The colour variables, in order -- the swatch strip a preset is recognised by. */
@@ -75,8 +113,10 @@ class PresetService
         'neutral-soft-color' => '#57575c',
         'neutral-light-color' => '#f2f2f2',
         'main-text-fontsize' => '16px',
-        'main-text-fontfamily' => 'sans-serif',
-        'main-title-fontfamily' => 'sans-serif',
+        // the first stack of the list rather than the bare generic this used to be: a new
+        // preset opens on a value the font select can actually show as selected
+        'main-text-fontfamily' => 'system-ui, sans-serif',
+        'main-title-fontfamily' => 'system-ui, sans-serif',
     ];
 
     public function __construct(
@@ -335,6 +375,24 @@ class PresetService
         }
 
         return '#000000';
+    }
+
+    /**
+     * Is this font family one of the stacks above -- fonts the reader already has?
+     *
+     * Asked by ThemeManager on save, because saving a preset otherwise means asking Google
+     * for a webfont named after the first family in the value. For a stack that is `Seravek`
+     * or `Didot`, that request is answered by nothing and costs a curl timeout per user-agent
+     * string, on a screen where the person is waiting for a page. It is also a request to
+     * Google made by the instance, in the one case where the whole point of the choice was
+     * that nothing has to be fetched from anywhere.
+     *
+     * Static, so ThemeManager can ask without being handed this service: PresetService is
+     * built on top of ThemeManager, and injecting it back would close the circle.
+     */
+    public static function isSystemStack(string $family): bool
+    {
+        return in_array(trim($family), self::FONT_STACKS, true);
     }
 
     /** @return array{id: string, name: string, custom: bool, default: bool, path: string, href: string, values: array<string, string>} */

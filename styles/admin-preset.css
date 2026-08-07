@@ -247,6 +247,42 @@ span.yw-preset-card__star {
   cursor: pointer;
 }
 
+/* Slider and read-out on one line, the read-out sized to `24px` and no more: it is a length
+   in pixels, and a box wide enough for a sentence says a sentence is expected. The slider
+   takes what is left, because it is the control being used. */
+.yw-preset-rail__size {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.yw-preset-rail__slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--primary-color);
+}
+
+.yw-preset-rail__size-value {
+  flex: 0 0 5.5em;
+  width: 5.5em;
+  text-align: center;
+}
+
+/* The select shows its own choice (the JS sets font-family on it), so what a stack looks
+   like is on screen without opening the list. A size up from the rail's other inputs, since
+   what is being judged here is the shape of the letters. */
+.yw-preset-rail__font {
+  font-size: 1.05rem;
+}
+
+/* Each option drawn in the stack it names. Declared here as well as inline on the option so
+   the list has a size that shows the difference between two of them; the family itself has
+   to stay inline, because it is per option. */
+.yw-preset-rail__font option {
+  font-size: 1.05rem;
+  padding: 2px 0;
+}
+
 .yw-preset-rail__copy-notice {
   margin: 0 0 12px;
   padding: 8px 10px;

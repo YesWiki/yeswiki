@@ -34,8 +34,11 @@
       <template v-for="group in paletteGroups" :key="group.id">
         <h3 class="actions-builder-panel__palette-group" v-text="group.label"></h3>
         <div class="actions-builder-panel__palette">
+          {# `title`: three to a row leaves each card a third of the rail, so a name of more
+             than a few words is clamped on the card. The tooltip is where the rest of it is. #}
           <button type="button" class="actions-builder-panel__component"
                   v-for="action in group.actions" :key="action.id"
+                  :title="action.label"
                   @click="selectFromPalette(group.id, action.id)">
             <span class="actions-builder-panel__component-icon" v-html="group.icon"></span>
             <span class="actions-builder-panel__component-label" v-html="action.label"></span>

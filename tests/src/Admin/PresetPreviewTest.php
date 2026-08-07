@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Render\Service\PresetService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -144,6 +145,49 @@ class PresetPreviewTest extends YesWikiTestCase
         // one input per variable, named as the CSS custom property it writes
         $this->assertStringContainsString('name="primary-color"', $screen);
         $this->assertStringContainsString('name="main-title-fontfamily"', $screen);
+    }
+
+    /**
+     * The two variables that are not colours get controls of their own.
+     *
+     * Both were text boxes, which is the one thing typography cannot be judged from: a size
+     * is chosen by watching the gallery change while dragging, and a typeface by looking at
+     * it. So the size is a slider over the range a body size can sensibly land in, and each
+     * font is a select whose options are drawn in the stack they name.
+     *
+     * Asserted because the failure is silent in both directions: a select that lost its
+     * inline `font-family` still lists fifteen names, and a slider whose bounds went missing
+     * still slides -- over 0 to 100.
+     */
+    public function testTheRailOffersASizeSliderAndAFontSelect(): void
+    {
+        $screen = $this->screen();
+
+        $this->assertStringContainsString('data-yw-preset-slider="main-text-fontsize"', $screen);
+        $this->assertMatchesRegularExpression(
+            '/type="range"[^>]*min="12"[^>]*max="24"/',
+            $screen,
+            'a slider with no bounds is a slider over 0 to 100'
+        );
+        // the text box beside it is what posts, so a preset written by hand in `rem` survives
+        $this->assertStringContainsString('name="main-text-fontsize"', $screen);
+
+        foreach (['main-text-fontfamily', 'main-title-fontfamily'] as $variable) {
+            $this->assertMatchesRegularExpression(
+                '/<select[^>]*name="' . $variable . '"/',
+                $screen,
+                $variable . ' is chosen from a list, not typed'
+            );
+        }
+        // every stack offered, each option drawn in itself -- the option's own preview
+        foreach (PresetService::FONT_STACKS as $name => $stack) {
+            $this->assertStringContainsString('>' . $name . '</option>', $screen);
+            $this->assertStringContainsString(
+                'style="font-family: ' . htmlspecialchars($stack, ENT_QUOTES) . '"',
+                $screen,
+                $name . ' is not drawn in its own stack'
+            );
+        }
     }
 
     /**
