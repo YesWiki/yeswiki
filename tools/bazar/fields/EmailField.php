@@ -113,9 +113,10 @@ class EmailField extends BazarField
 
     public static function mapToFieldArray($fieldProps): array
     {
+        error_log(json_encode($fieldProps));
         $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_SHOW_CONTACT_FORM] = $fieldProps['showContactForm'];
-        $new[self::FIELD_SEE_MAIL_ACLS] = $fieldProps['seeEmailAcls'];
+        $new[self::FIELD_SHOW_CONTACT_FORM] = $fieldProps['showContactForm'] ? 'form' : '';
+        $new[self::FIELD_SEE_MAIL_ACLS] = $fieldProps['seeEmailAcls'] == '@admins' ? '' : $fieldProps['seeEmailAcls'];
         $new[self::FIELD_SEND_EMAIL] = $fieldProps['sendMail'];
         ksort($new);
         return $new;

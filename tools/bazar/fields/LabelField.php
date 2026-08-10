@@ -77,8 +77,8 @@ class LabelField extends BazarField
     {
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_USE_WIKI_SYNTAX] = $fieldProps['useWikiSyntax'] ?? '';
-        $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewText'] ?? '';
-        $new[self::FIELD_FORM_TEXT] = $fieldProps['formText'] ?? '';
+        $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewtext'] ?? '';
+        $new[self::FIELD_FORM_TEXT] = $fieldProps['formtext'] ?? '';
         ksort($new);
         return $new;
     }

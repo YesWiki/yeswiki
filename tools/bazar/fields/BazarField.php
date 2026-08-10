@@ -115,7 +115,7 @@ abstract class BazarField implements \JsonSerializable
         $new[self::FIELD_DEFAULT] = $fieldProps['default'] ?? '';
         $new[6] = '';
         $new[7] = '';
-        $new[self::FIELD_REQUIRED] = $fieldProps['required'] ?? '';
+        $new[self::FIELD_REQUIRED] = $fieldProps['required'] ? 1 : '';
         $new[self::FIELD_SEARCHABLE] = $fieldProps['searchable'] ?? '';
         $new[self::FIELD_HINT] = $fieldProps['helper'] ?? '';
         $new[self::FIELD_READ_ACCESS] = $fieldProps['read_acl'] ?? '';
@@ -357,6 +357,7 @@ abstract class BazarField implements \JsonSerializable
             'write_acl' => $this->getWriteAccess(),
             'sem_type' => $this->getSemanticPredicate(),
             'field_type' => self::FIELD_CLASS_TYPE,
+            'size' => $this->getSize(),
         ];
     }
 

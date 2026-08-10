@@ -33,7 +33,7 @@ class TextareaField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->numRows = empty($values[self::FIELD_NUM_ROWS]) ? 3 : $values[self::FIELD_NUM_ROWS];
+        $this->numRows = $values[self::FIELD_NUM_ROWS] ?? 3;
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         $this->placeholder = $values[self::FIELD_PLACEHOLDER];
@@ -344,12 +344,13 @@ class TextareaField extends BazarField
 
     public static function mapToFieldArray($fieldProps): array
     {
-       $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_NUM_ROWS] = $fieldProps['numRow'] ?? '';
-       $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
-       $new[self::FIELD_SYNTAX] = $fieldProps['syntax'] ?? '';
-       ksort($new);
-       return $new;
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_NUM_ROWS] = $fieldProps['numRow'];
+        $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
+        $new[self::FIELD_SYNTAX] = $fieldProps['syntax'] ?? '';
+        ksort($new);
+
+        return $new;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)

@@ -3,13 +3,13 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -133,7 +133,7 @@ class FormManager
     }
 
     // necessary until jquery form is rework to use new format
-    protected function prepare_with_special_parameters_old_format($form)
+    protected function prepare_with_special_parameters_old_format($form, $id_nature)
     {
         $basePath = $this->getBasePath();
         $template_list = $this->parseTemplate($form['bn_template']);
@@ -142,7 +142,7 @@ class FormManager
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$form['id']}_{$image_comp[1]}.jpg";
+                $default_image_filename = $basePath . "defaultimage{$id_nature}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
@@ -183,7 +183,8 @@ class FormManager
             }
             $prepared[] = $wikifield;
         }
-        $template_list['fields'] = $prepared;
+        //$template_list['fields'] = $prepared;
+
         return [$prepared, $modify];
     }
 
@@ -246,8 +247,9 @@ class FormManager
 
             list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         } else {
-            list($template_list, $modify) = $this->prepare_with_special_parameters_old_format($form);
+            list($template_list, $modify) = $this->prepare_with_special_parameters_old_format($form, $form['bn_id_nature']);
         }
+
         $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
         $form['bn_template'] = $this->encodeTemplate($template_list);

@@ -1,15 +1,15 @@
 <?php
 
+use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FieldFactory;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Service\ActivityPubService;
-use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Security\Controller\SecurityController;
 
 class MigrationFormManager extends FormManager
@@ -51,11 +51,15 @@ class MigrationFormManager extends FormManager
 
 class ConvertTableNature2Pages extends YesWikiMigration
 {
-    public function run()
+    /**
+     * This function get a form in old nature syntax and return a form in new json syntax.
+     * @param string $form  formulaire with old nature syntax
+     * @param array|null $fiche as associative array using json_decode.
+     * @@return array fiche in new format
+     */
+    public function convertform($pageManager, $tripleStore, $form, $fiche = []): array
     {
-        $pageManager = $this->getService(PageManager::class);
-        $tripleStore = $this->getService(TripleStore::class);
-        $aclService = $this->getService(AclService::class);
+
         $formManager = new MigrationFormManager(
             $this->wiki,
             $this->dbService,
@@ -69,6 +73,88 @@ class ConvertTableNature2Pages extends YesWikiMigration
             $tripleStore,
             $this->getService(AclService::class),
         );
+        $form = $formManager->getFromRawData($form);
+        $form_array = [];
+        foreach ($form['prepared'] as $i => $element) {
+            $classType = get_class($element);
+            $field = json_decode(json_encode($element), true);
+            $field['order'] = $i;
+            $fieldExploded = explode('\\', $classType);
+            $field['field_type'] = array_pop($fieldExploded);
+
+            switch ($field['field_type']) {
+                case 'SelectEntryField':
+                    $key = 'listefiche'.$field['linkedObjectName'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+
+                    break;
+                case 'SelectListField':
+                    $key = 'listeListe'.$field['linkedObjectName'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+
+                    break;
+                case 'CheckboxListField':
+                    $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+
+                    break;
+                case 'CheckboxEntryField':
+                    $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+
+                    break;
+                case 'RadioListField':
+                    $key = 'radio'.$field['linkedObjectName'].$field['id'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+                    break;
+                case 'RadioEntryField':
+                    $key = 'radio' . $field['linkedObjectName'].$field['id'];
+                    if (array_key_exists($key, $fiche)) {
+                        $field['name'] = $key;
+                    }
+
+                    break;
+            }
+            $field['id'] ??= $field['name'] ?? $field['type'].'__'.$i;
+            if (isset($field['options'])) {
+                unset($field['options']);
+            }
+            $form_array[$field['id']] = $field;
+        }
+        $newform = [
+            'id' => $form['bn_id_nature'],
+            'title' => $form['bn_label_nature'],
+            'description' => $form['bn_description'],
+            'condition' => $form['bn_condition'],
+            'only_one_entry' => $form['bn_only_one_entry'],
+            'only_one_entry_message' => $form['bn_only_one_entry_message'],
+            'fields' => $form_array,
+        ];
+        if (isset($form['bn_sem_context']) || isset($form['bn_sem_type']) || isset($form['bn_sem_use_template'])) {
+            $semantic = [];
+            $form['bn_sem_context'] ?? $semantic['context'] = $form['bn_sem_context'];
+            $form['bn_sem_type'] ?? $semantic['type'] = $form['type'];
+            $form['bn_sem_use_template'] ?? $semantic['use_template'] = $form['bn_sem_use_template'];
+            $newform['semantic'] = $semantic;
+        }
+        return $newform;
+    }
+
+    public function run()
+    {
+        $aclService = $this->getService(AclService::class);
+        $pageManager = $this->getService(PageManager::class);
+        $tripleStore = $this->getService(TripleStore::class);
 
         $forms = $this->dbService->loadAll(
             "SELECT * FROM {$this->dbService->prefixTable(
@@ -76,53 +162,13 @@ class ConvertTableNature2Pages extends YesWikiMigration
             )} ORDER BY bn_label_nature ASC",
         );
         foreach ($forms as $form) {
-            $form = $formManager->getFromRawData($form);
-            $form_array = [];
-            foreach ($form['prepared'] as $i => $element) {
-                error_log("field number : $i");
-                $classType = get_class($element);
-                $field = json_decode(json_encode($element), true);
-                $field["order"] = $i;
 
-                if (
-                    (!isset($field['name']) || $field['name'] == '') &&
-                    isset($field['linkedObjectName'])
-                ) {
-                    $id = $field['type'] . $field['linkedObjectName'];
-                    if (is_numeric($field['linkedObjectName'])) {
-                        $field['id'] = $field['name'] = 'listefiche'. $field['linkedObjectName'];
-                    } else {
-                        $field['name'] = 'listeListe'. $field['linkedObjectName'];
-                    }
-                    $field['id'] ??= $field['name'];
-                } else {
-                    $id = $field['name'] ?? $field['type'] . '__' . $i;
-                }
-                if (isset($field['options'])) {
-                    unset($field['options']);
-                }
-                $fieldExploded = explode('\\', $classType);
-                $field['field_type'] = array_pop($fieldExploded);
-                error_log(json_encode($field));
-                $form_array[$id] = $field;
-            }
-            $slug = getAvailableSlug($form['bn_label_nature']); //TODO changer pour slug et ajouter mettre les droits d'admin.
-            $newform = [
-                'id' => $form['bn_id_nature'],
-                'title' => $form['bn_label_nature'],
-                'description' => $form['bn_description'],
-                'condition' => $form['bn_condition'],
-                'only_one_entry' => $form['bn_only_one_entry'],
-                'only_one_entry_message' => $form['bn_only_one_entry_message'],
-                'fields' => $form_array,
-            ];
-            if (isset($form['bn_sem_context']) || isset($form['bn_sem_type']) || isset($form['bn_sem_use_template'])) {
-                $semantic = [];
-                $form['bn_sem_context'] ?? $semantic['context'] = $form['bn_sem_context'];
-                $form['bn_sem_type'] ?? $semantic['type'] = $form['type'];
-                $form['bn_sem_use_template'] ?? $semantic['use_template'] = $form['bn_sem_use_template'];
-                $newform['semantic'] = $semantic;
-            }
+            $fiche = $this->dbService->loadSingle("select body from {$this->dbService->prefixTable('nature')} where tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')} WHERE value = 'fiche_bazar') and JSON_VALUE(body, '$.id_typeannonce') = {$form['bn_id_nature']} limit 1");
+            $fiche = $fiche ? json_decode($fiche) : [];
+
+            $newform = $this->convertform($pageManager, $tripleStore, $form, $fiche);
+            $slug = getAvailableSlug($form['bn_label_nature']);
+
             $saved = $pageManager->save(
                 $slug,
                 json_encode($newform, JSON_FORCE_OBJECT),
