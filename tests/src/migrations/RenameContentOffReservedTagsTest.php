@@ -49,8 +49,12 @@ class RenameContentOffReservedTagsTest extends YesWikiTestCase
         $expectedNewTag = $pageManager->suggestFreeTag($reserved);
 
         try {
+            // `user` and `time` are reserved words on PostgreSQL, so the fixture quotes them --
+            // unquoted, this test could not run at all on one of the three supported drivers
+            // ("syntax error at or near \"user\""), which is what the pgsql CI leg found.
             $dbService->query(
-                "INSERT INTO {$pages} (tag, time, body, owner, user, latest, parent)"
+                "INSERT INTO {$pages} (tag, {$dbService->quoteIdentifier('time')}, body, owner,"
+                . " {$dbService->quoteIdentifier('user')}, latest, parent)"
                 . " VALUES ('{$dbService->escape($reserved)}', '2026-01-01 00:00:00',"
                 . " '" . $dbService->escape('{"content":"content stranded on a reserved tag"}') . "',"
                 . " '', '', 'Y', '')"

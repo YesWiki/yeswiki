@@ -29,11 +29,8 @@ on:
       - '.github/workflows/*.yml'
 
 env:
-  DB_NAME: yeswiki_test
-  DB_USER: root
-  DB_PASSWORD: root
-  PG_USER: yeswiki
-  PG_PASSWORD: password
+  # Only what is genuinely shared by every leg. Per-driver credentials live on the matrix rows
+  # below, next to the driver they belong to.
   WIKI_HOST: 127.0.0.1:8080
 
 jobs:
@@ -52,12 +49,19 @@ jobs:
         # until now CI ran one. The dialects are where they differ -- SQLite accepts what
         # MySQL refuses and PostgreSQL is stricter than both -- so a driver leg is worth more
         # than another PHP leg. PHP still spans its supported range, on MySQL.
+        #
+        # Each leg carries its OWN credentials. They used to come from a `case` on
+        # ${{ matrix.driver }} reading workflow-level `env`, and on the pgsql leg that selected
+        # the mysql branch: db_driver=pgsql went through correctly while db_user came out as
+        # `root`, so the installer dialled PostgreSQL on 5432 with the MySQL account and got
+        # `password authentication failed for user "root"`. One value per leg, resolved by the
+        # matrix and nothing else, cannot express that.
         include:
-          - { php-version: '8.3', driver: 'mysql' }
-          - { php-version: '8.4', driver: 'mysql' }
-          - { php-version: '8.5', driver: 'mysql' }
-          - { php-version: '8.3', driver: 'sqlite' }
-          - { php-version: '8.3', driver: 'pgsql' }
+          - { php-version: '8.3', driver: 'mysql',  db_user: 'root',    db_password: 'root',     db_name: 'yeswiki_test' }
+          - { php-version: '8.4', driver: 'mysql',  db_user: 'root',    db_password: 'root',     db_name: 'yeswiki_test' }
+          - { php-version: '8.5', driver: 'mysql',  db_user: 'root',    db_password: 'root',     db_name: 'yeswiki_test' }
+          - { php-version: '8.3', driver: 'sqlite', db_user: '',        db_password: '',         db_name: '' }
+          - { php-version: '8.3', driver: 'pgsql',  db_user: 'yeswiki', db_password: 'password', db_name: 'yeswiki_test' }
 
     # `services` cannot be conditioned on the matrix, so both servers start on every leg and
     # the SQLite ones simply ignore them. The alternative is one job per driver with the steps
@@ -66,8 +70,8 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
-          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: yeswiki_test
         ports:
           - 3306:3306
         options: >-
@@ -79,9 +83,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ${{ env.PG_USER }}
-          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
-          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: yeswiki
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: yeswiki_test
         ports:
           - 5432:5432
         options: >-
@@ -134,12 +138,19 @@ jobs:
       # fixed private/yeswiki.db (InstallationController::SQLITE_DATABASE_PATH).
       - name: Setup Wiki
         run: |
-          case "${{ matrix.driver }}" in
-            mysql)  DB_ARGS=(-F "config[db_host]=127.0.0.1" -F "config[db_database]=${{ env.DB_NAME }}" -F "config[db_user]=${{ env.DB_USER }}" -F "config[db_password]=${{ env.DB_PASSWORD }}") ;;
-            pgsql)  DB_ARGS=(-F "config[db_host]=127.0.0.1" -F "config[db_database]=${{ env.DB_NAME }}" -F "config[db_user]=${{ env.PG_USER }}" -F "config[db_password]=${{ env.PG_PASSWORD }}") ;;
-            sqlite) DB_ARGS=() ;;
-            *) echo "unknown driver '${{ matrix.driver }}'"; exit 1 ;;
-          esac
+          # SQLite takes no credentials and ignores db_database: the installer puts the file at a
+          # fixed private/yeswiki.db (InstallationController::SQLITE_DATABASE_PATH).
+          DB_ARGS=()
+          if [ "${{ matrix.driver }}" != "sqlite" ]; then
+            DB_ARGS=(
+              -F "config[db_host]=127.0.0.1"
+              -F "config[db_database]=${{ matrix.db_name }}"
+              -F "config[db_user]=${{ matrix.db_user }}"
+              -F "config[db_password]=${{ matrix.db_password }}"
+            )
+          fi
+          # printed so a failure says which account was dialled, which is what the last one hid
+          echo "installing: driver=${{ matrix.driver }} user=${{ matrix.db_user }} database=${{ matrix.db_name }}"
           curl --silent --fail --show-error \
             -F "config[default_language]=fr" \
             -F "config[yeswiki_name]=MyTestWiki" \

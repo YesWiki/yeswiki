@@ -87,7 +87,14 @@ class CommentService implements EventSubscriberInterface
             if (empty($idComment)) {
                 $newComment = true;
                 // find number
-                $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
+                // `+ 0` is the MySQL-ism `loadComments()` below already had to stop using:
+                // comments are tagged `comment<epoch>`, so the number after the prefix is what
+                // orders them, and MySQL coerces the text silently. PostgreSQL refuses --
+                // "operator does not exist: text + integer" -- and took posting a comment down
+                // with it. `castToInteger()` exists for exactly this and was applied to the
+                // sibling method only.
+                $numericTag = $this->dbService->dialect()->castToInteger('SUBSTRING(tag, 8)');
+                $sql = "SELECT MAX({$numericTag}) AS comment_id"
                     . ' FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
                     . " WHERE parent != ''";
                 if ($lastComment = $this->dbService->loadSingle($sql)) {
