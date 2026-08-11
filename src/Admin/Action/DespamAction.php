@@ -112,10 +112,10 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 echo '<form method="post" action="' . $despam_url . "\">\n";
                 echo "<table>\n";
                 foreach ($pagesFromSpammer as $i => $page) {
-                    $req = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where tag = '"
-                . $this->getService(DbService::class)->escape($page['tag'])
-                . "' order by time desc";
-                    $revisions = $this->getService(DbService::class)->loadAll($req);
+                    $timeCol = $this->getService(DbService::class)->quoteIdentifier('time');
+                    $req = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix']
+                . 'pages where tag = ? order by ' . $timeCol . ' desc';
+                    $revisions = $this->getService(DbService::class)->loadAll($req, [$page['tag']]);
 
                     echo "<tr>\n" .
                 '<td>' .
@@ -199,34 +199,47 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         echo $rev_id . '<br>';
                         // Selectionne la revision
                         $dbService = $this->getService(DbService::class);
-                        $revision = $this->getService(DbService::class)->loadSingle('select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where id = '"
-                  . $dbService->escape($rev_id) . "' limit 1");
+                        $revision = $this->getService(DbService::class)->loadSingle(
+                            'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages where id = ? limit 1',
+                            [$rev_id]
+                        );
                         if (!is_array($revision)) {
                             continue;
                         }
 
-                        // Fait de la derniere version de cette revision
-                        // une version archivee
-                        $requeteUpdate =
-                  'UPDATE ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages ' .
-                  "SET latest = 'N' " .
-                  "WHERE latest = 'Y' " .
-                  "AND tag = '" . $dbService->escape($revision['tag']) . "'";
-                        $this->getService(DbService::class)->query($requeteUpdate);
-                        $restoredPages .= $revision['tag'] . ', ';
-
-                        // add new revision
+                        // Demote the current revision and promote the chosen one, atomically:
+                        // the same demote-then-insert pair PageManager::save() runs, so the same
+                        // hazard -- a failure in between leaves the page with no `latest = 'Y'`
+                        // row and it vanishes. One transaction per restored revision, so a
+                        // failure on the fifth keeps the four already restored.
                         $userCol = $dbService->quoteIdentifier('user');
-                        $this->getService(DbService::class)->query('INSERT INTO ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages ' .
-                  "(tag, time, owner, $userCol, latest, body) VALUES (" .
-                  "'" . $dbService->escape($revision['tag']) . "', " .
-                  $dbService->now() . ', ' .
-                  "'" . $dbService->escape($revision['owner']) . "', " .
-                  "'" . $dbService->escape('despam') . "', " .
-                  "'Y', " .
-                  // the revision is a raw row, so its body is re-encoded rather than copied
-                  // over verbatim: a row left in the legacy shape lands in the new one
-                  "'" . $dbService->escape(PageBody::encode(PageBody::decode($revision['body']))) . "')");
+                        $timeCol = $dbService->quoteIdentifier('time');
+                        $pagesTable = $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages';
+
+                        $dbService->transactional(function () use ($dbService, $revision, $pagesTable, $userCol, $timeCol): void {
+                            $dbService->query(
+                                'UPDATE ' . $pagesTable . " SET latest = 'N' WHERE latest = 'Y' AND tag = ?",
+                                [$revision['tag']]
+                            );
+                            // `time` takes the driver's own now() expression, so it is the one
+                            // slot in the VALUES list that is not a placeholder
+                            $dbService->query(
+                                'INSERT INTO ' . $pagesTable
+                                . " (tag, {$timeCol}, owner, {$userCol}, latest, body) VALUES (?, " . $dbService->now() . ', ?, ?, ?, ?)',
+                                [
+                                    $revision['tag'],
+                                    $revision['owner'],
+                                    'despam',
+                                    'Y',
+                                    // the revision is a raw row, so its body is re-encoded rather
+                                    // than copied verbatim: a row left in the legacy shape lands
+                                    // in the new one
+                                    PageBody::encode(PageBody::decode($revision['body'])),
+                                ]
+                            );
+                        });
+
+                        $restoredPages .= $revision['tag'] . ', ';
                     }
                 }
                 $restoredPages = trim($restoredPages, ', ');

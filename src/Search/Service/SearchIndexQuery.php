@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Service;
 
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
@@ -94,22 +95,27 @@ class SearchIndexQuery
         // the way a plain scan can. So it is skipped entirely when the index holds only one
         // bucket, which is every wiki with no restricted fields: there is then exactly one
         // row per Content and nothing to collapse.
+        // the title-hit expression is in the SELECT and the filter in the WHERE, so its values
+        // come first -- placeholder order is textual, and SqlFragment only guarantees the
+        // correspondence within a composition, not across two of them
         if ($this->hasASingleAclBucket()) {
             $rows = $this->dbService->loadAll(
-                "SELECT tag, content_type, form_id, title, updated_at, {$titleHit} AS title_hit"
-                . " FROM {$table} WHERE {$where}"
+                "SELECT tag, content_type, form_id, title, updated_at, {$titleHit->sql} AS title_hit"
+                . " FROM {$table} WHERE {$where->sql}"
                 . ' ORDER BY title_hit DESC, updated_at DESC, tag ASC'
-                . " LIMIT {$limit} OFFSET {$offset}"
+                . ' LIMIT ? OFFSET ?',
+                [...$titleHit->params, ...$where->params, $limit, $offset]
             );
         } else {
             $rows = $this->dbService->loadAll(
                 'SELECT tag, MAX(content_type) AS content_type, MAX(form_id) AS form_id,'
                 . ' MAX(title) AS title, MAX(updated_at) AS updated_at,'
-                . " MAX({$titleHit}) AS title_hit"
-                . " FROM {$table} WHERE {$where}"
+                . " MAX({$titleHit->sql}) AS title_hit"
+                . " FROM {$table} WHERE {$where->sql}"
                 . ' GROUP BY tag'
                 . ' ORDER BY title_hit DESC, MAX(updated_at) DESC, tag ASC'
-                . " LIMIT {$limit} OFFSET {$offset}"
+                . ' LIMIT ? OFFSET ?',
+                [...$titleHit->params, ...$where->params, $limit, $offset]
             );
         }
 
@@ -147,17 +153,17 @@ class SearchIndexQuery
      *
      * @return array{0: int, 1: bool} the count, and whether it stopped at the cap
      */
-    private function countMatches(string $where): array
+    private function countMatches(SqlFragment $where): array
     {
         $table = $this->schema->table();
         $cap = self::COUNT_CAP + 1;
 
         // DISTINCT only where it can matter -- see the GROUP BY note in search()
         $inner = $this->hasASingleAclBucket()
-            ? "SELECT 1 FROM {$table} WHERE {$where} LIMIT {$cap}"
-            : "SELECT tag FROM {$table} WHERE {$where} GROUP BY tag LIMIT {$cap}";
+            ? "SELECT 1 FROM {$table} WHERE {$where->sql} LIMIT {$cap}"
+            : "SELECT tag FROM {$table} WHERE {$where->sql} GROUP BY tag LIMIT {$cap}";
 
-        $counted = (int)$this->dbService->scalar("SELECT COUNT(*) FROM ({$inner}) yw_capped", 0);
+        $counted = (int)$this->dbService->scalar("SELECT COUNT(*) FROM ({$inner}) yw_capped", 0, $where->params);
 
         return $counted > self::COUNT_CAP ? [self::COUNT_CAP, true] : [$counted, false];
     }
@@ -262,8 +268,9 @@ class SearchIndexQuery
         // DISTINCT tag inside, so a Content with several ACL-bucket rows counts once
         $rows = $this->dbService->loadAll(
             'SELECT content_type, COUNT(*) AS total FROM ('
-            . "SELECT DISTINCT tag, content_type FROM {$table} WHERE {$where} LIMIT {$cap}"
-            . ') yw_facets GROUP BY content_type'
+            . "SELECT DISTINCT tag, content_type FROM {$table} WHERE {$where->sql} LIMIT {$cap}"
+            . ') yw_facets GROUP BY content_type',
+            $where->params
         );
 
         $facets = [];
@@ -287,10 +294,12 @@ class SearchIndexQuery
             return '';
         }
 
+        $bucket = $this->fieldAclPredicate();
         $rows = $this->dbService->loadAll(
             "SELECT text FROM {$this->schema->table()}"
-            . " WHERE tag = '{$this->dbService->escape($tag)}'"
-            . ' AND ' . $this->fieldAclPredicate()
+            . ' WHERE tag = ?'
+            . ' AND ' . $bucket->sql,
+            [$tag, ...$bucket->params]
         );
 
         return trim(implode(' ', array_map(static fn (array $row): string => (string)$row['text'], $rows)));
@@ -324,12 +333,12 @@ class SearchIndexQuery
     /**
      * @param list<list<string>> $groups
      */
-    private function where(array $groups, ?string $contentType): string
+    private function where(array $groups, ?string $contentType): SqlFragment
     {
         $table = $this->schema->table();
 
         $clauses = [
-            $this->dbService->dialect()->searchMatchExpression($table, $groups),
+            SqlFragment::of($this->dbService->dialect()->searchMatchExpression($table, $groups)),
             // field-level ACL: the buckets this user may read
             $this->fieldAclPredicate(),
             // page-level ACL: the same predicate `pages` is filtered with, over the
@@ -338,10 +347,15 @@ class SearchIndexQuery
         ];
 
         if ($contentType !== null && $contentType !== '') {
-            $clauses[] = "{$table}.content_type = '{$this->dbService->escape($contentType)}'";
+            $clauses[] = SqlFragment::of("{$table}.content_type = ?", [$contentType]);
         }
 
-        return '(' . implode(') AND (', $clauses) . ')';
+        // each clause keeps its own parentheses, and SqlFragment lines the values up with the
+        // placeholders across all of them -- which is the whole reason this returns a fragment
+        return SqlFragment::all(' AND ', ...array_map(
+            static fn (SqlFragment $c): SqlFragment => $c->wrappedIn('(', ')'),
+            $clauses
+        ));
     }
 
     /**
@@ -352,16 +366,22 @@ class SearchIndexQuery
      * of them costs a handful of AclService::check() calls, once. Hashes are hex, so the
      * list needs no escaping.
      */
-    private function fieldAclPredicate(): string
+    private function fieldAclPredicate(): SqlFragment
     {
         $hashes = $this->readableAclHashes();
         if ($hashes === []) {
             // cannot happen in practice -- the public bucket is readable by definition --
             // but a predicate that is never true beats one that is always true
-            return '1 = 0';
+            return SqlFragment::of('1 = 0');
         }
 
-        return "{$this->schema->table()}.acl_hash IN ('" . implode("', '", $hashes) . "')";
+        // the hashes are hex md5s of this wiki's own ACL expressions, so they need no
+        // quoting -- but they bind anyway, because a predicate that builds SQL from data is
+        // one refactor away from binding data that is not hex
+        return SqlFragment::of(
+            "{$this->schema->table()}.acl_hash IN (" . SqlParameters::placeholders(count($hashes)) . ')',
+            $hashes
+        );
     }
 
     /** @return list<string> */
@@ -395,7 +415,7 @@ class SearchIndexQuery
      *
      * @param list<list<string>> $groups
      */
-    private function titleHitExpression(array $groups): string
+    private function titleHitExpression(array $groups): SqlFragment
     {
         $table = $this->schema->table();
         $collate = $this->dbService->collateClause();
@@ -408,12 +428,14 @@ class SearchIndexQuery
                 // leave `%` and `_` alone, quite correctly -- inside a LIKE they are pattern
                 // syntax, not data. Left alone, searching `100%` scored a title hit against
                 // any title starting "100", and `a_b` against `aXb`.
-                $pattern = $this->dbService->escape(SqlParameters::likeContains($term));
-                $any[] = "{$table}.title{$collate} LIKE '{$pattern}'" . SqlParameters::LIKE_CLAUSE_SUFFIX;
+                $any[] = SqlFragment::of(
+                    "{$table}.title{$collate} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX,
+                    [SqlParameters::likeContains($term)]
+                );
             }
-            $tests[] = '(' . implode(' OR ', $any) . ')';
+            $tests[] = SqlFragment::all(' OR ', ...$any)->wrappedIn('(', ')');
         }
 
-        return '(CASE WHEN ' . implode(' AND ', $tests) . ' THEN 1 ELSE 0 END)';
+        return SqlFragment::all(' AND ', ...$tests)->wrappedIn('(CASE WHEN ', ' THEN 1 ELSE 0 END)');
     }
 }

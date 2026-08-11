@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Service;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 /**
@@ -45,24 +46,18 @@ class AdministrativeLogService
                         array_slice($revisions, 10)
                     );
 
-                    $formattedIds = implode(
-                        ',',
-                        array_map(
-                            function ($id) {
-                                return $this->dbService->escape($id);
-                            },
-                            $idsToDelete
-                        )
-                    );
+                    // one placeholder per id -- an IN clause is the one place a bound query
+                    // still assembles SQL, and it assembles it from the COUNT, not the values
+                    $placeholders = SqlParameters::placeholders(count($idsToDelete));
 
                     // there are some versions to remove from DB
                     // let's build one big request, that's better...
                     $sql = <<<SQL
-                    DELETE FROM {$this->dbService->prefixTable('pages')} WHERE id IN ($formattedIds);
+                    DELETE FROM {$this->dbService->prefixTable('pages')} WHERE id IN ($placeholders);
                     SQL;
 
                     // ... and send it !
-                    $this->dbService->query($sql);
+                    $this->dbService->query($sql, array_values($idsToDelete));
                 }
             } catch (\Throwable $th) {
             }

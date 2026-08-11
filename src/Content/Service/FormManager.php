@@ -215,9 +215,9 @@ class FormManager
     {
         $jsonExtract = $this->dbService->jsonExtract('body', '$.id');
         $sql = "SELECT tag FROM {$this->dbService->prefixTable('pages')}
-            WHERE latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape((string)(int)$id) . "'
+            WHERE latest = 'Y' AND {$jsonExtract} = ?
             LIMIT 1";
-        $row = $this->dbService->loadSingle($sql);
+        $row = $this->dbService->loadSingle($sql, [(string)(int)$id]);
 
         return $row['tag'] ?? null;
     }
@@ -426,9 +426,10 @@ class FormManager
         $row = $this->dbService->loadSingle(
             'SELECT tag FROM ' . $this->dbService->prefixTable('pages')
             . " WHERE latest = 'Y' AND " . $this->dbService->quoteIdentifier('type')
-            . " = '" . $this->dbService->escape(PageType::FORM) . "'"
-            . " AND {$contentTypeExpr} = '" . $this->dbService->escape($contentType) . "'"
-            . ' ORDER BY tag LIMIT 1'
+            . ' = ?'
+            . " AND {$contentTypeExpr} = ?"
+            . ' ORDER BY tag LIMIT 1',
+            [PageType::FORM, $contentType]
         );
 
         return $row === null ? null : (string)$row['tag'];
@@ -478,8 +479,9 @@ class FormManager
             . " COALESCE({$label}, {$legacyLabel}, '') AS form_label"
             . ' FROM ' . $this->dbService->prefixTable('pages')
             . " WHERE latest = 'Y' AND " . $this->dbService->quoteIdentifier('type')
-            . " = '" . $this->dbService->escape(PageType::FORM) . "'"
-            . ' ORDER BY tag'
+            . ' = ?'
+            . ' ORDER BY tag',
+            [PageType::FORM]
         );
 
         foreach ($rows as $row) {
@@ -891,10 +893,10 @@ class FormManager
     {
         $jsonExtract = $this->dbService->jsonExtract('p.body', '$.form_id');
         $sql = "SELECT p.tag FROM {$this->dbService->prefixTable('pages')} p
-            WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($numericId) . "'
-            AND p.{$this->dbService->quoteIdentifier('type')} = '" . $this->dbService->escape(PageType::ENTRY) . "'";
+            WHERE p.latest = 'Y' AND {$jsonExtract} = ?
+            AND p.{$this->dbService->quoteIdentifier('type')} = ?";
 
-        return array_column($this->dbService->loadAll($sql), 'tag');
+        return array_column($this->dbService->loadAll($sql, [$numericId, PageType::ENTRY]), 'tag');
     }
 
     public function findNewId()

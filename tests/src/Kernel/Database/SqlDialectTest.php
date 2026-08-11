@@ -93,8 +93,9 @@ class SqlDialectTest extends TestCase
         $this->assertSame('', $d->collateClause(), 'pgsql uses ILIKE rather than COLLATE');
         $this->assertSame('~', $d->regexpOperator());
         $this->assertSame('!~', $d->regexpOperator(true));
-        // '$.title' reduces to the bare field name for the ->> operator
-        $this->assertStringContainsString("->> 'title'", $d->jsonExtract('body', '$.title'));
+        // one quoted element per path segment, via #>> -- see
+        // testANestedJsonPathAddressesTheNestedKey for why `->>` with the whole path was wrong
+        $this->assertStringContainsString("#>> ARRAY['title']", $d->jsonExtract('body', '$.title'));
     }
 
     #[DataProvider('dialects')]
@@ -121,6 +122,62 @@ class SqlDialectTest extends TestCase
      * identifier cannot be bound, so it has to be constrained before it arrives -- see
      * SearchManager::asSafeIdentifier() and FieldNameIsNotSqlTest.
      */
+    /**
+     * A NESTED json path must address a nested key.
+     *
+     * PostgreSqlDialect stripped the leading `$.` and passed the remainder to `->>`, which takes
+     * a single key -- so `$.acls.read` looked for a top-level key literally named `acls.read`,
+     * found none, and returned NULL for every row. The only nested paths in the codebase are the
+     * ACL ones, which made it a security bug: with every read ACL reading as NULL,
+     * AclService's predicate fell back to `default_read_acl` for the whole table and page-level
+     * read ACLs stopped filtering on PostgreSQL entirely.
+     *
+     * Asserted as "the segments are addressed separately", which is the property; each driver
+     * spells it its own way (`JSON_EXTRACT`/`json_extract` take the path whole, PostgreSQL needs
+     * `#>>` with an array).
+     */
+    #[DataProvider('dialects')]
+    public function testANestedJsonPathAddressesTheNestedKey(SqlDialect $d, string $driver): void
+    {
+        $nested = $d->jsonExtract('metadata', '$.acls.read');
+
+        $this->assertStringNotContainsString(
+            "'acls.read'",
+            $nested,
+            "$driver must not treat the whole path as one key name"
+        );
+
+        if ($driver === 'pgsql') {
+            // the two segments, each its own quoted element
+            $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested);
+        } else {
+            // these engines parse the path themselves
+            $this->assertStringContainsString('$.acls.read', $nested);
+        }
+
+        // a flat path must keep working -- every other caller uses one
+        $this->assertStringContainsString(
+            $driver === 'pgsql' ? "ARRAY['form_id']" : '$.form_id',
+            $d->jsonExtract('body', '$.form_id')
+        );
+    }
+
+    /**
+     * A path segment can be a form field name, which is user data -- so it must not be able to
+     * end the literal it sits in.
+     */
+    #[DataProvider('dialects')]
+    public function testAQuoteInAJsonPathSegmentCannotEndTheLiteral(SqlDialect $d, string $driver): void
+    {
+        $expression = $d->jsonExtract('body', "$.bf_a'b");
+
+        $this->assertSame(
+            0,
+            substr_count($expression, "'") % 2,
+            "$driver: the quotes in the generated expression must balance"
+        );
+    }
+
     #[DataProvider('dialects')]
     public function testQuoteIdentifierEscapesItsOwnDelimiter(SqlDialect $d, string $driver): void
     {

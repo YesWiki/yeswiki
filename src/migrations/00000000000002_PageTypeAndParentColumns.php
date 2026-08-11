@@ -34,7 +34,7 @@ class PageTypeAndParentColumns extends YesWikiMigration
         $this->addTypeColumn($db, $pages);
         $this->renameCommentOnToParent($db, $pages);
         $this->fillTypeFromTriples($db, $pages);
-        $db->dropColumn('pages', 'handler');
+        $db->schema()->dropColumn('pages', 'handler');
         $this->deleteTypeTriples($db);
         $this->index($db, $pages, 'type');
         $this->index($db, $pages, 'parent');
@@ -50,7 +50,7 @@ class PageTypeAndParentColumns extends YesWikiMigration
 
     private function addTypeColumn(DbService $db, string $pages): void
     {
-        if ($db->columnExists('pages', 'type')) {
+        if ($db->schema()->columnExists('pages', 'type')) {
             return;
         }
         $default = PageType::DEFAULT;
@@ -67,18 +67,18 @@ class PageTypeAndParentColumns extends YesWikiMigration
      */
     private function renameCommentOnToParent(DbService $db, string $pages): void
     {
-        if (!$db->columnExists('pages', 'comment_on')) {
+        if (!$db->schema()->columnExists('pages', 'comment_on')) {
             return;
         }
         $parent = $db->quoteIdentifier('parent');
-        if (!$db->columnExists('pages', 'parent')) {
+        if (!$db->schema()->columnExists('pages', 'parent')) {
             $definition = $db->getDriver() === 'sqlite'
                 ? "TEXT NOT NULL DEFAULT ''"
                 : "VARCHAR(191) NOT NULL DEFAULT ''";
             $db->query("ALTER TABLE {$pages} ADD COLUMN {$parent} {$definition}");
         }
         $db->query("UPDATE {$pages} SET {$parent} = comment_on WHERE comment_on <> ''");
-        $db->dropColumn('pages', 'comment_on');
+        $db->schema()->dropColumn('pages', 'comment_on');
     }
 
     private function fillTypeFromTriples(DbService $db, string $pages): void

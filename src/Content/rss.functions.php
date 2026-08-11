@@ -11,12 +11,14 @@ if (!function_exists('rssdiff')) {
         // TODO : cache ?
 
         if ($idfirst == $idlast) {
+            // $idfirst was interpolated with no escaping at all; both values bind now
             $previousdiff = $services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
                 'select id from '
                 . $services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
-                . "pages where tag = '"
-                . $services->get(YesWiki\Kernel\Service\DbService::class)->escape($tag)
-                . "' and id < $idfirst order by time desc limit 1"
+                . 'pages where tag = ? and id < ? order by '
+                . $services->get(YesWiki\Kernel\Service\DbService::class)->quoteIdentifier('time')
+                . ' desc limit 1',
+                [$tag, $idfirst]
             );
             if ($previousdiff) {
                 $idlast = $previousdiff['id'];

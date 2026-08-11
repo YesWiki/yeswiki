@@ -21,6 +21,9 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
     private const THEMED_TAG = 'AdminContentThemeFilterRegressionThemed';
     private const UNTHEMED_TAG = 'AdminContentThemeFilterRegressionUntheme';
 
+    /**
+     * @return array{string, list<mixed>, string, list<mixed>} [where, whereParams, having, havingParams]
+     */
     private function buildWhere(AdminPagesApiController $controller, DbService $db, string $themeFilter): array
     {
         $reflection = new \ReflectionClass($controller);
@@ -47,11 +50,13 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
             $pageManager->setMetadata(self::THEMED_TAG, ['theme' => $filterTheme]);
             $pageManager->save(self::UNTHEMED_TAG, [PageBody::CONTENT => 'untheme page'], '', true);
 
-            [$whereClause] = $this->buildWhere($controller, $dbService, $filterTheme);
+            // the clause carries placeholders now, so its values have to come with it -- running
+            // the fragment alone leaves an unbound `?` and quietly matches nothing
+            [$whereClause, $whereParams] = $this->buildWhere($controller, $dbService, $filterTheme);
 
             $pT = $dbService->prefixTable('pages');
             $matchingTags = array_column(
-                $dbService->loadAll("SELECT tag FROM {$pT} p WHERE p.latest = 'Y' AND {$whereClause}"),
+                $dbService->loadAll("SELECT tag FROM {$pT} p WHERE p.latest = 'Y' AND {$whereClause}", $whereParams),
                 'tag'
             );
 

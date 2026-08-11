@@ -8,6 +8,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -154,14 +155,16 @@ class TagsManager
 
         $rows = $this->dbService->loadAll(
             "SELECT tag, body FROM {$pages}"
-            . " WHERE latest = 'Y' AND parent = '' AND {$typeCol} = '" . $this->dbService->escape(PageType::PAGE) . "'"
+            . " WHERE latest = 'Y' AND parent = '' AND {$typeCol} = ?",
+            [PageType::PAGE]
         );
 
         $triples = trim($this->dbService->prefixTable('triples'));
         $this->dbService->query(
-            "DELETE FROM {$triples} WHERE property = '" . $this->dbService->escape(self::TAG_PROPERTY) . "'"
+            "DELETE FROM {$triples} WHERE property = ?"
             . " AND resource IN (SELECT tag FROM {$pages}"
-            . " WHERE latest = 'Y' AND {$typeCol} = '" . $this->dbService->escape(PageType::PAGE) . "')"
+            . " WHERE latest = 'Y' AND {$typeCol} = ?)",
+            [self::TAG_PROPERTY, PageType::PAGE]
         );
 
         $indexed = 0;
@@ -187,9 +190,9 @@ class TagsManager
     public function getAll($page = '')
     {
         if ($page == '') {
-            $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . "WHERE property='" . self::TAG_PROPERTY . "'";
+            $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . 'WHERE property = ?';
 
-            return $this->dbService->loadAll($sql);
+            return $this->dbService->loadAll($sql, [self::TAG_PROPERTY]);
         }
 
         $stored = $this->container->get(PageManager::class)->getOne($page, null, true, true);
@@ -210,18 +213,23 @@ class TagsManager
         $limit = max(1, min($limit, 100));
         $offset = max(0, $offset);
         $table = $this->dbService->prefixTable('triples');
-        $where = "property='" . self::TAG_PROPERTY . "'";
+        $where = 'property = ?';
+        $params = [self::TAG_PROPERTY];
         if ($search !== '') {
-            // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
-            // guarantees safety inside a single-quoted SQL literal (see
-            // AclService::updateRequestWithACL() for the same class of driver-dependent bug)
-            $where .= " AND value LIKE '%" . $this->dbService->escape($search) . "%'";
+            // $search is what a visitor typed into the tag picker, so its wildcards are defused:
+            // searching `a_b` looks for that, not for `aXb`. The ESCAPE clause is what makes the
+            // defusing mean anything on SQLite, which has no default escape character.
+            $where .= ' AND value LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
+            $params[] = SqlParameters::likeContains($search);
         }
         $baseQuery = "SELECT DISTINCT value FROM $table WHERE $where";
 
         return [
-            'tags' => array_column($this->dbService->loadAll($baseQuery . " ORDER BY value ASC LIMIT $limit OFFSET $offset"), 'value'),
-            'total' => $this->dbService->count($baseQuery),
+            'tags' => array_column($this->dbService->loadAll(
+                $baseQuery . ' ORDER BY value ASC LIMIT ? OFFSET ?',
+                [...$params, $limit, $offset]
+            ), 'value'),
+            'total' => $this->dbService->countRows($baseQuery, $params),
         ];
     }
 
@@ -287,39 +295,46 @@ class TagsManager
     {
         if (!empty($tags)) {
             $req = ' AND EXISTS (select resource FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource=tag';
-            $tags = trim($tags);
-            $tab_tags = explode(',', $tags);
+            // One placeholder per tag. What this replaces was `addslashes()` fed through
+            // escape() and then split on the comma -- two escaping passes over one value, which
+            // does not merely fail to be safe: it CORRUPTS a tag containing a quote, storing and
+            // then searching for a backslash that was never in the keyword. The split-after-
+            // escaping also meant the separator was decided after the values had been altered.
+            $tab_tags = explode(',', trim($tags));
             $nbdetags = count($tab_tags);
-            $tags = implode(',', $tab_tags);
-            $tags = "'" . str_replace(',', "','", $this->dbService->escape(addslashes($tags))) . "'";
-            $req .= ' AND value IN (' . $tags . ') ';
-            $req .= " AND property='" . self::TAG_PROPERTY . "'";
+            $req .= ' AND value IN (' . SqlParameters::placeholders($nbdetags) . ') ';
+            $req .= ' AND property = ?';
             $req .= ' GROUP BY resource ';
-            $req .= ' HAVING COUNT(resource)=' . $nbdetags . ') ';
+            $req .= ' HAVING COUNT(resource) = ?) ';
+            // placeholders are positional, so this list follows the order they appear above
+            $params = [...$tab_tags, self::TAG_PROPERTY, $nbdetags];
 
             // gestion du tri de l'affichage (sort)
             if ($sort == 'alpha') {
                 $req .= ' ORDER BY tag ASC ';
             } elseif ($sort == 'date') {
-                $req .= ' ORDER BY time DESC ';
+                $req .= ' ORDER BY ' . $this->dbService->quoteIdentifier('time') . ' DESC ';
             }
 
             $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and parent = '' " . $req;
 
-            return $this->dbService->loadAll($requete);
+            return $this->dbService->loadAll($requete, $params);
         }
         // recuperation des pages wikis
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
         $sql .= " WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 
+        $params = [];
         if ($type == 'wiki') {
-            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . " = '" . $this->dbService->escape(PageType::PAGE) . "' ";
+            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . ' = ? ';
+            $params[] = PageType::PAGE;
         } elseif ($type == 'bazar') {
-            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . " = '" . $this->dbService->escape(PageType::ENTRY) . "'";
+            $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . ' = ?';
+            $params[] = PageType::ENTRY;
         }
 
         $sql .= ' ORDER BY tag ASC';
 
-        return $this->dbService->loadAll($sql);
+        return $this->dbService->loadAll($sql, $params);
     }
 }

@@ -277,19 +277,26 @@ class UserOperationsService extends YesWikiController
      */
     private function deleteUserFromEveryGroup(User $user)
     {
-        // Delete user in every group
-        $searchedValue = $this->dbService->escape($user['name']);
+        // Delete user in every group.
+        //
+        // NOT pre-escaped: getMatching() binds its values, so escaping here would search for
+        // the escaped spelling of the name rather than the name. It escaped on both sides even
+        // before bindings, which made an account whose name contains a quote unfindable in any
+        // group -- so it never removed that account's memberships and delete() left them behind.
         $groups = $this->tripleStore->getMatching(
             GROUP_PREFIX . '%',
             'http://www.wikini.net/_vocabulary/acls',
-            "%$searchedValue%",
+            '%' . $user['name'] . '%',
             'LIKE',
             '=',
             'LIKE'
         );
         $error = false;
         if (is_array($groups)) {
-            $pregQuoteSearchValue = preg_quote($searchedValue, '/');
+            // the raw name: this matches against the group's *stored* ACL text, which holds the
+            // name as typed. It used to reuse the SQL-escaped spelling, so for a name carrying a
+            // quote the regex matched nothing and the account stayed in the group after deletion.
+            $pregQuoteSearchValue = preg_quote($user['name'], '/');
             $prefixLen = strlen(GROUP_PREFIX);
             foreach ($groups as $group) {
                 $newValue = $group['value'];
@@ -327,9 +334,9 @@ class UserOperationsService extends YesWikiController
     {
         $pagesWhereOwner = $this->dbService->loadAll("
             SELECT tag FROM {$this->dbService->prefixTable('pages')}
-            WHERE owner = '{$this->dbService->escape($user['name'])}'
+            WHERE owner = ?
             AND latest = 'Y' ;
-        ");
+        ", [$user['name']]);
         $pagesWhereOwner = array_map(function ($page) {
             return $page['tag'];
         }, $pagesWhereOwner);

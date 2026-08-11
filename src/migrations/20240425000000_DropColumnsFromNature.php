@@ -8,15 +8,15 @@ class DropColumnsFromNature extends YesWikiMigration
     public function run()
     {
         // drop old nature table fields
-        $this->dbService->dropColumn('nature', 'bn_ce_id_menu');
-        $this->dbService->dropColumn('nature', 'bn_commentaire');
-        $this->dbService->dropColumn('nature', 'bn_appropriation');
-        $this->dbService->dropColumn('nature', 'bn_image_titre');
-        $this->dbService->dropColumn('nature', 'bn_image_logo');
-        $this->dbService->dropColumn('nature', 'bn_couleur_calendrier');
-        $this->dbService->dropColumn('nature', 'bn_picto_calendrier');
-        $this->dbService->dropColumn('nature', 'bn_type_fiche');
-        $this->dbService->dropColumn('nature', 'bn_label_class');
+        $this->dbService->schema()->dropColumn('nature', 'bn_ce_id_menu');
+        $this->dbService->schema()->dropColumn('nature', 'bn_commentaire');
+        $this->dbService->schema()->dropColumn('nature', 'bn_appropriation');
+        $this->dbService->schema()->dropColumn('nature', 'bn_image_titre');
+        $this->dbService->schema()->dropColumn('nature', 'bn_image_logo');
+        $this->dbService->schema()->dropColumn('nature', 'bn_couleur_calendrier');
+        $this->dbService->schema()->dropColumn('nature', 'bn_picto_calendrier');
+        $this->dbService->schema()->dropColumn('nature', 'bn_type_fiche');
+        $this->dbService->schema()->dropColumn('nature', 'bn_label_class');
 
         // Modify bn_ce_i18n column - different syntax per database
         $driver = $this->dbService->getDriver();
@@ -35,7 +35,7 @@ class DropColumnsFromNature extends YesWikiMigration
         }
 
         // add semantic bazar fields
-        if (!$this->dbService->columnExists('nature', 'bn_sem_context')) {
+        if (!$this->dbService->schema()->columnExists('nature', 'bn_sem_context')) {
             $this->addSemanticColumns();
         }
 

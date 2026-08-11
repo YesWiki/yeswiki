@@ -267,25 +267,6 @@ class EntryManager
     }
 
     /**
-     * Escape a search term the way it appears *inside* a stored body, for the SQL
-     * REGEXP/LIKE patterns SearchManager matches against the JSON text.
-     *
-     * The flags must be PageBody's: bodies are written by PageBody::encode() with
-     * unescaped unicode, so escaping the term to `\u00e9` here would never match the
-     * `é` actually stored (ticket 09).
-     *
-     * @return string $formatedValue
-     */
-    private function convertToRawJSONStringForREGEXP(string $rawValue): string
-    {
-        $encoded = (string)json_encode($rawValue, PageBody::JSON_FLAGS);
-        $valueJSON = substr($encoded, 1, strlen($encoded) - 2);
-        $formattedValue = str_replace(['\\', '\''], ['\\\\', '\\\''], $valueJSON);
-
-        return $this->dbService->escape($formattedValue);
-    }
-
-    /**
      * Validate the fiche's data.
      *
      * @throws \Exception
@@ -586,25 +567,6 @@ class EntryManager
     }
 
     /**
-     * @throws \Exception
-     */
-    public function publish($entryId, $accepted)
-    {
-        if ($this->hibernationService->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-        // not possible to init the Guard in the constructor because of circular reference problem
-        if ($this->container->get(Guard::class)->isAllowed('valider_fiche')) {
-            if ($accepted) {
-                $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=1 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
-            } else {
-                $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=2 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
-            }
-            // TODO envoie mail annonceur
-        }
-    }
-
-    /**
      * Delete a fiche.
      *
      * @throws \Exception
@@ -775,8 +737,11 @@ class EntryManager
         }
 
         // Get creation date if it exists, initialize it otherwise
-        $tag = $this->dbService->escape($data['tag']);
-        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $tag . "'");
+        $result = $this->dbService->loadSingle(
+            'SELECT MIN(' . $this->dbService->quoteIdentifier('time') . ') as firsttime FROM '
+            . $this->dbService->prefixTable('pages') . 'WHERE tag = ?',
+            [$data['tag']]
+        );
         $data['created_at'] = $data['created_at'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
@@ -1118,11 +1083,11 @@ class EntryManager
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
         $requete = $this->searchManager->prepareSearchRequest($params, false, $applyOnAllRevisions);
 
-        if ($requete === '') {
+        if ($requete->isEmpty()) {
             return [];
         }
 
-        $pages = $this->dbService->loadAll($requete);
+        $pages = $this->dbService->loadAll($requete->sql, $requete->params);
 
         if (empty($pages)) {
             return [];
@@ -1162,8 +1127,10 @@ class EntryManager
                 }, $entry);
             }
             if ($applyOnAllRevisions) {
-                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(PageBody::encode($entry)) . "'" .
-                    " WHERE id = '" . $this->dbService->escape($page['id']) . "';");
+                $this->dbService->query(
+                    'UPDATE' . $this->dbService->prefixTable('pages') . 'SET body = ? WHERE id = ?',
+                    [PageBody::encode($entry), $page['id']]
+                );
             } else {
                 $this->pageManager->save($entry['tag'], $entry);
             }

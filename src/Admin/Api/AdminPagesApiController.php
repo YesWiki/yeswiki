@@ -12,6 +12,7 @@ use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
@@ -45,7 +46,7 @@ class AdminPagesApiController extends YesWikiController
         [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter]
             = $this->extractListParams($request);
 
-        [$whereClause, $having] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter);
+        [$whereClause, $whereParams, $having, $havingParams] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter);
 
         $offset = ($page - 1) * $perpage;
         $sortCol = self::SORT_COLUMNS[$sort] ?? 'p.tag';
@@ -80,10 +81,11 @@ class AdminPagesApiController extends YesWikiController
             GROUP BY p.tag, p.time, p.owner, p.parent, p.user, p.metadata, p.{$typeCol}
             {$having}
             ORDER BY {$sortCol} {$dirSql}
-            LIMIT {$perpage} OFFSET {$offset}
+            LIMIT ? OFFSET ?
         SQL;
 
-        $rows = $dbService->loadAll($sql) ?? [];
+        // in the order the placeholders appear: WHERE, then HAVING, then the page window
+        $rows = $dbService->loadAll($sql, [...$whereParams, ...$havingParams, $perpage, $offset]) ?? [];
 
         // ACLs are part of p.metadata now (no separate acls table to join), so the count
         // query no longer needs anything beyond the shared $whereClause (which itself
@@ -93,7 +95,8 @@ class AdminPagesApiController extends YesWikiController
             FROM {$pT} p
             WHERE {$whereClause}
         SQL;
-        $total = (int)($dbService->loadSingle($countSql)['total'] ?? 0);
+        // $whereParams only: this query has no HAVING, so it has no placeholder for the tag filter
+        $total = (int)($dbService->loadSingle($countSql, $whereParams)['total'] ?? 0);
 
         $totalPages = max(1, (int)ceil($total / $perpage));
 
@@ -332,64 +335,88 @@ class AdminPagesApiController extends YesWikiController
         return [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter];
     }
 
+    /**
+     * The WHERE and HAVING clauses of the page list, and the values they bind.
+     *
+     * The two clauses carry their parameters separately because the count query below reuses
+     * the WHERE and drops the HAVING -- a single merged list would bind the tag filter's value
+     * to a statement that has no placeholder for it.
+     *
+     * @return array{string, list<mixed>, string, list<mixed>} [where, whereParams, having, havingParams]
+     */
     private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = '', string $themeFilter = ''): array
     {
         $conditions = ["p.latest = 'Y'", $type === 'comments' ? "p.parent != ''" : "p.parent = ''"];
+        $params = [];
         $having = '';
+        $havingParams = [];
 
         if ($search !== '') {
-            $escaped = $db->escape($search);
-            $conditions[] = "(p.tag LIKE '%{$escaped}%' OR p.body LIKE '%{$escaped}%')";
+            // what an administrator typed in the filter box, so its wildcards are defused: a
+            // search for `a_b` looks for that and not for `aXb`
+            $conditions[] = '(p.tag LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX
+                . ' OR p.body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
+            $params[] = SqlParameters::likeContains($search);
+            $params[] = SqlParameters::likeContains($search);
         }
 
         if ($ownerFilter !== '') {
-            $escaped = $db->escape($ownerFilter);
-            $conditions[] = "p.owner = '{$escaped}'";
+            $conditions[] = 'p.owner = ?';
+            $params[] = $ownerFilter;
         }
 
         $typeCol = 'p.' . $db->quoteIdentifier('type');
 
         switch ($type) {
             case 'pages':
-                $conditions[] = "{$typeCol} NOT IN ('" . PageType::ENTRY . "', '" . PageType::LIST . "')";
+                $conditions[] = "{$typeCol} NOT IN (?, ?)";
+                $params[] = PageType::ENTRY;
+                $params[] = PageType::LIST;
                 break;
             case 'bazar':
-                $conditions[] = "{$typeCol} = '" . PageType::ENTRY . "'";
+                $conditions[] = "{$typeCol} = ?";
+                $params[] = PageType::ENTRY;
                 break;
             case 'comments':
                 // base condition already set to parent != ''
                 break;
             case 'lists':
-                $conditions[] = "{$typeCol} = '" . PageType::LIST . "'";
+                $conditions[] = "{$typeCol} = ?";
+                $params[] = PageType::LIST;
                 break;
             case 'special':
-                $sp = implode("','", self::SPECIAL_PAGES);
-                $conditions[] = "p.tag IN ('{$sp}')";
+                $conditions[] = 'p.tag IN (' . SqlParameters::placeholders(count(self::SPECIAL_PAGES)) . ')';
+                $params = [...$params, ...self::SPECIAL_PAGES];
                 break;
             default:
                 if (ctype_digit((string)$type) && (int)$type > 0) {
-                    $escaped = $db->escape($type);
-                    $conditions[] = "{$typeCol} = '" . PageType::ENTRY . "'";
-                    $conditions[] = "p.body LIKE '%\"form_id\":\"{$escaped}\"%'";
+                    $conditions[] = "{$typeCol} = ?";
+                    $params[] = PageType::ENTRY;
+                    // ctype_digit above rules out a wildcard, but the pattern is assembled the
+                    // same way as the others so that stays true of the code and not just of
+                    // this one input
+                    $conditions[] = 'p.body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
+                    $params[] = SqlParameters::likeContains('"form_id":"' . $type . '"');
                 }
                 break;
         }
 
         if ($tagFilter !== '') {
-            $escaped = $db->escape($tagFilter);
             // tag filter uses the already-joined tg alias, so use HAVING
-            $having = "HAVING {$db->groupConcat('tg.value')} LIKE '%{$escaped}%'";
+            $having = "HAVING {$db->groupConcat('tg.value')} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX;
+            $havingParams[] = SqlParameters::likeContains($tagFilter);
         }
 
-        $aclCondition = $this->buildAclFilterCondition($db, $aclFilter);
+        [$aclCondition, $aclParams] = $this->buildAclFilterCondition($db, $aclFilter);
         if ($aclCondition !== null) {
             $conditions[] = $aclCondition;
+            $params = [...$params, ...$aclParams];
         }
 
         if ($themeFilter !== '') {
-            $escaped = $db->escape($themeFilter);
             $themeManager = $this->getService(ThemeManager::class);
-            $explicitMatch = "p.metadata LIKE '%\"theme\":\"{$escaped}\"%'";
+            $explicitMatch = 'p.metadata LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
+            $params[] = SqlParameters::likeContains('"theme":"' . $themeFilter . '"');
             if ($themeFilter === $themeManager->getFavoriteTheme()) {
                 // Also include pages that have no theme stored (they inherit the wiki default)
                 $noThemeStored = "(p.metadata IS NULL OR p.metadata NOT LIKE '%\"theme\":\"%')";
@@ -399,34 +426,40 @@ class AdminPagesApiController extends YesWikiController
             }
         }
 
-        return [implode(' AND ', $conditions), $having];
+        return [implode(' AND ', $conditions), $params, $having, $havingParams];
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
-    private function buildAclFilterCondition(DbService $db, string $aclFilter): ?string
+    /**
+     * @return array{string|null, list<mixed>} the condition and the values it binds
+     */
+    private function buildAclFilterCondition(DbService $db, string $aclFilter): array
     {
         if ($aclFilter === '') {
-            return null;
+            return [null, []];
         }
         $parts = explode('|', $aclFilter, 2);
         if (count($parts) !== 2) {
-            return null;
+            return [null, []];
         }
         [$privilege, $value] = $parts;
         if (!in_array($privilege, ['read', 'write', 'comment'], true)) {
-            return null;
+            return [null, []];
         }
         // ACLs live in p.metadata now, not a joined acls table
         $col = $db->jsonExtract('p.metadata', '$.acls.' . $privilege);
-        // Escape REGEXP metacharacters, then escape for SQL
-        $regexpEscaped = $db->escape(preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value));
         $regexpOperator = $db->regexpOperator();
 
+        // The REGEXP metacharacters still have to be escaped by hand -- that is a property of
+        // the pattern language, which binding knows nothing about, exactly as with LIKE. What
+        // binding removes is the second pass that used to follow it (escape() for SQL).
+        $pattern = '(^|\\n|\\r)' . preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value) . '(\\n|\\r|$)';
+
         // Match value as a complete line within the ACL text
-        return "({$col} {$regexpOperator} '(^|\\n|\\r){$regexpEscaped}(\\n|\\r|$)')";
+        return ["({$col} {$regexpOperator} ?)", [$pattern]];
     }
 
     private function filterCommentAcl(string $list): string

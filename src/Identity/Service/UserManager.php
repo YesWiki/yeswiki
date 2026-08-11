@@ -128,10 +128,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         $jsonExtract = $this->dbService->jsonExtract('p.body', '$.email');
         $sql = "SELECT p.tag AS tag FROM {$this->dbService->prefixTable('pages')} p
-            WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($email) . "'
-            AND p.{$this->dbService->quoteIdentifier('type')} = '" . $this->dbService->escape(PageType::USER) . "'
+            WHERE p.latest = 'Y' AND {$jsonExtract} = ?
+            AND p.{$this->dbService->quoteIdentifier('type')} = ?
             LIMIT 1";
-        $row = $this->dbService->loadSingle($sql);
+        $row = $this->dbService->loadSingle($sql, [$email, PageType::USER]);
 
         return $row['tag'] ?? null;
     }

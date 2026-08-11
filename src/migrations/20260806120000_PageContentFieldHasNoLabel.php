@@ -66,8 +66,8 @@ class PageContentFieldHasNoLabel extends YesWikiMigration
                 continue;
             }
             $db->query(
-                "UPDATE {$pages} SET body = '{$db->escape($encoded)}'"
-                . " WHERE id = '{$db->escape((string)$row['id'])}'"
+                "UPDATE {$pages} SET body = ? WHERE id = ?",
+                [$encoded, (string)$row['id']]
             );
             $fixed[(string)$row['tag']] = true;
         }

@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Service;
 
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -128,13 +129,10 @@ class SearchResultPresenter
             return [];
         }
 
-        $list = implode(', ', array_map(
-            fn (string $tag): string => "'{$this->dbService->escape($tag)}'",
-            $commentTags
-        ));
         $found = $this->dbService->loadAll(
             "SELECT tag, parent FROM {$this->dbService->prefixTable('pages')}"
-            . " WHERE latest = 'Y' AND tag IN ({$list})"
+            . " WHERE latest = 'Y' AND tag IN (" . SqlParameters::placeholders(count($commentTags)) . ')',
+            $commentTags
         );
 
         $parents = [];

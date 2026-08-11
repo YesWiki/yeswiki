@@ -12,6 +12,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -47,7 +48,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
 
         $request = $this->getRequest();
         list('success' => $success, 'error' => $error) = $this->manageChangeRights($request->request->all());
-        list('filter' => $filter, 'search' => $search) = $this->getFilterAndSearch($request->query->all(), $request->request->all());
+        list('filter' => $filter, 'search' => $search, 'searchParams' => $searchParams) = $this->getFilterAndSearch($request->query->all(), $request->request->all());
 
         // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();
@@ -67,7 +68,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
     FROM $pagesTableName
         WHERE latest='Y' $search
             ORDER BY $pagesTableName.tag ASC
-    SQL);
+    SQL, $searchParams);
         $pageEtDroits = [];
         while ($pages = $liste_pages->fetch(\PDO::FETCH_ASSOC)) {
             $pageEtDroits[] = $this->utils->recupDroits($pages);
@@ -147,12 +148,14 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
     /**
      * récupération des filtres.
      *
-     * @return array ['filter'=>string,'search'=>string]
+     * @return array{filter: string, search: string, searchParams: list<mixed>}
      */
     protected function getFilterAndSearch(array $get, array $post): array
     {
         $filter = $get['filter'] ?? '';
         $search = '';
+        // the values the $search fragment binds, in the order its placeholders appear
+        $searchParams = [];
         if (!empty($filter)) {
             $filter = strval($filter);
             $typeCol = $this->dbService->quoteIdentifier('type');
@@ -166,8 +169,9 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
                 'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
-                $search = " AND body LIKE '%\"form_id\":\"{$this->dbService->escape($filter)}\"%'"
+                $search = ' AND body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX
                     . " AND {$typeCol} = '" . PageType::ENTRY . "'";
+                $searchParams[] = SqlParameters::likeContains('"form_id":"' . $filter . '"');
             } elseif ($filter === 'lists') {
                 $search = " AND {$typeCol} = '" . PageType::LIST . "'";
             } else {
@@ -180,7 +184,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction
             $filter = strval($post['filter']);
         }
 
-        return compact(['filter', 'search']);
+        return compact(['filter', 'search', 'searchParams']);
     }
 
     protected function filterCommentRightsBeforeSave($list): string

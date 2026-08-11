@@ -48,7 +48,7 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
     public function newModeIsActivated(): bool
     {
         try {
-            $columnInfo = $this->dbService->getColumnInfo('users', 'password');
+            $columnInfo = $this->dbService->schema()->getColumnInfo('users', 'password');
             if (empty($columnInfo)) {
                 return false;
             }
@@ -64,6 +64,6 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 
     public function activateNewMode(): bool
     {
-        return $this->dbService->modifyColumn('users', 'password', 'varchar(256)', true);
+        return $this->dbService->schema()->modifyColumn('users', 'password', 'varchar(256)', true);
     }
 }

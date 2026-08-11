@@ -23,14 +23,20 @@ use PHPUnit\Framework\TestCase;
  * Converting a call site means replacing the interpolation with a placeholder and passing the
  * value: see SearchIndexer for the whole file done, and BoundValuesTest for what it buys.
  *
- * `escape()` is NOT the tool for two remaining cases, and bindings are not either:
- *  - **identifiers** (a column or table name) cannot be bound. SearchManager runs field names
- *    through escape() and emits them unquoted as column references; that needs
- *    `SqlDialect::quoteIdentifier()` plus an allowlist, and is why its 21 are not simply
- *    convertible.
- *  - **LIKE metacharacters**: escape() leaves `%` and `_` alone, so a searched term containing
- *    one is a wildcard. Binding does not change that -- the metacharacters need escaping
- *    first, then binding.
+ * Two things bindings cannot do, both now handled elsewhere rather than open questions:
+ *  - **identifiers** (a column or table name) cannot be bound at all. Field names are user
+ *    data and reach SearchManager's generated SQL in five positions, so they are constrained
+ *    once at their chokepoint instead -- `SearchManager::asSafeIdentifier()`, pinned by
+ *    FieldNameIsNotSqlTest.
+ *  - **LIKE metacharacters**: `%` and `_` are pattern syntax, so neither escape() nor a bound
+ *    parameter touches them, correctly. Defusing is deliberate and opt-in --
+ *    `SqlParameters::likeContains()` plus `LIKE_CLAUSE_SUFFIX`, which is mandatory because
+ *    SQLite has no default escape character.
+ *
+ * What keeps a count on this list is therefore one of: it is a genuine value escape not yet
+ * converted; it is inside a SQL *fragment* builder whose callers concatenate the result, so the
+ * value never reaches the call that executes the statement (AclService's read-ACL predicate,
+ * SearchManager's WHERE assembly); or it is in a one-shot migration against known data.
  */
 class EscapeRatchetTest extends TestCase
 {
@@ -42,29 +48,9 @@ class EscapeRatchetTest extends TestCase
      * @var array<string, int>
      */
     private const CEILING = [
-        'Admin/Action/DespamAction.php' => 7,
-        'Admin/Api/AdminPagesApiController.php' => 6,
-        'Admin/Service/AdministrativeLogService.php' => 1,
-        'Content/Action/ListpagesAction.php' => 3,
-        'Content/Action/MychangesAction.php' => 2,
-        'Content/Action/PointimageAction.php' => 2,
-        'Content/Action/TagCloudAction.php' => 1,
-        'Content/rss.functions.php' => 1,
-        'Content/Service/CommentService.php' => 5,
-        'Content/Service/EntryManager.php' => 6,
-        'Content/Service/FormManager.php' => 6,
-        'Content/Service/PageBodyMigrator.php' => 3,
-        'Content/Service/PageManager.php' => 40,
-        'Content/Service/ReactionManager.php' => 6,
-        'Content/Service/TripleStore.php' => 17,
-        'Content/tags.functions.php' => 1,
-        'Identity/Action/AdminAclsAction.php' => 1,
-        'Identity/Service/AclService.php' => 13,
-        'Identity/Service/UserManager.php' => 2,
-        'Identity/Service/UserOperationsService.php' => 2,
-        // the two inside escape()'s own class are columnExists()/getColumnInfo() building a
-        // `SHOW COLUMNS ... LIKE` -- an identifier case, see the class docblock
-        'Kernel/Service/DbService.php' => 5,
+        // the last one in live code, and it is correct: escaping row VALUES into the TEXT of a
+        // SQL dump file. A dump is written, not executed, so there is no statement to bind to.
+        'Kernel/Database/SqlDumper.php' => 1,
         'migrations/00000000000002_PageTypeAndParentColumns.php' => 6,
         'migrations/20240425000000_CalcFieldToString.php' => 2,
         'migrations/20240425000000_CheckSQLTablesThenFixThem.php' => 1,
@@ -78,25 +64,13 @@ class EscapeRatchetTest extends TestCase
         'migrations/20260727120000_RenameEntryBodyKeys.php' => 3,
         'migrations/20260730160000_FileAttributesIntoBody.php' => 4,
         'migrations/20260801000000_RenameContentOffReservedTags.php' => 7,
-        'migrations/20260802130000_RewriteRetiredSearchActions.php' => 2,
         'migrations/20260802140000_RenameContentOffSearchTag.php' => 6,
         'migrations/20260803120000_RenameContentOffDashboardTags.php' => 6,
-        'migrations/20260803160000_ReplaceLoginModalWithAccountLink.php' => 2,
-        'migrations/20260804090000_LoginDefaultsToTheAccountButton.php' => 2,
-        'migrations/20260806110000_LookWikiIsRetired.php' => 3,
-        'migrations/20260806120000_PageContentFieldHasNoLabel.php' => 2,
-        'Search/Command/SeedCommand.php' => 5,
-        'Search/Service/SearchIndexQuery.php' => 3,
-        // was 31: the 8 that wrapped an identifier are gone, replaced by constraining the field
-        // name at its chokepoint (SearchManager::asSafeIdentifier, FieldNameIsNotSqlTest). What
-        // is left is genuine value escaping -- plus one call inside a commented-out block.
-        'Search/Service/SearchManager.php' => 23,
-        'Search/Service/SearchResultPresenter.php' => 1,
-        'Search/Service/TagsManager.php' => 7,
+        'migrations/20260806110000_LookWikiIsRetired.php' => 1,
     ];
 
     /** Lower this when you convert a call site. It is asserted exactly, on purpose. */
-    private const TOTAL = 238;
+    private const TOTAL = 60;
 
     /** @return array<string, int> relative path => number of ->escape( calls */
     private function currentCounts(): array

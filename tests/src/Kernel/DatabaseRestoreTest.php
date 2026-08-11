@@ -58,7 +58,7 @@ class DatabaseRestoreTest extends TestCase
     public function testTheDumpRecordsWhichDriverProducedIt(): void
     {
         $this->seed();
-        $backup = $this->db->getSQLContentBackupMethod();
+        $backup = $this->db->dumper()->dump();
 
         $this->assertSame('', $backup['error']);
         $this->assertStringContainsString('-- YesWiki-Dialect: sqlite', $backup['sql']);
@@ -68,11 +68,11 @@ class DatabaseRestoreTest extends TestCase
     public function testBackupThenRestoreBringsTheContentBack(): void
     {
         $this->seed();
-        $backup = $this->db->getSQLContentBackupMethod();
+        $backup = $this->db->dumper()->dump();
         $this->assertSame('', $backup['error'], 'backing up must not error');
 
         $this->db->query('DROP TABLE probe_pages');
-        $this->assertNotContains('probe_pages', $this->db->getTables(), 'the table must really be gone');
+        $this->assertNotContains('probe_pages', $this->db->schema()->getTables(), 'the table must really be gone');
 
         $this->db->restoreFromDump($backup['sql']);
 
@@ -88,7 +88,7 @@ class DatabaseRestoreTest extends TestCase
     public function testTablesOutsideThePrefixAreLeftAlone(): void
     {
         $this->seed();
-        $backup = $this->db->getSQLContentBackupMethod();
+        $backup = $this->db->dumper()->dump();
 
         $this->db->restoreFromDump($backup['sql']);
 
@@ -98,7 +98,7 @@ class DatabaseRestoreTest extends TestCase
     public function testRestoringTwiceIsStillCorrect(): void
     {
         $this->seed();
-        $backup = $this->db->getSQLContentBackupMethod();
+        $backup = $this->db->dumper()->dump();
 
         $this->db->restoreFromDump($backup['sql']);
         $this->db->restoreFromDump($backup['sql']);
@@ -122,7 +122,7 @@ class DatabaseRestoreTest extends TestCase
             $this->assertStringContainsString('sqlite', $e->getMessage());
         }
 
-        $this->assertContains('probe_pages', $this->db->getTables(), 'nothing may be dropped when the dump is refused');
+        $this->assertContains('probe_pages', $this->db->schema()->getTables(), 'nothing may be dropped when the dump is refused');
         $this->assertCount(2, $this->db->loadAll('SELECT tag FROM probe_pages'));
     }
 
@@ -160,6 +160,6 @@ class DatabaseRestoreTest extends TestCase
             $this->assertStringContainsString('no statements', $e->getMessage());
         }
 
-        $this->assertContains('probe_pages', $this->db->getTables());
+        $this->assertContains('probe_pages', $this->db->schema()->getTables());
     }
 }

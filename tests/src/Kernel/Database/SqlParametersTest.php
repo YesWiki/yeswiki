@@ -151,6 +151,58 @@ class SqlParametersTest extends TestCase
         $this->assertStringContainsString(SqlParameters::LIKE_ESCAPE, SqlParameters::LIKE_CLAUSE_SUFFIX);
     }
 
+    /**
+     * The guard on placeholder/value arity.
+     *
+     * PDO rejects a mismatch at execute() time with "Invalid parameter number" and no hint of
+     * which statement or which direction. That is a poor error for a mistake that is easy to
+     * make: converting a query assembled from several concatenated fragments means keeping
+     * placeholders and values in step across all of them. A statement whose values went
+     * missing altogether is still valid SQL right up to the moment it runs -- which is exactly
+     * what happened while converting the migrations in this burn-down.
+     */
+    public function testAMissingValueIsRefusedWithTheStatementNamed(): void
+    {
+        try {
+            SqlParameters::assertPlaceholderCount('UPDATE pages SET body = ? WHERE id = ?', ['only one']);
+            $this->fail('a statement with two placeholders and one value must be refused');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('2 placeholder', $e->getMessage());
+            $this->assertStringContainsString('1 value', $e->getMessage());
+            $this->assertStringContainsString('UPDATE pages', $e->getMessage(), 'the message must name the statement');
+        }
+    }
+
+    public function testASurplusValueIsRefusedToo(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        SqlParameters::assertPlaceholderCount('SELECT 1 FROM pages WHERE tag = ?', ['a', 'b']);
+    }
+
+    public function testMatchingCountsPass(): void
+    {
+        SqlParameters::assertPlaceholderCount('SELECT 1 FROM pages WHERE tag = ? AND latest = ?', ['Home', 'Y']);
+        SqlParameters::assertPlaceholderCount('SELECT 1 FROM pages', []);
+        $this->addToAssertionCount(2);
+    }
+
+    /** A `?` inside a string literal is data, not a placeholder. */
+    public function testAQuestionMarkInsideALiteralIsNotAPlaceholder(): void
+    {
+        SqlParameters::assertPlaceholderCount("SELECT ? FROM pages WHERE tag = 'why?' AND x = 'it''s ?'", ['one']);
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * Named statements are left to PDO: one placeholder may legitimately be reused, so the
+     * counts need not agree and this check would produce false refusals.
+     */
+    public function testNamedParametersAreNotCounted(): void
+    {
+        SqlParameters::assertPlaceholderCount('SELECT 1 WHERE a = :tag OR b = :tag', ['tag' => 'x']);
+        $this->addToAssertionCount(1);
+    }
+
     /** Long text is what an indexed `text` column holds; the footer prints one line per query. */
     public function testLongTextIsCutSoTheFooterStaysReadable(): void
     {

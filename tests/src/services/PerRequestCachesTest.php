@@ -179,6 +179,33 @@ class PerRequestCachesTest extends YesWikiTestCase
      * `getOne()`, asked `isEntry()` about the very tag just found to be missing. The
      * unredacted cache already records the absence; `typeOf()` now reads it.
      */
+    /**
+     * The measure itself: a parameterised query has to be counted.
+     *
+     * Every other test in this file asserts a query *count*, so all of them quietly stop
+     * meaning anything if the counter cannot see the queries. It could not: it hooked
+     * PDO::query() only, and a bound statement is prepared-then-executed, so converting
+     * PageManager to bindings took this file's counts to zero -- which asserted-as-1 caught by
+     * luck and asserted-as-0 would not have. Counted on execute(), so a statement reused in a
+     * loop counts once per iteration.
+     */
+    public function testTheCounterSeesParameterisedQueries(): void
+    {
+        $db = $this->getWiki()->services->get(DbService::class);
+        $pages = $db->prefixTable('pages');
+
+        $before = $this->countQueries($db);
+        $db->loadAll("SELECT tag FROM {$pages} WHERE tag = ? LIMIT 1", ['PerRequestCachesTestNoSuchPage']);
+        $this->assertSame(1, $this->countQueries($db) - $before, 'a bound query counts as one');
+
+        $before = $this->countQueries($db);
+        $statement = $db->prepare("SELECT tag FROM {$pages} WHERE tag = ? LIMIT 1");
+        foreach (['a', 'b', 'c'] as $tag) {
+            $statement->execute([$tag]);
+        }
+        $this->assertSame(3, $this->countQueries($db) - $before, 'one prepare, three executions, three queries');
+    }
+
     public function testAMissingPageIsLookedUpOnce(): void
     {
         $wiki = $this->getWiki();

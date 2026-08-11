@@ -69,6 +69,39 @@ final class SqlParameters
     }
 
     /**
+     * Refuse a positional statement whose `?` count does not match its value count.
+     *
+     * PDO already rejects this at execute() time, with "SQLSTATE[HY093]: Invalid parameter
+     * number" and no indication of which statement or which way the mismatch goes. That is a
+     * poor error for the mistake it describes, and the mistake is easy: converting a query
+     * built by concatenating several fragments means keeping placeholders and values in step
+     * across all of them, and a statement whose values went missing altogether is still valid
+     * SQL right up to the moment it runs.
+     *
+     * Positional only. A named statement may legitimately reuse one placeholder twice, so its
+     * counts need not agree and PDO's own check is the right one.
+     *
+     * @param array<array-key, mixed> $params
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function assertPlaceholderCount(string $sql, array $params): void
+    {
+        if (!array_is_list($params)) {
+            return;
+        }
+
+        // string literals go first: a `?` inside one is data, not a placeholder. Doubled
+        // quotes inside a literal are consumed by the same pass.
+        $stripped = (string)preg_replace("/'(?:[^']|'')*'/", "''", $sql);
+        $placeholders = substr_count($stripped, '?');
+
+        if ($placeholders !== count($params)) {
+            throw new \InvalidArgumentException(sprintf('This statement has %d placeholder(s) but was given %d value(s): %s', $placeholders, count($params), trim((string)preg_replace('/\s+/', ' ', $sql))));
+        }
+    }
+
+    /**
      * `?, ?, ?` for a `WHERE tag IN (...)` of $count values.
      *
      * SQL has no way to bind a list to one placeholder, so an IN clause needs as many

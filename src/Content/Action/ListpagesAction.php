@@ -2,8 +2,10 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -73,8 +75,9 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             $sort = 'tag';
         }
         if ($exclude) {
-            // notice we can addslash() the list before splitting it because escaped character are not separators
-            $exclude = preg_split('/[ ;,\|]/', addslashes($exclude), -1, PREG_SPLIT_NO_EMPTY);
+            // no addslashes(): the names are bound now, so escaping them here would filter on
+            // the escaped spelling instead of on the tag the author typed
+            $exclude = preg_split('/[ ;,\|]/', (string)$exclude, -1, PREG_SPLIT_NO_EMPTY);
         } else {
             $exclude = [];
         }
@@ -90,66 +93,88 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
 
         // classical list display
         // building the request
-        // has_ownpage and user_is_registered avoid us to make requests to know
-        // whether the personnal pages of owners and users exist
+        //
+        // These joins used to read a `users` table, which this major dropped: accounts are
+        // `pages` rows carrying `type = 'user'` now. Every branch below that sorted or filtered
+        // by user therefore died with "no such table: <prefix>users" -- only the plainest branch
+        // (no user, no owner, sort != user) has no join and kept working, which is why the
+        // action looked healthy.
+        //
+        // One join replaces the two: an account's row IS the page its name points at, so
+        // "is registered" and "has an own page" are now the same question. The third rendering
+        // branch below (registered, but no page of their own) is consequently unreachable --
+        // that is the unification working, not a case gone missing.
+        $typeCol = $dbService->quoteIdentifier('type');
+        $timeCol = $dbService->quoteIdentifier('time');
+        $accountFlags = 'user_row.tag IS NOT NULL user_is_registered, user_row.tag IS NOT NULL user_has_ownpage';
+        $params = [];
+
+        // `a` is the latest revision in every branch, so the clauses appended after this block
+        // (parent, exclusions, ORDER BY) qualify one alias and read the same throughout.
+        $latestRow = ' FROM ' . $prefix . 'pages a';
+        $accountJoin = ' LEFT JOIN ' . $prefix . "pages user_row ON user_row.tag = a.{$userCol}"
+            . " AND user_row.latest = 'Y' AND user_row.{$typeCol} = ?";
+        $ownerJoin = ' LEFT JOIN ' . $prefix . "pages owner_page ON a.owner = owner_page.tag AND owner_page.latest = 'Y'";
+
         if ($user) {
-            $sql = "SELECT a.tag, b.time,
-                b.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage"
-                . ($owner ? '' : ', b.owner, owner_page.tag IS NOT NULL owner_has_ownpage')
-                . ' FROM ' . $prefix . 'pages a, ' . $prefix . 'pages b
-                LEFT JOIN ' . $prefix . 'users ON b.user = name
-                LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"'
-                . ($owner ? '' : ' LEFT JOIN ' . $prefix . 'pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = "Y"')
-                . ' WHERE a.user = "' . $this->getService(DbService::class)->escape($user) . '"'
-                . ' AND a.tag = b.tag AND b.latest = "Y"'
-                . ($owner ? ' AND b.owner = "' . $this->getService(DbService::class)->escape($owner) . '"' : '');
+            // "pages this user took part in" is a question about *any* revision, which used to
+            // be asked by joining the table to itself and collapsing the duplicates with a
+            // GROUP BY. That grouping selected non-aggregated columns, which SQLite tolerates
+            // and both MySQL (ONLY_FULL_GROUP_BY) and PostgreSQL reject outright -- so the
+            // first repair of this branch still only ran on one of the three drivers. EXISTS
+            // asks the same question without producing duplicates to collapse.
+            $params[] = PageType::USER;
+            $sql = "SELECT a.tag, a.{$timeCol}, a.{$userCol}, {$accountFlags}"
+                . ($owner ? '' : ', a.owner, owner_page.tag IS NOT NULL owner_has_ownpage')
+                . $latestRow
+                . $accountJoin
+                . ($owner ? '' : $ownerJoin)
+                . " WHERE a.latest = 'Y'"
+                . ' AND EXISTS (SELECT 1 FROM ' . $prefix . "pages r WHERE r.tag = a.tag AND r.{$userCol} = ?)"
+                . ($owner ? ' AND a.owner = ?' : '');
+            $params[] = $user;
+            if ($owner) {
+                $params[] = $owner;
+            }
         } elseif ($owner) {
             if ($sort == 'user') {
-                $sql = "SELECT a.tag, a.time,
-                    a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                    FROM " . $prefix . 'pages a
-                    LEFT JOIN ' . $prefix . "users ON a.$userCol = name
-                    LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'";
+                $params[] = PageType::USER;
+                $sql = "SELECT a.tag, a.{$timeCol}, a.{$userCol}, {$accountFlags}" . $latestRow . $accountJoin;
             } else {
-                $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
+                $sql = "SELECT a.tag, a.{$timeCol}" . $latestRow;
             }
-            $sql .= ' WHERE a.owner = "' . $this->getService(DbService::class)->escape($owner) . '" AND a.latest = "Y"';
+            $sql .= " WHERE a.owner = ? AND a.latest = 'Y'";
+            $params[] = $owner;
         } else {
             if ($sort == 'user') {
-                $sql = "SELECT a.tag, a.owner,
-                    owner_page.tag IS NOT NULL owner_has_ownpage,
-                    a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                    FROM " . $prefix . 'pages a
-                    LEFT JOIN ' . $prefix . "users ON a.$userCol = name
-    		LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'
-    		LEFT JOIN " . $prefix . "pages owner_page ON a.owner = owner_page.tag AND owner_page.latest = 'Y'";
+                $params[] = PageType::USER;
+                $sql = 'SELECT a.tag, a.owner, owner_page.tag IS NOT NULL owner_has_ownpage,'
+                    . " a.{$userCol}, {$accountFlags}"
+                    . $latestRow . $accountJoin . $ownerJoin;
             } else {
-                $sql = 'SELECT a.tag, a.owner, a.time, b.tag IS NOT NULL owner_has_ownpage
-                    FROM ' . $prefix . 'pages a
-                    LEFT JOIN ' . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
+                $sql = "SELECT a.tag, a.owner, a.{$timeCol}, owner_page.tag IS NOT NULL owner_has_ownpage"
+                    . $latestRow . $ownerJoin;
             }
             $sql .= " WHERE a.latest = 'Y'";
         }
         $sql .= " AND a.parent = ''";
         if ($exclude) {
-            $sql .= " AND a.tag NOT IN ('" . implode("', '", $exclude) . "')";
+            $sql .= ' AND a.tag NOT IN (' . SqlParameters::placeholders(count($exclude)) . ')';
+            $params = [...$params, ...$exclude];
         }
-        if ($user) {
-            $sql .= ' GROUP BY tag';
-            if ($sort == 'owner') {
-                $sql .= ' ORDER BY b.owner = "", b.owner';
-            } else {
-                $sql .= ' ORDER BY b.' . $sort;
-            }
-        } elseif ($sort == 'owner') {
+        // `$sort` is whitelisted above, but two of its four values (`time`, `user`) are
+        // reserved words on at least one driver, so the column is quoted rather than pasted.
+        // The empty-string comparisons were written `= ""`, which is a MySQL-ism: PostgreSQL
+        // reads a double-quoted token as an *identifier*, so it errored on a column named "".
+        if ($sort == 'owner') {
             // this allows to display non existent pages last
-            $sql .= ' ORDER BY a.owner = "", a.owner';
+            $sql .= " ORDER BY a.owner = '', a.owner";
         } else {
-            $sql .= ' ORDER BY a.' . $sort;
+            $sql .= ' ORDER BY a.' . $dbService->quoteIdentifier($sort);
         }
 
         // retrieving the pages
-        $pages = $this->getService(DbService::class)->loadAll($sql);
+        $pages = $this->getService(DbService::class)->loadAll($sql, $params);
 
         // Display
         // Header

@@ -25,6 +25,6 @@ class DropBodyRColumn extends YesWikiMigration
 {
     public function run()
     {
-        $this->getService(DbService::class)->dropColumn('pages', 'body_r');
+        $this->getService(DbService::class)->schema()->dropColumn('pages', 'body_r');
     }
 }

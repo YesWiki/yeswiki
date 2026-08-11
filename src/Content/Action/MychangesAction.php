@@ -55,7 +55,11 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             if ($bydate = $this->getService(PerformableArguments::class)->get('bydate')) {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
-                if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->getService(AuthenticationService::class)->getLoggedUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
+                if ($pages = $this->getService(DbService::class)->loadAll(
+                    'SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix']
+                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC",
+                    [$this->getService(AuthenticationService::class)->getLoggedUserName()]
+                )) {
                     foreach ($pages as $page) {
                         $edited_pages[$page['tag']] = $page['time'];
                     }
@@ -88,7 +92,11 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             } else {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_NAME') . ".</b><br /><br />\n";
 
-                if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->getService(AuthenticationService::class)->getLoggedUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
+                if ($pages = $this->getService(DbService::class)->loadAll(
+                    'SELECT tag, time FROM ' . $this->getService(RuntimeConfig::class)['table_prefix']
+                    . "pages WHERE $userCol = ? AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC",
+                    [$this->getService(AuthenticationService::class)->getLoggedUserName()]
+                )) {
                     foreach ($pages as $page) {
                         if ($last_tag != $page['tag']) {
                             $last_tag = $page['tag'];

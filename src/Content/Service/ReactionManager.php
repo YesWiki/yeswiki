@@ -8,6 +8,8 @@ use YesWiki\Content\Field\ReactionsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Database\SqlFragment;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
 class ReactionManager
@@ -111,10 +113,10 @@ class ReactionManager
     {
         $type = self::TYPE_URI;
 
-        return $this->dbService->count("
-            SELECT * FROM {$this->dbService->prefixTable('triples')} 
-            WHERE resource = '{$this->dbService->escape($tag)}' AND property = '{$type}'
-        ");
+        return $this->dbService->countRows("
+            SELECT * FROM {$this->dbService->prefixTable('triples')}
+            WHERE resource = ? AND property = ?
+        ", [$tag, $type]);
     }
 
     public function getActionParameters($page, $idReaction = null)
@@ -337,6 +339,25 @@ class ReactionManager
             throw new \Exception('Unauthorized');
         }
 
+        // TripleStore::delete()'s $extraSQL is a SqlFragment since ticket 31, so these values
+        // bind instead of being escaped into the clause on the way there.
+        //
+        // The column name was spelled with MySQL backticks, which PostgreSQL rejects outright
+        // as a syntax error -- so deleting a reaction was broken on one of the three supported
+        // drivers, silently, because nothing in the suite reaches this path on pgsql.
+        $valueCol = $this->dbService->quoteIdentifier('value');
+        $suffix = SqlParameters::LIKE_CLAUSE_SUFFIX;
+        // a reaction is stored as a JSON blob in the triple's value, so these are substring
+        // probes into it -- and the ids they look for are user data, hence likeContains()
+        $holds = fn (string $json): SqlFragment => SqlFragment::of(
+            "({$valueCol} LIKE ?{$suffix})",
+            [SqlParameters::likeContains($json)]
+        );
+        $lacks = fn (string $json): SqlFragment => SqlFragment::of(
+            "({$valueCol} NOT LIKE ?{$suffix})",
+            [SqlParameters::likeContains($json)]
+        );
+
         if ($this->entryManager->isEntry($pageTag) && $reactionId == 'reactionField') {
             return $this->tripleStore->delete(
                 $pageTag,
@@ -344,18 +365,23 @@ class ReactionManager
                 null,
                 '',
                 '',
-                "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')" .
-                    'AND' .
-                    "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
-                    'AND' .
-                    "(`value` NOT LIKE '%\"idReaction\":\"%')" .
-                    'AND' .
-                    "(`value` NOT LIKE '%\"date\":\"%')"
+                SqlFragment::all(
+                    ' AND ',
+                    $holds('"user":"' . $user . '"'),
+                    $holds('"id":"' . $id . '"'),
+                    $lacks('"idReaction":"'),
+                    $lacks('"date":"')
+                )
             );
         }
 
-        return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
-
-        return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');
+        return $this->tripleStore->delete(
+            $pageTag,
+            self::TYPE_URI,
+            null,
+            '',
+            '',
+            $holds('user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"')
+        );
     }
 }

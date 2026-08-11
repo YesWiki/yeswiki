@@ -36,6 +36,8 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
 {
     private const MALICIOUS_NAME = 'AclSqliRegressionUser" OR SLEEP(1) OR "1';
     private const TEST_EMAIL = 'aclsqliregression@example.tld';
+    private const PRIVATE_TAG = 'AclPredicateRegressionPrivate';
+    private const PUBLIC_TAG = 'AclPredicateRegressionPublic';
 
     public function testMaliciousUserNameIsEscapedInGeneratedAclFragment()
     {
@@ -56,27 +58,27 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
         try {
             $fragment = $aclService->updateRequestWithACL();
 
-            // pre-fix: the fragment contains the raw, unescaped '"' from the username
-            // directly inside a *double*-quoted LIKE string, breaking out of it.
+            // Since ticket 31 the predicate is a SqlFragment, so the strongest available
+            // statement is no longer "the payload is escaped" but "the payload is not in the
+            // statement". Assert that: the name appears nowhere in the SQL text, and appears
+            // in the bound values instead. No quoting rule of any driver applies to it.
             $this->assertStringNotContainsString(
-                'LIKE "%AclSqliRegressionUser" OR',
-                $fragment,
-                'the username breaks out of a double-quoted LIKE string literal unescaped (SQL injection)'
+                'AclSqliRegressionUser',
+                $fragment->sql,
+                'the username must not reach the statement text at all -- it is a bound value'
+            );
+            $this->assertStringNotContainsString('SLEEP', $fragment->sql);
+            $this->assertNotEmpty(
+                array_filter(
+                    $fragment->params,
+                    static fn ($value): bool => is_string($value) && str_contains($value, 'AclSqliRegressionUser')
+                ),
+                'and it must actually be among the bound values, or the predicate stopped using it'
             );
 
-            // post-fix: the fix (AclService::updateRequestWithACL()) switched these LIKE
-            // clauses to *single*-quoted SQL literals, matching what DbService::escape()
-            // (PDO::quote()) actually guarantees -- portable across every driver, unlike
-            // relying on escape() to also neutralize '"' inside a double-quoted literal
-            // (MySQL's PDO driver happens to backslash-escape '"' too, so that was
-            // incidentally safe there, but SQLite's PDO driver never touches '"' at all,
-            // which is exactly what made the original double-quoted version exploitable
-            // here). So the double-quote content in the malicious name is now just inert
-            // text inside a safely-delimited single-quoted string, not a breakout -- checking
-            // for one particular escaped substring doesn't fit every valid fix shape; what
-            // actually matters is that the payload can no longer execute as SQL. Verify that
-            // black-box, the same way this was originally verified against a real MariaDB
-            // connection: a SLEEP(1) in the payload must not measurably slow the query down.
+            // Kept from the original: what matters is that the payload cannot execute. This was
+            // first verified against a real MariaDB connection by timing SLEEP(1); the timing
+            // check stays because it is behavioural rather than a claim about the SQL's shape.
             $start = microtime(true);
             $tags = $pageManager->getReadablePageTags();
             $elapsed = microtime(true) - $start;
@@ -97,6 +99,56 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
             if ($createdUser) {
                 $userManager->delete($createdUser);
             }
+        }
+    }
+
+    /**
+     * The predicate must still *filter*.
+     *
+     * This is the failure mode that matters and the one that does not look like an error: a
+     * read-ACL predicate that quietly becomes `1 = 1` -- or loses its values, or gets composed
+     * away by an `isEmpty()` branch taken by mistake -- returns more rows rather than fewer, and
+     * every test asserting "the page I created is findable" still passes. Ticket 31 moved this
+     * predicate through three composition steps, which is exactly the refactor that can do it.
+     */
+    public function testThePredicateActuallyRestrictsWhatAnAnonymousVisitorSees(): void
+    {
+        $wiki = $this->getWiki();
+        $aclService = $wiki->services->get(AclService::class);
+        $pageManager = $wiki->services->get(PageManager::class);
+
+        $previousSessionUser = $_SESSION['user'] ?? null;
+        unset($_SESSION['user']);
+
+        try {
+            $pageManager->save(self::PRIVATE_TAG, [\YesWiki\Content\Entity\PageBody::CONTENT => 'secret'], '', true);
+            $aclService->save(self::PRIVATE_TAG, 'read', '@' . ADMIN_GROUP);
+            $pageManager->save(self::PUBLIC_TAG, [\YesWiki\Content\Entity\PageBody::CONTENT => 'public'], '', true);
+            $aclService->save(self::PUBLIC_TAG, 'read', '*');
+            $pageManager->forget(self::PRIVATE_TAG);
+            $pageManager->forget(self::PUBLIC_TAG);
+
+            $fragment = $aclService->updateRequestWithACL();
+            $this->assertFalse($fragment->isEmpty(), 'an anonymous visitor must get a predicate, not nothing');
+            $this->assertStringNotContainsString('1 = 1', $fragment->sql);
+
+            $readable = $pageManager->getReadablePageTags();
+
+            $this->assertContains(self::PUBLIC_TAG, $readable, 'a public page must stay readable');
+            $this->assertNotContains(
+                self::PRIVATE_TAG,
+                $readable,
+                'an admins-only page must NOT be listed for an anonymous visitor -- if this fails the '
+                . 'predicate stopped filtering, which no other assertion in the suite would notice'
+            );
+        } finally {
+            if ($previousSessionUser === null) {
+                unset($_SESSION['user']);
+            } else {
+                $_SESSION['user'] = $previousSessionUser;
+            }
+            $pageManager->deleteOrphaned(self::PRIVATE_TAG);
+            $pageManager->deleteOrphaned(self::PUBLIC_TAG);
         }
     }
 }

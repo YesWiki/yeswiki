@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -91,14 +92,22 @@ class TripleStore
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
+        $params = [];
+        // The operators are whitelisted above and stay in the text -- an operator cannot be
+        // bound. The values bind, and `%` in one is deliberately left alone: a caller asking
+        // for LIKE wants pattern semantics, which is why nothing here defuses wildcards the
+        // way SearchIndexQuery does.
         if ($resource !== null) {
-            $where[] = ' resource ' . $res_op . " '" . $this->dbService->escape($resource) . "'";
+            $where[] = ' resource ' . $res_op . ' ?';
+            $params[] = $resource;
         }
         if ($property !== null) {
-            $where[] = ' property ' . $prop_op . " '" . $this->dbService->escape($property) . "'";
+            $where[] = ' property ' . $prop_op . ' ?';
+            $params[] = $property;
         }
         if ($value !== null) {
-            $where[] = ' value ' . $val_op . " '" . $this->dbService->escape($value) . "'";
+            $where[] = ' value ' . $val_op . ' ?';
+            $params[] = $value;
         }
         if (count($where) > 0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
@@ -109,11 +118,17 @@ class TripleStore
         //      - but $res in this cache can be with a $re_prefix
         //      - but $prop in this cache can be with $prop_prefix
         //      - $re_prefix and $prop_prefix are not parameters of the getMatching function
-        if (!array_key_exists($sql, $this->matchingCache)) {
-            $this->matchingCache[$sql] = $this->dbService->loadAll($sql);
+        //
+        // Keyed on the statement AND its values. Before bindings the values were inside the
+        // statement, so the statement alone identified the query; now every lookup for a given
+        // shape produces the SAME text, and keying on it alone would serve the first
+        // resource's triples to every subsequent resource asking the same shape of question.
+        $key = $sql . '|' . serialize($params);
+        if (!array_key_exists($key, $this->matchingCache)) {
+            $this->matchingCache[$key] = $this->dbService->loadAll($sql, $params);
         }
 
-        return $this->matchingCache[$sql];
+        return $this->matchingCache[$key];
     }
 
     /**
@@ -187,12 +202,14 @@ class TripleStore
 
         $this->cacheByResource[$res] = [];
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE ';
+        $params = [];
         if (empty($res)) { // get everything if no resource given
             $sql .= '1';
         } else {
-            $sql .= "resource = '" . $this->dbService->escape($res) . "'";
+            $sql .= 'resource = ?';
+            $params[] = $res;
         }
-        foreach ($this->dbService->loadAll($sql) as $triple) {
+        foreach ($this->dbService->loadAll($sql, $params) as $triple) {
             if (!isset($this->cacheByResource[$res][$triple['property']])) {
                 $this->cacheByResource[$res][$triple['property']] = [];
             }
@@ -218,8 +235,8 @@ class TripleStore
      */
     public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): ?int
     {
-        $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($re_prefix . $resource) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' AND value = '" . $this->dbService->escape($value) . "'";
-        $triple = $this->dbService->loadSingle($sql);
+        $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = ? AND property = ? AND value = ?';
+        $triple = $this->dbService->loadSingle($sql, [$re_prefix . $resource, $prop_prefix . $property, $value]);
 
         return !is_null($triple) ?
             intval($triple['id'])
@@ -241,11 +258,12 @@ class TripleStore
         }
         $res = $re_prefix . $resource;
 
-        // single-quoted literal, matching what DbService::escape() (PDO::quote()) actually
-        // guarantees -- SQLite's PDO driver never escapes '"', so wrapping the value in
-        // double quotes here let a resource containing '"' break out of the literal
-        // (found via UserManager::delete() on an account name containing '"', ticket 06)
-        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "'";
+        // This line used to carry a warning: it had wrapped the value in DOUBLE quotes, and
+        // SQLite's PDO driver does not escape '"', so a resource containing one broke out of
+        // the literal -- found via UserManager::delete() on an account name containing '"'
+        // (ticket 06). Bound, the value is not in the statement at all and the quoting rules
+        // of no driver apply to it. That is the entire argument for bindings in one line.
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = ?';
 
         // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
@@ -253,7 +271,7 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        return $this->dbService->query($sql) !== false;
+        return $this->dbService->query($sql, [$res]) !== false;
     }
 
     /**
@@ -289,9 +307,9 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . " (resource, property, value)VALUES ('" . $this->dbService->escape($res) . "', '" . $this->dbService->escape($prop_prefix . $property) . "', '" . $this->dbService->escape($value) . "')";
+        $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value) VALUES (?, ?, ?)';
 
-        return $this->dbService->query($sql) ? 0 : 1;
+        return $this->dbService->query($sql, [$res, $prop_prefix . $property, $value]) ? 0 : 1;
     }
 
     /**
@@ -336,47 +354,55 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . " SET value = '" . $this->dbService->escape($newvalue) . "' WHERE id = " . $id;
+        $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = ? WHERE id = ?';
 
-        return $this->dbService->query($sql) ? 0 : 1;
+        return $this->dbService->query($sql, [$newvalue, $id]) ? 0 : 1;
     }
 
     /**
      * Deletes a triple ($resource, $property, $value) from the triples' table.
      *
-     * @param string $resource
-     *                            The resource of the triple to delete
-     * @param string $property
-     *                            The property of the triple to delete
-     * @param string $value
-     *                            The value of the triple to delete. If set to <tt>null</tt>,
-     *                            deletes all the triples corresponding to ($resource, $property). (defaults to <tt>null</tt>)
-     * @param string $re_prefix
-     *                            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *                            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @param string $extraSQL
-     *                            Extra SQL query (null by default)
+     * @param string           $resource
+     *                                      The resource of the triple to delete
+     * @param string           $property
+     *                                      The property of the triple to delete
+     * @param string           $value
+     *                                      The value of the triple to delete. If set to <tt>null</tt>,
+     *                                      deletes all the triples corresponding to ($resource, $property). (defaults to <tt>null</tt>)
+     * @param string           $re_prefix
+     *                                      The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
+     * @param string           $prop_prefix
+     *                                      The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
+     * @param SqlFragment|null $extraSQL
+     *                                      An extra clause to AND onto the delete, with the values it binds
+     *                                      (null by default)
      */
-    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null): bool
+    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, ?SqlFragment $extraSQL = null): bool
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $res = $re_prefix . $resource;
 
-        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' ";
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = ? AND property = ? ';
+        // one list, reused by the verification SELECT below, which asks the same question
+        $params = [$res, $prop_prefix . $property];
         if ($value !== null) {
-            $valueQuery = "AND value = '" . $this->dbService->escape($value) . "'";
+            $valueQuery = 'AND value = ?';
             $sql .= $valueQuery;
+            $params[] = $value;
         } else {
             $valueQuery = '';
         }
-        if ($extraSQL !== null) {
-            $extraSQLQuery = 'AND (' . $extraSQL . ')';
+        // $extraSQL is a whole extra clause a caller supplies -- so it arrives as a SqlFragment
+        // (ticket 31) and brings its own values with it, rather than having had to escape them
+        // into the text on the way here. It goes in after the value clause, so its parameters go
+        // after that clause's too.
+        $extraSQLQuery = '';
+        if ($extraSQL !== null && !$extraSQL->isEmpty()) {
+            $extraSQLQuery = 'AND (' . $extraSQL->sql . ')';
             $sql .= $extraSQLQuery;
-        } else {
-            $extraSQLQuery = '';
+            $params = [...$params, ...$extraSQL->params];
         }
         // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
@@ -385,18 +411,18 @@ class TripleStore
         $this->matchingCache = [];
 
         try {
-            if ($this->dbService->query($sql) === false) {
+            if ($this->dbService->query($sql, $params) === false) {
                 return false;
             }
             $sql = <<<SQL
             SELECT id FROM {$this->dbService->prefixTable('triples')}
-              WHERE resource = '{$this->dbService->escape($re_prefix . $resource)}'
-                AND property = '{$this->dbService->escape($prop_prefix . $property)}'
+              WHERE resource = ?
+                AND property = ?
                 $valueQuery
                 $extraSQLQuery
                 ;
             SQL;
-            $triple = $this->dbService->loadSingle($sql);
+            $triple = $this->dbService->loadSingle($sql, $params);
 
             return is_null($triple);
         } catch (\Throwable $th) {

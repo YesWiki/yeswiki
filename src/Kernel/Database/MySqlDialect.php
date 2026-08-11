@@ -30,8 +30,12 @@ class MySqlDialect implements SqlDialect
 
     public function jsonExtract(string $column, string $path): string
     {
-        // JSON_UNQUOTE so strings come back unquoted
-        return "JSON_UNQUOTE(JSON_EXTRACT($column, '$path'))";
+        // JSON_UNQUOTE so strings come back unquoted. The path is escaped here rather than by
+        // the caller: it can carry a form field name, and the dialect is what knows the path
+        // ends up inside a single-quoted literal (see SqlDialect::jsonExtract()).
+        $escaped = str_replace("'", "''", $path);
+
+        return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

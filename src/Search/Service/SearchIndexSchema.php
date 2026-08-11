@@ -72,6 +72,6 @@ class SearchIndexSchema
      */
     public function exists(): bool
     {
-        return in_array($this->table(), $this->dbService->getTables(), true);
+        return in_array($this->table(), $this->dbService->schema()->getTables(), true);
     }
 }

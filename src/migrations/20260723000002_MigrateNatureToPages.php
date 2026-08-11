@@ -14,7 +14,7 @@ class MigrateNatureToPages extends YesWikiMigration
         // apart). Each form's stable numeric id (bn_id_nature) is preserved so entries
         // (id_typeannonce), default-image filenames, and ActivityPub actor URLs -- all
         // keyed off that id, never the tag -- keep resolving unchanged.
-        if (!$this->dbService->columnExists('nature', 'bn_id_nature')) {
+        if (!$this->dbService->schema()->columnExists('nature', 'bn_id_nature')) {
             return;
         }
 

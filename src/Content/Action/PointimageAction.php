@@ -124,7 +124,10 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         // get an unique pagename based on the image (tag if a FileManager entry, filename otherwise)
         $dbService = $this->getService(DbService::class);
         $baseForPageTag = $isFileTag ? $file : preg_replace('/[^A-Za-z0-9 ]/', '', str_replace('.' . $ext, '', $file));
-        $datapagetag = $dbService->escape($this->getService(PageContext::class)->getTag() . 'PI' . $baseForPageTag);
+        // NOT escaped: this value is also the tag handed to PageManager::save() below, so the
+        // SQL-escaped spelling was being stored as the page's actual name. It binds in the query
+        // instead, which is the only place the escaping was ever for.
+        $datapagetag = $this->getService(PageContext::class)->getTag() . 'PI' . $baseForPageTag;
 
         // save the posted data
         if (isset($_POST['title']) && !empty($_POST['title'])
@@ -133,9 +136,12 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             && isset($_POST['image_x']) && !empty($_POST['image_x'])
             && isset($_POST['image_y']) && !empty($_POST['image_y'])
             && isset($_POST['color']) && !empty($_POST['color'])) {
-            $pagetag = $dbService->escape(str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']));
+            $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']);
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
-            $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
+            $donneesbody = $this->getService(DbService::class)->loadSingle(
+                'SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = ? and latest = 'Y' limit 1",
+                [$pagetag]
+            );
             // raw row, so the body is still encoded; the markers append to the markup and
             // whatever else the marker page's body carries travels with it
             $markersBody = PageBody::decode($donneesbody['body'] ?? null);
@@ -145,7 +151,10 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         }
 
         // get the data for the image
-        $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
+        $donneesbody = $this->getService(DbService::class)->loadSingle(
+            'SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = ? and latest = 'Y' limit 1",
+            [$datapagetag]
+        );
 
         // search for markers info
         preg_match_all('/~~(.*)~~/msU', PageBody::content(PageBody::decode($donneesbody['body'] ?? null)), $locations);

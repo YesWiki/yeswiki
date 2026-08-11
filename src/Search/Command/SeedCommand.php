@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexQuery;
@@ -161,11 +162,18 @@ class SeedCommand extends Command
             }
 
             foreach ($buckets as $acl => $bucketText) {
-                $rows[] = '('
-                    . "'{$db->escape($tag)}', '{$db->escape((string)$acl)}', '" . md5((string)$acl) . "', "
-                    . "'*', '', '{$db->escape($type)}', '', "
-                    . "'{$db->escape('Seeded content ' . $i)}', '{$db->escape($bucketText)}', "
-                    . "'2026-01-01 00:00:00')";
+                $rows[] = [
+                    $tag,
+                    (string)$acl,
+                    md5((string)$acl),
+                    '*',
+                    '',
+                    $type,
+                    '',
+                    'Seeded content ' . $i,
+                    $bucketText,
+                    '2026-01-01 00:00:00',
+                ];
             }
 
             if (count($rows) >= 500) {
@@ -189,17 +197,25 @@ class SeedCommand extends Command
     }
 
     /** @param list<string> $rows */
+    /**
+     * @param list<list<string>> $rows one list of column values per index row
+     */
     private function flush(array $rows): void
     {
         if ($rows === []) {
             return;
         }
-        $db = $this->services->get(DbService::class);
-        $db->query(
+        // One prepared INSERT executed per row, like SearchIndexer::write(). This command exists
+        // to measure the index at a million rows, so it is the last place that wants to spend
+        // its time concatenating a statement the database then has to parse.
+        $statement = $this->services->get(DbService::class)->prepare(
             "INSERT INTO {$this->services->get(SearchIndexSchema::class)->table()}"
             . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
-            . ' VALUES ' . implode(', ', $rows)
+            . ' VALUES (' . SqlParameters::placeholders(10) . ')'
         );
+        foreach ($rows as $row) {
+            $statement->execute($row);
+        }
     }
 
     /**

@@ -31,10 +31,12 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
     } elseif (empty($filter)) {
         return $tab;
     }
+    // A LIST of tag names, not a pre-quoted SQL string (ticket 31): the caller binds them, so
+    // building `'a','b'` here meant this function decided the quoting for a statement it never
+    // sees -- and got it wrong, since PDO::quote() only protects the single-quoted literal it
+    // wraps its own output in.
     if (!isset($tab['tags'])) {
-        $tab['tags'] = '';
-    } else {
-        $tab['tags'] .= ',';
+        $tab['tags'] = [];
     }
     $explodelabel = explode(':', $filter);
 
@@ -60,14 +62,7 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
     } else {
         $tab[$nb]['class'] = 'filter-inline';
     }
-    $dbService = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\DbService::class);
-    $escapedTags = array_map(function ($tagname) use ($dbService) {
-        return $dbService->escape($tagname);
-    }, $tab[$nb]['arraytags']);
-    // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
-    // guarantees safety inside a single-quoted SQL literal (see
-    // AclService::updateRequestWithACL() for the same class of driver-dependent bug)
-    $tab['tags'] .= "'" . implode("','", $escapedTags) . "'";
+    $tab['tags'] = [...$tab['tags'], ...array_values($tab[$nb]['arraytags'])];
     $nb++;
     $tab = get_filtertags_parameters_recursive($nb, $tab);
 

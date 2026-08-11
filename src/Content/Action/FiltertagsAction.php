@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Database\SqlFragment;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
@@ -75,14 +77,39 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         }
         $taglist = $params['tags'];
         unset($params['tags']);
+        if ($taglist === []) {
+            return;
+        }
 
         // requete avec toutes les pages contenants les mots cles
         $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
-        $req = "SELECT DISTINCT tag, time, $userCol, owner, body
-        FROM " . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages, ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "triples tags
-        WHERE latest = 'Y' AND parent = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->getService(InclusionStack::class)->getAll()) . "') ORDER BY tag ASC";
-        $pages = $this->getService(DbService::class)->loadAll($req);
+        $timeCol = $dbService->quoteIdentifier('time');
+        $prefix = $this->getService(RuntimeConfig::class)['table_prefix'];
+
+        // The pages already being rendered, so an inclusion cannot recurse into itself. Bound
+        // like the tags: these are page tags, and an empty stack must not produce `NOT IN ()`.
+        $included = $this->getService(InclusionStack::class)->getAll();
+        $notIncluded = $included === []
+            ? SqlFragment::empty()
+            : SqlFragment::of('AND tag NOT IN (' . SqlParameters::placeholders(count($included)) . ')', $included);
+
+        $filter = SqlFragment::all(
+            ' ',
+            SqlFragment::of(
+                'tags.value IN (' . SqlParameters::placeholders(count($taglist)) . ')'
+                . " AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag'"
+                . ' AND tags.resource = tag',
+                $taglist
+            ),
+            $notIncluded
+        );
+
+        $req = "SELECT DISTINCT tag, {$timeCol}, {$userCol}, owner, body"
+            . ' FROM ' . $prefix . 'pages, ' . $prefix . 'triples tags'
+            . " WHERE latest = 'Y' AND parent = '' AND " . $filter->sql
+            . ' ORDER BY tag ASC';
+        $pages = $this->getService(DbService::class)->loadAll($req, $filter->params);
 
         echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
         foreach ($params as $param) {

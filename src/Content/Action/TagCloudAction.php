@@ -3,6 +3,8 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Database\SqlFragment;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
@@ -41,9 +43,15 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
         $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
         $tablePrefix = $this->getService(RuntimeConfig::class)['table_prefix'];
 
+        // `property="..."` was a DOUBLE-quoted literal, which MySQL reads as a string and
+        // PostgreSQL as an identifier -- so this action failed outright on one of the three
+        // supported drivers. Bound now, so no driver's quoting rules apply to it.
+        $tagProperty = SqlFragment::of('property = ?', [self::TAG_PROPERTY]);
+        $filter = SqlFragment::all(' ', $tagProperty, $selectiontags);
+
         // on récupère le nb maximum et le nb minimum d'occurences
-        $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' GROUP BY value';
-        $min_max = $this->getService(DbService::class)->loadAll($sql);
+        $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' GROUP BY value';
+        $min_max = $this->getService(DbService::class)->loadAll($sql, $filter->params);
         $min = 100000000;
         $max = 0;
         foreach ($min_max as $tab_min_max) {
@@ -60,8 +68,8 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
         }
 
         // on récupère tous les tags existants
-        $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' ORDER BY value ASC, resource ASC';
-        $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql);
+        $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' ORDER BY value ASC, resource ASC';
+        $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql, $filter->params);
 
         $output = '';
         if ($tab_tous_les_tags !== []) {
@@ -121,23 +129,20 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * Builds the "AND value IN (...)" SQL clause from the (already trimmed/filtered) tag
-     * tokens, escaping each one individually to prevent SQL injection.
+     * The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens.
+     *
+     * A SqlFragment since ticket 31: the tags are webmaster-typed action arguments, and this
+     * clause is pasted into two different queries, so the values have to travel with it.
      */
-    private function buildSelectionTagsClause(array $tags): string
+    private function buildSelectionTagsClause(array $tags): SqlFragment
     {
         if (empty($tags)) {
-            return '';
+            return SqlFragment::empty();
         }
-        $dbService = $this->getService(DbService::class);
-        // single-quoted, not double-quoted: DbService::escape() (\PDO::quote()) only
-        // guarantees safety inside a single-quoted SQL literal (see
-        // AclService::updateRequestWithACL() and get_filtertags_parameters_recursive()
-        // for the same class of driver-dependent bug, fixed the same way)
-        $escapedTags = array_map(function ($tag) use ($dbService) {
-            return "'" . $dbService->escape($tag) . "'";
-        }, $tags);
 
-        return ' AND value IN (' . implode(',', $escapedTags) . ')';
+        return SqlFragment::of(
+            'AND value IN (' . SqlParameters::placeholders(count($tags)) . ')',
+            array_values($tags)
+        );
     }
 }

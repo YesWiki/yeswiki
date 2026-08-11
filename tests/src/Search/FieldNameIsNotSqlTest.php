@@ -144,7 +144,7 @@ class FieldNameIsNotSqlTest extends YesWikiTestCase
 
         // prepareSearchRequest() takes its params by reference, so they need a variable
         $params = ['formsIds' => [$created['id']]];
-        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params);
+        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params)->sql;
         $this->assertNotSame('', $sql, 'the form should produce a query at all');
 
         // the JSON path is a string literal and legitimately holds the real name, escaped;

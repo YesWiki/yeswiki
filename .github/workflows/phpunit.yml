@@ -32,6 +32,8 @@ env:
   DB_NAME: yeswiki_test
   DB_USER: root
   DB_PASSWORD: root
+  PG_USER: yeswiki
+  PG_PASSWORD: password
   WIKI_HOST: 127.0.0.1:8080
 
 jobs:
@@ -39,11 +41,27 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-26.04
+    name: PHP ${{ matrix.php-version }} / ${{ matrix.driver }}
 
     strategy:
+      # One driver failing must not cancel the others: which drivers a change breaks is the
+      # information this matrix exists to produce, and fail-fast throws most of it away.
+      fail-fast: false
       matrix:
-        php-version: ['8.3', '8.4', '8.5']
+        # Three drivers are supported (ADR-0015 commits the search index to all three) and
+        # until now CI ran one. The dialects are where they differ -- SQLite accepts what
+        # MySQL refuses and PostgreSQL is stricter than both -- so a driver leg is worth more
+        # than another PHP leg. PHP still spans its supported range, on MySQL.
+        include:
+          - { php-version: '8.3', driver: 'mysql' }
+          - { php-version: '8.4', driver: 'mysql' }
+          - { php-version: '8.5', driver: 'mysql' }
+          - { php-version: '8.3', driver: 'sqlite' }
+          - { php-version: '8.3', driver: 'pgsql' }
 
+    # `services` cannot be conditioned on the matrix, so both servers start on every leg and
+    # the SQLite ones simply ignore them. The alternative is one job per driver with the steps
+    # duplicated three times, which is a worse trade than a container nobody connects to.
     services:
       mysql:
         image: mysql:8.4
@@ -58,6 +76,20 @@ jobs:
           --health-timeout=5s
           --health-retries=3
 
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ${{ env.PG_USER }}
+          POSTGRES_PASSWORD: ${{ env.PG_PASSWORD }}
+          POSTGRES_DB: ${{ env.DB_NAME }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v5
 
@@ -65,8 +97,10 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           # Everything composer.json declares under ext-*, so `composer install`
-          # and the installer request run against the same extension set.
-          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, pdo, pdo_sqlite, zip
+          # and the installer request run against the same extension set. All three PDO
+          # drivers, so the same image serves every leg of the matrix -- the installer only
+          # offers a driver whose extension is loaded (InstallationController::availableDrivers).
+          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, zip
           tools: composer:v2
 
       - run: php -v
@@ -93,17 +127,26 @@ jobs:
           done
           echo "server did not come up"; cat ${{ runner.temp }}/php-server.log; exit 1
 
+      # The driver is named explicitly now. It never was, so the installer fell through to its
+      # `mysql` default and the wiki CI tested was always MySQL -- the driver was not a choice
+      # anyone had made, which is why nobody noticed it was the only one covered.
+      # SQLite needs no credentials and ignores db_database: the installer puts the file at a
+      # fixed private/yeswiki.db (InstallationController::SQLITE_DATABASE_PATH).
       - name: Setup Wiki
         run: |
+          case "${{ matrix.driver }}" in
+            mysql)  DB_ARGS=(-F "config[db_host]=127.0.0.1" -F "config[db_database]=${{ env.DB_NAME }}" -F "config[db_user]=${{ env.DB_USER }}" -F "config[db_password]=${{ env.DB_PASSWORD }}") ;;
+            pgsql)  DB_ARGS=(-F "config[db_host]=127.0.0.1" -F "config[db_database]=${{ env.DB_NAME }}" -F "config[db_user]=${{ env.PG_USER }}" -F "config[db_password]=${{ env.PG_PASSWORD }}") ;;
+            sqlite) DB_ARGS=() ;;
+            *) echo "unknown driver '${{ matrix.driver }}'"; exit 1 ;;
+          esac
           curl --silent --fail --show-error \
             -F "config[default_language]=fr" \
             -F "config[yeswiki_name]=MyTestWiki" \
             -F "config[root_page]=PagePrincipale" \
             -F "config[base_url]=http://${{ env.WIKI_HOST }}/?" \
-            -F "config[db_host]=127.0.0.1" \
-            -F "config[db_database]=${{ env.DB_NAME }}" \
-            -F "config[db_user]=${{ env.DB_USER }}" \
-            -F "config[db_password]=${{ env.DB_PASSWORD }}" \
+            -F "config[db_driver]=${{ matrix.driver }}" \
+            "${DB_ARGS[@]}" \
             -F "config[table_prefix]=yeswiki_" \
             -F "config[allow_raw_html]=1" \
             -F "config[archive][privatePath]=${{ github.workspace }}/private/backups" \
@@ -113,6 +156,18 @@ jobs:
             -F "admin_email=test@example.com" \
             -F "submit=Continue" \
             "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install"
+
+      # The installer creates the tables a fresh wiki needs and nothing more; migrations own
+      # everything added since, including the search index table (20260802120000_CreateSearchIndex).
+      # Without this step SearchIndexTest, SearchIndexAclTest, SearchIndexCascadeTest and
+      # SearchSurfaceTest all call markTestSkipped('no search index on this wiki') -- so CI was
+      # reporting green over the most dialect-specific code in the repo, which is exactly what
+      # a driver matrix is here to exercise. tests/e2e/reset.sh has always done install-then-migrate.
+      # `./yeswicli`, not `php yeswicli`: it is a bash wrapper that resolves symlinks before
+      # handing off to PHP, so invoking it through the PHP binary prints the command list and
+      # exits 0 -- a step that looks like it migrated and did not. The 100755 mode is committed.
+      - name: Run migrations
+        run: ./yeswicli migrate
 
       # `javascripts/vendor/` and `styles/vendor/` are gitignored: they are copied out of
       # node_modules by the `postinstall` hook, so a fresh checkout has neither. Without this

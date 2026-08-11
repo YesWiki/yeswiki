@@ -95,12 +95,13 @@ class PageManager
             $page = $cachedPage;
         } else {
             // load page
-            $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
+            // the revision clause is a *shape*, so it stays in the text; only its value binds
+            $timeQuery = $time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'";
             $page = $this->dbService->loadSingle("
                 SELECT * FROM {$this->dbService->prefixTable('pages')}
-                WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery}
+                WHERE tag = ? AND {$timeQuery}
                 LIMIT 1
-            ");
+            ", $time ? [$tag, $time] : [$tag]);
 
             // set ownersCache before using guard
             $this->cacheOwner($page);
@@ -144,7 +145,7 @@ class PageManager
      */
     public function tagExists(string $tag): bool
     {
-        return (bool)$this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' LIMIT 1");
+        return (bool)$this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? LIMIT 1", [$tag]);
     }
 
     /**
@@ -231,8 +232,8 @@ class PageManager
             throw new ReservedTagException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $newTag]));
         }
 
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = '{$this->dbService->escape($newTag)}' WHERE tag = '{$this->dbService->escape($oldTag)}'");
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET parent = '{$this->dbService->escape($newTag)}' WHERE parent = '{$this->dbService->escape($oldTag)}'");
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = ? WHERE tag = ?", [$newTag, $oldTag]);
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET parent = ? WHERE parent = ?", [$newTag, $oldTag]);
 
         unset($this->pageCache[$oldTag]);
         unset($this->rawPageCache[$oldTag]);
@@ -322,7 +323,8 @@ class PageManager
             } else {
                 $row = $this->dbService->loadSingle(
                     "SELECT {$this->dbService->quoteIdentifier('type')} FROM {$this->dbService->prefixTable('pages')}"
-                    . " WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1"
+                    . ' WHERE tag = ? AND latest = \'Y\' LIMIT 1',
+                    [$tag]
                 );
                 $this->typeCache[$tag] = $row === null ? null : (string)$row['type'];
             }
@@ -345,8 +347,9 @@ class PageManager
     {
         $rows = $this->dbService->loadAll(
             "SELECT tag FROM {$this->dbService->prefixTable('pages')}"
-            . " WHERE latest = 'Y' AND {$this->dbService->quoteIdentifier('type')} = '{$this->dbService->escape($type)}'"
-            . ' ORDER BY tag'
+            . " WHERE latest = 'Y' AND {$this->dbService->quoteIdentifier('type')} = ?"
+            . ' ORDER BY tag',
+            [$type]
         );
 
         return array_values(array_map(static fn (array $row): string => (string)$row['tag'], $rows));
@@ -390,7 +393,7 @@ class PageManager
      */
     public function getById($id, bool $bypassAcls = false): ?array
     {
-        $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
+        $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . 'where id = ? limit 1', [$id]);
         if ($page) {
             $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
             $page['body'] = PageBody::decode($page['body'] ?? null);
@@ -441,8 +444,14 @@ class PageManager
      */
     private function replaceMetadata($tag, ?array $metadata): void
     {
-        $encoded = empty($metadata) ? 'NULL' : "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'";
-        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET metadata = {$encoded} WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
+        // `null` rather than the literal string 'NULL' spliced into the statement: a bound null
+        // is a real SQL NULL, which is what "this row has no metadata" has to be. The ternary
+        // existed because escape() casts through (string) and would have written '' instead.
+        $encoded = empty($metadata) ? null : $this->encodeMetadata($metadata);
+        $this->dbService->query(
+            'UPDATE' . $this->dbService->prefixTable('pages') . "SET metadata = ? WHERE tag = ? AND latest = 'Y'",
+            [$encoded, $tag]
+        );
         unset($this->pageCache[$tag]);
         unset($this->rawPageCache[$tag]);
         unset($this->typeCache[$tag]);
@@ -453,22 +462,28 @@ class PageManager
     {
         $userCol = $this->dbService->quoteIdentifier('user');
 
+        // $limit is bound as an int rather than interpolated: it is a public parameter, so
+        // "nobody passes anything odd today" is the only thing that made the old form safe.
         return $this->checkEntriesACL($this->dbService->loadAll("
             SELECT id, time, $userCol AS user FROM {$this->dbService->prefixTable('pages')}
-            WHERE tag = '{$this->dbService->escape($pageTag)}'
+            WHERE tag = ?
             ORDER BY time DESC
-            LIMIT {$limit}
-        "), $pageTag);
+            LIMIT ?
+        ", [$pageTag, (int)$limit]), $pageTag);
     }
 
     public function getPreviousRevision($page)
     {
+        // `time` was interpolated with no escaping at all -- it comes off a row this code just
+        // read, so it was never hostile, but it was one refactor away from being a value from
+        // somewhere else. Both bind now, and `time` is a reserved word on some drivers.
+        $timeCol = $this->dbService->quoteIdentifier('time');
         $previous = $this->dbService->loadSingle("
-            SELECT * FROM {$this->dbService->prefixTable('pages')} 
-            WHERE tag = '{$this->dbService->escape($page['tag'])}' AND time < '{$page['time']}'
-            ORDER BY time DESC
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
+            WHERE tag = ? AND {$timeCol} < ?
+            ORDER BY {$timeCol} DESC
             LIMIT 1
-        ");
+        ", [$page['tag'], $page['time']]);
         if ($previous) {
             $previous['metadatas'] = $this->decodeMetadata($previous['metadata'] ?? null);
             $previous['body'] = PageBody::decode($previous['body'] ?? null);
@@ -479,10 +494,10 @@ class PageManager
 
     public function countRevisions($page)
     {
-        return $this->dbService->count("
-            SELECT * FROM {$this->dbService->prefixTable('pages')} 
-            WHERE tag = '{$this->dbService->escape($page)}'
-        ");
+        return $this->dbService->countRows("
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
+            WHERE tag = ?
+        ", [$page]);
     }
 
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
@@ -532,12 +547,16 @@ class PageManager
         SQL;
 
         // append request to filter on acls during the request
+        $params = [];
         if (!$this->aclService->isAdmin()) {
             $aclRequest = $this->aclService->updateRequestWithACL();
-            $sqlRequest .= !empty($aclRequest) ? ' AND ' . $aclRequest : '';
+            if (!$aclRequest->isEmpty()) {
+                $sqlRequest .= ' AND ' . $aclRequest->sql;
+                $params = $aclRequest->params;
+            }
         }
         $sqlRequest .= ' ORDER BY tag';
-        $pages = $this->dbService->loadAll($sqlRequest);
+        $pages = $this->dbService->loadAll($sqlRequest, $params);
 
         return array_map(function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case
@@ -549,11 +568,12 @@ class PageManager
 
     public function getCreateTime($pageTag)
     {
-        $sql = 'SELECT time FROM ' . $this->dbService->prefixTable('pages')
-            . " WHERE tag = '" . $this->dbService->escape($pageTag) . "'"
+        $timeCol = $this->dbService->quoteIdentifier('time');
+        $sql = "SELECT {$timeCol} FROM " . $this->dbService->prefixTable('pages')
+            . ' WHERE tag = ?'
             . " AND parent = ''"
-            . ' ORDER BY time ASC LIMIT 1';
-        $page = $this->dbService->loadSingle($sql);
+            . " ORDER BY {$timeCol} ASC LIMIT 1";
+        $page = $this->dbService->loadSingle($sql, [$pageTag]);
         if ($page) {
             return $page['time'];
         }
@@ -578,7 +598,7 @@ class PageManager
         $this->aclService->forget($tag);
         // ACLs live in the pages row's own metadata column now, not a separate acls table --
         // deleting the row (below) already removes them, no separate ACL delete needed
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR parent='{$this->dbService->escape($tag)}'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR parent = ?", [$tag, $tag]);
         $this->tripleStore->deleteAll($tag, '');
         $this->tagsManager->deleteAll($tag);
 
@@ -679,38 +699,28 @@ class PageManager
                 }
             }
 
-            // set all other revisions to old
-            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
+            // Demoting the current revision and inserting the new one are one act: between the
+            // two the row has no `latest = 'Y'` revision, and every read filters on that -- so a
+            // failure in between does not damage the page, it makes it vanish while keeping all
+            // its history. The cache updates and the event dispatch below stay OUTSIDE the
+            // scope: neither is undone by a rollback, and a listener that sends mail has no
+            // business running inside a transaction.
+            $this->dbService->transactional(function () use (
+                $tag,
+                $owner,
+                $user,
+                $body,
+                $type,
+                $initialMetadata,
+                $oldPage,
+                $parent,
+                $forcedDate
+            ): void {
+                // set all other revisions to old
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = ?", [$tag]);
 
-            // use forcedDate if present
-            $time = $this->dbService->now();
-            if (!empty($forcedDate)) {
-                $time = "'" . $this->dbService->escape($forcedDate) . "'";
-            }
-
-            // add new revision
-            $userCol = $this->dbService->quoteIdentifier('user');
-            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
-            $values = [
-                "'" . $this->dbService->escape($tag) . "'",
-                $time,
-                "'" . $this->dbService->escape($owner) . "'",
-                "'" . $this->dbService->escape($user) . "'",
-                "'Y'",
-                "'" . $this->dbService->escape(PageBody::encode($body)) . "'",
-                "'" . $this->dbService->escape((string)$type) . "'",
-                // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
-                // revision's value forward unchanged, same as owner/parent above (or the
-                // freshly-computed default ACLs for a brand-new page, see above)
-                $initialMetadata !== null
-                    ? "'" . $this->dbService->escape($this->encodeMetadata($initialMetadata)) . "'"
-                    : (empty($oldPage['metadata']) ? 'NULL' : "'" . $this->dbService->escape($oldPage['metadata']) . "'"),
-            ];
-            if ($parent) {
-                $columns[] = 'parent';
-                $values[] = "'" . $this->dbService->escape($parent) . "'";
-            }
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
+                $this->insertRevision($tag, $owner, $user, $body, $type, $initialMetadata, $oldPage, $parent, $forcedDate);
+            });
 
             unset($this->pageCache[$tag]);
             unset($this->rawPageCache[$tag]);
@@ -735,6 +745,74 @@ class PageManager
         return 1;
     }
 
+    /**
+     * The INSERT half of save()'s revisioning, extracted so the transaction above reads as the
+     * two statements it is.
+     *
+     * @param array<string, mixed>      $body
+     * @param array<string, mixed>|null $initialMetadata
+     * @param array<string, mixed>|null $oldPage
+     */
+    private function insertRevision(
+        string $tag,
+        ?string $owner,
+        ?string $user,
+        array $body,
+        ?string $type,
+        ?array $initialMetadata,
+        ?array $oldPage,
+        string $parent,
+        ?string $forcedDate
+    ): void {
+        // add new revision.
+        //
+        // Column => value, bound. The (string) casts are deliberate rather than tidy-up:
+        // escape() used to apply them, so dropping them would turn an absent owner or an
+        // anonymous user from '' into a real NULL -- a behaviour change smuggled in under
+        // a refactor. `metadata` is the one value that DOES become a real NULL, because
+        // the old code spliced the literal string 'NULL' in for exactly that case.
+        $columns = [
+            'tag' => (string)$tag,
+            'owner' => (string)$owner,
+            $this->dbService->quoteIdentifier('user') => (string)$user,
+            'latest' => 'Y',
+            'body' => PageBody::encode($body),
+            $this->dbService->quoteIdentifier('type') => (string)$type,
+            // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
+            // revision's value forward unchanged, same as owner/parent above (or the
+            // freshly-computed default ACLs for a brand-new page, see above)
+            'metadata' => $initialMetadata !== null
+                ? $this->encodeMetadata($initialMetadata)
+                : (empty($oldPage['metadata']) ? null : $oldPage['metadata']),
+        ];
+        if ($parent) {
+            $columns['parent'] = (string)$parent;
+        }
+
+        $names = array_keys($columns);
+        $placeholders = array_fill(0, count($columns), '?');
+        $params = array_values($columns);
+
+        // `time` is the one column whose slot is not always a value: with no forced date it
+        // is a driver-specific SQL expression (NOW(), datetime('now'), ...) that the
+        // database has to evaluate, and a bound parameter would arrive as the literal text
+        // "NOW()". Appended rather than kept in its historical second position because the
+        // column list is explicit, so the order carries no meaning.
+        $names[] = $this->dbService->quoteIdentifier('time');
+        if (empty($forcedDate)) {
+            $placeholders[] = $this->dbService->now();
+        } else {
+            $placeholders[] = '?';
+            $params[] = $forcedDate;
+        }
+
+        $this->dbService->query(
+            'INSERT INTO' . $this->dbService->prefixTable('pages')
+            . '(' . implode(', ', $names) . ') VALUES (' . implode(', ', $placeholders) . ')',
+            $params
+        );
+    }
+
     public function getOwner($tag = '', $time = '')
     {
         if (!$tag = trim($tag)) {
@@ -745,11 +823,12 @@ class PageManager
             if (empty($time) && isset($this->pageCache[$tag])) {
                 $this->ownersCache[$tag] = $this->pageCache[$tag]['owner'] ?? null;
             } else {
-                $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
+                $timeQuery = $time ? "{$this->dbService->quoteIdentifier('time')} = ?" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
                     "SELECT owner FROM {$this->dbService->prefixTable('pages')} " .
-                        "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                        'LIMIT 1'
+                        "WHERE tag = ? AND {$timeQuery} " .
+                        'LIMIT 1',
+                    $time ? [$tag, $time] : [$tag]
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
@@ -767,7 +846,7 @@ class PageManager
             return;
         }
 
-        $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
+        $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = ? WHERE tag = ? AND latest = 'Y'", [(string)$user, $tag]);
         $this->ownersCache[$tag] = $user;
         // the row just changed, and both page caches hold a copy of it: keeping only
         // ownersCache current left every other reader with the previous owner. Latent while
@@ -815,29 +894,11 @@ class PageManager
             return false;
         }
 
-        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
-
-        $userCol = $this->dbService->quoteIdentifier('user');
-        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
-        $values = [
-            "'" . $this->dbService->escape($tag) . "'",
-            $this->dbService->now(),
-            "'" . $this->dbService->escape($oldPage['owner']) . "'",
-            "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
-            "'Y'",
-            "'" . $this->dbService->escape(PageBody::encode($oldPage['body'])) . "'",
-            // carried forward, like owner and parent: writing metadata is not retyping the
-            // Content, and a revision that defaulted to 'page' would turn every account,
-            // file and entry into a page the first time its ACLs were touched
-            "'" . $this->dbService->escape((string)($oldPage['type'] ?? PageType::DEFAULT)) . "'",
-            "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'",
-        ];
-        if (!empty($oldPage['parent'])) {
-            $columns[] = 'parent';
-            $values[] = "'" . $this->dbService->escape($oldPage['parent']) . "'";
-        }
-        $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
-
+        // demote-then-insert, atomically: see the note in save(), which this mirrors
+        $this->dbService->transactional(function () use ($tag, $oldPage, $metadata): void {
+            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = ?", [$tag]);
+            $this->insertMetadataRevision($tag, $oldPage, $metadata);
+        });
         unset($this->pageCache[$tag]);
         unset($this->rawPageCache[$tag]);
         unset($this->typeCache[$tag]);
@@ -855,6 +916,46 @@ class PageManager
         ]);
 
         return true;
+    }
+
+    /**
+     * The INSERT half of setMetadata()'s revisioning, so the transaction above reads as the two
+     * statements it is. Mirrors insertRevision().
+     *
+     * @param array<string, mixed> $oldPage
+     * @param array<string, mixed> $metadata
+     */
+    private function insertMetadataRevision(string $tag, array $oldPage, array $metadata): void
+    {
+        // mirrors save()'s INSERT: bound values, with `time` the one column carrying a SQL
+        // expression instead. The (string) casts preserve escape()'s own cast, so an absent
+        // owner stays '' rather than quietly becoming NULL.
+        $columns = [
+            'tag' => (string)$tag,
+            'owner' => (string)$oldPage['owner'],
+            $this->dbService->quoteIdentifier('user') => (string)$this->authenticationService->getLoggedUserName(),
+            'latest' => 'Y',
+            'body' => PageBody::encode($oldPage['body']),
+            // carried forward, like owner and parent: writing metadata is not retyping the
+            // Content, and a revision that defaulted to 'page' would turn every account,
+            // file and entry into a page the first time its ACLs were touched
+            $this->dbService->quoteIdentifier('type') => (string)($oldPage['type'] ?? PageType::DEFAULT),
+            'metadata' => $this->encodeMetadata($metadata),
+        ];
+        if (!empty($oldPage['parent'])) {
+            $columns['parent'] = (string)$oldPage['parent'];
+        }
+
+        $names = array_keys($columns);
+        $placeholders = array_fill(0, count($columns), '?');
+        $names[] = $this->dbService->quoteIdentifier('time');
+        $placeholders[] = $this->dbService->now();
+
+        $this->dbService->query(
+            'INSERT INTO' . $this->dbService->prefixTable('pages')
+            . '(' . implode(', ', $names) . ') VALUES (' . implode(', ', $placeholders) . ')',
+            array_values($columns)
+        );
     }
 
     private function decodeMetadata(?string $rawJson): ?array

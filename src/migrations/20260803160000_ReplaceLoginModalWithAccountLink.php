@@ -51,8 +51,8 @@ class ReplaceLoginModalWithAccountLink extends YesWikiMigration
             }
 
             $db->query(
-                "UPDATE {$pages} SET body = '{$db->escape(PageBody::encode($changed))}'"
-                . " WHERE id = '{$db->escape((string)$row['id'])}'"
+                "UPDATE {$pages} SET body = ? WHERE id = ?",
+                [PageBody::encode($changed), (string)$row['id']]
             );
             $rewritten[(string)$row['tag']] = true;
         }

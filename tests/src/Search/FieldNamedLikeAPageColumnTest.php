@@ -116,7 +116,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
         $form = $this->formWithCollidingFields();
         $params = ['formsIds' => [$form['id']]];
 
-        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params);
+        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params)->sql;
         $this->assertNotSame('', $sql, 'the form should produce a query at all');
 
         $declared = $this->declaredColumns($sql);
@@ -139,7 +139,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
         $form = $this->formWithCollidingFields();
         $params = ['formsIds' => [$form['id']], 'queries' => ['tag' => 'quelque-chose']];
 
-        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params);
+        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params)->sql;
 
         $this->assertStringContainsString('yw_field__tag', $sql, 'the condition names the renamed column');
         $this->assertMatchesRegularExpression(
@@ -155,7 +155,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
         $form = $this->formWithCollidingFields();
         $params = ['formsIds' => [$form['id']], 'queries' => ['bf_titre' => 'quelque-chose']];
 
-        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params);
+        $sql = $this->getWiki()->services->get(SearchManager::class)->prepareSearchRequest($params)->sql;
 
         $this->assertStringContainsString('bf_titre', $sql);
         $this->assertStringNotContainsString('yw_field__bf_titre', $sql);

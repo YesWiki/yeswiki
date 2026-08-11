@@ -7,8 +7,10 @@ use Exception;
 use PDO;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Database\PreparedStatement;
+use YesWiki\Kernel\Database\SchemaManager;
 use YesWiki\Kernel\Database\SqlDialect;
 use YesWiki\Kernel\Database\SqlDialectFactory;
+use YesWiki\Kernel\Database\SqlDumper;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
 
@@ -19,9 +21,33 @@ class DbService
     protected $link;
     protected $queryLog;
     protected $driver;
-    protected $readCache = [];
     /** Per-driver SQL fragments; see YesWiki\Kernel\Database\SqlDialect. */
     protected SqlDialect $dialect;
+
+    /**
+     * How many nested `transactional()` scopes are open; only the outermost one is real.
+     *
+     * PDO::beginTransaction() throws if a transaction is already active, and these writes nest
+     * for real -- AclService::writeMetadataAcls() and PageManager::save() both revision a row,
+     * and either can be reached from inside the other. Counting scopes lets an inner one say
+     * "all of this together" without needing to know whether it is the outermost.
+     */
+    private int $transactionDepth = 0;
+
+    /**
+     * Set when an inner scope rolled back, so the outermost commit refuses.
+     *
+     * Without this, an inner failure whose exception something swallowed would be committed by
+     * the outer scope -- which is the one outcome a transaction exists to prevent, and it would
+     * look like success.
+     */
+    private bool $transactionRollbackOnly = false;
+
+    /** Lazily built by schema(); see there for why it is not injected. */
+    private ?SchemaManager $schemaManager = null;
+
+    /** Lazily built by dumper(). */
+    private ?SqlDumper $sqlDumper = null;
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -192,7 +218,7 @@ class DbService
         }
 
         try {
-            foreach ($this->getTables() as $tableName) {
+            foreach ($this->schema()->getTables() as $tableName) {
                 if (str_starts_with($tableName, $tablesPrefix)) {
                     $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
                 }
@@ -357,11 +383,6 @@ class DbService
         return $this->dialect->findInSet($needle, $haystack, $not);
     }
 
-    public function getLink()
-    {
-        return $this->link;
-    }
-
     public function getCollation(): string
     {
         return $this->collation;
@@ -425,10 +446,6 @@ class DbService
      */
     public function query($query, array $params = [])
     {
-        if (!preg_match('/^\s*SELECT\b/i', $query)) {
-            $this->readCache = [];
-        }
-
         if ($this->params->get('debug')) {
             $start = $this->getMicroTime();
         }
@@ -437,6 +454,7 @@ class DbService
             if ($params === []) {
                 $result = $this->link->query($query);
             } else {
+                SqlParameters::assertPlaceholderCount($query, $params);
                 $result = $this->link->prepare($query);
                 SqlParameters::bind($result, $params);
                 $result->execute();
@@ -461,6 +479,115 @@ class DbService
     }
 
     /**
+     * Run $work as one atomic unit: commit if it returns, roll back if it throws.
+     *
+     * Every write that revisions a `pages` row is two statements -- mark the current revision
+     * `latest = 'N'`, then INSERT the new one. A failure between them leaves the row with **no
+     * `latest = 'Y'` revision at all**, which is not a visibly broken page but an invisible one:
+     * every read filters on `latest = 'Y'`, so the Content simply stops existing while all its
+     * history is still there. That is the failure this exists to prevent (PageManager::save(),
+     * PageManager::setMetadata(), AclService::writeMetadataAcls(), SearchIndexer::index()).
+     *
+     * Nests. An inner scope joins the outer one rather than starting a second transaction, so a
+     * caller does not have to know whether it is the outermost -- see $transactionDepth.
+     *
+     * Keep DDL out of it. MySQL commits implicitly on CREATE/ALTER/DROP, so a migration that
+     * mixed schema changes into a transaction would get a silent partial commit rather than an
+     * error; migrations are not wrapped for that reason.
+     *
+     * What this does NOT undo is anything outside the database: a rolled-back scope has still
+     * sent whatever mail its listeners sent and still mutated whatever per-request cache it
+     * touched. So cache updates and event dispatch belong *after* the scope, not inside it.
+     *
+     * @template T
+     *
+     * @param callable(): T $work
+     *
+     * @return T
+     *
+     * @throws \Throwable whatever $work threw, after rolling back
+     */
+    public function transactional(callable $work): mixed
+    {
+        $this->beginTransaction();
+
+        try {
+            $result = $work();
+        } catch (\Throwable $failure) {
+            $this->rollBack();
+
+            throw $failure;
+        }
+
+        $this->commit();
+
+        return $result;
+    }
+
+    /** Open a scope. Prefer transactional(), which cannot forget to close it. */
+    public function beginTransaction(): void
+    {
+        if ($this->transactionDepth === 0) {
+            $this->link->beginTransaction();
+            $this->transactionRollbackOnly = false;
+        }
+        $this->transactionDepth++;
+    }
+
+    /**
+     * Close a scope, committing only when the outermost one closes.
+     *
+     * @throws \Exception if an inner scope had rolled back -- the work is undone either way, and
+     *                    saying so is better than returning as though it had been kept
+     */
+    public function commit(): void
+    {
+        if ($this->transactionDepth === 0) {
+            throw new \Exception('DbService::commit() called with no transaction open.');
+        }
+
+        $this->transactionDepth--;
+        if ($this->transactionDepth > 0) {
+            // an inner scope: whether this is kept is the outermost scope's decision
+            return;
+        }
+
+        if ($this->transactionRollbackOnly) {
+            $this->transactionRollbackOnly = false;
+            $this->link->rollBack();
+
+            throw new \Exception('Transaction rolled back: an inner scope failed and its error was swallowed.');
+        }
+
+        $this->link->commit();
+    }
+
+    /** Undo a scope. An inner one marks the whole transaction rollback-only. */
+    public function rollBack(): void
+    {
+        if ($this->transactionDepth === 0) {
+            // nothing open: a caller unwinding after a failure that happened before the scope
+            // started should not itself fail
+            return;
+        }
+
+        $this->transactionDepth--;
+        if ($this->transactionDepth > 0) {
+            $this->transactionRollbackOnly = true;
+
+            return;
+        }
+
+        $this->link->rollBack();
+    }
+
+    /** Whether any scope is open -- for a caller that must not, say, send mail yet. */
+    public function inTransaction(): bool
+    {
+        return $this->transactionDepth > 0;
+    }
+
+    /**
      * A statement prepared once, to be executed many times with different values.
      *
      * For loops only -- a one-off query should call query($sql, $params), which prepares and
@@ -473,12 +600,6 @@ class DbService
             $errorInfo = $this->link->errorInfo();
 
             throw new \Exception('Prepare failed: ' . $query . ' (' . $errorInfo[2] . ')');
-        }
-
-        // A prepared INSERT/UPDATE invalidates reads the same way an inline one does, and it
-        // does it once here rather than on every execution.
-        if (!preg_match('/^\s*SELECT\b/i', $query)) {
-            $this->readCache = [];
         }
 
         return new PreparedStatement(
@@ -563,13 +684,14 @@ class DbService
     /**
      * How many ROWS the query returned.
      *
-     * Note what this is not: it does **not** read a `SELECT COUNT(*)`. Handed one of those it
-     * returns 1, because that query returns one row -- and 1 is plausible enough to survive
-     * review. Use scalar() for an aggregate.
+     * Named `countRows` and not `count` because the short name invited exactly the mistake the
+     * old docblock had to warn about: handed a `SELECT COUNT(*)` this returns **1**, that query
+     * having returned one row -- and 1 is plausible enough to survive review. `scalar()` reads an
+     * aggregate. A warning is weaker than a name that cannot be misread.
      *
      * @param array<array-key, mixed> $params
      */
-    public function count($query, array $params = []): int
+    public function countRows(string $query, array $params = []): int
     {
         $stmt = $this->query($query, $params);
         if ($stmt) {
@@ -600,214 +722,25 @@ class DbService
         return reset($row);
     }
 
-    public function columnExists($table, $column): bool
+    /**
+     * The database's own shape -- which tables exist, which columns, of what type.
+     *
+     * Was six methods and 216 lines of `switch ($this->driver)` on this class, which is three
+     * jobs too many for the thing that runs statements (see SchemaManager). Constructed lazily
+     * and memoised: it needs this service, so injecting it would be a cycle.
+     */
+    public function schema(): SchemaManager
     {
-        $tableName = trim($this->prefixTable($table));
-        $escapedColumn = $this->escape($column);
-
-        switch ($this->driver) {
-            case 'sqlite':
-                $result = $this->loadAll("PRAGMA table_info($tableName)");
-                foreach ($result as $row) {
-                    if (strcasecmp($row['name'], $column) === 0) {
-                        return true;
-                    }
-                }
-
-                return false;
-
-            case 'pgsql':
-                $result = $this->loadSingle(
-                    'SELECT column_name FROM information_schema.columns ' .
-                    "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
-                );
-
-                return !empty($result);
-
-            case 'mysql':
-            default:
-                return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$escapedColumn}';") > 0;
-        }
-    }
-
-    public function dropColumn($table, $column)
-    {
-        if ($this->columnExists($table, $column)) {
-            $quotedColumn = $this->quoteIdentifier($this->escape($column));
-            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP COLUMN $quotedColumn;");
-        }
+        return $this->schemaManager ??= new SchemaManager($this);
     }
 
     /**
-     * Returns information about a column (type, nullable, etc.).
-     *
-     * @param string $table  The table name (without prefix)
-     * @param string $column The column name
-     *
-     * @return array|null Column info with 'type', 'nullable', 'default' keys or null if not found
+     * The database as a replayable SQL dump -- see SqlDumper, which used to be 138 lines of this
+     * class and is the archive feature's concern, not the query runner's.
      */
-    public function getColumnInfo($table, $column): ?array
+    public function dumper(): SqlDumper
     {
-        $tableName = trim($this->prefixTable($table));
-        $escapedColumn = $this->escape($column);
-
-        switch ($this->driver) {
-            case 'sqlite':
-                $result = $this->loadAll("PRAGMA table_info($tableName)");
-                foreach ($result as $row) {
-                    if (strcasecmp($row['name'], $column) === 0) {
-                        return [
-                            'type' => strtolower($row['type']),
-                            'nullable' => $row['notnull'] == 0,
-                            'default' => $row['dflt_value'],
-                        ];
-                    }
-                }
-
-                return null;
-
-            case 'pgsql':
-                $result = $this->loadSingle(
-                    'SELECT data_type, character_maximum_length, is_nullable, column_default ' .
-                    'FROM information_schema.columns ' .
-                    "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
-                );
-                if (empty($result)) {
-                    return null;
-                }
-                $type = $result['data_type'];
-                if (!empty($result['character_maximum_length'])) {
-                    $type .= '(' . $result['character_maximum_length'] . ')';
-                }
-
-                return [
-                    'type' => strtolower($type),
-                    'nullable' => $result['is_nullable'] === 'YES',
-                    'default' => $result['column_default'],
-                ];
-
-            case 'mysql':
-            default:
-                $result = $this->loadSingle("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$escapedColumn}';");
-                if (empty($result)) {
-                    return null;
-                }
-
-                return [
-                    'type' => strtolower($result['Type']),
-                    'nullable' => $result['Null'] === 'YES',
-                    'default' => $result['Default'],
-                ];
-        }
-    }
-
-    /**
-     * Modifies a column type.
-     * Note: SQLite has limited ALTER TABLE support. For SQLite, this method may need
-     * to recreate the table to change column types.
-     *
-     * @param string $table   The table name (without prefix)
-     * @param string $column  The column name
-     * @param string $newType The new column type (e.g., 'varchar(256)')
-     * @param bool   $notNull Whether the column should be NOT NULL
-     *
-     * @return bool Success
-     */
-    public function modifyColumn($table, $column, $newType, $notNull = false): bool
-    {
-        $quotedColumn = $this->quoteIdentifier($this->escape($column));
-        $notNullClause = $notNull ? ' NOT NULL' : '';
-
-        switch ($this->driver) {
-            case 'sqlite':
-                // SQLite doesn't support ALTER COLUMN, would need table recreation
-                // For now, we'll skip this for SQLite as it's complex
-                // The column type in SQLite is mostly advisory anyway
-                return true;
-
-            case 'pgsql':
-                $this->query(
-                    "ALTER TABLE {$this->prefixTable($table)} " .
-                    "ALTER COLUMN $quotedColumn TYPE $newType"
-                );
-                if ($notNull) {
-                    $this->query(
-                        "ALTER TABLE {$this->prefixTable($table)} " .
-                        "ALTER COLUMN $quotedColumn SET NOT NULL"
-                    );
-                }
-
-                return true;
-
-            case 'mysql':
-            default:
-                $this->query(
-                    "ALTER TABLE {$this->prefixTable($table)} " .
-                    "MODIFY COLUMN $quotedColumn $newType$notNullClause;"
-                );
-
-                return true;
-        }
-    }
-
-    /**
-     * Returns a list of all tables in the database.
-     *
-     * @return array List of table names
-     */
-    public function getTables(): array
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                $result = $this->loadAll("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-
-                return array_column($result, 'name');
-
-            case 'pgsql':
-                $result = $this->loadAll("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
-
-                return array_column($result, 'tablename');
-
-            case 'mysql':
-            default:
-                $result = $this->loadAll('SHOW TABLES');
-
-                return array_map(function ($row) {
-                    return array_values($row)[0];
-                }, $result);
-        }
-    }
-
-    /**
-     * Returns the CREATE TABLE statement for a table.
-     * Note: Only fully supported for MySQL. SQLite returns the original schema.
-     * PostgreSQL support is limited.
-     *
-     * @param string $tableName The table name
-     *
-     * @return string|null The CREATE TABLE statement or null if not supported
-     */
-    public function getTableSchema(string $tableName): ?string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                $result = $this->loadSingle(
-                    "SELECT sql FROM sqlite_master WHERE type='table' AND name='$tableName'"
-                );
-
-                return $result['sql'] ?? null;
-
-            case 'pgsql':
-                // PostgreSQL doesn't have a simple SHOW CREATE TABLE equivalent
-                // Return null to indicate this feature is not supported
-                return null;
-
-            case 'mysql':
-            default:
-                $result = $this->loadSingle("SHOW CREATE TABLE $tableName");
-
-                return $result['Create Table'] ?? null;
-        }
+        return $this->sqlDumper ??= new SqlDumper($this);
     }
 
     public function getDbTimeZone(): ?string
@@ -861,149 +794,11 @@ class DbService
     // Schema generation helpers for CREATE TABLE statements
     // ========================================================================
 
-    /**
+    /*
      * get SQL content : backup method ; prefer mysqldump way if available.
      * Note: This method generates MySQL-compatible SQL dumps.
      * For SQLite, consider using file copy instead.
      *
      * @return array ['sql' => string, 'error' => string]
      */
-    public function getSQLContentBackupMethod(): array
-    {
-        $sql = '';
-        $error = '';
-        try {
-            if (!$this->dialect->supportsDump()) {
-                throw new \Exception("Database backup is not supported on the '{$this->driver}' driver: its table structure " . 'cannot be exported, so the archive would contain data with no tables to restore it into.');
-            }
-            $tablesPrefix = trim($this->prefixTable(''));
-            if (empty($tablesPrefix)) {
-                throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
-            }
-            $tablesPostfix = [];
-            // get Tables using the driver-agnostic method
-            $tables = $this->getTables();
-
-            foreach ($tables as $tableName) {
-                if (strpos($tableName, $tablesPrefix) === 0) {
-                    $tablesPostfix[] = $tableName;
-                }
-            }
-
-            // generate file
-            $date = (new \DateTime())->format('c');
-            $phpVersion = phpversion();
-
-            $driver = $this->dialect->driverName();
-            $preamble = implode(";\n", $this->dialect->dumpPreamble());
-
-            // The dialect marker is load-bearing, not decoration: a dump carries CREATE TABLE
-            // statements in its own driver's syntax, so replaying a MySQL dump on SQLite (or
-            // the reverse) fails part-way through, leaving the wiki with some tables restored
-            // and some dropped. restoreDatabase() refuses on a mismatch (ticket 17).
-            $sql =
-                <<<SQL
-            -- SQL Dump
-            -- YesWiki database backup
-            -- 
-            -- Generated on : $date
-            -- PHP version : $phpVersion
-            -- YesWiki-Dialect: $driver
-
-            $preamble;
-
-            -- --------------------------------------------------------
-
-            SQL;
-
-            // For each table
-            foreach ($tablesPostfix as $tableName) {
-                // DUMP CREATE TABLE
-
-                // HEADER
-                $sql .=
-                    <<<SQL
-
-                -- 
-                -- Structure of table : `$tableName`
-                -- 
-
-                SQL;
-                // END HEADER
-
-                $tableSchema = $this->getTableSchema($tableName);
-                if ($tableSchema) {
-                    $sql .= $tableSchema . ";\n\n";
-                }
-
-                // DUMP DATA
-
-                //    HEADER
-                $sql .=
-                    <<<SQL
-
-                -- 
-                -- Data of table : `$tableName`
-                -- 
-
-                SQL;
-                // END HEADER
-
-                $rawData = $this->query('select * from ' . $tableName);
-
-                $firstRow = true;
-                $columnCount = $rawData->columnCount();
-                $columnMeta = [];
-                for ($i = 0; $i < $columnCount; $i++) {
-                    $columnMeta[$i] = $rawData->getColumnMeta($i);
-                }
-
-                while ($row = $rawData->fetch(\PDO::FETCH_NUM)) {
-                    if ($firstRow) {
-                        $sql .= "INSERT INTO `$tableName` ";
-                        $sql .= '(';
-                        for ($i = 0; $i < $columnCount; $i++) {
-                            if ($i != 0) {
-                                $sql .= ', ';
-                            }
-                            $sql .= '`' . $columnMeta[$i]['name'] . '`';
-                        }
-                        $sql .= ") VALUES\n";
-                        $firstRow = false;
-                    } else {
-                        $sql .= ",\n";
-                    }
-                    $sql .= '(';
-                    for ($i = 0; $i < $columnCount; $i++) {
-                        if ($i != 0) {
-                            $sql .= ', ';
-                        }
-                        // Quote everything except NULL. Deciding by the driver's reported
-                        // native type was MySQL-specific (SQLite and PostgreSQL name their
-                        // types differently, so numeric columns came out unquoted and text
-                        // columns quoted at random), and `$row[$i] ?? ''` silently turned every
-                        // NULL into an empty string on restore. Both databases accept a quoted
-                        // literal in a numeric column.
-                        $sql .= $row[$i] === null ? 'NULL' : "'" . $this->escape($row[$i]) . "'";
-                    }
-                    $sql .= ')';
-                }
-                if (!$firstRow) {
-                    $sql .= ";\n";
-                }
-                $sql .=
-                    <<<SQL
-
-                -- --------------------------------------------------------
-
-                SQL;
-            }
-
-            $sql .= "\n" . implode(";\n", $this->dialect->dumpEpilogue()) . ";\n";
-        } catch (\Throwable $th) {
-            $error = $th->getMessage();
-        }
-
-        return compact(['sql', 'error']);
-    }
 }

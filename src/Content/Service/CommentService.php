@@ -213,23 +213,28 @@ class CommentService implements EventSubscriberInterface
     public function loadComments($tag, bool $bypassAcls = false, $username = null)
     {
         $query = 'SELECT * FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
+        $params = [];
         if (empty($tag)) {
             $query .= "parent != '' ";
         } else {
-            $query .= "parent = '{$this->dbService->escape($tag)}' ";
+            $query .= 'parent = ? ';
+            $params[] = $tag;
         }
         if (!empty($username)) {
             $userCol = $this->dbService->quoteIdentifier('user');
-            $query .= "AND ($userCol = '{$this->dbService->escape($username)}' OR owner = '{$this->dbService->escape($username)}') ";
+            $query .= "AND ($userCol = ? OR owner = ?) ";
+            $params[] = $username;
+            $params[] = $username;
         }
         // remove current comment to prevent infinite loop
-        $query .= "AND tag != '{$this->dbService->escape($tag)}' ";
+        $query .= 'AND tag != ? ';
+        $params[] = $tag;
         // comments are tagged `comment<epoch>`, so they sort by the number after the prefix.
         // `+ 0` used to do the coercion, which is a MySQL-ism: PostgreSQL answers "operator
         // does not exist: text + integer" and the page dies with it.
         $numericTag = $this->dbService->dialect()->castToInteger('substring(tag, 8)');
         $query .= "AND latest = 'Y' ORDER BY {$numericTag}";
-        $comments = array_filter($this->dbService->loadAll($query), function ($comment) {
+        $comments = array_filter($this->dbService->loadAll($query, $params), function ($comment) {
             return !empty($comment['tag']);
         });
 
@@ -281,10 +286,10 @@ class CommentService implements EventSubscriberInterface
 
     public function getCommentsCount($tag)
     {
-        return $this->dbService->count("
+        return $this->dbService->countRows("
             SELECT * FROM {$this->dbService->prefixTable('pages')}
-            WHERE parent = '{$this->dbService->escape($tag)}' AND latest = 'Y'
-        ");
+            WHERE parent = ? AND latest = 'Y'
+        ", [$tag]);
     }
 
     /**

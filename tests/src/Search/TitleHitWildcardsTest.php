@@ -33,15 +33,24 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class TitleHitWildcardsTest extends YesWikiTestCase
 {
-    /** @param list<list<string>> $groups */
+    /**
+     * The generated expression, with its bound values spliced back in for readability.
+     *
+     * titleHitExpression() returns a SqlFragment since ticket 31, so the patterns live in
+     * `params` rather than in the SQL; interpolating them here keeps these assertions about
+     * what the database will actually match, which is what they are for.
+     *
+     * @param list<list<string>> $groups
+     */
     private function titleHitSql(array $groups): string
     {
         $method = new \ReflectionMethod(SearchIndexQuery::class, 'titleHitExpression');
-
-        return (string)$method->invoke(
+        $fragment = $method->invoke(
             $this->getWiki()->services->get(SearchIndexQuery::class),
             $groups
         );
+
+        return SqlParameters::interpolateForDisplay($fragment->sql, $fragment->params);
     }
 
     public function testAnUnderscoreInATermIsNotASingleCharacterWildcard(): void

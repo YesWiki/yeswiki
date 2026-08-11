@@ -21,17 +21,17 @@ require_once 'tests/YesWikiTestCase.php';
  * literal actually ends and letting attacker-controlled text after it run as bare
  * SQL.
  *
- * The fix (like AclService::updateRequestWithACL(), see
- * AclServiceUpdateRequestWithAclTest) wraps each escaped value in single-quoted SQL
- * literals rather than double-quoted ones, matching what DbService::escape()
- * (PDO::quote()) actually protects. Whether an unescaped trailing backslash is
- * itself dangerous is driver-dependent (MySQL's default sql_mode treats it as an
- * escape character inside a string literal; SQLite's dialect never does), so this
- * is verified black-box against the real database instead of by pattern-matching
- * one driver's specific escaped text: build the exact `tags.value IN (...)` query
- * the action builds, with real triples on both sides of the ambiguous boundary, and
- * confirm the malicious filter value only ever matches its own tag, never bleeds
- * into matching (or corrupting the query enough to match) an unrelated one.
+ * Ticket 31 replaced the whole mechanism rather than the escaping: the function returns the
+ * tag tokens as a **list**, and the caller binds them behind placeholders. So the values are
+ * not in the statement at all, and a trailing backslash cannot shift where a string literal
+ * ends because there is no literal for it to shift. Whether an unescaped trailing backslash is
+ * dangerous is driver-dependent (MySQL's default sql_mode treats it as an escape character
+ * inside a literal; SQLite never does), which is exactly why the property worth asserting is
+ * "no value reaches the SQL" rather than "this driver escaped it this way".
+ *
+ * Still verified black-box against the real database: build the query the action builds, with
+ * real triples on both sides of the boundary the old bug shifted, and confirm the malicious
+ * value matches only its own tag.
  */
 class FiltertagsActionTest extends YesWikiTestCase
 {
@@ -66,9 +66,17 @@ class FiltertagsActionTest extends YesWikiTestCase
             $params = get_filtertags_parameters_recursive();
             $taglist = $params['tags'];
 
+            // the contract this function now has: a list of the tokens, nothing pre-quoted
+            $this->assertSame(
+                [self::MALICIOUS_TAG, self::DECOY_TAG],
+                $taglist,
+                'the tokens must come back as values, not as a pre-quoted SQL string'
+            );
+
             $req = 'SELECT DISTINCT resource FROM ' . $dbService->prefixTable('triples')
-                . " WHERE property = '" . self::TAG_PROPERTY . "' AND value IN (" . $taglist . ')';
-            $rows = $dbService->loadAll($req);
+                . ' WHERE property = ? AND value IN ('
+                . \YesWiki\Kernel\Database\SqlParameters::placeholders(count($taglist)) . ')';
+            $rows = $dbService->loadAll($req, [self::TAG_PROPERTY, ...$taglist]);
 
             // both real triples are legitimately matched by their own exact value --
             // this is the correctness half: the fix must not just neutralize the

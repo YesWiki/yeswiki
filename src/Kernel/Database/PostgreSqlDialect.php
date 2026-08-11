@@ -28,12 +28,34 @@ class PostgreSqlDialect implements SqlDialect
         return "NOW() - INTERVAL '" . intval($hours) . " hours'";
     }
 
+    /**
+     * `#>>` with a path array, NOT `->>` with the path as one key.
+     *
+     * This used to strip the leading `$.` and hand the whole remainder to `->>`, which takes a
+     * *single* key. So `'$.form_id'` worked and `'$.acls.read'` looked for a top-level key
+     * literally named `acls.read`, found none, and returned NULL -- silently, for every row.
+     *
+     * The only nested paths in the codebase are the ACL ones (`$.acls.read`, `.write`,
+     * `.comment`), which made this a security bug rather than a display one: with every row's
+     * read ACL reading as NULL, `AclService`'s predicate took its "no explicit ACL, fall back to
+     * default_read_acl" branch for the whole table, so page-level read ACLs did not filter at
+     * all on PostgreSQL. Found by exercising the predicate on all three drivers; the suite runs
+     * one, and this class's own docblock admitted these fragments were unverified.
+     *
+     * Each segment goes in as its own quoted element with `'` doubled, so a path segment that
+     * came from a field name (`jsonExtract('body', '$.' . $field)`) cannot end the literal --
+     * the `{a,b}` array-literal shorthand could not offer that, because a segment containing a
+     * comma or brace would restructure the path itself.
+     */
     public function jsonExtract(string $column, string $path): string
     {
-        // ->> extracts as text; '$.field' reduces to 'field'
-        $field = preg_replace('/^\$\./', '', $path);
+        $segments = explode('.', (string)preg_replace('/^\$\./', '', $path));
+        $quoted = implode(', ', array_map(
+            static fn (string $segment): string => "'" . str_replace("'", "''", $segment) . "'",
+            $segments
+        ));
 
-        return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb ->> '$field') ELSE NULL END)";
+        return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb #>> ARRAY[$quoted]) ELSE NULL END)";
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

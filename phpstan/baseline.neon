@@ -379,12 +379,6 @@ parameters:
 			path: ../src/Admin/Api/AdminPagesApiController.php
 
 		-
-			message: '#^Method YesWiki\\Admin\\Api\\AdminPagesApiController\:\:buildWhere\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Admin/Api/AdminPagesApiController.php
-
-		-
 			message: '#^Method YesWiki\\Admin\\Api\\AdminPagesApiController\:\:bulkChangeAcls\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -10297,12 +10291,6 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:convertToRawJSONStringForREGEXP\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:create\(\) has parameter \$data with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -10491,24 +10479,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:publish\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:publish\(\) has parameter \$accepted with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:publish\(\) has parameter \$entryId with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
@@ -13285,12 +13255,6 @@ parameters:
 			path: ../src/Content/Service/ReactionManager.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Content/Service/ReactionManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatImages\(\) has parameter \$defaultImages with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14514,12 +14478,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Identity\\Action\\AdminAclsAction\:\:getFilterAndSearch\(\) has parameter \$post with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Action/AdminAclsAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\AdminAclsAction\:\:getFilterAndSearch\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Identity/Action/AdminAclsAction.php
@@ -16853,42 +16811,6 @@ parameters:
 			path: ../src/Kernel/Service/DbService.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:columnExists\(\) has parameter \$column with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:columnExists\(\) has parameter \$table with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:count\(\) has parameter \$query with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:dropColumn\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:dropColumn\(\) has parameter \$column with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:dropColumn\(\) has parameter \$table with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:escape\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -16901,18 +16823,6 @@ parameters:
 			path: ../src/Kernel/Service/DbService.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getColumnInfo\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getLink\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getMicroTime\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -16921,18 +16831,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getQueryLog\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getSQLContentBackupMethod\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:getTables\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Kernel/Service/DbService.php
 
@@ -17004,12 +16902,6 @@ parameters:
 
 		-
 			message: '#^Property YesWiki\\Kernel\\Service\\DbService\:\:\$queryLog has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Property YesWiki\\Kernel\\Service\\DbService\:\:\$readCache has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
 			path: ../src/Kernel/Service/DbService.php
@@ -18737,12 +18629,6 @@ parameters:
 			path: ../src/Search/Service/SearchManager.php
 
 		-
-			message: '#^Loose comparison using \!\= between non\-falsy\-string and '''' will always evaluate to true\.$#'
-			identifier: notEqual.alwaysTrue
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
 			message: '#^Method YesWiki\\Search\\Service\\SearchManager\:\:aggregateKeywords\(\) has parameter \$pArguments with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -18767,12 +18653,6 @@ parameters:
 			path: ../src/Search/Service/SearchManager.php
 
 		-
-			message: '#^Method YesWiki\\Search\\Service\\SearchManager\:\:buildKeywordsConditions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
 			message: '#^Method YesWiki\\Search\\Service\\SearchManager\:\:buildKeywordsConditions\(\) has parameter \$pKeywords with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -18787,12 +18667,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Search\\Service\\SearchManager\:\:buildKeywordsConditions\(\) has parameter \$pSearchFields with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
-			message: '#^Method YesWiki\\Search\\Service\\SearchManager\:\:buildQueriesConditions\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: ../src/Search/Service/SearchManager.php
 
@@ -19028,12 +18902,6 @@ parameters:
 			path: ../src/Search/Service/SearchManager.php
 
 		-
-			message: '#^PHPDoc tag @return has invalid value \(\$string\)\: Unexpected token "\$string", expected type at offset 123 on line 6$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
 			message: '''
 				#^PHPDoc tag @return has invalid value \(\<array\> \: an associative array containing the keys \:
 					\- CNF \=	the Conjonctive Normal Form \(\= \[a OR b\] AND \[d or e\]\) of the keywords search string
@@ -19080,12 +18948,6 @@ parameters:
 			path: ../src/Search/Service/SearchManager.php
 
 		-
-			message: '#^PHPDoc tag @return has invalid value \(\<string\> \: fields conditions for keywords\)\: Unexpected token "\<", expected type at offset 878 on line 18$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
 			message: '#^PHPDoc tag @return has invalid value \(\<string\> \: the hash\)\: Unexpected token "\<", expected type at offset 210 on line 9$#'
 			identifier: phpDoc.parseError
 			count: 1
@@ -19105,12 +18967,6 @@ parameters:
 
 		-
 			message: '#^PHPDoc tag @return has invalid value \(\<string\> aggregated queries\)\: Unexpected token "\<", expected type at offset 295 on line 10$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Search/Service/SearchManager.php
-
-		-
-			message: '#^PHPDoc tag @return has invalid value \(\= \<string\> fields conditions for queries\)\: Unexpected token "\=", expected type at offset 243 on line 7$#'
 			identifier: phpDoc.parseError
 			count: 1
 			path: ../src/Search/Service/SearchManager.php
@@ -20368,12 +20224,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../tests/src/SyndicationFunctionsTest.php
-
-		-
-			message: '#^Method YesWiki\\Test\\Core\\Controller\\AdminContentControllerThemeFilterTest\:\:buildWhere\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../tests/src/controllers/AdminContentControllerThemeFilterTest.php
 
 		-
 			message: '#^Method YesWiki\\Test\\Core\\Controller\\AdminContentControllerThemeFilterTest\:\:testThemeFilterMatchesPagesByTheirOwnMetadataColumn\(\) has no return type specified\.$#'

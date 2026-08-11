@@ -69,14 +69,23 @@ class SearchIndexer
             [$tag]
         );
 
-        $this->delete($tag);
-        if ($row) {
-            $content = $this->extractor->extract($row);
+        // Delete-then-insert-then-dequeue as one act. Between the delete and the write the
+        // Content is absent from the index, so a failure in between makes it unfindable while
+        // leaving nothing to say so -- and the dequeue belongs inside too, or a crash after it
+        // would drop the work from the queue as well and the Content would stay unfindable until
+        // something else happened to touch it.
+        //
+        // The extraction stays outside the scope: it decodes the body and asks fields for their
+        // searchable text, which is the slow part and touches no table.
+        $content = $row ? $this->extractor->extract($row) : null;
+
+        $this->dbService->transactional(function () use ($tag, $content): void {
+            $this->delete($tag);
             if ($content !== null) {
                 $this->write([$content]);
             }
-        }
-        $this->dequeue([$tag]);
+            $this->dequeue([$tag]);
+        });
     }
 
     /** Remove a Content from the index entirely -- it was deleted. */
@@ -264,9 +273,14 @@ class SearchIndexer
             // every queued tag is cleared out of the index first, including the ones that
             // turned out to have no row (deleted since queueing) and the ones that index to
             // nothing -- otherwise a Content that became empty would keep its old text
-            $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
-            $this->write($contents);
-            $this->dequeue($tags);
+            // one transaction per chunk, not per drain: a chunk is the unit of work the queue
+            // hands out, so committing each one means an interrupted drain keeps what it
+            // finished and the queue still holds exactly what it did not
+            $this->dbService->transactional(function () use ($inList, $tags, $contents): void {
+                $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
+                $this->write($contents);
+                $this->dequeue($tags);
+            });
 
             $done += count($tags);
 

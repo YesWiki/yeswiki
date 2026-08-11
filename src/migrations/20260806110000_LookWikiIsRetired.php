@@ -117,8 +117,8 @@ class LookWikiIsRetired extends YesWikiMigration
             }
 
             $db->query(
-                "UPDATE {$pages} SET body = '{$db->escape(PageBody::encode($body))}'"
-                . " WHERE id = '{$db->escape((string)$row['id'])}'"
+                "UPDATE {$pages} SET body = ? WHERE id = ?",
+                [PageBody::encode($body), (string)$row['id']]
             );
             $changedTags[(string)$row['tag']] = true;
         }

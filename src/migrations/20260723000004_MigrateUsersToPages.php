@@ -10,7 +10,7 @@ class MigrateUsersToPages extends YesWikiMigration
         // users are load-bearing content (real accounts, real password hashes) rather than
         // reconfigurable state like the dropped `acls` table -- migrated in place rather
         // than reset, same reasoning as MigrateNatureToPages (ticket 05)
-        if (!$this->dbService->columnExists('users', 'name')) {
+        if (!$this->dbService->schema()->columnExists('users', 'name')) {
             return;
         }
 

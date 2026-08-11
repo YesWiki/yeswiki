@@ -1222,7 +1222,7 @@ class ArchiveService
                 }
             }
             // backup
-            $results = $this->dbService->getSQLContentBackupMethod();
+            $results = $this->dbService->dumper()->dump();
             if (empty($results['sql'])) {
                 throw new \Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
             }

@@ -16,6 +16,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 
@@ -192,9 +193,9 @@ class SearchManager
      *				   <fields> = <array> of properties
      *		: fields descriptions (structures, etc...)
      *
-     * @return <string> : fields conditions for keywords
+     * @return SqlFragment fields conditions for keywords, and the values they bind
      */
-    public function buildKeywordsConditions($pKeywords, $pSearchFields, $pMinKeywordsLength)
+    public function buildKeywordsConditions($pKeywords, $pSearchFields, $pMinKeywordsLength): SqlFragment
     {
         // Let's parse the given keywords search string...
 
@@ -203,7 +204,7 @@ class SearchManager
         // if there is nothing to do, there is nothing to do
 
         if ((count($vParsedKeywords['CNF']) == 0 && count($vParsedKeywords['excludeds']) == 0) || count($pSearchFields) == 0) {
-            return '';
+            return SqlFragment::empty();
         }
 
         // ... and let's analyse it
@@ -232,7 +233,7 @@ class SearchManager
                     // We need to build a specific condition for each field structure
 
                     foreach ($vField['descriptors'] as $vHash => $vFieldDescriptor) {
-                        $vORRequest = '';
+                        $vORRequest = SqlFragment::empty();
 
                         switch ($vFieldDescriptor['_mode_']) {
                             // If this field instance in is intended to store a single value...
@@ -240,11 +241,12 @@ class SearchManager
                             case 'single':
                                 // Add a field condition adapted to a regexp or not
 
-                                if ($vIsRegExp) {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator() . ' \'' . $this->dbService->escape($this->extractRegExp($vOR)) . '\'';
-                                } else {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vOR)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX;
-                                }
+                                $vORRequest = $this->termCondition(
+                                    $this->renameJSONPathVariable($vFieldName),
+                                    $vOR,
+                                    $vIsRegExp,
+                                    false
+                                );
 
                                 break;
 
@@ -253,11 +255,12 @@ class SearchManager
                             case 'multiple':
                                 // Add a field condition adapted to a regexp or not
 
-                                if ($vIsRegExp) {
-                                    $vORRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator() . ' \'^' . $this->dbService->escape($this->extractRegExp($vOR)) . '$\')';
-                                } else {
-                                    $vORRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vOR)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
-                                }
+                                $vORRequest = $this->splitValueCondition(
+                                    $this->renameJSONPathVariable($vFieldName),
+                                    $vOR,
+                                    $vIsRegExp,
+                                    false
+                                );
 
                                 break;
                         }
@@ -265,14 +268,10 @@ class SearchManager
                         // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
 
                         if ($vField['hasMultipleStructures']) {
-                            if ($vORRequest != '') {
-                                $vORRequest = '( ' . $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
-                                    return '\'' . $pFormID . '\'';
-                                }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vORRequest . ')';
-                            }
+                            $vORRequest = $this->restrictedToForms($vORRequest, $vFieldDescriptor['_ids_']);
                         }
 
-                        if ($vORRequest != '') {
+                        if (!$vORRequest->isEmpty()) {
                             $vORs[] = $vORRequest;
                         }
                     }
@@ -280,7 +279,7 @@ class SearchManager
             }
 
             if (count($vORs) > 0) {
-                $vANDs[] = '(' . implode(' OR ', $vORs) . ')';
+                $vANDs[] = SqlFragment::all(' OR ', ...$vORs)->wrappedIn('(', ')');
             }
         }
 
@@ -294,7 +293,7 @@ class SearchManager
             foreach ($pSearchFields as $vFieldName => $vField) {
                 // The condition we will construct
 
-                $vExcludedRequest = '';
+                $vExcludedRequest = SqlFragment::empty();
 
                 // We need to build a specific condition for each field structure
 
@@ -305,11 +304,12 @@ class SearchManager
                         case 'single':
                             // Add a field condition adapted to a regexp or not
 
-                            if ($vIsRegExp) {
-                                $vExcludedRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator(true) . ' \'' . $this->dbService->escape($this->extractRegExp($vExcluded)) . '\'';
-                            } else {
-                                $vExcludedRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' NOT LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vExcluded)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX;
-                            }
+                            $vExcludedRequest = $this->termCondition(
+                                $this->renameJSONPathVariable($vFieldName),
+                                $vExcluded,
+                                $vIsRegExp,
+                                true
+                            );
 
                             break;
 
@@ -318,11 +318,12 @@ class SearchManager
                         case 'multiple':
                             // Add a field condition adapted to a regexp or not
 
-                            if ($vIsRegExp) {
-                                $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $this->dbService->regexpOperator(true) . ' \'^' . $this->dbService->escape($this->extractRegExp($vExcluded)) . '$\')';
-                            } else {
-                                $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' NOT LIKE \'' . $this->dbService->escape(SqlParameters::likeContains($vExcluded)) . '\'' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
-                            }
+                            $vExcludedRequest = $this->splitValueCondition(
+                                $this->renameJSONPathVariable($vFieldName),
+                                $vExcluded,
+                                $vIsRegExp,
+                                true
+                            );
 
                             break;
                     }
@@ -330,24 +331,113 @@ class SearchManager
                     // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
 
                     if ($vField['hasMultipleStructures']) {
-                        if ($vExcludedRequest != '') {
-                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
-                                return '\'' . $pFormID . '\'';
-                            }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vExcludedRequest . ')';
-                        }
+                        $vExcludedRequest = $this->restrictedToForms($vExcludedRequest, $vFieldDescriptor['_ids_']);
                     }
 
-                    if ($vExcludedRequest != '') {
+                    if (!$vExcludedRequest->isEmpty()) {
                         $vANDs[] = $vExcludedRequest;
                     }
                 }
             }
         }
 
-        return implode(
-            ' AND ',
-            array_unique($vANDs),
+        return self::uniqueFragments(' AND ', $vANDs);
+    }
+
+    /**
+     * `<column> <op> <term>` for a single-valued field -- the leaf of a keyword condition.
+     *
+     * $negated picks the NOT form. A regexp term is matched with the driver's REGEXP operator
+     * and an ordinary one with LIKE, whose wildcards are defused: the term came from a search
+     * box, so `100%` means those four characters (SqlParameters::likeContains).
+     */
+    private function termCondition(string $column, string $term, bool $isRegExp, bool $negated): SqlFragment
+    {
+        $collate = $this->dbService->collateClause();
+
+        if ($isRegExp) {
+            return SqlFragment::of(
+                "{$column} {$collate} " . $this->dbService->regexpOperator($negated) . ' ?',
+                [$this->extractRegExp($term)]
+            );
+        }
+
+        return SqlFragment::of(
+            "{$column} {$collate} " . ($negated ? 'NOT LIKE' : 'LIKE') . ' ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
+            [SqlParameters::likeContains($term)]
         );
+    }
+
+    /**
+     * The same test against a comma-separated field, which the CTEs above have split into one
+     * `(champ, elt)` row per value -- so the column name is matched as a *value* here.
+     */
+    private function splitValueCondition(string $column, string $term, bool $isRegExp, bool $negated): SqlFragment
+    {
+        $collate = $this->dbService->collateClause();
+
+        if ($isRegExp) {
+            return SqlFragment::of(
+                "(s.champ = ? AND s.elt {$collate} " . $this->dbService->regexpOperator($negated) . ' ?)',
+                [$column, '^' . $this->extractRegExp($term) . '$']
+            );
+        }
+
+        return SqlFragment::of(
+            "(s.champ = ? AND s.elt {$collate} " . ($negated ? 'NOT LIKE' : 'LIKE')
+            . ' ?' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')',
+            [$column, SqlParameters::likeContains($term)]
+        );
+    }
+
+    /**
+     * Narrow a condition to the forms whose structure it was built for.
+     *
+     * The form ids are cast to int rather than bound: they index into `$vFields`' descriptors,
+     * so they are this wiki's own numbering, and the cast is what makes that true rather than
+     * assumed.
+     *
+     * @param list<int|string> $formIds
+     */
+    private function restrictedToForms(SqlFragment $condition, array $formIds): SqlFragment
+    {
+        if ($condition->isEmpty() || $formIds === []) {
+            return $condition;
+        }
+
+        $ids = implode(', ', array_map(static fn ($id): string => (string)(int)$id, $formIds));
+
+        return SqlFragment::all(
+            ' AND ',
+            SqlFragment::of($this->renameJSONPathVariable('form_id') . " IN ({$ids})"),
+            $condition
+        )->wrappedIn('( ', ')');
+    }
+
+    /**
+     * Join fragments, dropping duplicates.
+     *
+     * `array_unique()` did this while conditions were strings. Two fragments are the same
+     * condition when both their SQL and their values match -- comparing the SQL alone would
+     * collapse `tag = ?` against a different tag, which is how a deduplicating rewrite
+     * silently changes what a query means.
+     *
+     * @param list<SqlFragment> $fragments
+     */
+    private static function uniqueFragments(string $glue, array $fragments): SqlFragment
+    {
+        $seen = [];
+        $kept = [];
+        foreach ($fragments as $fragment) {
+            $key = $fragment->sql . '|' . serialize($fragment->params);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $kept[] = $fragment;
+        }
+
+        return SqlFragment::all($glue, ...$kept);
     }
 
     /**
@@ -356,9 +446,9 @@ class SearchManager
      * @param $pQueries : <array> of <query>
      *                  <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
      *
-     * @return = <string> fields conditions for queries
+     * @return SqlFragment fields conditions for queries, and the values they bind
      */
-    public function buildQueriesConditions($pQueries, $pFields)
+    public function buildQueriesConditions($pQueries, $pFields): SqlFragment
     {
         // The conditions we are going to build
 
@@ -448,7 +538,10 @@ class SearchManager
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp
 
                             if ($vIsRegExp) {
-                                $vValueConditions[] = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vRegExpOperator . ' \'' . $this->dbService->escape($this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = SqlFragment::of(
+                                    $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vRegExpOperator} ?",
+                                    [$this->extractRegExp($vValue)]
+                                );
                             }
 
                             // else let's just compare using the appropriated comparison operator
@@ -456,12 +549,23 @@ class SearchManager
                             else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
-                                        $vValueConditions[] = 'CAST(' . $this->renameJSONPathVariable($vFieldName) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . $this->dbService->escape($vValue);
+                                        // bound as a *string* still: the column holds JSON text and the CAST
+                                        // is what makes it numeric, so sending a PHP int here would change
+                                        // which side of the comparison is converted
+                                        $vValueConditions[] = SqlFragment::of(
+                                            'CAST(' . $this->renameJSONPathVariable($vFieldName) . " AS DOUBLE) {$vComparisonOperator} ?",
+                                            [(string)$vValue]
+                                        );
                                     } else {
-                                        $vValueConditions[] = '(' . $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = SqlFragment::of(
+                                            '(' . $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vComparisonOperator} '' )"
+                                        );
                                     }
                                 } else {
-                                    $vValueConditions[] = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' ' . $vComparisonOperator . ' \'' . $this->dbService->escape($vValue) . '\'';
+                                    $vValueConditions[] = SqlFragment::of(
+                                        $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . " {$vComparisonOperator} ?",
+                                        [$vValue]
+                                    );
                                 }
                             }
 
@@ -473,11 +577,16 @@ class SearchManager
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
 
                             if ($vIsRegExp) {
-                                $vValueConditions[] = '(s.champ = \'' . $this->dbService->escape($this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' ' . $vRegExpOperator . ' \'' . $this->dbService->escape($this->extractRegExp($vValue)) . '\')';
+                                $vValueConditions[] = SqlFragment::of(
+                                    '(s.champ = ? AND s.elt ' . $this->dbService->collateClause() . " {$vRegExpOperator} ?)",
+                                    [$this->renameJSONPathVariable($vFieldName), $this->extractRegExp($vValue)]
+                                );
                             } else { // else let's just check in the value belongs (or NOT) to the set of values
-                                $needle = '\'' . $this->dbService->escape($vValue) . '\'';
                                 $haystack = $this->renameJSONPathVariable($vFieldName);
-                                $vValueConditions[] = $this->dbService->findInSet($needle, $haystack, $vFindInSetNot);
+                                $vValueConditions[] = SqlFragment::of(
+                                    $this->dbService->findInSet('?', $haystack, $vFindInSetNot),
+                                    [$vValue]
+                                );
                             }
 
                             break;
@@ -488,54 +597,53 @@ class SearchManager
                         case self::MISSING_PROPERTY:
                             // For negative operators (!=), entries without this field trivially
                             // satisfy the condition (they can't have the excluded value)
-                            $vValueConditions[] = ($vComparisonOperator === '!=') ? 'TRUE' : 'FALSE';
+                            $vValueConditions[] = SqlFragment::of(($vComparisonOperator === '!=') ? 'TRUE' : 'FALSE');
 
                             break;
                     }
                 }
 
-                $vDescriptorCondition = '';
-
                 // Merge all value conditions: OR for positive matches (==), AND for negative (!=)
                 // For !=: "field NOT IN (A,B,C)" = "!=A AND !=B AND !=C", not OR which would always be true
 
-                if (count($vValueConditions) > 0) {
-                    $vDescriptorCondition = implode($vComparisonOperator === '!=' ? ' AND ' : ' OR ', $vValueConditions);
+                $vDescriptorCondition = SqlFragment::all(
+                    $vComparisonOperator === '!=' ? ' AND ' : ' OR ',
+                    ...$vValueConditions
+                );
 
-                    // if we had remembered that this field can have multiple structures
-                    // we need to specify the form IDs that use this structure in the condition request
+                // if we had remembered that this field can have multiple structures
+                // we need to specify the form IDs that use this structure in the condition request
 
-                    if ($vField['hasMultipleStructures']) {
-                        if ($vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
-                                return '\'' . $pFormID . '\'';
-                            }, $vDescriptor['_ids_'])) . ') AND (' . $vDescriptorCondition . ')';
-                        }
-                    }
+                if ($vField['hasMultipleStructures'] && !$vDescriptorCondition->isEmpty()) {
+                    $ids = implode(', ', array_map(static fn ($id): string => (string)(int)$id, $vDescriptor['_ids_']));
+                    $vDescriptorCondition = SqlFragment::all(
+                        ' AND ',
+                        SqlFragment::of($this->renameJSONPathVariable('form_id') . " IN ({$ids})"),
+                        $vDescriptorCondition->wrappedIn('(', ')')
+                    );
                 }
 
                 // Add the structure conditions to the field conditions
 
-                if ($vDescriptorCondition != '') {
-                    $vQueryConditions[] = '(' . $vDescriptorCondition . ')';
+                if (!$vDescriptorCondition->isEmpty()) {
+                    $vQueryConditions[] = $vDescriptorCondition->wrappedIn('(', ')');
                 }
             }
 
             // Merge all the field conditions with a logical OR
 
             if (count($vQueryConditions) > 0) {
-                $vQueriesConditions[] = '(' . implode(' OR ', $vQueryConditions) . ')';
+                $vQueriesConditions[] = SqlFragment::all(' OR ', ...$vQueryConditions)->wrappedIn('(', ')');
             }
         }
 
-        return implode(' AND ', $vQueriesConditions);
+        return SqlFragment::all(' AND ', ...$vQueriesConditions);
     }
 
     /** A predicate matching the rows of a given PageType. */
-    private function typedAs(string $type): string
+    private function typedAs(string $type): SqlFragment
     {
-        return 'p.' . $this->dbService->quoteIdentifier('type')
-            . " = '" . $this->dbService->escape($type) . "'";
+        return SqlFragment::of('p.' . $this->dbService->quoteIdentifier('type') . ' = ?', [$type]);
     }
 
     /**
@@ -552,7 +660,7 @@ class SearchManager
      *
      * @param array<array-key, int> $formIds
      */
-    private function rowsBelongingTo(array $formIds): string
+    private function rowsBelongingTo(array $formIds): SqlFragment
     {
         if (empty($formIds)) {
             return $this->typedAs(PageType::ENTRY);
@@ -579,14 +687,21 @@ class SearchManager
                     $clauses[] = $this->typedAs(PageType::FILE);
                     break;
                 default:
-                    $clauses[] = '(' . $this->typedAs(PageType::ENTRY)
-                        . ' AND ' . $this->dbService->jsonExtract('body', '$.form_id')
-                        . ' IN (' . implode(',', array_map(fn ($formId) => "'" . (int)$formId . "'", $ids)) . '))';
+                    $clauses[] = SqlFragment::all(
+                        ' AND ',
+                        $this->typedAs(PageType::ENTRY),
+                        SqlFragment::of(
+                            $this->dbService->jsonExtract('body', '$.form_id')
+                            . ' IN (' . implode(', ', array_map(static fn ($formId): string => "'" . (int)$formId . "'", $ids)) . ')'
+                        )
+                    )->wrappedIn('(', ')');
                     break;
             }
         }
 
-        return count($clauses) === 1 ? $clauses[0] : '(' . implode(' OR ', $clauses) . ')';
+        return count($clauses) === 1
+            ? $clauses[0]
+            : SqlFragment::all(' OR ', ...$clauses)->wrappedIn('(', ')');
     }
 
     /**
@@ -594,9 +709,11 @@ class SearchManager
      *
      * @param array &$params
      *
-     * @return $string
+     * @return SqlFragment the whole statement and the values it binds (ticket 31). An empty
+     *                     fragment means "this search cannot match anything" -- the caller must
+     *                     not run it, exactly as the empty string used to mean.
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): SqlFragment
     {
         // Merge default parameters with given parameters
 
@@ -665,19 +782,18 @@ class SearchManager
         $vIDsRequest = $this->rowsBelongingTo($vFormIDs);
         // Limit the request depending on the date
 
-        $vPeriodRequest = '';
-
-        if (!empty($params['minDate'])) {
-            $vPeriodRequest .= 'time >= "' . $this->dbService->escape($params['minDate']) . '"';
-        }
+        // `time` was compared inside DOUBLE quotes, which MySQL reads as a string and
+        // PostgreSQL as an identifier -- and `time` itself is a reserved word on some drivers,
+        // so both halves of that expression were driver-dependent. Bound and quoted now.
+        $vPeriodRequest = empty($params['minDate'])
+            ? SqlFragment::empty()
+            : SqlFragment::of($this->dbService->quoteIdentifier('time') . ' >= ?', [$params['minDate']]);
 
         // Limit the request to a user if specified
 
-        $vUserRequest = '';
-
-        if (!empty($params['user'])) {
-            $vUserRequest .= "owner = '" . $this->dbService->escape($params['user']) . "'";
-        }
+        $vUserRequest = empty($params['user'])
+            ? SqlFragment::empty()
+            : SqlFragment::of('owner = ?', [$params['user']]);
 
         // Determine the necessary fields from searchfields and queries
 
@@ -883,7 +999,9 @@ class SearchManager
             if (!$vField['isExtracted']) {
                 // Extract it if it is not yet done
 
-                $vSQLNom = $this->dbService->escape($vFieldName);
+                // raw: SqlDialect::jsonExtract() escapes the path for whichever syntax it
+                // is building, and pre-escaping here would double it
+                $vSQLNom = $vFieldName;
                 $vRenamedSQLNom = $this->renameJSONPathVariable($vFieldName);
 
                 $vSelectRequest[] = $this->dbService->jsonExtract('body', '$.' . $vSQLNom) . ' AS ' . $vRenamedSQLNom;
@@ -963,7 +1081,7 @@ class SearchManager
 
         // Construct WHERE part with queries and keywords conditions
 
-        $vWhereRequest = '';
+        $vWhereRequest = SqlFragment::empty();
 
         // Keywords conditions
 
@@ -984,113 +1102,57 @@ class SearchManager
             $vMinSearchKeywordLength,
         );
 
-        $vWhereRequest .= $vKeywordsConditions;
-
         // Queries conditions
 
-        $vQueriesConditions = trim($this->buildQueriesConditions($vQueries, $vFields));
+        $vQueriesConditions = $this->buildQueriesConditions($vQueries, $vFields);
 
-        if (str_contains($vQueriesConditions, '((FALSE))')) {
-            return '';
-        }
-
-        if ($vQueriesConditions != '') {
-            $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $vQueriesConditions;
+        // a query on a field no form has cannot match: `((FALSE))` is how that arrives here,
+        // and running the statement anyway would scan the whole table to return nothing
+        if (str_contains($vQueriesConditions->sql, '((FALSE))')) {
+            return SqlFragment::empty();
         }
 
         // Optionnaly, filter on read ACL
 
-        if (!$this->aclService->isAdmin() && $filterOnReadACL) {
-            $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $this->aclService->updateRequestWithACL();
-        }
+        $vAclRequest = (!$this->aclService->isAdmin() && $filterOnReadACL)
+            ? $this->aclService->updateRequestWithACL()
+            : SqlFragment::empty();
+
+        $vWhereRequest = SqlFragment::all(' AND ', $vKeywordsConditions, $vQueriesConditions, $vAclRequest);
 
         // Construct full request
 
-        $vCompleteRequest = 'WITH RECURSIVE '
-                                . 'filteredPages AS '
-                                . '( '
-                                    . 'SELECT '
-                                        . $vSelectRequest . ' '
-                                    . 'FROM ' . $this->dbService->prefixTable('pages') . ' p '
-                                    // no type join here: which rows belong to the searched
-                                    // forms is $vIDsRequest's business, because it depends
-                                    // on their Content type -- see rowsBelongingTo()
-                                    . 'WHERE '
-                                        . ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ')
-                                        . 'p.parent = \'\''
-                                        . ($vUserRequest !== '' ? ' AND ' . $vUserRequest : '')
-                                        . ($vPeriodRequest !== '' ? ' AND ' . $vPeriodRequest : '')
-                                        . ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '')
-                                . ')'
-                                . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
-                                . 'SELECT DISTINCT f.* '
-                                . 'FROM filteredPages f '
-                                . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
-                                . ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
-        /*
-                // requete de jointure : reprend la requete precedente et ajoute des criteres
-                if (isset($_GET['joinquery'])) {
-                    $join = $this->dbService->escape($_GET['joinquery']);
-                    $joinrequeteSQL = '';
-                    $tableau = [];
-                    $tab = explode('|', $join);
-                    //découpe la requete autour des |
-                    foreach ($tab as $req) {
-                        $tabdecoup = explode('=', $req, 2);
-                        $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-                    }
-                    $first = true;
+        // The inner CTE's filters come first in the text, so their values come first in the
+        // list; SqlFragment keeps each composition's own order, and this is where the two
+        // compositions meet.
+        $vInnerFilters = SqlFragment::all(
+            ' AND ',
+            SqlFragment::of(($applyOnAllRevisions ? '' : "latest='Y' AND ") . "p.parent = ''"),
+            $vUserRequest,
+            $vPeriodRequest,
+            $vIDsRequest
+        );
 
-                    foreach ($tableau as $name => $val) {
-                        if (!empty($name) && !empty($val)) {
-                            $valcrit = explode(',', $val);
-                            if (is_array($valcrit) && count($valcrit) > 1) {
-                                foreach ($valcrit as $critere) {
-                                    if (!$first) {
-                                        $joinrequeteSQL .= ' AND ';
-                                    } else {
-                                        $first = false;
-                                    }
-                                    $rawCriteron = $this->convertToRawJSONStringForREGEXP($critere);
-                                    $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":"[^"]*' . $rawCriteron .
-                                        '[^"]*"\')';
-                                }
-                                $joinrequeteSQL .= ')';
-                            } else {
-                                if (!$first) {
-                                    $joinrequeteSQL .= ' AND ';
-                                } else {
-                                    $first = false;
-                                }
-                                $rawCriteron = $this->convertToRawJSONStringForREGEXP($val);
-                                if (strcmp(substr($name, 0, 5), 'liste') == 0) {
-                                    $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":"' . $rawCriteron . '"\')';
-                                } else {
-                                    $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":("' . $rawCriteron .
-                                        '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
-                                        . $rawCriteron . ',[^"]*")\')';
-                                }
-                            }
-                        }
-                    }
-                    if ($requeteSQL != '') {
-                        $requeteSQL .= ' UNION ' . $requete . ' AND (' . $joinrequeteSQL . ')';
-                    } else {
-                        $requeteSQL .= ' AND (' . $joinrequeteSQL . ')';
-                    }
-                    $requete .= $requeteSQL;
-                } elseif ($requeteSQL != '') {
-                    $requete .= $requeteSQL;
-                }
-        */
-
+        $vCompleteRequest = SqlFragment::all(
+            '',
+            SqlFragment::of('WITH RECURSIVE filteredPages AS ( SELECT ' . $vSelectRequest
+                . ' FROM ' . $this->dbService->prefixTable('pages') . ' p '
+                // no type join here: which rows belong to the searched forms is
+                // $vIDsRequest's business, because it depends on their Content type --
+                // see rowsBelongingTo()
+                . 'WHERE '),
+            $vInnerFilters,
+            SqlFragment::of(')' . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
+                . 'SELECT DISTINCT f.* FROM filteredPages f '
+                . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')),
+            $vWhereRequest->wrappedIn('WHERE ', '')
+        );
         // debug
 
         if (isset($_GET['showreq'])) {
-            echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
+            echo '<hr><code style="width:100%;height:100px;">'
+                . SqlParameters::interpolateForDisplay($vCompleteRequest->sql, $vCompleteRequest->params)
+                . '</code><hr>';
         }
 
         return $vCompleteRequest;
@@ -1108,10 +1170,10 @@ class SearchManager
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
 
         $searchResults = [];
-        if ($requete === '') {
+        if ($requete->isEmpty()) {
             return $searchResults;
         }
-        $results = $this->dbService->loadAll($requete);
+        $results = $this->dbService->loadAll($requete->sql, $requete->params);
         $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
 
         $vPageManager = $this->container->get(PageManager::class);

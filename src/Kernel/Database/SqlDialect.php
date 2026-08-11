@@ -30,7 +30,15 @@ interface SqlDialect
     /** SQL expression for "current timestamp minus $hours hours". */
     public function dateSubHours(int $hours): string;
 
-    /** SQL expression extracting $path from a JSON $column. */
+    /**
+     * SQL expression extracting $path from a JSON $column, e.g. `$.form_id` or `$.acls.read`.
+     *
+     * **The implementation owns the escaping of $path.** A segment can be a form field name,
+     * which is user data, and only the dialect knows the syntax it is being embedded in --
+     * MySQL and SQLite take the path whole inside a string literal, PostgreSQL needs one quoted
+     * element per segment. Callers must therefore pass the path RAW; pre-escaping it here would
+     * double-escape and look for a key that does not exist.
+     */
     public function jsonExtract(string $column, string $path): string;
 
     /** SQL aggregating a column's distinct values into one comma-separated string. */

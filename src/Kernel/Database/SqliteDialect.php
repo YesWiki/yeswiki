@@ -30,8 +30,11 @@ class SqliteDialect implements SqlDialect
 
     public function jsonExtract(string $column, string $path): string
     {
-        // json_extract() errors on non-JSON input, so guard with json_valid()
-        return "(CASE WHEN json_valid($column) THEN json_extract($column, '$path') ELSE NULL END)";
+        // json_extract() errors on non-JSON input, so guard with json_valid(). The path is
+        // escaped here, not by the caller -- see SqlDialect::jsonExtract().
+        $escaped = str_replace("'", "''", $path);
+
+        return "(CASE WHEN json_valid($column) THEN json_extract($column, '$escaped') ELSE NULL END)";
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

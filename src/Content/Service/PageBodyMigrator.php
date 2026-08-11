@@ -177,8 +177,8 @@ class PageBodyMigrator
             if ($write) {
                 $this->dbService->query(
                     'UPDATE ' . trim($this->dbService->prefixTable('pages'))
-                    . " SET body = '" . $this->dbService->escape($encoded) . "'"
-                    . " WHERE id = '" . $this->dbService->escape($row['id']) . "'"
+                    . ' SET body = ? WHERE id = ?',
+                    [$encoded, $row['id']]
                 );
                 if ($onProgress !== null && $counts['total'] % 500 === 0) {
                     $onProgress($counts['total']);
@@ -212,8 +212,9 @@ class PageBodyMigrator
     {
         $rows = $this->dbService->loadAll(
             'SELECT DISTINCT resource FROM ' . trim($this->dbService->prefixTable('triples'))
-            . " WHERE property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'"
-            . " AND value <> 'migration'"
+            . ' WHERE property = ?'
+            . " AND value <> 'migration'",
+            [TripleStore::TYPE_URI]
         );
 
         $tags = [];

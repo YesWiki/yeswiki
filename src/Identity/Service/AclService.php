@@ -6,6 +6,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Database\SqlFragment;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -213,7 +215,7 @@ class AclService
         // unlike save() (which can't set permissions on a page that doesn't exist),
         // deleting ACL entries for an already-deleted/nonexistent page is a harmless no-op --
         // a common pattern is deleting a page and then separately clearing its ACLs
-        if ($this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1")) {
+        if ($this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? AND latest = 'Y' LIMIT 1", [$tag])) {
             $acls = $this->readMetadataAcls($tag);
             foreach ($privileges as $privilege) {
                 unset($acls[$privilege]);
@@ -275,7 +277,7 @@ class AclService
      */
     private function writeMetadataAcls(string $tag, array $acls): void
     {
-        $current = $this->dbService->loadSingle("SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
+        $current = $this->dbService->loadSingle("SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? AND latest = 'Y' LIMIT 1", [$tag]);
         if (!$current) {
             throw new \Exception("Cannot set ACLs on '$tag': no such page");
         }
@@ -292,33 +294,60 @@ class AclService
         // the row below replaces the stored value this service may have cached
         unset($this->metadataAclsCache[$tag]);
 
-        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
-
-        $userCol = $this->dbService->quoteIdentifier('user');
-        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', $this->dbService->quoteIdentifier('type'), 'metadata'];
-        $values = [
-            "'" . $this->dbService->escape($tag) . "'",
-            $this->dbService->now(),
-            "'" . $this->dbService->escape($current['owner']) . "'",
-            "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
-            "'Y'",
-            // raw SQL row, so the body is still the stored JSON text -- carry it forward
-            // verbatim rather than decoding and re-encoding it
-            "'" . $this->dbService->escape((string)$current['body']) . "'",
-            // carried forward: changing a page's ACLs is not retyping it, and a revision
-            // defaulting to 'page' would turn every account, file and entry into a page the
-            // first time its permissions were touched
-            "'" . $this->dbService->escape((string)($current['type'] ?? PageType::DEFAULT)) . "'",
-            "'" . $this->dbService->escape(json_encode($metadata)) . "'",
-        ];
-        if (!empty($current['parent'])) {
-            $columns[] = 'parent';
-            $values[] = "'" . $this->dbService->escape($current['parent']) . "'";
-        }
-        $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
+        // Demote-then-insert as one act. Between the two statements the row has no
+        // `latest = 'Y'` revision, and every read filters on that -- so a failure here would not
+        // leave a page with wrong permissions, it would make the page disappear. The cache
+        // eviction below stays outside the scope, since a rollback does not undo it.
+        $this->dbService->transactional(function () use ($tag, $current, $metadata): void {
+            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = ?", [$tag]);
+            $this->insertAclRevision($tag, $current, $metadata);
+        });
 
         // a new revision of the row PageManager may be holding a copy of
         $this->container->get(PageManager::class)->forget($tag);
+    }
+
+    /**
+     * The INSERT half of writeMetadataAcls()' revisioning.
+     *
+     * Same shape as PageManager::save()/setMetadata() -- the docblock above asks for this
+     * method's revisioning to stay in sync with them, so it is written the same way: bound
+     * values, `time` the one column holding a driver-specific SQL expression, and (string)
+     * casts kept where escape() used to apply them.
+     *
+     * @param array<string, mixed> $current
+     * @param array<string, mixed> $metadata
+     */
+    private function insertAclRevision(string $tag, array $current, array $metadata): void
+    {
+        $columns = [
+            'tag' => (string)$tag,
+            'owner' => (string)$current['owner'],
+            $this->dbService->quoteIdentifier('user') => (string)$this->authenticationService->getLoggedUserName(),
+            'latest' => 'Y',
+            // raw SQL row, so the body is still the stored JSON text -- carry it forward
+            // verbatim rather than decoding and re-encoding it
+            'body' => (string)$current['body'],
+            // carried forward: changing a page's ACLs is not retyping it, and a revision
+            // defaulting to 'page' would turn every account, file and entry into a page the
+            // first time its permissions were touched
+            $this->dbService->quoteIdentifier('type') => (string)($current['type'] ?? PageType::DEFAULT),
+            'metadata' => json_encode($metadata),
+        ];
+        if (!empty($current['parent'])) {
+            $columns['parent'] = (string)$current['parent'];
+        }
+
+        $names = array_keys($columns);
+        $placeholders = array_fill(0, count($columns), '?');
+        $names[] = $this->dbService->quoteIdentifier('time');
+        $placeholders[] = $this->dbService->now();
+
+        $this->dbService->query(
+            'INSERT INTO' . $this->dbService->prefixTable('pages')
+            . '(' . implode(', ', $names) . ') VALUES (' . implode(', ', $placeholders) . ')',
+            array_values($columns)
+        );
     }
 
     /**
@@ -488,9 +517,9 @@ class AclService
     }
 
     /** create request for ACL.
-     * @return string $request request to append to request
+     * @return SqlFragment the predicate and the values it binds (ticket 31)
      */
-    public function updateRequestWithACL(): string
+    public function updateRequestWithACL(): SqlFragment
     {
         // ACLs now live in metadata.acls, a column on the very `pages` row being filtered --
         // no join/subquery against a separate table needed, unlike the old acls-table version
@@ -516,7 +545,7 @@ class AclService
      * `$nullMeansDefault` is false here, unlike for `pages`: the index resolves the default
      * at write time, so a row's stored ACL is never absent.
      */
-    public function aclColumnPredicate(string $aclColumn, string $ownerColumn): string
+    public function aclColumnPredicate(string $aclColumn, string $ownerColumn): SqlFragment
     {
         return $this->buildReadAclPredicate($aclColumn, $ownerColumn, false);
     }
@@ -525,8 +554,14 @@ class AclService
      * @param string $readAclExpr      SQL expression yielding the row's read ACL
      * @param string $ownerColumn      SQL expression yielding the row's owner
      * @param bool   $nullMeansDefault whether an absent ACL falls back to `default_read_acl`
+     *
+     * Returns a SqlFragment rather than a string (ticket 31): this predicate is pasted into
+     * queries built elsewhere -- PageManager::getAll(), SearchManager, SearchIndexQuery::where()
+     * -- so the values it needs have no way to reach the call that executes the statement unless
+     * they travel with the SQL. That is the whole reason these were the last escape() calls in
+     * live code.
      */
-    private function buildReadAclPredicate(string $readAclExpr, string $ownerColumn, bool $nullMeansDefault): string
+    private function buildReadAclPredicate(string $readAclExpr, string $ownerColumn, bool $nullMeansDefault): SqlFragment
     {
         // needed ACL
         $neededACL = ['*'];
@@ -545,50 +580,66 @@ class AclService
             }
         }
 
-        // Built as clearly-parenthesized, self-contained sub-expressions (rather than the old
-        // start/end string-accumulator, which relied on an implicit-subquery paren that this
-        // rewrite has no equivalent for) so the grouping is verifiable by inspection instead
-        // of by manually tracing open/close counts across the method.
+        // Composed from self-contained sub-expressions rather than accumulated into a string,
+        // so the grouping is verifiable by inspection instead of by tracing open/close counts --
+        // and so each part's values travel with it (SqlFragment).
+        //
+        // An ACL entry is matched as a *substring* of a comma-ish list, so it goes through
+        // likeContains(): a group or account name containing `%` or `_` would otherwise be a
+        // wildcard, matching ACLs it has no business matching. In a read-ACL predicate that is
+        // an over-grant, which is the direction that matters.
+        $suffix = SqlParameters::LIKE_CLAUSE_SUFFIX;
+        $contains = static fn (string $needle): array => [SqlParameters::likeContains($needle)];
 
         // "the page's read ACL, evaluated against $neededACL": at least one needed entry is
         // explicitly granted, and none of them is explicitly denied (the '!' prefix)
-        $matchesNeededAcl = '(';
-        $addOr = false;
-        foreach ($neededACL as $acl) {
-            if ($addOr) {
-                $matchesNeededAcl .= ' OR ';
-            } else {
-                $addOr = true;
-            }
-            // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
-            // guarantees safety inside a single-quoted SQL literal -- e.g. SQLite's PDO
-            // driver never touches '"' at all, so a double-quoted literal here would let
-            // a raw '"' in $acl break out of the string (see
-            // AclServiceUpdateRequestWithAclTest for the regression this guards against)
-            $matchesNeededAcl .= " {$readAclExpr} LIKE '%" . $this->dbService->escape($acl) . "%'";
-        }
-        $matchesNeededAcl .= ')';
-        foreach ($neededACL as $acl) {
-            $matchesNeededAcl .= " AND {$readAclExpr} NOT LIKE '%!" . $this->dbService->escape($acl) . "%'";
-        }
+        $granted = array_map(
+            fn (string $acl): SqlFragment => SqlFragment::of("{$readAclExpr} LIKE ?{$suffix}", $contains($acl)),
+            $neededACL
+        );
+        $denied = array_map(
+            fn (string $acl): SqlFragment => SqlFragment::of("{$readAclExpr} NOT LIKE ?{$suffix}", $contains('!' . $acl)),
+            $neededACL
+        );
+        $matchesNeededAcl = SqlFragment::all(
+            ' AND ',
+            SqlFragment::all(' OR ', ...$granted)->wrappedIn('(', ')'),
+            ...$denied
+        );
 
         // has an explicit read ACL that matches, OR (if logged in) is the page's owner and
         // the ACL contains the '%' (owner) marker
-        $hasExplicitMatchingAcl = "(({$readAclExpr} IS NOT NULL) AND {$matchesNeededAcl})";
+        $hasExplicitMatchingAcl = SqlFragment::all(
+            ' AND ',
+            SqlFragment::of("({$readAclExpr} IS NOT NULL)"),
+            $matchesNeededAcl
+        )->wrappedIn('(', ')');
+
         if (!empty($user)) {
-            $ownerMatch = "(({$readAclExpr} LIKE '%\\%%' AND {$readAclExpr} NOT LIKE '%!\\%%')" .
-                " AND {$ownerColumn} = '" . $this->dbService->escape($userName) . "')";
-            $hasExplicitMatchingAcl = "({$hasExplicitMatchingAcl} OR {$ownerMatch})";
+            // The owner marker is a literal `%`, so it has to be defused like any other term.
+            // It was written `LIKE '%\%%'`, leaning on `\` being the LIKE escape character --
+            // true on MySQL and PostgreSQL, and **false on SQLite, which has no default escape
+            // character at all**. Measured: on SQLite that pattern missed the `%` marker
+            // entirely (an owner denied their own page) while matching any ACL containing a
+            // backslash (an over-grant). Both wrong, on the driver the test suite runs.
+            $ownerMatch = SqlFragment::of(
+                "(({$readAclExpr} LIKE ?{$suffix} AND {$readAclExpr} NOT LIKE ?{$suffix})"
+                . " AND {$ownerColumn} = ?)",
+                [SqlParameters::likeContains('%'), SqlParameters::likeContains('!%'), $userName]
+            );
+            $hasExplicitMatchingAcl = SqlFragment::all(' OR ', $hasExplicitMatchingAcl, $ownerMatch)
+                ->wrappedIn('(', ')');
         }
 
         if ($nullMeansDefault && $this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
             // current user can display pages without an explicit read acl too
-            $request = "(({$readAclExpr} IS NULL) OR {$hasExplicitMatchingAcl})";
-        } else {
-            $request = $hasExplicitMatchingAcl;
+            return SqlFragment::all(
+                ' OR ',
+                SqlFragment::of("({$readAclExpr} IS NULL)"),
+                $hasExplicitMatchingAcl
+            )->wrappedIn('(', ')');
         }
 
-        // return request to append
-        return $request;
+        return $hasExplicitMatchingAcl;
     }
 }
