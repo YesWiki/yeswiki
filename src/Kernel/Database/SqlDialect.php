@@ -122,7 +122,7 @@ interface SqlDialect
      *
      * @return list<string>
      */
-    public function searchIndexDdl(string $table, string $queueTable): array;
+    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array;
 
     /**
      * Every statement needed to remove what searchIndexDdl() created, in execution order.
@@ -130,7 +130,7 @@ interface SqlDialect
      *
      * @return list<string>
      */
-    public function searchIndexDropDdl(string $table, string $queueTable): array;
+    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array;
 
     /**
      * A boolean SQL expression selecting the index rows that match the query, each term

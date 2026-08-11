@@ -7,23 +7,24 @@ use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The `/rss` handler, after pear/xml_util was dropped for DOM.
+ * The entries RSS feed, after pear/xml_util was dropped for DOM.
  *
  * The point of these assertions is that the feed PARSES. The old builder escaped each
  * value and then ran html_entity_decode() over the finished document to turn escaped
  * `<![CDATA[` markers back into real CDATA -- which un-escaped every other value too, so
  * an `&` or a `<` anywhere in the wiki's own RSS config produced a feed no reader could
  * read. Nothing in the previous test suite would have noticed.
+ *
+ * Ticket 35 moved it from the `/PageName/rss` handler to `GET /api/entries/rss`: the feed is a
+ * bazar list, so the page it used to hang off contributed nothing but a URL to reach it by.
  */
-class RssHandlerTest extends YesWikiTestCase
+class EntriesFeedTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'RssHandlerTestPage';
 
@@ -110,17 +111,23 @@ class RssHandlerTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * The feed no longer needs a page at all -- it is built from the query string -- but one is
+     * still created here so the wiki has some content to list, which is what makes the escaping
+     * assertions meaningful rather than vacuous.
+     */
     private function runRssOn(YesWikiRuntime $wiki, string $content): string
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => $content], '', true);
-        $page = $pageManager->getOne(self::PAGE_TAG);
-        $wiki->services->get(PageContext::class)->setTag(self::PAGE_TAG);
-        $wiki->services->get(PageContext::class)->setPage($page);
-        $wiki->services->get(CurrentRequest::class)->replace(Request::create('https://example.org/?' . self::PAGE_TAG . '/rss'));
+        $request = Request::create('https://example.org/?api/entries/rss');
+        $wiki->services->get(CurrentRequest::class)->replace($request);
 
         try {
-            return $wiki->services->get(Performer::class)->run('rss', 'handler', []);
+            return (string)$wiki->services
+                ->get(\YesWiki\Content\Api\FeedApiController::class)
+                ->entriesFeed($request)
+                ->getContent();
         } finally {
             $pageManager->deleteOrphaned(self::PAGE_TAG);
             unset($GLOBALS['wiki']);

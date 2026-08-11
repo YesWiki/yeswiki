@@ -14,6 +14,19 @@
    honour the mode, and to refuse one it does not know rather than put a visitor's string
    into a class name #}
 {% set display = display in ['list', 'accordion', 'cards'] ? display : 'list' %}
+{# ticket 35: say which keyword is being filtered on, and offer a way out of it. A visitor who
+   arrived from a tag link at the bottom of a page has typed nothing, so without this the results
+   look like an unexplained subset of the wiki. #}
+{% if tags is defined and tags is not empty %}
+    <p class="yw-search-filter">
+        {{ _t('SEARCH_FILTERED_BY_KEYWORD') }}
+        {% for keyword in (tags is iterable ? tags : tags|split(',')) %}
+            <span class="yw-tag">{{ keyword|trim }}</span>
+        {% endfor %}
+        <a class="yw-search-filter__clear"
+           href="{{ url({tag: 'search', params: phrase is empty ? {} : {q: phrase}}) }}">{{ _t('SEARCH_CLEAR_KEYWORD') }}</a>
+    </p>
+{% endif %}
 {% if prompt %}
     <p class="yw-search-prompt">{{ _t('SEARCH_TYPE_SOMETHING') }}</p>
 {% elseif results is empty and type is empty %}

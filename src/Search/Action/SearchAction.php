@@ -85,10 +85,15 @@ class SearchAction extends YesWikiAction implements RegisteredAction
         $phrase = trim((string)($arguments->get('q', '') ?: ($_GET['q'] ?? '')));
         $type = trim((string)($arguments->get('type', '') ?: ($_GET['type'] ?? '')));
         $display = trim((string)($arguments->get('display', '') ?: ($_GET['display'] ?? 'list')));
+        // `tags=` narrows to Content carrying every listed keyword, and is what a tag link opens
+        // (ticket 35, replacing the `listpages` handler). Read from the query string as well as
+        // from the action, so `/search?tags=X` works on a page that just says `{{search}}`.
+        $tags = trim((string)($arguments->get('tags', '') ?: ($_GET['tags'] ?? '')));
 
         return $templateEngine->render('@core/search-action.twig', [
             'phrase' => $phrase,
             'type' => $type,
+            'tags' => $tags,
             // validated here as well as in the fragment: it reaches a class name either way
             'display' => in_array($display, self::DISPLAY_MODES, true) ? $display : 'list',
             'limit' => (int)$arguments->get('limit', SearchIndexQuery::DEFAULT_LIMIT),

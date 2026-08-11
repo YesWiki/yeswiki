@@ -57,22 +57,29 @@ class SearchIndexQuery
     }
 
     /**
-     * @param string      $query       what the visitor typed
-     * @param string|null $contentType restrict to one type ('entry', 'page', ...), null for all
-     * @param int         $limit       page size
-     * @param int         $offset      how far in
+     * @param string       $query       what the visitor typed
+     * @param string|null  $contentType restrict to one type ('entry', 'page', ...), null for all
+     * @param list<string> $tags        keywords the Content must ALL carry, [] for no filter
+     * @param int          $limit       page size
+     * @param int          $offset      how far in
      *
      * @return array{results: list<array{tag: string, title: string, content_type: string, form_id: string, updated_at: string}>, total: int, capped: bool}
      *                                                                                                                                                      `total` is exact up to COUNT_CAP; `capped` says when it stopped there
      */
-    public function search(string $query, ?string $contentType = null, int $limit = self::DEFAULT_LIMIT, int $offset = 0): array
+    public function search(string $query, ?string $contentType = null, int $limit = self::DEFAULT_LIMIT, int $offset = 0, array $tags = []): array
     {
         $groups = $this->parseQuery($query);
-        if ($groups === [] || !$this->schema->exists()) {
+        $tags = array_values(array_filter(array_map('trim', $tags), static fn (string $t): bool => $t !== ''));
+
+        // An empty phrase used to end the search here on its own, which would have made the
+        // `tags=` filter unreachable -- a tag link carries no phrase. What must still end it is
+        // asking for *nothing*: with no terms the match clause is omitted (see where()) and every
+        // remaining clause is an ACL filter, so the query would return the entire wiki.
+        if (($groups === [] && $tags === []) || !$this->schema->exists()) {
             return ['results' => [], 'total' => 0, 'capped' => false];
         }
 
-        $where = $this->where($groups, $contentType);
+        $where = $this->where($groups, $contentType, $tags);
         $table = $this->schema->table();
         $limit = max(1, min($limit, self::MAX_LIMIT));
         $offset = max(0, $offset);
@@ -332,13 +339,13 @@ class SearchIndexQuery
 
     /**
      * @param list<list<string>> $groups
+     * @param list<string>       $tags
      */
-    private function where(array $groups, ?string $contentType): SqlFragment
+    private function where(array $groups, ?string $contentType, array $tags = []): SqlFragment
     {
         $table = $this->schema->table();
 
         $clauses = [
-            SqlFragment::of($this->dbService->dialect()->searchMatchExpression($table, $groups)),
             // field-level ACL: the buckets this user may read
             $this->fieldAclPredicate(),
             // page-level ACL: the same predicate `pages` is filtered with, over the
@@ -346,8 +353,31 @@ class SearchIndexQuery
             $this->aclService->aclColumnPredicate("{$table}.page_read_acl", "{$table}.owner"),
         ];
 
+        // Only when there is something to match. A full-text expression built from no terms is not
+        // "match everything" in any of the three engines -- FTS5 raises on `MATCH ''` and MySQL's
+        // boolean mode matches nothing -- so a tags-only search has to leave the clause out
+        // entirely rather than pass an empty query to it.
+        if ($groups !== []) {
+            array_unshift($clauses, SqlFragment::of($this->dbService->dialect()->searchMatchExpression($table, $groups)));
+        }
+
         if ($contentType !== null && $contentType !== '') {
             $clauses[] = SqlFragment::of("{$table}.content_type = ?", [$contentType]);
+        }
+
+        // One EXISTS per keyword, ANDed: asking for two tags means Content carrying both. An
+        // `IN (...)` over the keyword table would mean *either*, and would need a HAVING COUNT to
+        // become "both" -- which cannot use the index the way a correlated equality can.
+        $keywords = $this->schema->keywordsTable();
+        foreach ($tags as $tag) {
+            $tag = trim((string)$tag);
+            if ($tag === '') {
+                continue;
+            }
+            $clauses[] = SqlFragment::of(
+                "EXISTS (SELECT 1 FROM {$keywords} k WHERE k.tag = {$table}.tag AND k.keyword = ?)",
+                [$tag]
+            );
         }
 
         // each clause keeps its own parentheses, and SqlFragment lines the values up with the
@@ -434,6 +464,13 @@ class SearchIndexQuery
                 );
             }
             $tests[] = SqlFragment::all(' OR ', ...$any)->wrappedIn('(', ')');
+        }
+
+        // A tags-only search has no terms, and an empty fragment stays empty when wrapped -- which
+        // would leave `SELECT tag, ..., AS title_hit` in the query. Nothing can be a title hit
+        // when nothing was typed, so the expression is the constant it means.
+        if ($tests === []) {
+            return SqlFragment::of('0');
         }
 
         return SqlFragment::all(' AND ', ...$tests)->wrappedIn('(CASE WHEN ', ' THEN 1 ELSE 0 END)');

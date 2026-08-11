@@ -243,6 +243,44 @@ Check whether any page or template of yours depends on these, because nothing re
   means deciding which local form to use, whether the copy may diverge, and whether files are
   downloaded or linked.
 
+- **Nine page-handler URLs are gone.** A handler is a way of looking at a page, and these were not
+  — they were output formats, state changes, a form and a cron job wearing a page's URL. Each has a
+  replacement, but **the old paths return nothing, with no redirect**:
+
+  | gone | use instead |
+  |---|---|
+  | `?PageName/rss` | `?api/entries/rss` (same query parameters) |
+  | `?PageName/tagrss` | `?api/tags/rss&tags=…` |
+  | `?PageName/xml` | `?api/pages/PageName/xml` |
+  | `?PageName/addcomment` | `POST ?api/comments` (already where the form posted) |
+  | `?PageName/claim` | `POST ?api/pages/PageName/claim`, `…/comments-access` |
+  | `?PageName/mail` | `?api/contact/form&pageTag=…` |
+  | `?PageName/sendmail&key=…&period=…` | `./yeswicli contact:send-digest -p day` |
+  | `?PageName/filemanager` | the `{{filemanager}}` action |
+  | `?PageName/qrcodetroc` | the `{{qrcodetroc}}` action |
+  | `?PageName/listpages&tags=X` | `?search&tags=X` |
+
+  **If you subscribe to a feed, or link to one from another site, it stops working.** A feed reader
+  gives its owner no signal beyond the feed going quiet, so re-publish the new address. Links inside
+  the wiki were all repointed for you.
+
+  Two of these are worth singling out:
+
+  - **`sendmail` was a cron job authenticated by `?key=<contact_passphrase>` in the URL**, which
+    wrote your site-wide contact passphrase into web-server logs, proxy logs and browser history.
+    Replace the cron line with `cd /path/to/wiki && ./yeswicli contact:send-digest -p day`. **A wiki
+    with no cron needs no line at all**: the digests now go out from the wiki's own housekeeping
+    pass. If you keep a real cron *and* have mailing-list groups, set
+    `contact_disable_periodic_digest` to true so both do not send.
+  - **Keyword navigation moved into search.** A tag link at the bottom of a page now opens
+    `?search&tags=<keyword>`, and `tags=` takes a comma-separated list that Content must carry
+    *all* of. This is a new capability, not just a relocation: keywords used to be folded into the
+    index's free-text column, so a keyword could only be matched as loosely as any other word.
+    **The keyword index fills as the search queue drains** — a tag link finds nothing until then,
+    which `./yeswicli search:reindex` forces.
+  - **`{{qrcodetroc}}` renders inside the page** rather than filling the window as the handler did.
+    Give its page a minimal squelette for the old look — that is a `layout_*` setting now.
+
 - **The `fulltextsearch` extension** is superseded and should be uninstalled. It was never part
   of core, so nothing removed it for you — but search is now a denormalised index table in the
   wiki's own database (ADR-0015), and the extension's own indexing is at best redundant with it.

@@ -74,14 +74,25 @@ class DashboardController extends YesWikiController
         $home = $this->getService(RuntimeConfig::class)['root_page'];
 
         return $this->page('@core/dashboard/export.twig', 'dashboard/export', [
+            // Both rows used to point at `href('rss', $home)` -- the `rss` PAGE HANDLER, which
+            // served a feed of bazar *entries* and never read a `comments` parameter at all. So
+            // "Latest changes" and "Latest comments" were the same feed of entries under two wrong
+            // labels, and the `comments=1` on the second did nothing. Ticket 35 moved that feed to
+            // GET /api/entries/rss and this says what it actually is.
+            //
+            // Recent *changes* are published by the `{{recentchangesrss}}` action, on the
+            // `DerniersChangementsRSS` page every install is seeded with -- a page, so a webmaster
+            // can restrict or rename it. A comments feed is `{{recentcommentsrss}}` on a page of
+            // its own; nothing is seeded, so nothing is advertised here rather than advertising a
+            // url that answers the wrong thing.
             'feeds' => [
                 [
                     'label' => _t('DASHBOARD_EXPORT_FEED_CHANGES'),
-                    'url' => $urlFormatter->href('rss', $home),
+                    'url' => $urlFormatter->href('', 'DerniersChangementsRSS'),
                 ],
                 [
-                    'label' => _t('DASHBOARD_EXPORT_FEED_COMMENTS'),
-                    'url' => $urlFormatter->href('rss', $home, 'comments=1'),
+                    'label' => _t('DASHBOARD_EXPORT_FEED_ENTRIES'),
+                    'url' => $urlFormatter->href('', 'api/entries/rss'),
                 ],
             ],
             // one row per form, one column per output the entries API can answer with

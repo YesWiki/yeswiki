@@ -98,6 +98,11 @@ class SearchIndexer
             "DELETE FROM {$this->schema->table()} WHERE tag = ?",
             [$tag]
         );
+        // and its keywords, or a deleted page keeps answering `tags=`
+        $this->dbService->query(
+            "DELETE FROM {$this->schema->keywordsTable()} WHERE tag = ?",
+            [$tag]
+        );
     }
 
     /** Follow a rename. Cheaper than reindexing, and a rename changes nothing else. */
@@ -108,6 +113,12 @@ class SearchIndexer
         }
         $this->dbService->query(
             "UPDATE {$this->schema->table()} SET tag = ? WHERE tag = ?",
+            [$newTag, $oldTag]
+        );
+        // the keyword rows are keyed by tag, so they move with it -- otherwise a renamed page
+        // would be findable by keyword under its old name and not its new one
+        $this->dbService->query(
+            "UPDATE {$this->schema->keywordsTable()} SET tag = ? WHERE tag = ?",
             [$newTag, $oldTag]
         );
         // the title of an untitled Content *is* its tag, so it moved too
@@ -278,6 +289,9 @@ class SearchIndexer
             // finished and the queue still holds exactly what it did not
             $this->dbService->transactional(function () use ($inList, $tags, $contents): void {
                 $this->dbService->query("DELETE FROM {$this->schema->table()} WHERE tag IN ({$inList})", $tags);
+                // the keyword rows too: a page whose keywords were removed would otherwise keep
+                // answering `tags=` for a keyword it no longer carries
+                $this->dbService->query("DELETE FROM {$this->schema->keywordsTable()} WHERE tag IN ({$inList})", $tags);
                 $this->write($contents);
                 $this->dequeue($tags);
             });
@@ -339,6 +353,39 @@ class SearchIndexer
         );
         foreach ($rows as $row) {
             $insert->execute($row);
+        }
+
+        $this->writeKeywords($contents);
+    }
+
+    /**
+     * The (Content, keyword) rows behind the `tags=` filter.
+     *
+     * One statement prepared for the batch, like the index insert above. Keyed on the Content
+     * rather than on the index row: keywords belong to the page, not to one of its ACL buckets, and
+     * writing them per bucket would insert the same pair several times -- which the primary key
+     * would reject, taking the whole batch down with it.
+     *
+     * @param list<IndexedContent> $contents
+     */
+    private function writeKeywords(array $contents): void
+    {
+        $pairs = [];
+        foreach ($contents as $content) {
+            foreach ($content->keywords as $keyword) {
+                $pairs[$content->tag . "\0" . $keyword] = [$content->tag, $keyword];
+            }
+        }
+        if ($pairs === []) {
+            return;
+        }
+
+        $insert = $this->dbService->prepare(
+            "INSERT INTO {$this->schema->keywordsTable()} (tag, keyword) VALUES ("
+            . SqlParameters::placeholders(2) . ')'
+        );
+        foreach ($pairs as $pair) {
+            $insert->execute($pair);
         }
     }
 

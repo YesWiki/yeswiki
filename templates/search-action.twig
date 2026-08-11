@@ -65,6 +65,11 @@
         </fieldset>
 
         <input type="hidden" name="limit" value="{{ limit }}" />
+        {% if tags is defined and tags is not empty %}
+            {# ticket 35: the keyword filter travels with every request the box makes, so typing
+               in the box narrows *within* the tag rather than escaping it #}
+            <input type="hidden" name="tags" value="{{ tags }}" />
+        {% endif %}
         {% if not showFilters %}
             {# an embedded box scoped to one type: the type is fixed and the facet row would
                only offer to widen past what the webmaster asked for #}

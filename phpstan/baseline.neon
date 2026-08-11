@@ -7600,23 +7600,8 @@ parameters:
 			count: 1
 			path: ../src/Content/Handler/EditHandler.php
 
-		-
-			message: '#^Parameter \#1 \$path of function basename expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Handler/ListpagesHandler.php
 
-		-
-			message: '#^Variable \$outputselecttag might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: ../src/Content/Handler/ListpagesHandler.php
 
-		-
-			message: '#^Variable \$tab_selected_tags in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: ../src/Content/Handler/ListpagesHandler.php
 
 
 
@@ -7626,53 +7611,13 @@ parameters:
 			count: 1
 			path: ../src/Content/Handler/RevisionsHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:sanitize\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:sanitize\(\) has parameter \$string with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:updateRelativeLinks\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:updateRelativeLinks\(\) has parameter \$pBody with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\RssHandler\:\:updateRelativeLinks\(\) has parameter \$pPageURL with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Parameter \#1 \$string of function urldecode expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 5
-			path: ../src/Content/Handler/RssHandler.php
 
-		-
-			message: '#^Parameter \#2 \$timestamp of function date expects int\|null, false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Handler/RssHandler.php
 
 		-
 			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, string\|false given\.$#'
@@ -7686,17 +7631,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Handler/ShowHandler.php
 
-		-
-			message: '#^Undefined variable\: \$titrerss$#'
-			identifier: variable.undefined
-			count: 1
-			path: ../src/Content/Handler/TagrssHandler.php
 
-		-
-			message: '#^Variable \$titrerss in empty\(\) is never defined\.$#'
-			identifier: empty.variable
-			count: 1
-			path: ../src/Content/Handler/TagrssHandler.php
 
 		-
 			message: '#^Argument of an invalid type array\|false supplied for foreach, only iterables are supported\.$#'

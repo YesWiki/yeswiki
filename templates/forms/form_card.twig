@@ -54,7 +54,7 @@
     <span class="form-card__formats-label">{{ _t('BAZ_DATA_FORMAT') }}</span>
     {# named, not iconified: they sit beside one another, and the sprite has no glyph that
        reads as "RSS" -- chart-bar certainly did not #}
-    <a class="form-card__format" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}">RSS</a>
+    <a class="form-card__format" title="{{ _t('BAZ_RSS') }}" href="{{ url({ tag: 'api/entries/rss', params: { id: key }}) }}">RSS</a>
     <a class="form-card__format" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/csv'}) }}">CSV</a>
     <a class="form-card__format" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries'}) }}">JSON</a>
     {% if form.isSemantic %}

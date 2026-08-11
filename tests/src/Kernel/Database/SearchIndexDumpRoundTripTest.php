@@ -44,7 +44,7 @@ class SearchIndexDumpRoundTripTest extends TestCase
             'debug' => false,
         ]));
 
-        foreach ($this->dbService->dialect()->searchIndexDdl('rt_search_index', 'rt_search_queue') as $ddl) {
+        foreach ($this->dbService->dialect()->searchIndexDdl('rt_search_index', 'rt_search_queue', 'rt_search_keywords') as $ddl) {
             $this->dbService->query($ddl);
         }
         $this->insertIndexed('Tag1', 'Hello', 'searchable body text');

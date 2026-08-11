@@ -98,7 +98,8 @@ set vGenericParams = {}
 {% set vRSSParams = {} | merge (vGenericParams) | merge (vIDsObject) %}
 {% set vCSVParams = {} | merge (vGenericParams) | merge (vOrder) | merge (vField) %}
 {% set vJSONParams = {} | merge (vGenericParams) | merge (vOrder) | merge (vField) %}
-{% set vRSSHRef = url ({ handler:'rss', params: vRSSParams }) %}
+{# ticket 35: the feed is GET /api/entries/rss now, not a page handler #}
+{% set vRSSHRef = url({ tag: 'api/entries/rss', params: vRSSParams }) %}
 {% set vCSSHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams }) %}
 {% set vJSONHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams }) %}
 <div class="export-links pull-right">

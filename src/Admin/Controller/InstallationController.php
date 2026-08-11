@@ -469,8 +469,9 @@ class InstallationController
         $prefix = $this->config['table_prefix'];
         $index = $prefix . SearchIndexSchema::TABLE;
         $queue = $prefix . SearchIndexSchema::QUEUE_TABLE;
+        $keywords = $prefix . SearchIndexSchema::KEYWORDS_TABLE;
 
-        foreach ($dialect->searchIndexDdl($index, $queue) as $statement) {
+        foreach ($dialect->searchIndexDdl($index, $queue, $keywords) as $statement) {
             $db->exec($statement);
         }
 

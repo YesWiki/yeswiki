@@ -25,6 +25,7 @@ final class IndexedContent
      * @param string                $owner       needed to evaluate a `%` (owner) read ACL in SQL
      * @param string                $updatedAt   'Y-m-d H:i:s'
      * @param array<string, string> $buckets     ACL expression => searchable text
+     * @param list<string>          $keywords    the Content's keywords, for the `tags=` filter
      */
     public function __construct(
         public readonly string $tag,
@@ -35,6 +36,7 @@ final class IndexedContent
         public readonly string $owner,
         public readonly string $updatedAt,
         public readonly array $buckets,
+        public readonly array $keywords = [],
     ) {
     }
 

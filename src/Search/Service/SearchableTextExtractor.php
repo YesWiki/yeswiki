@@ -69,9 +69,43 @@ class SearchableTextExtractor
             owner: (string)($row['owner'] ?? ''),
             updatedAt: (string)($row['time'] ?? date('Y-m-d H:i:s')),
             buckets: $buckets,
+            keywords: $this->keywordsOf($body),
         );
 
         return $content->isEmpty() ? null : $content;
+    }
+
+    /**
+     * The Content's keywords, for the `tags=` filter (ticket 35).
+     *
+     * They stay in the free-text bucket too, so searching the word still finds the page -- what
+     * this adds is the ability to ask for an *exact* keyword. Before, folding them into `text` was
+     * the only thing that happened, so tag navigation could only ever be a fuzzy text match:
+     * `?q=Recette` also matched every page that merely mentioned the word.
+     *
+     * Trimmed and de-duplicated, and empties dropped: a keyword list that round-trips through a
+     * text field arrives with stray commas.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return list<string>
+     */
+    private function keywordsOf(array $body): array
+    {
+        $keywords = $body[PageBody::KEYWORDS] ?? null;
+        if (!is_array($keywords)) {
+            return [];
+        }
+
+        $cleaned = [];
+        foreach ($keywords as $keyword) {
+            $keyword = trim((string)$keyword);
+            if ($keyword !== '') {
+                $cleaned[$keyword] = true;
+            }
+        }
+
+        return array_keys($cleaned);
     }
 
     /**

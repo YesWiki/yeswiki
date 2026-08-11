@@ -138,7 +138,7 @@ class PostgreSqlDialect implements SqlDialect
      * defers stemming to a tuning ticket for that reason. `'simple'` is also immutable, which
      * a generated column requires; a per-Content language would need a trigger instead.
      */
-    public function searchIndexDdl(string $table, string $queueTable): array
+    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -166,12 +166,26 @@ class PostgreSqlDialect implements SqlDialect
                 \"tag\" VARCHAR(191) PRIMARY KEY,
                 \"queued_at\" TIMESTAMP NOT NULL
             )",
+            // One row per (Content, keyword): an inverted index, so `tags=` is an indexed
+            // equality lookup rather than a LIKE over a delimited column. ADR-0015 rejected
+            // LIKE-based search for the scale this is built for, and a tag filter is no
+            // different -- `%,cooking,%` cannot use an index at any size.
+            "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
+                \"tag\" VARCHAR(191) NOT NULL,
+                \"keyword\" VARCHAR(191) NOT NULL,
+                PRIMARY KEY (\"tag\", \"keyword\")
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$keywordsTable}_idx_keyword\" ON \"{$keywordsTable}\" (\"keyword\")",
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable): array
+    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
     {
-        return ["DROP TABLE IF EXISTS \"{$table}\"", "DROP TABLE IF EXISTS \"{$queueTable}\""];
+        return [
+            "DROP TABLE IF EXISTS \"{$table}\"",
+            "DROP TABLE IF EXISTS \"{$queueTable}\"",
+            "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
+        ];
     }
 
     public function searchMatchExpression(string $table, array $termGroups): string

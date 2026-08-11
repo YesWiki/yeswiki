@@ -31,6 +31,12 @@ class SearchApiController extends YesWikiController
     {
         $phrase = trim((string)$request->query->get('q', ''));
         $type = trim((string)$request->query->get('type', ''));
+        // `tags=` is a comma-separated list of keywords the Content must ALL carry (ticket 35).
+        // This is what replaced the `listpages` handler: tag navigation is an exact filter, and
+        // folding it into `q` would have made it a fuzzy text match on the keyword's spelling.
+        $tags = array_values(array_filter(
+            array_map('trim', explode(',', (string)$request->query->get('tags', '')))
+        ));
         $limit = max(1, min((int)$request->query->get('limit', SearchIndexQuery::DEFAULT_LIMIT), SearchIndexQuery::MAX_LIMIT));
         $page = max(1, (int)$request->query->get('page', 1));
         $display = trim((string)$request->query->get('display', 'list'));
@@ -38,7 +44,9 @@ class SearchApiController extends YesWikiController
             $display = 'list';
         }
 
-        if ($phrase === '') {
+        // a tags-only request is a real search, so the empty-box prompt is only for a request
+        // that asks for nothing at all
+        if ($phrase === '' && $tags === []) {
             // the URL is rewritten here too, so clearing the box clears `?q=` rather than
             // leaving the address bar claiming a search that is no longer on screen
             return $this->withSearchUrl(new Response($this->render('@core/search-results.twig', [
@@ -52,16 +60,22 @@ class SearchApiController extends YesWikiController
                 'limit' => $limit,
                 'type' => $type,
                 'display' => $display,
+                'tags' => [],
                 'prompt' => true,
             ])), $phrase, $type, $display, 1);
         }
 
         $query = $this->getService(SearchIndexQuery::class);
-        $found = $query->search($phrase, $type === '' ? null : $type, $limit, ($page - 1) * $limit);
+        $found = $query->search($phrase, $type === '' ? null : $type, $limit, ($page - 1) * $limit, $tags);
         // computed across every type, not just the selected one -- a facet's job is to show
         // what else is there. Skipped when the type filter is hidden, since nothing would
         // read them.
-        $facets = $request->query->get('facets') === '0' ? [] : $query->facets($phrase);
+        // Facets come from the phrase, so a tags-only search has none to show: facets() would be
+        // asked to count matches for an empty query. Not a loss -- the type filter is still there,
+        // and it is the phrase that makes "what else matched this" a useful question.
+        $facets = ($request->query->get('facets') === '0' || $phrase === '')
+            ? []
+            : $query->facets($phrase);
 
         // Rendered inside a capture scope whose result is deliberately thrown away, the way
         // {{newtextsearch}} did before it (ADR-0014 records the reasoning): a result row can
@@ -85,6 +99,7 @@ class SearchApiController extends YesWikiController
             'limit' => $limit,
             'type' => $type,
             'display' => $display,
+            'tags' => $tags,
             'prompt' => false,
         ]));
 

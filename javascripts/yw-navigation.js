@@ -40,9 +40,9 @@
   }
 
   // handler suffixes that never render a page, and the upload path.
-  // qrcodetroc left this list when it became an action (ticket 35): it is reached as an ordinary
-  // page now, so boosted navigation is exactly what it wants.
-  const NON_PAGE = /\/(raw|xml|rss|tagrss|iframe|editiframe|render)(\/|$|\?)/i
+  // Only the handlers that still exist. qrcodetroc became an action and xml/rss/tagrss became API
+  // routes (ticket 35) -- an /api/ url is not a page link, so it never reaches this list.
+  const NON_PAGE = /\/(raw|iframe|editiframe|render)(\/|$|\?)/i
   const FILE_PATH = /\/files\//i
 
   document.addEventListener('htmx:confirm', (event) => {

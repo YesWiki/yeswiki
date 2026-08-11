@@ -289,4 +289,34 @@ class PageApiController extends YesWikiController
 
         return new ApiResponse(['success' => _t('YW_COMMENTS_ARE_NOW_OPEN')]);
     }
+
+    /**
+     * A page's body as XML, with its `{{action}}` calls rendered (ticket 35, was `/PageName/xml`).
+     *
+     * Only the body, not the page's other properties -- that was true of the handler too, and
+     * changing it would change what existing consumers receive. `GET /api/pages/{tag}` is the route
+     * that answers with everything.
+     */
+    #[Route('/api/pages/{tag}/xml', methods: ['GET'], options: ['acl' => ['public']])]
+    public function getPageAsXml(string $tag): Response
+    {
+        $declaration = '<?xml version="1.0" encoding="' . YW_CHARSET . '"?>';
+        $headers = ['Content-Type' => 'text/xml; charset=' . YW_CHARSET];
+
+        $page = $this->getService(PageManager::class)->getOne($tag);
+        // An unreadable or absent page answers an empty document rather than 403/404: this replaces
+        // a handler that did exactly that, and a feed-shaped consumer handles an empty document
+        // better than it handles an error status it was never written to expect.
+        if (empty($page) || !$this->getService(AclService::class)->hasAccess('read', $tag)) {
+            return new Response($declaration, Response::HTTP_OK, $headers);
+        }
+
+        return new Response(
+            $declaration . $this->getService(MarkdownFormatterService::class)->renderActionsOnly(
+                PageBody::content($page['body'] ?? [])
+            ),
+            Response::HTTP_OK,
+            $headers
+        );
+    }
 }

@@ -118,7 +118,7 @@ class SqliteDialect implements SqlDialect
      * ships a Porter stemmer for English, and ADR-0015 keeps the three dialects comparable
      * rather than stemming on some and not others.
      */
-    public function searchIndexDdl(string $table, string $queueTable): array
+    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS \"{$table}\" (
@@ -160,12 +160,23 @@ class SqliteDialect implements SqlDialect
                 \"tag\" TEXT PRIMARY KEY,
                 \"queued_at\" TEXT NOT NULL
             )",
+            // One row per (Content, keyword): an inverted index, so `tags=` is an indexed
+            // equality lookup rather than a LIKE over a delimited column. ADR-0015 rejected
+            // LIKE-based search for the scale this is built for, and a tag filter is no
+            // different -- `%,cooking,%` cannot use an index at any size.
+            "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
+                \"tag\" TEXT NOT NULL,
+                \"keyword\" TEXT NOT NULL,
+                PRIMARY KEY (\"tag\", \"keyword\")
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$keywordsTable}_idx_keyword\" ON \"{$keywordsTable}\" (\"keyword\")",
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable): array
+    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
+            "DROP TABLE IF EXISTS \"{$keywordsTable}\"",
             "DROP TABLE IF EXISTS \"{$queueTable}\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ai\"",
             "DROP TRIGGER IF EXISTS \"{$table}_ad\"",

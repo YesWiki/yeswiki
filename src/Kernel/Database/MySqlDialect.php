@@ -111,7 +111,7 @@ class MySqlDialect implements SqlDialect
      * needing a restart) drops one- and two-character words, and the built-in stopword list
      * is English and cannot be disabled per session.
      */
-    public function searchIndexDdl(string $table, string $queueTable): array
+    public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
             "CREATE TABLE IF NOT EXISTS `{$table}` (
@@ -138,12 +138,26 @@ class MySqlDialect implements SqlDialect
                 `queued_at` DATETIME NOT NULL,
                 PRIMARY KEY (`tag`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
+            // One row per (Content, keyword): an inverted index, so `tags=` is an indexed
+            // equality lookup rather than a LIKE over a delimited column. ADR-0015 rejected
+            // LIKE-based search for the scale this is built for, and a tag filter is no
+            // different -- `%,cooking,%` cannot use an index at any size.
+            "CREATE TABLE IF NOT EXISTS `{$keywordsTable}` (
+                `tag` VARCHAR(191) NOT NULL,
+                `keyword` VARCHAR(191) NOT NULL,
+                PRIMARY KEY (`tag`, `keyword`),
+                KEY `idx_keyword` (`keyword`)
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
         ];
     }
 
-    public function searchIndexDropDdl(string $table, string $queueTable): array
+    public function searchIndexDropDdl(string $table, string $queueTable, string $keywordsTable): array
     {
-        return ["DROP TABLE IF EXISTS `{$table}`", "DROP TABLE IF EXISTS `{$queueTable}`"];
+        return [
+            "DROP TABLE IF EXISTS `{$table}`",
+            "DROP TABLE IF EXISTS `{$queueTable}`",
+            "DROP TABLE IF EXISTS `{$keywordsTable}`",
+        ];
     }
 
     public function searchMatchExpression(string $table, array $termGroups): string

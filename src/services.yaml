@@ -147,6 +147,10 @@ services:
   YesWiki\Content\Service\MaintenanceSyncSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }
+  # sends the mailing-list digests on a wiki with no cron, on the same housekeeping pass
+  YesWiki\Content\Service\ContactDigestScheduler:
+    tags:
+      - { name: yeswiki.event_subscriber }
 
   # An importer is constructed per data source, with that source's config key -- a scalar no
   # container can autowire. These definitions exist so ImporterManager can *find* them by

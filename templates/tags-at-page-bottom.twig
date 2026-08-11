@@ -2,7 +2,9 @@
   <br><i class="icon icon-tags"></i>
   {% for tag in tags|sort %}
     <a class="tag-label label label-info" 
-      href="{{ url({tag:pageTag,handler:'listpages',params:{tags: tag}}) }}"
+      {# ticket 35: the listpages handler is gone; a keyword is a search filter now, so the same
+         question is answered by the search screen and can be narrowed further from there #}
+      href="{{ url({tag:'search',params:{tags: tag}}) }}"
       title="{{ _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') }}"
       >
       {{ tag }}
