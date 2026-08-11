@@ -265,11 +265,29 @@ class InstallationController
         }
     }
 
+    /**
+     * A connection to the *server*, before the wiki's own database is known to exist.
+     *
+     * PostgreSQL needs a database named here and MySQL does not, which is the whole subtlety:
+     * libpq given no `dbname` falls back to **the connecting user's name**, so this worked only
+     * where the database happened to be named after its owner and failed with
+     * `FATAL: database "<user>" does not exist` everywhere else. The install then reported the
+     * failure as an ordinary page, so the next thing anyone saw was `yeswicli` answering
+     * "Command migrate is not defined" -- the console registers almost nothing without a
+     * `base_url` in the config that never got written.
+     *
+     * `postgres` is the maintenance database every PostgreSQL install has; `tests/e2e/reset.sh`
+     * already attaches to `template1` for the same reason. MySQL keeps connecting with no
+     * database, which is valid there and is what `databaseExists()` then interrogates.
+     */
     private function serverDsn(string $driver): string
     {
         $dsn = $driver . ':host=' . $this->config['db_host'];
         if (!empty($this->config['db_port'])) {
             $dsn .= ';port=' . $this->config['db_port'];
+        }
+        if ($driver === 'pgsql') {
+            $dsn .= ';dbname=postgres';
         }
 
         return $dsn;

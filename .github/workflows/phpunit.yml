@@ -85,10 +85,10 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready"
-          --health-interval=10s
+          --health-cmd="pg_isready -U yeswiki -d yeswiki_test"
+          --health-interval=5s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=20
 
     steps:
       - uses: actions/checkout@v5
@@ -155,7 +155,26 @@ jobs:
             -F "admin_password_conf=ActionTestPassword" \
             -F "admin_email=test@example.com" \
             -F "submit=Continue" \
-            "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install"
+            "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install" \
+            > ${{ runner.temp }}/install.html
+
+      # The installer renders its failures as an ordinary page, so it answers 200 whether it
+      # worked or not and `curl --fail` proves nothing. Assert what actually matters: a config
+      # that configures a wiki. Without this the pgsql leg went green here and failed three
+      # steps later with "Command migrate is not defined" -- the console registers only its
+      # runs-outside-an-instance commands when `base_url` is missing, so the real error was an
+      # install failure reported as a missing command.
+      - name: Check the wiki really installed
+        run: |
+          if ! grep -q "'base_url'" yeswiki.config.php 2>/dev/null; then
+            echo "::error::The installer did not write a usable yeswiki.config.php."
+            echo "--- installer response ---"
+            sed -e 's/<[^>]*>//g' ${{ runner.temp }}/install.html | tr -s ' \n' ' \n' | grep -viE '^\s*$' | tail -60
+            echo "--- php server log ---"
+            cat ${{ runner.temp }}/php-server.log
+            exit 1
+          fi
+          echo "installed on ${{ matrix.driver }}"
 
       # The installer creates the tables a fresh wiki needs and nothing more; migrations own
       # everything added since, including the search index table (20260802120000_CreateSearchIndex).
