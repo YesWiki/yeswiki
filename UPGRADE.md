@@ -20,13 +20,19 @@ in that list, that is a bug in this document.
 ./yeswicli core:archive
 ```
 
-> **PostgreSQL wikis cannot currently produce a database backup.** `SqlDumper` refuses,
-> because the pgsql table-structure export is not implemented — an archive would hold data
-> with no tables to restore it into. This is tracked as a bug (tracker ticket 32), not a
-> design. Until it is fixed, back up with `pg_dump` yourself before upgrading. Do not skip
-> this: everything below is a one-way change.
+This works on all three drivers. Two things worth knowing if you are upgrading from an earlier
+Ectoplasme pre-release rather than from Doryphore:
 
-MySQL and SQLite wikis are fine through `core:archive`.
+- **PostgreSQL could not produce a database backup at all** until this release — there is no
+  `SHOW CREATE TABLE`, so the table structure was simply never exported. It is rebuilt from the
+  system catalogs now.
+- **SQLite could produce one, but it could not be restored** once the wiki had a search index. The
+  FTS5 virtual table's internal storage was dumped as though it were ordinary data, and replaying
+  the archive died part-way through. That is the worse of the two failures, because it surfaced at
+  restore time — the archive looked fine right up until the moment it was needed.
+
+If you are holding an archive taken by an earlier Ectoplasme pre-release, take a fresh one after
+upgrading and keep that instead. Do not skip this step: everything below is a one-way change.
 
 ### Requirements
 
@@ -113,20 +119,22 @@ behind it changed.
 
 ## Still by hand
 
-### 1. Action names and parameters in your page bodies — **the big one**
+### 1. Action names in files on disk
 
-Twenty action names and forty-five parameter names became English. A page body still saying
-`{{bazarliste}}` has nothing to resolve to: there is no alias layer.
+Twenty action names and forty-five parameter names became English.
 
-**This is deliberately not yet migrated.** The decision (2026-07-31) was "documented breaking
-changes now, migration magic later", and the two rename maps were written as machine-readable
-input to that later migration:
+**In page bodies this is migrated for you** — `RenameActionsAndParametersInBodies` rewrites every
+revision of every row, resolving each call's parameters against the action name as it finds it,
+and leaves parameter values and template filenames alone. It names the rewritten pages in the
+administrative log. Nothing to do.
 
-- `docs/action-name-renames.json` — 20 action renames
-- `docs/action-parameter-renames.json` — 45 parameter renames, 38 of them user-typed
+**In files, it is not.** A squelette, theme template or custom template that calls an action by
+its French name — as wiki syntax or through Twig's `action('...')` helper — is yours to fix:
+silently editing your theme from a database migration is not something an upgrade should do. The
+migration **reports** every such file to the administrative log, so check there after upgrading,
+and use `docs/action-name-renames.json` as the mapping.
 
-Apply the action-name map **first**: the parameter map is keyed by the *old* action names, which
-is exactly how an unmigrated body still spells them.
+The renames, for reference when fixing those files:
 
 | old | new |
 |---|---|
@@ -161,9 +169,10 @@ moved, the filename did not.
 was the risk the rename work was most worried about, and it turned out not to exist: every
 handler name was already English.
 
-> **To be automated.** Both maps exist precisely so a migration can rewrite stored bodies. See
-> tracker ticket 33. Until it lands, this section is a search-and-replace job over your page
-> bodies, and the maps are the authority — not this table, which omits the parameters.
+**Two parameters are not migrated anywhere, because they are URL query parameters**:
+`?tri=` on the `listpages` handler (now `?sort=`) and `?utilisateur=` on `rss` (now `?user=`). A
+migration cannot rewrite a link somebody has already shared or bookmarked. If you have published
+such links, republish them with the new spelling.
 
 ### 2. Extensions in `tools/` are not loaded
 

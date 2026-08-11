@@ -1,7 +1,7 @@
 {
   "ticket": 23,
   "date": "2026-08-01",
-  "purpose": "Every French action name renamed to English. Continuous with docs/action-parameter-renames.json (ticket 22): together they are the input to the later migration that rewrites {{action param=\"...\"}} in stored page bodies. That migration is deliberately NOT part of either ticket -- decided 2026-07-31, 'documented breaking changes now, migration magic later'. Apply this file's renames BEFORE that one's: action-parameter-renames.json is keyed by the action name as it was spelled in ticket 22, which is exactly how an unmigrated body still spells it.",
+  "purpose": "Every French action name renamed to English. Continuous with docs/action-parameter-renames.json (ticket 22): together they are the input to the later migration that rewrites {{action param=\"...\"}} in stored page bodies. That migration is deliberately NOT part of either ticket -- decided 2026-07-31, 'documented breaking changes now, migration magic later'. ORDERING, corrected 2026-08-11 by ticket 33: do NOT apply this file before the parameter one. action-parameter-renames.json is keyed by the OLD action names, so renaming actions first makes 9 of its 15 keys unmatchable. Resolve parameters against the action name as found, then rename the action, in one pass -- see ActionCallRewriter.",
   "handlerPolicy": {
     "decision": "No handler is renamed, so no handler URL changes and no redirecting alias is needed.",
     "why": "The ticket flagged handler names as its one place where a compatibility mechanism might be worth its cost, because /MyPage/revisions and friends are bookmarked and linked from outside. On inspection every one of the 24 handler names is already English -- acls, addcomment, claim, deletepage, duplicate, edit, editiframe, emailactivation, filemanager, html, iframe, listpages, mail, qrcodetroc, raw, render, revisions, rss, sendmail, share, show, tagrss, update, xml. There was nothing to decide.",
@@ -53,16 +53,27 @@
       "new": "entrylistcategory",
       "class": "BazarListCategoryAction -> EntryListCategoryAction"
     },
-
-    { "old": "calendrier", "new": "calendar" },
+    {
+      "old": "calendrier",
+      "new": "calendar"
+    },
     {
       "old": "abonnement",
       "new": "subscribe",
       "note": "the action's own vocabulary moved with it: the `demand` template variable and the ContactApiController `type` it posts back are now subscribe/unsubscribe. The `form-abonnement` CSS class is a class name and stays"
     },
-    { "old": "desabonnement", "new": "unsubscribe" },
-    { "old": "nuagetag", "new": "tagcloud" },
-    { "old": "valeur", "new": "value" },
+    {
+      "old": "desabonnement",
+      "new": "unsubscribe"
+    },
+    {
+      "old": "nuagetag",
+      "new": "tagcloud"
+    },
+    {
+      "old": "valeur",
+      "new": "value"
+    },
     {
       "old": "gererdroits",
       "new": "adminacls",
@@ -74,14 +85,23 @@
       "new": "adminthemes",
       "class": "ManageThemesAction -> AdminThemesAction"
     },
-    { "old": "ariane", "new": "breadcrumb" },
+    {
+      "old": "ariane",
+      "new": "breadcrumb"
+    },
     {
       "old": "doubleclic",
       "new": "doubleclick",
       "note": "the {{include}} parameter of the same name became `doubleclick` in ticket 22; this is the action. The `allow_doubleclic` config key and the `doubleclickedit` user column are stored data and unchanged"
     },
-    { "old": "barreredaction", "new": "editbar" },
-    { "old": "titrepage", "new": "pagetitle" },
+    {
+      "old": "barreredaction",
+      "new": "editbar"
+    },
+    {
+      "old": "titrepage",
+      "new": "pagetitle"
+    },
     {
       "old": "moteurrecherche",
       "new": "searchform",
@@ -94,7 +114,10 @@
       "name": "bazar",
       "why": "the BazaR admin console, not an entry -- there is no entry* name that describes it. Decided 2026-08-01: `bazar` is the product's own word for this screen, like `wiki`, and `{{bazar}}` is the single most-used action in YesWiki, so it is the one place where not breaking content is worth an inconsistency"
     },
-    { "name": "every handler", "why": "see handlerPolicy above" },
+    {
+      "name": "every handler",
+      "why": "see handlerPolicy above"
+    },
     {
       "name": "bazarcard, bazarcalendar, bazaragenda, bazarannuaire, bazartimeline, bazarcarousel, bazarlistephotobox, bazarlisteliens, bazarblog, bazartableau, bazarmapandtable",
       "why": "actions-builder PRESET ids in docs/actions/entrylist.yaml, not actions. Every one of them emits {{entrylist template=\"...\"}}; they never appear in a page body. They carry YAML anchors and AB_* translation keys, so renaming them is churn with real breakage risk and no user-visible payoff"

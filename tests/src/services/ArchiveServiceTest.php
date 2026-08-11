@@ -41,20 +41,16 @@ class ArchiveServiceTest extends YesWikiTestCase
         ?array $wakkaContent,
         array $services
     ) {
-        // ArchiveService openly declines to back up a database it cannot restore: PostgreSQL has
-        // no getTableSchema() implementation, so SqlDialect::supportsDump() is false there and
-        // SqlDumper throws rather than write data with no CREATE TABLE to restore it into.
-        // Asserting a successful archive on such a driver tests a capability the code says it
-        // does not have -- skip and name the gap. Closing it is tracked as ticket 32 (a pgsql
-        // wiki genuinely cannot be backed up, which is a bug, not a preference); the file half
-        // of the archive is still exercised here by the savefiles-only cases.
-        if ($savedatabase && !$services['wiki']->services->get(DbService::class)->dialect()->supportsDump()) {
-            $this->markTestSkipped(
-                "database backup is unsupported on the '"
-                . $services['wiki']->services->get(DbService::class)->getDriver()
-                . "' driver (SqlDialect::supportsDump() is false: no table structure export)"
-            );
-        }
+        // This used to skip when SqlDialect::supportsDump() was false, which was PostgreSQL's way
+        // of saying it could not export a table structure at all -- so a pgsql wiki could not be
+        // backed up. Ticket 32 closed that by rebuilding the DDL from the system catalogs, so
+        // there is no driver left to skip for and the assertion below runs everywhere. Kept as an
+        // assertion rather than deleted outright: if a driver ever declines again, this says so
+        // instead of failing several frames deeper inside the archive.
+        $this->assertTrue(
+            $services['wiki']->services->get(DbService::class)->dialect()->supportsDump(),
+            'every supported driver must be able to export its table structure'
+        );
 
         $output = '';
         $location = $services['archiveService']->archive(

@@ -122,7 +122,11 @@ class PostgreSqlDialect implements SqlDialect
      */
     public function supportsDump(): bool
     {
-        return false;
+        // False until ticket 32. There is no `SHOW CREATE TABLE` here, so the table structure was
+        // simply not exported -- which meant a PostgreSQL wiki could not be backed up at all,
+        // including immediately before an upgrade. SchemaManager rebuilds the DDL from the system
+        // catalogs instead, so there is nothing left for this to decline.
+        return true;
     }
 
     /**

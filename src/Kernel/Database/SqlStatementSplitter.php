@@ -12,12 +12,16 @@ namespace YesWiki\Kernel\Database;
  * statement in half and the INSERT would be replayed truncated.
  *
  * What has to be tracked: single-quoted strings (with both `''` and backslash escaping),
- * double-quoted strings, backtick-quoted identifiers, `--` and `#` line comments, and
- * `/* *\/` block comments. Block comments are *kept* rather than stripped, because MySQL's
- * version-gated executable comments (`/*!40101 SET ... *\/`) are statements in a MySQL dump.
+ * double-quoted strings, backtick-quoted identifiers, `--` and `#` line comments,
+ * `/* *\/` block comments, and the `BEGIN ... END` body of a trigger. Block comments are *kept*
+ * rather than stripped, because MySQL's version-gated executable comments
+ * (`/*!40101 SET ... *\/`) are statements in a MySQL dump.
  */
 final class SqlStatementSplitter
 {
+    /** Keywords that open a compound statement inside a trigger body, and the one that closes it. */
+    private const BLOCK_KEYWORDS = ['BEGIN' => 1, 'CASE' => 1, 'END' => -1];
+
     /**
      * @return list<string> non-empty statements, in order, without their trailing semicolon
      */
@@ -27,6 +31,7 @@ final class SqlStatementSplitter
         $current = '';
         $length = strlen($sql);
         $i = 0;
+        $blockDepth = 0;
 
         while ($i < $length) {
             $char = $sql[$i];
@@ -60,7 +65,24 @@ final class SqlStatementSplitter
                 continue;
             }
 
-            if ($char === ';') {
+            // A trigger body is a compound statement: `CREATE TRIGGER ... BEGIN <stmt>; END`.
+            // Its inner semicolons are not statement boundaries, and splitting on them yields
+            // "incomplete input" -- which is what stopped a SQLite archive containing the search
+            // index triggers from ever restoring.
+            //
+            // Deliberately scoped to trigger statements. PostgreSQL's own dump preamble is a bare
+            // `BEGIN;`, and treating that as an opening block would make the entire dump one
+            // unterminated statement.
+            $keyword = self::blockKeywordAt($sql, $i);
+            if ($keyword !== null && self::isTriggerStatement($current)) {
+                $blockDepth = max(0, $blockDepth + self::BLOCK_KEYWORDS[$keyword]);
+                $current .= substr($sql, $i, strlen($keyword));
+                $i += strlen($keyword);
+
+                continue;
+            }
+
+            if ($char === ';' && $blockDepth === 0) {
                 $statements[] = $current;
                 $current = '';
                 $i++;
@@ -114,6 +136,42 @@ final class SqlStatementSplitter
         }
 
         return $statement;
+    }
+
+    /**
+     * The block keyword starting at $position, as a whole word, or null.
+     *
+     * Whole-word matching matters in both directions: `END` must not fire inside `APPENDIX`, and
+     * a preceding letter or digit means this is the middle of an identifier rather than the start
+     * of a keyword.
+     */
+    private static function blockKeywordAt(string $sql, int $position): ?string
+    {
+        $before = $position > 0 ? $sql[$position - 1] : ' ';
+        if (ctype_alnum($before) || $before === '_') {
+            return null;
+        }
+
+        foreach (array_keys(self::BLOCK_KEYWORDS) as $keyword) {
+            if (strcasecmp(substr($sql, $position, strlen($keyword)), $keyword) !== 0) {
+                continue;
+            }
+            $after = $sql[$position + strlen($keyword)] ?? ' ';
+            if (!ctype_alnum($after) && $after !== '_') {
+                return $keyword;
+            }
+        }
+
+        return null;
+    }
+
+    /** Whether what has been accumulated so far is a `CREATE TRIGGER`. */
+    private static function isTriggerStatement(string $current): bool
+    {
+        return preg_match(
+            '/(^|\n)\s*CREATE\s+(OR\s+REPLACE\s+)?(TEMP(ORARY)?\s+)?TRIGGER\b/i',
+            $current
+        ) === 1;
     }
 
     /** `--` introduces a comment only when followed by whitespace or end of input. */

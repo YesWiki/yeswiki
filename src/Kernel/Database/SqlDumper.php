@@ -85,6 +85,13 @@ class SqlDumper
 
             // For each table
             foreach ($tablesPostfix as $tableName) {
+                $role = $this->dbService->schema()->dumpRoleFor($tableName);
+                if ($role === SchemaManager::DUMP_SKIP) {
+                    // an FTS virtual table's shadow storage: not a table anyone may restore
+                    // directly, and dumping it is what made SQLite archives unreplayable
+                    continue;
+                }
+
                 // DUMP CREATE TABLE
 
                 // HEADER
@@ -103,39 +110,53 @@ class SqlDumper
                     $sql .= $tableSchema . ";\n\n";
                 }
 
+                if ($role === SchemaManager::DUMP_STRUCTURE_ONLY) {
+                    // an FTS virtual table: its rows are derived from the table it shadows, and
+                    // selecting them yields FTS5 pseudo-columns that no INSERT can accept. It is
+                    // repopulated by a rebuild in postDataStatements() instead.
+                    $sql .= "\n-- \n-- Data of table : `$tableName` is derived and rebuilt after the data\n-- \n";
+                    $sql .= "\n-- --------------------------------------------------------\n";
+                    continue;
+                }
+
                 // DUMP DATA
 
                 //    HEADER
                 $sql .=
                     <<<SQL
 
-                -- 
+                --
                 -- Data of table : `$tableName`
-                -- 
+                --
 
                 SQL;
                 // END HEADER
 
-                $rawData = $this->dbService->query('select * from ' . $tableName);
+                // Named columns rather than `select *`, because a generated column must not be
+                // selected: PostgreSQL refuses an INSERT that supplies any value for one, so a
+                // `select *` dump of the search index could not be replayed at all. Naming them
+                // also fixes the INSERT column list, which used to come from getColumnMeta().
+                $columnNames = $this->dbService->schema()->dumpableColumns($tableName);
+                if ($columnNames === []) {
+                    continue;
+                }
+                $quotedColumns = array_map(
+                    fn (string $column): string => $this->dbService->quoteIdentifier($column),
+                    $columnNames
+                );
+
+                $rawData = $this->dbService->query(
+                    'SELECT ' . implode(', ', $quotedColumns)
+                    . ' FROM ' . $this->dbService->quoteIdentifier($tableName)
+                );
 
                 $firstRow = true;
-                $columnCount = $rawData->columnCount();
-                $columnMeta = [];
-                for ($i = 0; $i < $columnCount; $i++) {
-                    $columnMeta[$i] = $rawData->getColumnMeta($i);
-                }
+                $columnCount = count($columnNames);
 
                 while ($row = $rawData->fetch(\PDO::FETCH_NUM)) {
                     if ($firstRow) {
                         $sql .= 'INSERT INTO ' . $this->dbService->quoteIdentifier($tableName) . ' ';
-                        $sql .= '(';
-                        for ($i = 0; $i < $columnCount; $i++) {
-                            if ($i != 0) {
-                                $sql .= ', ';
-                            }
-                            $sql .= $this->dbService->quoteIdentifier((string)$columnMeta[$i]['name']);
-                        }
-                        $sql .= ") VALUES\n";
+                        $sql .= '(' . implode(', ', $quotedColumns) . ") VALUES\n";
                         $firstRow = false;
                     } else {
                         $sql .= ",\n";
@@ -164,6 +185,14 @@ class SqlDumper
                 -- --------------------------------------------------------
 
                 SQL;
+            }
+
+            // Triggers and FTS rebuilds, which must run once all the data is in place -- see
+            // SchemaManager::postDataStatements() for why each of them cannot come earlier.
+            $postData = $this->dbService->schema()->postDataStatements($tablesPostfix);
+            if ($postData !== []) {
+                $sql .= "\n-- \n-- Triggers and derived indexes, replayed after the data\n-- \n\n"
+                    . implode(";\n", $postData) . ";\n";
             }
 
             $sql .= "\n" . implode(";\n", $this->dbService->dialect()->dumpEpilogue()) . ";\n";
