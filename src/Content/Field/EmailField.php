@@ -69,6 +69,12 @@ class EmailField extends BazarField
 
         return $this->render('@core/fields/email.twig', [
             'value' => $value,
+            // The ENTRY's tag, not the current page's. The old link was built with
+            // `url({handler:'mail'})` and no tag, so it inherited whatever page was being
+            // rendered -- correct on an entry's own page and wrong in a list, where it pointed the
+            // contact form at the list instead of the entry it was drawn next to. A route takes
+            // the tag explicitly, which makes the right answer the only expressible one.
+            'pageTag' => (string)($entry['tag'] ?? ''),
         ]);
     }
 

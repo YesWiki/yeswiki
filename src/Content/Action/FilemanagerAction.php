@@ -45,7 +45,7 @@ class FilemanagerAction extends YesWikiAction implements RegisteredAction
         // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
         if ($this->getService(AclService::class)->hasAccess('write')) {
-            echo $this->getService(FileBrowser::class)->render(true);
+            echo $this->getService(FileBrowser::class)->render();
         } else {
             echo '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER') . '.</div>' . "\n";
         }

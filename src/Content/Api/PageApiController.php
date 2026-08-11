@@ -17,12 +17,17 @@ use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 class PageApiController extends YesWikiController
 {
+    /** The comment ACL that means "nobody", as ClaimHandler wrote it before ticket 35. */
+    private const COMMENTS_CLOSED = 'comments-closed';
+
     #[Route('/api/pages', options: ['acl' => ['public']])]
     public function getAllPages()
     {
@@ -215,5 +220,73 @@ class PageApiController extends YesWikiController
         return (empty($result))
             ? $this->deletePage($tag)
             : new ApiResponse($result, $code);
+    }
+
+    /**
+     * Take ownership of a page that has none (ticket 35, was `/PageName/claim`).
+     *
+     * Only an unowned page, and only for someone signed in: this grants the caller write access to
+     * a page they did not have it on, so the "no current owner" test is the whole security model.
+     * An owned page answers 409 rather than silently doing nothing, because "I clicked claim and
+     * nothing happened" is indistinguishable from a bug.
+     */
+    #[Route('/api/pages/{tag}/claim', methods: ['POST'], options: ['acl' => ['+']])]
+    public function claimPage(string $tag): ApiResponse
+    {
+        $pageManager = $this->getService(PageManager::class);
+        if (empty($pageManager->getOne($tag))) {
+            return new ApiResponse(['error' => _t('NOT_FOUND')], Response::HTTP_NOT_FOUND);
+        }
+
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
+        if (empty($user['name'])) {
+            return new ApiResponse(['error' => _t('LOGIN_NO_CONNECTED_USER')], Response::HTTP_UNAUTHORIZED);
+        }
+        if (!empty($pageManager->getOwner($tag))) {
+            return new ApiResponse(['error' => _t('YW_PAGE_ALREADY_OWNED')], Response::HTTP_CONFLICT);
+        }
+
+        $pageManager->setOwner($tag, (string)$user['name']);
+
+        return new ApiResponse([
+            'success' => _t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'),
+            'owner' => (string)$user['name'],
+        ]);
+    }
+
+    /**
+     * Open or close comments on a page (ticket 35, was `/PageName/claim&action=opencomments`).
+     *
+     * `access` is a group name, `+` for any signed-in user, or `closed`. Owner or admin only --
+     * comment access is a permission, so handing it out is itself a privileged act.
+     */
+    #[Route('/api/pages/{tag}/comments-access', methods: ['POST'], options: ['acl' => ['+']])]
+    public function setCommentsAccess(string $tag, Request $request): ApiResponse
+    {
+        $aclService = $this->getService(AclService::class);
+        if (!$aclService->isAdmin() && !$aclService->isOwner($tag)) {
+            return new ApiResponse(['error' => _t('LOGIN_NOT_AUTORIZED')], Response::HTTP_FORBIDDEN);
+        }
+        if (empty($this->getService(PageManager::class)->getOne($tag))) {
+            return new ApiResponse(['error' => _t('NOT_FOUND')], Response::HTTP_NOT_FOUND);
+        }
+
+        $access = trim((string)$request->request->get('access', ''));
+        if ($access === 'closed') {
+            $aclService->save($tag, 'comment', self::COMMENTS_CLOSED);
+
+            return new ApiResponse(['success' => _t('YW_COMMENTS_ARE_NOW_CLOSED')]);
+        }
+
+        // A group that does not exist would be saved verbatim and match nobody -- comments would
+        // read as open and be closed in practice. `+` is every signed-in user.
+        $groups = $this->getService(GroupOperationsService::class)->getAll();
+        if ($access !== '+' && !in_array($access, $groups, true)) {
+            return new ApiResponse(['error' => _t('YW_PROBLEM_WITH_ACLS_LIST')], Response::HTTP_BAD_REQUEST);
+        }
+
+        $aclService->save($tag, 'comment', $access);
+
+        return new ApiResponse(['success' => _t('YW_COMMENTS_ARE_NOW_OPEN')]);
     }
 }

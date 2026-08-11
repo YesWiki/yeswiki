@@ -175,4 +175,45 @@ class ContactApiController extends YesWikiController
 
         return new ApiResponse(['type' => $message['class'], 'message' => $message['message']], Response::HTTP_OK);
     }
+
+    /**
+     * The contact form, as an HTML fragment (ticket 35, was `/PageName/mail`).
+     *
+     * `templates/fields/email.twig` opens this in a modal, so the answer is markup rather than
+     * JSON -- which is what an API route is for when the caller is a modal: a fragment fetched over
+     * HTTP. What it is *not* is a way of looking at a page, which is what the handler it replaces
+     * was registered as.
+     *
+     * `pageTag` is explicit for the same reason `sendContactMail()` needs it: a route has none of
+     * the implicit page context a handler was dispatched with.
+     */
+    #[Route('/api/contact/form', methods: ['GET'], options: ['acl' => ['public']])]
+    public function contactForm(Request $request): Response
+    {
+        $pageTag = (string)$request->query->get('pageTag', '');
+        if ($pageTag === '') {
+            return new ApiResponse(['type' => 'danger', 'message' => "'pageTag' should not be empty"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $aclService = $this->getService(AclService::class);
+        $hasReadAccess = $aclService->hasAccess('read', $pageTag);
+        $isLoggedIn = !empty($this->getService(\YesWiki\Identity\Service\AuthenticationService::class)->getLoggedUser());
+
+        // contact.js binds the submit handler; only declared when there is a form to submit
+        if ($hasReadAccess && ($isLoggedIn || $request->query->get('field', '') !== '')) {
+            $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');
+        }
+
+        $html = $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely(
+            '@core/contact/mail-form.twig',
+            [
+                'pageTag' => $pageTag,
+                'field' => (string)$request->query->get('field', ''),
+                'hasReadAccess' => $hasReadAccess,
+                'isLoggedIn' => $isLoggedIn,
+            ]
+        );
+
+        return new Response($html, Response::HTTP_OK, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
 }

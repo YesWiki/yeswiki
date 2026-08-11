@@ -72,7 +72,15 @@ function checkAll(state) {
       data instanceof HTMLFormElement
         ? new URLSearchParams(new FormData(data))
         : new URLSearchParams(data)
-    return fetch(url, { method: 'POST', body }).then((response) =>
+    // X-Requested-With is what lets the server tell this apart from a plain form
+    // submission of the same form to the same url: routes that have to serve both answer
+    // JSON here and redirect-with-a-flash there (ticket 35). fetch sends no such header
+    // of its own, and `Accept` is `*​/*` either way, so it has to be explicit.
+    return fetch(url, {
+      method: 'POST',
+      body,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    }).then((response) =>
       response
         .json()
         .then((payload) => (response.ok ? payload : Promise.reject(payload))),

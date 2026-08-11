@@ -39,9 +39,10 @@
     window.htmx.config.historyCacheSize = 0
   }
 
-  // handler suffixes that never render a page, and the upload path
-  const NON_PAGE =
-    /\/(raw|xml|rss|tagrss|iframe|editiframe|render|qrcodetroc)(\/|$|\?)/i
+  // handler suffixes that never render a page, and the upload path.
+  // qrcodetroc left this list when it became an action (ticket 35): it is reached as an ordinary
+  // page now, so boosted navigation is exactly what it wants.
+  const NON_PAGE = /\/(raw|xml|rss|tagrss|iframe|editiframe|render)(\/|$|\?)/i
   const FILE_PATH = /\/files\//i
 
   document.addEventListener('htmx:confirm', (event) => {

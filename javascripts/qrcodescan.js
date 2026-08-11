@@ -191,9 +191,14 @@ function stepHandler(currentStep, entry) {
         message1 = `${message1}Fiche complète : ${firstpeople.url}\n`
       }
 
-      fetch('?ContacT/mail', {
+      // Ticket 35: this used to POST to `?ContacT/mail`, a page handler that never read $_POST
+      // at all -- it rendered a form and discarded the body, so these two mails were silently
+      // never sent. The route below is what actually sends, and it requires `pageTag`, which was
+      // as much of the problem as the wrong url.
+      fetch(wiki.url('api/contact/mail'), {
         method: 'POST',
         body: new URLSearchParams({
+          pageTag: 'ContacT',
           name: firstpeople.title,
           email: firstpeople.bf_mail,
           subject: 'QRcode contact',
@@ -214,9 +219,14 @@ function stepHandler(currentStep, entry) {
       if (secondpeople.url) {
         message2 = `${message2}Fiche complète : ${secondpeople.url}\n`
       }
-      fetch('?ContacT/mail', {
+      // Ticket 35: this used to POST to `?ContacT/mail`, a page handler that never read $_POST
+      // at all -- it rendered a form and discarded the body, so these two mails were silently
+      // never sent. The route below is what actually sends, and it requires `pageTag`, which was
+      // as much of the problem as the wrong url.
+      fetch(wiki.url('api/contact/mail'), {
         method: 'POST',
         body: new URLSearchParams({
+          pageTag: 'ContacT',
           name: secondpeople.title,
           email: secondpeople.bf_mail,
           subject: 'QRcode contact',

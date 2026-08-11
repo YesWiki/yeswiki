@@ -7618,17 +7618,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Handler/ListpagesHandler.php
 
-		-
-			message: '#^Variable \$field in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.variable
-			count: 1
-			path: ../src/Content/Handler/MailHandler.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Handler\\QrcodetrocHandler\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Handler/QrcodetrocHandler.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Handler\\RevisionsHandler\:\:run\(\) has no return type specified\.$#'

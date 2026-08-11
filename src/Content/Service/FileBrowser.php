@@ -43,37 +43,36 @@ class FileBrowser
     /**
      * Apply the `?do=` operation, then render the resulting listing.
      *
-     * @param bool $isAction true for `{{filemanager}}`, false for the /filemanager handler
      *                       -- they differ only in which template wraps the list
      */
-    public function render(bool $isAction = false): string
+    public function render(): string
     {
         $do = (string)($_GET['do'] ?? '');
         switch ($do) {
             case 'restore':
                 $this->restore();
 
-                return $this->renderListing(true, $isAction);
+                return $this->renderListing(true);
             case 'erase':
                 $this->erase();
 
-                return $this->renderListing(true, $isAction);
+                return $this->renderListing(true);
             case 'del':
                 $this->moveToTrash();
 
-                return $this->renderListing(false, $isAction);
+                return $this->renderListing(false);
             case 'trash':
-                return $this->renderListing(true, $isAction);
+                return $this->renderListing(true);
             case 'emptytrash':
                 $this->emptyTrash();
                 // falls through: emptying the trash returns you to the listing
                 // no break
             default:
-                return $this->renderListing(false, $isAction);
+                return $this->renderListing(false);
         }
     }
 
-    private function renderListing(bool $trash, bool $isAction): string
+    private function renderListing(bool $trash): string
     {
         $files = $this->files($trash);
         $files = $this->sortByNameThenRevision($files);
@@ -85,8 +84,12 @@ class FileBrowser
             ]);
         }, $files);
 
+        // One template. There used to be a second, wrapping this one in a heading and a
+        // "back to the page" footer, for the `/PageName/filemanager` handler -- deleted by
+        // ticket 35 because `{{filemanager}}` already renders the same browser, and a file
+        // manager is something you put on a page rather than a way of looking at one.
         return $this->templateEngine->renderSafely(
-            $isAction ? '@core/attach-filemanager.twig' : '@core/attach-filemanager-handler.twig',
+            '@core/attach-filemanager.twig',
             [
                 'tag' => $this->pageContext->getTag(),
                 'method' => $this->pageContext->getMethod() !== 'show' ? $this->pageContext->getMethod() : '',

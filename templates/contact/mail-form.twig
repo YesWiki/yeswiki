@@ -1,0 +1,69 @@
+{# Ticket 35: the form the /PageName/mail handler used to build by string concatenation.
+
+   Fetched as an HTML fragment from GET /api/contact/form and dropped into a modal, so it must
+   NOT extend a layout: what arrives here is inserted into an existing page.
+
+   Three cases, in the order the handler had them:
+     field      contact whoever owns this entry, through one of its fields
+     logged in  send this page to somebody by email
+     otherwise  say why not, and offer to sign in
+   Both forms post to POST /api/contact/mail via javascripts/contact.js, which reads
+   data-page-tag and data-field. #}
+
+{% if not hasReadAccess %}
+  {{ include('@core/alert-message.twig', {type: 'danger', message: _t('LOGIN_NOT_AUTORIZED')}) }}
+{% elseif field is not empty %}
+  <form id="ajax-mail-form-handler" class="ajax-mail-form"
+        data-page-tag="{{ pageTag }}" data-field="{{ field }}">
+    <div class="form-group">
+      <div class="input-group">
+        <div class="input-group-addon">{{ icon('mail') }}</div>
+        <input required class="form-control" type="email" name="email" value=""
+               placeholder="{{ _t('CONTACT_YOUR_MAIL') }}">
+      </div>
+    </div>
+    <div class="form-group">
+      <input required class="contact-subject form-control" type="text" name="subject" value=""
+             placeholder="{{ _t('CONTACT_SUBJECT') }}">
+    </div>
+    <div class="form-group">
+      <textarea required rows="6" class="form-control" name="message"
+                placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
+    </div>
+    <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
+      {{ icon('mail') }}&nbsp;{{ _t('CONTACT_SEND_MESSAGE') }}
+    </button>
+  </form>
+{% elseif isLoggedIn %}
+  <h1>{{ _t('CONTACT_SEND_PAGE_BY_MAIL') }}</h1>
+  <form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="{{ pageTag }}">
+    <div class="form-group">
+      <div class="input-group">
+        <div class="input-group-addon">{{ icon('mail') }}</div>
+        <input required class="form-control" type="email" name="email" value=""
+               placeholder="{{ _t('CONTACT_YOUR_MAIL') }}">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <div class="input-group-addon">{{ icon('mail') }}</div>
+        <input required class="form-control" type="email" name="mail" value=""
+               placeholder="{{ _t('CONTACT_TO_PLACEHOLDER') }}">
+      </div>
+    </div>
+    <div class="form-group">
+      <input required class="contact-subject form-control" type="text" name="subject" value=""
+             placeholder="{{ _t('CONTACT_SUBJECT') }}">
+    </div>
+    <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
+      {{ icon('mail') }}&nbsp;{{ _t('CONTACT_SEND_MESSAGE') }}
+    </button>
+    <input type="hidden" name="type" value="mail">
+  </form>
+{% else %}
+  {{ include('@core/alert-message.twig', {
+    type: 'danger',
+    message: _t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') ~ '<br />' ~ _t('CONTACT_LOGIN_IF_CONNECTED')
+  }) }}
+  {{ renderAction('login template="login-form.twig"')|raw }}
+{% endif %}
