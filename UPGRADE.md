@@ -1,0 +1,268 @@
+# Upgrading to YesWiki Ectoplasme
+
+Ectoplasme is a **major** release. It removes legacy subsystems, renames every French
+identifier a page body or a template can contain, and moves data between tables. Upgrading a
+Doryphore wiki is not a file swap.
+
+**The goal is that `migrate` does all of it.** Most of it already does — 35 migrations ship with
+this release and they cover every schema and stored-content change listed below. What is left in
+[Still by hand](#still-by-hand) is the residue, and each entry there says whether a migration can
+absorb it and what is tracked to do so. If you find yourself doing something by hand that is not
+in that list, that is a bug in this document.
+
+---
+
+## Before you start
+
+**Take a backup, and check you actually have one.**
+
+```bash
+./yeswicli core:archive
+```
+
+> **PostgreSQL wikis cannot currently produce a database backup.** `SqlDumper` refuses,
+> because the pgsql table-structure export is not implemented — an archive would hold data
+> with no tables to restore it into. This is tracked as a bug (tracker ticket 32), not a
+> design. Until it is fixed, back up with `pg_dump` yourself before upgrading. Do not skip
+> this: everything below is a one-way change.
+
+MySQL and SQLite wikis are fine through `core:archive`.
+
+### Requirements
+
+| | Doryphore | Ectoplasme |
+|---|---|---|
+| PHP | 7.4+ | **8.3+** (8.3, 8.4 and 8.5 are tested in CI) |
+| Database | MySQL/MariaDB | **MySQL/MariaDB, SQLite or PostgreSQL** — all three are supported and tested |
+| Extensions | | `ctype curl fileinfo filter gd iconv json mbstring pcre pdo zip` + the PDO driver for your database |
+
+---
+
+## The upgrade
+
+1. **Back up** (above).
+2. **Replace the code.** Either `./yeswicli upgrade`, or the `{{update}}` admin screen, or
+   unpack the release over your instance by hand.
+3. **Run the migrations.**
+
+   ```bash
+   ./yeswicli migrate
+   ```
+
+   The `{{update}}` screen runs them too, so if you upgraded that way they have already run.
+
+   > **Read the output.** `migrate` prints one line per migration and **exits 0 even when a
+   > migration fails** — `MigrationService` collects per-migration errors into a message list
+   > rather than aborting. A failure looks like `AU_ERROR | Migration X (date) failed with
+   > error ...`, and the migration stays pending, so fixing the cause and re-running is safe.
+   > Do not read a zero exit status as success; grep the output for `AU_ERROR`.
+
+4. **Work through [Still by hand](#still-by-hand).**
+5. **Tell your users about passwords** (see [Passwords](#passwords)) — some of them will be
+   signed out and unable to sign back in until they reset.
+
+Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date wiki prints
+`No migrations to run`.
+
+---
+
+## What migrations do for you
+
+Nothing in this section needs your attention. It is here so you can tell whether a change you
+notice was intended, and so the list of what is *not* automated is meaningful by contrast.
+
+**Tables.** `acls`, `nature`, `users`, `referrers` and `links` are dropped. Their contents move
+into `pages` rows first where they still exist as concepts — users and uploaded files are now
+Content, with their own forms. `pages` gains `metadata`, `type` and `parent` columns.
+
+**Page bodies become JSON.** Every `pages.body`, for every revision, of every Content type.
+Keywords move out of `triples` into `body.keywords`.
+
+**Form and entry bodies are re-keyed to English.** `bn_id_nature` → `id`, `id_fiche` → `tag`,
+and the rest; form templates (`bn_template`) become native JSON field objects; the five
+pseudo-fields (`titre`, `acls`, `metadatas`, …) are extracted out of the template into real
+form properties.
+
+**Content sitting on a tag the router now owns is renamed off it** — reserved tags, plus
+`search`, `dashboard` and `admin`. Such a page was unreachable by its own name; renaming is the
+only thing that gives it a URL back. Its triples follow it.
+
+**The search index is created and every Content queued for it.** If it ever looks stale or
+incomplete, `./yeswicli search:reindex` rebuilds it.
+
+**Layout pages become configuration.** `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become
+`layout_*` config keys; `PageCss` becomes `custom/styles/custom.css`; `LookWiki` is retired and
+its links point at `admin/preset`.
+
+**Per-action ACLs are re-keyed to the new action names.** This one is worth knowing about
+because of what it prevents: per-action permissions live in your config under
+`permissions.action.<name>`, and renaming `{{gererdroits}}` to `{{adminacls}}` would have
+orphaned the entry and fallen back to `*` — everybody. A restriction silently becoming
+world-readable is why this was not deferred with the rest of the rename work.
+
+**Your config file is read as-is.** `wakka.config.php` is still found if you have not renamed it
+to `yeswiki.config.php`; `$wakkaConfig` is accepted as well as `$yeswikiConfig`; `mysql_host`
+and friends map to `db_host`, `wakka_name` to `yeswiki_name`; `debug: 'yes'` becomes `true`; and
+`base_url` values containing `/wakka.php?wiki=` are rewritten. There is nothing to edit.
+
+**Old template names in stored content still resolve.** `{{entrylist template="liste.tpl.html"}}`
+finds `liste.twig`. The name is user data and was left alone deliberately — only the engine
+behind it changed.
+
+---
+
+## Still by hand
+
+### 1. Action names and parameters in your page bodies — **the big one**
+
+Twenty action names and forty-five parameter names became English. A page body still saying
+`{{bazarliste}}` has nothing to resolve to: there is no alias layer.
+
+**This is deliberately not yet migrated.** The decision (2026-07-31) was "documented breaking
+changes now, migration magic later", and the two rename maps were written as machine-readable
+input to that later migration:
+
+- `docs/action-name-renames.json` — 20 action renames
+- `docs/action-parameter-renames.json` — 45 parameter renames, 38 of them user-typed
+
+Apply the action-name map **first**: the parameter map is keyed by the *old* action names, which
+is exactly how an unmigrated body still spells them.
+
+| old | new |
+|---|---|
+| `{{bazarliste}}` | `{{entrylist}}` |
+| `{{bazarcarto}}` | `{{entrymap}}` |
+| `{{bazartable}}` | `{{entrytable}}` |
+| `{{bazarexport}}` / `{{bazarimport}}` | `{{entryexport}}` / `{{entryimport}}` |
+| `{{bazarfollow}}` | `{{entryfollow}}` |
+| `{{bazaruserpage}}` | `{{entryuserpage}}` |
+| `{{bazarlistecategorie}}` | `{{entrylistcategory}}` |
+| `{{calendrier}}` | `{{calendar}}` |
+| `{{abonnement}}` / `{{desabonnement}}` | `{{subscribe}}` / `{{unsubscribe}}` |
+| `{{nuagetag}}` | `{{tagcloud}}` |
+| `{{valeur}}` | `{{value}}` |
+| `{{gererdroits}}` / `{{gererthemes}}` | `{{adminacls}}` / `{{adminthemes}}` |
+| `{{ariane}}` | `{{breadcrumb}}` |
+| `{{doubleclic}}` | `{{doubleclick}}` |
+| `{{barreredaction}}` | `{{editbar}}` |
+| `{{titrepage}}` | `{{pagetitle}}` |
+| `{{moteurrecherche}}` | `{{searchform}}` |
+
+`{{bazar}}` **keeps its name.** It is the BazaR admin console rather than an entry, `bazar` is
+the product's own word for that screen, and it is the most widely written action call in the
+ecosystem.
+
+Parameter **values** and template filenames are user data and unchanged, so
+`{{searchform template="moteurrecherche_button.twig"}}` is correct and deliberate: the action
+moved, the filename did not.
+
+**No handler was renamed**, so no URL changed. `/MyPage/revisions`, `/MyPage/raw`,
+`/MyPage/iframe` and the other 21 all still work — inbound links and bookmarks are safe. This
+was the risk the rename work was most worried about, and it turned out not to exist: every
+handler name was already English.
+
+> **To be automated.** Both maps exist precisely so a migration can rewrite stored bodies. See
+> tracker ticket 33. Until it lands, this section is a search-and-replace job over your page
+> bodies, and the maps are the authority — not this table, which omits the parameters.
+
+### 2. Extensions in `tools/` are not loaded
+
+Extensions now live in `extensions/` (shared, in the source tree) and `custom/extensions/`
+(per-instance). **`tools/` is not scanned at all**, so anything still there is silently ignored —
+no error, the features just stop existing.
+
+```bash
+mv tools/* custom/extensions/     # per-instance, the usual case for a single wiki
+```
+
+Check each extension is Ectoplasme-compatible before trusting it: extensions were explicitly out
+of scope for the core rename work, so one written for Doryphore will refer to French action names,
+dropped tables and the deleted `Wiki` class.
+
+> **Automatable.** Moving directories is something a migration can do; it is not done because
+> silently relocating third-party code is a worse default than telling you to. Tracker ticket 33
+> covers whether this should warn rather than move.
+
+### 3. Custom `.tpl.html` templates must be ported to Twig
+
+The `tpl.html` engine is gone. Stored *names* alias to `.twig` (above), which means your
+`custom/templates/mylist.tpl.html` file is never loaded — the alias looks for `mylist.twig`.
+
+Port each one and save it with a `.twig` extension. **No migration can do this**: it is a
+translation between two template languages, not a rename.
+
+### 4. Custom Twig templates that use core identifiers
+
+Twig variable, macro and macro-parameter names inside `templates/` and `themes/` were renamed to
+English. A custom template of yours that extends a core template, includes one, or calls a core
+macro will refer to identifiers that no longer exist.
+
+There is no rename map for this one — the work was verified by a sweep rather than recorded as a
+table — so the practical approach is to diff your override against the core template it is based
+on. **A migration cannot help here either**: the sandbox cannot cover overrides, and a template
+override is arbitrary code against an interface that changed.
+
+### 5. FontAwesome icon classes in your own markup
+
+FontAwesome is no longer shipped. Icons come from a generated Tabler sprite. Core templates map
+historical names through `iconFromLegacy()`, so shipped markup is fine, but
+`<i class="fa fa-user"></i>` written in *your* template or page renders nothing.
+
+Use the `icon()` Twig helper, or `iconFromLegacy()` if you want the legacy name translated.
+
+### 6. Removed features
+
+Check whether any page or template of yours depends on these, because nothing replaces them:
+
+- **GoGoCarto** integration — removed.
+- **Referrers** — the `referrers` table and everything reading it. There is no referrer report.
+- **Backlinks / `links`** — the link graph table is gone.
+- **The `fulltextsearch` extension** is superseded and should be uninstalled. It was never part
+  of core, so nothing removed it for you — but search is now a denormalised index table in the
+  wiki's own database (ADR-0015), and the extension's own indexing is at best redundant with it.
+  The built-in index is not a drop-in replacement for the extension's configuration.
+- **The login modal** — the navbar links to `/user` instead. A bare `{{login}}` now renders the
+  **account button**, not the sign-in form; ask for `login-form.twig` by name if you want the
+  fields. There is deliberately no template called `default`.
+
+---
+
+## Passwords
+
+**Passwords stored as md5 no longer sign anyone in.** md5 was listed as a legacy hasher, so an
+md5 hash used to authenticate once and get rehashed on the way through — which meant every md5 in
+a wiki's history stayed a live credential indefinitely, for as long as its owner did not sign in.
+
+**Nothing is deleted.** The stored hash stays exactly where it is; it is what marks the account as
+needing a reset, and what keeps it findable by the lost-password flow. Affected users:
+
+- are told so at sign-in — "your password was stored in a format this version no longer accepts" —
+  rather than being told their password is wrong,
+- are signed out if they had a live session or a remember-me cookie, since neither path re-checks
+  a password and both would otherwise let an md5 account skip the reset for weeks,
+- get back in through **Lost password**, which sets a modern hash. Nothing else about the account
+  changes.
+
+If you have disabled password reset by email (`contact_disable_email_for_password`), the message
+tells them to ask an administrator instead — so make sure an administrator is reachable, and note
+that an admin whose *own* password is md5 must reset it the same way.
+
+**No migration can do this for you**, and none pretends to: rehashing needs the plain password,
+which by construction nobody has. Expect reset requests in the days after you upgrade, in
+proportion to how long the wiki has been running.
+
+---
+
+## If something goes wrong
+
+- **`migrate` printed `AU_ERROR`** — the named migration is still pending and nothing partial was
+  committed for it. Fix the cause and re-run; migrations are idempotent.
+- **`Command "migrate" is not defined`** — the console registers the full command set only when
+  `base_url` is set in your config. This almost always means the config file was not found or not
+  written, not that the command is missing.
+- **A page renders an error where an action used to be** — an un-renamed action name. See
+  [section 1](#1-action-names-and-parameters-in-your-page-bodies--the-big-one).
+- **An extension's features vanished silently** — it is probably still in `tools/`. See
+  [section 2](#2-extensions-in-tools-are-not-loaded).
+- **Search returns nothing** — `./yeswicli search:reindex`.
+- **You need to go back** — restore the backup. There are no down migrations.

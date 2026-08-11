@@ -17,9 +17,12 @@
 
 ## Installation
 
-YesWiki can be installed in about ten minutes on a server which supports **PHP >= 7.3** and a **MySQL >= 5.6** database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
+YesWiki can be installed in about ten minutes on a server which supports **PHP >= 8.3** and a **MySQL/MariaDB, PostgreSQL or SQLite** database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
 
 [More detailed install instructions in the INSTALL.md file](INSTALL.md).
+
+**Upgrading from Doryphore?** Ectoplasme is a major release with breaking changes — read
+[UPGRADE.md](UPGRADE.md) first.
 
 ## Translations
 
