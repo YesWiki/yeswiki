@@ -248,9 +248,17 @@ class SchemaManager
                 // the table name is an identifier here, not a value: SHOW CREATE TABLE takes no
                 // parameters at all, so it is quoted rather than bound. Its output already
                 // carries the indexes as KEY clauses, and the AUTO_INCREMENT counter with them.
-                $row = $this->dbService->loadSingle(
-                    'SHOW CREATE TABLE ' . $this->dbService->quoteIdentifier($tableName)
-                );
+                try {
+                    $row = $this->dbService->loadSingle(
+                        'SHOW CREATE TABLE ' . $this->dbService->quoteIdentifier($tableName)
+                    );
+                } catch (\Throwable $noSuchTable) {
+                    // SHOW CREATE TABLE *raises* for a table that is not there, where SQLite's
+                    // sqlite_master query simply finds no row. This method promises null for a
+                    // table it cannot describe, and that promise held on exactly one of the three
+                    // drivers until a test asked each of them the question.
+                    return null;
+                }
 
                 return $row['Create Table'] ?? null;
         }
@@ -414,7 +422,7 @@ class SchemaManager
             case 'pgsql':
                 $rows = $this->dbService->loadAll(
                     'SELECT a.attname AS name FROM pg_attribute a'
-                    . ' WHERE a.attrelid = ?::regclass AND a.attnum > 0 AND NOT a.attisdropped'
+                    . ' WHERE a.attrelid = to_regclass(?) AND a.attnum > 0 AND NOT a.attisdropped'
                     . " AND a.attgenerated::text = ''"
                     . ' ORDER BY a.attnum',
                     [$tableName]
@@ -467,6 +475,12 @@ class SchemaManager
      */
     private function postgreSqlTableSchema(string $tableName): ?string
     {
+        // `to_regclass(?)`, never `?::regclass`: the cast RAISES for a name that is not there
+        // ("relation does not exist"), while the function returns NULL and the query simply finds
+        // no columns. `getTableSchema()` promises null for a table it cannot describe, and a dump
+        // only asks about names it found itself -- but a promise that throws instead is worse than
+        // no promise, and this is exactly what a test for the missing-table case caught.
+        //
         // Booleans and the `"char"` catalog columns are cast in SQL rather than read raw: what
         // PDO hands back for a pgsql boolean depends on the driver build, and `attgenerated` /
         // `attidentity` are single-byte `"char"` values, not text.
@@ -479,7 +493,7 @@ class SchemaManager
             . ' a.attgenerated::text AS generated'
             . ' FROM pg_attribute a'
             . ' LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum'
-            . ' WHERE a.attrelid = ?::regclass AND a.attnum > 0 AND NOT a.attisdropped'
+            . ' WHERE a.attrelid = to_regclass(?) AND a.attnum > 0 AND NOT a.attisdropped'
             . ' ORDER BY a.attnum',
             [$tableName]
         );
@@ -496,7 +510,7 @@ class SchemaManager
         // meaning to PostgreSQL. Foreign keys ('f') are deliberately absent; see the docblock.
         $constraints = $this->dbService->loadAll(
             'SELECT conname, pg_get_constraintdef(oid) AS def FROM pg_constraint'
-            . " WHERE conrelid = ?::regclass AND contype IN ('p', 'u', 'c')"
+            . " WHERE conrelid = to_regclass(?) AND contype IN ('p', 'u', 'c')"
             . " ORDER BY CASE contype WHEN 'p' THEN 1 WHEN 'u' THEN 2 ELSE 3 END, conname",
             [$tableName]
         );
@@ -517,7 +531,7 @@ class SchemaManager
             . ' WHERE i.schemaname = current_schema() AND i.tablename = ?'
             . ' AND NOT EXISTS ('
             . '   SELECT 1 FROM pg_constraint c'
-            . '   WHERE c.conrelid = i.tablename::regclass AND c.conname = i.indexname'
+            . '   WHERE c.conrelid = to_regclass(i.tablename) AND c.conname = i.indexname'
             . ' ) ORDER BY i.indexname',
             [$tableName]
         );

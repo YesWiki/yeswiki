@@ -179,19 +179,27 @@ class SchemaManagerTest extends YesWikiTestCase
         $this->assertTrue($schema->columnExists(self::TABLE, 'tag'));
     }
 
-    /** PostgreSQL cannot produce a CREATE TABLE, and says so with null rather than throwing. */
-    public function testGetTableSchemaEitherDescribesTheTableOrDeclinesCleanly(): void
+    /**
+     * **All three** drivers describe a table now.
+     *
+     * This used to assert that pgsql answered `null` -- "no SHOW CREATE TABLE equivalent" -- which
+     * was true until ticket 32 rebuilt the DDL from the system catalogs. The assertion outlived the
+     * behaviour it described, and could not be noticed locally: it is the only branch of this test
+     * that runs on PostgreSQL, and the local suite runs SQLite. The pgsql leg of the CI matrix is
+     * what caught it.
+     */
+    public function testEveryDriverDescribesATable(): void
     {
         $ddl = self::schema()->getTableSchema(trim(self::db()->prefixTable(self::TABLE)));
 
-        if (self::db()->getDriver() === 'pgsql') {
-            $this->assertNull($ddl, 'pgsql has no SHOW CREATE TABLE equivalent');
-
-            return;
-        }
-
-        $this->assertNotNull($ddl);
+        $this->assertNotNull($ddl, 'every supported driver must be able to describe a table');
         $this->assertStringContainsStringIgnoringCase('create table', $ddl);
         $this->assertStringContainsString(self::TABLE, $ddl);
+    }
+
+    /** A table that is not there is not an error: the dump asks about names it found itself. */
+    public function testGetTableSchemaDeclinesCleanlyForAMissingTable(): void
+    {
+        $this->assertNull(self::schema()->getTableSchema('no_such_table_' . bin2hex(random_bytes(4))));
     }
 }
