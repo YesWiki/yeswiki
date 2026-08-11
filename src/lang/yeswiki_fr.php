@@ -2609,11 +2609,13 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'IMPORTER_FIELD_ATTACHMENTS_FOLDER' => 'Dossier de stockage des pièces jointes (optionnel)',
     'IMPORTER_FIELD_AUTH_USER' => 'Utilisateur admin distant',
     'IMPORTER_FIELD_AUTH_PASSWORD' => 'Mot de passe admin distant',
+    'BAZ_EXTERNAL_IDS_REMOVED' => 'Cette liste demandait des fiches d\'un autre wiki (%{ids}), ce qui ne se fait plus à l\'affichage : les contenus extérieurs sont désormais importés dans ce wiki, pour être cherchables, respecter les droits de ce wiki et rester disponibles même si l\'autre site ne l\'est pas. Un administrateur peut configurer l\'import depuis l\'écran d\'administration des importeurs, puis faire pointer cette liste sur le formulaire local.',
     'IMPORTER_FIELD_REMOTEFORMID' => 'Identifiant du formulaire distant',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL' => 'Url des fiches du formulaire distant (api json)',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL_HELP' => 'De la forme https://mon-wiki-distant.fr/?api/forms/12/entries/json — '
         . 'l\'identifiant du formulaire distant en est déduit. Les paramètres ajoutés à cette url '
         . '(par exemple &query=bf_ville=Marseille) sont conservés, pour n\'importer qu\'une partie des fiches.',
+    'IMPORTER_FIELD_YESWIKITOYESWIKI_AUTH_HELP' => 'Optionnel. Laissez l\'identifiant et le mot de passe vides pour lire anonymement un formulaire distant public ; renseignez les deux pour importer depuis un formulaire qui n\'est pas lisible publiquement.',
     'IMPORTER_FIELD_LOCALADMINUSER' => 'Nom d\'utilisateur admin local (optionnel, mais requis pour mettre à jour des fiches existantes)',
     'IMPORTER_FIELD_SYNCMODE' => 'Mode de synchronisation',
     'IMPORTER_SYNCMODE_SOURCE_OF_TRUTH' => 'Le wiki distant fait autorité (miroir complet, y compris suppressions)',

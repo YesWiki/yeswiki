@@ -5,7 +5,6 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
-use YesWiki\Content\Service\ExternalBazarService;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\CsrfTokenChecker;
@@ -79,11 +78,10 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
 
         // get Forms
 
-        if (empty($this->arguments['server'])) {
-            $vForms = $this->formManager->getAll();
-        } else {
-            $vForms = $this->getService(ExternalBazarService::class)->getForms($this->arguments['server']);
-        }
+        // Always the local forms. A `server=` argument used to list another wiki's forms over
+        // HTTP so entries could be pulled from it on the spot; importing from another YesWiki is
+        // the Importer's job now (ticket 34), which holds its own sources and credentials.
+        $vForms = $this->formManager->getAll();
 
         // switch to right method
         switch ($this->arguments['mode']) {

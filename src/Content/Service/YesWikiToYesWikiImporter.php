@@ -86,8 +86,19 @@ class YesWikiToYesWikiImporter extends Importer
         if (empty($config['remoteFormId'])) {
             throw new \Exception('Le paramètre "url" doit être l\'url de l\'api des fiches du formulaire distant, de la forme "https://mon-wiki-distant.fr/?api/forms/12/entries/json".');
         }
-        if (empty($config['auth']['user']) || empty($config['auth']['password'])) {
-            throw new \Exception('Les paramètres "auth.user" et "auth.password" sont requis pour un importer YesWikiToYesWiki.');
+        // Credentials are OPTIONAL (ticket 34). They used to be required, which was fine while
+        // `{{entrylist id="https://other.wiki|4"}}` existed to cover the public case -- that read
+        // a remote wiki's public API with no account at all. Removing it and keeping auth
+        // mandatory would have meant every wiki displaying public remote entries needed an
+        // account on the remote wiki before it could upgrade: a regression introduced by a
+        // cleanup. With neither set, the remote API is read anonymously and a private form simply
+        // answers nothing, which is the same outcome as wrong credentials.
+        //
+        // Half-configured is still an error, because it is always a mistake rather than a choice.
+        $user = $config['auth']['user'] ?? '';
+        $password = $config['auth']['password'] ?? '';
+        if (empty($user) xor empty($password)) {
+            throw new \Exception('Les paramètres "auth.user" et "auth.password" doivent être fournis ensemble, ou tous les deux laissés vides pour lire un formulaire distant public.');
         }
         if (!in_array($config['syncMode'], ['source_of_truth', 'allow_local'], true)) {
             throw new \Exception('Le paramètre "syncMode" doit valoir "source_of_truth" ou "allow_local".');
@@ -109,8 +120,13 @@ class YesWikiToYesWikiImporter extends Importer
                 'label' => 'IMPORTER_FIELD_YESWIKITOYESWIKI_URL',
                 'help' => 'IMPORTER_FIELD_YESWIKITOYESWIKI_URL_HELP',
             ],
-            'auth_user' => ['type' => 'text', 'required' => true],
-            'auth_password' => ['type' => 'password', 'required' => true],
+            // optional: leave both empty to read a public remote form anonymously (ticket 34)
+            'auth_user' => [
+                'type' => 'text',
+                'required' => false,
+                'help' => 'IMPORTER_FIELD_YESWIKITOYESWIKI_AUTH_HELP',
+            ],
+            'auth_password' => ['type' => 'password', 'required' => false],
             'localAdminUser' => ['type' => 'text', 'required' => false],
             'syncMode' => [
                 'type' => 'select',
@@ -222,8 +238,20 @@ class YesWikiToYesWikiImporter extends Importer
         ];
     }
 
+    /**
+     * Sign in on the source wiki, if credentials were configured.
+     *
+     * With none, nothing is sent and `$this->cookie` stays empty: the remote API is read
+     * anonymously, which is all a public form needs (ticket 34).
+     */
     public function authenticate(): void
     {
+        if (empty($this->config['auth']['user']) || empty($this->config['auth']['password'])) {
+            $this->cookie = '';
+
+            return;
+        }
+
         $response = $this->importerManager->curl(
             $this->remoteUrl('api/login'),
             ['Content-Type: application/x-www-form-urlencoded'],
@@ -494,7 +522,9 @@ class YesWikiToYesWikiImporter extends Importer
     {
         $response = $this->importerManager->curl(
             $this->remoteUrl($path),
-            ['Cookie: ' . $this->cookie],
+            // no header at all when reading anonymously -- an empty `Cookie:` is not the same
+            // thing as not sending one, and some servers treat it as a malformed request
+            $this->cookie === '' ? [] : ['Cookie: ' . $this->cookie],
             false,
             [],
             $this->noSSLCheck(),

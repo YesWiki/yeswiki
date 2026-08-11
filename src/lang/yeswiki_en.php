@@ -2510,11 +2510,13 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'IMPORTER_FIELD_ATTACHMENTS_FOLDER' => 'Folder to store attachments in (optional)',
     'IMPORTER_FIELD_AUTH_USER' => 'Remote admin user',
     'IMPORTER_FIELD_AUTH_PASSWORD' => 'Remote admin password',
+    'BAZ_EXTERNAL_IDS_REMOVED' => 'This list asked for entries from another wiki (%{ids}), which is no longer done at display time: content from elsewhere is imported into this wiki instead, so that it is searchable, respects this wiki\'s permissions and stays available when the other site is not. An administrator can set up the import from the importers admin screen, then point this list at the local form.',
     'IMPORTER_FIELD_REMOTEFORMID' => 'Remote form id',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL' => 'Url of the remote form\'s entries (json api)',
     'IMPORTER_FIELD_YESWIKITOYESWIKI_URL_HELP' => 'Of the form https://my-remote-wiki.org/?api/forms/12/entries/json — '
         . 'the remote form id is read from it. Parameters added to that url '
         . '(e.g. &query=bf_ville=Marseille) are kept, to import only some of the entries.',
+    'IMPORTER_FIELD_YESWIKITOYESWIKI_AUTH_HELP' => 'Optional. Leave the user name and password empty to read a public remote form anonymously; fill both in to import from a form that is not publicly readable.',
     'IMPORTER_FIELD_LOCALADMINUSER' => 'Local admin user name (optional, but required to update existing entries)',
     'IMPORTER_FIELD_SYNCMODE' => 'Sync mode',
     'IMPORTER_SYNCMODE_SOURCE_OF_TRUTH' => 'The remote wiki is authoritative (full mirror, deletions included)',

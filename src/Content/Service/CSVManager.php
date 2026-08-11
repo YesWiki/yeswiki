@@ -934,14 +934,6 @@ class CSVManager
             );
         }
 
-        foreach ($vFormIDs['externals'] as $vFormID) {
-            $vFilename = $this->buildExportFilename($this->container->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
-
-            $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams),
-            );
-        }
-
         $fileCount = count($csvFiles);
 
         if ($fileCount === 0) {

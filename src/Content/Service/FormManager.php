@@ -1076,7 +1076,7 @@ class FormManager
     /**
      * Native template (array of field objects) => list of positional arrays. For the
      * few boundaries that still need the constructors' positional wire format
-     * (ExternalBazarService munging remote payloads, legacy migrations).
+     * (legacy migrations; ExternalBazarService was the other one, deleted by ticket 34).
      */
     public function templateToPositionalList(array $template): array
     {

@@ -8,9 +8,7 @@ use YesWiki\Content\Controller\EntryController;
 #[\Field(['listefiche'])]
 class SelectEntryField extends EnumField
 {
-    public $isDistantJson;
     protected $displayMethod;
-    protected $baseUrl;
 
     protected const FIELD_DISPLAY_METHOD = 3;
 
@@ -19,18 +17,18 @@ class SelectEntryField extends EnumField
         parent::__construct($values, $services);
 
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
-        $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
-
-        if ($this->isDistantJson) {
-            $this->prepareJSONEntryField();
-        } else {
-            $this->options = null;
-            $this->baseUrl = null;
-        }
+        // A linked form used to be allowed to be a URL, which fetched another wiki's entries at
+        // render time (ticket 34). It is a local form or nothing now, so there is one case left.
+        $this->options = null;
     }
 
     protected function renderInput($entry)
     {
+        $notice = $this->remoteLinkedFormNotice();
+        if ($notice !== null) {
+            return $this->render('@core/alert-message.twig', ['type' => 'warning', 'message' => $notice]);
+        }
+
         return $this->render('@core/inputs/select.twig', [
             'value' => $this->getValue($entry),
             'options' => $this->getOptions(),
@@ -44,25 +42,17 @@ class SelectEntryField extends EnumField
             return '';
         }
 
-        if ($this->displayMethod === 'fiche') {
-            if ($this->isDistantJson) {
-                // TODO display the entry in an iframe ?
-                return '';
-            }
+        if ($this->remoteLinkedFormNotice() !== null) {
+            // the stored value is a tag on a wiki we no longer read; there is nothing to link to
+            return '';
+        }
 
+        if ($this->displayMethod === 'fiche') {
             // TODO add documentation
             return $this->getService(EntryController::class)->view($value);
         }
 
-        if ($this->isDistantJson) {
-            if (!empty($this->optionsUrls[$value])) {
-                $entryUrl = $this->optionsUrls[$value];
-            } else {
-                $entryUrl = $baseUrl . $value;
-            }
-        } else {
-            $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
-        }
+        $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
 
         return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,

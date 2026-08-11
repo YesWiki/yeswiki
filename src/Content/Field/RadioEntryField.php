@@ -7,21 +7,12 @@ use Psr\Container\ContainerInterface;
 #[\Field(['radiofiche'])]
 class RadioEntryField extends RadioField
 {
-    public $isDistantJson;
-    protected $baseUrl;
-
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
-        $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
-
-        if ($this->isDistantJson) {
-            $this->prepareJSONEntryField();
-        } else {
-            $this->options = null;
-            $this->baseUrl = null;
-        }
+        // ticket 34: a linked form is local, never a URL to another wiki
+        $this->options = null;
     }
 
     protected function renderStatic($entry)
@@ -31,15 +22,11 @@ class RadioEntryField extends RadioField
             return '';
         }
 
-        if ($this->isDistantJson) {
-            if (!empty($this->optionsUrls[$value])) {
-                $entryUrl = $this->optionsUrls[$value];
-            } else {
-                $entryUrl = $this->baseUrl . $value;
-            }
-        } else {
-            $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
+        if ($this->remoteLinkedFormNotice() !== null) {
+            return '';
         }
+
+        $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
 
         return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,

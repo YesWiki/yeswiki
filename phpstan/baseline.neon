@@ -2640,11 +2640,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Action/EntryImportAction.php
 
-		-
-			message: '#^Offset mixed might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
-			path: ../src/Content/Action/EntryImportAction.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Action\\EntryImportAction\:\:\$CSVManager has no type specified\.$#'
@@ -5364,17 +5359,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/CheckboxEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\CheckboxEntryField\:\:\$baseUrl has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/CheckboxEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\CheckboxEntryField\:\:\$isDistantJson has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/CheckboxEntryField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -5820,17 +5805,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/EmailField.php
 
-		-
-			message: '#^Access to an undefined property YesWiki\\Content\\Field\\EnumField\:\:\$baseUrl\.$#'
-			identifier: property.notFound
-			count: 2
-			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Access to an undefined property YesWiki\\Content\\Field\\EnumField\:\:\$isDistantJson\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
 		-
 			message: '#^If condition is always true\.$#'
@@ -5874,23 +5849,8 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EnumField\:\:loadOptionsFromJSONForm\(\) has parameter \$JSONAddress with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EnumField\:\:loadOptionsFromJSONForm\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EnumField\:\:loadOptionsFromJson\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\EnumField\:\:loadOptionsFromList\(\) has no return type specified\.$#'
@@ -5916,11 +5876,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EnumField\:\:prepareJSONEntryField\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Field\\EnumField\:\:\$keywords has no type specified\.$#'
@@ -5946,11 +5901,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\EnumField\:\:\$optionsUrls has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/EnumField.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Field\\EnumField\:\:\$queries has no type specified\.$#'
@@ -5958,461 +5908,81 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/EnumField.php
 
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:getFormName\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalCheckboxEntryField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:loadOptionsFromList\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalCheckboxListField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalCheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalFileField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalFileField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalFileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalImageField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalImageField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalRadioEntryField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalRadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:loadOptionsFromList\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalRadioListField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalRadioListField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalRadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalSelectEntryField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalSelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:loadOptionsFromList\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalSelectListField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalSelectListField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalSelectListField.php
-
-		-
-			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
-			identifier: greater.alwaysTrue
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:getOptions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:loadOptionsFromTags\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ExternalTagsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Field\\ExternalTagsField\:\:\$JSONFormAddress has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/ExternalTagsField.php
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -6804,11 +6374,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/LinkField.php
 
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -6870,11 +6435,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/LinkedEntryField.php
 
-		-
-			message: '#^Parameter \#1 \$json of function json_decode expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Field\\LinkedEntryField\:\:\$addEntryBtnLabel has no type specified\.$#'
@@ -6912,11 +6472,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/LinkedEntryField.php
 
-		-
-			message: '#^Ternary operator condition is always true\.$#'
-			identifier: ternary.alwaysTrue
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -7212,17 +6767,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/RadioEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\RadioEntryField\:\:\$baseUrl has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/RadioEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\RadioEntryField\:\:\$isDistantJson has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/RadioEntryField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\RadioField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -7416,11 +6961,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/SelectEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\SelectEntryField\:\:\$baseUrl has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Field\\SelectEntryField\:\:\$displayMethod has no type specified\.$#'
@@ -7428,17 +6968,7 @@ parameters:
 			count: 1
 			path: ../src/Content/Field/SelectEntryField.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Field\\SelectEntryField\:\:\$isDistantJson has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
 
-		-
-			message: '#^Undefined variable\: \$baseUrl$#'
-			identifier: variable.undefined
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\SelectListField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -8844,11 +8374,6 @@ parameters:
 			count: 1
 			path: ../src/Content/Service/BazarListService.php
 
-		-
-			message: '#^Property YesWiki\\Content\\Service\\BazarListService\:\:\$externalBazarService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/BazarListService.php
 
 		-
 			message: '#^Property YesWiki\\Content\\Service\\BazarListService\:\:\$formManager has no type specified\.$#'
@@ -10740,485 +10265,85 @@ parameters:
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
-		-
-			message: '#^Argument of an invalid type list\<string\>\|false supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Call to function is_array\(\) with non\-empty\-array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Call to function is_array\(\) with non\-falsy\-string will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Call to function is_scalar\(\) with non\-falsy\-string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Call to function is_string\(\) with array will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot access offset ''cache_time_to_check_changes'' on array\|bool\|float\|int\|string\|UnitEnum\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot access offset ''cache_time_to_check_deletion'' on array\|bool\|float\|int\|string\|UnitEnum\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot access offset ''cache_time_to_refresh_forms'' on array\|bool\|float\|int\|string\|UnitEnum\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot access offset ''time_debug'' on array\|bool\|float\|int\|string\|UnitEnum\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot assign offset ''_isExternal_'' to string\.$#'
-			identifier: offsetAssign.dimType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Cannot unset offset \*NEVER\* on non\-empty\-list\<string\>\.$#'
-			identifier: unset.offset
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:cacheURLContent\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:checkExternalIDsFormat\(\) has parameter \$pExternalIDs with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:checkForDeletion\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:checkOnlyEntriesChanges\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:cleanOldCacheFiles\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:cleanOldCacheFiles\(\) has parameter \$pRefresh with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:formatUrl\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:formatUrl\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getAllForms\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getAllForms\(\) has parameter \$pServer with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntries\(\) has parameter \$pParams with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntries\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaApiUrl\(\) has parameter \$distantFormId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaApiUrl\(\) has parameter \$querystring with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaApiUrl\(\) has parameter \$urlDetails with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaJsonHandlerUrl\(\) has parameter \$distantFormId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaJsonHandlerUrl\(\) has parameter \$querystring with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getEntriesViaJsonHandlerUrl\(\) has parameter \$urlDetails with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getExternalFormIDKey\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getExternalFormIDKey\(\) has parameter \$pExternalID with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getForm\(\) has parameter \$pRefresh with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getForm\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getFormUrl\(\) has parameter \$formId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getFormUrl\(\) has parameter \$urlDetails with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getForms\(\) has parameter \$pExternalIDs with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getForms\(\) has parameter \$pRefresh with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getForms\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getJSONCachedUrlContent\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getJSONCachedUrlContent\(\) has parameter \$mode with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getJSONFromURL\(\) has parameter \$pMode with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getLastModificationDateFromFile\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getNewEntries\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getRefreshValue\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getRefreshValue\(\) has parameter \$pRefresh with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:getURLDetails\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:groupIDsByURL\(\) has parameter \$pExternalIDs with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:groupIDsByURL\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:loadURLContent\(\) should return string but returns string\|false\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:normalizeRemoteEntry\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:normalizeRemoteEntry\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:prepareExtForm\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\ExternalBazarService\:\:prepareExtForm\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Offset ''error'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^PHPDoc tag @return with type array\|null is not subtype of native type array\.$#'
-			identifier: return.phpDocType
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#1 \$pJSON of method YesWiki\\Content\\Service\\ExternalBazarService\:\:extractErrors\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#2 \$pContent of method YesWiki\\Content\\Service\\ExternalBazarService\:\:cacheURLContent\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#3 \$forceRefresh of method YesWiki\\Content\\Service\\ExternalBazarService\:\:checkOnlyEntriesChanges\(\) expects bool, array\|float\|int\|string\|false\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Parameter \#3 \$value of function curl_setopt expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$aAlreadyCheckingDeletionsURLs has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$aAlreadyRefreshedURLs has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$aURLDetailsCache has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$debug has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$entryManager has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$formManager has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$importService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$params has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$timeCacheToCheckChanges has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$timeCacheToCheckDeletion has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$timeCacheToRefreshForms has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\ExternalBazarService\:\:\$timeDebug has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between int\<0, max\> and ''fields'' will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 6
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Variable \$diffTime might not be defined\.$#'
-			identifier: variable.undefined
-			count: 11
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Variable \$fields in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
-
-		-
-			message: '#^Variable \$fields in empty\(\) is never defined\.$#'
-			identifier: empty.variable
-			count: 1
-			path: ../src/Content/Service/ExternalBazarService.php
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\FavoritesManager\:\:getUserFavorites\(\) return type has no value type specified in iterable type array\.$#'

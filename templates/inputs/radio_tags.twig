@@ -2,7 +2,6 @@
 
 {% block input %}
   {{ include_javascript('javascripts/yw-tags-input.js') }}
-  {{ include_javascript('javascripts/inputs/checkbox-tags.js') }}
   {% set options = {} %}
   {% for key, tag in tagsData.existingTags %}
     {% set options = options|merge({(key): tag.title}) %}
@@ -19,15 +18,4 @@
     <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
     <input type="hidden" name="{{ field.propertyName }}" data-yw-tag-input-value value="{{ tagsData.selectedOptions|join(',') }}">
   </div>
-  {% if field.isDistantJson %}
-    <button
-      class="yw-btn yw-btn--sm btn-icon tagsinput-refresh"
-      data-property-name="{{ field.propertyName }}"
-      type="button"
-      data-toggle="tooltip"
-      data-placement="right"
-      title="{{ _t('BAZ_RADIO_REFRESH') }}">
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#refresh"/></svg>
-    </button>
-  {% endif %}
 {% endblock %}

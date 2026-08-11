@@ -3,16 +3,12 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Service\ExternalBazarService;
 use YesWiki\Content\Service\ListManager;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Search\Service\SearchManager;
 
 abstract class EnumField extends BazarField
 {
     protected $options;
-    protected $optionsUrls; // only for loadOptionsFromJson
     protected $optionsTree; // only for list with multi levels
 
     protected $linkedObjectName;
@@ -34,7 +30,6 @@ abstract class EnumField extends BazarField
         $this->queries = $values[self::FIELD_QUERIES];
 
         $this->options = [];
-        $this->optionsUrls = [];
 
         $this->propertyName = $this->name;
     }
@@ -62,58 +57,6 @@ abstract class EnumField extends BazarField
                 $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
             }
         }
-    }
-
-    public function loadOptionsFromJson()
-    {
-        $params = $this->getService(ParameterBagInterface::class);
-        $refreshCacheDuration = ($params->has('baz_external_service_time_cache_to_check_changes'))
-            ? $params->get('baz_external_service_time_cache_to_check_changes')
-            : 7200; // 2 hours by default
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent(
-            $this->sanitizeUrlForEntries($this->getLinkedObjectName()),
-            $refreshCacheDuration,
-            isset($_GET['refresh']) && ($_GET['refresh'] === 'true') && $this->getService(AclService::class)->isAdmin(),
-            'entries'
-        );
-        $entries = json_decode($json, true);
-        $options = [];
-        $this->optionsUrls = [];
-        if (is_array($entries)) {
-            foreach ($entries as $id => $entry) {
-                // the computed title, so a linked form that names its entries with
-                // something other than bf_titre still fills the dropdown (ticket 11)
-                $entryTitle = $entry['title'] ?? $entry['bf_titre'] ?? '';
-                if (!empty($entryTitle)) {
-                    $options[$id] = $entryTitle;
-                }
-                if (!empty($entry['url'])) {
-                    $this->optionsUrls[$id] = $entry['url'];
-                }
-            }
-        }
-        asort($options);
-        $this->options = $options;
-    }
-
-    protected function loadOptionsFromJSONForm($JSONAddress): array
-    {
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($JSONAddress, 9000000);
-        // do not refresh less than 99 days because cache defined by ExternalBazarService
-        $form = json_decode($json, true);
-        if (isset($form[0]['prepared'])) {
-            foreach ($form[0]['prepared'] as $field) {
-                // be carefull it is an array here
-                if (isset($field['propertyname']) && ($field['propertyname'] == $this->getPropertyName())) {
-                    $this->options = $field['options'] ?? [];
-
-                    return $this->options;
-                }
-            }
-        }
-        $this->options = [];
-
-        return $this->options;
     }
 
     public function loadOptionsFromEntries()
@@ -146,24 +89,25 @@ abstract class EnumField extends BazarField
     }
 
     /**
-     * prepareJSON for RadioEntriField or SelectEntryField.
+     * A linked form named by a URL is no longer resolvable (ticket 34).
+     *
+     * `loadOptionsFromJson()`, `loadOptionsFromJSONForm()` and `prepareJSONEntryField()` lived
+     * here and fetched another wiki's entries or form over HTTP -- through ExternalBazarService's
+     * cache -- every time a field needed its options. That made rendering a form depend on a third
+     * party being up, and the borrowed options were never searchable nor subject to this wiki's
+     * permissions.
+     *
+     * Content from elsewhere is imported now. This returns the sentence to show in place of the
+     * input, or null when the linked form is an ordinary local one.
      */
-    protected function prepareJSONEntryField()
+    protected function remoteLinkedFormNotice(): ?string
     {
-        $this->loadOptionsFromJson();
-        if (
-            preg_match('/^(.*\/\??)' // catch baseUrl
-                . '(?:' // followed by
-                . '\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
-                . '|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
-                . '|api\/entries\/[0-9]*' // or api entries/{id}
-                . ')/', $this->name, $matches)
-        ) {
-            $this->baseUrl = $matches[1];
-        } else {
-            $this->baseUrl = $this->name;
+        $linked = (string)$this->getLinkedObjectName();
+        if ($linked === '' || filter_var($linked, FILTER_VALIDATE_URL) === false) {
+            return null;
         }
-        $this->options = null;
+
+        return _t('BAZ_EXTERNAL_IDS_REMOVED', ['ids' => $linked]);
     }
 
     public function getOptions()
@@ -199,11 +143,8 @@ abstract class EnumField extends BazarField
     {
         // load options only when needed but not at construct to prevent infinite loops
         if (is_null($this->options)) {
-            if ($this->isDistantJson) {
-                $this->loadOptionsFromJson();
-            } else {
-                $this->loadOptionsFromEntries();
-            }
+            // no remote branch: a linked form is a local form, or it is nothing (ticket 34)
+            $this->loadOptionsFromEntries();
         }
 
         return $this->options;
@@ -234,36 +175,5 @@ abstract class EnumField extends BazarField
                 'options' => $this->getOptions(),
             ]
         );
-    }
-
-    /**
-     * check existence of &fields=bf_titre,tag,url in url when api.
-     *
-     * @return string $url
-     */
-    private function sanitizeUrlForEntries(string $url): string
-    {
-        // sanitize url
-        $query = parse_url($url, PHP_URL_QUERY);
-        if (!empty($query)) {
-            $queries = explode('&', $query);
-            if (substr($queries[0], 0, 3) === 'api') {
-                foreach ($queries as $key => $elem) {
-                    $extraction = explode('=', $elem, 2);
-                    if ($extraction[0] === 'fields') {
-                        $fields = explode(',', $extraction[1]);
-                        $fields = $fields + ['tag', 'bf_titre', 'url'];
-                        $queries[$key] = 'fields=' . implode(',', $fields);
-                    }
-                }
-                if (empty($fields)) {
-                    $queries[] = 'fields=tag,bf_titre,url';
-                }
-                $newQuery = implode('&', $queries);
-                $url = str_replace($query, $newQuery, $url);
-            }
-        }
-
-        return $url;
     }
 }

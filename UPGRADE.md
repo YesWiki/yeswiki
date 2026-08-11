@@ -226,6 +226,23 @@ Check whether any page or template of yours depends on these, because nothing re
 - **GoGoCarto** integration — removed.
 - **Referrers** — the `referrers` table and everything reading it. There is no referrer report.
 - **Backlinks / `links`** — the link graph table is gone.
+- **Displaying another wiki's entries at page-view time.** `{{entrylist id="https://other.wiki|4"}}`
+  fetched a remote wiki over HTTP every time the page was rendered, through a cache of its own. It
+  is gone, along with the nine `external*` field types and the `baz_external_service` config block.
+  A field whose linked form was a URL is likewise no longer resolved remotely.
+
+  **The replacement is the Importer**, which already exists: it copies the remote entries into this
+  wiki, so they become searchable, obey this wiki's permissions, can be edited, and stay available
+  when the other site is not. Set a source up on the importers admin screen and point the list at
+  the resulting local form. Credentials are optional — leave them blank to read a public remote
+  form, which is what the old syntax did.
+
+  A stored call naming another wiki now shows a sentence explaining this in place of the list; the
+  rest of the page renders normally. **A migration lists every affected page in the administrative
+  log**, so check there after upgrading — it cannot be automated, because choosing the replacement
+  means deciding which local form to use, whether the copy may diverge, and whether files are
+  downloaded or linked.
+
 - **The `fulltextsearch` extension** is superseded and should be uninstalled. It was never part
   of core, so nothing removed it for you — but search is now a denormalised index table in the
   wiki's own database (ADR-0015), and the extension's own indexing is at best redundant with it.

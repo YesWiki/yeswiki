@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Search\Service\SearchManager;
@@ -11,7 +12,6 @@ class BazarListService
 {
     protected $entryManager;
     protected $entryExtraFields;
-    protected $externalBazarService;
     protected $formManager;
     protected ContainerInterface $container;
 
@@ -19,26 +19,49 @@ class BazarListService
         ContainerInterface $container,
         EntryManager $entryManager,
         EntryExtraFieldsService $entryExtrafields,
-        ExternalBazarService $externalBazarService,
         FormManager $formManager,
     ) {
         $this->container = $container;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
-        $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
     }
 
     public function getForms($pOptions = []): array
     {
         $vIDs = $this->getIDs($pOptions['id'] ?? '');
+        $this->refuseExternalIds($vIDs['externals']);
 
-        $vLocalForms = $this->formManager->getMany($vIDs['locals']);
-        $vExternalForms = $this->externalBazarService->getForms($vIDs['externals'], $pOptions['refresh'] ?? null);
+        return $this->formManager->getMany($vIDs['locals']);
+    }
 
-        $vForms = $vLocalForms + $vExternalForms;
+    /**
+     * Refuse an id naming another wiki, explaining what to do instead (ticket 34).
+     *
+     * `{{entrylist id="https://other.wiki|4"}}` used to fetch that wiki's entries over HTTP on
+     * every page view, through a 1,000-line cache. Content from elsewhere is imported now, so it
+     * is *this* wiki's -- searchable, under our ACLs, and there when the source wiki is not.
+     *
+     * A BadRequestHttpException rather than a bare \Exception on purpose: Performer renders an
+     * HttpException as its message alone, so the reader gets this sentence in place of the list
+     * and the rest of the page still works. A plain exception would render the same message
+     * wrapped in PERFORMABLE_ERROR and a stack dump, and in the API this is already the idiom for
+     * "the request asks for something unsupported".
+     *
+     * @param list<array{url: string, id: string, localFormId?: string}> $externals
+     */
+    protected function refuseExternalIds(array $externals): void
+    {
+        if ($externals === []) {
+            return;
+        }
 
-        return $vForms;
+        $described = implode(', ', array_map(
+            static fn (array $external): string => $external['id'] . ' @ ' . $external['url'],
+            $externals
+        ));
+
+        throw new BadRequestHttpException(_t('BAZ_EXTERNAL_IDS_REMOVED', ['ids' => $described]));
     }
 
     private function replaceDefaultImage($options, $forms, $entries): array
@@ -96,38 +119,16 @@ class BazarListService
 
         $vIDs = $this->getIDs($vSelectedID ?? $pOptions['id'] ?? '');
 
+        $this->refuseExternalIds($vIDs['externals']);
         $vLocalIDs = $vIDs['locals'];
-        $vExternalIDs = $vIDs['externals'];
 
-        if (count($vLocalIDs) > 0 || count($vExternalIDs) == 0) {
-            $vSearchManager = $this->container->get(SearchManager::class);
-
-            $vLocalEntries = $vSearchManager->search(
-                array_merge(
-                    $pOptions,
-                    [
-                        'formsIds' => $vLocalIDs,
-                    ],
-                ),
-                true, // filter on read ACL,
-                true // use Guard
-            );
-        } else {
-            $vLocalEntries = [];
-        }
-
-        if (count($vExternalIDs) > 0) {
-            $vExternalEntries = $this->externalBazarService->getEntries(
-                array_merge($pOptions, [
-                    'id' => ['locals' => [], 'externals' => $vExternalIDs],
-                    'forms' => $vForms,
-                ]),
-            );
-        } else {
-            $vExternalEntries = [];
-        }
-
-        $vEntries = array_merge($vLocalEntries, $vExternalEntries);
+        // Unconditional now. It used to be `count($vLocalIDs) > 0 || count($vExternalIDs) == 0`,
+        // which existed only to skip the local search when every id named another wiki.
+        $vEntries = $this->container->get(SearchManager::class)->search(
+            array_merge($pOptions, ['formsIds' => $vLocalIDs]),
+            true, // filter on read ACL,
+            true // use Guard
+        );
 
         // filter entries on datefilter parameter
         if (!empty($pOptions['datefilter'])) {
@@ -428,17 +429,13 @@ class BazarListService
             return null;
         }
 
-        if ($vLocalIDsCount == 1) {
-            $vID = $vLocalIDs[0];
-            $vKey = $vID;
-            $vIsExternal = false;
-        } else {
-            $vID = $vExternalIDs[0]['id'];
-            $vKey = $this->externalBazarService->getExternalFormIDKey($vExternalIDs[0]);
-            $vIsExternal = true;
+        if ($vLocalIDsCount !== 1) {
+            $this->refuseExternalIds($vExternalIDs);
         }
 
-        return ['id' => $vID, 'key' => $vKey, 'isExternal' => $vIsExternal];
+        // `isExternal` is kept in the shape, always false: callers destructure this array and an
+        // absent key would be a silent null rather than a compile error.
+        return ['id' => $vLocalIDs[0], 'key' => $vLocalIDs[0], 'isExternal' => false];
     }
 
     public function getIDs($pIDs)

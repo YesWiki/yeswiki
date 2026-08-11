@@ -51,9 +51,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction
         'baz_map_center_lat', 'baz_map_center_lon', 'baz_map_zoom', 'baz_map_height',
         'BAZ_ADRESSE_MAIL_ADMIN', 'BAZ_ENVOI_MAIL_ADMIN', 'bazarIgnoreAcls',
     ];
-    private const BAZAR_EXTERNAL_SERVICE_KEYS = [
-        'cache_time_to_check_changes', 'cache_time_to_check_deletion', 'cache_time_to_refresh_forms',
-    ];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -211,11 +208,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction
             foreach (self::BAZAR_KEYS as $bazarKey) {
                 $keys[] = $bazarKey;
                 $associatedExtensions[$bazarKey] = 'bazar';
-            }
-
-            $keys[] = ['baz_external_service' => self::BAZAR_EXTERNAL_SERVICE_KEYS];
-            foreach (self::BAZAR_EXTERNAL_SERVICE_KEYS as $bazarExternalServiceKey) {
-                $associatedExtensions["baz_external_service[{$bazarExternalServiceKey}]"] = 'bazar';
             }
 
             foreach ($this->getService(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionFolder) {

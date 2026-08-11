@@ -535,12 +535,6 @@ class Init
             // not an image file; this key is only consulted if an admin opts into a
             // custom marker image.
             'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',
-            'baz_external_service' => [
-                'cache_time_to_check_changes' => 60, // seconds
-                'cache_time_to_check_deletion' => 86400, // seconds (1 day)
-                'cache_time_to_refresh_forms' => 7200, // seconds (2 hours)
-                'time_debug' => false,
-            ],
             'temp_tag_for_entry_creation' => 'unknown_entry_id',
         ];
         unset($_rewrite_mode);

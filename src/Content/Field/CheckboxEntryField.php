@@ -8,9 +8,6 @@ use YesWiki\Content\Service\FormManager;
 #[\Field(['checkboxfiche'])]
 class CheckboxEntryField extends CheckboxField
 {
-    public $isDistantJson;
-    protected $baseUrl;
-
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -30,14 +27,8 @@ class CheckboxEntryField extends CheckboxField
             self::CHECKBOX_DISPLAY_MODE_LIST;
         $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop_entry.twig';
 
-        $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
-
-        if ($this->isDistantJson) {
-            $this->prepareJSONEntryField();
-        } else {
-            $this->options = null;
-            $this->baseUrl = null;
-        }
+        // ticket 34: a linked form is local, never a URL to another wiki
+        $this->options = null;
     }
 
     protected function renderStatic($entry)
@@ -47,15 +38,7 @@ class CheckboxEntryField extends CheckboxField
         foreach ($keys as $key) {
             if (in_array($key, array_keys($this->getOptions()))) {
                 $values[$key]['value'] = $this->options[$key];
-                if ($this->isDistantJson) {
-                    if (!empty($this->optionsUrls[$key])) {
-                        $values[$key]['href'] = $this->optionsUrls[$key];
-                    } else {
-                        $values[$key]['href'] = $this->baseUrl . $key;
-                    }
-                } else {
-                    $values[$key]['href'] = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $key);
-                }
+                $values[$key]['href'] = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $key);
             }
         }
 

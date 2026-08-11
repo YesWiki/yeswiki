@@ -2,7 +2,6 @@
 
 {% block input %}
   {{ include_javascript('javascripts/yw-tags-input.js') }}
-  {{ include_javascript('javascripts/inputs/checkbox-tags.js') }}
   {% set options = {} %}
   {% for key, tag in tagsData.existingTags %}
     {% set options = options|merge({(key): tag.title}) %}

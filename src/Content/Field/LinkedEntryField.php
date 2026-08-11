@@ -112,32 +112,21 @@ class LinkedEntryField extends BazarField
 
     protected function getQueryForLinkedLabels($entry): ?string
     {
-        $formId = explode('|', $this->name);
-        $externalForm = false;
-        if (count($formId) == 2) {
-            $apiUrl = $formId[0] . '/?api/forms/' . $formId[1];
-            $externalForm = true;
-            $form = json_decode(file_get_contents($apiUrl), true);
-        }
-        if (!$externalForm) {
-            // we just query on the field
-            return isset($entry['tag']) ? $this->linkedId . '=' . $entry['tag'] : '';
-        }
-        if (!is_array($form) || !is_array($form['prepared'])
-                || empty($entry['form_id'])
-                || empty($entry['tag'])) {
+        // A `wiki-url|formId` name used to make this field fetch that wiki's form definition here,
+        // with a bare file_get_contents() on every render -- no timeout, no cache, and a fatal
+        // warning turning into an unrenderable page whenever the other site was slow or gone.
+        // Ticket 34 removed render-time dependencies on other sites; content from elsewhere is
+        // imported, so a linked form is a local form.
+        //
+        // This one was reached without going through ExternalBazarService, which is why the
+        // architecture test that greps for network calls outside an importer exists: deleting the
+        // service would not have found it.
+        if (str_contains((string)$this->name, '|')) {
             return '';
         }
-        $query = '';
-        // find EnumEntryField with right name
-        foreach ($form['prepared'] as $field) {
-            if (strstr($field['propertyname'], '-api-forms-' . $entry['form_id'] ?? 'none')) {
-                $query .= (empty($query)) ? '' : '|';
-                $query .= ($externalForm ? $field['propertyname'] : $field->getPropertyName()) . '=' . $entry['tag'];
-            }
-        }
 
-        return $query;
+        // we just query on the field
+        return isset($entry['tag']) ? $this->linkedId . '=' . $entry['tag'] : '';
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
