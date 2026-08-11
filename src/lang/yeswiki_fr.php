@@ -733,6 +733,8 @@ return [
     'LOGIN_CONNECTED_AS' => 'Connecté en tant que',
     'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous êtes maintenant déconnecté !',
     'LOGIN_LOST_PASSWORD' => 'Mot de passe perdu ?',
+    'LOGIN_PASSWORD_FORMAT_OBSOLETE' => 'Votre mot de passe était enregistré dans un format que cette version n\'accepte plus. Utilisez le lien « Mot de passe perdu ? » pour en choisir un nouveau — votre compte et vos contenus sont intacts.',
+    'LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN' => 'Votre mot de passe était enregistré dans un format que cette version n\'accepte plus. Demandez à un administrateur de le réinitialiser — votre compte et vos contenus sont intacts.',
     'LOGIN_CHANGE_PASSWORD' => 'Réinitialiser le mot de passe',
     'LOGIN_UNKNOWN_USER' => 'Email inconnu, pas d\'utilisateur avec cet email enregistré',
     'LOGIN_ADD_EMAIL_TO_CONTINUE' => 'Veuillez saisir un email pour continuer',

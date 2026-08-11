@@ -11,6 +11,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
+use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -71,12 +72,33 @@ class AuthenticationService extends YesWikiController
         );
     }
 
+    /**
+     * Whether this account's stored password is an md5 written by an older YesWiki, and so
+     * cannot be used to sign in until its owner resets it.
+     *
+     * The hash is left in the row on purpose -- it is what makes the account recoverable
+     * through LostPasswordAction, and it is the only thing distinguishing "predates the
+     * change" from "never had a password". See LegacyPasswordHash.
+     */
+    public function requiresPasswordReset(User $user): bool
+    {
+        return LegacyPasswordHash::isMd5($user->getPassword());
+    }
+
     /** checks if the given string is the user's password.
      *
      * @return bool True if OK or false if any problems
      */
     public function checkPassword(string $plainTextPassword, User $user)
     {
+        // md5 is not a credential. Redundant with the hasher as configured today -- `auto` with
+        // an empty migrate_from refuses a 32-hex string anyway -- but not redundant in the case
+        // that matters: putting `migrate_from => ['md5']` back makes the hasher accept them
+        // again, and this line is what still says no. Measured, by doing exactly that.
+        if ($this->requiresPasswordReset($user)) {
+            return false;
+        }
+
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $user->getPassword();
         if (!$passwordHasher->verify($hashedPassword, $plainTextPassword)) {
@@ -383,6 +405,16 @@ class AuthenticationService extends YesWikiController
             throw new BadUserConnectException('Unknown name');
         }
 
+        // An md5 account must reset before it gets back in, and this path would otherwise let it
+        // skip that indefinitely: the cookie is validated against the *stored hash*, which is
+        // deliberately left in place, so a remember-me cookie issued before the upgrade keeps
+        // verifying for its full lifetime -- weeks -- without checkPassword() ever being called.
+        // Failing here just means no auto-login: connectUser() treats the visitor as anonymous,
+        // they reach the sign-in form, and it tells them to reset.
+        if ($this->requiresPasswordReset($user)) {
+            throw new BadUserConnectException('Password predates this version, must be reset');
+        }
+
         $rawData = $this->prepareRawData($data->getLastConnectionDate(), $data->getRemember(), $user->getPassword());
 
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($data);
@@ -421,11 +453,24 @@ class AuthenticationService extends YesWikiController
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
         }
-        if (empty($userFromSession['lastConnection'])) {
+        // same rule as the cookie path: an md5 account resets before it is trusted again. A PHP
+        // session outlives a deployment, so without this a user already signed in when the
+        // upgrade landed would stay signed in and never be asked.
+        if ($this->requiresPasswordReset($user)) {
+            throw new BadUserConnectException('Password predates this version, must be reset');
+        }
+        // `lastConnection` is session state, not an account property. It was read off
+        // $userFromSession -- which is getLoggedUser(), i.e. the account as *stored*
+        // (User::getArrayCopy()) -- and no user record has ever carried it. So this threw 'No
+        // last connection date' on every single request and the "faster to connect from session"
+        // path above never once ran: every request re-hydrated through the cookie instead,
+        // hashing a bcrypt on the way. login() writes it here, so this is where to read it.
+        $lastConnection = $_SESSION['user']['lastConnection'] ?? null;
+        if (empty($lastConnection)) {
             throw new BadUserConnectException('No last connection date');
         }
 
-        $lastConnectionDate = \DateTime::createFromFormat('U', $userFromSession['lastConnection']);
+        $lastConnectionDate = \DateTime::createFromFormat('U', (string)$lastConnection);
 
         if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
             throw new BadUserConnectException('Last connection date badly formatted');

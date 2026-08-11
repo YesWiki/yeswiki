@@ -211,10 +211,14 @@ class CSVManager
             $value = $entry[$propertyName] ?? null;
 
             if ($value) {
-                if ($propertyName == 'mot_de_passe_wikini') {
-                    // secure password
-                    $value = md5($value);
-                } elseif (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
+                // There used to be a `mot_de_passe_wikini` branch here re-hashing the value with
+                // md5() and calling it "secure password". It was unreachable and would have been
+                // wrong if it were not: `mot_de_passe_wikini` is a submission artifact stripped
+                // before save (EntryManager, ADR-0010), so no stored entry carries it, and the
+                // headers are built from form field property names, which it is not. Had it ever
+                // fired it would have md5'd an already-hashed value -- a string that verifies
+                // against nothing -- and exported a password hash into a CSV.
+                if (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
                     // ajoute l'URL de base aux images et fichiers
                     $value = $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                 } elseif (

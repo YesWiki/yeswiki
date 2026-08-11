@@ -724,6 +724,8 @@ return [
     'LOGIN_CONNECTED_AS' => 'Connected as',
     'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected!',
     'LOGIN_LOST_PASSWORD' => 'Lost password ?',
+    'LOGIN_PASSWORD_FORMAT_OBSOLETE' => 'Your password was stored in a format this version no longer accepts. Use the "Lost password" link to choose a new one — your account and its contents are untouched.',
+    'LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN' => 'Your password was stored in a format this version no longer accepts. Ask an administrator to reset it — your account and its contents are untouched.',
     'LOGIN_CHANGE_PASSWORD' => 'Change the password',
     'LOGIN_UNKNOWN_USER' => 'Unknown email, no user registered under this email',
     'LOGIN_ADD_EMAIL_TO_CONTINUE' => 'Add an email to continue',

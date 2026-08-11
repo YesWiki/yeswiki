@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 
 /**
@@ -14,9 +15,10 @@ use YesWiki\Identity\Service\PasswordHasherFactory;
  * This field used to call `md5()`, which has been unfit for passwords for two decades:
  * unsalted, and fast enough that a commodity GPU walks the whole plausible keyspace.
  *
- * Hashes written by older YesWikis are still md5 and stay verifiable: the factory's
- * `migrate_from` keeps the legacy hasher for checking, and `needsRehash()` says when a
- * stored value should be replaced the next time the plain password passes through.
+ * Hashes written by older YesWikis are still md5, and are no longer accepted: `verify()`
+ * refuses them outright rather than trusting what amounts to an encoded plaintext table.
+ * `needsRehash()` still reports true for one, so a stored md5 is replaced the first time a
+ * plain password legitimately passes through.
  */
 #[\Field(['mot_de_passe'])]
 class PasswordField extends BazarField
@@ -60,13 +62,18 @@ class PasswordField extends BazarField
     }
 
     /**
-     * Whether a plain password matches a stored hash. Accepts hashes written by any
-     * algorithm the factory knows, md5 included, so values stored before this field
-     * stopped using md5 keep working.
+     * Whether a plain password matches a stored hash.
+     *
+     * An md5 left by an older YesWiki is refused, exactly as a user-account password is
+     * (AuthenticationService::checkPassword). The stored value is not touched -- it stays
+     * where it is until someone sets a real password over it.
+     *
+     * The explicit check is not redundant: it holds even if the hasher factory's md5
+     * `migrate_from` chain is ever restored, which is the regression it exists for.
      */
     public function verify(?string $hashedPassword, string $plainPassword): bool
     {
-        if (empty($hashedPassword)) {
+        if (empty($hashedPassword) || LegacyPasswordHash::isMd5($hashedPassword)) {
             return false;
         }
 

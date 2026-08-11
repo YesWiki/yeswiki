@@ -15125,12 +15125,6 @@ parameters:
 			path: ../src/Identity/Handler/EmailActivationHandler.php
 
 		-
-			message: '#^Property YesWiki\\Identity\\Security\\MD5PasswordHasher\:\:\$needRehash has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Identity/Security/MD5PasswordHasher.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Service\\AccountActivationService\:\:readBody\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -15831,12 +15825,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Identity/Service/PasswordForEditingService.php
-
-		-
-			message: '#^Property YesWiki\\Identity\\Service\\PasswordHasherFactory\:\:\$dbService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Identity/Service/PasswordHasherFactory.php
 
 		-
 			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\PasswordAuthenticatedUserInterface\:\:setPassword\(\)\.$#'

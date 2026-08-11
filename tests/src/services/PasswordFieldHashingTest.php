@@ -13,8 +13,9 @@ require_once 'tests/YesWikiTestCase.php';
  * that a commodity GPU walks the whole plausible keyspace. They now go through the same
  * hasher factory as user-account passwords.
  *
- * Values written by older YesWikis are still md5, so the tests that matter are as much
- * about verifying those as about hashing new ones: an upgrade must not lock anyone out.
+ * Values written by older YesWikis are still md5, and are no longer accepted: verifying one
+ * is indistinguishable from trusting a plaintext table that happens to be encoded. The
+ * stored value is left alone rather than blanked, so a real password can be set over it.
  */
 class PasswordFieldHashingTest extends YesWikiTestCase
 {
@@ -61,13 +62,20 @@ class PasswordFieldHashingTest extends YesWikiTestCase
         $this->assertFalse($field->verify($hashed, 'not the password'));
     }
 
-    /** The upgrade path: nobody stored before this change is locked out. */
-    public function testALegacyMd5HashStillVerifies(): void
+    /**
+     * md5 is out. It used to verify here (and rehash on the way through), which kept every
+     * md5 in the installed base a live credential for as long as it went unused.
+     *
+     * Note the second assertion: the *right* password does not get in either. That is the
+     * point -- there is no path where an md5 authenticates, so a leaked hash table is worth
+     * nothing to whoever holds it.
+     */
+    public function testALegacyMd5HashIsRefusedEvenWithTheRightPassword(): void
     {
         $field = $this->field();
         $legacy = md5('old-stored-password');
 
-        $this->assertTrue($field->verify($legacy, 'old-stored-password'));
+        $this->assertFalse($field->verify($legacy, 'old-stored-password'));
         $this->assertFalse($field->verify($legacy, 'wrong'));
     }
 

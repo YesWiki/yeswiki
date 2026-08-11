@@ -4,38 +4,32 @@ namespace YesWiki\Identity\Service;
 
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
 use YesWiki\Identity\Entity\User;
-use YesWiki\Identity\Security\MD5PasswordHasher;
-use YesWiki\Kernel\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {
     /** Hasher name for form password fields, as opposed to user-account passwords. */
     public const BAZAR_FIELD = 'bazar_field';
 
-    protected $dbService;
-
-    public function __construct(DbService $dbService)
+    public function __construct()
     {
-        $this->dbService = $dbService;
+        // No `migrate_from` anywhere: md5 is out. It used to be listed here so a stored md5
+        // still logged in once and was rehashed on the way through, which meant the whole
+        // installed base of md5 hashes stayed live credentials indefinitely -- one account
+        // that never signed in again kept its md5 forever. `auto` alone refuses them, and
+        // LegacyPasswordHash::isMd5() is what turns that refusal into an actionable
+        // "reset your password" rather than a bare "wrong password".
+        //
+        // Symfony still wraps `auto` in a MigratingPasswordHasher with an empty chain, so
+        // needsRehash() keeps reporting true for an md5 -- a stored one is replaced the
+        // first time a plain password legitimately passes through (the reset flow).
         $params = [
-            'md5' => [
-                'class' => MD5PasswordHasher::class,
-                'arguments' => [true],
-            ],
             User::class => [
                 'algorithm' => 'auto',
-                'migrate_from' => [
-                    'md5', // uses the "md5" hasher configured above
-                ],
             ],
             // Password fields inside bazar forms (PasswordField / `mot_de_passe`).
-            // Same deal as user accounts: PHP's current best algorithm for new values,
-            // and the md5 hasher above kept only to verify what older YesWikis stored.
+            // Same deal as user accounts: PHP's current best algorithm, md5 refused.
             self::BAZAR_FIELD => [
                 'algorithm' => 'auto',
-                'migrate_from' => [
-                    'md5',
-                ],
             ],
             'cookie' => [
                 'algorithm' => 'bcrypt',
@@ -43,27 +37,5 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
             ],
         ];
         parent::__construct($params);
-    }
-
-    public function newModeIsActivated(): bool
-    {
-        try {
-            $columnInfo = $this->dbService->schema()->getColumnInfo('users', 'password');
-            if (empty($columnInfo)) {
-                return false;
-            }
-
-            // Check if the column type is varchar(256) - normalize comparison
-            $type = strtolower($columnInfo['type']);
-
-            return $type === 'varchar(256)' || $type === 'character varying(256)';
-        } catch (\Throwable $th) {
-            return false;
-        }
-    }
-
-    public function activateNewMode(): bool
-    {
-        return $this->dbService->schema()->modifyColumn('users', 'password', 'varchar(256)', true);
     }
 }

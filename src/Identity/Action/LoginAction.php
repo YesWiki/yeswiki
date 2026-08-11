@@ -314,6 +314,15 @@ class LoginAction extends YesWikiAction implements RegisteredAction
 
             $password = $this->inputFilter->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
             if (!$this->authenticationService->checkPassword($password, $user)) {
+                // An md5 stored by an older YesWiki no longer authenticates. Saying "wrong
+                // password" to its owner is a dead end -- the password they typed may well be
+                // the right one, and no number of retries will change the answer. The reset
+                // flow is the only way through, so name it; and only point at the lost-password
+                // link when this wiki actually offers it.
+                if ($this->authenticationService->requiresPasswordReset($user)) {
+                    throw new LoginException(boolval($this->params->get('contact_disable_email_for_password')) ? _t('LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN') : _t('LOGIN_PASSWORD_FORMAT_OBSOLETE'));
+                }
+
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
             $remember = $this->inputFilter->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');

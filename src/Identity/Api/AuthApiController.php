@@ -37,7 +37,14 @@ class AuthApiController extends YesWikiController
 
         $authenticationService = $this->getService(AuthenticationService::class);
         if (!$authenticationService->checkPassword(strval($post->get('password')), $user)) {
-            return new ApiResponse(['error' => _t('LOGIN_WRONG_PASSWORD')], Response::HTTP_UNAUTHORIZED);
+            // An md5 from an older YesWiki is refused outright, and "wrong password" would send
+            // an API client into a retry loop over a credential that can never work again.
+            return new ApiResponse(
+                ['error' => _t($authenticationService->requiresPasswordReset($user)
+                    ? 'LOGIN_PASSWORD_FORMAT_OBSOLETE'
+                    : 'LOGIN_WRONG_PASSWORD')],
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         $authenticationService->login($user);

@@ -20,6 +20,8 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(AuthenticationService::class, 'login')]
 #[CoversMethod(AuthenticationService::class, 'logout')]
 #[CoversMethod(AuthenticationService::class, 'checkPassword')]
+#[CoversMethod(AuthenticationService::class, 'requiresPasswordReset')]
+#[CoversMethod(AuthenticationService::class, 'setPassword')]
 #[CoversMethod(AuthenticationService::class, 'getLoggedUser')]
 #[CoversMethod(AuthenticationService::class, 'getLoggedUserName')]
 class AuthenticationServiceTest extends YesWikiTestCase
@@ -79,6 +81,135 @@ class AuthenticationServiceTest extends YesWikiTestCase
             $this->assertFalse($authenticationService->checkPassword($password . 'wrong', $user));
         } finally {
             $userManager->delete($user);
+        }
+    }
+
+    /**
+     * md5 is out as a credential, and stays in the row as the marker that says "reset me".
+     *
+     * The rule used to be the opposite: md5 was listed in the hasher factory's `migrate_from`,
+     * so a stored md5 logged in once and was rehashed on the way through -- which meant every
+     * md5 in an installed base stayed a live credential for as long as its owner did not sign
+     * in. The alternative to refusing them was blanking them, which throws away the only thing
+     * distinguishing an account that predates the change from one that never had a password.
+     *
+     * So all three halves are asserted here: the md5 does not authenticate (not even with the
+     * correct password), the stored value is still there afterwards, and setting a real password
+     * over it -- what the lost-password flow does -- restores the account.
+     */
+    #[Depends('testAuthenticationServiceExisting')]
+    public function testAnMd5PasswordCannotSignInButSurvivesForTheResetFlow(YesWikiRuntime $wiki): void
+    {
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user, 'password' => $password] = $this->createRandomUser($wiki);
+
+        try {
+            $legacyHash = md5($password);
+            $userManager->upgradePassword($user, $legacyHash);
+            $legacyUser = self::requireUser($userManager->getOneByName($user['name']));
+            $this->assertSame($legacyHash, $legacyUser->getPassword(), 'fixture: the account now holds an md5');
+
+            $this->assertTrue($authenticationService->requiresPasswordReset($legacyUser));
+            $this->assertFalse(
+                $authenticationService->checkPassword($password, $legacyUser),
+                'the CORRECT password must not get in either -- otherwise a leaked md5 table is still usable'
+            );
+
+            // not blanked: the row is what keeps the account findable by the reset flow, and
+            // checkPassword() must not have quietly rehashed or cleared it on the way out
+            $this->assertSame(
+                $legacyHash,
+                self::requireUser($userManager->getOneByName($user['name']))->getPassword(),
+                'the stored md5 must be left exactly as it was'
+            );
+
+            // the way back in, which is the whole reason the hash is kept rather than blanked
+            $authenticationService->setPassword($legacyUser, 'a-brand-new-passphrase');
+            $resetUser = self::requireUser($userManager->getOneByName($user['name']));
+            $this->assertFalse($authenticationService->requiresPasswordReset($resetUser));
+            $this->assertTrue($authenticationService->checkPassword('a-brand-new-passphrase', $resetUser));
+        } finally {
+            $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
+        }
+    }
+
+    /**
+     * Refusing md5 at the sign-in form is not enough on its own: connectUser() re-hydrates an
+     * identity every request from the session and then from a remember-me cookie, and neither
+     * calls checkPassword(). The cookie is validated against the *stored hash*, which this
+     * change deliberately leaves in place -- so a cookie issued before the upgrade keeps
+     * verifying for its whole remember-me lifetime, and an account that was simply signed in
+     * when the upgrade landed would never be asked to reset at all.
+     *
+     * The session half is what is exercised here (a cookie cannot be set under the CLI SAPI);
+     * both paths carry the same guard.
+     */
+    #[Depends('testAuthenticationServiceExisting')]
+    public function testAnMd5AccountIsNotKeptSignedInByItsExistingSession(YesWikiRuntime $wiki): void
+    {
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        try {
+            $authenticationService->login($user);
+            $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null, 'fixture: signed in');
+
+            // the upgrade lands while this session is live
+            $userManager->upgradePassword($user, md5('whatever was stored before'));
+
+            $authenticationService->connectUser();
+
+            $this->assertArrayNotHasKey(
+                'user',
+                $_SESSION,
+                'a live session must not carry an md5 account past the sign-in refusal'
+            );
+        } finally {
+            $authenticationService->logout();
+            $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
+        }
+    }
+
+    /**
+     * connectUser()'s own comment calls the session the fast path -- "faster to connect from
+     * session" -- and it had never run. connectUserFromSession() read `lastConnection` from
+     * getLoggedUser(), which returns the account as stored, and no user record carries that: it
+     * is session state that login() writes to $_SESSION. So the method threw 'No last connection
+     * date' on every request and every request fell through to the cookie, computing a bcrypt to
+     * re-establish an identity the session already held.
+     *
+     * Nothing noticed, because falling through still signs the user in. Only the cost and the
+     * dead branch differ -- which is exactly the kind of bug that needs a test naming it, since
+     * the symptom is invisible.
+     */
+    #[Depends('testAuthenticationServiceExisting')]
+    public function testTheSessionFastPathActuallyResolvesAUser(YesWikiRuntime $wiki): void
+    {
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        $exposed = new class($wiki->services->get(AccountActivationService::class), $wiki->services->get(HibernationService::class), $wiki->services->get(ParameterBagInterface::class), $wiki->services->get(PasswordHasherFactory::class), $userManager, $wiki->services) extends AuthenticationService {
+            /** @return array<string, mixed> the parent declares a bare `array`, so no shape to narrow to */
+            public function resolveFromSession(): array
+            {
+                return $this->connectUserFromSession();
+            }
+        };
+
+        try {
+            // $_SESSION is a superglobal, so what the real service writes is what the stand-in
+            // above reads -- which is also what a second request would see
+            $wiki->services->get(AuthenticationService::class)->login($user);
+
+            $data = $exposed->resolveFromSession();
+
+            $this->assertSame($user['name'], $data['user']['name']);
+            $this->assertInstanceOf(\DateTime::class, $data['lastConnectionDate']);
+        } finally {
+            $wiki->services->get(AuthenticationService::class)->logout();
+            $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
         }
     }
 

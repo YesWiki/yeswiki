@@ -370,10 +370,11 @@ class InstallationController
 
     /**
      * Hashes the admin password with the same 'auto' algorithm the runtime
-     * PasswordHasherFactory (src/services/PasswordHasherFactory.php) configures for
+     * PasswordHasherFactory (src/Identity/Service/PasswordHasherFactory.php) configures for
      * User::class, so the seeded hash is exactly what UserManager would produce.
-     * Historically this was md5() — which still logs in thanks to the runtime's
-     * migrate_from chain, but there is no reason to seed a fresh install with it.
+     * Historically this was md5(), which used to keep logging in via the runtime's
+     * migrate_from chain. That chain is gone -- md5 no longer authenticates at all -- so an
+     * installer that seeded one would create an admin who could not sign in.
      */
     protected function hashAdminPassword(): string
     {
