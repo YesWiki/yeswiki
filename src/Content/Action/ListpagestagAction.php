@@ -4,6 +4,10 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -18,11 +22,50 @@ use YesWiki\Search\Service\TagsManager;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class ListpagestagAction extends YesWikiAction implements RegisteredAction
+class ListpagestagAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'listpagestag';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('listpagestag')
+                ->category(Category::Navigation)
+                ->label(_t('AB_tags_listpagestag_label'))
+                ->icon('list')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::text('tags')
+                        ->label(_t('AB_tags_listpagestag_tags_label'))
+                        ->hint(_t('AB_tags_listpagestag_tags_hint')),
+                    Setting::choice('type', [
+                        '' => _t('AB_tags_listpagestag_type_all'),
+                        'wiki' => _t('AB_tags_listpagestag_type_wiki'),
+                        'bazar' => _t('AB_tags_listpagestag_type_bazar'),
+                    ])
+                        ->label(_t('AB_tags_listpagestag_type_label')),
+                    Setting::number('nb')
+                        ->label(_t('AB_tags_listpagestag_nb_label'))
+                        ->min(0),
+                    Setting::choice('sort', [
+                        'date' => _t('AB_tags_listpagestag_tri_date'),
+                        'alpha' => _t('AB_tags_listpagestag_tri_alpha'),
+                    ])
+                        ->label(_t('AB_tags_listpagestag_tri_label')),
+                    Setting::choice('template', [
+                        'pages_list.tpl.html' => _t('AB_tags_listpagestag_template_list'),
+                        'pages_listgroup.tpl.html' => _t('AB_tags_listpagestag_template_list_panel'),
+                        'pages_listnum.tpl.html' => _t('AB_tags_listpagestag_template_list_num'),
+                    ])
+                        ->label(_t('AB_tags_listpagestag_template_label')),
+                    Setting::checkbox('shownumberinfo')
+                        ->label(_t('AB_tags_listpagestag_shownumberinfo_label'))
+                        ->checkedValues('1', ''),
+                ),
+        ];
     }
 
     public function run(): string

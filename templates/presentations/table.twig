@@ -1,0 +1,29 @@
+{# A table shows only the slots that ARE a column. `description` is prose and would make
+   every row as tall as its longest paragraph, so it is not one; the title links out to it. #}
+{% import "@core/presentations/_item-fields.twig" as slot %}
+{{ include_css('styles/presentations.css') }}
+
+<div class="yw-items yw-items--table">
+  <table class="yw-table">
+    <thead>
+      <tr>
+        <th>{{ _t('PRESENTATION_TABLE_TITLE') }}</th>
+        {% if items|filter(i => i.subtitle)|length %}<th>{{ _t('PRESENTATION_TABLE_SUBTITLE') }}</th>{% endif %}
+        {% if items|filter(i => i.date)|length %}<th>{{ _t('PRESENTATION_TABLE_DATE') }}</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ slot.badge(item) }}{{ slot.title(item) }}</td>
+          {% if items|filter(i => i.subtitle)|length %}<td>{{ item.subtitle }}</td>{% endif %}
+          {% if items|filter(i => i.date)|length %}
+            <td>{% if item.date %}<time datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}</td>
+          {% endif %}
+        </tr>
+      {% else %}
+        <tr><td colspan="3">{{ _t('BAZ_NO_RESULT') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

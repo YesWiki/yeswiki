@@ -18,9 +18,10 @@ import ActionsBuilder from './actions-builder.js'
 import LinkPanel from './link-panel.js'
 import {
   FENCE_LANGUAGES,
-  componentBlockElement,
   fenceComponents,
   LINK_EXTRA,
+  calloutRegionAt,
+  componentBlockElement,
   markComments,
   markLinkExtras,
   openingBlockFor,
@@ -31,6 +32,31 @@ import {
   tagOfBlock,
   unfenceComponents,
 } from './vditor-components.js'
+
+/**
+ * The four callouts, and the icon each is recognised by. Only the four the wiki has styles
+ * for -- `:::note` is not a callout to the server either (AlertExtension).
+ */
+const CALLOUTS = [
+  ['info', 'info-circle'],
+  ['success', 'circle-check'],
+  ['warning', 'alert-triangle'],
+  ['danger', 'ban'],
+]
+
+/** Written out, so `php src/build-js-lang-keys.php` can see each key. */
+function calloutLabel(type) {
+  switch (type) {
+    case 'success':
+      return _t('ALERT_SUCCESS')
+    case 'warning':
+      return _t('ALERT_WARNING')
+    case 'danger':
+      return _t('ALERT_DANGER')
+    default:
+      return _t('ALERT_INFO')
+  }
+}
 
 /** The `{{...}}` braces off, which is the form the actions builder reads and writes. */
 const withoutBraces = (tag) =>
@@ -79,6 +105,28 @@ class ComponentEditor {
     rewriteBlock(block, wikiCode)
     this.highlight(block)
     this.sync()
+    this.recordUndo()
+  }
+
+  /**
+   * Put what the rail just wrote on Vditor's undo stack.
+   *
+   * Its undo is driven by its own input handling, so a block rewritten from outside -- the
+   * settings rail writing a component, which is every change this class makes -- was
+   * invisible to it: Ctrl+Z after changing a section's colour did nothing, and there was no
+   * way back to what the tag said before. (The ACeditor has never had this problem: Ace's
+   * undo manager records programmatic edits like any other.)
+   *
+   * Guarded because addToUndoStack reads the selection to remember where the caret was,
+   * and while the rail has focus there may be no range in the document at all.
+   */
+  recordUndo() {
+    const vditor = this.vditor.vditor
+    try {
+      vditor.undo.addToUndoStack(vditor)
+    } catch {
+      // nothing to record against; the change stands, it simply is not a stop for Ctrl+Z
+    }
   }
 
   /**
@@ -148,6 +196,7 @@ class ComponentEditor {
       })
     this.highlight(inserted)
     this.sync()
+    this.recordUndo()
 
     return inserted
   }
@@ -252,6 +301,21 @@ function initVditorWiki(textareaParam) {
         : []),
       // the one button that has no equivalent in a Markdown editor: everything YesWiki can
       // put on a page that is not prose is behind it
+      // Markup syntax lives in the toolbar, not in the components palette: a callout is
+      // notation like `**bold**` or `> quote`, reached by formatting text rather than by
+      // inserting a thing (ADR-0017). Each one wraps what is selected, wraps the block the
+      // caret is in, or -- if that block is already a callout -- RETYPES it, which is how
+      // a heading level behaves and what stands in for a settings rail.
+      ...CALLOUTS.map(([type, icon]) => ({
+        name: `yw-callout-${type}`,
+        tip: calloutLabel(type),
+        tipPosition: 'n',
+        icon: legacyIconToSprite(icon),
+        click() {
+          applyCallout(type)
+        },
+      })),
+      '|',
       {
         name: 'yw-component',
         tip: _t('ADD_COMPONENT'),
@@ -382,6 +446,52 @@ function initVditorWiki(textareaParam) {
     return converted
   }
 
+  /**
+   * Make the block at the caret a callout of this type -- or, if it already is one, make
+   * it that type instead.
+   *
+   * The same three cases the source editor's version has, minus the selection: a selection
+   * in a WYSIWYG editor spans rendered nodes rather than lines, and wrapping "from here to
+   * there" is a different job from wrapping the block you are in. The block is what a
+   * callout takes.
+   */
+  function applyCallout(type) {
+    const block = componentEditor.blockAtCursor()
+    if (!block) return
+
+    const existing = calloutRegionAt(componentEditor.content, block)
+    if (existing) {
+      // already one: retype it rather than nesting a second inside the first
+      rewriteBlock(existing.block, `:::${type}`)
+      // ...and the closing chip with it. A `:::` says nothing about what it closes -- it
+      // reads the type off the opening fence above -- so left alone it goes on announcing
+      // the type this callout used to be.
+      renderComponent(
+        existing.closeBlock.querySelector('.vditor-wysiwyg__preview'),
+        ':::',
+      )
+      sync()
+      componentEditor.recordUndo()
+
+      return
+    }
+
+    // ...otherwise the two halves go around the block, and what was in it stays where it
+    // is: the content between them is ordinary editable prose, which is the whole point.
+    const opening = componentBlockElement(`:::${type}`)
+    const closing = componentBlockElement(':::')
+    block.before(opening)
+    block.after(closing)
+    componentEditor.content
+      .querySelectorAll(".vditor-wysiwyg__preview[data-render='2']")
+      .forEach((preview) => {
+        renderComponent(preview)
+        preview.setAttribute('data-render', '1')
+      })
+    sync()
+    componentEditor.recordUndo()
+  }
+
   /** The palette, for a component the page does not have yet. */
   function openBuilderForNewComponent() {
     const anchor = componentEditor.blockAtCursor()
@@ -405,6 +515,10 @@ function initVditorWiki(textareaParam) {
     if (!block) return
 
     const tag = tagOfBlock(block)
+    // `:::info` is a wrapper too, but it is not an action -- there is nothing for a panel
+    // of action parameters to open on. Its source button is how it is changed.
+    if (!tag.startsWith('{{')) return
+
     componentEditor.highlight(block)
     actionsBuilder.open(componentEditor, {
       action: withoutBraces(tag),

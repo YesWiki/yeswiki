@@ -10,6 +10,10 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
@@ -19,12 +23,78 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 
-class LoginAction extends YesWikiAction implements RegisteredAction
+class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{login}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'login';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('login')
+                ->category(Category::Forms)
+                ->label(_t('AB_advanced_action_login_label'))
+                ->icon('login')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::choice('template', [
+                        'default.twig' => _t('AB_advanced_action_login_template_default'),
+                        'account-link.twig' => _t('AB_advanced_action_login_template_account_link'),
+                        'horizontal.twig' => _t('AB_advanced_action_login_template_horizontal'),
+                        'dropdown.twig' => _t('AB_advanced_action_login_template_dropdown'),
+                    ])
+                        ->label(_t('AB_advanced_action_login_template_label'))
+                        ->default('default.twig'),
+                    Setting::page('signupurl')
+                        ->label(_t('AB_advanced_action_login_signupurl_label'))
+                        ->hint(_t('AB_advanced_action_login_signupurl_hint'))
+                        ->default(''),
+                    Setting::page('incomingurl')
+                        ->label(_t('AB_advanced_action_login_incomingurl_label'))
+                        ->default(''),
+                    Setting::page('loggedinurl')
+                        ->label(_t('AB_advanced_action_login_loggedinurl_label'))
+                        ->hint(_t('AB_advanced_action_login_loggedinurl_hint'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::page('loggedouturl')
+                        ->label(_t('AB_advanced_action_login_loggedouturl_label'))
+                        ->hint(_t('AB_advanced_action_login_loggedouturl_hint'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::checkbox('userpage')
+                        ->label(_t('AB_advanced_action_login_userpage_label'))
+                        ->default('')
+                        ->checkedValues('user', ''),
+                    Setting::page('lostpasswordurl')
+                        ->label(_t('AB_advanced_action_login_lostpasswordurl_label'))
+                        ->hint(_t('AB_advanced_action_login_lostpasswordurl_hint'))
+                        ->default(''),
+                    Setting::page('profileurl')
+                        ->label(_t('AB_advanced_action_login_profileurl_label'))
+                        ->hint(_t('AB_advanced_action_login_profileurl_hint'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::text('class')
+                        ->label(_t('AB_advanced_action_login_class_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::text('btnclass')
+                        ->label(_t('AB_advanced_action_login_btnclass_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::checkbox('nobtn')
+                        ->label(_t('AB_advanced_action_login_nobtn_label'))
+                        ->default('false')
+                        ->showIf([
+                            'template' => 'account-link\\.(?:twig|tpl\\.html)',
+                        ])
+                        ->checkedValues('true', 'false'),
+                ),
+        ];
     }
 
     /**

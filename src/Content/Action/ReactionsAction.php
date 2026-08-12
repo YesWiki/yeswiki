@@ -9,15 +9,48 @@ use YesWiki\Content\Service\ReactionManager;
 use YesWiki\Content\Service\ReactionsFormatter;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 
-class ReactionsAction extends YesWikiAction implements RegisteredAction
+class ReactionsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{reactions}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'reactions';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('reactions')
+                ->category(Category::Forms)
+                ->label(_t('AB_REACTION_LABEL'))
+                ->icon('thumb-up')
+                ->description(_t('AB_REACTION_DESC'))
+                ->settings(
+                    Setting::text('title')
+                        ->label(_t('AB_REACTION_TITLE_LABEL'))
+                        ->suggests(_t('REACTION_SHARE_YOUR_REACTION'))
+                        ->required(),
+                    Setting::number('maxreaction')
+                        ->label(_t('AB_REACTION_MAXREACTION_LABEL'))
+                        ->default(1)
+                        ->suggests(1),
+                    Setting::reaction('choices')
+                        ->raw('btn-label-add', _t('AB_REACTION_ADD_REACTION'))
+                        ->subSettings(
+                            Setting::text('label')
+                            ->label(_t('AB_REACTION_NAME')),
+                            Setting::icon('image')
+                            ->label(_t('AB_REACTION_ICON')),
+                        ),
+                ),
+        ];
     }
 
     public function formatArguments($args)

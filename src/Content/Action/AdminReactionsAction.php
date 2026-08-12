@@ -8,14 +8,28 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-class AdminReactionsAction extends YesWikiAction implements RegisteredAction
+class AdminReactionsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{adminreactions}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'adminreactions';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('adminreactions')
+                ->category(Category::Admin)
+                ->label(_t('AB_ADMINREACTIONS_LABEL'))
+                ->icon('thumb-up')
+                ->hint(_t('AB_ADMINREACTIONS_HINT')),
+        ];
     }
 
     public function run()

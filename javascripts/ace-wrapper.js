@@ -18,6 +18,14 @@ import './vendor/ace/ext-language_tools.js'
 // editor loads without highlighting. Same side-effect registration as the vendor files above.
 import './mode-yeswiki.js'
 
+/**
+ * A callout's two fences, which are lines of their own. Only the four types the wiki has
+ * styles for -- `:::note` is not a callout to the server either, and the editor must not
+ * claim otherwise (see AlertExtension and javascripts/vditor-components.js).
+ */
+const CALLOUT_OPEN = /^:::[ \t]*(success|info|warning|danger)[ \t]*$/i
+const CALLOUT_CLOSE = /^:::[ \t]*$/
+
 export default class {
   ace = null
   container
@@ -290,9 +298,14 @@ export default class {
     this.selectCurrentGroupAfterEdit()
   }
 
+  /** Returns the range the text landed in, so the rail can keep editing what it inserted. */
   insert(text) {
+    const start = this.ace.getCursorPosition()
     this.ace.insert(text)
+    const end = this.ace.getCursorPosition()
     this.selectCurrentGroupAfterEdit()
+
+    return new ace.Range(start.row, start.column, end.row, end.column)
   }
 
   lineLength(row) {
@@ -313,10 +326,21 @@ export default class {
    * modal: between opening it and pressing its button, the cursor is free to wander, and
    * what the rail rewrites has to be what it was opened on.
    */
+  /**
+   * @returns the range the replacement now occupies, so a caller that replaces the same
+   *   span again knows where it moved to. The rail does exactly that: it writes on every
+   *   change now rather than once on a button, and the second write against the range the
+   *   first one was measured from would land on the wrong span of text -- the tag having
+   *   changed length under it.
+   */
   replaceRange(range, text) {
     if (!range) return this.replaceCurrentGroupBy(text)
     this.ace.selection.setRange(range)
-    return this.replaceSelectionBy(text)
+    const { start } = this.ace.getSelectionRange()
+    const end = this.ace.session.replace(this.ace.getSelectionRange(), text)
+    this.selectCurrentGroupAfterEdit()
+
+    return new ace.Range(start.row, start.column, end.row, end.column)
   }
 
   /**
@@ -388,10 +412,90 @@ export default class {
    * decides where a new component goes when it opens -- the cursor may well have moved
    * on by the time the user is done configuring it.
    */
+  /**
+   * The `:::info … :::` callout the cursor is in, as row numbers, or null.
+   *
+   * Scanned rather than parsed: the document is text here, and the two fences are lines.
+   * A closing fence found on the way up means the cursor is BELOW a block rather than in
+   * one, which is the case that would otherwise retype somebody else's callout.
+   */
+  calloutAt(row) {
+    const session = this.ace.session
+    let start = -1
+    for (let r = row; r >= 0; r -= 1) {
+      const line = session.getLine(r)
+      if (r !== row && CALLOUT_CLOSE.test(line)) return null
+      if (CALLOUT_OPEN.test(line)) {
+        start = r
+        break
+      }
+    }
+    if (start === -1) return null
+    for (let r = Math.max(start + 1, row); r < session.getLength(); r += 1) {
+      if (CALLOUT_CLOSE.test(session.getLine(r))) return { start, end: r }
+    }
+
+    return null
+  }
+
+  /**
+   * Make the text at the cursor a callout of this type -- or, if it already is one,
+   * make it that type instead.
+   *
+   * Three cases, and they are the three a format button has always had: something is
+   * selected, so wrap it; nothing is, so wrap the paragraph the cursor is in; it is
+   * already formatted, so change it rather than nesting a second one inside the first.
+   */
+  applyCallout(type) {
+    const cursor = this.ace.getCursorPosition()
+    const existing = this.calloutAt(cursor.row)
+    if (existing) {
+      this.ace.session.replace(
+        new ace.Range(
+          existing.start,
+          0,
+          existing.start,
+          this.lineLength(existing.start),
+        ),
+        `:::${type}`,
+      )
+      this.ace.focus()
+
+      return
+    }
+
+    if (this.ace.getSelectedText()) {
+      this.surroundSelectionWith(`:::${type}\n`, '\n:::')
+
+      return
+    }
+
+    // the paragraph the cursor is in: contiguous non-blank lines around it
+    const session = this.ace.session
+    let first = cursor.row
+    let last = cursor.row
+    while (first > 0 && session.getLine(first - 1).trim() !== '') first -= 1
+    while (
+      last < session.getLength() - 1 &&
+      session.getLine(last + 1).trim() !== ''
+    )
+      last += 1
+
+    this.ace.selection.setRange(
+      new ace.Range(first, 0, last, this.lineLength(last)),
+    )
+    this.surroundSelectionWith(`:::${type}\n`, '\n:::')
+  }
+
   insertAt(position, text) {
     if (!position) return this.insert(text)
     this.ace.moveCursorTo(position.row, position.column)
     this.ace.clearSelection()
-    return this.insert(position.onNewLine ? `\n${text}` : text)
+    // the newline goes in first, so that the range handed back covers the tag and not the
+    // break before it -- rewriting that range would otherwise eat the newline and weld the
+    // component onto the line above
+    if (position.onNewLine) this.insert('\n')
+
+    return this.insert(text)
   }
 }

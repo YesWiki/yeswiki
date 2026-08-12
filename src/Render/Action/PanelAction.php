@@ -3,15 +3,65 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 
-class PanelAction extends YesWikiAction implements RegisteredAction
+class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{panel}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'panel';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('panel')
+                ->category(Category::Writing)
+                ->label(_t('AB_templates_panel_label'))
+                ->icon('layout-rows')
+                ->previewHeight('300px')
+                ->wraps(_t('AB_templates_panel_wrappedcontentexample'))
+                ->settings(
+                    Setting::text('title')
+                        ->label(_t('AB_templates_panel_title_label'))
+                        ->suggests(_t('AB_templates_panel_title_default'))
+                        ->required(),
+                    Setting::choice('type', [
+                        'default' => _t('AB_templates_panel_type_default'),
+                        'collapsible' => _t('AB_templates_panel_type_collapsible'),
+                        'collapsed' => _t('AB_templates_panel_type_collapsed'),
+                    ])
+                        ->label('Type'),
+                    // `panel-success|info|warning|danger` are gone from what is offered.
+                    // They said the same four things a callout says, and two ways to draw
+                    // a coloured box is what makes a palette unusable: a **callout carries
+                    // meaning, a panel carries styling** (ADR-0017). What is left is the
+                    // wiki's own neutral vocabulary, plus a free class for anything else.
+                    //
+                    // Only the OFFER changes. The classes are in stored pages and yw-core
+                    // still styles them, under ADR-0004's legacy-vocabulary rule.
+                    Setting::choice('class', [
+                        'panel-default' => _t('AB_template_actions_default'),
+                        'panel-primary' => _t('AB_template_actions_primary'),
+                        'panel-secondary-1' => _t('AB_template_actions_secondary_1'),
+                        'panel-secondary-2' => _t('AB_template_actions_secondary_2'),
+                    ])
+                        ->label(_t('AB_template_actions_color'))
+                        ->writesTo('class')
+                        ->default('panel-default'),
+                    Setting::text('class-extra')
+                        ->label(_t('AB_templates_panel_custom_class_label'))
+                        ->hint(_t('AB_templates_panel_custom_class_hint'))
+                        ->writesTo('class')
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function run()

@@ -4,18 +4,33 @@ namespace YesWiki\Admin\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-class EditConfigAction extends YesWikiAction implements RegisteredAction
+class EditConfigAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{editconfig}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'editconfig';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('editconfig')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_editconfig_label'))
+                ->icon('settings')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     private const SAVE_NAME = 'save_config';

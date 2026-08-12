@@ -5,6 +5,9 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 /**
@@ -14,11 +17,23 @@ use YesWiki\Kernel\Performable\RegisteredAction;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class FilemanagerAction extends YesWikiAction implements RegisteredAction
+class FilemanagerAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'filemanager';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('filemanager')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_filemanager_label'))
+                ->icon('folder-open')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     public function run(): string

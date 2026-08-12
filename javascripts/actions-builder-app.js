@@ -20,6 +20,7 @@ import InputColorMapping from './components/InputColorMapping.js'
 import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
+import InputImage from './components/InputImage.js'
 import InputFieldMapping from './components/InputFieldMapping.js'
 import PreviewAction from './components/PreviewAction.js'
 import InputHint from './components/InputHint.js'
@@ -44,6 +45,7 @@ const components = {
   InputNavLinks,
   InputGeo,
   InputClass,
+  InputImage,
   InputFieldMapping,
   InputColumnsWidth,
   PreviewAction,
@@ -55,31 +57,98 @@ const components = {
 const data =
   typeof actionsBuilderData === 'object'
     ? actionsBuilderData
-    : { forms: {}, action_groups: {} }
+    : { forms: {}, palette: [], components: {} }
+
+/** Each Component names its own icon now; one that names none still gets a card. */
+const componentIcon = (name) => legacyIconToSprite(name || 'stack-2') || ''
 
 /**
- * A sprite icon per action group, for the palette. Kept here rather than in the group's
- * own YAML: a group is documentation an extension ships, and asking every extension
- * author to name an icon before their actions can be listed would be a worse trade than
- * a shared fallback. An unmapped group gets one, and still appears.
+ * Which Component wrote this tag.
+ *
+ * Take every Component that lists the tag name; keep those whose pinned settings all match
+ * what the tag actually says; the one with the most pins wins, and a Component with no pins
+ * is the fallback. So `{{entrylist template="card"}}` is a `Cards` and
+ * `{{entrylist template="something-nobody-declared"}}` is a plain entry list rather than
+ * nothing at all.
+ *
+ * This replaces a branch that knew the answer for one group and no other: it matched
+ * `properties.template.value` against the parsed template, `if (newActionId === 'entrylist')`.
+ * Thirteen components were reachable that way and every other pinned component would have
+ * been invisible.
  */
-const PALETTE_ICONS = {
-  'advanced-actions': 'tool',
-  bazar: 'square-plus',
-  buttons: 'external-link',
-  contact: 'mail',
-  entrylist: 'layout-grid',
-  management: 'settings',
-  reactions: 'thumb-up',
-  syndication: 'rss',
-  tags: 'tags',
-  templates: 'brush',
-  textsearch: 'loupe',
-  video: 'player-play',
+function matchComponent(components, tag, values) {
+  let best = null
+  let bestPins = -1
+
+  for (const [id, component] of Object.entries(components)) {
+    if (!(component.tags || []).includes(tag)) continue
+    const pins = component.pins || {}
+    const matches = Object.entries(pins).every(
+      ([name, value]) => `${values[name] ?? ''}` === `${value}`,
+    )
+    if (!matches) continue
+    if (Object.keys(pins).length > bestPins) {
+      best = id
+      bestPins = Object.keys(pins).length
+    }
+  }
+
+  return best
 }
 
-const paletteIcon = (groupId) =>
-  legacyIconToSprite(PALETTE_ICONS[groupId] || 'stack-2') || ''
+/**
+ * What the action does when the parameter is not there at all.
+ *
+ * A setting sitting at its default is left out of the tag -- that is what keeps a component
+ * from being written out with thirty parameters restating what it would have done anyway.
+ * The test for it used to be `config.default && value === config.default`, which skips the
+ * whole check whenever the default is falsy: `''`, `0` and `false` are exactly the defaults
+ * worth omitting, and every one of them was written out instead.
+ *
+ * A checkbox with no declared default has one all the same -- unticked -- and it is what the
+ * box shows before anyone touches it. Without this, merely opening the rail on a `{{section}}`
+ * added `patternreverse="false"` to it.
+ */
+function effectiveDefault(config) {
+  if (!config) return undefined
+  if ('default' in config) return config.default
+  if (config.type === 'checkbox') return config.uncheckedvalue ?? 'false'
+
+  return undefined
+}
+
+const isDefaultValue = (config, value) => {
+  const fallback = effectiveDefault(config)
+
+  return fallback !== undefined && `${value}` === `${fallback}`
+}
+
+/** Settings whose value is one token of a shared, space-separated parameter. */
+const sharedTargets = (configs) => {
+  const targets = {}
+  for (const name in configs) {
+    const target = configs[name]?.writesTo
+    if (target) (targets[target] ??= []).push(name)
+  }
+
+  return targets
+}
+
+/**
+ * Which of a setting's own values a token of the shared parameter is.
+ *
+ * A choice knows its tokens (they are its options); a checkbox has exactly one, the value
+ * it writes when ticked. Anything else contributes nothing, which is what stops a free-text
+ * setting from claiming every word of the class it was written beside.
+ */
+const tokensOf = (config) => {
+  if (config.type === 'list') return Object.keys(config.options || {})
+  if (config.type === 'checkbox' && config.checkedvalue) {
+    return [String(config.checkedvalue)]
+  }
+
+  return []
+}
 
 // dynamically loads other components defined in extensions or in custom folder
 if (data.extraComponents) {
@@ -102,8 +171,10 @@ export const appConfig = {
   data() {
     return {
       // Available Actions
-      actionGroups: data.action_groups,
-      currentGroupId: '',
+      // every Component by id, palette-visible or not: the rail opens on components the
+      // palette does not offer (a file was inserted by the picker, not chosen from a card)
+      components: data.components,
+      palette: data.palette,
       selectedActionId: '',
       // Some Actions require to select a Form (like bazar actions)
       formIds: data.forms, // list of this YesWiki Forms
@@ -126,6 +197,14 @@ export const appConfig = {
       insertAt: null,
       // and where the one it IS on is written, which is what an update rewrites
       target: null,
+      // the last wiki code this rail put in the document, so that a change that does not
+      // change anything is not written again
+      written: null,
+      // leftovers of a shared parameter: the class tokens no setting recognised, kept so
+      // they can be put back. NOT in `values` -- everything in there is written into the
+      // tag as a parameter of its own, so parking them there emitted `class__rest="..."`
+      // beside the `class` they came out of.
+      sharedRest: {},
       // Current Aceditor in use
       editor: null,
     }
@@ -147,11 +226,9 @@ export const appConfig = {
     editorRendersComponents() {
       return Boolean(this.editor?.previewComponent)
     },
-    actionGroup() {
-      if (!this.currentGroupId) return { label: '', actions: {} }
-      return (
-        this.actionGroups[this.currentGroupId] || { label: '', actions: {} }
-      )
+    /** The component the rail is on, whatever it was reached by. */
+    selectedAction() {
+      return this.components[this.selectedActionId]
     },
     /**
      * What the rail is on, for its header: the component. The group it belongs to is how
@@ -160,17 +237,7 @@ export const appConfig = {
      * every button's settings titled "Buttons".
      */
     railTitle() {
-      return this.selectedAction?.label || this.actionGroup?.label || ''
-    },
-    /**
-     * Read from `wiki.lang` rather than translated in the template: both keys live in the
-     * javascript catalog (src/lang/yeswikijs_*.php), which is the one the browser reads
-     * and the one Twig's `_t()` does not see.
-     */
-    submitLabel() {
-      return this.isEditingExistingAction
-        ? wiki.lang.ACTION_BUILDER_UPDATE_CODE
-        : wiki.lang.ACTION_BUILDER_INSERT_CODE
+      return this.selectedAction?.label || ''
     },
     /**
      * The palette: every component that can be inserted, under its group's heading and
@@ -187,41 +254,30 @@ export const appConfig = {
       const matches = (text) =>
         !needle || String(text).toLowerCase().includes(needle)
 
-      return Object.entries(this.actionGroups)
-        .filter(([, group]) => group && !group.onlyEdit)
-        .map(([groupId, group]) => ({
-          id: groupId,
-          label: group.label,
-          icon: paletteIcon(groupId),
-          actions: Object.entries(group.actions || {})
+      return this.palette
+        .map((category) => ({
+          id: category.id,
+          label: category.label,
+          actions: category.components
             .filter(
-              ([actionId, action]) =>
-                action && action.label && !actionId.startsWith('common'),
+              (component) =>
+                matches(component.label) || matches(category.label),
             )
-            .filter(
-              ([, action]) => matches(action.label) || matches(group.label),
-            )
-            .map(([actionId, action]) => ({
-              id: actionId,
-              label: action.label,
+            .map((component) => ({
+              id: component.id,
+              label: component.label,
+              icon: componentIcon(component.icon),
             })),
         }))
-        .filter((group) => group.actions.length > 0)
+        .filter((category) => category.actions.length > 0)
     },
-    actions() {
-      const actions = this.actionGroup?.actions || {}
-      // Filter out any undefined values that could cause template errors
-      const result = {}
-      Object.entries(actions).forEach(([key, value]) => {
-        if (value) result[key] = value
-      })
-      return result
-    },
-    selectedAction() {
-      return this.actions[this.selectedActionId]
-    },
+    /**
+     * Whether this component has to be pointed at a form before it can render anything.
+     * Declared by the component rather than by the drawer it used to live in: `needFormField`
+     * was a property of the whole `entrylist` YAML group.
+     */
     needFormField() {
-      return this.actionGroup?.needFormField
+      return Boolean(this.selectedAction?.needsForm)
     },
     // Some action group (like bazar) have common properties available for each actions
     // so we always display those commons properties in different panels
@@ -236,9 +292,11 @@ export const appConfig = {
           class: 'specific-action-params',
         })
       }
-      Object.entries(this.actions).forEach(([actionName, params]) => {
-        if (actionName.startsWith('common') && params) result.push({ params })
-      })
+      // ...and the shared blocks it was handed. These used to be found by NAME -- any
+      // entry of the same group called `common*` -- which is a convention nothing enforced.
+      ;(this.selectedAction?.groups || []).forEach((params) =>
+        result.push({ params }),
+      )
       return result
     },
     isSomeAdvancedParams() {
@@ -246,9 +304,6 @@ export const appConfig = {
         const props = Object.values(panel.params?.properties || {})
         return props.some((prop) => prop?.advanced)
       })
-    },
-    isEntryListAction() {
-      return this.currentGroupId === 'entrylist'
     },
     selectedActionAllConfigs() {
       let result = {}
@@ -258,13 +313,22 @@ export const appConfig = {
       return result
     },
     wikiCodeStart() {
-      let actionId = this.selectedActionId
-      if (this.isEntryListAction) actionId = 'entrylist'
-      let result = `{{${actionId}`
+      // The TAG a component writes, which is not its own name: `bazarcard` is one of
+      // thirteen ways of writing `{{entrylist}}`. The first tag it lists is the one it
+      // writes; the others are ones it also answers to (see the resolver below).
+      const [first = this.selectedActionId] = this.selectedAction?.tags || []
+      // ...unless a setting decides it. A Presentation writes whichever tag its source
+      // setting names -- `Cards` over a form is `{{entrylist}}`, over a feed
+      // `{{syndication}}`, and it is one card either way (ticket 37).
+      const tag = this.tagDecidedBySetting() ?? first
+      let result = `{{${tag}`
       for (const key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
       }
-      result += ' }}'
+      // no space before the braces: `{{section bgcolor="x" }}` is what this used to write,
+      // and a tag that comes back from the rail differing from the one that went in by a
+      // space is a diff on every page anyone opens the rail on
+      result += '}}'
       return result
     },
     wikiCodeDefaultContent() {
@@ -343,39 +407,43 @@ export const appConfig = {
       // what they want already; opening with neither is the "what can I insert?" case
       this.view = options.action || options.groupName ? 'settings' : 'palette'
       this.paletteFilter = ''
+      this.written = null
       setTimeout(() => this.initValues(), 0)
     },
     close() {
       if (!this.isOpen) return
-      this.abandonPreview()
       if (this.editor) this.editor.clearHighlight()
       document.getElementById('actions-builder-panel').hidden = true
       this.isOpen = false
       this.openKey = null
+      this.written = null
     },
     /**
-     * Show what this panel currently says, on the component itself, without writing it:
-     * an editor that renders components is where the preview lives, and a preview is not
-     * a change. Only the button below writes -- so leaving is still how a change is
-     * abandoned, which is what abandonPreview() puts back.
+     * Write what the panel currently says into the document.
+     *
+     * Every change lands as it is made: the rail used to hold them back behind a button,
+     * and closing it threw away whatever had been typed -- a rule nothing on screen said
+     * out loud. Ctrl+Z is the way back now, in both editors (the ACeditor's undo has always
+     * recorded programmatic edits; Vditor's needed ComponentEditor.recordUndo, which is why
+     * that exists).
+     *
+     * Nothing is written until something has actually changed. Merely opening the rail on a
+     * component must leave the page alone -- the rail normalises what it writes (it drops
+     * parameters that are already the default, and empty ones), so writing on open would
+     * rewrite tags nobody touched.
      */
-    previewIntoEditor() {
-      if (!this.editorRendersComponents) return
-      if (!this.isEditingExistingAction || !this.target) return
-      this.editor.previewComponent(this.target, this.wikiCode)
-    },
-    abandonPreview() {
-      if (this.editorRendersComponents && this.target) {
-        this.editor.restoreComponent(this.target)
-      }
-    },
-    /** The rail's one button: write what it has been configured into the document. */
-    writeIntoEditor() {
+    applyToEditor() {
+      if (!this.isOpen || !this.selectedActionId) return
+      const wikiCode = this.wikiCode
+      if (wikiCode === this.written) return
+
       if (this.isEditingExistingAction) {
-        this.updateExistingAction(this.wikiCode)
+        if (!this.target) return
+        this.updateExistingAction(wikiCode)
       } else {
-        this.insertNewAction(this.wikiCode)
+        this.insertNewAction(wikiCode)
       }
+      this.written = wikiCode
     },
     /**
      * Write a component the document does not have yet, where it was decided it would go
@@ -384,7 +452,11 @@ export const appConfig = {
     insertNewAction(wikiCode) {
       this.isEditingExistingAction = true
       this.openKey = null
-      this.editor.insertAt(this.insertAt, wikiCode)
+      // ...and hold on to where it landed. Without this the rail declares itself to be
+      // editing an existing component while pointing at nothing, so applyToEditor's
+      // `if (!this.target) return` swallowed every change made after an insert -- pick
+      // Cards, then change anything, and the page kept the first version.
+      this.target = this.editor.insertAt(this.insertAt, wikiCode) || null
     },
     /**
      * Rewrite the component this panel was opened on -- which is not necessarily the one
@@ -392,24 +464,43 @@ export const appConfig = {
      * closes, several lines above.
      */
     updateExistingAction(wikiCode) {
-      this.editor.replaceRange(this.target, wikiCode)
+      // ...and follow it. In the source editor a target is a row/column range, so writing
+      // a tag of a different length moves the thing this rail is on; the next change would
+      // otherwise be written over whatever now sits at the old coordinates. (The WYSIWYG
+      // editor addresses the widget element itself, which survives being rewritten, and
+      // returns nothing here.)
+      const moved = this.editor.replaceRange(this.target, wikiCode)
+      if (moved) {
+        this.target = moved
+        this.editor.highlightRange?.(moved)
+      }
     },
-    /** Picked from the palette: this names the group AND the action, so both are set. */
+    /**
+     * Picked from the palette: this names the group AND the action, so both are set.
+     *
+     * The component lands in the page here rather than waiting for a button. It is what
+     * picking one means, and it puts the thing being configured in front of the person
+     * configuring it -- there is nothing to judge a colour or a column count against while
+     * the component is still hypothetical.
+     */
     selectFromPalette(groupId, actionId) {
-      this.abandonPreview()
       this.currentGroupId = groupId
       this.currentSelectedAction = null
       this.isEditingExistingAction = false
+      this.written = null
       this.view = 'settings'
       // initValues() clears selectedActionId on the way in, so the choice is applied
       // after it rather than before -- and the watcher then loads the action's params
       setTimeout(() => {
         this.initValues()
         this.selectedActionId = actionId
+        // ...and once the parameters have settled into their defaults, write it. Not in
+        // the same tick: the watcher that loads them has not run yet, so the tag would go
+        // in bare and be rewritten a moment later, costing an undo stop for nothing.
+        setTimeout(() => this.applyToEditor(), 0)
       }, 0)
     },
     backToPalette() {
-      this.abandonPreview()
       this.view = 'palette'
       this.paletteFilter = ''
       // whatever was being edited is abandoned here: the rail is picking a component to
@@ -421,7 +512,6 @@ export const appConfig = {
     initValues() {
       this.values = {}
       this.actionParams = {}
-      const previousSelectedActionId = this.selectedActionId
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
         const holder = document.createElement('div')
@@ -434,17 +524,6 @@ export const appConfig = {
 
         const newActionId = fakeDom.tagName.toLowerCase()
         this.selectedActionId = newActionId
-        // Get Action group
-        for (const groupId in this.actionGroups) {
-          if (
-            Object.keys(this.actionGroups[groupId].actions).includes(
-              newActionId,
-            )
-          ) {
-            this.currentGroupId = groupId
-            break
-          }
-        }
         // Get Form if needed
         if (this.needFormField) {
           if (!this.selectedFormsIds) {
@@ -453,20 +532,17 @@ export const appConfig = {
           this.getSelectedFormsByAjax()
         }
 
-        // For bazar action, name is contained inside the template attribute
-        if (newActionId === 'entrylist') {
-          for (const actionId in this.actions) {
-            const action = this.actions[actionId]
-            if (
-              action &&
-              action.properties &&
-              action.properties.template &&
-              action.properties.template.value === this.values.template
-            ) {
-              this.selectedActionId = actionId
-            }
-          }
-        }
+        // ...and which component that tag belongs to, which is not always the tag's own
+        // name: thirteen of them write `{{entrylist}}` and are told apart by their pins
+        this.selectedActionId =
+          matchComponent(this.components, newActionId, this.values) ??
+          newActionId
+        // a Presentation is reached through any of its sources' tags, so the source it is
+        // showing is the tag it was written as -- not whichever one the setting defaults to
+        const sourceSetting = Object.entries(
+          this.selectedAction?.properties || {},
+        ).find(([, config]) => config?.decidesTag)
+        if (sourceSetting) this.values[sourceSetting[0]] = newActionId
         if (this.$refs.specialInput)
           this.$refs.specialInput.forEach((component) =>
             component.parseNewValues(this.values),
@@ -478,25 +554,25 @@ export const appConfig = {
           )
         this.selectedFormsIds = null
         this.selectedActionId = ''
-        // Bazar dynamic by default
-        if (this.isEntryListAction) this.values.dynamic = true
+        // a list is dynamic by default -- declared by the component now (`dynamic` is one
+        // of its shared settings) rather than inferred from which drawer it came out of
+        if (this.selectedAction?.needsForm) this.values.dynamic = true
       }
       this.updateActionParams()
-      // If only one action available, select it
-      if (Object.keys(this.actions).length === 1) {
-        if (
-          this.selectedActionId === '' &&
-          previousSelectedActionId === Object.keys(this.actions)[0]
-        ) {
-          this.selectedActionId = Object.keys(this.actions)[0]
-          // force watcher without changing value because VueJs will not detect the change
-          // The comparison between changes is done at regular interval, so there will not have detection
-          // of change if the value retrieve its previous value before the end of the interval
-          this.watchSelectedActionId()
-        } else {
-          this.selectedActionId = Object.keys(this.actions)[0]
-        }
-      }
+      // (a group holding exactly one action used to be auto-selected here. A component is
+      // always chosen outright now -- from a card, or by the cursor landing in one -- so
+      // there is never a single candidate left to guess at.)
+    },
+    /**
+     * The tag named by a `decidesTag` setting, when the component has one and the value it
+     * holds is a tag the component actually writes. Null otherwise, so the first tag wins.
+     */
+    tagDecidedBySetting() {
+      const configs = this.selectedActionAllConfigs
+      const name = Object.keys(configs).find((key) => configs[key]?.decidesTag)
+      if (!name) return null
+      const value = this.values[name]
+      return (this.selectedAction?.tags || []).includes(value) ? value : null
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
@@ -605,6 +681,60 @@ export const appConfig = {
       this.values[propName] = value
       this.updateActionParams()
     },
+    /**
+     * How many of the panel's six columns this setting takes. Half by default; a composite
+     * input takes the row whether it asked to or not, since it is a panel rather than a
+     * control and there is nothing sensible to put beside it.
+     */
+    spanOf(config) {
+      if (config?.span) return config.span
+      const wide = [
+        'class',
+        'field-mapping',
+        'icon-mapping',
+        'color-mapping',
+        'columns-width',
+        'nav-links',
+        'facets',
+        'sort-fields',
+        'geo',
+        'divider',
+        'hint',
+      ]
+
+      return wide.includes(config?.type) ? 6 : 3
+    },
+    /**
+     * Take a shared parameter apart into the settings that write it.
+     *
+     * `class="cover full-width text-left"` is four independent choices in a trench coat.
+     * They are ordinary settings now, so on the way in each one claims the tokens it knows
+     * -- and whatever is left over is somebody's hand-written class, which is kept as it is
+     * on the first setting that will hold it.
+     */
+    splitSharedValues() {
+      this.sharedRest = {}
+      const configs = this.selectedActionAllConfigs
+      for (const [target, names] of Object.entries(sharedTargets(configs))) {
+        const written = String(this.values[target] ?? '')
+        const tokens = written.split(/\s+/).filter(Boolean)
+        const claimed = new Set()
+        for (const name of names) {
+          const mine = tokensOf(configs[name]).filter((t) => tokens.includes(t))
+          if (mine.length) {
+            this.values[name] = mine[0]
+            claimed.add(mine[0])
+          } else if (configs[name].type === 'checkbox') {
+            this.values[name] = configs[name].uncheckedvalue ?? ''
+          }
+        }
+        // whatever no setting recognised is not ours to drop
+        this.sharedRest[target] = tokens
+          .filter((t) => !claimed.has(t))
+          .join(' ')
+        delete this.values[target]
+      }
+    },
     initValuesOnActionSelected() {
       if (!this.selectedAction) return
       // Populate the values field from the config
@@ -617,13 +747,29 @@ export const appConfig = {
         if (configValue && !this.values[propName])
           this.values[propName] = configValue
       }
-      if (
-        this.isEntryListAction &&
-        this.selectedAction.properties &&
-        this.selectedAction.properties.template
+      // a component's pins are values it always writes, so they are part of what it says
+      // before anyone touches a field. `entrylist` was the only one that got this, and it
+      // got it by name.
+      Object.entries(this.selectedAction.pins || {}).forEach(
+        ([name, value]) => {
+          this.values[name] = value
+        },
       )
-        this.values.template = this.selectedAction.properties.template.value
-      setTimeout(() => this.updateActionParams(), 0)
+      this.splitSharedValues()
+      setTimeout(() => {
+        this.updateActionParams()
+        // ...and now that the inputs have settled, remember what this component already
+        // says. Several of them emit as they mount -- a checkbox reports itself unticked
+        // before anyone has seen it -- so "has anything changed?" cannot be answered by
+        // watching for a change; it is answered by comparing against this.
+        //
+        // Only when the document already holds the component. When one is being inserted
+        // there is nothing to be the same as, and the first value computed is what gets
+        // written.
+        if (this.isEditingExistingAction && this.written === null) {
+          this.written = this.wikiCode
+        }
+      }, 0)
     },
     updateActionParams() {
       if (!this.selectedAction) return
@@ -644,7 +790,7 @@ export const appConfig = {
         if (
           Object.prototype.hasOwnProperty.call(result, key) ||
           value === undefined ||
-          (config && config.default && `${value}` === `${config.default}`) ||
+          isDefaultValue(config, value) ||
           typeof value == 'object' ||
           (config && config.mapped === false) ||
           (config && !this.checkConfigDisplay(config))
@@ -653,11 +799,32 @@ export const appConfig = {
         }
         result[key] = value
       }
-      // Adds values from special components
+      // ...and put the shared parameters back together: every setting that writes into
+      // `class` contributes one token, in the order they are declared, with whatever the
+      // page had that no setting recognised kept on the end.
+      const configs = this.selectedActionAllConfigs
+      for (const [target, names] of Object.entries(sharedTargets(configs))) {
+        const tokens = names
+          .filter((name) => this.checkConfigDisplay(configs[name]))
+          .map((name) => this.values[name])
+        const rest = this.sharedRest[target]
+        const joined = [...tokens, rest]
+          .map((t) => (t === undefined || t === null ? '' : String(t).trim()))
+          .filter(Boolean)
+          .join(' ')
+        names.forEach((name) => delete result[name])
+        if (joined) result[target] = joined
+      }
+
+      // Adds values from special components -- but only the ones on screen. They are
+      // hidden with v-show, so a `showIf` that stops one being shown leaves it in $refs
+      // and it went on contributing its parameter: picking a feed still wrote the form
+      // mapping that only a form can have (ticket 37).
       if (this.$refs.specialInput)
-        this.$refs.specialInput.forEach(
-          (p) => (result = { ...result, ...p.getValues() }),
-        )
+        this.$refs.specialInput.forEach((p) => {
+          if (p.config && !this.checkConfigDisplay(p.config)) return
+          result = { ...result, ...p.getValues() }
+        })
 
       // default value for 'entrylist'
       if (this.selectedActionId === 'entrylist')
@@ -676,7 +843,7 @@ export const appConfig = {
       this.actionParams = orderedResult
     },
     watchSelectedActionId() {
-      if (!this.isEntryListAction && !this.isEditingExistingAction) {
+      if (!this.selectedAction?.needsForm && !this.isEditingExistingAction) {
         this.values = {}
       }
       this.initValuesOnActionSelected()
@@ -699,11 +866,15 @@ export const appConfig = {
     },
     /**
      * Every change to any parameter ends up here, since they all feed `wikiCode` -- which
-     * is why the preview follows this rather than each input. The editor debounces: a
-     * preview costs a request, and this fires on every keystroke in a text field.
+     * is why the write follows this rather than each input.
+     *
+     * Debounced, and the debounce is what makes undo usable: each write is one stop for
+     * Ctrl+Z, so writing per keystroke would make typing `300` into a height field three
+     * of them. A pause in typing is the unit of undo, which is what every editor does.
      */
     wikiCode() {
-      this.previewIntoEditor()
+      clearTimeout(this.applyTimer)
+      this.applyTimer = setTimeout(() => this.applyToEditor(), 400)
     },
   },
 }

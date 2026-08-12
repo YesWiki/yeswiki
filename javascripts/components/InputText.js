@@ -18,7 +18,8 @@ export default {
       <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       <input :type="config.type" :value="value"
              v-on:input="$emit('input', $event.target.value)" class="yw-input"
-             :required="config.required" :min="config.min" :max="config.max" ref="input"
+             :required="config.required" :min="config.min" :max="config.max"
+             :step="config.step" ref="input"
       />
       <input-hint :config="config"></input-hint>
     </div>

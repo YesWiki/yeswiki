@@ -126,12 +126,46 @@ input[type='range'] {
   left: 0.9rem !important;
 }
 
+/* A checkbox's text is a caption like every other label in this panel, at the same size
+   as one. The `padding-left` made room for a box drawn as a pseudo-element in a styling
+   this panel no longer uses -- the input is a real checkbox sitting right there, so the
+   padding was a 1.5rem gap between the box and the words belonging to it. */
 #actions-builder-app .checkbox label {
-  font-size: 0.9em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: 0.85;
 }
 
 #actions-builder-app [type='checkbox'] + span:not(.lever) {
-  padding-left: 1.5rem;
+  padding-left: 0;
+}
+
+/* The caption sits beside the icon, the way it does for every other setting -- `100%` put
+   it on a line of its own and left the icon stranded on the line above. `auto`, so it takes
+   what is left of the row after the icon; the box and its sentence wrap to the next line
+   because that one asks for the full width. */
+#actions-builder-app .checkbox .checkbox__title {
+  flex: 1 1 auto;
+}
+
+/* the same distance between an icon and its caption as every other setting has -- the grid
+   the others are laid out on gives them 0.4rem, and this row had none */
+#actions-builder-app .checkbox {
+  column-gap: 0.4rem;
+}
+
+/* Plain inline flow, not flex: a box and the sentence naming it are text, and as flex items
+   the sentence became a flex item that shrank to its longest word -- three lines of it in a
+   half-width column that had room for one and a half. */
+#actions-builder-app .checkbox > label:not(.checkbox__title) {
+  display: block;
+  flex: 1 1 100%;
+}
+
+#actions-builder-app .checkbox > label:not(.checkbox__title) input {
+  margin-right: 0.4em;
+  vertical-align: middle;
 }
 
 #actions-builder-app
@@ -167,8 +201,9 @@ input[type='range'] {
   margin-bottom: 0;
 }
 
-/* ...except that the builder is a 340px rail now, not a wide modal: a label and its
-   control no longer fit on one row, and side by side they get a few characters each.
+/* ...except that the builder is a narrow rail now (--yw-rail-width in yw-core.css), not a
+   wide modal: a label and its control no longer fit on one row, and side by side they get
+   a few characters each.
    Declared right after the rules above because it ties with them on specificity, and
    order is what decides a tie.
 
@@ -196,11 +231,63 @@ input[type='range'] {
   flex-grow: 0;
 }
 
+/* A setting's icon belongs to its label.
+
+   It was written as an input-group prefix -- a box to the left of the control, which is
+   what an `.input-group-addon` is -- and that worked while the builder was a wide modal
+   laying label and control out side by side. The rail stacks them into a column instead,
+   and a column put the addon on a row of its own: a bordered box above the label, holding
+   an `<i class="fa …">` that has drawn nothing since FontAwesome left core. That empty box
+   is the short horizontal rule that has been sitting above half the settings in this panel.
+   The icon draws again (AddonIcon renders the sprite), so the box has to go somewhere that
+   makes sense -- next to the words it illustrates.
+
+   The stacked group becomes a two-column grid for it: icon, then label, then the control
+   across both. With no icon the first column collapses to nothing and the label starts at
+   the edge, so a setting without one is laid out exactly as before. */
+#actions-builder-app
+  :not(.multi-input-container)
+  > *
+  > .input-group:not(.iconpicker-container):not(.checkbox):has(
+    > .yw-form-label
+  ) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 0.4rem;
+}
+
+#actions-builder-app
+  :not(.multi-input-container)
+  > *
+  > .input-group:not(.iconpicker-container):not(.checkbox):has(> .yw-form-label)
+  > *:not(.addon-icon):not(.yw-form-label) {
+  grid-column: 1 / -1;
+}
+
+/* At a third of the rail an icon and a caption are tight, so the caption wraps rather than
+   losing the icon -- two short lines read fine and every setting keeps the mark that makes
+   it recognisable. (The icons used to be hidden here instead, back when the caption was
+   body size and got cut off mid-word.) */
+.config-cell--third .yw-form-label {
+  overflow-wrap: anywhere;
+}
+
 .addon-icon {
-  width: 2.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* no box: it is a mark on a label, not a control glued to an input */
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--neutral-color);
+}
+
+.addon-icon .yw-icon {
+  width: 1.1em;
+  height: 1.1em;
 }
 
 .input-group-addon.btn {
@@ -210,11 +297,6 @@ input[type='range'] {
 .input-group-addon.btn-default {
   background-color: #727479;
   border-color: #727479;
-}
-
-#actions-builder-app [type='checkbox'] + span:not(.lever)::before,
-#actions-builder-app [type='checkbox'] + span:not(.lever)::after {
-  margin-top: 2px;
 }
 
 .checkbox {
@@ -250,7 +332,7 @@ input[type='range'] {
 
 /* CONFIG PARAMETERS
    These were laid out for a wide modal: side-by-side columns whose widths the template
-   writes as inline styles (33% each, or 50% for a lone one). In a 340px rail there is
+   writes as inline styles (33% each, or 50% for a lone one). In a rail this narrow there is
    room for exactly one column, so they stack -- and `!important` is what outranks an
    inline style, the same reason the Vditor toolbar rules use it. */
 .panels-config-container {
@@ -268,8 +350,108 @@ input[type='range'] {
   margin-bottom: 1.5rem;
 }
 
+/* The panel is a six-column grid, and each setting says how much of a row it takes: two
+   columns for a third, three for a half (the default), six for the whole row. Six because
+   it is the smallest number that divides evenly by both two and three, which are the two
+   densities these settings actually want.
+
+   Declared per setting rather than inferred from the input's markup. The version before
+   this laid out two per row and used `:has()` to guess which ones needed more -- and a
+   guess is what it stayed: it could see that an input was a checkbox, never that a colour
+   and an alignment belong side by side. */
 .config-panel-content {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: start;
+  gap: 0 12px;
   padding-right: 0;
+}
+
+.config-cell {
+  grid-column: span var(--yw-span, 3);
+  min-width: 0;
+}
+
+/* A control must not be wider than the column it was given. `.yw-input` is laid out with
+   `width: auto` and a flex-grow by the rules above, which in a third of the rail is
+   wider than the third -- so the last column of a three-column row ran off the edge of the
+   panel, taking its label with it. */
+#actions-builder-app .config-cell .yw-input,
+#actions-builder-app
+  .config-cell
+  input:not([type='checkbox']):not([type='radio']),
+#actions-builder-app .config-cell select,
+#actions-builder-app .config-cell .input-image {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ...but not a checkbox. It is a box, not a field: stretched to the width of the column it
+   pushed the words belonging to it onto the next line, which is why they read as a caption
+   floating under a tickbox rather than as one sentence you can click. */
+#actions-builder-app .config-cell input[type='checkbox'] {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* below this a third of the rail is narrower than the words in it */
+@media (max-width: 560px) {
+  .config-cell {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A rail is a column of small controls, and its labels are captions rather than headings:
+   at body size they were the loudest thing in the panel and pushed every input apart. */
+#actions-builder-app .config-panel-content .yw-form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  opacity: 0.85;
+}
+
+/* The picture setting: one button when it is empty, the picture itself when it is not.
+   No text field -- a filename is what gets stored, not what anyone needs to read. */
+.input-image {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.input-image__thumb {
+  display: block;
+  width: 100%;
+  max-height: 90px;
+  object-fit: cover;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+
+/* the file is named by something the listing does not know: show the name rather than a
+   broken picture, so it can still be recognised and removed */
+.input-image__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+/* over the corner of the picture rather than beside it: at a half-width column there is no
+   room for both, and it belongs to the thing it removes */
+.input-image__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0 6px;
+  line-height: 1.4;
+  background: var(--neutral-light-color, #f1f1f1);
+  border: 1px solid var(--neutral-soft-color);
 }
 
 .config-panel-content .hint {
@@ -301,12 +483,25 @@ input[type='range'] {
   flex-grow: 1;
 }
 
+/* These indented a label past an addon that used to be laid over the start of the row. The
+   addon has a column of its own now, so the margin was counted twice and every setting with
+   an icon had its label pushed 2.5rem further in than one without -- which is the ragged
+   left edge down the middle of the panel. Zeroed where the grid is, kept elsewhere for
+   whatever still lays an addon over its label. */
 #actions-builder-panel .input-group-addon + label {
   margin-left: 1rem !important;
 }
 
 #actions-builder-panel .input-group-addon + label.yw-form-label {
   margin-left: 2.5rem !important;
+}
+
+#actions-builder-panel .config-panel-content .input-group-addon + label,
+#actions-builder-panel
+  .config-panel-content
+  .input-group-addon
+  + label.yw-form-label {
+  margin-left: 0 !important;
 }
 
 .multi-input-container .btn-add-element {

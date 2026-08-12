@@ -1,0 +1,175 @@
+/* The shared presentations (ticket 37): one list of Items, drawn four ways.
+
+   Deliberately independent of styles/bazar/*: those style a bazar entry list, and these
+   render Items -- which may have come from a feed or a page index and have no entry behind
+   them at all. Sharing the stylesheet would have meant sharing that assumption. */
+
+.yw-items__empty {
+  margin: 1rem 0;
+  color: var(--neutral-color, #777);
+  font-style: italic;
+}
+
+.yw-item__title {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.yw-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-top: 0.15rem;
+  font-size: 0.85em;
+  color: var(--neutral-color, #777);
+}
+
+.yw-item__description {
+  margin-top: 0.4rem;
+}
+
+/* the description arrives as HTML, so it can bring blocks of its own -- they must not open
+   the item with a gap or close it with one */
+.yw-item__description > :first-child {
+  margin-top: 0;
+}
+
+.yw-item__description > :last-child {
+  margin-bottom: 0;
+}
+
+.yw-item__badge {
+  display: inline-block;
+  margin-right: 0.4em;
+  padding: 0.05em 0.5em;
+  border-radius: 1em;
+  background: var(--neutral-light-color, #f1f1f1);
+  font-size: 0.75em;
+  vertical-align: 0.1em;
+}
+
+/* ---------------------------------------------------------------- card */
+
+.yw-items--card {
+  display: grid;
+  grid-template-columns: repeat(var(--yw-item-columns, 3), minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.yw-item--card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--neutral-soft-color, #ddd);
+  border-radius: 6px;
+  background: var(--main-bg-color, #fff);
+}
+
+.yw-item--card .yw-item__image {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.yw-item--card .yw-item__body {
+  padding: 0.75rem;
+}
+
+/* below this a three-column grid gives each card a few words a line */
+@media (max-width: 700px) {
+  .yw-items--card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- list */
+
+.yw-items--list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.yw-item--list {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--neutral-soft-color, #ddd);
+}
+
+.yw-item--list:last-child {
+  border-bottom: 0;
+}
+
+.yw-item--list .yw-item__image {
+  flex: 0 0 auto;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.yw-item--list .yw-item__body {
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- table */
+
+.yw-items--table {
+  overflow-x: auto;
+}
+
+.yw-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.yw-table th,
+.yw-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--neutral-soft-color, #ddd);
+  text-align: left;
+  vertical-align: top;
+}
+
+/* ------------------------------------------------------------- timeline */
+
+.yw-items--timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+/* the rule everything hangs off, drawn once behind the items rather than per item */
+.yw-items--timeline::before {
+  content: '';
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  left: 0.32rem;
+  width: 2px;
+  background: var(--neutral-soft-color, #ddd);
+}
+
+.yw-item--timeline {
+  position: relative;
+}
+
+.yw-item__marker {
+  position: absolute;
+  top: 0.35rem;
+  left: -1.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--primary-color, #395);
+}
+
+.yw-item--timeline .yw-item__date {
+  display: block;
+  font-size: 0.8em;
+  color: var(--neutral-color, #777);
+}

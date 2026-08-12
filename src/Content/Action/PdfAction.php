@@ -21,14 +21,63 @@ namespace YesWiki\Content\Action;
  */
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-class PdfAction extends YesWikiAction implements RegisteredAction
+class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{pdf}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'pdf';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('pdf')
+                ->category(Category::Media)
+                ->label(_t('AB_attach_pdf_label'))
+                ->icon('file')
+                ->description(_t('AB_attach_pdf_description'))
+                ->hint(_t('AB_attach_pdf_hint'))
+                ->previewHeight('300px')
+                ->notOffered()
+                ->settings(
+                    Setting::text('url')
+                        ->label(_t('AB_attach_pdf_url_label'))
+                        ->required(),
+                    Setting::choice('ratio', [
+                        'portrait' => _t('AB_attach_pdf_ratio_option_portrait'),
+                        'paysage' => _t('AB_attach_pdf_ratio_option_paysage'),
+                        'carre' => _t('AB_attach_pdf_ratio_option_carre'),
+                    ])
+                        ->label(_t('AB_attach_pdf_ratio_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::number('maxwidth')
+                        ->label(_t('AB_attach_pdf_largeur_max_label'))
+                        ->advanced(),
+                    Setting::number('maxheight')
+                        ->label(_t('AB_attach_pdf_hauteur_max_label'))
+                        ->advanced(),
+                    Setting::cssClass('class')
+                        ->label('Classe')
+                        ->subSettings(
+                            Setting::choice('position', [
+                                '' => 'standard',
+                                'pull-left' => 'float left',
+                                'pull-right' => 'float right',
+                            ])
+                            ->label(_t('AB_attach_pdf_position_label'))
+                            ->default('')
+                            ->advanced(),
+                        ),
+                ),
+        ];
     }
 
     public function formatArguments($arg)

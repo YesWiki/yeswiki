@@ -8,17 +8,33 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 
 // TODO create GroupManager
 
-class MailPeriodAction extends YesWikiAction implements RegisteredAction
+class MailPeriodAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{mailperiod}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'mailperiod';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('mailperiod')
+                ->category(Category::Admin)
+                ->label(_t('AB_mailperiod_action_label'))
+                ->icon('mail')
+                ->hint(_t('AB_mailperiod_action_hint'))
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     protected $authenticationService;

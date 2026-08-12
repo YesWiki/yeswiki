@@ -33,7 +33,7 @@
 }
 
 /* One row, not two: the filter and the extension are the same question asked twice, and
-   stacking them pushed the list itself below the fold of a 340px rail. The select takes
+   stacking them pushed the list itself below the fold of the rail. The select takes
    what it needs for ".jpeg" and the search takes the rest. */
 #YesWikiFilePickerPanel .file-picker-filters {
   display: flex;

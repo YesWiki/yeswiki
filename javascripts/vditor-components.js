@@ -67,34 +67,101 @@ const STANDALONE_TAG = /^\{\{((?:(?!\}\})[\s\S])*)\}\}[ \t]*$/
 /** A fence opening or closing, so that a tag written inside one is left alone. */
 const FENCE_DELIMITER = /^ {0,3}(`{3,}|~{3,})/
 
+/**
+ * The other pair of tags that wraps ordinary prose: HedgeDoc's `:::info` ... `:::` alerts.
+ *
+ * Lute has never heard of those either -- worse than a `{{tag}}`, in fact, since the three
+ * lines have no blank line between them and so arrive as *one paragraph* with `:::info` as
+ * its first line of text. So they go through the same fence, and come out as the same two
+ * chips with the box painted behind what they hold.
+ *
+ * Only the four types the wiki has styles for. `:::note` is not an alert to the server
+ * either (src/Render/Formatter/AlertExtension.php) -- it stays the literal text it is, and
+ * a chip saying otherwise would be a lie about what the page will look like.
+ */
+const ALERT = ':::'
+const ALERT_OPEN = /^:::[ \t]*(success|info|warning|danger)[ \t]*$/i
+const ALERT_CLOSE = /^:::[ \t]*$/
+
+const alertType = (line) => (ALERT_OPEN.exec(line)?.[1] || '').toLowerCase()
+
+/** Written out, so `php src/build-js-lang-keys.php` can see each key. */
+function alertLabel(type) {
+  switch (type) {
+    case 'success':
+      return _t('ALERT_SUCCESS')
+    case 'info':
+      return _t('ALERT_INFO')
+    case 'warning':
+      return _t('ALERT_WARNING')
+    case 'danger':
+      return _t('ALERT_DANGER')
+    default:
+      return _t('ALERT')
+  }
+}
+
 const actionsData = () =>
   typeof actionsBuilderData === 'object' ? actionsBuilderData : null
 
-/** The action's declaration in the palette's data, or null for one nothing declares. */
+/**
+ * The Component that writes this tag, or null for a tag nothing declares.
+ *
+ * By the tag rather than by the component id: what is in the page is `{{entrylist}}`, and
+ * the thirteen components that write it are told apart by their pinned settings -- which is
+ * more than this needs. All it asks is "is this a wrapper, and what is it called".
+ */
 function actionConfiguration(name) {
   const data = actionsData()
   if (!data) return null
-  for (const group of Object.values(data.action_groups || {})) {
-    if (group.actions && group.actions[name]) return group.actions[name]
-  }
-  return null
+  const components = Object.values(data.components || {})
+
+  return (
+    components.find((c) => (c.tags || []).includes(name) && !c.pins) ||
+    components.find((c) => (c.tags || []).includes(name)) ||
+    null
+  )
 }
 
-/** `{{grid}}` and `{{end elem="grid"}}` are half a component each, not two components. */
+/**
+ * `{{grid}}` and `{{end elem="grid"}}` are half a component each, not two components -- and
+ * `:::info` and `:::` are the same thing written differently.
+ *
+ * `name` is what an opening tag and its closing tag agree on, which is what lets a stack
+ * pair them; `closes` is that name, said by the closing half.
+ */
 function tagRole(tag) {
-  const name = tag
-    .trim()
+  const line = tag.trim()
+  if (ALERT_OPEN.test(line)) return { name: ALERT, role: 'open' }
+  if (ALERT_CLOSE.test(line))
+    return { name: ALERT, role: 'close', closes: ALERT }
+
+  const name = line
     .replace(/^\{\{/, '')
     .replace(/\}\}$/, '')
     .trim()
     .split(/\s/)[0]
-  if (name === 'end') return { name, role: 'close' }
+  if (name === 'end')
+    return { name, role: 'close', closes: closedElement(line) }
 
   return {
     name,
     role: actionConfiguration(name)?.isWrapper ? 'open' : 'leaf',
   }
 }
+
+/** The half that closes this one, which is what a wrapper has to be rendered with. */
+function closingFor(tag) {
+  const { name } = tagRole(tag)
+
+  return name === ALERT ? ALERT : `{{end elem="${name}"}}`
+}
+
+/** A line that is a component on its own, and so travels through Vditor in a fence. */
+const isComponentLine = (line) =>
+  (STANDALONE_TAG.test(line) && line !== '{{}}') ||
+  ALERT_OPEN.test(line) ||
+  ALERT_CLOSE.test(line)
 
 /**
  * Wrap every standalone tag in a fence, so Vditor makes a widget of it.
@@ -106,6 +173,7 @@ export function fenceComponents(markdown) {
   const lines = String(markdown).split('\n')
   const out = []
   let openFence = null
+  let alertDepth = 0
 
   lines.forEach((line, index) => {
     const delimiter = FENCE_DELIMITER.exec(line)
@@ -118,16 +186,36 @@ export function fenceComponents(markdown) {
         openFence = null
       }
       out.push(line)
-    } else if (delimiter) {
+
+      return
+    }
+    if (delimiter) {
       openFence = delimiter[1]
       out.push(line)
-    } else if (STANDALONE_TAG.test(line) && line !== '{{}}') {
-      const above = index > 0 && lines[index - 1].trim() !== ''
-      const below = index < lines.length - 1 && lines[index + 1].trim() !== ''
-      out.push('```' + fenceLanguage(above, below), line, '```')
-    } else {
-      out.push(line)
+
+      return
     }
+
+    // A `:::` closing nothing is not half of an alert -- the server leaves it as the text
+    // it is, so the depth is counted here rather than the line merely matched.
+    if (ALERT_OPEN.test(line)) {
+      alertDepth += 1
+    } else if (ALERT_CLOSE.test(line)) {
+      if (alertDepth === 0) {
+        out.push(line)
+
+        return
+      }
+      alertDepth -= 1
+    } else if (!isComponentLine(line)) {
+      out.push(line)
+
+      return
+    }
+
+    const above = index > 0 && lines[index - 1].trim() !== ''
+    const below = index < lines.length - 1 && lines[index + 1].trim() !== ''
+    out.push('```' + fenceLanguage(above, below), line, '```')
   })
 
   return out.join('\n')
@@ -153,7 +241,7 @@ export function unfenceComponents(markdown) {
     if (
       fence &&
       body !== undefined &&
-      STANDALONE_TAG.test(body) &&
+      isComponentLine(body) &&
       closing !== undefined &&
       new RegExp('^' + fence[1] + '[ \t]*$').test(closing)
     ) {
@@ -216,6 +304,12 @@ export function rewriteBlock(block, tag) {
   const preview = block.querySelector('.vditor-wysiwyg__preview')
   preview.setAttribute('data-render', '2')
   renderComponent(preview)
+  // ...and say so. `2` means "not rendered yet", and leaving it there after rendering
+  // invites Vditor's next pass to render the block again -- as the fenced code block it
+  // is underneath, since that pass does not go through customRenders. The widget then
+  // briefly wears the grey slab and monospace of a code block. insertAt() has always put
+  // this back; rewriting one did not, which is why it only happened while editing.
+  preview.setAttribute('data-render', '1')
 }
 
 const icon = (name) => legacyIconToSprite(name) || ''
@@ -240,6 +334,34 @@ const isConfigurable = (name) => {
 /** What a `{{end elem="..."}}` closes. */
 const closedElement = (tag) =>
   /elem\s*=\s*["']([^"']+)["']/.exec(tag)?.[1] || 'end'
+
+/**
+ * Which alert a `:::` closes. Unlike `{{end elem="section"}}`, a closing alert fence says
+ * nothing about what it closes -- the type is on the opening fence, several blocks above --
+ * so the chip has to go and look, or it could only ever be labelled "alert".
+ *
+ * Backwards from the block, counting: the nearest opening fence that is not already closed
+ * by one of the fences in between is the one this closes.
+ */
+function alertTypeClosedBy(previewElement) {
+  const root = previewElement.closest('.vditor-wysiwyg') || document
+  const codes = [...root.querySelectorAll('.vditor-wysiwyg__pre code')]
+  const own = previewElement
+    .closest('.vditor-wysiwyg__block')
+    ?.querySelector('.vditor-wysiwyg__pre code')
+  let depth = 0
+
+  for (let i = codes.indexOf(own) - 1; i >= 0; i -= 1) {
+    const line = codes[i].textContent.trim()
+    if (ALERT_CLOSE.test(line)) depth += 1
+    else if (ALERT_OPEN.test(line)) {
+      if (depth === 0) return alertType(line)
+      depth -= 1
+    }
+  }
+
+  return ''
+}
 
 /**
  * Whether this tag is half of a wrapper, and so has no preview of its own -- `{{grid}}`
@@ -275,9 +397,24 @@ function componentRole(previewElement, tag) {
  *   and only its button writes into the document.
  */
 export function renderComponent(previewElement, pendingTag = null) {
-  const tag = (pendingTag ?? previewElement.textContent ?? '').trim()
+  // The block's own source, not the panel's text. They are the same thing the FIRST time
+  // this runs -- Vditor hands over a preview still holding the fenced code -- but only the
+  // first time: rendering replaces that content with the widget, so on any later render
+  // `previewElement.textContent` is the widget's LABEL. Re-rendering a `{{section}}` after
+  // the settings rail rewrote it therefore read the tag as `Section`, which no declaration
+  // matches, so it lost its wrapper role and came back as a leaf: the inline chip that says
+  // where a region starts turned into the floating bar of a standalone component.
+  const source = previewElement
+    .closest('.vditor-wysiwyg__block')
+    ?.querySelector('.vditor-wysiwyg__pre code')?.textContent
+  const tag = (pendingTag ?? source ?? previewElement.textContent ?? '').trim()
   const { name, role } = componentRole(previewElement, tag)
-  const label = labelFor(role === 'close' ? closedElement(tag) : name)
+  const label =
+    name === ALERT
+      ? alertLabel(
+          role === 'close' ? alertTypeClosedBy(previewElement) : alertType(tag),
+        )
+      : labelFor(role === 'close' ? closedElement(tag) : name)
 
   const widget = document.createElement('div')
   widget.className = `yw-component yw-component--${role}`
@@ -350,8 +487,7 @@ const wrapperPaints = new Map()
 
 function wrapperPaint(openTag) {
   if (!wrapperPaints.has(openTag)) {
-    const { name } = tagRole(openTag)
-    const content = `${openTag}\n{{end elem="${name}"}}`
+    const content = `${openTag}\n${closingFor(openTag)}`
     wrapperPaints.set(
       openTag,
       fetch(wiki.url('wiki/render', { content }))
@@ -419,12 +555,11 @@ function wrapperRegions(content) {
   for (const block of content.children) {
     const tag = pendingTag(block) ?? blockTag(block)
     if (!tag) continue
-    const { name } = tagRole(tag)
-    if (name !== 'end') {
+    const { name, role, closes } = tagRole(tag)
+    if (role !== 'close') {
       open.push({ name, block, tag })
       continue
     }
-    const closes = closedElement(tag)
     const index = open.findLastIndex((candidate) => candidate.name === closes)
     if (index === -1) continue
     regions.push({ ...open[index], closeBlock: block })
@@ -434,7 +569,25 @@ function wrapperRegions(content) {
   // A region is recorded when its closing tag is found, so an inner one is recorded before
   // the outer one holding it. Reversed, that is outermost first -- which is the order they
   // have to be painted in for a nested wrapper to be painted over the one it sits in.
-  return regions.reverse()
+  regions.reverse()
+
+  // ...and which of them sits inside another, by where their halves fall among the blocks.
+  // Only a region that is nobody's inside may reach out past the text column (see the
+  // inset in paintInto): a callout written inside a section that grew wider than the
+  // section holding it, by exactly the padding of each.
+  const blocks = [...content.children]
+  regions.forEach((region) => {
+    region.from = blocks.indexOf(region.block)
+    region.to = blocks.indexOf(region.closeBlock)
+  })
+  regions.forEach((region) => {
+    region.nested = regions.some(
+      (other) =>
+        other !== region && other.from < region.from && other.to > region.to,
+    )
+  })
+
+  return regions
 }
 
 /**
@@ -515,10 +668,71 @@ function brace(character) {
   return span
 }
 
+/**
+ * Classes a wrapper puts on its CONTENT rather than on its box.
+ *
+ * The paint behind a region is the action's own element, emptied -- so anything that styles
+ * what is inside it can never show there. Alignment and text tone are exactly that: a
+ * `{{section class="text-center white"}}` centres and lightens its words, and the words in
+ * the editor are the editor's own, sitting in front of an empty painted box. Changing
+ * either setting therefore did nothing on screen at all.
+ *
+ * So these few are copied onto the blocks the region holds. Classes only, which
+ * VditorDOM2Md ignores -- the same reason markComments can mark a comment without the mark
+ * reaching the document.
+ */
+const CONTENT_CLASSES = [
+  'text-left',
+  'text-center',
+  'text-right',
+  'text-justify',
+  'white',
+  'black',
+]
+
+function styleRegionContent(content, regions) {
+  const blocks = [...content.children]
+  blocks.forEach((block) => block.classList.remove(...CONTENT_CLASSES))
+
+  regions.forEach((region) => {
+    const written = /class\s*=\s*["']([^"']*)["']/.exec(region.tag)?.[1] ?? ''
+    const classes = written
+      .split(/\s+/)
+      .filter((token) => CONTENT_CLASSES.includes(token))
+    if (!classes.length) return
+    for (let i = region.from + 1; i < region.to; i += 1) {
+      blocks[i]?.classList.add(...classes)
+    }
+  })
+}
+
+/**
+ * The callout region the caret's block sits in, or null.
+ *
+ * Reuses the same stack-paired regions the paint uses: a callout IS a wrapper, so "which
+ * one am I inside" is a question already answered. Only its own region counts -- a block
+ * inside a `{{section}}` that happens to hold a callout elsewhere is not in a callout.
+ */
+export function calloutRegionAt(content, block) {
+  if (!block) return null
+  const blocks = [...content.children]
+  const index = blocks.indexOf(block)
+  if (index === -1) return null
+
+  return (
+    wrapperRegions(content).find(
+      (region) =>
+        tagRole(region.tag).name === ALERT &&
+        region.from < index &&
+        region.to > index,
+    ) ?? null
+  )
+}
+
 export function paintWrappers(content) {
   const layer = wrapperLayer(content)
   const regions = wrapperRegions(content)
-  const signature = regions.map((region) => region.tag).join(' ')
+  const signature = regions.map((region) => region.tag).join(' ')
 
   if (layer.dataset.signature !== signature) {
     layer.dataset.signature = signature
@@ -527,16 +741,10 @@ export function paintWrappers(content) {
       const slot = document.createElement('div')
       layer.appendChild(slot)
       region.slot = slot
-      wrapperPaint(region.tag).then((paint) => {
-        if (!paint || !slot.isConnected) return
-        const clone = paint.cloneNode(true)
-        slot.appendChild(clone)
-        // measured rather than guessed, and only once it is in the document: whether an
-        // element paints anything is a question about the theme, not about the action
-        if (!paintsSomething(clone)) clone.remove()
-      })
     })
   }
+
+  styleRegionContent(content, regions)
 
   // positions are recomputed every time: the region moves whenever anything above it or
   // inside it changes height, which is most keystrokes
@@ -544,10 +752,53 @@ export function paintWrappers(content) {
   regions.forEach((region, index) => {
     const slot = region.slot || layer.children[index]
     if (!slot) return
+    // ...and the paint, if the slot has none. A paint is fetched, so a rebuild that
+    // happens while one is in flight throws away the slot it was going to land in
+    // (`isConnected` is false by the time it arrives) -- and since the promise is cached
+    // and the signature does not change again, nothing would ever ask for it a second
+    // time. Painting from here rather than only on a rebuild makes that self-healing.
+    paintInto(slot, region.tag, region.nested)
     const from = region.block.getBoundingClientRect()
     const to = region.closeBlock.getBoundingClientRect()
     slot.style.top = `${from.top - layerBox.top}px`
     slot.style.height = `${Math.max(0, to.bottom - from.top)}px`
+  })
+}
+
+/**
+ * Put a wrapper's paint in its slot, unless it is already there or already on its way.
+ *
+ * Idempotent on purpose: this is called from every repaint, which is every animation frame
+ * in which anything moved, and a fetch per frame would be a fetch per keystroke.
+ */
+function paintInto(slot, tag, nested = false) {
+  if (slot.firstElementChild || slot.dataset.painting === tag) return
+  slot.dataset.painting = tag
+
+  wrapperPaint(tag).then((paint) => {
+    if (!paint || !slot.isConnected) return
+    const clone = paint.cloneNode(true)
+    slot.appendChild(clone)
+    // measured rather than guessed, and only once it is in the document: whether an
+    // element paints anything is a question about the theme, not about the action
+    if (!paintsSomething(clone)) {
+      clone.remove()
+
+      return
+    }
+    // A box's padding is part of how it looks -- an alert's words are not written against
+    // its coloured rule -- and the text this is painted behind is not inside the box, so it
+    // cannot be pushed off the edge by it. The region grows outwards by that much instead,
+    // which puts the words where the padding would have put them.
+    //
+    // Not when it is inside another one, though: growing outwards there means growing past
+    // the box it is written in. A callout inside a section came out wider than the section.
+    if (!nested) {
+      slot.style.setProperty(
+        '--yw-paint-inset',
+        getComputedStyle(clone).paddingLeft,
+      )
+    }
   })
 }
 
@@ -564,20 +815,36 @@ export function paintWrappers(content) {
  */
 function paintsSomething(element) {
   const style = getComputedStyle(element)
-  const transparent = (color) =>
-    !color || color === 'transparent' || /,\s*0\)$/.test(color)
 
   return (
-    !transparent(style.backgroundColor) ||
+    !isTransparent(style.backgroundColor) ||
     style.backgroundImage !== 'none' ||
     style.boxShadow !== 'none' ||
     ['Top', 'Right', 'Bottom', 'Left'].some(
       (side) =>
         parseFloat(style[`border${side}Width`]) > 0 &&
         style[`border${side}Style`] !== 'none' &&
-        !transparent(style[`border${side}Color`]),
+        !isTransparent(style[`border${side}Color`]),
     )
   )
+}
+
+/**
+ * Whether a computed colour paints nothing at all -- which is to say, whether its ALPHA is
+ * zero.
+ *
+ * This used to be `/,\s*0\)$/.test(color)`, meaning "ends in `, 0)`". That is what
+ * `rgba(0, 0, 0, 0)` looks like, so it worked on the case it was written for and on nothing
+ * else: `rgb()` has no alpha component, so the test read its BLUE channel instead. Every
+ * colour with no blue in it -- pure red, orange, olive, `#c64600` -- was declared invisible
+ * and its section painted nothing.
+ */
+function isTransparent(color) {
+  if (!color || color === 'transparent') return true
+  const parts = /^rgba?\(([^)]+)\)/.exec(color)?.[1].split(',')
+
+  // three components is `rgb()`, which has no alpha and is therefore opaque
+  return parts !== undefined && parts.length > 3 && parseFloat(parts[3]) === 0
 }
 
 function wrapperLayer(content) {

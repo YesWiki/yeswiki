@@ -22,8 +22,8 @@ const PANEL = '#actions-builder-panel'
 const PALETTE = `${PANEL} .actions-builder-panel__palette`
 const COMPONENT = `${PANEL} .actions-builder-panel__component`
 const BACK = `${PANEL} .actions-builder-panel__back`
-/** The rail's one button: write what it holds into the document. */
-const SUBMIT = `${PANEL} [data-yw-action-submit]`
+/** The panel of settings, which is what replaces the palette once a component is picked. */
+const SETTINGS = `${PANEL} .action-parameters-container`
 /** The tint over the component the rail is on -- an ace marker, not a selection. */
 const MARKER = '.ace-body .ace_marker-layer .yw-active-group'
 
@@ -67,7 +67,7 @@ const putCursorAt = async (page: Page, row: number, column: number) => {
 const pickFromPalette = async (page: Page, label: string) => {
   await page.locator(`${PANEL} input[type="text"]`).first().fill(label)
   await page.locator(COMPONENT, { hasText: label }).first().click()
-  await expect(page.locator(SUBMIT)).toBeVisible()
+  await expect(page.locator(SETTINGS)).toBeVisible()
 }
 
 test('the builder is a rail down the right-hand side', async ({
@@ -138,14 +138,13 @@ test('inserting from the rail writes the action and stays on it', async ({
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openEditor(page)
   await openBuilder(page)
+  // picking it is what writes it: there is no button to confirm with, and every change
+  // after this one lands as it is made (ticket 36)
   await pickFromPalette(page, 'Bouton')
-
-  await page.locator(SUBMIT).click()
 
   await expect.poll(() => editorContent(page)).toMatch(/\{\{button/)
   await expect(page.locator(PANEL)).toBeVisible()
-  // and it edits it now: the same button updates the code instead of inserting it again
-  await expect(page.locator(SUBMIT)).toHaveText(/jour/)
+  await expect(page.locator(SETTINGS)).toBeVisible()
 })
 
 /**
@@ -204,7 +203,7 @@ test('picking from the palette opens its settings, and back returns', async ({
 
   // the palette is gone, and what replaced it is that component's own parameters
   await expect(page.locator(PALETTE)).toHaveCount(0)
-  await expect(page.locator(SUBMIT)).toBeVisible()
+  await expect(page.locator(SETTINGS)).toBeVisible()
   // the card named the component, so the panel is on it: no second choice to make here,
   // and the header says which one rather than which drawer it came out of
   await expect(page.locator(`${PANEL} .yw-rail__title`)).toHaveText(
@@ -330,7 +329,6 @@ test('the toolbar button adds a component after the one the cursor is in', async
     'and it is on none of them yet',
   ).toHaveCount(0)
   await pickFromPalette(page, 'Bouton')
-  await page.locator(SUBMIT).click()
 
   await expect
     .poll(async () => (await editorContent(page)).split('\n').length)
@@ -388,7 +386,6 @@ test('updating from a closing tag rewrites the opening one', async ({
 
   await putCursorAt(page, 2, 5)
   await page.locator(`${PANEL} input[value="111px"]`).fill('999px')
-  await page.locator(SUBMIT).click()
 
   await expect
     .poll(async () => (await editorContent(page)).split('\n')[0])

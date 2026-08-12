@@ -6,6 +6,11 @@ use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
+use YesWiki\Kernel\Component\SettingGroup;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -34,11 +39,181 @@ use YesWiki\Render\Service\TemplateHelperService;
  * (ADR-0006). Anything that is not a known tag falls back to the **legacy** search for an
  * encoded filename under files/, which is web-served directly, as it always was.
  */
-class AttachAction extends YesWikiAction implements RegisteredAction
+class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'attach';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('attach')
+                ->category(Category::Media)
+                ->label(_t('AB_attach_attach_title'))
+                ->icon('paperclip')
+                ->description(_t('AB_attach_attach_description'))
+                ->previewHeight('400px')
+                ->notOffered()
+                ->group(self::pictureSettings())
+                ->settings(
+                    Setting::text('file')
+                        ->label(_t('AB_attach_file_label'))
+                        ->hint(_t('AB_attach_file_hint')),
+                    Setting::text('desc')
+                        ->label(_t('ALTERNATIVE_TEXT')),
+                    Setting::choice('displaypdf', [
+                        _t('AB_attach_yes'),
+                        _t('AB_attach_no'),
+                    ])
+                        ->label(_t('AB_attach_displaypdf_label'))
+                        ->default('')
+                        ->showIf([
+                            'file' => '\\.pdf$',
+                        ]),
+                    Setting::choice('ratio', [
+                        'portrait' => _t('AB_attach_pdf_ratio_option_portrait'),
+                        'paysage' => _t('AB_attach_pdf_ratio_option_paysage'),
+                        'carre' => _t('AB_attach_pdf_ratio_option_carre'),
+                    ])
+                        ->label(_t('AB_attach_pdf_ratio_label'))
+                        ->default('')
+                        ->showIf([
+                            'displaypdf' => 1,
+                            'file' => '\\.pdf$',
+                        ])
+                        ->advanced(),
+                    Setting::number('maxwidth')
+                        ->label(_t('AB_attach_pdf_largeur_max_label'))
+                        ->showIf([
+                            'displaypdf' => 1,
+                            'file' => '\\.pdf$',
+                        ])
+                        ->advanced(),
+                    Setting::number('maxheight')
+                        ->label(_t('AB_attach_pdf_hauteur_max_label'))
+                        ->showIf([
+                            'displaypdf' => 1,
+                            'file' => '\\.pdf$',
+                        ])
+                        ->advanced(),
+                ),
+        ];
+    }
+
+    /**
+     * The settings that only mean something once the file is a picture (or a PDF).
+     *
+     * A `commons` entry of the YAML, which is to say a block of settings declared as if it
+     * were a component of its own -- the browser found it by its NAME. It is a block handed
+     * to the component that uses it now.
+     */
+    private static function pictureSettings(): SettingGroup
+    {
+        return SettingGroup::named(
+            _t('AB_attach_commons_title'),
+            Setting::url('link')
+                ->label(_t('AB_attach_link_label'))
+                ->default('https://')
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ]),
+            Setting::text('caption')
+                ->label(_t('AB_attach_caption_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ]),
+            Setting::text('legend')
+                ->label(_t('AB_attach_legend_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ]),
+            Setting::checkbox('nofullimagelink')
+                ->label(_t('AB_attach_nofullimagelink_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ])
+                ->checkedValues('0', '1'),
+            Setting::choice('size', [
+                'small' => _t('AB_attach_size_small'),
+                'medium' => _t('AB_attach_size_medium'),
+                'big' => _t('AB_attach_size_big'),
+                'original' => _t('AB_attach_size_original'),
+            ])
+                ->label(_t('AB_attach_size_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ]),
+            Setting::number('width')
+                ->label(_t('AB_attach_width_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ])
+                ->advanced(),
+            Setting::number('height')
+                ->label(_t('AB_attach_height_label'))
+                ->showIf([
+                    'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                ])
+                ->advanced(),
+            Setting::cssClass('class')
+                ->label(_t('AB_attach_class_label'))
+                ->subSettings(
+                    Setting::choice('position', [
+                        '' => _t('AB_attach_class_position_none'),
+                        'left' => _t('AB_attach_class_position_left'),
+                        'center' => _t('AB_attach_class_position_center'),
+                        'right' => _t('AB_attach_class_position_right'),
+                    ])
+                    ->label(_t('AB_attach_class_position_label'))
+                    ->showIf([
+                        'file' => '\\.(png|jpg|jpeg|gif|pdf|svg|webp)$',
+                    ]),
+                    Setting::choice('displaylink', [
+                        '' => _t('AB_attach_class_displaylink_default'),
+                        'new-window' => '_t(AB_attach_class_displaylink_new-window)',
+                        'modalbox' => _t('AB_attach_class_displaylink_modalbox'),
+                    ])
+                    ->label(_t('AB_attach_class_displaylink_label'))
+                    ->default(''),
+                    Setting::checkbox('lightshadow')
+                    ->label(_t('AB_attach_class_effect_lightshadow'))
+                    ->default('')
+                    ->showIf([
+                        'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                    ])
+                    ->checkedValues('lightshadow', ''),
+                    Setting::checkbox('whiteborder')
+                    ->label(_t('AB_attach_class_effect_whiteborder'))
+                    ->default('')
+                    ->showIf([
+                        'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                    ])
+                    ->checkedValues('whiteborder', ''),
+                    Setting::checkbox('zoom')
+                    ->label(_t('AB_attach_class_effect_zoom'))
+                    ->default('')
+                    ->showIf([
+                        'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
+                    ])
+                    ->checkedValues('zoom', ''),
+                    Setting::choice('izmir', [
+                        'c4-izmir' => _t('AB_attach_class_izmir_izmir'),
+                        'c4-izmir c4-border-cc-3' => _t('AB_attach_class_izmir_border'),
+                        'c4-izmir c4-image-zoom-in' => _t('AB_attach_class_izmir_zoom'),
+                        'c4-izmir c4-reveal-up' => _t('AB_attach_class_izmir_revealup'),
+                        'c4-izmir c4-gradient-top' => _t('AB_attach_class_izmir_gradiant'),
+                        'C4-izmir c4-layout-top-center' => _t('AB_attach_class_izmir_topcentertext'),
+                    ])
+                    ->label(_t('AB_attach_class_izmir_label'))
+                    ->hint(_t('AB_attach_class_izmir_hint'))
+                    ->showIf([
+                        'file' => '\\.(png|jpg|jpeg|gif)$',
+                    ])
+                    ->advanced(),
+                ),
+        )->width('40%');
     }
 
     public function run(): string

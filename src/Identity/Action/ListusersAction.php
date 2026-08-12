@@ -4,14 +4,36 @@ namespace YesWiki\Identity\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-class ListusersAction extends YesWikiAction implements RegisteredAction
+class ListusersAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{listusers}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'listusers';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('listusers')
+                ->category(Category::Admin)
+                ->label(_t('AB_advanced_action_listusers_label'))
+                ->icon('users')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::number('last')
+                        ->label(_t('AB_advanced_action_listusers_last_label'))
+                        ->hint(_t('AB_advanced_action_listusers_last_hint'))
+                        ->default('')
+                        ->min(1),
+                ),
+        ];
     }
 
     public function formatArguments($arg)

@@ -7,15 +7,30 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\ModuleAclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Performer;
 
-class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
+class EditActionsAclsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{editactionsacls}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'editactionsacls';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('editactionsacls')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_editactionsacls_label'))
+                ->icon('lock')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     public function run()

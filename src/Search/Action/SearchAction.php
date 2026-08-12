@@ -3,6 +3,10 @@
 namespace YesWiki\Search\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -36,7 +40,7 @@ use YesWiki\Search\Service\SearchResultPresenter;
  *                  {{search}} embedded in a page of prose must not steal focus from the
  *                  reader. The /search route turns it on, because there the box IS the page.
  */
-class SearchAction extends YesWikiAction implements RegisteredAction
+class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** The layouts the results fragment knows how to render. */
     public const DISPLAY_MODES = ['list', 'accordion', 'cards'];
@@ -44,6 +48,32 @@ class SearchAction extends YesWikiAction implements RegisteredAction
     public static function performableName(): string
     {
         return 'search';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('search')
+                ->category(Category::Forms)
+                ->label(_t('AB_advanced_action_search_label'))
+                ->icon('loupe')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::text('phrase')
+                        ->label(_t('AB_advanced_action_search_phrase_label')),
+                    Setting::text('type')
+                        ->label(_t('AB_advanced_action_search_type_label'))
+                        ->advanced(),
+                    Setting::number('limit')
+                        ->label(_t('AB_advanced_action_search_limit_label'))
+                        ->default('')
+                        ->min(1)
+                        ->advanced(),
+                    Setting::text('filters')
+                        ->label(_t('AB_advanced_action_search_filters_label'))
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function run(): string

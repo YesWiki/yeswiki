@@ -233,8 +233,16 @@ export default class {
     }
     this.insertBtn.addEventListener('click', this.insertHandler)
 
-    // the slot on the right holds one rail at a time -- see editor-rails.js
-    claimRailSlot(this)
+    // The slot on the right holds one rail at a time -- see editor-rails.js -- but only
+    // for rails that are peers. In `onPick` mode this one was opened BY another rail, to
+    // answer a question that rail asked ("which picture?"), so claiming the slot would
+    // close the very panel waiting for the answer: choosing a background image for a
+    // {{section}} shut the settings rail, and the answer was then handed to a panel that
+    // had stopped listening -- the file was picked and silently went nowhere. Here it
+    // opens over the rail that asked, and closing it gives that rail back, still on what
+    // it was editing.
+    if (!this.onPick) claimRailSlot(this)
+    this.panel.classList.toggle('yw-rail--over', Boolean(this.onPick))
     this.panel.hidden = false
     this.isOpen = true
     // a rail opened by pressing a button: the search box is what it opened for

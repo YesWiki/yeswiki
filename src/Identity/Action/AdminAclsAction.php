@@ -12,18 +12,33 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\TemplateHelperService;
 
-class AdminAclsAction extends YesWikiAction implements RegisteredAction
+class AdminAclsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{adminacls}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'adminacls';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('adminacls')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_gererdroits_label'))
+                ->icon('key')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     protected $dbService;

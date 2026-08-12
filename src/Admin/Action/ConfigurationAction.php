@@ -3,6 +3,10 @@
 namespace YesWiki\Admin\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -15,11 +19,44 @@ use YesWiki\Render\Service\ThemeManager;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class ConfigurationAction extends YesWikiAction implements RegisteredAction
+class ConfigurationAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'configuration';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('configuration')
+                ->category(Category::Admin)
+                ->label(_t('AB_advanced_action_configuration_label'))
+                ->icon('settings')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::choice('param', [
+                        'root_page',
+                        'base_url',
+                        'navigation_links',
+                        'meta_keywords',
+                        'meta_description',
+                        'yeswiki_name',
+                        'yeswiki_release',
+                        'yeswiki_version',
+                        'favorite_theme',
+                        'favorite_style',
+                        'favorite_squelette',
+                        'default_language',
+                        'charset',
+                        'lang',
+                        'theme_path',
+                        'wakka_version',
+                    ])
+                        ->label('param')
+                        ->required(),
+                ),
+        ];
     }
 
     public function run(): string

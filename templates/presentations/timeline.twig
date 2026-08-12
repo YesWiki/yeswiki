@@ -1,0 +1,22 @@
+{# Down a rule, newest first. An Item with no date has nowhere to sit on a timeline, so it
+   sits at the end rather than being dropped -- a list that silently loses rows is worse
+   than one with an undated tail. #}
+{% import "@core/presentations/_item-fields.twig" as slot %}
+{{ include_css('styles/presentations.css') }}
+
+<div class="yw-items yw-items--timeline">
+  {% for item in items|sort((a, b) => (b.date ?? '') <=> (a.date ?? '')) %}
+    <article class="yw-item yw-item--timeline">
+      <div class="yw-item__marker" aria-hidden="true"></div>
+      <div class="yw-item__body">
+        {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}
+        {{ slot.badge(item) }}
+        {{ slot.title(item) }}
+        {% if item.subtitle %}<div class="yw-item__subtitle">{{ item.subtitle }}</div>{% endif %}
+        {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
+      </div>
+    </article>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

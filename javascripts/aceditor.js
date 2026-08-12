@@ -93,6 +93,10 @@ class Aceditor {
               this.editor.replaceSelectionBy(result)
             },
           })
+        } else if (btn.dataset.callout) {
+          // markup syntax, and the one that is not a plain pair of delimiters: it retypes
+          // a callout the cursor is already in rather than nesting another inside it
+          this.editor.applyCallout(btn.dataset.callout)
         } else {
           // Other Buttons
           this.editor.surroundSelectionWith(btn.dataset.lft, btn.dataset.rgt)
@@ -133,17 +137,26 @@ class Aceditor {
    * Where a component chosen from the palette should be written: at the cursor, unless
    * the cursor sits inside a component -- a `{{...}}` tag written inside another one's
    * tag corrupts both -- in which case it goes on a line of its own just below.
+   *
+   * A tag the server reads as a block has to be alone on its line, so a cursor sitting in
+   * the middle of a sentence sends it to the end of that line and onto its own. This used
+   * to be rare enough to live with: you pressed Insert deliberately, usually having put the
+   * cursor where you wanted the thing. Picking from the palette now writes immediately, so
+   * a cursor left at the top of the page glued `{{button ...}}` onto the first paragraph.
    */
   insertionPointFrom(cursor) {
     if (!cursor) return null
-    if (cursor.groupType === 'yw-action' && cursor.groupEnd !== undefined) {
-      return {
-        row: cursor.row,
-        column: this.editor.lineLength(cursor.row),
-        onNewLine: true,
-      }
+    const row = cursor.row || 0
+    const column = cursor.column || 0
+    const insideAComponent =
+      cursor.groupType === 'yw-action' && cursor.groupEnd !== undefined
+    const midLine = column > 0 || this.editor.lineLength(row) > 0
+
+    if (insideAComponent || midLine) {
+      return { row, column: this.editor.lineLength(row), onNewLine: true }
     }
-    return { row: cursor.row || 0, column: cursor.column || 0 }
+
+    return { row, column }
   }
 
   /** What identifies the thing a rail is open on, so it knows when it is a different one. */

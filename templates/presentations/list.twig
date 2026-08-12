@@ -1,0 +1,18 @@
+{% import "@core/presentations/_item-fields.twig" as slot %}
+{{ include_css('styles/presentations.css') }}
+
+<div class="yw-items yw-items--list">
+  {% for item in items %}
+    <article class="yw-item yw-item--list{{ item.image ? ' has-image' : '' }}">
+      {{ slot.image(item, item.title) }}
+      <div class="yw-item__body">
+        {{ slot.badge(item) }}
+        {{ slot.title(item) }}
+        {{ slot.meta(item) }}
+        {% if item.description %}<div class="yw-item__description">{{ item.description|raw }}</div>{% endif %}
+      </div>
+    </article>
+  {% else %}
+    <p class="yw-items__empty">{{ _t('BAZ_NO_RESULT') }}</p>
+  {% endfor %}
+</div>

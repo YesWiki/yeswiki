@@ -4,6 +4,10 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -17,11 +21,28 @@ use YesWiki\Render\Service\LinkRenderer;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class MychangesAction extends YesWikiAction implements RegisteredAction
+class MychangesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'mychanges';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('mychanges')
+                ->category(Category::Admin)
+                ->label(_t('AB_advanced_action_mychanges_label'))
+                ->icon('history')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::checkbox('bydate')
+                        ->label(_t('AB_advanced_action_mychanges_bydate_label'))
+                        ->default('')
+                        ->checkedValues('1', ''),
+                ),
+        ];
     }
 
     public function run(): string

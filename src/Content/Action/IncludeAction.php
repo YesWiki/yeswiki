@@ -7,6 +7,10 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
@@ -24,7 +28,7 @@ use YesWiki\Render\Service\TemplateHelperService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class IncludeAction extends YesWikiAction implements RegisteredAction
+class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /**
      * The three phases below were three files sharing one scope: runFileInBuffer()
@@ -39,6 +43,22 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
     public static function performableName(): string
     {
         return 'include';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('include')
+                ->category(Category::Writing)
+                ->label(_t('AB_advanced_action_include_label'))
+                ->icon('copy')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::page('page')
+                        ->label(_t('AB_advanced_action_backlinks_page_label'))
+                        ->required(),
+                ),
+        ];
     }
 
     public function run(): string

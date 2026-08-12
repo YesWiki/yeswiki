@@ -515,7 +515,10 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 #YesWikiModal .page {
   min-height: auto;
 }
-
+#yw-topnav {
+  display: flex;
+  align-items: center;
+}
 #yw-topnav > .container {
   display: flex;
   flex-direction: row;
@@ -1108,6 +1111,46 @@ section.shape-blob5 {
 
 section.full-width:not(.with-bg-pattern) {
   padding: 2rem 0;
+}
+
+section > div {
+  width: 100%;
+  padding: 1em;
+}
+/* The background PICTURE of a section, on a layer of its own between the colour and the
+   words.
+
+   Three things want it there. `opacity` on the section fades the text with it. The
+   section's own `background-image` cannot be faded at all without fading the
+   `background-color` under it -- and that colour is exactly what a translucent picture is
+   meant to blend into. And `background-repeat` / `background-size` on the section would
+   fight the pattern, which is drawn with the same properties.
+
+   Everything about how it is drawn is a custom property SectionAction writes inline, so the
+   stylesheet holds the arrangement and the action holds the values. */
+section.with-bg-image {
+  position: relative;
+}
+
+section.with-bg-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--yw-section-image);
+  background-repeat: var(--yw-section-image-repeat, no-repeat);
+  background-size: var(--yw-section-image-size, auto);
+  background-position: var(--yw-section-image-position, center center);
+  background-attachment: var(--yw-section-image-attachment, scroll);
+  opacity: var(--yw-section-image-opacity, 1);
+  pointer-events: none;
+}
+
+/* the words sit above it -- a positioned pseudo-element paints over in-flow children
+   whatever order they are written in */
+section.with-bg-image > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dropup:hover {
@@ -2017,13 +2060,27 @@ blockquote > cite {
 }
 
 .yw-designer__sidebar {
+  /* One property, read twice: the rail starts this far down the window and may be as tall
+     as the rest of it. Computed apart -- `top` from the toolbar, a flat `max-height: 85vh`
+     -- they disagreed, and a rail starting 20vh down and running 85vh tall ends 5vh past
+     the bottom of the window. What fell off the end was the sticky footer, which is to say
+     the button the whole rail exists to offer. */
+  --yw-rail-top: calc(var(--sticky-toolbar-top) + 64px);
+  /* How wide a rail is, in one place: the actions builder, the link editor and the file
+     picker all dock in the same slot and have to agree. */
+  --yw-rail-width: 380px;
+
   position: fixed;
-  top: calc(var(--sticky-toolbar-top) + 64px);
+  top: var(--yw-rail-top);
   border-radius: 6px 0 0 6px;
   right: 0;
   z-index: 10;
-  max-width: 340px;
-  max-height: 85vh;
+  box-sizing: border-box;
+  width: var(--yw-rail-width);
+  max-width: 100vw;
+  /* dvh, not vh: on a phone the browser's own chrome is the difference between the two,
+     and it is exactly the height the footer would be hidden behind */
+  max-height: calc(100dvh - var(--yw-rail-top) - 1rem);
   overflow-y: auto;
   border: 1px solid var(--neutral-soft-color);
   padding: 12px;
@@ -2053,6 +2110,16 @@ blockquote > cite {
   .yw-designer__sidebar[hidden] {
     transition: none;
   }
+}
+
+/* A rail opened BY another rail, to answer a question it asked -- the file picker, when a
+   setting is asking which picture. It does not take the slot (that would close the panel
+   waiting for the answer), so it has to sit over the one that asked instead of beside it.
+   Opaque, because what is behind it is another rail and not the page. */
+.yw-designer__sidebar.yw-rail--over {
+  z-index: 20;
+  background: var(--neutral-light-color, #f1f1f1);
+  box-shadow: -4px 0 16px rgb(0 0 0 / 18%);
 }
 
 /* The chrome a rail shares with the next one: a header that stays put while what is under
@@ -2104,7 +2171,7 @@ blockquote > cite {
     position: fixed;
     z-index: 1040;
     inset: 0 0 0 auto;
-    width: min(340px, 90vw);
+    width: min(var(--yw-rail-width), 90vw);
     max-width: none;
     max-height: none;
     border-radius: 0;

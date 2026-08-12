@@ -26,6 +26,14 @@
         <li>{{ _self.button('code', '') }}</li>
         <li>{{ _self.button('inline_code', '') }}</li>
         <li>{{ _self.button('comment', '') }}</li>
+        <li class="yw-dropdown__divider"></li>
+        {# Markup syntax, so the toolbar is where they live rather than the components
+           palette -- ADR-0017. Beside `comment` and `highlight`, which are the same kind of
+           thing and have always been here. #}
+        <li>{{ _self.calloutButton('info') }}</li>
+        <li>{{ _self.calloutButton('success') }}</li>
+        <li>{{ _self.calloutButton('warning') }}</li>
+        <li>{{ _self.calloutButton('danger') }}</li>
     </ul>
 </div>
 <div class="btn-group format-buttons">
@@ -235,3 +243,13 @@
             {% endif %}
         </a>
     {% endmacro %}
+
+{# A callout is not a pair of delimiters wrapped around a selection: pressing one while the
+   cursor is already inside a callout must CHANGE it rather than nest a second one in the
+   first, the way a heading level does. So it carries its type and javascripts/aceditor.js
+   does the rest -- see AceWrapper.applyCallout(). #}
+{% macro calloutButton(type) %}
+    <a href="#" class="yw-btn aceditor-btn aceditor-btn-callout"
+       data-callout="{{ type }}"
+       title="{{ _t('ALERT_' ~ type|upper) }}">{{ _t('ALERT_' ~ type|upper) }}</a>
+{% endmacro %}

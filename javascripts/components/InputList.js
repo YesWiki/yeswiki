@@ -5,6 +5,10 @@ export default {
   emits: ['input'],
   mixins: [InputHelper],
   computed: {
+    /** Whether the setting names its own empty choice, rather than leaving it nameless. */
+    hasOwnBlank() {
+      return Object.keys(this.optionsList).includes('')
+    },
     optionsList() {
       // Get the data from a specific form field
       if (this.config.dataFromFormField) {
@@ -55,7 +59,12 @@ export default {
       <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       <select :value="value" v-on:input="$emit('input', $event.target.value)"
               :required="config.required" class="yw-input">
-        <option value=""></option>
+        {# The blank choice, unless the setting declares one of its own. A component that
+           names its empty value -- a texture of "Uni", a shape of "Rectangle", visible to
+           "tout le monde" -- had two options with the same empty value, and the browser
+           picks the first: the setting showed blank while its real default sat below,
+           unreachable except by choosing it. #}
+        <option value="" v-if="!hasOwnBlank"></option>
         <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">
           {{ optLabel }}
         </option>

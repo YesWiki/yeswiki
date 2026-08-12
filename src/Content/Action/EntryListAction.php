@@ -3,7 +3,9 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\CheckboxField;
@@ -11,6 +13,7 @@ use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
+use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FieldRoleResolver;
@@ -19,6 +22,11 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
+use YesWiki\Kernel\Component\SettingGroup;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -26,14 +34,1176 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Search\Service\SearchManager;
 
-class EntryListAction extends YesWikiAction implements RegisteredAction
+class EntryListAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
 {
     /** `{{entrylist}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'entrylist';
+    }
+
+    public static function sourceLabel(): string
+    {
+        return _t('SOURCE_ENTRYLIST');
+    }
+
+    public static function sourceSettings(): array
+    {
+        return [
+            // the form whose entries are listed. Since ADR-0011 that includes the Page,
+            // User and File forms, so "which Content?" and "which form?" are one question.
+            Setting::choice('id', [])
+                ->label(_t('ACTION_BUILDER_CHOOSE_FORM'))
+                ->withIcon('database')
+                ->raw('dataFromFormField', 'forms')
+                ->required(),
+            // ...and which of that form's fields fill an Item's slots. This is the mapping
+            // `displayfields` always was; it belongs to the Source because only a form has
+            // fields to map, and a feed has nothing to say here.
+            Setting::fieldMapping('displayfields')
+                ->subSettings(
+                    Setting::formField('title')
+                        ->label(_t('AB_bazarliste_displayfields_title_label'))
+                        ->suggests('bf_titre'),
+                    Setting::formField('subtitle')
+                        ->label(_t('AB_bazarliste_displayfields_subtitle_label'))
+                        ->default('')
+                        ->extraFields(['owner', 'created_at', 'updated_at']),
+                    Setting::formField('description')
+                        ->label(_t('AB_bazarliste_displayfields_text_label'))
+                        ->default(''),
+                    Setting::formField('visual')
+                        ->label(_t('AB_bazarliste_displayfields_visual_label'))
+                        ->default('')
+                        ->suggests('imagebf_image'),
+                    Setting::formField('floating')
+                        ->label(_t('AB_bazarliste_displayfields_floating_label'))
+                        ->default('')
+                        ->extraFields(['owner']),
+                ),
+        ];
+    }
+
+    /**
+     * The entries, as Items (ticket 37).
+     *
+     * `displayfields` is what does the work, and it always did: it is the declared mapping
+     * from a form's own field names -- which a webmaster chose and core cannot know -- onto
+     * the handful of slots a list actually draws. Naming the result an Item is most of what
+     * this ticket was: the mapping existed, the shape it produced had no name, so every
+     * presentation was written against entries instead.
+     *
+     * @return list<Item>
+     */
+    public function items(): array
+    {
+        $bazarListService = $this->getService(BazarListService::class);
+        $forms = $bazarListService->getForms($this->arguments);
+        $entries = $bazarListService->getEntries($this->arguments, $forms);
+
+        return $this->itemsFrom($entries);
+    }
+
+    /**
+     * @param array<mixed> $entries
+     *
+     * @return list<Item>
+     */
+    private function itemsFrom(array $entries): array
+    {
+        $slots = $this->arguments['displayfields'] ?? [];
+        $field = static function (array $entry, $name) {
+            if (empty($name) || !isset($entry[$name])) {
+                return null;
+            }
+            $value = $entry[$name];
+
+            return is_scalar($value) && (string)$value !== '' ? (string)$value : null;
+        };
+
+        $items = [];
+        foreach ($entries as $entry) {
+            $image = $field($entry, $slots['visual'] ?? null);
+            $items[] = new Item(
+                id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
+                // every Content carries the computed `title` (ADR-0010), so a form whose
+                // mapping names nothing still has a name to show
+                title: $field($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
+                subtitle: $field($entry, $slots['subtitle'] ?? null),
+                description: $field($entry, $slots['description'] ?? null),
+                // resolved here, because only this Source knows an attachment is a filename
+                // relative to the entry that carries it
+                image: $image === null ? null : $this->getService(AttachedFilePaths::class)->fullFilename($image),
+                url: $this->getService(UrlFormatter::class)->href('', (string)($entry['tag'] ?? '')),
+                date: self::asDate($entry['created_at'] ?? null),
+                badge: $field($entry, $slots['floating'] ?? null),
+            );
+        }
+
+        return $items;
+    }
+
+    /** An entry's stored date, as the ISO-8601 string an Item carries -- or nothing at all. */
+    private static function asDate(mixed $stored): ?string
+    {
+        if (!is_string($stored) || $stored === '') {
+            return null;
+        }
+        $timestamp = strtotime($stored);
+
+        return $timestamp === false ? null : date('c', $timestamp);
+    }
+
+    public function components(): array
+    {
+        return [
+            ...$this->customTemplateComponents(),
+
+            // The fallback for the tag itself. Every presentation is pinned on a template,
+            // so a `{{entrylist}}` written by hand -- or one naming a template nobody
+            // declares -- would match none of them and the rail would open on nothing.
+            // Not offered: what the palette offers is the presentations.
+            Component::for('entrylist-any')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarliste_label'))
+                ->icon('layout-list')
+                ->previewHeight('450px')
+                ->notOffered()
+                ->group(self::commonSettings(), self::commonDisplaySettings()),
+            Component::for('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarliste_label'))
+                ->icon('layout-list')
+                ->pin('template', 'liste_accordeon')
+                ->description(_t('AB_bazarliste_description'))
+                ->previewHeight('450px')
+                // the accordion list. Not offered: the palette's list is the shared
+                // Presentation now (ticket 37), and a second card called "Liste" was the
+                // duplication this ticket set out to remove. Still recognised, so a page
+                // that says `template="liste_accordeon"` opens on all of its settings.
+                ->notOffered()
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::fieldMapping('displayfields')
+                        ->showIf('dynamic')
+                        ->subSettings(
+                            Setting::formField('title')
+                            ->label(_t('AB_bazarliste_displayfields_title_label'))
+                            ->default('bf_titre'),
+                            Setting::formField('subtitle')
+                            ->label(_t('AB_bazarliste_displayfields_subtitle_label'))
+                            ->default('')
+                            ->extraFields([
+                                'owner',
+                                'created_at',
+                                'updated_at',
+                            ]),
+                            Setting::formField('floating')
+                            ->label(_t('AB_bazarliste_displayfields_floating_label'))
+                            ->default('')
+                            ->extraFields([
+                                'owner',
+                                'created_at',
+                                'updated_at',
+                            ]),
+                            Setting::formField('visual')
+                            ->label(_t('AB_bazarliste_displayfields_visual_label'))
+                            ->default('')
+                            ->extraFields([
+                                'owner',
+                                'created_at',
+                                'updated_at',
+                            ]),
+                        ),
+                ),
+            Component::for('entrymap')
+                ->writes('entrylist', 'entrymap')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarcarto_label'))
+                ->icon('map-2')
+                ->pin('template', 'map')
+                ->description(_t('AB_bazarcarto_description'))
+                ->hint(_t('AB_bazarcarto_hint'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::choice('provider', [
+                        'OpenStreetMap.Mapnik',
+                        'OpenStreetMap.BlackAndWhite',
+                        'OpenStreetMap.DE',
+                        'OpenStreetMap.France',
+                        'OpenStreetMap.HOT',
+                        'OpenTopoMap',
+                        'Stadia.AlidadeSmooth',
+                        'Stadia.AlidadeSmoothDark',
+                        'Stadia.OSMBright',
+                        'Stamen.Toner',
+                        'Stamen.TonerBackground',
+                        'Stamen.TonerLite',
+                        'Stamen.Watercolor',
+                        'Stamen.Terrain',
+                        'Stamen.TerrainBackground',
+                        'Esri.WorldStreetMap',
+                        'Esri.DeLorme',
+                        'Esri.WorldTopoMap',
+                        'Esri.WorldImagery',
+                        'Esri.WorldTerrain',
+                        'Esri.WorldShadedRelief',
+                        'Esri.WorldPhysical',
+                        'Esri.OceanBasemap',
+                        'Esri.NatGeoWorldMap',
+                        'Esri.WorldGrayCanvas',
+                        'HERE.normalDay',
+                        'MtbMap',
+                        'CartoDB.Positron',
+                        'CartoDB.PositronNoLabels',
+                        'CartoDB.PositronOnlyLabels',
+                        'CartoDB.DarkMatter',
+                        'CartoDB.DarkMatterNoLabels',
+                        'CartoDB.DarkMatterOnlyLabels',
+                        'HikeBike.HikeBike',
+                        'HikeBike.HillShading',
+                        'BasemapAT.orthofoto',
+                        'NASAGIBS.ViirsEarthAtNight2012',
+                    ])
+                        ->label(_t('AB_bazarcarto_provider_label'))
+                        ->default('OpenStreetMap.Mapnik')
+                        ->required(),
+                    Setting::geo('coordinates')
+                        ->label(_t('AB_bazarcarto_coordinates_label')),
+                    Setting::checkbox('cluster')
+                        ->label(_t('AB_bazarcarto_cluster_label'))
+                        ->default('false'),
+                    Setting::text('width')
+                        ->label(_t('AB_bazarcarto_width_label'))
+                        ->hint('500px, 100%...')
+                        ->default('100%')
+                        ->advanced(),
+                    Setting::text('height')
+                        ->label(_t('AB_bazarcarto_height_label'))
+                        ->default('700px')
+                        ->advanced(),
+                    Setting::choice('entrydisplay', [
+                        'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
+                        'sidebar' => _t('AB_bazarcarto_entrydisplay_option_sidebar'),
+                        'modal' => _t('AB_bazarcarto_entrydisplay_option_modal'),
+                        'newtab' => _t('AB_bazarcarto_entrydisplay_option_newtab'),
+                        'popup' => _t('AB_bazarcarto_entrydisplay_option_popup'),
+                    ])
+                        ->label(_t('AB_bazarcarto_entrydisplay_label'))
+                        ->default('sidebar')
+                        ->showIf('dynamic')
+                        ->advanced(),
+                    Setting::choice('popuptemplate', [
+                        '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
+                        '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
+                        'custom' => _t('AB_bazarcarto_popuptemplate_custom'),
+                    ])
+                        ->label(_t('AB_bazarcarto_popuptemplate_label'))
+                        ->suggests('_map_popup_html.twig')
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                        ])
+                        ->advanced(),
+                    Setting::text('popupcustomtemplate')
+                        ->label(_t('AB_bazarcarto_popupcustomtemplate_label'))
+                        ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
+                        ->suggests('custom_map_popup.twig')
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => 'custom',
+                        ])
+                        ->advanced(),
+                    Setting::formField('popupselectedfields')
+                        ->label(_t('AB_bazarliste_popupselectedfields_label'))
+                        ->default('')
+                        ->multiple()
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => '_map_popup_html.twig|custom',
+                        ])
+                        ->advanced(),
+                    Setting::formField('necessary_fields')
+                        ->label(_t('AB_bazarliste_popupneededfields_label'))
+                        ->suggests('bf_titre,imagebf_image')
+                        ->multiple()
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => '_map_popup_from_data.twig|custom',
+                        ])
+                        ->advanced(),
+                    Setting::fieldMapping('displayfields')
+                        ->showIf('dynamic')
+                        ->subSettings(
+                            Setting::formField('markerhover')
+                            ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
+                            ->default('bf_titre'),
+                        )
+                        ->advanced(),
+                    Setting::checkbox('smallmarker')
+                        ->label(_t('AB_bazarcarto_smallmarker_label'))
+                        ->default('0')
+                        ->checkedValues('1', '0')
+                        ->advanced(),
+                    Setting::checkbox('scrollwheelzoom')
+                        ->label(_t('AB_bazarcarto_zoommolette_label'))
+                        ->default('false')
+                        ->advanced(),
+                ),
+            Component::for('bazarcalendar')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarcalendar'))
+                ->icon('calendar')
+                ->pin('template', 'calendar')
+                ->description(_t('AB_bazarcalendar_description'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::fieldMapping('fieldmapping')
+                        ->subSettings(
+                            Setting::formField('bf_date_debut_evenement')
+                            ->label(_t('AB_bazar_bf_date_debut_evenement_label'))
+                            ->default(''),
+                            Setting::formField('bf_date_fin_evenement')
+                            ->label(_t('AB_bazar_bf_date_fin_evenement_label'))
+                            ->default(''),
+                        ),
+                    Setting::choice('showlist', [
+                        'week' => _t('AB_bazarcalendar_showlist_week'),
+                        'month' => _t('AB_bazarcalendar_showlist_month'),
+                        'year' => _t('AB_bazarcalendar_showlist_year'),
+                    ])
+                        ->label(_t('AB_bazarcalendar_showlist_label'))
+                        ->default('year'),
+                    Setting::choice('initialview', [
+                        'dayGridMonth' => _t('AB_bazarcalendar_initialview_month'),
+                        'timeGridWeek' => _t('AB_bazarcalendar_initialview_week'),
+                        'timeGridDay' => _t('AB_bazarcalendar_initialview_day'),
+                        'list' => _t('AB_bazarcalendar_initialview_list'),
+                    ])
+                        ->label(_t('AB_bazarcalendar_initialview_label'))
+                        ->default('dayGridMonth'),
+                    Setting::choice('entrydisplay', [
+                        'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
+                        'sidebar' => _t('AB_bazarcarto_entrydisplay_option_sidebar'),
+                        'modal' => _t('AB_bazarcarto_entrydisplay_option_modal'),
+                        'newtab' => _t('AB_bazarcarto_entrydisplay_option_newtab'),
+                    ])
+                        ->label(_t('AB_bazarcarto_entrydisplay_label'))
+                        ->default('modal')
+                        ->suggests('modal')
+                        ->advanced(),
+                    Setting::checkbox('showicalbutton')
+                        ->label(_t('AB_bazarcarto_showicalbutton_label'))
+                        ->default('false'),
+                ),
+            Component::for('bazaragenda')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazaragenda_label'))
+                ->icon('calendar-event')
+                ->pin('template', 'agenda')
+                ->description(_t('AB_bazaragenda_description'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::fieldMapping('fieldmapping')
+                        ->subSettings(
+                            Setting::formField('bf_date_debut_evenement')
+                            ->label(_t('AB_bazar_bf_date_debut_evenement_label'))
+                            ->default('')
+                            ->extraFields([
+                                'created_at',
+                                'updated_at',
+                            ]),
+                            Setting::formField('bf_date_fin_evenement')
+                            ->label(_t('AB_bazar_bf_date_fin_evenement_label'))
+                            ->default('')
+                            ->extraFields([
+                                'created_at',
+                                'updated_at',
+                            ]),
+                        ),
+                    Setting::number('columns')
+                        ->label(_t('AB_bazaragenda_nbcol_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::checkbox('modal')
+                        ->label(_t('AB_bazaragenda_modal_label'))
+                        ->default('')
+                        ->checkedValues('1', '')
+                        ->advanced(),
+                ),
+            Component::for('bazarannuaire')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarannuaire_label'))
+                ->icon('list-details')
+                ->pin('template', 'annuaire_alphabetique')
+                ->description(_t('AB_bazarannuaire_description'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings()),
+            Component::for('bazarcarousel')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarcarousel_label'))
+                ->icon('arrows-horizontal')
+                ->pin('template', 'carousel')
+                ->description(_t('AB_bazarcarousel_description'))
+                ->hint(_t('AB_bazarcarousel_hint'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::checkbox('notitle')
+                        ->label(_t('AB_bazarcarousel_sanstitre_label'))
+                        ->default('')
+                        ->checkedValues('oui', ''),
+                    Setting::checkbox('withpage')
+                        ->label(_t('AB_bazarcarousel_avecpage_label'))
+                        ->hint(_t('AB_bazarcarousel_avecpage_hint'))
+                        ->default('')
+                        ->checkedValues('oui', '')
+                        ->advanced(),
+                    Setting::checkbox('showlinkinsteadofurl')
+                        ->label(_t('AB_bazarcarousel_showlinkinsteadofurl_label'))
+                        ->default('')
+                        ->checkedValues('oui', '')
+                        ->advanced(),
+                    Setting::fieldMapping('fieldmapping')
+                        ->subSettings(
+                            Setting::formField('bf_titre')
+                            ->label(_t('AB_bazarcarousel_bf_titre_label'))
+                            ->default('')
+                            ->extraFields([
+                                'owner',
+                            ]),
+                        ),
+                ),
+            Component::for('bazarlistephotobox')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarlistephotobox_label'))
+                ->icon('photo')
+                ->pin('template', 'photobox')
+                ->description(_t('AB_bazarlistephotobox_description'))
+                ->hint(_t('AB_bazarlistephotobox_hint'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings()),
+            Component::for('bazarlisteliens')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarlisteliens_label'))
+                ->icon('link')
+                ->pin('template', 'liste_liens')
+                ->description(_t('AB_bazarlisteliens_description'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings()),
+            Component::for('bazarblog')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarblog_label'))
+                ->icon('file')
+                ->pin('template', 'blog')
+                ->description(_t('AB_bazarblog_description'))
+                ->hint(_t('AB_bazarblog_hint'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::checkbox('header')
+                        ->label(_t('AB_bazarblog_header_label'))
+                        ->default('true')
+                        ->checkedValues('true', 'false'),
+                    Setting::checkbox('show_author')
+                        ->label(_t('AB_bazarblog_show_author_label'))
+                        ->default('0')
+                        ->checkedValues('1', '0')
+                        ->advanced(),
+                    Setting::checkbox('show_date')
+                        ->label(_t('AB_bazarblog_show_date_label'))
+                        ->default('0')
+                        ->checkedValues('1', '0')
+                        ->advanced(),
+                    Setting::fieldMapping('fieldmapping')
+                        ->subSettings(
+                            Setting::formField('created_at')
+                            ->label(_t('AB_bazarblog_date_creation_fiche_label'))
+                            ->default('')
+                            ->extraFields([
+                                'created_at',
+                                'updated_at',
+                            ]),
+                        ),
+                ),
+            Component::for('bazartableau')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazartableau_label'))
+                ->icon('table')
+                ->pin('template', 'tableau.tpl.html')
+                ->description(_t('AB_bazartableau_description'))
+                ->previewHeight('450px')
+                // likewise the bazar table, which is not the shared `table` Presentation:
+                // it has its own renderer, its own columns and its own export buttons.
+                ->notOffered()
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::formField('columnfieldsids')
+                        ->label(_t('AB_bazartableau_columnfieldsids_label'))
+                        ->hint(_t('AB_bazartableau_columnfieldsids_hint'))
+                        ->default('')
+                        ->multiple()
+                        ->extraFields([
+                            'form_id',
+                            'created_at',
+                            'updated_at',
+                            'url',
+                        ]),
+                    Setting::text('columntitles')
+                        ->label(_t('AB_bazartableau_columntitles_label'))
+                        ->hint(_t('AB_bazartableau_columntitles_hint'))
+                        ->default(''),
+                    Setting::checkbox('checkboxfieldsincolumns')
+                        ->label(_t('AB_bazartableau_checkboxfieldsincolumns_label'))
+                        ->default('true')
+                        ->checkedValues('true', 'false'),
+                    Setting::checkbox('displayimagesasthumbnails')
+                        ->label(_t('AB_bazartableau_displayimagesasthumbnails_label'))
+                        ->default('false')
+                        ->checkedValues('true', 'false'),
+                    Setting::checkbox('displayvaluesinsteadofkeys')
+                        ->label(_t('AB_bazartableau_displayvaluesinsteadofkeys_label'))
+                        ->default('false')
+                        ->checkedValues('true', 'false'),
+                    Setting::formField('sumfieldsids')
+                        ->label(_t('AB_bazartableau_sumfieldsids_label'))
+                        ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
+                        ->default('')
+                        ->multiple(),
+                    Setting::choice('displayadmincol', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displayadmincol_label'))
+                        ->hint(_t('AB_bazartableau_displayadmincol_hint'))
+                        ->default(''),
+                    Setting::choice('displaycreationdate', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displaycreationdate_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::choice('displaylastchangedate', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displaylastchangedate_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::choice('displayowner', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displayowner_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::text('defaultcolumnwidth')
+                        ->label(_t('AB_bazartableau_defaultcolumnwidth_label'))
+                        ->hint(_t('AB_bazartableau_defaultcolumnwidth_hint'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::columnsWidth('columnswidth')
+                        ->label(_t('AB_bazartableau_columnswidth_label'))
+                        ->hint(_t('AB_bazartableau_columnswidth_hint'))
+                        ->subSettings(
+                            Setting::formField('field')
+                            ->label(_t('AB_bazartableau_columnswidth_field_label')),
+                            Setting::text('width')
+                            ->label(_t('AB_bazartableau_columnswidth_width_label'))
+                            ->default(''),
+                        )
+                        ->advanced(),
+                    Setting::checkbox('exportallcolumns')
+                        ->label(_t('AB_bazartableau_exportallcolumns_label'))
+                        ->default('false')
+                        ->advanced(),
+                ),
+            Component::for('bazarmapandtable')
+                ->writes('entrylist')
+                ->category(Category::Lists)
+                ->label(_t('AB_BAZAR_MAP_AND_TABLE_LABEL'))
+                ->icon('map-2')
+                ->pin('template', 'map-and-table')
+                ->description(_t('AB_bazarcarto_description'))
+                ->hint(_t('AB_bazarcarto_hint'))
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings())
+                ->settings(
+                    Setting::choice('provider', [
+                        'OpenStreetMap.Mapnik',
+                        'OpenStreetMap.BlackAndWhite',
+                        'OpenStreetMap.DE',
+                        'OpenStreetMap.France',
+                        'OpenStreetMap.HOT',
+                        'OpenTopoMap',
+                        'Stadia.AlidadeSmooth',
+                        'Stadia.AlidadeSmoothDark',
+                        'Stadia.OSMBright',
+                        'Stamen.Toner',
+                        'Stamen.TonerBackground',
+                        'Stamen.TonerLite',
+                        'Stamen.Watercolor',
+                        'Stamen.Terrain',
+                        'Stamen.TerrainBackground',
+                        'Esri.WorldStreetMap',
+                        'Esri.DeLorme',
+                        'Esri.WorldTopoMap',
+                        'Esri.WorldImagery',
+                        'Esri.WorldTerrain',
+                        'Esri.WorldShadedRelief',
+                        'Esri.WorldPhysical',
+                        'Esri.OceanBasemap',
+                        'Esri.NatGeoWorldMap',
+                        'Esri.WorldGrayCanvas',
+                        'HERE.normalDay',
+                        'MtbMap',
+                        'CartoDB.Positron',
+                        'CartoDB.PositronNoLabels',
+                        'CartoDB.PositronOnlyLabels',
+                        'CartoDB.DarkMatter',
+                        'CartoDB.DarkMatterNoLabels',
+                        'CartoDB.DarkMatterOnlyLabels',
+                        'HikeBike.HikeBike',
+                        'HikeBike.HillShading',
+                        'BasemapAT.orthofoto',
+                        'NASAGIBS.ViirsEarthAtNight2012',
+                    ])
+                        ->label(_t('AB_bazarcarto_provider_label'))
+                        ->default('OpenStreetMap.Mapnik')
+                        ->required(),
+                    Setting::geo('coordinates')
+                        ->label(_t('AB_bazarcarto_coordinates_label')),
+                    Setting::checkbox('cluster')
+                        ->label(_t('AB_bazarcarto_cluster_label'))
+                        ->default('false'),
+                    Setting::text('width')
+                        ->label(_t('AB_bazarcarto_width_label'))
+                        ->hint('500px, 100%...')
+                        ->default('100%')
+                        ->advanced(),
+                    Setting::text('height')
+                        ->label(_t('AB_bazarcarto_height_label'))
+                        ->default('300px')
+                        ->advanced(),
+                    Setting::choice('entrydisplay', [
+                        'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
+                        'sidebar' => _t('AB_bazarcarto_entrydisplay_option_sidebar'),
+                        'modal' => _t('AB_bazarcarto_entrydisplay_option_modal'),
+                        'newtab' => _t('AB_bazarcarto_entrydisplay_option_newtab'),
+                        'popup' => _t('AB_bazarcarto_entrydisplay_option_popup'),
+                    ])
+                        ->label(_t('AB_bazarcarto_entrydisplay_label'))
+                        ->default('sidebar')
+                        ->showIf('dynamic')
+                        ->advanced(),
+                    Setting::choice('popuptemplate', [
+                        '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
+                        '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
+                        'custom' => _t('AB_bazarcarto_popuptemplate_custom'),
+                    ])
+                        ->label(_t('AB_bazarcarto_popuptemplate_label'))
+                        ->suggests('_map_popup_html.twig')
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                        ])
+                        ->advanced(),
+                    Setting::text('popupcustomtemplate')
+                        ->label(_t('AB_bazarcarto_popupcustomtemplate_label'))
+                        ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
+                        ->suggests('custom_map_popup.twig')
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => 'custom',
+                        ])
+                        ->advanced(),
+                    Setting::formField('popupselectedfields')
+                        ->label(_t('AB_bazarliste_popupselectedfields_label'))
+                        ->default('')
+                        ->multiple()
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => '_map_popup_html.twig|custom',
+                        ])
+                        ->advanced(),
+                    Setting::formField('necessary_fields')
+                        ->label(_t('AB_bazarliste_popupneededfields_label'))
+                        ->suggests('bf_titre,imagebf_image')
+                        ->multiple()
+                        ->showIf([
+                            'dynamic' => true,
+                            'entrydisplay' => 'popup',
+                            'popuptemplate' => '_map_popup_from_data.twig|custom',
+                        ])
+                        ->advanced(),
+                    Setting::fieldMapping('displayfields')
+                        ->showIf('dynamic')
+                        ->subSettings(
+                            Setting::formField('markerhover')
+                            ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
+                            ->default('bf_titre'),
+                        )
+                        ->advanced(),
+                    Setting::checkbox('smallmarker')
+                        ->label(_t('AB_bazarcarto_smallmarker_label'))
+                        ->default('0')
+                        ->checkedValues('1', '0')
+                        ->advanced(),
+                    Setting::checkbox('scrollwheelzoom')
+                        ->label(_t('AB_bazarcarto_zoommolette_label'))
+                        ->default('false')
+                        ->advanced(),
+                    Setting::formField('columnfieldsids')
+                        ->label(_t('AB_bazartableau_columnfieldsids_label'))
+                        ->hint(_t('AB_bazartableau_columnfieldsids_hint'))
+                        ->default('')
+                        ->multiple()
+                        ->extraFields([
+                            'form_id',
+                            'created_at',
+                            'updated_at',
+                            'url',
+                        ]),
+                    Setting::text('columntitles')
+                        ->label(_t('AB_bazartableau_columntitles_label'))
+                        ->hint(_t('AB_bazartableau_columntitles_hint'))
+                        ->default(''),
+                    Setting::checkbox('checkboxfieldsincolumns')
+                        ->label(_t('AB_bazartableau_checkboxfieldsincolumns_label'))
+                        ->default('true')
+                        ->checkedValues('true', 'false'),
+                    Setting::checkbox('displayimagesasthumbnails')
+                        ->label(_t('AB_bazartableau_displayimagesasthumbnails_label'))
+                        ->default('false')
+                        ->checkedValues('true', 'false'),
+                    Setting::checkbox('displayvaluesinsteadofkeys')
+                        ->label(_t('AB_bazartableau_displayvaluesinsteadofkeys_label'))
+                        ->default('false')
+                        ->checkedValues('true', 'false'),
+                    Setting::formField('sumfieldsids')
+                        ->label(_t('AB_bazartableau_sumfieldsids_label'))
+                        ->hint(_t('AB_bazartableau_sumfieldsids_hint'))
+                        ->default('')
+                        ->multiple(),
+                    Setting::choice('displayadmincol', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displayadmincol_label'))
+                        ->hint(_t('AB_bazartableau_displayadmincol_hint'))
+                        ->default(''),
+                    Setting::choice('displaycreationdate', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displaycreationdate_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::choice('displaylastchangedate', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displaylastchangedate_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::choice('displayowner', [
+                        '' => _t('NO'),
+                        'yes' => _t('YES'),
+                        'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
+                    ])
+                        ->label(_t('AB_bazartableau_displayowner_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::text('defaultcolumnwidth')
+                        ->label(_t('AB_bazartableau_defaultcolumnwidth_label'))
+                        ->hint(_t('AB_bazartableau_defaultcolumnwidth_hint'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::columnsWidth('columnswidth')
+                        ->label(_t('AB_bazartableau_columnswidth_label'))
+                        ->hint(_t('AB_bazartableau_columnswidth_hint'))
+                        ->subSettings(
+                            Setting::formField('field')
+                            ->label(_t('AB_bazartableau_columnswidth_field_label')),
+                            Setting::text('width')
+                            ->label(_t('AB_bazartableau_columnswidth_width_label'))
+                            ->default(''),
+                        )
+                        ->advanced(),
+                    Setting::checkbox('exportallcolumns')
+                        ->label(_t('AB_bazartableau_exportallcolumns_label'))
+                        ->default('false')
+                        ->advanced(),
+                    Setting::choice('tablewith', [
+                        '' => _t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL'),
+                        'only-geolocation' => _t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC'),
+                        'no-geolocation' => _t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC'),
+                    ])
+                        ->label(_t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL'))
+                        ->default(''),
+                ),
+        ];
+    }
+
+    /**
+     * A presentation for every list template this wiki has added of its own.
+     *
+     * `custom/templates/bazar/` is where a webmaster drops a Twig file to render a list
+     * their own way, and it has always shown up in the palette -- but as a special case
+     * inside the palette service, which had to know that entrylist was the group to put it
+     * in. It is this action's business: they are its templates.
+     *
+     * The key is built from the filename, which is the one place in this repo a `_t()` key
+     * is not a literal -- and legitimately so: the name is user data, so there is no key to
+     * write down. A file nobody has translated falls back to being named after itself.
+     *
+     * @return list<Component>
+     */
+    private function customTemplateComponents(): array
+    {
+        $components = [];
+        foreach (glob('custom/templates/bazar/*.twig') ?: [] as $path) {
+            $file = str_replace('custom/templates/bazar/', '', $path);
+            // `fiche*` renders one entry, not a list of them
+            if (str_starts_with($file, 'fiche')) {
+                continue;
+            }
+            $name = str_replace('.twig', '', $file);
+            $translated = _t('AB_' . $name . '_label');
+            $label = $translated === 'AB_' . $name . '_label'
+                ? _t('ACTION_BUILDER_TEMPLATE_CUSTOM') . ' ' . $name
+                : $translated;
+
+            $components[] = Component::for($name)
+                ->writes('entrylist')
+                ->pin('template', $file)
+                ->category(Category::Lists)
+                ->label($label)
+                ->icon('layout-list')
+                ->previewHeight('450px')
+                ->group(self::commonSettings(), self::commonDisplaySettings());
+        }
+
+        return $components;
+    }
+
+    /**
+     * The settings every presentation of a list shares.
+     *
+     * These were two YAML entries called `commons` and `commons2`, declared as if they were
+     * components of their own and recognised by the browser on the strength of their NAMES
+     * -- `actionName.startsWith('common')`. They are blocks of settings handed to the
+     * components that use them now, which is the same sharing said out loud.
+     */
+    private static function commonSettings(): SettingGroup
+    {
+        return SettingGroup::named(
+            _t('AB_bazar_commons_title'),
+            Setting::choice('search', [
+                'true' => _t('AB_attach_yes'),
+                'false' => _t('AB_attach_no'),
+                'dynamic' => [
+                    'label' => _t('AB_bazar_commons_search_label_dynamic'),
+                    'showif' => 'dynamic',
+                ],
+            ])
+                ->label(_t('AB_bazar_commons_search_label'))
+                ->withIcon('search'),
+            Setting::formField('searchfields')
+                ->label(_t('AB_bazar_commons_search_fields_label'))
+                ->default('bf_titre')
+                ->multiple()
+                ->showIf([
+                    'search' => 'dynamic',
+                ])
+                ->onlyFor([
+                    'entrylist',
+                    'entrymap',
+                    'bazarmapandtable',
+                ])
+                ->exceptFor([
+                    'bazarcarousel',
+                ]),
+            Setting::checkbox('dynamic')
+                ->label(_t('AB_bazar_commons_dynamic_label'))
+                ->onlyFor([
+                    'entrylist',
+                    'entrymap',
+                    'bazarmapandtable',
+                    'bazarcalendar',
+                    'bazartableau',
+                ])
+                ->advanced(),
+            Setting::number('pagination')
+                ->label(_t('AB_bazar_commons_pagination_label'))
+                ->hint(_t('AB_bazar_commons_pagination_hint'))
+                ->exceptFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                    'bazartimeline',
+                    'bazarcarousel',
+                    'bazarcalendar',
+                    'bazartableau',
+                ]),
+            Setting::number('nb')
+                ->label(_t('AB_bazar_commons2_nb_label'))
+                ->hint(_t('AB_bazar_commons2_nb_hint'))
+                ->advanced(),
+            Setting::formField('colorfield')
+                ->label(_t('AB_bazar_commons_colorfield_label'))
+                ->onlyFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                    'entrylist',
+                    'bazarcalendar',
+                    'bazartableau',
+                    'bazarcard',
+                    'bazartimeline',
+                ])
+                ->extraFields([
+                    'form_id',
+                ])
+                ->raw('only', 'lists')
+                ->advanced(),
+            Setting::colorMapping('colormapping')
+                ->showIf('colorfield')
+                ->onlyFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                    'entrylist',
+                    'bazarcalendar',
+                    'bazartimeline',
+                    'bazartableau',
+                    'bazarcard',
+                ])
+                ->subSettings(
+                    Setting::choice('id', [
+                    ])
+                    ->label(_t('AB_bazar_commons_subproperty_id_label'))
+                    ->extraFields([
+                        'form_id',
+                    ])
+                    ->raw('dataFromFormField', 'colorfield'),
+                    Setting::color('color')
+                    ->label(_t('AB_bazar_commons_colormapping_color_label')),
+                )
+                ->advanced(),
+            Setting::formField('iconfield')
+                ->label(_t('AB_bazar_commons_iconfield_label'))
+                ->onlyFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                    'entrylist',
+                    'bazarcalendar',
+                    'bazartimeline',
+                    'bazartableau',
+                    'bazarcard',
+                ])
+                ->extraFields([
+                    'form_id',
+                ])
+                ->raw('only', 'lists')
+                ->advanced(),
+            Setting::iconMapping('iconmapping')
+                ->showIf('iconfield')
+                ->onlyFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                    'entrylist',
+                    'bazarcalendar',
+                    'bazartableau',
+                    'bazartimeline',
+                    'bazarcard',
+                ])
+                ->raw('iconprefix', [
+                    'advanced' => true,
+                    'type' => 'text',
+                    'label' => _t('AB_bazar_commons_iconfield_iconprefix_label'),
+                    'hint' => _t('AB_bazar_commons_iconfield_iconprefix_hint'),
+                ])
+                ->subSettings(
+                    Setting::choice('id', [
+                    ])
+                    ->label(_t('AB_bazar_commons_subproperty_id_label'))
+                    ->extraFields([
+                        'form_id',
+                    ])
+                    ->raw('dataFromFormField', 'iconfield'),
+                    Setting::icon('icon')
+                    ->label(_t('AB_bazar_commons_iconfield_icon_label')),
+                )
+                ->advanced(),
+            Setting::checkbox('minicalendar')
+                ->label(_t('AB_bazar_commons_minical'))
+                ->default('false')
+                ->onlyFor([
+                    'bazarcalendar',
+                ]),
+            Setting::checkbox('showexportbuttons')
+                ->label(_t('AB_bazar_commons2_showexportbuttons'))
+                ->default('0')
+                ->exceptFor([
+                    'bazarcarousel',
+                    'bazarcalendar',
+                ])
+                ->checkedValues('1', '0')
+                ->advanced(),
+            Setting::checkbox('showmapinlistview')
+                ->label(_t('AB_bazar_commons2_showmapinlistview_label'))
+                ->hint(_t('AB_bazar_commons2_showmapinlistview_hint'))
+                ->default('0')
+                ->exceptFor([
+                    'entrymap',
+                    'bazarmapandtable',
+                ])
+                ->checkedValues('1', '0')
+                ->advanced(),
+        )->width('33%');
+    }
+
+    /** ...and the second block, which is about how the entries are displayed. */
+    private static function commonDisplaySettings(): SettingGroup
+    {
+        return SettingGroup::named(
+            _t('AB_bazar_commons2_title'),
+            Setting::facets('facets')
+                ->raw('btn-label-add', '_t(AB_bazar_facettes_btn-label-add)')
+                ->subSettings(
+                    Setting::formField('field')
+                    ->label(_t('AB_bazar_facettes_field_label'))
+                    ->extraFields([
+                        'form_id',
+                    ])
+                    ->raw('only', 'lists'),
+                    Setting::text('title')
+                    ->label(_t('AB_bazar_facettes_title_label')),
+                    Setting::icon('icon')
+                    ->label('Icone'),
+                ),
+            Setting::choice('groupsexpanded', [
+                'false' => _t('AB_bazar_commons2_groupsexpanded_false'),
+                'true' => _t('AB_bazar_commons2_groupsexpanded_true'),
+            ])
+                ->label(_t('AB_bazar_commons2_groupsexpanded_label'))
+                ->showIf('facets')
+                ->advanced(),
+            Setting::choice('filterposition', [
+                'right' => _t('AB_RIGHT'),
+                'left' => _t('AB_LEFT'),
+            ])
+                ->label(_t('AB_bazar_commons2_filterposition_label'))
+                ->showIf('facets')
+                ->advanced(),
+            Setting::range('filtercolsize')
+                ->label(_t('AB_bazar_commons2_filtercolsize_label'))
+                ->min(1)
+                ->max(12)
+                ->showIf('facets')
+                ->advanced(),
+            Setting::checkbox('filteruserasowner')
+                ->label(_t('AB_bazar_commons2_filter_user_as_owner'))
+                ->default('false')
+                ->advanced(),
+            Setting::choice('datefilter', [
+                'futur' => _t('AB_bazar_commons2_filter_on_date_future'),
+                'past' => _t('AB_bazar_commons2_filter_on_date_past'),
+                'today' => _t('AB_bazar_commons2_filter_on_date_today'),
+                '>-1M' => _t('AB_bazar_commons2_filter_on_date_for_one_month'),
+                '>-0D&<+1M' => _t('AB_bazar_commons2_filter_on_date_on_current_month'),
+                '>-2Y' => _t('AB_bazar_commons2_filter_on_date_for_two_years'),
+                '>-7D&<+7D' => _t('AB_bazar_commons2_filter_on_date_one_week_more_and_less'),
+            ])
+                ->label(_t('AB_bazar_commons2_filter_on_date'))
+                ->hint(_t('AB_bazar_commons2_filter_index')),
+            Setting::checkbox('filtersresultnb')
+                ->label(_t('AB_bazar_commons2_filtersresultnb_label'))
+                ->default(true)
+                ->showIf('facets')
+                ->advanced(),
+            Setting::checkbox('resetfiltersbutton')
+                ->label(_t('AB_bazar_commons2_resetfiltersbutton_label'))
+                ->default('0')
+                ->showIf('facets')
+                ->checkedValues('1', '0')
+                ->advanced(),
+            Setting::formField('field')
+                ->label(_t('AB_bazar_facettes_field_label'))
+                ->default('')
+                ->exceptFor([
+                    'entrymap',
+                    'bazarannuaire',
+                    'bazarcalendar',
+                    'bazarcarousel',
+                ])
+                ->extraFields([
+                    'form_id',
+                    'created_at',
+                    'updated_at',
+                ])
+                ->raw('intro', '<h3>_t(AB_bazar_sort)</h3>')
+                ->advanced(),
+            Setting::choice('order', [
+                'asc' => _t('AB_bazar_commons2_ordre_option_asc'),
+                'desc' => _t('AB_bazar_commons2_ordre_option_desc'),
+            ])
+                ->label(_t('AB_bazar_commons2_ordre_label'))
+                ->default('asc')
+                ->exceptFor([
+                    'entrymap',
+                    'bazarannuaire',
+                    'bazarcalendar',
+                ])
+                ->advanced(),
+            Setting::sortFields('sortfields')
+                ->showIf('dynamic')
+                ->exceptFor([
+                    'entrymap',
+                    'bazarannuaire',
+                    'bazarcalendar',
+                    'bazarcarousel',
+                ])
+                ->raw('intro', '<center><h4>_t(AB_bazar_sort_dynamique)</h4></center>')
+                ->raw('btn-label-add', _t('AB_bazar_sort_add_field'))
+                ->subSettings(
+                    Setting::formField('field')
+                    ->label(_t('AB_bazar_facettes_field_label'))
+                    ->extraFields([
+                        'created_at',
+                        'updated_at',
+                    ]),
+                    Setting::text('title')
+                    ->label(_t('AB_bazar_facettes_title_label')),
+                )
+                ->advanced(),
+        )->width('33%');
     }
 
     // `gogomap` and `gogocarto` are retired names kept here on purpose: the GoGoCartoJs
@@ -135,7 +1305,12 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
         // compared without its extension: the same template is written `liste_accordeon` in
         // page content and `liste_accordeon.twig` in the config, and both must map
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)$template);
-        if (in_array($bareTemplate, ['list', 'card', 'map-and-table', 'table', 'timeline'], true)) {
+        // `map-and-table` has no server-rendered form, so it still has to be dynamic. The
+        // other four are shared Presentations now (ticket 37) and render server-side unless
+        // `dynamic` is asked for -- which is what makes `template="card"` the same card here
+        // as on a feed. Ticking Dynamic brings back the search, filters and pagination that
+        // are the Vue renderer's, and only its.
+        if ($bareTemplate === 'map-and-table') {
             $dynamic = true;
         }
         if ($dynamic && $bareTemplate === 'liste_accordeon') {
@@ -335,6 +1510,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
             return $this->callAction('calendar', $this->arguments);
         } elseif (
             self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
+            // `table` is a shared Presentation now and renders server-side (ticket 37);
+            // entrytable exists only to compute the Vue table's columns, so it is a detour
+            // worth making when that table is the one asked for, and only then
+            && ($this->arguments['dynamic'] || $this->arguments['template'] === 'map-and-table')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'EntryTableAction')
         ) {
             // Ceci est bancal : entrylist action appelle entrytable action qui rappelle une deuxieme entrylist action.
@@ -446,6 +1625,13 @@ class EntryListAction extends YesWikiAction implements RegisteredAction
             // a display that needs a role no form can answer renders nothing at all, with
             // nothing to explain it -- say which role is missing instead (ticket 11)
             $warning = $this->missingRoleWarning((string)$templateBaseName, $pForms);
+            // the shared Presentations (ticket 37): rendered from Items by the same code
+            // that renders a feed, so `template="card"` is one card and not two. Everything
+            // around it -- the search form, the facets, the pager -- is still this action's.
+            if (PresentationRenderer::knows($templateName)) {
+                return $warning . $this->getService(PresentationRenderer::class)
+                    ->render($templateName, $this->itemsFrom($data['entries']), $this->arguments);
+            }
             if ($templateBaseName === 'tableau') {
                 return $warning . $this->renderTableau($data);
             }

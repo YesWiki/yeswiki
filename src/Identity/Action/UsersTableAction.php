@@ -10,17 +10,40 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\User;
 
-class UsersTableAction extends YesWikiAction implements RegisteredAction
+class UsersTableAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{userstable}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'userstable';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('userstable')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_userstable_label'))
+                ->icon('users')
+                ->previewHeight('200px')
+                ->adminOnly()
+                ->settings(
+                    Setting::number('last')
+                        ->label(_t('AB_advanced_action_listusers_last_label'))
+                        ->hint(_t('AB_advanced_action_listusers_last_hint'))
+                        ->default('')
+                        ->min(1),
+                ),
+        ];
     }
 
     protected $authenticationService;

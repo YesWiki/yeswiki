@@ -24,14 +24,79 @@ namespace YesWiki\Render\Action;
  */
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-class VideoAction extends YesWikiAction implements RegisteredAction
+class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{video}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'video';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('video')
+                ->category(Category::Media)
+                ->label(_t('AB_attach_video_label'))
+                ->icon('player-play')
+                ->description(_t('AB_attach_video_description'))
+                ->hint(_t('AB_attach_video_hint'))
+                ->previewHeight('250px')
+                ->settings(
+                    Setting::url('url')
+                        ->label('Url')
+                        ->hint(_t('AB_attach_video_url_hint')),
+                    Setting::choice('server', [
+                        'peertube' => 'PeerTube',
+                        'youtube' => 'Youtube',
+                        'vimeo' => 'Vimeo',
+                    ])
+                        ->label(_t('AB_attach_video_serveur_label'))
+                        ->suggests('peertube')
+                        ->required()
+                        ->advanced(),
+                    Setting::url('peertubeinstance')
+                        ->label(_t('AB_attach_video_peertubeinstance_label'))
+                        ->showIf([
+                            'server' => 'peertube',
+                        ])
+                        ->advanced(),
+                    Setting::text('id')
+                        ->label(_t('AB_attach_video_id_label'))
+                        ->advanced(),
+                    Setting::choice('ratio', [
+                        '' => '16/9',
+                        '4par3' => '4/3',
+                    ])
+                        ->label(_t('AB_attach_video_ratio_label'))
+                        ->default('')
+                        ->advanced(),
+                    Setting::number('maxwidth')
+                        ->label(_t('AB_attach_video_largeur_max_label'))
+                        ->advanced(),
+                    Setting::number('maxheight')
+                        ->label(_t('AB_attach_video_hauteur_max_label'))
+                        ->advanced(),
+                    Setting::cssClass('class')
+                        ->label('Classe')
+                        ->subSettings(
+                            Setting::choice('position', [
+                                '' => 'standard',
+                                'pull-left' => _t('AB_LEFT'),
+                                'pull-right' => _t('AB_RIGHT'),
+                            ])
+                            ->label(_t('AB_attach_video_position_label'))
+                            ->default('')
+                            ->advanced(),
+                        ),
+                ),
+        ];
     }
 
     public const ALLOWED_SERVERS = ['vimeo', 'youtube', 'peertube', 'dailymotion'];

@@ -5,16 +5,40 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
-class RecentchangesAction extends YesWikiAction implements RegisteredAction
+class RecentchangesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'recentchanges';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('recentchanges')
+                ->category(Category::Lists)
+                ->label(_t('AB_advanced_action_recentchanges_label'))
+                ->icon('history')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::number('max')
+                        ->label(_t('AB_advanced_action_recentchanges_max_label'))
+                        ->default('')
+                        ->min(1),
+                    Setting::text('period')
+                        ->label(_t('AB_advanced_action_recentchanges_period_label'))
+                        ->hint(_t('AB_advanced_action_recentchanges_period_hint')),
+                ),
+        ];
     }
 
     public function run(): string

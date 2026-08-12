@@ -5,6 +5,9 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -15,11 +18,22 @@ use YesWiki\Render\Service\LinkRenderer;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class MypagesAction extends YesWikiAction implements RegisteredAction
+class MypagesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'mypages';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('mypages')
+                ->category(Category::Admin)
+                ->label(_t('AB_advanced_action_mypages_label'))
+                ->icon('file')
+                ->previewHeight('200px'),
+        ];
     }
 
     public function run(): string

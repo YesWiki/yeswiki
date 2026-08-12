@@ -3,6 +3,10 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -12,12 +16,38 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-class TagCloudAction extends YesWikiAction implements RegisteredAction
+class TagCloudAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{tagcloud}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'tagcloud';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('tagcloud')
+                ->category(Category::Navigation)
+                ->label(_t('AB_tags_listpagestag_nuagetag_label'))
+                ->icon('tags')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::text('tags')
+                        ->label(_t('AB_tags_listpagestag_tags_label'))
+                        ->hint(_t('AB_tags_listpagestag_tags_hint')),
+                    Setting::choice('sort', [
+                        '' => _t('AB_tags_nuagetag_tri_shuffle'),
+                        'apha' => _t('AB_tags_listpagestag_tri_alpha'),
+                    ])
+                        ->label(_t('AB_tags_listpagestag_tri_label'))
+                        ->default(''),
+                    Setting::number('classcount')
+                        ->label(_t('AB_tags_listpagestag_nbclasses_label'))
+                        ->min(0)
+                        ->advanced(),
+                ),
+        ];
     }
 
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';

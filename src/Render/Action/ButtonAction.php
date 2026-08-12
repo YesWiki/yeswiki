@@ -4,6 +4,10 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -17,11 +21,91 @@ use YesWiki\Render\Service\TemplateHelperService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class ButtonAction extends YesWikiAction implements RegisteredAction
+class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'button';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('button')
+                ->category(Category::Navigation)
+                ->label(_t('AB_buttons_action_button_label'))
+                ->icon('external-link')
+                ->description(_t('AB_buttons_action_button_description'))
+                ->previewHeight('100px')
+                ->settings(
+                    Setting::text('text')
+                        ->label(_t('AB_buttons_action_button_text_label'))
+                        ->default('')
+                        ->suggests(_t('AB_buttons_action_button_text_default')),
+                    Setting::page('link')
+                        ->label(_t('AB_buttons_action_button_link_label'))
+                        ->hint(_t('AB_buttons_action_button_link_hint'))
+                        ->suggests('https://yeswiki.net')
+                        ->required(),
+                    Setting::text('title')
+                        ->label(_t('AB_buttons_action_button_title_label'))
+                        ->advanced(),
+                    Setting::icon('icon')
+                        ->label(_t('AB_buttons_action_button_icon_label')),
+                    Setting::cssClass('class')
+                        ->label(_t('AB_buttons_action_button_class_label'))
+                        ->subSettings(
+                            Setting::choice('color', [
+                                'btn-default' => _t('AB_buttons_action_button_color_default'),
+                                'btn-primary' => _t('AB_buttons_action_button_color_primary'),
+                                'btn-secondary-1' => _t('AB_buttons_action_button_color_secondary1'),
+                                'btn-secondary-2' => _t('AB_buttons_action_button_color_secondary2'),
+                                'btn-success' => _t('AB_buttons_action_button_color_success'),
+                                'btn-info' => _t('AB_buttons_action_button_color_info'),
+                                'btn-warning' => _t('AB_buttons_action_button_color_warning'),
+                                'btn-danger' => _t('AB_buttons_action_button_color_danger'),
+                                'btn-link' => _t('AB_buttons_action_button_color_link'),
+                            ])
+                            ->label(_t('AB_buttons_action_button_color_label'))
+                            ->suggests('btn-primary'),
+                            Setting::choice('size', [
+                                '' => _t('AB_buttons_action_button_size_standard'),
+                                'btn-xs' => _t('AB_buttons_action_button_size_small'),
+                                'btn-sm' => _t('AB_buttons_action_button_size_medium'),
+                                'btn-lg' => _t('AB_buttons_action_button_size_big'),
+                            ])
+                            ->label(_t('AB_buttons_action_button_size_label'))
+                            ->advanced(),
+                            Setting::choice('modal', [
+                                'modalbox' => _t('AB_buttons_action_button_modal_modalbox'),
+                                'modalbox-hover' => _t('AB_buttons_action_button_modal_modalbox_hover'),
+                            ])
+                            ->label(_t('AB_buttons_action_button_modal_label'))
+                            ->hint(_t('AB_buttons_action_button_modal_hint'))
+                            ->advanced(),
+                            Setting::choice('pull', [
+                                'pull-right' => _t('AB_buttons_action_button_pull_right'),
+                                'btn-block' => _t('AB_buttons_action_button_pull_block'),
+                            ])
+                            ->label(_t('AB_buttons_action_button_pull_label'))
+                            ->advanced(),
+                            Setting::choice('new-window', [
+                                'new-window' => _t('AB_buttons_action_button_new_window_yes'),
+                            ])
+                            ->label(_t('AB_buttons_action_button_new_window_label'))
+                            ->advanced(),
+                        ),
+                    Setting::checkbox('hideifnoaccess')
+                        ->label(_t('AB_buttons_action_button_hideifnoaccess_label'))
+                        ->default('false')
+                        ->advanced(),
+                    Setting::checkbox('nobtn')
+                        ->label(_t('AB_buttons_action_button_nobtn_label'))
+                        ->default('0')
+                        ->checkedValues(1, 0)
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function run(): string

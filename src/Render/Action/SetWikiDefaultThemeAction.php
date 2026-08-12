@@ -4,6 +4,9 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -14,12 +17,24 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
-class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredAction
+class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{setwikidefaulttheme}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'setwikidefaulttheme';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('setwikidefaulttheme')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_setwikidefaulttheme_label'))
+                ->icon('brush')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     protected $hibernationService;

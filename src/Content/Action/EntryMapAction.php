@@ -3,15 +3,38 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Search\Service\SearchManager;
 
-class EntryMapAction extends YesWikiAction implements RegisteredAction
+class EntryMapAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{entrymap}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'entrymap';
+    }
+
+    /**
+     * `{{entrymap}}` itself, which the palette does not offer.
+     *
+     * What it offers is the `Cartographie` presentation, and that writes
+     * `{{entrylist template="map"}}` -- one action rendering every shape of list. But
+     * `{{entrymap}}` is a real action and pages hold it, so it needs a Component all the
+     * same or the settings rail would open on nothing when the cursor landed in one.
+     */
+    public function components(): array
+    {
+        return [
+            Component::for('entrymap-legacy')
+                ->writes('entrymap')
+                ->category(Category::Lists)
+                ->label(_t('AB_bazarcarto_label'))
+                ->icon('map-2')
+                ->notOffered(),
+        ];
     }
 
     public function formatArguments($arg)

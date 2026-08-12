@@ -40,7 +40,9 @@
                   v-for="action in group.actions" :key="action.id"
                   :title="action.label"
                   @click="selectFromPalette(group.id, action.id)">
-            <span class="actions-builder-panel__component-icon" v-html="group.icon"></span>
+            {# the component's own icon, not its category's -- every card in a category used
+               to wear the same one, so a palette of six categories had six icons in it #}
+            <span class="actions-builder-panel__component-icon" v-html="action.icon"></span>
             <span class="actions-builder-panel__component-label" v-html="action.label"></span>
           </button>
         </div>
@@ -54,7 +56,7 @@
         <select :value="getSelectedFormId()" required class="yw-input" @change="setSelectedFormId" ref="formSelection">
           <option v-for="(name, id) in formIds" :value="id" v-text="name"></option>
         </select>
-        <span v-if="isEntryListAction" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT')|raw }}</span>
+        <span v-if="needFormField" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT')|raw }}</span>
       </div>
 
       {# No "which action of this group?" select: the component is already decided by the
@@ -71,21 +73,30 @@
            this panel as it is filled in), a second copy of it in the rail is the same thing
            twice and takes the room the parameters want. #}
         <preview-action v-if="!editorRendersComponents" :wiki-code="wikiCodeForIframe"
-                        :height="actionGroup ? actionGroup.previewHeight : null"></preview-action>
+                        :height="selectedAction ? selectedAction.previewHeight : null"></preview-action>
 
         <div class="panels-config-container">
           <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class"
                :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
             <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS')|e('js') }}'"></h3>
             <div class="config-panel-content">
+              {# Each setting gets a cell of the panel's six-column grid, and says how much
+                 of a row it wants: a third, a half (the default) or all of it. Declared
+                 rather than guessed from the input's markup -- which is what a pile of
+                 `:has()` selectors was doing, and it could only ever guess. #}
               <template v-for="(config, propName) in panel.params.properties" :key="propName">
-                <div v-html="config.intro" v-show="checkVisibility(config)"></div>
-                <component :is="componentIdFrom(config)" :ref="refFrom(config)"
-                           :value="values[propName]" v-on:input="updateValue(propName, $event)"
-                           v-show="checkVisibility(config)"
-                           :name="propName" :values="values"
-                           :config="config" :selected-forms="selectedForms">
-                </component>
+                <div class="config-cell" :class="{'config-cell--third': spanOf(config) === 2}"
+                     :style="{'--yw-span': spanOf(config)}"
+                     v-show="checkVisibility(config)">
+                  {# `v-if`: almost no setting has an intro, and an empty div still takes a
+                     cell -- which pushed every input after it into the wrong column #}
+                  <div class="config-intro" v-if="config.intro" v-html="config.intro"></div>
+                  <component :is="componentIdFrom(config)" :ref="refFrom(config)"
+                             :value="values[propName]" v-on:input="updateValue(propName, $event)"
+                             :name="propName" :values="values"
+                             :config="config" :selected-forms="selectedForms">
+                  </component>
+                </div>
               </template>
             </div>
           </div>
@@ -100,12 +111,11 @@
       </div>
     </div>
 
-    {# The one thing this rail is for, parked at the bottom of it: the wiki code it builds
-       is what goes in the page, not something to read or copy out by hand. #}
-    <div class="yw-rail__footer" v-if="view === 'settings' && selectedAction && (!needFormField || selectedForms)">
-      <button type="button" class="yw-btn yw-btn--primary" data-yw-action-submit
-              @click="writeIntoEditor" v-text="submitLabel"></button>
-    </div>
+    {# No button. Picking a component from the palette writes it into the page, and every
+       change after that lands as it is made -- so there is nothing left to confirm. The
+       button that used to be here also carried a rule nothing said out loud: closing the
+       rail threw away whatever had been typed into it. Ctrl+Z is the way back now, in both
+       editors. See ADR-0017's ticket 36. #}
   </div>
 </aside>
 

@@ -1,0 +1,31 @@
+{# The slots every presentation draws, in one place: an Item is the same shape wherever it
+   came from, so "how a title is drawn" should not be answered four times.
+
+   `description` is HTML -- a feed's summary arrives as markup and a form's long text is
+   formatted before it gets here -- so it is the one slot that is not escaped. #}
+{% macro badge(item) %}
+  {% if item.badge %}<span class="yw-item__badge">{{ item.badge }}</span>{% endif %}
+{% endmacro %}
+
+{% macro image(item, alt) %}
+  {% if item.image %}
+    <img class="yw-item__image" src="{{ item.image }}" alt="{{ alt|default('') }}" loading="lazy" />
+  {% endif %}
+{% endmacro %}
+
+{% macro title(item) %}
+  {% if item.url %}
+    <a class="yw-item__title" href="{{ item.url }}">{{ item.title }}</a>
+  {% else %}
+    <span class="yw-item__title">{{ item.title }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro meta(item) %}
+  {% if item.subtitle or item.date %}
+    <div class="yw-item__meta">
+      {% if item.subtitle %}<span class="yw-item__subtitle">{{ item.subtitle }}</span>{% endif %}
+      {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}
+    </div>
+  {% endif %}
+{% endmacro %}

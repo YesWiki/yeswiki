@@ -3,6 +3,10 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -17,11 +21,27 @@ use YesWiki\Render\Service\LinkRenderer;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class RedirectAction extends YesWikiAction implements RegisteredAction
+class RedirectAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'redirect';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('redirect')
+                ->category(Category::Navigation)
+                ->label(_t('AB_advanced_action_redirect_label'))
+                ->icon('arrow-forward-up')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::page('page')
+                        ->label(_t('AB_advanced_action_backlinks_page_label'))
+                        ->required(),
+                ),
+        ];
     }
 
     public function run(): string

@@ -4,6 +4,10 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -17,11 +21,49 @@ use YesWiki\Render\Service\TemplateHelperService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class NavAction extends YesWikiAction implements RegisteredAction
+class NavAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'nav';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('nav')
+                ->category(Category::Navigation)
+                ->label(_t('AB_templates_nav_label'))
+                ->icon('menu-2')
+                ->description(_t('AB_templates_nav_description'))
+                ->hint(_t('AB_templates_nav_hint'))
+                ->previewHeight('300px')
+                ->settings(
+                    Setting::navLinks('nav-links')
+                        ->raw('btn-label-add', _t('AB_templates_nav_add_tag'))
+                        ->subSettings(
+                            Setting::page('link')
+                            ->label(_t('AB_templates_nav_link')),
+                            Setting::text('title')
+                            ->label(_t('AB_templates_nav_title')),
+                        ),
+                    Setting::cssClass('class')
+                        ->subSettings(
+                            Setting::choice('type', [
+                                'nav nav-tabs' => _t('AB_templates_nav_class_tabs'),
+                                'nav nav-pills' => _t('AB_templates_nav_class_pills'),
+                                'nav nav-tabs nav-justified' => _t('AB_templates_nav_class_justified'),
+                                'nav nav-stacked' => _t('AB_templates_nav_class_vertical'),
+                            ])
+                            ->label(_t('AB_templates_nav_class_label'))
+                            ->default('nav nav-tabs'),
+                        ),
+                    Setting::checkbox('hideifnoaccess')
+                        ->label(_t('AB_templates_nav_hide_if_no_access_label'))
+                        ->default(false)
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function run(): string

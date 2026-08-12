@@ -5,6 +5,10 @@ namespace YesWiki\Content\Action;
 // ticket 18: relocated from tools/contact/actions/ContactAction.php.
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
@@ -12,12 +16,39 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 
 include_once YESWIKI_SOURCE_DIR . '/src/Content/contact.functions.php';
 
-class ContactAction extends YesWikiAction implements RegisteredAction
+class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{contact}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'contact';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('contact')
+                ->category(Category::Forms)
+                ->label(_t('AB_contact_action_label'))
+                ->icon('mail')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::email('mail')
+                        ->label(_t('AB_contact_action_mail_label'))
+                        ->suggests('my@email.com')
+                        ->required(),
+                    Setting::text('subjectprefix')
+                        ->label(_t('AB_contact_action_entete_label'))
+                        ->default(_t('AB_contact_action_entete_default')),
+                    Setting::text('template')
+                        ->label(_t('AB_contact_action_template_label'))
+                        ->hint(_t('AB_contact_action_template_hint'))
+                        ->advanced(),
+                    Setting::text('class')
+                        ->label(_t('AB_contact_action_class_label'))
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function formatArguments($arg)

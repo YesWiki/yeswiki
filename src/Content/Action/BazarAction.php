@@ -8,16 +8,39 @@ use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-class BazarAction extends YesWikiAction implements RegisteredAction
+class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{bazar}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'bazar';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('bazar')
+                ->category(Category::Forms)
+                ->label(_t('AB_bazar_action_label'))
+                ->icon('square-plus')
+                ->pin('showmenu', '0')
+                ->pin('view', 'saisir')
+                ->description(_t('AB_bazar_action_description'))
+                ->previewHeight('450px')
+                ->settings(
+                    Setting::page('redirecturl')
+                        ->label(_t('AB_bazar_action_redirecturl_label'))
+                        ->advanced(),
+                ),
+        ];
     }
 
     public const URL_VIEW_PARAM = 'view';

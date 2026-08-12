@@ -24,6 +24,15 @@ services:
       tags: ['yeswiki.action']
     YesWiki\Kernel\Performable\RegisteredHandler:
       tags: ['yeswiki.handler']
+    # Ticket 36: whatever declares what the editor's palette can insert. Tagged the same
+    # way an action is, so a provider enrols by implementing the interface and nothing else
+    # -- there is no list of providers anywhere, which is the point.
+    YesWiki\Kernel\Component\ProvidesComponents:
+      tags: ['yeswiki.component_provider']
+    # Ticket 37: an action that supplies Items for a Presentation to render. Tagged the same
+    # way, so adding a Source is a change to that action and nothing else.
+    YesWiki\Content\Entity\SuppliesItems:
+      tags: ['yeswiki.item_source']
 
   YesWiki\Kernel\Performable\ActionRegistry:
     arguments:
@@ -58,6 +67,25 @@ services:
 
   YesWiki\Search\Controller\:
     resource: 'Search/Controller/*'
+
+  YesWiki\Render\Component\:
+    resource: 'Render/Component/*'
+
+  # ...and the two registries in there that take a tagged iterator, which nothing can guess.
+  # Declared AFTER the resource above on purpose: a resource definition replaces whatever it
+  # matched, so these arguments have to be the last word or they are silently dropped.
+  YesWiki\Render\Component\SourceRegistry:
+    arguments:
+      $sourceServices: !tagged_iterator yeswiki.item_source
+
+  YesWiki\Render\Component\ComponentRegistry:
+    arguments:
+      # Iterating instantiates every provider, which for an action means the action too.
+      # That is an edit-screen cost only: nothing asks for the palette while rendering a
+      # page, and the result is memoised for the request that did ask.
+      $providers: !tagged_iterator yeswiki.component_provider
+      $container: '@service_container'
+
 
   YesWiki\Render\Service\:
     resource: 'Render/Service/*'

@@ -3,6 +3,10 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -15,11 +19,27 @@ use YesWiki\Kernel\Service\UrlFormatter;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class RssAction extends YesWikiAction implements RegisteredAction
+class RssAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'rss';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('rss')
+                ->category(Category::Lists)
+                ->label(_t('AB_tags_listpagestag_rss_label'))
+                ->icon('rss')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::text('tags')
+                        ->label(_t('AB_tags_listpagestag_tags_label'))
+                        ->hint(_t('AB_tags_listpagestag_tags_hint')),
+                ),
+        ];
     }
 
     public function run(): string

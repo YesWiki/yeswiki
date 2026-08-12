@@ -655,9 +655,8 @@ class YesWikiRuntime
         // custom/tools/ with the exact same precedence).
         $this->loadExtensionsFromDir(YESWIKI_SOURCE_DIR . '/extensions/');
         $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/extensions/');
-        // TODO refactor as custom and actionsbuilder are not extensions
+        // TODO refactor as custom is not an extension
         $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/'; // Will load custom/actions, custom/handlers etc...
-        $this->extensions['actionsbuilder'] = YESWIKI_SOURCE_DIR . '/docs/actions/'; // Will load langs inside docs/actions/lang
 
         $this->includeExtensionsBootstrapFiles();
         $this->boot();

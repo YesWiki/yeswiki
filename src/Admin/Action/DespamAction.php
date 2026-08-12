@@ -6,6 +6,10 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -21,11 +25,29 @@ use YesWiki\Render\Service\MarkdownFormatterService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class DespamAction extends YesWikiAction implements RegisteredAction
+class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'despam';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('despam')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_despam_label'))
+                ->icon('ban')
+                ->hint(_t('AB_management_despam_hint'))
+                ->previewHeight('200px')
+                ->adminOnly()
+                ->settings(
+                    Setting::note('hint', '')
+                        ->hint(_t('AB_management_despam_hint_details'))
+                        ->documentedAt('https://yeswiki.net/?LutterContreLeSpam'),
+                ),
+        ];
     }
 
     public function run(): string

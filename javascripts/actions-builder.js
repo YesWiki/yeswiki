@@ -26,10 +26,15 @@ export default class {
     }
   }
 
+  /** Every `{{tag}}` a declared Component knows about -- what the editors highlight. */
   get allAvailableActions() {
-    return Object.values(actionsBuilderData.action_groups)
-      .map((e) => Object.keys(e.actions))
-      .flat()
+    return [
+      ...new Set(
+        Object.values(actionsBuilderData.components || {}).flatMap(
+          (component) => component.tags || [],
+        ),
+      ),
+    ]
   }
 
   get allAvailableActionsWithBackward() {
@@ -38,13 +43,15 @@ export default class {
     )
   }
 
+  /** By tag, since that is what a page holds; the unpinned component is the general one. */
   getActionConfiguration(actionName) {
-    for (const group of Object.values(actionsBuilderData.action_groups)) {
-      if (group.actions[actionName]) {
-        return group.actions[actionName]
-      }
-    }
-    return {}
+    const components = Object.values(actionsBuilderData.components || {})
+
+    return (
+      components.find((c) => (c.tags || []).includes(actionName) && !c.pins) ||
+      components.find((c) => (c.tags || []).includes(actionName)) ||
+      {}
+    )
   }
 
   /** True while the rail is placing a component the document does not contain yet. */

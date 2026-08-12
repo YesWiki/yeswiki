@@ -4,16 +4,31 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\TagsManager;
 
-class AdminTagAction extends YesWikiAction implements RegisteredAction
+class AdminTagAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{admintag}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'admintag';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('admintag')
+                ->category(Category::Admin)
+                ->label(_t('AB_tags_admintag_label'))
+                ->icon('tags')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     public function run()

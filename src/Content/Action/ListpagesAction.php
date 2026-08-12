@@ -2,16 +2,25 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\PresentationRenderer;
 
 /**
  * `{{listpages}}` -- converted from the procedural actions/listpages.php by ticket 06.
@@ -20,15 +29,145 @@ use YesWiki\Render\Service\MarkdownFormatterService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class ListpagesAction extends YesWikiAction implements RegisteredAction
+class ListpagesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
 {
     public static function performableName(): string
     {
         return 'listpages';
     }
 
+    public function components(): array
+    {
+        return [
+            Component::for('listpages')
+                ->category(Category::Lists)
+                ->label(_t('AB_advanced_action_listpages_label'))
+                ->icon('list')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::choice('sort', [
+                        'tag',
+                        'user',
+                        'owner',
+                        'time',
+                    ])
+                        ->label(_t('AB_advanced_action_listpages_sort_label'))
+                        ->default(''),
+                    Setting::page('exclude')
+                        ->label(_t('AB_advanced_action_listpages_exclude_label'))
+                        ->hint(_t('AB_advanced_action_listpages_exclude_hint')),
+                    Setting::checkbox('owner')
+                        ->label(_t('AB_advanced_action_listpages_owner_label'))
+                        ->hint(_t('AB_advanced_action_listpages_owner_hint'))
+                        ->default('')
+                        ->checkedValues('owner', ''),
+                    Setting::checkbox('user')
+                        ->label(_t('AB_advanced_action_listpages_user_label'))
+                        ->hint(_t('AB_advanced_action_listpages_user_hint'))
+                        ->default('')
+                        ->checkedValues('user', ''),
+                ),
+        ];
+    }
+
+    public static function sourceLabel(): string
+    {
+        return _t('SOURCE_LISTPAGES');
+    }
+
+    /**
+     * Everything a page list can be told. Two settings and no mapping: a page has a name, an
+     * owner and a date whatever wiki it lives on, so there is nothing to declare about which
+     * field holds what -- which is why this was the Source worth adding to prove the seam.
+     * Adding it changed this file and `services.yaml`, and no presentation at all.
+     */
+    public static function sourceSettings(): array
+    {
+        return [
+            Setting::page('exclude')
+                ->label(_t('AB_advanced_action_listpages_exclude_label'))
+                ->hint(_t('AB_advanced_action_listpages_exclude_hint'))
+                ->withIcon('file-off'),
+            Setting::checkbox('owner')
+                ->label(_t('AB_advanced_action_listpages_owner_label'))
+                ->hint(_t('AB_advanced_action_listpages_owner_hint'))
+                ->default('')
+                ->checkedValues('owner', ''),
+        ];
+    }
+
+    /** @return list<Item> */
+    public function items(): array
+    {
+        $arguments = $this->getService(PerformableArguments::class);
+        $dbService = $this->getService(DbService::class);
+        $prefix = (string)$this->getService(RuntimeConfig::class)->getValue('table_prefix');
+
+        $owner = $arguments->get('owner');
+        if ($owner === 'owner') {
+            $owner = $this->getService(PageManager::class)->getOwner();
+        }
+        $exclude = $arguments->get('exclude')
+            ? preg_split('/[ ;,\|]/', (string)$arguments->get('exclude'), -1, PREG_SPLIT_NO_EMPTY)
+            : [];
+
+        $timeCol = $dbService->quoteIdentifier('time');
+        $sql = "SELECT tag, owner, {$timeCol} FROM {$prefix}pages WHERE latest = 'Y' AND parent = ''";
+        $params = [];
+        if ($owner) {
+            $sql .= ' AND owner = ?';
+            $params[] = $owner;
+        }
+        if ($exclude) {
+            $sql .= ' AND tag NOT IN (' . SqlParameters::placeholders(count($exclude)) . ')';
+            $params = [...$params, ...$exclude];
+        }
+        $sql .= ' ORDER BY tag';
+
+        $aclService = $this->getService(AclService::class);
+        $urlFormatter = $this->getService(UrlFormatter::class);
+
+        $items = [];
+        foreach ($dbService->loadAll($sql, $params) as $page) {
+            $tag = (string)$page['tag'];
+            // the same read check the list itself does -- a Presentation renders what it is
+            // given, so a Source that skipped this would publish every private page
+            if (!$aclService->hasAccess('read', $tag)) {
+                continue;
+            }
+            $items[] = new Item(
+                id: $tag,
+                title: $tag,
+                subtitle: ($page['owner'] ?? '') !== '' ? (string)$page['owner'] : null,
+                url: $urlFormatter->href('', $tag),
+                date: self::asDate($page['time'] ?? null),
+            );
+        }
+
+        return $items;
+    }
+
+    /** A page's stored revision date, as the ISO-8601 string an Item carries. */
+    private static function asDate(mixed $stored): ?string
+    {
+        if (!is_string($stored) || $stored === '') {
+            return null;
+        }
+        $timestamp = strtotime($stored);
+
+        return $timestamp === false ? null : date('c', $timestamp);
+    }
+
     public function run(): string
     {
+        // asked for as a Presentation (ticket 37): the same cards a form or a feed gets.
+        // Without a `template` this is the plain <ul> it has always been.
+        $template = (string)$this->getService(PerformableArguments::class)->get('template');
+        if ($template !== '' && PresentationRenderer::knows($template)) {
+            return $this->getService(PresentationRenderer::class)
+                ->render($template, $this->items(), $this->arguments);
+        }
+
         ob_start();
         try {
             $this->emit();
@@ -213,7 +352,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
 
         // Display the list itself
         echo "<ul>\n";
-        $aclService = $this->getService(\YesWiki\Identity\Service\AclService::class);
+        $aclService = $this->getService(AclService::class);
         foreach ($pages as $page) {
             if ($aclService->hasAccess('read', $page['tag'])) {
                 echo "\t<li>" . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], false, false);

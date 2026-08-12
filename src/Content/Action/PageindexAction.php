@@ -3,6 +3,9 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -15,11 +18,22 @@ use YesWiki\Render\Service\LinkRenderer;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class PageindexAction extends YesWikiAction implements RegisteredAction
+class PageindexAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'pageindex';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('pageindex')
+                ->category(Category::Navigation)
+                ->label(_t('AB_advanced_action_pageindex_label'))
+                ->icon('list-details')
+                ->previewHeight('200px'),
+        ];
     }
 
     public function run(): string

@@ -23,6 +23,29 @@ const EXTRAS = [
   'layout-list',
   'layout-rows',
   'layout-grid',
+  // the settings rail's own addons (ticket 36). The YAML asked for `fill-drip`, `shapes`,
+  // `align-center` and `columns` -- FontAwesome names with no entry in the legacy map, so
+  // every one of them rendered as an empty bordered box beside its label. Extras rather
+  // than map entries: a Component now names a sprite icon directly, and the map is for
+  // the legacy vocabulary in stored content.
+  'palette',
+  'shape',
+  'align-center',
+  'columns',
+  // ...and one per setting of the section component, so every caption in the rail is
+  // recognisable at a glance rather than only readable
+  'contrast',
+  'texture',
+  'droplet-half-2',
+  'repeat',
+  'crop',
+  'focus-centered',
+  'pin',
+  'eye',
+  'box-margin',
+  'wand',
+  // the entry-list presentations
+  'table',
 ]
 // sprite ids whose Tabler source icon has a different name — e.g. the magnifier
 // ships as "loupe" because adblock cosmetic filters hide elements whose

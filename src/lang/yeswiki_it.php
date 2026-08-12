@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * it: the actions-builder strings only.
+ *
+ * This wiki has no core catalog in it -- these came from docs/actions/lang, which
+ * had three languages core does not (ticket 36). Kept rather than thrown away: 400-odd
+ * translated strings are worth more than the tidiness of deleting them, and this is
+ * where a translator would add the rest.
+ */
+
 return [
     'AB_LEFT' => 'Sinistra',
     'AB_RIGHT' => 'Destra',
@@ -8,10 +17,10 @@ return [
     'AB_bazar_commons_colorfield_label' => 'Campo per il colore',
     'AB_bazar_commons_colormapping_color_label' => 'Colore',
     'AB_bazar_commons_dynamic_label' => 'Rendering dinamico',
-    'AB_bazar_commons_iconfield_label' => "Campo per l'icona",
+    'AB_bazar_commons_iconfield_label' => 'Campo per l\'icona',
     'AB_bazar_commons_iconfield_icon_label' => 'Icona',
     'AB_bazar_commons_iconfield_iconprefix_label' => 'Prefisso per le icone',
-    'AB_bazar_commons_iconfield_iconprefix_hint' => "Se usi il selettore dell'icona, questo campo non serve",
+    'AB_bazar_commons_iconfield_iconprefix_hint' => 'Se usi il selettore dell\'icona, questo campo non serve',
     'AB_bazar_commons_minical' => 'Visualizza il contenuto come mini calendario',
     'AB_bazar_commons_pagination_label' => 'Numero di fogli per pagina',
     'AB_bazar_commons_pagination_hint' => 'Lascia vuoto per non utilizzare il paging',
@@ -20,9 +29,9 @@ return [
     'AB_bazar_commons_search_label_dynamic' => 'Ricerca dinamica',
     'AB_bazar_commons_subproperty_id_label' => 'Valore',
     'AB_bazar_commons_title' => 'Visualizza',
-    'AB_bazar_commons2_champ_label' => "Campo per l'ordinamento",
+    'AB_bazar_commons2_champ_label' => 'Campo per l\'ordinamento',
     'AB_bazar_commons2_champ_hint' => 'È possibile effettuare richieste avanzate, per saperne di più',
-    'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' deve essere definito.",
+    'AB_bazar_commons2_filter_index' => '\'bf_date_debut_evenement\' deve essere definito.',
     'AB_bazar_commons2_filter_on_date' => 'Filtra per data',
     'AB_bazar_commons2_filter_on_date_future' => 'futuro',
     'AB_bazar_commons2_filter_on_date_past' => 'passato',
@@ -31,7 +40,7 @@ return [
     'AB_bazar_commons2_filter_on_date_on_current_month' => 'nel prossimo mese',
     'AB_bazar_commons2_filter_on_date_for_two_years' => 'tra due anni',
     'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => '+/- una settimana',
-    'AB_bazar_commons2_filter_user_as_owner' => "Visualizza solo le pagine dell'utente corrente",
+    'AB_bazar_commons2_filter_user_as_owner' => 'Visualizza solo le pagine dell\'utente corrente',
     'AB_bazar_commons2_filtercolsize_label' => 'Larghezza delle sfaccettature',
     'AB_bazar_commons2_filterposition_label' => 'Posizione della sfaccettature',
     'AB_bazar_commons2_groupsexpanded_label' => 'Visualizzazione iniziale delle sfaccettature',
@@ -75,7 +84,7 @@ return [
     'AB_bazarliste_popupselectedfields_label' => 'Campi da mantenere nel popup',
     'AB_bazarliste_popupneededfields_label' => 'Campi da aggiungere nel popup',
     'AB_bazarcarto_popupcustomtemplate_label' => 'Template personalizzato per il piccolo popup',
-    'AB_bazarcarto_popupcustomtemplate_hint' => "es. 'custom_map_popup.twig' da mettere in 'custom/templates/bazar/entries/index-dynamic-templates/'",
+    'AB_bazarcarto_popupcustomtemplate_hint' => 'es. \'custom_map_popup.twig\' da mettere in \'custom/templates/bazar/entries/index-dynamic-templates/\'',
     'AB_bazarcarto_displayfields_markhover_label' => 'Campo da visualizzare al passaggio sul marker',
     'AB_bazarcarto_smallmarker_label' => 'Piccoli marcatori',
     'AB_bazarcarto_spider_label' => 'Modalità spider',
@@ -84,12 +93,12 @@ return [
     'AB_bazarcarto_navigation_label' => 'Pulsanti di controllo dello zoom',
     'AB_bazarcarto_zoommolette_label' => 'Puoi ingrandire con la rotella del mouse',
     'AB_bazaragenda_label' => 'Agenda',
-    'AB_bazaragenda_description' => "I file saranno mostrati come evento in un'agenda.",
+    'AB_bazaragenda_description' => 'I file saranno mostrati come evento in un\'agenda.',
     'AB_bazaragenda_nbcol_label' => 'Numero di colonne',
     'AB_bazaragenda_modal_label' => 'Visualizzazione di una finestra modale cliccando',
     'AB_bazarcalendar' => 'Calendario',
     'AB_bazarcalendar_description' => 'I file saranno mostrati come eventi in un calendario.',
-    'AB_bazarcalendar_showlist_label' => "Visualizza il pulsante 'planning'",
+    'AB_bazarcalendar_showlist_label' => 'Visualizza il pulsante \'planning\'',
     'AB_bazarcalendar_showlist_week' => 'Settimana',
     'AB_bazarcalendar_showlist_month' => 'Mese',
     'AB_bazarcalendar_showlist_year' => 'Anno',

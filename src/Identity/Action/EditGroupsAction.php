@@ -7,14 +7,29 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-class EditGroupsAction extends YesWikiAction implements RegisteredAction
+class EditGroupsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{editgroups}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'editgroups';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('editgroups')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_editgroups_label'))
+                ->icon('users')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     public function run()

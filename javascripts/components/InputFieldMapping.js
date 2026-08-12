@@ -39,6 +39,11 @@ export default {
         const value = this.mappingValues[propName]
         if (
           propName &&
+          // a slot with no field chosen is not a mapping: writing `title=` mapped the
+          // title onto nothing, and every list carrying one lost its titles
+          value !== undefined &&
+          value !== null &&
+          String(value) !== '' &&
           String(value) !==
             String((this.config.subproperties[propName] || {}).default) &&
           value !== ',' &&

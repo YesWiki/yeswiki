@@ -3,6 +3,10 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
@@ -16,11 +20,39 @@ use YesWiki\Render\Service\TemplateEngine;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class UnsubscribeAction extends YesWikiAction implements RegisteredAction
+class UnsubscribeAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'unsubscribe';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('unsubscribe')
+                ->category(Category::Forms)
+                ->label(_t('AB_deabonnement_action_label'))
+                ->icon('mail-forward')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::email('mail')
+                        ->label(_t('AB_abonnement_action_mail_label'))
+                        ->suggests('my@mailing.list')
+                        ->required(),
+                    Setting::choice('mailinglist', [
+                        'sympa',
+                        'ezmlm',
+                    ])
+                        ->label(_t('AB_abonnement_mailinglist_label')),
+                    Setting::text('nbactionmail')
+                        ->label(_t('AB_abonnement_template_label'))
+                        ->advanced(),
+                    Setting::text('class')
+                        ->label(_t('AB_abonnement_class_label'))
+                        ->advanced(),
+                ),
+        ];
     }
 
     public function run(): string

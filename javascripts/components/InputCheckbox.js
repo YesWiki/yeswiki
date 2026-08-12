@@ -41,9 +41,13 @@ export default {
       this.setCheckedFromValue(this.value)
     },
   },
+  // `title` is the caption above the box; `label` is the sentence beside it. Every other
+  // input's label does both jobs, but a checkbox's is what you click and what says what
+  // ticking it does, so the word naming the setting has nowhere else to go.
   template: `
     <div class="yw-form-group input-group checkbox" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
+      <label v-if="config.title" class="yw-form-label checkbox__title">{{ config.title }}</label>
       <label>
         <input type="checkbox" v-model="checked" />
         <span>{{ config.label }}</span>

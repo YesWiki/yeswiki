@@ -4,6 +4,10 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -16,11 +20,28 @@ use YesWiki\Render\Service\MarkdownFormatterService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class RecentcommentsAction extends YesWikiAction implements RegisteredAction
+class RecentcommentsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'recentcomments';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('recentcomments')
+                ->category(Category::Lists)
+                ->label(_t('AB_advanced_action_recentcomments_label'))
+                ->icon('messages')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::number('max')
+                        ->label(_t('AB_advanced_action_recentcomments_max_label'))
+                        ->default('')
+                        ->min(1),
+                ),
+        ];
     }
 
     public function run(): string

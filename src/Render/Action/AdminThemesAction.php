@@ -10,16 +10,31 @@ namespace YesWiki\Render\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
-class AdminThemesAction extends YesWikiAction implements RegisteredAction
+class AdminThemesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     /** `{{adminthemes}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'adminthemes';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('adminthemes')
+                ->category(Category::Admin)
+                ->label(_t('AB_management_gererthemes_label'))
+                ->icon('brush')
+                ->previewHeight('200px')
+                ->adminOnly(),
+        ];
     }
 
     protected $pageManager;

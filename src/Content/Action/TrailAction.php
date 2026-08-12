@@ -5,6 +5,10 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -19,11 +23,27 @@ use YesWiki\Render\Service\MarkdownFormatterService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class TrailAction extends YesWikiAction implements RegisteredAction
+class TrailAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'trail';
+    }
+
+    public function components(): array
+    {
+        return [
+            Component::for('trail')
+                ->category(Category::Navigation)
+                ->label(_t('AB_advanced_action_trail_label'))
+                ->icon('sitemap')
+                ->previewHeight('200px')
+                ->settings(
+                    Setting::page('toc')
+                        ->label(_t('AB_advanced_action_trail_toc_label'))
+                        ->required(),
+                ),
+        ];
     }
 
     public function run(): string

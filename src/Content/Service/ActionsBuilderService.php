@@ -3,13 +3,29 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
-use Symfony\Component\Yaml\Yaml;
+use YesWiki\Kernel\Service\ExtensionRegistry;
+use YesWiki\Render\Component\ComponentRegistry;
 use YesWiki\Render\Service\TemplateEngine;
 
+/**
+ * What the editor's component palette is given.
+ *
+ * Until ticket 36 this class WAS the palette: it globbed `docs/actions/*.yaml` plus every
+ * extension's `actions/documentation.yaml` plus the instance's `custom` one, sorted the
+ * groups by a `position` integer, injected the custom bazar templates as extra entries of
+ * the entrylist group, and finished by walking the whole structure to turn `_t(KEY)` marker
+ * strings into translations. None of that is here any more. Components are declared in PHP
+ * by the services that own them (`ProvidesComponents`), a provider calls `_t()` itself at
+ * the moment it declares a label, and this is left holding the two things that are neither
+ * a component nor a category: which forms exist, and which extra Vue inputs to load.
+ */
 class ActionsBuilderService
 {
+    /** @var array<string, mixed>|null */
     protected $data;
-    protected $renderer;
+
+    protected TemplateEngine $renderer;
+
     protected ContainerInterface $container;
 
     public function __construct(TemplateEngine $renderer, ContainerInterface $container)
@@ -18,116 +34,49 @@ class ActionsBuilderService
         $this->container = $container;
     }
 
-    // ---------------------
-    // Data for the template
-    // ---------------------
-    public function getData()
+    /** @return array<string, mixed> */
+    public function getData(): array
     {
         if ($this->data !== null) {
             return $this->data;
         }
 
+        $registry = $this->container->get(ComponentRegistry::class);
+
         $data = formAndListIds();
-        // Loads various Yaml file.
-        //
-        // The core one is SOURCE-relative, like the line under it and like the lang half of
-        // the same directory (YesWikiRuntime registers `YESWIKI_SOURCE_DIR . '/docs/actions/'`).
-        // It was cwd-relative, which is the instance directory on a farm -- and an instance
-        // docroot holds no `docs/`, so the glob found nothing and the components palette came
-        // up **empty** on every farm instance while working perfectly on every standalone
-        // install. `custom/` below stays cwd-relative: that one really is the instance's.
-        $docFiles = glob(YESWIKI_SOURCE_DIR . '/docs/actions/*.yaml');
-        $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/extensions/*/actions/documentation.yaml');
-        $customDocFiles = glob('custom/actions/documentation.yaml');
-        $docFiles = array_merge($docFiles, $extensionDocFiles);
-        $docFiles = array_merge($docFiles, $customDocFiles);
-        $data['action_groups'] = [];
-        foreach ($docFiles as $filePath) {
-            $filename = pathinfo($filePath)['filename'];
-            if ($filename == 'documentation') {
-                // find key from filePath between extensions and actions
-                $matches = [];
-                if (preg_match('/extensions(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
-                    || preg_match('/(custom)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
-                ) {
-                    $key = $matches[1];
-                } else {
-                    $key = $filename;
-                }
-            } else {
-                $key = $filename;
-            }
-            $data['action_groups'][$key] = Yaml::parseFile($filePath);
-            // remove file for no admins if 'onlyForAdmins'
-            if (isset($data['action_groups'][$key]['onlyForAdmins'])
-                && $data['action_groups'][$key]['onlyForAdmins']
-                && !$GLOBALS['yeswikiServices']->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) {
-                unset($data['action_groups'][$key]);
-            } else {
-                // When order is not defined, put at the end
-                if (empty($data['action_groups'][$key]['position'])) {
-                    $data['action_groups'][$key]['position'] = 1000;
-                }
-            }
-        }
-        // Sort by position
-        uasort($data['action_groups'], function ($a, $b) {
-            return $a['position'] - $b['position'];
-        });
+        // the palette, in category order; and every component by id, palette-visible or not,
+        // because the settings rail opens on components the palette does not offer
+        $data['palette'] = $registry->palette();
+        $data['components'] = $registry->byId();
 
-        // Add custom bazar templates to the list of the entrylist component
-        $bazarlisteCustomTemplates = glob('custom/templates/bazar/*.twig') ?: [];
-        foreach ($bazarlisteCustomTemplates as $k => $v) {
-            $bazarlisteCustomTemplates[$k] = str_replace('custom/templates/bazar/', '', $v);
-        }
-        // bazar templates starting with "fiche" are not list of entries
-        $filtered_files = preg_grep('/^(?!fiche)/', $bazarlisteCustomTemplates);
-        foreach ($filtered_files as $file) {
-            $name = str_replace('.twig', '', $file);
-            $translation = _t('AB_' . $name . '_label');
-            // if no translation found, write "Template custom"
-            if ($translation == 'AB_' . $name . '_label') {
-                $translation = _t('ACTION_BUILDER_TEMPLATE_CUSTOM') . ' ' . $name;
-            } else {
-                $translation = '_t(AB_' . $name . '_label)';
-            }
-            if (empty($data['action_groups']['entrylist']['actions'][$name])) {
-                $data['action_groups']['entrylist']['actions'][$name] = [
-                    'label' => $translation,
-                    'properties' => [
-                        'template' => ['value' => $file],
-                    ],
-                ];
-            }
-        }
-
-        // Handle translations
-        array_walk_recursive($data['action_groups'], function (&$item, $key) {
-            if (is_string($item) && preg_match("/_t\((.+)\)/", $item, $trans_key)) {
-                $item = str_replace($trans_key[0], _t($trans_key[1]), $item);
-            }
-        });
-
-        // add extra components
-        $extraComponents = [];
-        $files = [];
-        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
-            $files = glob($pluginPath . 'javascripts/components/actions-builder/*.js');
-            foreach ($files as $filePath) {
-                $filename = pathinfo($filePath)['filename'];
-                $extraComponents[$filename] = "../../../$pluginName/javascripts/components/actions-builder/$filename.js";
-            }
-        }
-        $files = glob('custom/javascripts/components/actions-builder/*.js');
-        foreach ($files as $filePath) {
-            $filename = pathinfo($filePath)['filename'];
-            $extraComponents[$filename] = "../../../../custom/javascripts/components/actions-builder/$filename.js";
-        }
+        $extraComponents = $this->extraInputComponents();
         if (!empty($extraComponents)) {
             $data['extraComponents'] = $extraComponents;
         }
-        $this->data = $data;
 
-        return $this->data;
+        return $this->data = $data;
+    }
+
+    /**
+     * Vue inputs an extension or the instance ships, for a setting type core has never
+     * heard of. Unrelated to Components -- these are the widgets a setting is drawn with.
+     *
+     * @return array<string, string>
+     */
+    private function extraInputComponents(): array
+    {
+        $extra = [];
+        foreach ($this->container->get(ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
+            foreach (glob($pluginPath . 'javascripts/components/actions-builder/*.js') ?: [] as $filePath) {
+                $filename = pathinfo($filePath)['filename'];
+                $extra[$filename] = "../../../$pluginName/javascripts/components/actions-builder/$filename.js";
+            }
+        }
+        foreach (glob('custom/javascripts/components/actions-builder/*.js') ?: [] as $filePath) {
+            $filename = pathinfo($filePath)['filename'];
+            $extra[$filename] = "../../../../custom/javascripts/components/actions-builder/$filename.js";
+        }
+
+        return $extra;
     }
 }
