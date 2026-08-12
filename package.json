@@ -36,7 +36,7 @@
     "leaflet-providers": "^1.13",
     "leaflet.fullscreen": "^2.4",
     "leaflet.markercluster": "^1.5.3",
-    "mermaid": "^11.15.0",
+    "mermaid": "^11.16.1",
     "minimist": "^1.2.6",
     "moment": "^2.29.2",
     "node-fetch": "^2.6.7",
