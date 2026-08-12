@@ -217,3 +217,11 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin: 1.5rem 0;
   padding: 0.5rem 0;
 }
+
+/* PROTOTYPE: the button that leaves for the other editor sits at the far end of the bar,
+   away from everything that acts on the text. The toolbar is a block of inline-flex
+   groups, not a flex row, so this is a float rather than a margin -- and the button is
+   last in the template for the float to land on the right of the last line. */
+.aceditor-toolbar .aceditor-switch-editor {
+  float: right;
+}

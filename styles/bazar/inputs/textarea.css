@@ -47,6 +47,7 @@
    toolbar would bury the one control the first block has. */
 .vditor-toolbar--pin {
   top: var(--sticky-toolbar-top);
+  z-index: 9;
 }
 
 /* fullscreen has no top bar to clear: .vditor is fixed and already offset by the margin

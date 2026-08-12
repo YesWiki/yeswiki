@@ -9,39 +9,11 @@
 // The stored/submitted format is still HTML, not Markdown: on init, the textarea's existing
 // HTML value is converted to Markdown via vditor.html2md() before being loaded, since
 // Vditor's own internal model is Markdown-based.
-import FilePickerPanel from './file-picker-panel.js'
-import { legacyIconToSprite } from './yw-icon-map.js'
 
-// One picker for the document, built on first use: its constructor binds to the single
-// #YesWikiFilePickerPanel the page carries, which several editors on one form share.
-let filePicker = null
-
-// The rail lives outside the form (it contains one of its own), so it is included by the
-// page template rather than by the field. A Vditor rendered somewhere that never included
-// it gets its other buttons and no file button, rather than one that throws on click.
-const hasFilePicker = () =>
-  document.getElementById('YesWikiFilePickerPanel') !== null
-
-/**
- * @param getEditor a getter, not the editor: the toolbar is declared in the options
- *   object passed to `new Vditor()`, so the instance does not exist yet. The click comes
- *   much later, by which time it does -- the same reason `after`/`input` below can use
- *   it. Vditor hands the callback its own *internal* state object, which has none of the
- *   public API (insertValue included), so the argument it passes cannot be used.
- */
-const filePickerMenuItem = (getEditor) => ({
-  name: 'yw-file',
-  tip: _t('UPLOAD_A_FILE'),
-  tipPosition: 'n',
-  icon: legacyIconToSprite('upload'),
-  click() {
-    filePicker ??= new FilePickerPanel()
-    filePicker.open({
-      format: 'markdown',
-      onComplete: (markdown) => getEditor().insertValue(markdown),
-    })
-  },
-})
+// the file button is shared with the wiki-syntax editor (vditor-wiki.js), which differs
+// only in what the picker writes -- so it lives in a module of its own rather than in
+// whichever of the two editors happened to need it first
+import { filePickerMenuItem, hasFilePicker } from './vditor-toolbar-file.js'
 
 function initVditor(textareaParam) {
   const textarea = textareaParam
@@ -79,7 +51,14 @@ function initVditor(textareaParam) {
       'link',
       'table',
       '|',
-      ...(hasFilePicker() ? [filePickerMenuItem(() => editor), '|'] : []),
+      ...(hasFilePicker()
+        ? [
+            filePickerMenuItem({
+              onComplete: (markdown) => editor.insertValue(markdown),
+            }),
+            '|',
+          ]
+        : []),
       'emoji',
       '|',
       'undo',

@@ -139,6 +139,14 @@ export const appConfig = {
     isPlacingNewAction() {
       return this.isOpen && !this.isEditingExistingAction
     },
+    /**
+     * Whether the editor shows the component itself, in the page being written. Then this
+     * panel is only the parameters: the render belongs in one place, and that place is
+     * where the component is going to be.
+     */
+    editorRendersComponents() {
+      return Boolean(this.editor?.previewComponent)
+    },
     actionGroup() {
       if (!this.currentGroupId) return { label: '', actions: {} }
       return (
@@ -339,10 +347,27 @@ export const appConfig = {
     },
     close() {
       if (!this.isOpen) return
+      this.abandonPreview()
       if (this.editor) this.editor.clearHighlight()
       document.getElementById('actions-builder-panel').hidden = true
       this.isOpen = false
       this.openKey = null
+    },
+    /**
+     * Show what this panel currently says, on the component itself, without writing it:
+     * an editor that renders components is where the preview lives, and a preview is not
+     * a change. Only the button below writes -- so leaving is still how a change is
+     * abandoned, which is what abandonPreview() puts back.
+     */
+    previewIntoEditor() {
+      if (!this.editorRendersComponents) return
+      if (!this.isEditingExistingAction || !this.target) return
+      this.editor.previewComponent(this.target, this.wikiCode)
+    },
+    abandonPreview() {
+      if (this.editorRendersComponents && this.target) {
+        this.editor.restoreComponent(this.target)
+      }
     },
     /** The rail's one button: write what it has been configured into the document. */
     writeIntoEditor() {
@@ -371,6 +396,7 @@ export const appConfig = {
     },
     /** Picked from the palette: this names the group AND the action, so both are set. */
     selectFromPalette(groupId, actionId) {
+      this.abandonPreview()
       this.currentGroupId = groupId
       this.currentSelectedAction = null
       this.isEditingExistingAction = false
@@ -383,6 +409,7 @@ export const appConfig = {
       }, 0)
     },
     backToPalette() {
+      this.abandonPreview()
       this.view = 'palette'
       this.paletteFilter = ''
       // whatever was being edited is abandoned here: the rail is picking a component to
@@ -669,6 +696,14 @@ export const appConfig = {
     },
     selectedActionId() {
       this.watchSelectedActionId()
+    },
+    /**
+     * Every change to any parameter ends up here, since they all feed `wikiCode` -- which
+     * is why the preview follows this rather than each input. The editor debounces: a
+     * preview costs a request, and this fires on every keystroke in a text field.
+     */
+    wikiCode() {
+      this.previewIntoEditor()
     },
   },
 }

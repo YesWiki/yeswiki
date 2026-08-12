@@ -56,6 +56,12 @@ mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
 	for lang in en_US es_ES fr_FR pt_BR; do
 		copy_js "node_modules/vditor/dist/js/i18n/$lang.js" "javascripts/vendor/vditor/dist/js/i18n/$lang.js"
 	done
+# the typography of the editing surface itself, which Vditor fetches at runtime from the
+# same `cdn` base -- and which every editor in the wiki has been failing to load (the
+# server answers the missing path with text/plain, so the browser refuses the stylesheet)
+mkdir -p javascripts/vendor/vditor/dist/css/content-theme &&
+	copy_css node_modules/vditor/dist/css/content-theme/light.css javascripts/vendor/vditor/dist/css/content-theme/light.css &&
+	copy_css node_modules/vditor/dist/css/content-theme/dark.css javascripts/vendor/vditor/dist/css/content-theme/dark.css
 
 # fullcalendar
 mkdir -p styles/vendor/fullcalendar &&

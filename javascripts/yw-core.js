@@ -453,10 +453,16 @@
   // area by the scrollbar's width and gives the document a horizontal scrollbar of its own.
   // documentElement.clientWidth is the same measurement with the gutter taken off. See
   // .full-width in yw-core.css, which falls back to 100vw when this never runs.
+  let publishedViewportWidth = null
   function publishViewportWidth() {
+    const width = document.documentElement.clientWidth
+    // only when it actually changed: this is called from an observer of the very element
+    // whose size a write here can change, and an unconditional write is a loop
+    if (width === publishedViewportWidth) return
+    publishedViewportWidth = width
     document.documentElement.style.setProperty(
       '--yw-viewport-width',
-      document.documentElement.clientWidth + 'px',
+      width + 'px',
     )
   }
 
@@ -465,6 +471,11 @@
   // a swap can add or remove enough content to gain or lose the scrollbar, which changes the
   // answer without the window ever being resized
   document.addEventListener('htmx:afterSettle', publishViewportWidth)
+  // ...and so can a page that simply grows once it is already settled: an image arriving,
+  // a list rendering itself, an editor's preview finding its height. Any of those can be
+  // what gains the scrollbar, and every full-width block on the page is then 15px too wide
+  // -- which is the horizontal scrollbar this variable exists to avoid.
+  new ResizeObserver(publishViewportWidth).observe(document.documentElement)
 
   // Escape closes the top-most open modal, or any open dropdown
   document.addEventListener('keydown', (e) => {

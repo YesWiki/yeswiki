@@ -247,6 +247,9 @@ class Init
             'comments_activated' => true,
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,
+            // PROTOTYPE: edit wiki syntax in Vditor, components rendered in place, instead
+            // of in the ACeditor (javascripts/vditor-components.js)
+            'vditor_wiki_editor' => true,
             'allow_raw_html' => true,
             'disallowed_html_tags' => ['title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext'],
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],

@@ -1,12 +1,15 @@
 <?php
 
 return [
+    'ADD_COMPONENT' => 'Ajouter un composant',
     'ARCHIVES' => 'Sauvegardes',
     'ANSWER' => 'Répondre',
     'BY' => 'par',
     'CAUTION' => 'Attention',
     'CLEAN' => 'Nettoyer',
     'COMMENTS' => 'Commentaires',
+    'COMPONENT_SETTINGS' => 'Réglages du composant',
+    'COMPONENT_SOURCE' => 'Afficher le code wiki',
     'DELETE' => 'Supprimer',
     'DELETE_ALL' => 'Supprimer tout',
     'DELETE_ALL_SELECTED_ITEMS' => 'Supprimer tous les éléments sélectionnés',
@@ -19,6 +22,8 @@ return [
     'ONLY_FOR_ADMINS' => 'Seulement pour les administrateurs',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
+    'SWITCH_TO_SOURCE_EDITOR' => 'Éditer le code wiki',
+    'SWITCH_TO_VISUAL_EDITOR' => 'Éditer la page telle qu\'elle sera',
     'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',

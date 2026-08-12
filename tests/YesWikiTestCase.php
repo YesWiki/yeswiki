@@ -30,8 +30,23 @@ class YesWikiTestCase extends TestCase
         require_once 'src/YesWikiLoader.php';
         $wiki = YesWikiLoader::getWiki(true);
         self::registerLeakSweep($wiki);
+        self::pinExperimentalSwitches($wiki);
 
         return $wiki;
+    }
+
+    /**
+     * The suite reads the developer's own yeswiki.config.php (test.config.php has not been
+     * the one for a while), so anything they switch on to try it out changes what the
+     * tests see. An experiment left on turned five assertions about the ACeditor's markup
+     * into failures that said nothing about the code under test.
+     *
+     * What ships off is what is tested; a switch's own behaviour is the business of the
+     * tests that turn it on for themselves.
+     */
+    private static function pinExperimentalSwitches(YesWikiRuntime $wiki): void
+    {
+        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['vditor_wiki_editor'] = false;
     }
 
     /**

@@ -4,6 +4,7 @@ import openModal from './aceditor-toolbar-remote-modal.js'
 import LinkPanel from './link-panel.js'
 import FilePickerPanel from './file-picker-panel.js'
 import { closeRails } from './editor-rails.js'
+import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 
@@ -35,6 +36,9 @@ class Aceditor {
   }
 
   initialize() {
+    // whatever the other editor was holding, if this is a switch rather than a page opened
+    restoreStashedValue(this.textarea)
+
     // Init Components
     this.editor = new AceWrapper(this.aceBody, {
       rows: this.textarea.getAttribute('rows'),
@@ -104,6 +108,16 @@ class Aceditor {
           this.editor.updateCursor()
           const insertAt = this.insertionPointFrom(this.editor.cursor)
           this.actionsBuilder.open(this.editor, { insertAt })
+        })
+      })
+    this.toolbar
+      .querySelectorAll('.aceditor-btn-switch-editor')
+      .forEach((btn) => {
+        // the textarea is not what Ace has been writing into -- it is synced on change,
+        // and a switch has to carry what is on screen now
+        btn.addEventListener('click', () => {
+          this.textarea.value = this.editor.getValue()
+          switchEditorTo('vditor', this.textarea)
         })
       })
   }

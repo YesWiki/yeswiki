@@ -1,0 +1,45 @@
+{# PROTOTYPE -- what {{aceditor}} renders instead of the ACeditor when `vditor_wiki_editor`
+   is on (src/Render/Action/AceditorAction.php).
+
+   The same textarea, under the same name, with the same rails beside it: everything that
+   posts, validates or watches this field sees no difference. Only the surface changed. #}
+
+{# The save button lives in Vditor's own toolbar, which Vditor builds itself and no Twig can
+   reach. So the real button is here and hidden, and the toolbar item submits through it
+   (javascripts/vditor-wiki.js): the handler decides what to do from the submitter's name
+   and value, and there is one place saying what those are. #}
+{% if arguments.saveButton %}
+  <button type="submit" name="submit" hidden
+          value="{{ config['preview_before_save'] ? 'preview' : saveValue }}"
+          class="vditor-wiki-save">{{ _t("ACEDITOR_SAVE") }}</button>
+{% endif %}
+
+<textarea id="{{ arguments.name }}" name="{{ arguments.name }}"
+          {% if arguments.maxChars %}maxlength="{{ arguments.maxChars }}"{% endif %}
+          rows="{{ arguments.rows }}"
+          placeholder="{{ arguments.placeholder }}"
+          data-vditor-lang="{{ vditorLang }}"
+          {% if arguments.required is not empty %}required{% endif %}
+          class="vditor-wiki">
+  {{- arguments.value|raw -}}
+</textarea>
+
+<script>
+  // read by the actions builder, which is the same Vue app the ACeditor opens
+  var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
+  var pageTags = {{ pageTags|json_encode|raw }}
+</script>
+
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+{{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
+{{ include_css('styles/vendor/vue-select/vue-select.css') }}
+
+{{ include_javascript('javascripts/vendor/vditor/index.min.js') }}
+{# a module, and sequenced after the vendor file above by yw-assets.js, so the `Vditor`
+   global it reads is there by the time it runs #}
+{{ include_javascript('javascripts/vditor-wiki.js', false, true) }}
+{{ include_css('styles/vendor/vditor/index.css') }}
+{{ include_css('styles/bazar/inputs/textarea.css') }}
+{{ include_css('styles/vditor-wiki.css') }}
+{# the palette and the settings panel are the ACeditor's rails, unchanged #}
+{{ include_css('styles/actions/aceditor.css') }}

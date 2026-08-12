@@ -64,6 +64,17 @@
         </svg>
     </a>
 </div>
+{# PROTOTYPE: leave for the editor that shows the page rather than its source. Last, and
+   floated to the far end of the bar: it is not one of the things you do to what you are
+   writing. See javascripts/editor-switch.js. #}
+<div class="btn-group aceditor-switch-editor">
+    <button type="button" class="yw-btn aceditor-btn aceditor-btn-switch-editor"
+            title="{{ _t("SWITCH_TO_VISUAL_EDITOR") }}">
+        <svg class="yw-icon" aria-hidden="true">
+            <use href="src/assets/icons.svg#arrows-horizontal" />
+        </svg>
+    </button>
+</div>
 {% macro button(name, btnClass = 'yw-btn') %}
     {% set DELIMITERS = {
         "TITLE1": {

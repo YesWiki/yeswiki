@@ -66,8 +66,12 @@
 
         <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
 
-        {# Iframe Preview #}
-        <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup ? actionGroup.previewHeight : null"></preview-action>
+        {# The preview, for an editor that has nowhere else to put one. Where the component
+           is rendered in the page being written (the Vditor prototype, whose widget follows
+           this panel as it is filled in), a second copy of it in the rail is the same thing
+           twice and takes the room the parameters want. #}
+        <preview-action v-if="!editorRendersComponents" :wiki-code="wikiCodeForIframe"
+                        :height="actionGroup ? actionGroup.previewHeight : null"></preview-action>
 
         <div class="panels-config-container">
           <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class"
