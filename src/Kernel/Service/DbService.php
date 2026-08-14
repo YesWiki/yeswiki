@@ -303,17 +303,57 @@ class DbService
     }
 
     /**
-     * Returns a SQL expression for extracting a value from a JSON column.
-     * This is database-driver agnostic.
+     * The column type a JSON document is declared as on this driver (ADR-0018).
      *
-     * @param string $column The column containing JSON data
-     * @param string $path   The JSON path (e.g., '$.fieldname')
+     * `JSON`, `JSONB` or `TEXT`. Used by the installer and by the migration that converts an
+     * existing wiki, so the type is written down once rather than in both.
+     */
+    public function jsonColumnType(): string
+    {
+        return $this->dialect->jsonColumnType();
+    }
+
+    /**
+     * SQL expression extracting a value from a column declared as `jsonColumnType()`.
+     *
+     * There are two: `pages.body` and `pages.metadata`. For JSON that lives in an ordinary text
+     * column, use `jsonExtractText()`, which guards the read. Mixing them up is a type error on
+     * PostgreSQL rather than a wrong answer.
+     *
+     * @param string $column The column, declared as jsonColumnType()
+     * @param string $path   The JSON path (e.g., '$.fieldname'), passed RAW: the dialect owns
+     *                       the escaping, because only it knows what syntax the path lands in
      *
      * @return string SQL expression
      */
     public function jsonExtract(string $column, string $path): string
     {
         return $this->dialect->jsonExtract($column, $path);
+    }
+
+    /**
+     * A JSON column as text, for the string operators (`LIKE`) that have no JSON equivalent.
+     *
+     * Required on PostgreSQL, where `jsonb` has no `LIKE` at all. Ask this of `body` before
+     * applying one, and prefer `jsonExtract()` whenever the predicate is really about a
+     * particular field -- `body LIKE '%"form_id":"3"%'` was how several places asked that
+     * question, and it is both slower and one storage-normalisation away from being wrong.
+     */
+    public function jsonAsText(string $column): string
+    {
+        return $this->dialect->jsonAsText($column);
+    }
+
+    /**
+     * The same read, for JSON stored in a column that is not declared as JSON.
+     *
+     * A text column may hold something that is not a document, so the extraction is guarded.
+     * Core has no caller since ADR-0018 made both its JSON columns native; see
+     * `SqlDialect::jsonExtractText()` for why it is kept.
+     */
+    public function jsonExtractText(string $column, string $path): string
+    {
+        return $this->dialect->jsonExtractText($column, $path);
     }
 
     /**

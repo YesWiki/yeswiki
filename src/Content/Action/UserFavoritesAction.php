@@ -4,12 +4,12 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\ImageField;
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;

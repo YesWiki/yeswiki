@@ -34,7 +34,15 @@ class FieldFactory
         // reachable by a class-name or FQCN rewrite: wave-two ticket 05 moved the fields to
         // the Content module and this scan kept pointing at src/fields + YesWiki\Core\Field,
         // silently finding nothing. Keep the two halves in step.
-        $this->scanFieldsDir(YESWIKI_SOURCE_DIR . '/src/Content/Field', 'YesWiki\\Content\\Field\\');
+        //
+        // Globbed across modules rather than naming Content, the way route discovery already
+        // globs `src/*/Controller`: ticket 39 moved `ReactionsField` to `Social`, because a
+        // field whose data is reactions belongs with the reactions and not with the entry
+        // model that merely stores it (ADR-0019).
+        foreach (glob(YESWIKI_SOURCE_DIR . '/src/*/Field', GLOB_ONLYDIR) ?: [] as $moduleFieldsDir) {
+            $module = basename(dirname($moduleFieldsDir));
+            $this->scanFieldsDir($moduleFieldsDir, 'YesWiki\\' . $module . '\\Field\\');
+        }
 
         foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionKey => $extensionDir) {
             $extensionName = ucfirst($extensionKey);

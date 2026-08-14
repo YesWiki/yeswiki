@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Service;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Api\TagApiController;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;

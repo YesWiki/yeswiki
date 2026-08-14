@@ -7,9 +7,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Service\FileManager;
-use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Service\AclService;
 
 class FileApiController extends YesWikiController

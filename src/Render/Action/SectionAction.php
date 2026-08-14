@@ -2,9 +2,9 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;

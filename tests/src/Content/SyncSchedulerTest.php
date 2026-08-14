@@ -4,7 +4,7 @@ namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Service\SyncScheduler;
+use YesWiki\Import\Service\SyncScheduler;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\YesWikiRuntime;

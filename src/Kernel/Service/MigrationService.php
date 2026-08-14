@@ -4,7 +4,6 @@ namespace YesWiki\Kernel\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Entity\Messages;
 
 // This is a simple mecanism to perform migrations

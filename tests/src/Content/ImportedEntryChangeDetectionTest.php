@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\TestCase;
-use YesWiki\Content\Service\YesWikiToYesWikiImporter;
+use YesWiki\Import\Service\YesWikiToYesWikiImporter;
 
 /**
  * What counts as a change to an already-imported entry.

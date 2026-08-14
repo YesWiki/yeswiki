@@ -12,11 +12,11 @@ use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 

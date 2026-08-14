@@ -4,11 +4,11 @@ namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageViewAppendices;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -285,8 +285,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
 
         <?php
-        // render the comments if needed
-        echo $this->getService(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
+        // whatever other modules add to the bottom of a page -- the comment box is one, and
+        // it used to be called by name from here (ADR-0019)
+        $pageTag = $this->getService(PageContext::class)->getTag();
+        foreach ($this->getService(PageViewAppendices::class)->all() as $appendix) {
+            echo $appendix->appendToPageView($pageTag);
+        }
 
         // get the content buffer and display the page
         $content = ob_get_clean();

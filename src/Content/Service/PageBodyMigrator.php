@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\TripleStore;
 
 /**
  * Rewrites every `pages` row's body into the one JSON shape (ticket 09).

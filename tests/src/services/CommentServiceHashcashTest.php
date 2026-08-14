@@ -5,11 +5,11 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Social\Service\CommentService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\YesWikiRuntime;
 

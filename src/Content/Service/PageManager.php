@@ -16,6 +16,7 @@ use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
 

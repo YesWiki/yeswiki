@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Search\Service\SearchManager;
 
 class BazarListService

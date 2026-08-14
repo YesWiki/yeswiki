@@ -31,7 +31,30 @@ interface SqlDialect
     public function dateSubHours(int $hours): string;
 
     /**
-     * SQL expression extracting $path from a JSON $column, e.g. `$.form_id` or `$.acls.read`.
+     * The column type a JSON document is declared as: native where the dialect has one.
+     *
+     * `JSON` on MySQL, `JSONB` on PostgreSQL, `TEXT` on SQLite -- which has no JSON column
+     * type at all, its `json` being TEXT with JSON1 functions over it. Measured before it was
+     * decided (ADR-0018): MySQL halves and PostgreSQL is 8x to 25x faster on the field-path
+     * filtering every entry list does, while SQLite came out within +/-2% of itself, as a
+     * dialect with nothing to change should.
+     *
+     * Two columns are declared with it, both on `pages`: `body` and `metadata`. They convert
+     * in the same ALTER pass, because they are on the same table and a wiki that sat through
+     * two full rebuilds for one decision would be paying for scheduling rather than for work.
+     */
+    public function jsonColumnType(): string;
+
+    /**
+     * SQL expression extracting $path from a $column **declared as jsonColumnType()**,
+     * e.g. `$.form_id` or `$.acls.read`.
+     *
+     * The column being known to hold a JSON document is what this buys: PostgreSQL can read
+     * the path straight out of it instead of proving it is JSON and casting it first, once per
+     * row *per extracted field* -- and, for `metadata`, once per ACL entry the read predicate
+     * tests. For JSON living in an ordinary text column, use `jsonExtractText()` -- passing one
+     * here is a type error on PostgreSQL rather than a silent wrong answer, which is the way
+     * round it should be.
      *
      * **The implementation owns the escaping of $path.** A segment can be a form field name,
      * which is user data, and only the dialect knows the syntax it is being embedded in --
@@ -40,6 +63,39 @@ interface SqlDialect
      * double-escape and look for a key that does not exist.
      */
     public function jsonExtract(string $column, string $path): string;
+
+    /**
+     * A JSON column as text, for the string operators that have no JSON equivalent.
+     *
+     * `LIKE` over the whole body is the case: an administrator's free-text filter in the page
+     * list searches whatever a page says, and there is no path to extract because there is no
+     * field being asked about. PostgreSQL's `jsonb` has no `LIKE` at all -- `jsonb ~~ unknown`
+     * does not exist -- so it needs the cast stated; MySQL and SQLite coerce and this is the
+     * column name unchanged.
+     *
+     * Note what the text is: both servers store a **normalised** document, so the round trip
+     * loses insignificant whitespace and, on MySQL, object key order. A predicate matching one
+     * `"key":"value"` fragment survives that; one that spans two keys does not, and should be
+     * asking `jsonExtract()` about each of them instead.
+     */
+    public function jsonAsText(string $column): string;
+
+    /**
+     * The same read, for JSON stored in a column that is **not** declared as JSON.
+     *
+     * A text column may hold something that is not a JSON document at all, so the extraction
+     * has to be guarded -- `json_extract()` errors on non-JSON input, and a `::jsonb` cast
+     * throws. On MySQL and SQLite this is the same SQL as `jsonExtract()`; on PostgreSQL it is
+     * the expensive form, and that is the point of the two names.
+     *
+     * **Core has no caller.** Both of its JSON columns are native since ADR-0018, and this is
+     * kept for two reasons rather than deleted: an extension may store JSON in a text column of
+     * its own and needs a correct way to read it, and `content:body-bench` measures the
+     * before-state of that ADR with it. That second one matters more than it sounds -- the
+     * alternative is the benchmark hand-rolling the guarded expression per dialect, which is
+     * exactly how a benchmark stops measuring what the wiki actually used to run.
+     */
+    public function jsonExtractText(string $column, string $path): string;
 
     /** SQL aggregating a column's distinct values into one comma-separated string. */
     public function groupConcat(string $column, ?string $orderBy = null): string;

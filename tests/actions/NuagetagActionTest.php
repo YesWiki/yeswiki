@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
 

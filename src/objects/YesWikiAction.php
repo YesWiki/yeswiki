@@ -52,7 +52,15 @@ abstract class YesWikiAction extends YesWikiPerformable
      * This function check for corresponding "end" element and store result in
      * $GLOBALS['check ' . $pagetag]['$element_name'].
      *
-     * @return false if wrong number of closing element found
+     * The `@return` this used to carry read `@return false if wrong number of closing element
+     * found`, which was meant as prose. `false` is a **type**, so PHPStan narrowed the native
+     * `bool` to the literal and concluded that every `if ($this->check_end_elem(...))` in the
+     * codebase was dead -- eight of them, all baselined, in grid, col, panel, accordion, label,
+     * nav, buttondropdown and section. The branches are not dead; the annotation was wrong, and
+     * for as long as it stood a genuine always-false in any of those files was indistinguishable
+     * from it (ticket 40).
+     *
+     * @return bool true when every element of this type has its closing tag
      */
     protected function check_end_elem(string $action_name): bool
     {

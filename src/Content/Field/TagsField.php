@@ -3,7 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 #[\Field(['tags'])]

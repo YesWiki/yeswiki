@@ -2,7 +2,7 @@
 
 namespace YesWiki\Identity\Service;
 
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\TripleStore;
 
 class GroupManager
 {

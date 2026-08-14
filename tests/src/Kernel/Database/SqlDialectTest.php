@@ -139,20 +139,22 @@ class SqlDialectTest extends TestCase
     #[DataProvider('dialects')]
     public function testANestedJsonPathAddressesTheNestedKey(SqlDialect $d, string $driver): void
     {
-        $nested = $d->jsonExtract('metadata', '$.acls.read');
+        // `metadata` is read through jsonExtractText() -- it is JSON in a TEXT column and stays
+        // that way (ADR-0018) -- but the property is the path's, so both forms are asserted.
+        foreach ([$d->jsonExtractText('metadata', '$.acls.read'), $d->jsonExtract('body', '$.acls.read')] as $nested) {
+            $this->assertStringNotContainsString(
+                "'acls.read'",
+                $nested,
+                "$driver must not treat the whole path as one key name"
+            );
 
-        $this->assertStringNotContainsString(
-            "'acls.read'",
-            $nested,
-            "$driver must not treat the whole path as one key name"
-        );
-
-        if ($driver === 'pgsql') {
-            // the two segments, each its own quoted element
-            $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested);
-        } else {
-            // these engines parse the path themselves
-            $this->assertStringContainsString('$.acls.read', $nested);
+            if ($driver === 'pgsql') {
+                // the two segments, each its own quoted element
+                $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested);
+            } else {
+                // these engines parse the path themselves
+                $this->assertStringContainsString('$.acls.read', $nested);
+            }
         }
 
         // a flat path must keep working -- every other caller uses one
@@ -176,6 +178,69 @@ class SqlDialectTest extends TestCase
             substr_count($expression, "'") % 2,
             "$driver: the quotes in the generated expression must balance"
         );
+    }
+
+    /**
+     * ADR-0018. `body` is the dialect's own JSON type where there is one; SQLite says TEXT and
+     * means it, which is why the method returns a type rather than a nullable "native or not".
+     */
+    #[DataProvider('dialects')]
+    public function testJsonColumnTypeIsTheDialectsOwn(SqlDialect $d, string $driver): void
+    {
+        $this->assertSame(
+            ['mysql' => 'JSON', 'pgsql' => 'JSONB', 'sqlite' => 'TEXT'][$driver],
+            $d->jsonColumnType()
+        );
+    }
+
+    /**
+     * The seam ADR-0018 turns on: reading a column that is known to be JSON is not the same
+     * expression as reading JSON out of a text column, and only PostgreSQL had anything to
+     * drop -- the regex guard and the `::jsonb` cast it paid per row *per extracted field*.
+     *
+     * Asserted as "cheaper than, and a strict subset of" rather than by pinning the exact SQL:
+     * what matters is that the native form stops proving the column is JSON, not how it is
+     * spelled.
+     */
+    #[DataProvider('dialects')]
+    public function testOnlyPostgreSqlDropsAnythingForANativeColumn(SqlDialect $d, string $driver): void
+    {
+        $native = $d->jsonExtract('body', '$.form_id');
+        $guarded = $d->jsonExtractText('metadata', '$.form_id');
+
+        if ($driver !== 'pgsql') {
+            $this->assertSame(
+                $native,
+                str_replace('metadata', 'body', $guarded),
+                "$driver has no guard to drop: both forms are the same read"
+            );
+
+            return;
+        }
+
+        $this->assertStringNotContainsString('CASE WHEN', $native, 'no guard on a jsonb column');
+        $this->assertStringNotContainsString('::jsonb', $native, 'nothing to cast: it is already jsonb');
+        $this->assertStringContainsString('CASE WHEN', $guarded, 'a text column may hold a non-document');
+        $this->assertStringContainsString('::jsonb', $guarded);
+    }
+
+    /**
+     * `LIKE` over a whole body -- an administrator's free-text filter, which has no path to
+     * extract because it is not asking about a field. PostgreSQL has no `jsonb LIKE` operator
+     * at all, so the cast is the difference between a query and a syntax error.
+     */
+    #[DataProvider('dialects')]
+    public function testJsonAsTextCastsOnlyWhereTheOperatorIsMissing(SqlDialect $d, string $driver): void
+    {
+        $expression = $d->jsonAsText('p.body');
+
+        if ($driver === 'pgsql') {
+            $this->assertStringContainsString('::text', $expression);
+
+            return;
+        }
+
+        $this->assertSame('p.body', $expression, "$driver coerces for a string operator already");
     }
 
     #[DataProvider('dialects')]

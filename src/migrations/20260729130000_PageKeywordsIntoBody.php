@@ -3,8 +3,8 @@
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\TagsManager;
 
 /**

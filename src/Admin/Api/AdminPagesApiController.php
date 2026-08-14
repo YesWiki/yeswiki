@@ -354,8 +354,10 @@ class AdminPagesApiController extends YesWikiController
         if ($search !== '') {
             // what an administrator typed in the filter box, so its wildcards are defused: a
             // search for `a_b` looks for that and not for `aXb`
+            // the body has no path to extract here -- the administrator is searching for
+            // whatever a page says, not for a field -- so it is read as text (ADR-0018)
             $conditions[] = '(p.tag LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX
-                . ' OR p.body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
+                . ' OR ' . $db->jsonAsText('p.body') . ' LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
             $params[] = SqlParameters::likeContains($search);
             $params[] = SqlParameters::likeContains($search);
         }
@@ -392,11 +394,13 @@ class AdminPagesApiController extends YesWikiController
                 if (ctype_digit((string)$type) && (int)$type > 0) {
                     $conditions[] = "{$typeCol} = ?";
                     $params[] = PageType::ENTRY;
-                    // ctype_digit above rules out a wildcard, but the pattern is assembled the
-                    // same way as the others so that stays true of the code and not just of
-                    // this one input
-                    $conditions[] = 'p.body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
-                    $params[] = SqlParameters::likeContains('"form_id":"' . $type . '"');
+                    // Asked of the field, not of the body's text. This was a
+                    // `LIKE '%"form_id":"3"%'` -- correct, but only because the pattern
+                    // included both quotes, and only for as long as the stored bytes keep that
+                    // exact spelling. A native JSON column stores a normalised document
+                    // (ADR-0018), so the question has to be asked of the value.
+                    $conditions[] = $db->jsonExtract('p.body', '$.form_id') . ' = ?';
+                    $params[] = (string)$type;
                 }
                 break;
         }
@@ -415,11 +419,16 @@ class AdminPagesApiController extends YesWikiController
 
         if ($themeFilter !== '') {
             $themeManager = $this->getService(ThemeManager::class);
-            $explicitMatch = 'p.metadata LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
-            $params[] = SqlParameters::likeContains('"theme":"' . $themeFilter . '"');
+            // Asked of `$.theme`, not of the stored bytes. `metadata` is a JSON column now
+            // (ADR-0018), which has no LIKE on PostgreSQL at all -- and the pattern this
+            // replaces could not see the difference between a page with no theme key and one
+            // storing `"theme":null`, which the bulk editor writes when a theme is cleared.
+            $themeExpr = $db->jsonExtract('p.metadata', '$.theme');
+            $explicitMatch = "{$themeExpr} = ?";
+            $params[] = $themeFilter;
             if ($themeFilter === $themeManager->getFavoriteTheme()) {
                 // Also include pages that have no theme stored (they inherit the wiki default)
-                $noThemeStored = "(p.metadata IS NULL OR p.metadata NOT LIKE '%\"theme\":\"%')";
+                $noThemeStored = "(p.metadata IS NULL OR {$themeExpr} IS NULL)";
                 $conditions[] = "({$explicitMatch} OR {$noThemeStored})";
             } else {
                 $conditions[] = $explicitMatch;

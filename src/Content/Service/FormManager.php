@@ -9,10 +9,14 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\KeyPairGenerator;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchManager;
 
 class FormManager
@@ -29,8 +33,7 @@ class FormManager
     private const MAX_ALIAS_HOPS = 10;
 
     protected $dbService;
-    protected $activityPubService;
-    protected $httpSignatureService;
+    protected KeyPairGenerator $keyPairGenerator;
     protected $entryManager;
     protected $hibernationService;
     protected $fieldFactory;
@@ -54,16 +57,14 @@ class FormManager
         FieldFactory $fieldFactory,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        ActivityPubService $activityPubService,
-        HttpSignatureService $httpSignatureService,
+        KeyPairGenerator $keyPairGenerator,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
     ) {
         $this->container = $container;
         $this->dbService = $dbService;
-        $this->activityPubService = $activityPubService;
-        $this->httpSignatureService = $httpSignatureService;
+        $this->keyPairGenerator = $keyPairGenerator;
         $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
@@ -596,7 +597,10 @@ class FormManager
      */
     private function buildActivitypubMetadata(array $data, array $existingActivitypub): array
     {
-        $enabled = (int)$this->activityPubService->isEnabled($data);
+        // the form's own metadata key, read directly: asking the ActivityPub service whether
+        // ActivityPub is enabled was the last thing making Content depend on Federation, and
+        // the question is about a value Content stores (ticket 39)
+        $enabled = (int)(($data['activitypub_enable'] ?? null) === '1');
         $activitypub = [
             'enabled' => (string)$enabled,
             'username' => $data['activitypub_username'] ?? ($existingActivitypub['username'] ?? ''),
@@ -604,7 +608,7 @@ class FormManager
             'public_key' => $existingActivitypub['public_key'] ?? null,
         ];
         if ($enabled && empty($activitypub['private_key'])) {
-            [$privateKey, $publicKey] = $this->httpSignatureService->generateKeyPair();
+            [$privateKey, $publicKey] = $this->keyPairGenerator->generate();
             $activitypub['private_key'] = $privateKey;
             $activitypub['public_key'] = $publicKey;
         }

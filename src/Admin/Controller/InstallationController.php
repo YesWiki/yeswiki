@@ -58,10 +58,33 @@ class InstallationController
 
     /** @var \PDO|null */
     protected $dbLink;
+
     /** The driver's own message for the last failed execSqlTemplate(), for the error page. */
     private ?string $lastSqlError = null;
+
     /** @var array[] every check already passed, ['result' => 'success'|'warning', 'output' => text] */
     protected $messages = [];
+
+    /**
+     * The connection, once there is one.
+     *
+     * Fourteen call sites reached through `$this->dbLink` directly, and PHPStan said so eight
+     * times: the property is `PDO|null` until `connectDatabase()` has run, so every one of them
+     * was a potential "Call to a member function exec() on null" -- a fatal with no message,
+     * during an install, on someone else's server (ticket 40).
+     *
+     * They cannot actually be reached before the connection exists today. That is a property of
+     * the current call order, not of the code, and it is exactly what a message like this one is
+     * for: if the order ever changes, the installer says what went wrong instead of dying.
+     */
+    private function db(): \PDO
+    {
+        if ($this->dbLink === null) {
+            throw new \Exception('the installer used the database before connecting to it');
+        }
+
+        return $this->dbLink;
+    }
 
     /**
      * @param array  $config     configuration from Init::getConfig() (defaults + environment overrides)
@@ -209,7 +232,7 @@ class InstallationController
                 throw new \Exception(_t('TEST_DATABASE_CONNECTION') . ' :<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
             }
             $this->pass(_t('TEST_DATABASE_CONNECTION'));
-            $this->dbLink->exec('PRAGMA foreign_keys = ON');
+            $this->db()->exec('PRAGMA foreign_keys = ON');
 
             return;
         }
@@ -239,7 +262,7 @@ class InstallationController
                 $quotedName = $driver === 'pgsql'
                     ? $this->config['db_database']
                     : '`' . $this->config['db_database'] . '`';
-                $this->dbLink->exec('CREATE DATABASE ' . $quotedName);
+                $this->db()->exec('CREATE DATABASE ' . $quotedName);
             } catch (\PDOException $th) {
                 throw new \Exception(_t('TRYING_TO_CREATE_DATABASE') . ' "' . $this->config['db_database'] . '" :<br />' . _t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY'));
             }
@@ -259,9 +282,9 @@ class InstallationController
         }
 
         if ($driver === 'mysql') {
-            $this->dbLink->exec('SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
+            $this->db()->exec('SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
         } else {
-            $this->dbLink->exec("SET client_encoding TO 'UTF8'");
+            $this->db()->exec("SET client_encoding TO 'UTF8'");
         }
     }
 
@@ -297,13 +320,13 @@ class InstallationController
     {
         try {
             if ($driver === 'pgsql') {
-                $stmt = $this->dbLink->query(
-                    'SELECT 1 FROM pg_database WHERE datname = ' . $this->dbLink->quote($this->config['db_database'])
+                $stmt = $this->db()->query(
+                    'SELECT 1 FROM pg_database WHERE datname = ' . $this->db()->quote($this->config['db_database'])
                 );
 
                 return $stmt->fetchColumn() !== false;
             }
-            $this->dbLink->exec('USE `' . $this->config['db_database'] . '`');
+            $this->db()->exec('USE `' . $this->config['db_database'] . '`');
 
             return true;
         } catch (\PDOException $th) {
@@ -324,7 +347,7 @@ class InstallationController
         }
 
         try {
-            $existingTables = $this->dbLink->query($query)->fetchAll(\PDO::FETCH_COLUMN);
+            $existingTables = $this->db()->query($query)->fetchAll(\PDO::FETCH_COLUMN);
         } catch (\PDOException $th) {
             $existingTables = [];
         }
@@ -429,13 +452,13 @@ class InstallationController
 
         // The seed content is all INSERTs -- nothing here implicitly commits on any
         // dialect, so the transaction is still open when we reach commit().
-        $this->dbLink->beginTransaction();
+        $this->db()->beginTransaction();
         if (!$this->execSqlTemplate('installation-default-content.sql.twig', $replacements)) {
-            $this->dbLink->rollBack();
+            $this->db()->rollBack();
             $this->dropEmptyTables();
             throw new \Exception(_t('INSERTION_OF_PAGES') . ' :<br />' . _t('ALREADY_CREATED') . ' ?' . $this->sqlErrorDetail());
         }
-        $this->dbLink->commit();
+        $this->db()->commit();
         $this->pass(_t('INSERTION_OF_PAGES'));
 
         $this->installSearchIndex();
@@ -512,7 +535,7 @@ class InstallationController
                 }
                 $statement .= $line;
                 if (substr(trim($line), -1) === ';') {
-                    $this->dbLink->exec($statement);
+                    $this->db()->exec($statement);
                     $statement = '';
                 }
             }
@@ -533,9 +556,9 @@ class InstallationController
             $fullTableName = $this->config['table_prefix'] . $tableName;
             $quotedName = $driver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\"";
             try {
-                $countStmt = $this->dbLink->query("SELECT COUNT(*) FROM $quotedName");
+                $countStmt = $this->db()->query("SELECT COUNT(*) FROM $quotedName");
                 if ((int)$countStmt->fetchColumn() === 0) {
-                    $this->dbLink->exec("DROP TABLE IF EXISTS $quotedName");
+                    $this->db()->exec("DROP TABLE IF EXISTS $quotedName");
                 }
             } catch (\Throwable $th) {
                 // table absent: nothing to clean
@@ -738,7 +761,15 @@ class InstallationController
     {
         $sql = self::renderSqlTemplate(
             YESWIKI_SOURCE_DIR . '/templates/' . $templateName,
-            ['driver' => $this->dbDriver()]
+            [
+                'driver' => $this->dbDriver(),
+                // ADR-0018. A column type is not a value, so it comes in through the template's
+                // own variables rather than through the `{{...}}` replacements below, which
+                // SQL-string-escape everything they substitute. The dialect is the one place
+                // it is written down -- the migration that converts an existing wiki asks the
+                // same method, so a fresh install and an upgraded one cannot end up different.
+                'bodyType' => SqlDialectFactory::forDriver($this->dbDriver())->jsonColumnType(),
+            ]
         );
 
         // MySQL and MariaDB treat a backslash as an escape character inside string

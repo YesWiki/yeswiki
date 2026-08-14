@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\TripleStore;
 
 /**
  * Attached files are their own Content type (ticket 17, formerly tools/attach) -- a

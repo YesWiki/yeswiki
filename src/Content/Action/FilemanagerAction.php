@@ -2,8 +2,8 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;

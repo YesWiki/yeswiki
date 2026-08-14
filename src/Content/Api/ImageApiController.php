@@ -8,9 +8,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Service\FileManager;
-use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 
 class ImageApiController extends YesWikiController

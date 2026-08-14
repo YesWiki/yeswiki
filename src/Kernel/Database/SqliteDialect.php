@@ -28,6 +28,25 @@ class SqliteDialect implements SqlDialect
         return "datetime('now', '-" . intval($hours) . " hours')";
     }
 
+    /**
+     * TEXT, and it means it.
+     *
+     * SQLite has no JSON column type -- `json` there is TEXT with the JSON1 functions over it,
+     * and since 3.45 a JSONB blob that has to be converted on read. So there is nothing for
+     * ADR-0018 to change here, and the benchmark that decided it measured this dialect as the
+     * control: TEXT against TEXT, within +/-2% on every query.
+     */
+    public function jsonColumnType(): string
+    {
+        return 'TEXT';
+    }
+
+    public function jsonAsText(string $column): string
+    {
+        // it never stopped being text
+        return $column;
+    }
+
     public function jsonExtract(string $column, string $path): string
     {
         // json_extract() errors on non-JSON input, so guard with json_valid(). The path is
@@ -35,6 +54,15 @@ class SqliteDialect implements SqlDialect
         $escaped = str_replace("'", "''", $path);
 
         return "(CASE WHEN json_valid($column) THEN json_extract($column, '$escaped') ELSE NULL END)";
+    }
+
+    /**
+     * The same SQL. The column type is TEXT either way here, so the guard is needed either
+     * way -- which is precisely why SQLite gains nothing from ADR-0018.
+     */
+    public function jsonExtractText(string $column, string $path): string
+    {
+        return $this->jsonExtract($column, $path);
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

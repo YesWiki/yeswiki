@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageType;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -54,15 +55,28 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
         return (string)ob_get_clean();
     }
 
+    /**
+     * Every page of the wiki except the entries -- which is what the name has always meant.
+     *
+     * It asked that question as `body NOT LIKE '{"%'`: an entry's body was JSON and a page's
+     * was wiki markup, so "does it start with a brace" separated them. Ticket 09 made *every*
+     * body JSON and the predicate became universally false -- `{{pageonlyindex}}` has listed
+     * nothing at all since, on every wiki, silently, because an index with no entries in it
+     * looks exactly like an empty index. Measured on a real install: 139 pages, 0 listed.
+     *
+     * The `type` column (ticket 27) is what the question is actually about, and it survives a
+     * body that changes shape again.
+     */
     private function emit(): void
     {
-        /*
-        pageonlyindex.php
-        lists all the pages of the wiki BUT bazar records.
-
-        @licence: AGPL
-        */
-        if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages WHERE latest = \'Y\' AND parent=\'\' AND body not LIKE \'{"%\' ORDER BY tag')) {
+        $db = $this->getService(DbService::class);
+        $pages = $db->loadAll(
+            'SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages'
+            . " WHERE latest = 'Y' AND parent = '' AND " . $db->quoteIdentifier('type') . ' <> ?'
+            . ' ORDER BY tag',
+            [PageType::ENTRY]
+        );
+        if ($pages) {
             foreach ($pages as $page) {
                 // XXX: strtoupper is locale dependent
                 $firstChar = strtoupper($page['tag'][0]);

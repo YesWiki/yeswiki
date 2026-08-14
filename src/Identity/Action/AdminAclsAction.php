@@ -15,7 +15,6 @@ use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
-use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -184,9 +183,11 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
                 'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
-                $search = ' AND body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX
+                // the form the entry belongs to, asked of the field rather than of the body's
+                // stored bytes -- a native JSON column normalises those (ADR-0018)
+                $search = ' AND ' . $this->dbService->jsonExtract('body', '$.form_id') . ' = ?'
                     . " AND {$typeCol} = '" . PageType::ENTRY . "'";
-                $searchParams[] = SqlParameters::likeContains('"form_id":"' . $filter . '"');
+                $searchParams[] = $filter;
             } elseif ($filter === 'lists') {
                 $search = " AND {$typeCol} = '" . PageType::LIST . "'";
             } else {

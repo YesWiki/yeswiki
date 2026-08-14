@@ -20,7 +20,6 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Exception\UserFieldException;
@@ -30,6 +29,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -285,7 +285,7 @@ class EntryController extends YesWikiController
         return $this->view($entryId);
     }
 
-    public function create($formId, $redirectUrl = null)
+    public function create($formId, ?string $redirectUrl = null)
     {
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
@@ -307,11 +307,9 @@ class EntryController extends YesWikiController
             $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('valider')) {
+                    // `entry.created` is dispatched by EntryManager, so that the API, the
+                    // importers and migrations announce it too (ticket 39)
                     $entry = $this->getService(ContentCreator::class)->create($formId, $post->all());
-                    $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
-                        'id' => $entry['tag'],
-                        'data' => $entry,
-                    ]);
                     // get the GET parameter 'incomingurl' for the incoming url
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
@@ -391,22 +389,19 @@ class EntryController extends YesWikiController
         try {
             if ($state && $post->has('valider')) {
                 $entry = $this->entryManager->update($entryId, $post->all());
-                $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
-                    'id' => $entry['tag'],
-                    'data' => $entry,
-                ]);
+                // `create()` takes a $redirectUrl parameter and honours it here; this method
+                // does not, and the branch checking it was copied over anyway -- reading the
+                // variable in the same statement that assigns it. It was therefore always
+                // false, and emitted an "Undefined variable" notice on every entry update
+                // (ticket 40).
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
-                    : (
-                        !empty($redirectUrl)
-                        ? $redirectUrl
-                        : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
-                            'view' => 'consulter',
-                            'action' => 'voir_fiche',
-                            'tag' => $entry['tag'],
-                            'message' => 'modif_ok',
-                        ], false)
-                    );
+                    : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
+                        'view' => 'consulter',
+                        'action' => 'voir_fiche',
+                        'tag' => $entry['tag'],
+                        'message' => 'modif_ok',
+                    ], false);
                 header('Location: ' . $redirectUrl);
                 $this->getService(Redirector::class)->terminate();
             }
@@ -448,7 +443,7 @@ class EntryController extends YesWikiController
                 $entry = $this->entryManager->getOne($entryId);
                 $this->entryManager->delete($entryId);
                 if (!$this->entryManager->isEntry($entryId)) {
-                    $this->triggerDeletedEvent($entryId, $entry);
+                    // `entry.deleted` is dispatched by EntryManager::delete() above (ticket 39)
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
@@ -467,14 +462,6 @@ class EntryController extends YesWikiController
             return false;
         }
         throw new \Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
-    }
-
-    protected function triggerDeletedEvent($entryId, $entry)
-    {
-        return $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
-            'id' => $entryId,
-            'data' => $entry,
-        ]);
     }
 
     /**

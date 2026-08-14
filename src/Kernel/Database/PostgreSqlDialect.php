@@ -28,34 +28,67 @@ class PostgreSqlDialect implements SqlDialect
         return "NOW() - INTERVAL '" . intval($hours) . " hours'";
     }
 
+    public function jsonColumnType(): string
+    {
+        return 'JSONB';
+    }
+
+    public function jsonAsText(string $column): string
+    {
+        // Not optional here: there is no `jsonb LIKE text` operator at all, so a predicate
+        // that forgets this is a query that will not plan rather than one that returns the
+        // wrong rows.
+        return "($column::text)";
+    }
+
     /**
-     * `#>>` with a path array, NOT `->>` with the path as one key.
+     * Straight out of the document, with no guard and no cast.
      *
-     * This used to strip the leading `$.` and hand the whole remainder to `->>`, which takes a
-     * *single* key. So `'$.form_id'` worked and `'$.acls.read'` looked for a top-level key
-     * literally named `acls.read`, found none, and returned NULL -- silently, for every row.
+     * This is the whole of what ADR-0018 bought on this dialect, and the number behind it is
+     * larger than it looks: the guarded form below runs a regex **and** a full text-to-jsonb
+     * cast per row *per extracted field*, so an entry list projecting seven fields paid it
+     * seven times over -- 1947 ms against 78 ms on a 200k-row corpus. A `jsonb` column cannot
+     * hold a non-document, so neither is needed.
      *
-     * The only nested paths in the codebase are the ACL ones (`$.acls.read`, `.write`,
-     * `.comment`), which made this a security bug rather than a display one: with every row's
-     * read ACL reading as NULL, `AclService`'s predicate took its "no explicit ACL, fall back to
-     * default_read_acl" branch for the whole table, so page-level read ACLs did not filter at
-     * all on PostgreSQL. Found by exercising the predicate on all three drivers; the suite runs
-     * one, and this class's own docblock admitted these fragments were unverified.
+     * `#>>` with a path array, NOT `->>` with the path as one key. That was the earlier
+     * spelling: it stripped the leading `$.` and handed the whole remainder to `->>`, which
+     * takes a *single* key. So `'$.form_id'` worked and `'$.acls.read'` looked for a top-level
+     * key literally named `acls.read`, found none, and returned NULL -- silently, for every
+     * row. The only nested paths in the codebase are the ACL ones, which made it a security
+     * bug rather than a display one: with every row's read ACL reading as NULL, `AclService`'s
+     * predicate took its "no explicit ACL, fall back to default_read_acl" branch for the whole
+     * table, so page-level read ACLs did not filter at all on PostgreSQL. Found by exercising
+     * the predicate on all three drivers.
+     */
+    public function jsonExtract(string $column, string $path): string
+    {
+        return "($column #>> ARRAY[" . $this->pathElements($path) . '])';
+    }
+
+    public function jsonExtractText(string $column, string $path): string
+    {
+        // The guard is not optional on a text column: `::jsonb` throws on input that is not a
+        // document, and one such row would take down the whole query rather than read as NULL.
+        return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb #>> ARRAY["
+            . $this->pathElements($path) . ']) ELSE NULL END)';
+    }
+
+    /**
+     * `$.acls.read` -> `'acls', 'read'`.
      *
      * Each segment goes in as its own quoted element with `'` doubled, so a path segment that
      * came from a field name (`jsonExtract('body', '$.' . $field)`) cannot end the literal --
      * the `{a,b}` array-literal shorthand could not offer that, because a segment containing a
      * comma or brace would restructure the path itself.
      */
-    public function jsonExtract(string $column, string $path): string
+    private function pathElements(string $path): string
     {
         $segments = explode('.', (string)preg_replace('/^\$\./', '', $path));
-        $quoted = implode(', ', array_map(
+
+        return implode(', ', array_map(
             static fn (string $segment): string => "'" . str_replace("'", "''", $segment) . "'",
             $segments
         ));
-
-        return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb #>> ARRAY[$quoted]) ELSE NULL END)";
     }
 
     public function groupConcat(string $column, ?string $orderBy = null): string

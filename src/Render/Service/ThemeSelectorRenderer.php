@@ -4,6 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -151,20 +152,20 @@ class ThemeSelectorRenderer extends YesWikiController
             $imgextension = strtolower(substr($file, -4, 4));
             // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
             if ($imgextension == '.jpg') {
-                if (!is_file($backgroundsdir . '/thumbs/' . $file)) {
-                    $imgTrans = new \Zebra_Image();
-                    $imgTrans->auto_handle_exif_orientation = true;
-                    $imgTrans->preserve_aspect_ratio = true;
-                    $imgTrans->enlarge_smaller_images = true;
-                    $imgTrans->preserve_time = true;
-                    $imgTrans->handle_exif_orientation_tag = true;
-                    $imgTrans->source_path = $backgroundsdir . '/' . $file;
-                    $imgTrans->target_path = $backgroundsdir . '/thumbs/' . $file;
-                    if ($imgTrans->resize(intval(100), intval(75), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF')) {
-                        $backgrounds[] = $imgTrans->target_path;
+                $thumbnail = $backgroundsdir . '/thumbs/' . $file;
+                if (!is_file($thumbnail)) {
+                    // `new \Zebra_Image()` -- the global namespace -- for as long as this file
+                    // has existed, while the installed class is
+                    // `stefangabos\Zebra_Image\Zebra_Image`. Every wiki with a background
+                    // JPEG and no thumbnail for it fataled here and took the theme selector
+                    // down; nine baselined `class.notFound` entries said so and nobody read
+                    // them (ticket 40). ImageResizer was already doing this correctly, one
+                    // module away.
+                    if ($this->getService(ImageResizer::class)->resize($backgroundsdir . '/' . $file, $thumbnail, 100, 75)) {
+                        $backgrounds[] = $thumbnail;
                     }
                 } else {
-                    $backgrounds[] = $backgroundsdir . '/thumbs/' . $file;
+                    $backgrounds[] = $thumbnail;
                 }
             } elseif ($imgextension == '.png') {
                 // les png sont les images a repeter en mosaique

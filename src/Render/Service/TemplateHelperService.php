@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\ImageResizer;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -141,11 +141,13 @@ class TemplateHelperService
     /**
      * Verifie si le nombre d'elements graphiques d'un type trouvés et de leur fermeture correspondent.
      *
-     * @param $element : name of element
+     * @param string      $element     name of element
+     * @param string      $pagetag     the page being rendered
+     * @param string|null $pagecontent its wiki markup
      *
-     * return bool vrai si chaque élément est bien fermé
+     * @return bool true when every element of this type is closed
      */
-    public function checkGraphicalElements($element, $pagetag, $pagecontent)
+    public function checkGraphicalElements($element, $pagetag, $pagecontent): bool
     {
         if ($pagecontent == null) {
             $pagecontent = '';

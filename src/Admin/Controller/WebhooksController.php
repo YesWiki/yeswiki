@@ -9,7 +9,6 @@ use Symfony\Component\HttpClient\HttpClient;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
@@ -17,6 +16,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**

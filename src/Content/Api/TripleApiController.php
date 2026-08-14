@@ -4,11 +4,11 @@ namespace YesWiki\Content\Api;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Service\TripleStore;
 
 class TripleApiController extends YesWikiController
 {

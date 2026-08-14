@@ -145,8 +145,14 @@ class SchemaManager
      * SQLite has no ALTER COLUMN and changing a type there means rebuilding the table; its
      * column types are advisory anyway, so this reports success without doing anything -- which
      * is the pre-existing behaviour, kept deliberately rather than turned into a failure.
+     *
+     * `$using` is PostgreSQL's, and only PostgreSQL's: it refuses any type change it has no
+     * implicit cast for, which is most of the interesting ones -- `TEXT` to `JSONB` among them
+     * (ADR-0018). MySQL casts whatever it can and truncates the rest, so it is given nothing
+     * to do here; passing an expression it cannot use would be a silent difference between the
+     * two, which is why it is documented as PostgreSQL's rather than accepted and dropped.
      */
-    public function modifyColumn(string $table, string $column, string $newType, bool $notNull = false): bool
+    public function modifyColumn(string $table, string $column, string $newType, bool $notNull = false, ?string $using = null): bool
     {
         $quotedColumn = $this->dbService->quoteIdentifier($column);
         $table = $this->dbService->prefixTable($table);
@@ -156,7 +162,8 @@ class SchemaManager
                 return true;
 
             case 'pgsql':
-                $this->dbService->query("ALTER TABLE {$table} ALTER COLUMN {$quotedColumn} TYPE {$newType}");
+                $this->dbService->query("ALTER TABLE {$table} ALTER COLUMN {$quotedColumn} TYPE {$newType}"
+                    . ($using === null ? '' : " USING {$using}"));
                 if ($notNull) {
                     $this->dbService->query("ALTER TABLE {$table} ALTER COLUMN {$quotedColumn} SET NOT NULL");
                 }

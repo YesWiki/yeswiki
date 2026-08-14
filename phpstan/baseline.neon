@@ -631,24 +631,6 @@ parameters:
 			path: ../src/Admin/Controller/DocumentationController.php
 
 		-
-			message: '#^Cannot call method beginTransaction\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
-			message: '#^Cannot call method commit\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
-			message: '#^Cannot call method exec\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 5
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
 			message: '#^Cannot call method fetchAll\(\) on PDOStatement\|false\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -658,24 +640,6 @@ parameters:
 			message: '#^Cannot call method fetchColumn\(\) on PDOStatement\|false\.$#'
 			identifier: method.nonObject
 			count: 2
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
-			message: '#^Cannot call method query\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 3
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
-			message: '#^Cannot call method quote\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: ../src/Admin/Controller/InstallationController.php
-
-		-
-			message: '#^Cannot call method rollBack\(\) on PDO\|null\.$#'
-			identifier: method.nonObject
-			count: 1
 			path: ../src/Admin/Controller/InstallationController.php
 
 		-
@@ -2509,10 +2473,10 @@ parameters:
 			path: ../src/ComposerScriptsHelper.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\AdminReactionsAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\AdminReactionsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/AdminReactionsAction.php
+			path: ../src/Social/Action/AdminReactionsAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\AdminTagAction\:\:run\(\) has no return type specified\.$#'
@@ -2617,10 +2581,10 @@ parameters:
 			path: ../src/Content/Action/EntryExportAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryFollowAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Action\\EntryFollowAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/EntryFollowAction.php
+			path: ../src/Federation/Action/EntryFollowAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\EntryImportAction\:\:formatArguments\(\) has no return type specified\.$#'
@@ -2828,40 +2792,40 @@ parameters:
 			path: ../src/Content/Action/CalendarAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\CommentsAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\CommentsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/CommentsAction.php
+			path: ../src/Social/Action/CommentsAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\CommentsTableAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\CommentsTableAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/CommentsTableAction.php
+			path: ../src/Social/Action/CommentsTableAction.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Action\\CommentsTableAction\:\:\$commentsService has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Action\\CommentsTableAction\:\:\$commentsService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Action/CommentsTableAction.php
+			path: ../src/Social/Action/CommentsTableAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ContactAction\:\:formatArguments\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:formatArguments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/ContactAction.php
+			path: ../src/Contact/Action/ContactAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ContactAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
+			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Action/ContactAction.php
+			path: ../src/Contact/Action/ContactAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ContactAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/ContactAction.php
+			path: ../src/Contact/Action/ContactAction.php
 
 		-
 			message: '#^Parameter \#1 \$string of function bin2hex expects string, string\|false given\.$#'
@@ -2879,13 +2843,13 @@ parameters:
 			message: '#^Call to function is_array\(\) with array\{list\<string\>, list\<string\>\} will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../src/Content/Action/MailinglistAction.php
+			path: ../src/Contact/Action/MailinglistAction.php
 
 		-
 			message: '#^Variable \$listaction might not be defined\.$#'
 			identifier: variable.undefined
 			count: 2
-			path: ../src/Content/Action/MailinglistAction.php
+			path: ../src/Contact/Action/MailinglistAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\MapAction\:\:run\(\) has no return type specified\.$#'
@@ -2972,28 +2936,28 @@ parameters:
 			path: ../src/Content/Action/QrscannerAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ReactionsAction\:\:formatArguments\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:formatArguments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/ReactionsAction.php
+			path: ../src/Social/Action/ReactionsAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ReactionsAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Action/ReactionsAction.php
+			path: ../src/Social/Action/ReactionsAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\ReactionsAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/ReactionsAction.php
+			path: ../src/Social/Action/ReactionsAction.php
 
 		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 1
-			path: ../src/Content/Action/ReactionsAction.php
+			path: ../src/Social/Action/ReactionsAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\RecentChangesRssAction\:\:formatArguments\(\) has no return type specified\.$#'
@@ -3176,22 +3140,22 @@ parameters:
 			path: ../src/Content/Action/TrailAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\UserCommentsAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\UserCommentsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/UserCommentsAction.php
+			path: ../src/Social/Action/UserCommentsAction.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Action\\UserCommentsAction\:\:\$commentsService has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Action\\UserCommentsAction\:\:\$commentsService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Action/UserCommentsAction.php
+			path: ../src/Social/Action/UserCommentsAction.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Action\\UserCommentsAction\:\:\$userManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Action\\UserCommentsAction\:\:\$userManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Action/UserCommentsAction.php
+			path: ../src/Social/Action/UserCommentsAction.php
 
 		-
 			message: '#^Call to function is_array\(\) with list\<non\-falsy\-string\> will always evaluate to true\.$#'
@@ -3320,10 +3284,10 @@ parameters:
 			path: ../src/Content/Action/UserFavoritesAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\UserReactionsAction\:\:run\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Action\\UserReactionsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Action/UserReactionsAction.php
+			path: ../src/Social/Action/UserReactionsAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:formatArguments\(\) has no return type specified\.$#'
@@ -3350,94 +3314,94 @@ parameters:
 			path: ../src/Content/Action/ValueAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:deleteComment\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:deleteComment\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:deleteComment\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:deleteComment\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:deleteCommentViaPostMethod\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:deleteCommentViaPostMethod\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:deleteCommentViaPostMethod\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:deleteCommentViaPostMethod\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:editComment\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:editComment\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:editComment\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:editComment\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:getAllComments\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:getAllComments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:getAllComments\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:getAllComments\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\CommentApiController\:\:postComment\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\CommentApiController\:\:postComment\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/CommentApiController.php
+			path: ../src/Social/Api/CommentApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ContactApiController\:\:sendContactMail\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Contact\\Api\\ContactApiController\:\:sendContactMail\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Offset ''tag'' might not exist on array\|null\.$#'
 			identifier: offsetAccess.notFound
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Variable \$messageHtml might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Variable \$messageTxt might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Variable \$subject might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/Api/ContactApiController.php
+			path: ../src/Contact/Api/ContactApiController.php
 
 		-
 			message: '#^Call to an undefined method YesWiki\\Content\\Field\\BazarField\:\:getSyntax\(\)\.$#'
@@ -3800,118 +3764,118 @@ parameters:
 			path: ../src/Content/Api/PageApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:addReactionFromUser\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:addReactionFromUser\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReaction\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReaction\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$idreaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$idreaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$page with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$username with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReaction\(\) has parameter \$username with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$idreaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$idreaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$page with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$username with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:deleteReactionViaPostMethod\(\) has parameter \$username with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getAllReactions\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getAllReactions\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getAllReactionsFromUser\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getAllReactionsFromUser\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getAllReactionsFromUser\(\) has parameter \$userId with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getAllReactionsFromUser\(\) has parameter \$userId with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getReactions\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getReactions\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getReactions\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getReactions\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has parameter \$userId with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Api\\ReactionApiController\:\:getReactionsFromUser\(\) has parameter \$userId with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Api/ReactionApiController.php
+			path: ../src/Social/Api/ReactionApiController.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Api\\RelationApiController\:\:createRelation\(\) has no return type specified\.$#'
@@ -4070,12 +4034,6 @@ parameters:
 			path: ../src/Content/Controller/EntryController.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:create\(\) has parameter \$redirectUrl with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:delete\(\) has parameter \$entryId with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -4216,24 +4174,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:selectForm\(\) has parameter \$formsIds with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:triggerDeletedEvent\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:triggerDeletedEvent\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Controller\\EntryController\:\:triggerDeletedEvent\(\) has parameter \$entryId with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Controller/EntryController.php
 
@@ -4388,12 +4328,6 @@ parameters:
 			path: ../src/Content/Controller/EntryController.php
 
 		-
-			message: '#^Undefined variable\: \$redirectUrl$#'
-			identifier: variable.undefined
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 2
@@ -4415,12 +4349,6 @@ parameters:
 			message: '#^Variable \$post might not be defined\.$#'
 			identifier: variable.undefined
 			count: 3
-			path: ../src/Content/Controller/EntryController.php
-
-		-
-			message: '#^Variable \$redirectUrl in empty\(\) is never defined\.$#'
-			identifier: empty.variable
-			count: 1
 			path: ../src/Content/Controller/EntryController.php
 
 		-
@@ -6812,94 +6740,94 @@ parameters:
 			path: ../src/Content/Field/RadioListField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:getCurrentTag\(\) has parameter \$entry with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:getCurrentTag\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:getIds\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:getIds\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:getImagesPath\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:getImagesPath\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:getLabels\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:getLabels\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:renderInput\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderInput\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:renderStatic\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderStatic\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\ReactionsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$ids has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$ids has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$images has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$images has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$imagesPath has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$imagesPath has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$labels has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$labels has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$options has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$options has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Field\\ReactionsField\:\:\$reactionsFormatter has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Field\\ReactionsField\:\:\$reactionsFormatter has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Field/ReactionsField.php
+			path: ../src/Social/Field/ReactionsField.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
@@ -7613,313 +7541,313 @@ parameters:
 			message: '#^Cannot access offset ''host'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 2
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
 			message: '#^Cannot access offset ''scheme'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 2
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollower\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$actorUri with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$actorUri with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollowing\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$actorUri with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$actorUri with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:fetchAllOutboxItems\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:fetchAllOutboxItems\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getActor\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getActor\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getActor\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getActor\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFollowers\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowers\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFollowers\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowers\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFollowing\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowing\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFollowing\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowing\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFormActorUri\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormActorUri\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFormActorUri\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormActorUri\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$collectionType with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$collectionType with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getRecipients\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$activity with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$activity with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:isEnabled\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:isEnabled\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:isEnabled\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:isEnabled\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:notifyFollowers\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$activityType with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$activityType with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$entry with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:postActivity\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$activity with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$activity with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:processActivity\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$activity with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$activity with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollower\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$actorUri with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$actorUri with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollowing\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$actorUri with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$actorUri with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$form with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$form with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:syncActorPosts\(\) has parameter \$form with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:syncActorPosts\(\) has parameter \$form with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ActivityPubService\:\:syncActorPosts\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:syncActorPosts\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$AS_PREFIX has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$AS_PREFIX has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$container has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$container has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$httpClient has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$httpClient has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$httpSignatureService has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$httpSignatureService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$params has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$params has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$semanticTransformer has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$semanticTransformer has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$ssrfUrlValidator has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$ssrfUrlValidator has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$tripleStore has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$tripleStore has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ActivityPubService\:\:\$webfingerService has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$webfingerService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ActivityPubService.php
+			path: ../src/Federation/Service/ActivityPubService.php
 
 		-
 			message: '#^Cannot access offset 0 on list\<string\>\|false\.$#'
@@ -8811,370 +8739,370 @@ parameters:
 			path: ../src/Content/Service/CSVManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$content with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$content with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$idComment with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$idComment with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:delete\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:delete\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$loggedUser with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$loggedUser with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$owner with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$owner with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:genColorCodeFromText\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$min_brightness with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$min_brightness with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$spec with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$spec with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$text with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$text with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentForm\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentForm\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentForm\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentForm\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentList\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentList\(\) has parameter \$comments with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$comments with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentList\(\) has parameter \$first with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$first with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentList\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentsCount\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentsCount\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getCommentsCount\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentsCount\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getParentPage\(\) has parameter \$alreadyFoundTags with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getParentPage\(\) has parameter \$alreadyFoundTags with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:getParentPage\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getParentPage\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:loadComments\(\) has parameter \$username with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadComments\(\) has parameter \$username with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:loadComments\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadComments\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:loadCommentsRecursive\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadCommentsRecursive\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:renderCommentsForPage\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$showOnlyOnce with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$showOnlyOnce with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailAfterCreate\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterCreate\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailAfterDelete\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterDelete\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailAfterModify\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterModify\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$owner with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$owner with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$owner with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$owner with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:setUserData\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:setUserData\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CommentService\:\:setUserData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
 			message: '#^Parameter \#1 \$num of function dechex expects int, float\|int\<0, max\> given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
 			message: '#^Parameter \#3 \$pad_string of function str_pad expects string, int given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) expects array, array\|null given\.$#'
+			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) expects array, array\|null given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Content\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) expects array, array\|null given\.$#'
+			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) expects array, array\|null given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$aclService has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$aclService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$commentsActivated has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$commentsActivated has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$dbService has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$dbService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$eventDispatcher has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$eventDispatcher has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$mailer has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$mailer has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$pageManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$pageManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$pagesWhereCommentWereRendered has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$pagesWhereCommentWereRendered has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$params has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$params has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$templateEngine has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$templateEngine has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\CommentService\:\:\$userManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$userManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
 			message: '#^Variable \$userName in empty\(\) always exists and is not falsy\.$#'
 			identifier: empty.variable
 			count: 1
-			path: ../src/Content/Service/CommentService.php
+			path: ../src/Social/Service/CommentService.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\DiffService\:\:formatJsonCodeIntoHtmlTable\(\) has no return type specified\.$#'
@@ -9537,32 +9465,8 @@ parameters:
 			path: ../src/Content/Service/EntryExtraFieldsService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryExtraFieldsService\:\:getComments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryExtraFieldsService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryExtraFieldsService\:\:getCommentsCount\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryExtraFieldsService.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryExtraFieldsService\:\:getLinkedData\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryExtraFieldsService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryExtraFieldsService\:\:getReactions\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryExtraFieldsService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryExtraFieldsService\:\:getReactionsCount\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: ../src/Content/Service/EntryExtraFieldsService.php
 
@@ -10042,12 +9946,6 @@ parameters:
 
 		-
 			message: '#^Property YesWiki\\Content\\Service\\EntryManager\:\:\$aclService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\EntryManager\:\:\$activityPubService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
@@ -10727,12 +10625,6 @@ parameters:
 			path: ../src/Content/Service/FormManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\FormManager\:\:\$activityPubService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/FormManager.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Service\\FormManager\:\:\$cacheValidatedForAll has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -10764,12 +10656,6 @@ parameters:
 
 		-
 			message: '#^Property YesWiki\\Content\\Service\\FormManager\:\:\$hibernationService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/FormManager.php
-
-		-
-			message: '#^Property YesWiki\\Content\\Service\\FormManager\:\:\$httpSignatureService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Service/FormManager.php
@@ -11012,97 +10898,73 @@ parameters:
 			message: '#^Cannot access offset ''host'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Cannot access offset ''key'' on array\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
 			message: '#^Cannot access offset ''path'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:generateKeyPair\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:generateSignature\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:generateSignature\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$activity with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: ../src/Federation/Service/HttpSignatureService.php
+
+		-
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$form with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: ../src/Federation/Service/HttpSignatureService.php
+
+		-
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$url with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: ../src/Federation/Service/HttpSignatureService.php
+
+		-
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:getDigest\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$activity with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:getDigest\(\) has parameter \$message with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:generateSignature\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:getDigest\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:verifySignature\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:getDigest\(\) has parameter \$message with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\HttpSignatureService\:\:verifySignature\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Parameter \#1 \$key of function openssl_pkey_export expects array\|OpenSSLAsymmetricKey\|OpenSSLCertificate\|string, OpenSSLAsymmetricKey\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
-
-		-
-			message: '#^Parameter \#1 \$key of function openssl_pkey_get_details expects OpenSSLAsymmetricKey, OpenSSLAsymmetricKey\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
 			message: '#^Parameter \#1 \$str of function strtr expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\HttpSignatureService\:\:\$httpClient has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\HttpSignatureService\:\:\$httpClient has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\HttpSignatureService\:\:\$ssrfUrlValidator has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\HttpSignatureService\:\:\$ssrfUrlValidator has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/HttpSignatureService.php
+			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\IcalFormatter\:\:addHeaderAndFooter\(\) has parameter \$formId with no type specified\.$#'
@@ -11264,205 +11126,205 @@ parameters:
 			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:cURLDownload\(\) with return type void returns string but should not return anything\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:cURLDownload\(\) with return type void returns string but should not return anything\.$#'
 			identifier: return.void
 			count: 2
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:downloadAttachments\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadAttachments\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:downloadDirectLinkAttachment\(\) with return type void returns null but should not return anything\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadDirectLinkAttachment\(\) with return type void returns null but should not return anything\.$#'
 			identifier: return.void
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) should return array but return statement is missing\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) should return array but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:findDirectLinkAttachements\(\) invoked with 3 parameters, 0\-1 required\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:findDirectLinkAttachements\(\) invoked with 3 parameters, 0\-1 required\.$#'
 			identifier: arguments.count
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:findDirectLinkAttachements\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:findDirectLinkAttachements\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:findHiddenAttachments\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:findHiddenAttachments\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:findHiddenAttachments\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:findHiddenAttachments\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:getTextFieldsFromWikiPage\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:getTextFieldsFromWikiPage\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:getTextFieldsFromWikiPage\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:getTextFieldsFromWikiPage\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:humanFilesize\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:humanFilesize\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:humanFilesize\(\) has parameter \$bytes with no type specified\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:humanFilesize\(\) has parameter \$bytes with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportFilesManager\:\:humanFilesize\(\) has parameter \$decimals with no type specified\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:humanFilesize\(\) has parameter \$decimals with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Offset float does not exist on ''KMGT''\.$#'
 			identifier: offsetAccess.notFound
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Parameter \#1 \$dir_handle of function readdir expects resource\|null, resource\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Parameter \#3 \$value of function curl_setopt expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ImportFilesManager\:\:\$uploadPath has no type specified\.$#'
+			message: '#^Property YesWiki\\Import\\Service\\ImportFilesManager\:\:\$uploadPath has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Result of method YesWiki\\Content\\Service\\ImportFilesManager\:\:cURLDownload\(\) \(void\) is used\.$#'
+			message: '#^Result of method YesWiki\\Import\\Service\\ImportFilesManager\:\:cURLDownload\(\) \(void\) is used\.$#'
 			identifier: method.void
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Variable \$sz might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/Service/ImportFilesManager.php
+			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
 			message: '#^Elseif condition is always true\.$#'
 			identifier: elseif.alwaysTrue
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportService\:\:extractBaseUrlAndRootPage\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportService\:\:extractBaseUrlAndRootPage\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportService\:\:extractBaseUrlModeAndTag\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportService\:\:extractBaseUrlModeAndTag\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ImportService\:\:getHeaders\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Import\\Service\\ImportService\:\:getHeaders\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^PHPDoc tag @return with type string is incompatible with native type array\.$#'
 			identifier: return.phpDocType
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 2
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
 			identifier: argument.type
 			count: 2
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Parameter \#3 \$value of function curl_setopt expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 2
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Right side of \|\| is always false\.$#'
 			identifier: booleanOr.rightAlwaysFalse
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Variable \$intputUrl on left side of \?\? is never defined\.$#'
 			identifier: nullCoalesce.variable
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Variable \$rewriteModeEnabled might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/Service/ImportService.php
+			path: ../src/Import/Service/ImportService.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\ListManager\:\:convertDataStructure\(\) has no return type specified\.$#'
@@ -12017,280 +11879,280 @@ parameters:
 			path: ../src/Content/Service/PageOperationsService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:addUserReaction\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:addUserReaction\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:addUserReaction\(\) has parameter \$pageTag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:addUserReaction\(\) has parameter \$pageTag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:addUserReaction\(\) has parameter \$values with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:addUserReaction\(\) has parameter \$values with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:appendParametersFromField\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:appendParametersFromField\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:appendParametersFromField\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:appendParametersFromField\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:appendParamsFromActionDefinition\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:appendParamsFromActionDefinition\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:appendParamsFromActionDefinition\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:appendParamsFromActionDefinition\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$pageTag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$pageTag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$reactionId with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$reactionId with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$user with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:deleteUserReaction\(\) has parameter \$user with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParameters\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParameters\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParameters\(\) has parameter \$idReaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParameters\(\) has parameter \$idReaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParameters\(\) has parameter \$page with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParameters\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has parameter \$entryId with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has parameter \$entryId with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has parameter \$idReaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromEntry\(\) has parameter \$idReaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has parameter \$idReaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has parameter \$idReaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has parameter \$page with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getActionParametersFromPage\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has parameter \$idReaction with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has parameter \$idReaction with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has parameter \$page with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getAllReactionInfos\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactions\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactions\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$ids with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$ids with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$pageTag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$pageTag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$singleEntry with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$singleEntry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$user with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactions\(\) has parameter \$user with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactionsCount\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactionsCount\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionManager\:\:getReactionsCount\(\) has parameter \$tag with no type specified\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionManager\:\:getReactionsCount\(\) has parameter \$tag with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
 			message: '#^Parameter \#2 \$string of function explode expects string, array\<string, string\>\|string given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionManager\:\:\$cachedReactions has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionManager\:\:\$cachedReactions has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionManager\:\:\$dbService has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionManager\:\:\$dbService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionManager\:\:\$entryManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionManager\:\:\$entryManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionManager\:\:\$formManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionManager\:\:\$formManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionManager\:\:\$tripleStore has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionManager\:\:\$tripleStore has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionManager.php
+			path: ../src/Social/Service/ReactionManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatImages\(\) has parameter \$defaultImages with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:formatImages\(\) has parameter \$defaultImages with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatImages\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:formatImages\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) has parameter \$defaultLabels with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) has parameter \$defaultLabels with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:formatReactionsLabels\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$images with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$images with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$labels with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:getReactionItems\(\) has parameter \$labels with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\ReactionsFormatter\:\:getReactionItems\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Social\\Service\\ReactionsFormatter\:\:getReactionItems\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\ReactionsFormatter\:\:\$reactionManager has no type specified\.$#'
+			message: '#^Property YesWiki\\Social\\Service\\ReactionsFormatter\:\:\$reactionManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/ReactionsFormatter.php
+			path: ../src/Social/Service/ReactionsFormatter.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertFromSemanticData\(\) has parameter \$data with no type specified\.$#'
@@ -12341,202 +12203,202 @@ parameters:
 			path: ../src/Content/Service/SemanticTransformer.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\TripleStore\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Kernel\\Service\\TripleStore\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\TripleStore\:\:getMatching\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Kernel\\Service\\TripleStore\:\:getMatching\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\TripleStore\:\:\$cacheByResource has no type specified\.$#'
+			message: '#^Property YesWiki\\Kernel\\Service\\TripleStore\:\:\$cacheByResource has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\TripleStore\:\:\$dbService has no type specified\.$#'
+			message: '#^Property YesWiki\\Kernel\\Service\\TripleStore\:\:\$dbService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\TripleStore\:\:\$hibernationService has no type specified\.$#'
+			message: '#^Property YesWiki\\Kernel\\Service\\TripleStore\:\:\$hibernationService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\TripleStore\:\:\$matchingCache type has no value type specified in iterable type array\.$#'
+			message: '#^Property YesWiki\\Kernel\\Service\\TripleStore\:\:\$matchingCache type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/TripleStore.php
+			path: ../src/Kernel/Service/TripleStore.php
 
 		-
 			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:__construct\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:__construct\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:getAliases\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getAliases\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:getInteractionUrl\(\) should return string but return statement is missing\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getInteractionUrl\(\) should return string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:getLinks\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getLinks\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:getProfileId\(\) should return string but return statement is missing\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getProfileId\(\) should return string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:setAliases\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:setAliases\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:setAliases\(\) has parameter \$aliases with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:setAliases\(\) has parameter \$aliases with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:setLinks\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:setLinks\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:setLinks\(\) has parameter \$links with no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:setLinks\(\) has parameter \$links with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:setSubject\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:setSubject\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebFinger\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\WebFinger\:\:\$links type has no value type specified in iterable type array\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\WebFinger\:\:\$links type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/WebFinger.php
+			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:formatLocalActor\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:formatLocalActor\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:formatLocalActor\(\) has parameter \$actorUri with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:formatLocalActor\(\) has parameter \$actorUri with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:formatLocalActor\(\) has parameter \$handle with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:formatLocalActor\(\) has parameter \$handle with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getInteractionUrl\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getInteractionUrl\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getInteractionUrl\(\) has parameter \$actorToFollow with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getInteractionUrl\(\) has parameter \$actorToFollow with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getInteractionUrl\(\) has parameter \$handle with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getInteractionUrl\(\) has parameter \$handle with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getRemoteActor\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getRemoteActor\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getRemoteActor\(\) has parameter \$handle with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getRemoteActor\(\) has parameter \$handle with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getWebfingerObject\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getWebfingerObject\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:getWebfingerObject\(\) has parameter \$handle with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:getWebfingerObject\(\) has parameter \$handle with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:splitHandle\(\) has no return type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:splitHandle\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\WebfingerService\:\:splitHandle\(\) has parameter \$handle with no type specified\.$#'
+			message: '#^Method YesWiki\\Federation\\Service\\WebfingerService\:\:splitHandle\(\) has parameter \$handle with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\WebfingerService\:\:\$httpClient has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\WebfingerService\:\:\$httpClient has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
-			message: '#^Property YesWiki\\Content\\Service\\WebfingerService\:\:\$ssrfUrlValidator has no type specified\.$#'
+			message: '#^Property YesWiki\\Federation\\Service\\WebfingerService\:\:\$ssrfUrlValidator has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Service/WebfingerService.php
+			path: ../src/Federation/Service/WebfingerService.php
 
 		-
 			message: '#^Function compareFieldsByPosition\(\) has no return type specified\.$#'
@@ -12888,199 +12750,199 @@ parameters:
 			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 2
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function FindMailFromWikiPage\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function FindMailFromWikiPage\(\) has parameter \$nbactionmail with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function FindMailFromWikiPage\(\) has parameter \$wikipage with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function ValidateEmail\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function ValidateEmail\(\) has parameter \$email with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$mail_receiver with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$mail_sender with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$messagebody with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$name_sender with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$subject with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function check_parameters_mail\(\) has parameter \$type with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterDailyMailGroups\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterDailyMailGroups\(\) has parameter \$var with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterMailGroups\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterMailGroups\(\) has parameter \$var with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterMonthlyMailGroups\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterMonthlyMailGroups\(\) has parameter \$var with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterWeeklyMailGroups\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function filterWeeklyMailGroups\(\) has parameter \$var with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function getPageTitle\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function getPageTitle\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function parseMails\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function parseMails\(\) has parameter \$emails with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendEmailsToSubscribers\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendEmailsToSubscribers\(\) has parameter \$period with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendEmailsToSubscribers\(\) has parameter \$subject with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendPeriodicalMailToGroup\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$groups with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$period with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$subject with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Variable \$sub might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
-			path: ../src/Content/contact.functions.php
+			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function rssdiff\(\) has no return type specified\.$#'
@@ -16485,12 +16347,6 @@ parameters:
 			path: ../src/Render/Action/NavAction.php
 
 		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/NavAction.php
-
-		-
 			message: '#^Variable \$method might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
@@ -16499,12 +16355,6 @@ parameters:
 		-
 			message: '#^Variable \$params might not be defined\.$#'
 			identifier: variable.undefined
-			count: 1
-			path: ../src/Render/Action/NavAction.php
-
-		-
-			message: '#^Variable \$text in empty\(\) is never defined\.$#'
-			identifier: empty.variable
 			count: 1
 			path: ../src/Render/Action/NavAction.php
 
@@ -16647,12 +16497,6 @@ parameters:
 			path: ../src/Render/Action/VideoAction.php
 
 		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/AccordionAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\AccordionAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -16665,22 +16509,10 @@ parameters:
 			path: ../src/Render/Action/AccordionAction.php
 
 		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/ButtondropdownAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\ButtondropdownAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/ButtondropdownAction.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/ColAction.php
 
 		-
 			message: '#^Method YesWiki\\Render\\Action\\ColAction\:\:run\(\) has no return type specified\.$#'
@@ -16695,34 +16527,16 @@ parameters:
 			path: ../src/Render/Action/ColAction.php
 
 		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/GridAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\GridAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/GridAction.php
 
 		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/LabelAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\LabelAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/LabelAction.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: ../src/Render/Action/PanelAction.php
 
 		-
 			message: '#^Method YesWiki\\Render\\Action\\PanelAction\:\:run\(\) has no return type specified\.$#'
@@ -16733,12 +16547,6 @@ parameters:
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Render/Action/SectionAction.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
 			count: 1
 			path: ../src/Render/Action/SectionAction.php
 
@@ -17081,30 +16889,6 @@ parameters:
 		-
 			message: '#^Call to function is_array\(\) with non\-empty\-array\<string, string\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:checkGraphicalElements\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:checkGraphicalElements\(\) has parameter \$element with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:checkGraphicalElements\(\) has parameter \$pagecontent with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:checkGraphicalElements\(\) has parameter \$pagetag with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Render/Service/TemplateHelperService.php
 
@@ -17491,60 +17275,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Access to property \$auto_handle_exif_orientation on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$enlarge_smaller_images on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$handle_exif_orientation_tag on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$preserve_aspect_ratio on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$preserve_time on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$source_path on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Access to property \$target_path on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 3
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Call to method resize\(\) on an unknown class Zebra_Image\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
-
-		-
-			message: '#^Instantiated class Zebra_Image not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../src/Render/Service/ThemeSelectorRenderer.php
 
 		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeSelectorRenderer\:\:prepareBackgrounds\(\) return type has no value type specified in iterable type array\.$#'
@@ -18970,7 +18700,7 @@ parameters:
 			path: ../tests/actions/LoginRelatedActionsTest.php
 
 		-
-			message: '#^Cannot call method delete\(\) on YesWiki\\Content\\Service\\TripleStore\|null\.$#'
+			message: '#^Cannot call method delete\(\) on YesWiki\\Kernel\\Service\\TripleStore\|null\.$#'
 			identifier: method.nonObject
 			count: 2
 			path: ../tests/actions/NuagetagActionTest.php
@@ -20422,7 +20152,7 @@ parameters:
 			path: ../tests/src/services/StringUtilServiceTest.php
 
 		-
-			message: '#^Cannot call method delete\(\) on YesWiki\\Content\\Service\\TripleStore\|null\.$#'
+			message: '#^Cannot call method delete\(\) on YesWiki\\Kernel\\Service\\TripleStore\|null\.$#'
 			identifier: method.nonObject
 			count: 2
 			path: ../tests/src/services/TagsManagerAndApiTest.php

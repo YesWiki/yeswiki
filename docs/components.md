@@ -162,6 +162,15 @@ opens the rail on everything it can be told.
   key it was given, so a mistyped one renders as itself and waits to be noticed);
 - the palette comes out in category order.
 
+`tests/src/Kernel/PaletteCatalogTest.php` holds the other end, the catalog itself. The
+`AB_*` keys used to live in `docs/actions/lang/`, which nothing checked against anything —
+so the merge into `src/lang/` arrived carrying 92 keys nothing asks for, describing retired
+entries and older spellings of settings the port renamed. Both directions are asserted now:
+every `AB_*` key in the catalog is named somewhere in code, and every `AB_*` key named in
+code is defined in the French reference catalog. The single exception is written down in the
+test — `AB_bazar<name>_label`, which `EntryListAction` builds from a webmaster's own
+`custom/templates/bazar/*.twig` filename, the one palette key that cannot be a literal.
+
 ## What is not a Component
 
 **Markup syntax** — `**bold**`, `> quote`, `{# comment #}`, and the `:::info … :::`

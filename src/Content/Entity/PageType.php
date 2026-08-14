@@ -8,7 +8,7 @@ namespace YesWiki\Content\Entity;
  * Every row in `pages` is one of seven kinds. Before this ticket that fact lived in the
  * `triples` table, one row per typed Content, and "untyped means page" was a rule every
  * caller had to know. It cost two to four uncached `SELECT id FROM triples` per distinct tag
- * on every page render -- {@see \YesWiki\Content\Service\TripleStore::exist()} consults
+ * on every page render -- {@see \YesWiki\Kernel\Service\TripleStore::exist()} consults
  * neither cache -- and a `LEFT JOIN triples` in every query that needed the type.
  *
  * ## Why these spellings

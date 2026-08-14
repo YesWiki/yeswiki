@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\TripleStore;
 
 class FavoritesManager
 {

@@ -5,6 +5,10 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Component\Category;
+use YesWiki\Kernel\Component\Component;
+use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -16,11 +20,43 @@ use YesWiki\Kernel\Service\PerformableArguments;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class TocAction extends YesWikiAction implements RegisteredAction
+class TocAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
     {
         return 'toc';
+    }
+
+    /**
+     * `{{toc}}` had no YAML palette entry -- it was one of the fifty-one actions the palette
+     * never listed, so the only way to put a table of contents on a page was to know the tag
+     * and type it. It is a navigation Component like any other.
+     */
+    public function components(): array
+    {
+        return [
+            Component::for('toc')
+                ->category(Category::Navigation)
+                ->label(_t('AB_toc_label'))
+                ->icon('list-details')
+                ->description(_t('AB_toc_description'))
+                ->previewHeight('250px')
+                ->settings(
+                    Setting::text('title')
+                        ->label(_t('AB_toc_title_label'))
+                        ->hint(_t('AB_toc_title_hint'))
+                        ->half(),
+                    Setting::checkbox('closed')
+                        ->title(_t('AB_toc_closed_title'))
+                        ->label(_t('AB_toc_closed_label'))
+                        ->checkedValues('1', '')
+                        ->default('')
+                        ->half(),
+                    Setting::cssClass('class')
+                        ->label(_t('AB_template_actions_class'))
+                        ->full(),
+                ),
+        ];
     }
 
     public function run(): string

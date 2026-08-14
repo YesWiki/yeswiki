@@ -9,6 +9,7 @@ use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Routing\ReservedTags;
+use YesWiki\Kernel\Service\TripleStore;
 
 class DuplicationManager
 {

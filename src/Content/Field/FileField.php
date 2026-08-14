@@ -6,15 +6,14 @@ use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\FileBrowser;
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\AssetRegistry;
-use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -364,10 +363,8 @@ class FileField extends BazarField
                 $this->getService(EntryDateService::class)->followId($newEntry['tag']);
             }
 
-            $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [
-                'id' => $newEntry['tag'],
-                'data' => $newEntry,
-            ]);
+            // no dispatch here: EntryManager::update() above announces `entry.updated` itself
+            // now, and firing it a second time would double every subscriber (ticket 39)
         }
     }
 }

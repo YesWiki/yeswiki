@@ -3,18 +3,34 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Entity\ContributesEntryFields;
+use YesWiki\Kernel\Service\TripleStore;
 
 // Get more data about an entry
 class EntryExtraFieldsService
 {
+    /**
+     * The names this service answers for a template or an API response.
+     *
+     * `triples` and `linked_data` are answered here because they are Content's own. The rest
+     * are answered by whichever module contributes them -- `comments` and `reactions` come
+     * from `Social` (ADR-0019) -- and stay on this list because callers iterate it.
+     */
     public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples', 'linked_data'];
 
     protected ContainerInterface $container;
     protected $entryId;
 
-    public function __construct(ContainerInterface $container)
+    /** @var iterable<ContributesEntryFields> tagged `yeswiki.entry_fields` */
+    private iterable $contributors;
+
+    /**
+     * @param iterable<ContributesEntryFields> $contributors
+     */
+    public function __construct(ContainerInterface $container, iterable $contributors = [])
     {
         $this->container = $container;
+        $this->contributors = $contributors;
     }
 
     public function setEntryId($entryId)
@@ -30,50 +46,20 @@ class EntryExtraFieldsService
             return $this->$methodName();
         }
 
+        // ...and whatever another module says it can answer. Asked after this service's own
+        // methods so Content keeps the last word on the names it owns.
+        foreach ($this->contributors as $contributor) {
+            if (in_array($prop, $contributor->contributedFieldNames(), true)) {
+                return $contributor->contributedField($prop, (string)$this->entryId);
+            }
+        }
+
         return null;
     }
 
     private function snakeToPascal(string $string): string
     {
         return str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
-    }
-
-    public function getReactions()
-    {
-        return $this->container->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
-    }
-
-    public function getReactionsCount()
-    {
-        $reactions = $this->container->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
-        // The format of getReactions is not easy to use in a template, so we transform it
-        // bf_my_reaction: { like: { label: "I like", icon: "..", count: 5 }, dislike: { ... } }
-        $result = [];
-        foreach ($reactions as $field => $data) {
-            $fieldResult = [];
-            foreach ($data['parameters']['labels'] as $reactionId => $label) {
-                $fieldResult[$reactionId] = ['label' => $label, 'image' => null, 'count' => 0];
-            }
-            foreach ($data['parameters']['images'] as $reactionId => $image) {
-                $fieldResult[$reactionId]['image'] = $image;
-            }
-            foreach ($data['nb_reactions'] as $reactionId => $count) {
-                $fieldResult[$reactionId]['count'] = $count;
-            }
-            $result[$field] = $fieldResult;
-        }
-
-        return $result;
-    }
-
-    public function getComments()
-    {
-        return $this->container->get(CommentService::class)->loadCommentsRecursive($this->entryId);
-    }
-
-    public function getCommentsCount()
-    {
-        return $this->container->get(CommentService::class)->getCommentsCount($this->entryId);
     }
 
     public function getTriples()

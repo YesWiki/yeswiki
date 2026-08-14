@@ -154,7 +154,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $db = $wiki->services->get(DbService::class);
         $groups = $wiki->services->get(\YesWiki\Identity\Service\GroupOperationsService::class);
-        $tripleStore = $wiki->services->get(\YesWiki\Content\Service\TripleStore::class);
+        $tripleStore = $wiki->services->get(\YesWiki\Kernel\Service\TripleStore::class);
 
         // cold: nothing known about this resource yet
         (new \ReflectionProperty($tripleStore, 'cacheByResource'))->setValue($tripleStore, []);

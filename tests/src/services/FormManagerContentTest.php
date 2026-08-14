@@ -3,10 +3,10 @@
 namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Content\Entity\PageType;
-use YesWiki\Content\Service\ActivityPubService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

@@ -4,11 +4,11 @@ namespace YesWiki\Identity\Service;
 
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;

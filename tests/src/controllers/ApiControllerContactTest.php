@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Content\Api\ContactApiController;
+use YesWiki\Contact\Api\ContactApiController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;

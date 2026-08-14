@@ -54,6 +54,11 @@ const EXTRAS = [
   'filter',
   'text-decrease',
   'sort-ascending-letters',
+  // three actions that never had a YAML palette entry and gained a Component with the
+  // triage (ticket 36): a table of contents, a QR code and a page's comments
+  'list-details',
+  'qrcode',
+  'message-circle',
 ]
 // sprite ids whose Tabler source icon has a different name — e.g. the magnifier
 // ships as "loupe" because adblock cosmetic filters hide elements whose

@@ -20,7 +20,7 @@ parameters:
     ignoreErrors:
         -
             message: '#PhpImap\\Exceptions\\ConnectionException#'
-            path: ../src/Content/Service/ImapImporter.php
+            path: ../src/Import/Service/ImapImporter.php
 
     paths:
         - ../src

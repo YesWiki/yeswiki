@@ -33,6 +33,13 @@ services:
     # way, so adding a Source is a change to that action and nothing else.
     YesWiki\Content\Entity\SuppliesItems:
       tags: ['yeswiki.item_source']
+    # Ticket 39: what another module can say about an entry, and what it can add to the bottom
+    # of a page. Both are the view asking each module for its part, rather than Content
+    # reaching into the features layered over it (ADR-0019).
+    YesWiki\Content\Entity\ContributesEntryFields:
+      tags: ['yeswiki.entry_fields']
+    YesWiki\Content\Entity\AppendsToPageView:
+      tags: ['yeswiki.page_view_appendix']
 
   YesWiki\Kernel\Performable\ActionRegistry:
     arguments:
@@ -142,6 +149,42 @@ services:
   YesWiki\Content\Api\:
     resource: 'Content/Api/*'
 
+  YesWiki\Import\Service\:
+    resource: 'Import/Service/*'
+
+  YesWiki\Import\Action\:
+    resource: 'Import/Action/*'
+
+  YesWiki\Import\Api\:
+    resource: 'Import/Api/*'
+
+  YesWiki\Contact\Service\:
+    resource: 'Contact/Service/*'
+
+  YesWiki\Contact\Action\:
+    resource: 'Contact/Action/*'
+
+  YesWiki\Contact\Api\:
+    resource: 'Contact/Api/*'
+
+  YesWiki\Files\Service\:
+    resource: 'Files/Service/*'
+
+  YesWiki\Federation\Service\:
+    resource: 'Federation/Service/*'
+
+  YesWiki\Social\Service\:
+    resource: 'Social/Service/*'
+
+  YesWiki\Social\Action\:
+    resource: 'Social/Action/*'
+
+  YesWiki\Social\Api\:
+    resource: 'Social/Api/*'
+
+  YesWiki\Federation\Action\:
+    resource: 'Federation/Action/*'
+
   YesWiki\Search\Api\:
     resource: 'Search/Api/*'
 
@@ -152,13 +195,13 @@ services:
   YesWiki\Kernel\Service\LanguageService:
     factory: [null, 'getInstance']
 
-  YesWiki\Content\Service\CommentService:
+  YesWiki\Social\Service\CommentService:
     tags:
       - { name: yeswiki.event_subscriber }
   YesWiki\Render\Service\ThemeManager:
     tags:
       - { name: yeswiki.event_subscriber }
-  YesWiki\Content\Service\WebFinger:
+  YesWiki\Federation\Service\WebFinger:
     autowire: false
   YesWiki\Content\Service\EntryDateService:
     tags:
@@ -171,12 +214,17 @@ services:
   YesWiki\Search\Service\SearchIndexSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }
+  # announces entry changes to a form's ActivityPub followers (ticket 39). Subscribing works
+  # because the entry.* events are dispatched by EntryManager now, not by EntryController.
+  YesWiki\Federation\Service\FederatesEntryChanges:
+    tags:
+      - { name: yeswiki.event_subscriber }
   # imports the data sources flagged syncOnMaintenance, on the wiki's own housekeeping
-  YesWiki\Content\Service\MaintenanceSyncSubscriber:
+  YesWiki\Import\Service\MaintenanceSyncSubscriber:
     tags:
       - { name: yeswiki.event_subscriber }
   # sends the mailing-list digests on a wiki with no cron, on the same housekeeping pass
-  YesWiki\Content\Service\ContactDigestScheduler:
+  YesWiki\Contact\Service\ContactDigestScheduler:
     tags:
       - { name: yeswiki.event_subscriber }
 
@@ -184,11 +232,19 @@ services:
   # container can autowire. These definitions exist so ImporterManager can *find* them by
   # service id (any id ending in "Importer"); it constructs them itself. An extension adding
   # an importer declares it the same way.
-  YesWiki\Content\Service\RssImporter:
+  YesWiki\Import\Service\RssImporter:
     autowire: false
-  YesWiki\Content\Service\ImapImporter:
+  YesWiki\Import\Service\ImapImporter:
     autowire: false
-  YesWiki\Content\Service\YesWikiListImporter:
+  YesWiki\Import\Service\YesWikiListImporter:
     autowire: false
-  YesWiki\Content\Service\YesWikiToYesWikiImporter:
+  YesWiki\Import\Service\YesWikiToYesWikiImporter:
     autowire: false
+
+  YesWiki\Content\Service\EntryExtraFieldsService:
+    arguments:
+      $contributors: !tagged_iterator yeswiki.entry_fields
+
+  YesWiki\Content\Service\PageViewAppendices:
+    arguments:
+      $appendices: !tagged_iterator yeswiki.page_view_appendix

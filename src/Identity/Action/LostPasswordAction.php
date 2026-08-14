@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Action;
 
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
@@ -12,6 +11,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class LostPasswordAction extends YesWikiAction implements RegisteredAction

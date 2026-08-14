@@ -4,7 +4,7 @@ namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\WithoutErrorHandler;
-use YesWiki\Content\Service\AttachedFilePaths;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Test\Core\YesWikiTestCase;
 

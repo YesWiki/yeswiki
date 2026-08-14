@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Content\Service\MaintenanceSyncSubscriber;
+use YesWiki\Import\Service\MaintenanceSyncSubscriber;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\YesWikiRuntime;

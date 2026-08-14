@@ -28,11 +28,39 @@ class MySqlDialect implements SqlDialect
         return 'DATE_SUB(NOW(), INTERVAL ' . intval($hours) . ' HOUR)';
     }
 
+    public function jsonColumnType(): string
+    {
+        return 'JSON';
+    }
+
+    public function jsonAsText(string $column): string
+    {
+        // MySQL coerces a JSON value to its text form for a string operator, so there is
+        // nothing to state -- the normalisation the storage applies is the caller's problem
+        // either way (see SqlDialect::jsonAsText()).
+        return $column;
+    }
+
     public function jsonExtract(string $column, string $path): string
     {
         // JSON_UNQUOTE so strings come back unquoted. The path is escaped here rather than by
         // the caller: it can carry a form field name, and the dialect is what knows the path
         // ends up inside a single-quoted literal (see SqlDialect::jsonExtract()).
+        $escaped = str_replace("'", "''", $path);
+
+        return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";
+    }
+
+    /**
+     * Identical SQL, and deliberately not delegated away.
+     *
+     * `JSON_EXTRACT` accepts a text column and parses it per row -- which is exactly the cost
+     * a native column removes, and exactly what still happens for `metadata`. The two methods
+     * generate the same string here and mean different things; collapsing them into one would
+     * make the day one of them has to change look like a refactor rather than a decision.
+     */
+    public function jsonExtractText(string $column, string $path): string
+    {
         $escaped = str_replace("'", "''", $path);
 
         return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";

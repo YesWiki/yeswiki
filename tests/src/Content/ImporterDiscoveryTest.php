@@ -7,9 +7,9 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Service\ImporterManager;
 use YesWiki\Content\Service\ListManager;
-use YesWiki\Content\Service\YesWikiToYesWikiImporter;
+use YesWiki\Import\Service\ImporterManager;
+use YesWiki\Import\Service\YesWikiToYesWikiImporter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\YesWikiRuntime;
 

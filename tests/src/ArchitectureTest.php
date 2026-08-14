@@ -22,7 +22,7 @@ class ArchitectureTest extends TestCase
     /** Kernel is infrastructure: it may be depended upon, and may depend on no feature. */
     private const FEATURES = ['Content', 'Identity', 'Render', 'Search', 'Admin'];
 
-    private const MODULES = ['Kernel', 'Content', 'Identity', 'Render', 'Search', 'Admin'];
+    private const MODULES = ['Kernel', 'Content', 'Identity', 'Render', 'Search', 'Admin', 'Import', 'Contact', 'Files', 'Federation', 'Social'];
 
     /**
      * Pre-existing breaches, recorded when the rule was introduced. Every one is a real
@@ -38,7 +38,6 @@ class ArchitectureTest extends TestCase
         'Kernel/Service/Mailer.php -> Identity\Service\AuthenticationService',
         'Kernel/Service/Mailer.php -> Identity\Service\UserManager',
         'Kernel/Service/Mailer.php -> Render\Service\TemplateEngine',
-        'Kernel/Service/MigrationService.php -> Content\Service\TripleStore',
         // Performer renders action output; ticket 06 replaces this dispatcher entirely.
         // Its MarkdownFormatterService edge is gone: ticket 06 removed the formatter object
         // type, so Performer no longer registers the 'wakka' formatter closure.

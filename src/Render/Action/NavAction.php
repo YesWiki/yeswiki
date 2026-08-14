@@ -113,7 +113,12 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             $icons = explode(',', $icons);
             foreach ($icons as $key => $icon) {
                 $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
-                if (!empty($icon) && !empty($text)) {
+                // `&& !empty($text)` came with this line from ButtondropdownAction, where
+                // `$text` is a local. There is no `$text` here, so the space was never added
+                // and every nav icon ran into its title. `empty()` on an undefined variable is
+                // legal PHP, which is why it surfaced as an always-false branch rather than an
+                // undefined-variable notice, and sat baselined (ticket 40).
+                if (!empty($icon)) {
                     $icon = $icon . ' ';
                 }
                 $icons[$key] = $icon;

@@ -18,8 +18,10 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -35,7 +37,6 @@ class EntryManager
     protected $dbService;
     protected $semanticTransformer;
     protected $hibernationService;
-    protected $activityPubService;
     protected AdministrativeLogService $administrativeLogService;
     protected $params;
     protected $searchManager;
@@ -60,7 +61,6 @@ class EntryManager
         ParameterBagInterface $params,
         SearchManager $searchManager,
         HibernationService $hibernationService,
-        ActivityPubService $activityPubService,
         AdministrativeLogService $administrativeLogService,
         UrlFormatter $urlFormatter,
     ) {
@@ -77,8 +77,41 @@ class EntryManager
         $this->params = $params;
         $this->searchManager = $searchManager;
         $this->hibernationService = $hibernationService;
-        $this->activityPubService = $activityPubService;
         $this->administrativeLogService = $administrativeLogService;
+    }
+
+    /**
+     * Announce that an entry changed -- from here, so that **every** write path announces it.
+     *
+     * `entry.created`, `entry.updated` and `entry.deleted` used to be dispatched by
+     * `EntryController`, which is the form-submission path and only that. An entry written by
+     * the API, by an importer, by a migration or by a field's own side effect fired none of
+     * them, so every subscriber was quietly partial: search reindexing survived only because
+     * `PageManager` dispatches `page.*` underneath, and ActivityPub survived only because it
+     * was called directly from here instead of subscribing.
+     *
+     * Moving the dispatch to the storage layer is what makes the event mean what its name says.
+     * The consequence is deliberate and worth stating: **webhooks now fire for imported and
+     * migrated entries too**, because a wiki that says "tell me when an entry is created" was
+     * never asking "…but only if a human used the form".
+     *
+     * The dispatcher is fetched rather than injected: `EntryDateService` subscribes to these
+     * events and takes `EntryManager` in its constructor, so constructor-injecting the
+     * dispatcher here closes a container cycle.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
+     */
+    private function announce(string $event, array $form, array $entry, bool $imported): void
+    {
+        $this->container->get(EventDispatcher::class)->yesWikiDispatch($event, [
+            'id' => $entry['tag'] ?? '',
+            'data' => $entry,
+            // added for federation, which has to know which form's followers to tell and
+            // must not re-publish an entry this wiki imported from somewhere else
+            'form' => $form,
+            'imported' => $imported,
+        ]);
     }
 
     /**
@@ -414,10 +447,7 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
-        if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
-            // Notify followers about the new object
-            $this->activityPubService->notifyFollowers($form, $data, 'Create');
-        }
+        $this->announce('entry.created', $form, $data, (bool)$sourceUrl);
 
         return $data;
     }
@@ -491,10 +521,7 @@ class EntryManager
         }
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['tag'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-            // Notify followers about the updated object (skip if external)
-            $this->activityPubService->notifyFollowers($form, $data, 'Update');
-        }
+        $this->announce('entry.updated', $form, $data, $isExternalEntry);
 
         return $data;
     }
@@ -600,10 +627,7 @@ class EntryManager
             $this->authenticationService->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-            // Notify followers about the deleted object
-            $this->activityPubService->notifyFollowers($form, $entryToDelete, 'Delete');
-        }
+        $this->announce('entry.deleted', $form, $entryToDelete, $isExternalEntry);
     }
 
     /*

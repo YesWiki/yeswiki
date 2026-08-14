@@ -3,8 +3,8 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Content\Command\ContactDigestCommand;
-use YesWiki\Content\Service\ContactDigestScheduler;
+use YesWiki\Contact\Command\ContactDigestCommand;
+use YesWiki\Contact\Service\ContactDigestScheduler;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

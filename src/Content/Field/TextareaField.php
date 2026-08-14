@@ -5,7 +5,7 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\AttachedFilePaths;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;

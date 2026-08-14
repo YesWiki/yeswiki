@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

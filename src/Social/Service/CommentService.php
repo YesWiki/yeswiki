@@ -1,0 +1,615 @@
+<?php
+
+namespace YesWiki\Social\Service;
+
+use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Entity\Event;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
+
+class CommentService implements EventSubscriberInterface
+{
+    protected ContainerInterface $container;
+    protected $aclService;
+    protected $dbService;
+    protected $eventDispatcher;
+    protected $mailer;
+    protected $pageManager;
+    protected $params;
+    protected $pagesWhereCommentWereRendered;
+    protected $userManager;
+    protected $templateEngine;
+    protected $commentsActivated;
+
+    protected UrlFormatter $urlFormatter;
+
+    public function __construct(
+        ContainerInterface $container,
+        DbService $dbService,
+        AclService $aclService,
+        EventDispatcher $eventDispatcher,
+        Mailer $mailer,
+        PageManager $pageManager,
+        ParameterBagInterface $params,
+        TemplateEngine $templateEngine,
+        UserManager $userManager,
+        UrlFormatter $urlFormatter
+    ) {
+        $this->urlFormatter = $urlFormatter;
+        $this->container = $container;
+        $this->dbService = $dbService;
+        $this->aclService = $aclService;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->mailer = $mailer;
+        $this->pageManager = $pageManager;
+        $this->templateEngine = $templateEngine;
+        $this->userManager = $userManager;
+        $this->params = $params;
+        $this->pagesWhereCommentWereRendered = [];
+        $this->commentsActivated = $this->params->get('comments_activated');
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            'comment.created' => 'sendEmailAfterCreate',
+            'comment.updated' => 'sendEmailAfterModify',
+            'comment.deleted' => 'sendEmailAfterDelete',
+        ];
+    }
+
+    public function addCommentIfAuthorized($content, $idComment = '')
+    {
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
+            return [
+                'code' => 401,
+                'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
+            ];
+        }
+        if ($this->aclService->hasAccess('comment', $content['pagetag']) && $this->pageManager->getOne($content['pagetag'])) {
+            if (!$this->container->get(HashCashService::class)->checkHashcash()) {
+                return [
+                    'code' => 400,
+                    'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
+                ];
+            }
+            if (empty($idComment)) {
+                $newComment = true;
+                // find number
+                // `+ 0` is the MySQL-ism `loadComments()` below already had to stop using:
+                // comments are tagged `comment<epoch>`, so the number after the prefix is what
+                // orders them, and MySQL coerces the text silently. PostgreSQL refuses --
+                // "operator does not exist: text + integer" -- and took posting a comment down
+                // with it. `castToInteger()` exists for exactly this and was applied to the
+                // sibling method only.
+                $numericTag = $this->dbService->dialect()->castToInteger('SUBSTRING(tag, 8)');
+                $sql = "SELECT MAX({$numericTag}) AS comment_id"
+                    . ' FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
+                    . " WHERE parent != ''";
+                if ($lastComment = $this->dbService->loadSingle($sql)) {
+                    $num = $lastComment['comment_id'] + 1;
+                } else {
+                    $num = '1';
+                }
+                $idComment = 'Comment' . $num;
+            } else {
+                $newComment = false;
+            }
+
+            $body = trim($content['body']);
+            if (!$body) {
+                return [
+                    'code' => 400,
+                    'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
+                ];
+            }
+            // store new comment
+            $this->pageManager->save($idComment, [PageBody::CONTENT => $body], $content['pagetag']);
+            if ($newComment) {
+                // default ACLs for comments : visible for all, writable by owner, commentable like parent.
+                $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
+                $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
+                $parentCommentAcl = $parentCommentAcl['list'];
+                $this->aclService->save($idComment, 'write', '%');
+                $this->aclService->save($idComment, 'read', '*');
+                $this->aclService->save($idComment, 'comment', $parentCommentAcl);
+            }
+
+            $comment = $this->pageManager->getOne($idComment);
+            $com['tag'] = $comment['tag'];
+            $com['commentOn'] = $comment['parent'];
+            $com['rawbody'] = PageBody::content($comment['body']);
+            // Do the page change in any case (useful for attach or grid)
+            $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($comment);
+            $com['body'] = $GLOBALS['yeswikiServices']->get(MarkdownFormatterService::class)->format($com['rawbody']);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
+            $this->setUserData($comment, 'user', $com);
+            $this->setUserData($comment, 'owner', $com);
+            $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
+            if ($this->aclService->hasAccess('comment', $comment['tag'])) {
+                $com['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
+            }
+            if ($this->aclService->isOwner($comment['tag']) || $this->aclService->isAdmin()) {
+                $com['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
+                $com['linkdeletecomment'] = $this->urlFormatter->href("comments/{$comment['tag']}/delete", 'api');
+                // $this->urlFormatter->href('deletepage', $comment['tag']);
+            }
+            $com['reponses'] = $this->getCommentList($comment['tag'], false);
+            $com['parentPage'] = $this->getParentPage($comment['tag']);
+            $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comment.created' : 'comment.updated', [
+                'id' => $com['tag'],
+                'data' => $com,
+            ]);
+
+            return [
+                'code' => 200,
+                'success' => _t('COMMENT_PUBLISHED'),
+                'html' => $this->container->get(TemplateEngine::class)->renderSafely('@core/comment.twig', ['comment' => $com]),
+            ] + $errors;
+        }
+
+        return [
+            'code' => 403,
+            'error' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
+        ];
+    }
+
+    /**
+     * delete a comment.
+     */
+    public function delete(string $commentTag): array
+    {
+        // delete children comments
+        $comments = $this->loadComments($commentTag, true);
+        foreach ($comments as $com) {
+            $this->pageManager->deleteOrphaned($com['tag']);
+        }
+        $comment = $this->pageManager->getOne($commentTag);
+        $parentPage = $this->getParentPage($commentTag);
+        $this->pageManager->deleteOrphaned($commentTag);
+        $errors = $this->eventDispatcher->yesWikiDispatch('comment.deleted', [
+            'id' => $comment['tag'],
+            'data' => array_merge($comment, [
+                'associatedComments' => $comments,
+                'parentPage' => $parentPage,
+            ]),
+        ]);
+
+        return $errors;
+    }
+
+    /**
+     * Load comments recursivelly.
+     *
+     * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+     *
+     * @return array all comments and their corresponding properties
+     */
+    public function loadCommentsRecursive($tag, bool $bypassAcls = false)
+    {
+        $comments = $this->loadComments($tag);
+        foreach ($comments as $k => $c) {
+            $comments[$k]['comments'] = $this->loadCommentsRecursive($c['tag']);
+        }
+
+        return $comments;
+    }
+
+    /**
+     * Load comments for given page.
+     *
+     * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+     *
+     * @return array all comments and their corresponding properties
+     */
+    public function loadComments($tag, bool $bypassAcls = false, $username = null)
+    {
+        $query = 'SELECT * FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
+        $params = [];
+        if (empty($tag)) {
+            $query .= "parent != '' ";
+        } else {
+            $query .= 'parent = ? ';
+            $params[] = $tag;
+        }
+        if (!empty($username)) {
+            $userCol = $this->dbService->quoteIdentifier('user');
+            $query .= "AND ($userCol = ? OR owner = ?) ";
+            $params[] = $username;
+            $params[] = $username;
+        }
+        // remove current comment to prevent infinite loop
+        $query .= 'AND tag != ? ';
+        $params[] = $tag;
+        // comments are tagged `comment<epoch>`, so they sort by the number after the prefix.
+        // `+ 0` used to do the coercion, which is a MySQL-ism: PostgreSQL answers "operator
+        // does not exist: text + integer" and the page dies with it.
+        $numericTag = $this->dbService->dialect()->castToInteger('substring(tag, 8)');
+        $query .= "AND latest = 'Y' ORDER BY {$numericTag}";
+        $comments = array_filter($this->dbService->loadAll($query, $params), function ($comment) {
+            return !empty($comment['tag']);
+        });
+
+        foreach ($comments as $id => $comment) {
+            $parentPage = $this->getParentPage($comment['tag']);
+            $comments[$id]['parentTag'] = !empty($parentPage['tag']) ? $parentPage['tag'] : '';
+        }
+
+        if (!$bypassAcls) {
+            // filter on read acl on parent page
+            $comments = array_filter($comments, function ($com) {
+                return !empty($com['parent']) && $this->aclService->hasAccess('read', $com['parent']);
+            });
+        }
+
+        return $comments;
+    }
+
+    public function getCommentList($tag, $first = true, $comments = null)
+    {
+        $com = [];
+        $com['first'] = $first;
+        $com['tag'] = $tag;
+        $com['comments'] = [];
+        $comments = is_array($comments) ? $comments : $this->loadComments($tag);
+        if ($comments) {
+            foreach ($comments as $i => $comment) {
+                $com['comments'][$i]['tag'] = $comment['tag'];
+                $com['comments'][$i]['commentOn'] = $comment['parent'];
+                // loadComments() reads the rows straight from SQL, so the body is still stored text
+                $com['comments'][$i]['rawbody'] = PageBody::content(PageBody::decode($comment['body']));
+                $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['comments'][$i]['rawbody']);
+                $this->setUserData($comment, 'user', $com['comments'][$i]);
+                $this->setUserData($comment, 'owner', $com['comments'][$i]);
+                $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
+                if ($this->aclService->hasAccess('comment', $comment['tag'])) {
+                    $com['comments'][$i]['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
+                }
+                if ($this->aclService->isOwner($comment['tag']) || $this->aclService->isAdmin()) {
+                    $com['comments'][$i]['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
+                    $com['comments'][$i]['linkdeletecomment'] = $this->urlFormatter->href('comments/' . $comment['tag'] . '/delete', 'api');
+                }
+                $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);
+            }
+        }
+
+        return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-list.twig', $com);
+    }
+
+    public function getCommentsCount($tag)
+    {
+        return $this->dbService->countRows("
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
+            WHERE parent = ? AND latest = 'Y'
+        ", [$tag]);
+    }
+
+    /**
+     * The latest comments of every page, newest first (historic Wiki::LoadRecentComments()).
+     *
+     * @param int $limit 0 means all of them
+     *
+     * @return array<mixed>
+     */
+    public function getRecentComments(int $limit = 0): array
+    {
+        $lim = $limit > 0 ? ' limit ' . $limit : '';
+
+        return $this->dbService->loadAll(
+            'select * from ' . $this->dbService->prefixTable('pages')
+            . ' where parent != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim
+        );
+    }
+
+    /**
+     * The most recently commented pages, each carrying comment_user/comment_time/comment_tag
+     * of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
+     *
+     * @return array<mixed>
+     */
+    public function getRecentlyCommented(int $limit = 50): array
+    {
+        $pages = [];
+
+        // load ids of the first revisions of latest comments
+        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . ' where parent != "" group by tag order by id desc')) {
+            // load complete comments
+            $num = 0;
+            $comments = [];
+            foreach ($ids as $id) {
+                $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . " where id = '" . $id['id'] . "' limit 1");
+                if (!isset($comments[$comment['parent']]) && $num < $limit) {
+                    $comments[$comment['parent']] = $comment;
+                    $num++;
+                }
+            }
+
+            // now using these ids, load the actual pages
+            foreach ($comments as $comment) {
+                $page = $this->pageManager->getOne($comment['parent']);
+                $page['comment_user'] = $comment['user'];
+                $page['comment_time'] = $comment['time'];
+                $page['comment_tag'] = $comment['tag'];
+                $pages[] = $page;
+            }
+        }
+
+        return $pages;
+    }
+
+    private function setUserData(array $comment, string $key, array &$data)
+    {
+        if (in_array($key, ['user', 'owner'], true) && !empty($comment[$key])) {
+            $data[$key] = $comment[$key];
+            $data["link$key"] = $this->urlFormatter->href('', $comment[$key]);
+            $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
+            $data["{$key}picture"] =
+                !empty($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar'])
+                ? $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar']
+                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='" . str_replace('#', '%23', $data["{$key}color"]) . "' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
+        }
+    }
+
+    public function getCommentForm($tag)
+    {
+        $options = [];
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
+            $options['alerts'][] = [
+                'class' => 'info',
+                'text' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
+            ];
+        } else {
+            if ($this->aclService->hasAccess('comment', $tag)) {
+                $hashCashCode = '';
+                if ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash']) {
+                    $hashCash = $this->container->get(HashCashService::class);
+                    $hashCashCode = $hashCash->getJavascriptCode('post-comment');
+                }
+                $page = $this->pageManager->getOne($tag);
+                $commentOn = !empty($page['parent']) ? $page['parent'] : $page['tag'];
+                $tempTag = ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
+                $options = [
+                    'pagetag' => $commentOn,
+                    'formlink' => $this->urlFormatter->href('comments', 'api'),
+                    'hashcash' => $hashCashCode,
+                    'tempTag' => $tempTag,
+                ];
+            } else {
+                $options['alerts'][] = [
+                    'class' => 'warning',
+                    'text' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
+                ];
+            }
+        }
+
+        return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-form.twig', $options);
+    }
+
+    public function renderCommentsForPage($tag, $showOnlyOnce = true)
+    {
+        if (!$this->commentsActivated) {
+            return '';
+        }
+        $output = '';
+        // if the comments were allready render in page, we don't show them again
+        if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
+            return '';
+        }
+        $aclsService = $this->container->get(AclService::class);
+        $hasAccessComment = $aclsService->hasAccess('comment', $tag);
+        $HasAccessRead = $aclsService->HasAccess('read', $tag);
+
+        if ($HasAccessRead) {
+            $comments = $this->loadComments($tag);
+            $coms = $this->getCommentList($tag, true, $comments);
+            $acl = $aclsService->load($tag, 'comment');
+            $options = (!empty($acl['list']) && $acl['list'] == 'comments-closed')
+                ? [
+                    'commentsClosed' => true,
+                    'coms' => !empty($comments) ? $coms : '',
+                    'user' => null,
+                    'form' => null,
+                ]
+                : [
+                    'commentsClosed' => false,
+                    'coms' => $coms,
+                    'user' => ($hasAccessComment) ? null : $this->container->get(AuthenticationService::class)->getLoggedUser(),
+                    'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : '',
+                ];
+            $output = $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-for-page.twig', $options);
+        }
+
+        // indicate that those comments on page were already rendered once
+        $this->pagesWhereCommentWereRendered[] = $tag;
+
+        return $output;
+    }
+
+    /*
+    * Outputs a color (#000000) based Text input thanks https://gist.github.com/mrkmg/1607621
+    *
+    * @param $text String of text
+    * @param $min_brightness Integer between 0 and 100
+    * @param $spec Integer between 2-10, determines how unique each color will be
+    */
+
+    public function genColorCodeFromText($text, $min_brightness = 100, $spec = 10)
+    {
+        // Check inputs
+        if (!is_int($min_brightness)) {
+            throw new \Exception("$min_brightness is not an integer");
+        }
+        if (!is_int($spec)) {
+            throw new \Exception("$spec is not an integer");
+        }
+        if ($spec < 2 or $spec > 10) {
+            throw new \Exception("$spec is out of range");
+        }
+        if ($min_brightness < 0 or $min_brightness > 255) {
+            throw new \Exception("$min_brightness is out of range");
+        }
+
+        $hash = md5($text);  // Gen hash of text
+        $colors = [];
+        for ($i = 0; $i < 3; $i++) {
+            $colors[$i] = max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
+        } // convert hash into 3 decimal values between 0 and 255
+
+        if ($min_brightness > 0) {  // only check brightness requirements if min_brightness is about 100
+            while (array_sum($colors) / 3 < $min_brightness) {  // loop until brightness is above or equal to min_brightness
+                for ($i = 0; $i < 3; $i++) {
+                    $colors[$i] += 10;
+                }
+            }
+        }    // increase each color by 10
+
+        $output = '';
+
+        for ($i = 0; $i < 3; $i++) {
+            $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
+        }  // convert each color to hex and append to output
+
+        return '#' . $output;
+    }
+
+    public function sendEmailAfterCreate(Event $event)
+    {
+        $data = $event->getData();
+        if (!empty($data['data']['commentOn'])) {
+            $parentTag = $data['data']['commentOn'];
+            $loggedUser = $this->userManager->getLoggedUser();
+            $parentPage = $this->getParentPage($data['data']['tag']);
+            if (!empty($loggedUser)) {
+                $parentComment = $this->pageManager->getOne($parentTag);
+
+                if (!empty($parentComment['owner'])) {
+                    $owner = $this->userManager->getOneByName($parentComment['owner']);
+                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, ['comment' => $data['data']], $owner);
+                }
+                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, ['comment' => $data['data']], $owner ?? null);
+            }
+        }
+    }
+
+    protected function sendEmailToOwnerAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    {
+        if (!empty($owner) && !empty($loggedUser) && $owner['email'] != $loggedUser['email']) {
+            $baseUrl = $this->mailer->getBaseUrl();
+            $formattedData = [
+                'baseUrl' => $baseUrl,
+                'parentPage' => $parentPage,
+                'comment' => $data['comment'],
+                'parentComment' => $parentComment,
+            ];
+            $this->mailer->sendEmailFromAdmin(
+                $owner['email'],
+                $this->templateEngine->render('@core/comments/notify-email-subject.twig', $formattedData),
+                $this->templateEngine->render('@core/comments/notify-email-text.twig', $formattedData),
+                $this->templateEngine->render('@core/comments/notify-email-html.twig', $formattedData)
+            );
+        }
+    }
+
+    protected function sendEmailToTaggedUserAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    {
+        $taggedUsers = $this->extractTaggedUsernamesFromContent($data['comment'], $loggedUser, $owner);
+        if (!empty($taggedUsers)) {
+            $baseUrl = $this->mailer->getBaseUrl();
+            $formattedData = [
+                'baseUrl' => $baseUrl,
+                'parentPage' => $parentPage,
+                'comment' => $data['comment'],
+                'parentComment' => $parentComment,
+            ];
+            foreach ($taggedUsers as $user) {
+                $this->mailer->sendEmailFromAdmin(
+                    $user['email'],
+                    $this->templateEngine->render('@core/comments/notify-tag-email-subject.twig', $formattedData),
+                    $this->templateEngine->render('@core/comments/notify-tag-email-text.twig', $formattedData),
+                    $this->templateEngine->render('@core/comments/notify-tag-email-html.twig', $formattedData)
+                );
+            }
+        }
+    }
+
+    protected function extractTaggedUsernamesFromContent(array $comment, $loggedUser, $owner): array
+    {
+        $users = [];
+        try {
+            if (preg_match_all("/\B@([^\s!#@<>\\\\\/][^\s<>\\\\\/]{2,})(?=\s|$)/i", $comment['rawbody'], $matches)) {
+                foreach ($matches[0] as $idx => $value) {
+                    $userName = $matches[1][$idx];
+                    if (!empty($userName) && !in_array($userName, array_keys($users))) {
+                        $user = $this->userManager->getOneByName($userName);
+                        if (!empty($user)) {
+                            $users[$userName] = $user;
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+        }
+        // filter
+        $filteredUsers = [];
+        foreach ($users as $user) {
+            if (
+                $user['email'] != $loggedUser['email']
+                && (empty($owner) || ($user['email'] != $owner['email']))
+                && !in_array($user['name'], array_keys($filteredUsers))
+            ) {
+                $filteredUsers[$user['name']] = $user;
+            }
+        }
+
+        return $filteredUsers;
+    }
+
+    public function sendEmailAfterModify(Event $event)
+    {
+        $data = $event->getData();
+    }
+
+    public function sendEmailAfterDelete(Event $event)
+    {
+        $data = $event->getData();
+    }
+
+    /**
+     * retrieve parent page of the current tag
+     * RECURSIVE.
+     *
+     * @return array|null $page, null is not parent found
+     */
+    protected function getParentPage(string $commentTag, array $alreadyFoundTags = []): ?array
+    {
+        $page = $this->pageManager->getOne($commentTag);
+        if (empty($page)) {
+            return null;
+        } elseif (empty($page['parent'])) {
+            return $page;
+        } elseif (in_array($page['parent'], $alreadyFoundTags)) {
+            // prevent infinite loop
+            return null;
+        }
+        $foundTags = $alreadyFoundTags;
+        $foundTags[] = $commentTag;
+
+        return $this->getParentPage($page['parent'], $foundTags);
+    }
+}

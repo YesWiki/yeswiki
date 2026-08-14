@@ -1,9 +1,9 @@
 <?php
 
 use YesWiki\Content\Entity\PageType;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
 
 /**

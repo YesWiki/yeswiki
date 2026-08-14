@@ -2,10 +2,10 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Content\Service\AttachedFilePaths;
 use YesWiki\Content\Service\FileManager;
-use YesWiki\Content\Service\ImageResizer;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
