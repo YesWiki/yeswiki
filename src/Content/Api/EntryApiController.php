@@ -341,7 +341,10 @@ class EntryApiController extends YesWikiController
             foreach ($fieldList as $fieldName) {
                 // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['form_id']);
-                if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
+                // `instanceof` rather than `getType() == 'textelong'`: getSyntax() lives only on
+                // TextareaField, and the string check proved that to a reader but not to the
+                // analyser, which is why the call sat baselined as method.notFound (ticket 40)
+                if ($field instanceof TextareaField && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->getService(MarkdownFormatterService::class)->format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions

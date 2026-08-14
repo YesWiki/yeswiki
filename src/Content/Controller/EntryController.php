@@ -103,17 +103,25 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * @param string      $entryId
-     * @param string|null $time                 choose only the entry's revision corresponding to time, null = latest revision
-     * @param bool        $showFooter
-     * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
+     * @param string|array<string, mixed> $entryId              the tag, or the whole entry when the caller
+     *                                                          already has it. Declared `string` until
+     *                                                          ticket 40, which made the array branch below
+     *                                                          unreachable as far as the analyser could see
+     * @param string|null                 $time                 choose only the entry's revision corresponding to time, null = latest revision
+     * @param bool                        $showFooter
+     * @param string|null                 $userNameForRendering userName used to render the entry, if empty uses the connected user
      */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
-        if (is_array($entryId) && !empty($entryId) && isset($entryId['tag'])) {
-            // If entry ID is the full entry with all the values
+        if (is_array($entryId)) {
+            // If entry ID is the full entry with all the values. Split from the `elseif` below
+            // so that $entryId is a string from here on: it was `array|string` for the rest of
+            // the method, and the concatenations further down are string operations (ticket 40).
+            if (empty($entryId) || !isset($entryId['tag'])) {
+                return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
+            }
             $entry = $entryId;
-            $entryId = $entry['tag'];
+            $entryId = (string)$entry['tag'];
         } elseif ($entryId) {
             $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering)
                 // a page, an account and a file are described by a form too (ticket 10), so
@@ -300,11 +308,14 @@ class EntryController extends YesWikiController
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();
+        // read here rather than inside the branch below: the render at the end of the method
+        // asks it for `accept_condition` and `password_for_editing` whichever way we got there,
+        // and it was only assigned on one of the two paths (ticket 40)
+        $post = $this->getRequest()->request;
         if (!empty($results['output'])) {
             return $results['output'];
         } elseif (empty($results['error'])) {
             list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
-            $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('valider')) {
                     // `entry.created` is dispatched by EntryManager, so that the API, the
@@ -728,11 +739,13 @@ class EntryController extends YesWikiController
         }
         else*/
 
+        // the trailing `&& empty($nbDays)` was inside the false arm of `!empty($nbDays)`, so
+        // it could only ever be true -- a tautology PHPStan flagged and the baseline hid
         $vDateInterval = new \DateInterval(
             'P'
                     . (!empty($nbYears) ? $nbYears . 'Y' : '')
                     . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')),
+                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) ? '0D' : '')),
         );
         $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
 

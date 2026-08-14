@@ -51,6 +51,10 @@ class ImportService
      */
     private function extractBaseUrlModeAndTag($inputUrl): array
     {
+        // the guard at the end of this method already asks `is_null($rewriteModeEnabled)`, so
+        // null is the value it was written to expect when no pattern matched -- it just was
+        // never assigned one (ticket 40)
+        $rewriteModeEnabled = null;
         if (preg_match('/wiki=(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
             $tag = $matches[1];
             if (preg_match('/(.*)\/wakka.php\?.*wiki=' . $tag . '/u', $inputUrl, $matches)) {

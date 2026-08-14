@@ -106,7 +106,12 @@ final class WikiLinkRenderer implements NodeRendererInterface
 
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): string
     {
-        Link::assertInstanceOf($node);
+        // `Link::assertInstanceOf($node)` said this at runtime and nothing at analysis time,
+        // so getUrl()/getTitle() below sat baselined as method.notFound (ticket 40). Same
+        // check, same exception, and it narrows.
+        if (!$node instanceof Link) {
+            throw new \InvalidArgumentException('Incompatible node type: expected ' . Link::class . ', got ' . $node::class);
+        }
 
         $url = RegexHelper::isLinkPotentiallyUnsafe($node->getUrl()) ? '' : $node->getUrl();
         // populated by the Attributes extension from a trailing {.class #id key="value"}

@@ -59,11 +59,13 @@ class ImageOptimizerCommand extends Command
 
     public function humanFilesize($bytes, $decimals = 2)
     {
-        $factor = floor((strlen($bytes) - 1) / 3);
-        if ($factor > 0) {
-            $sz = 'KMGT';
-        }
+        // `@$sz[$factor - 1]` silenced an undefined variable for anything under a kilobyte,
+        // where $sz was never assigned. Indexing the unit list directly says the same thing
+        // without the suppression -- and without relying on PHP's negative string offsets,
+        // where `'KMGT'[-1]` is 'T' rather than nothing (ticket 40).
+        $units = ['', 'K', 'M', 'G', 'T'];
+        $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);
 
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor - 1] . 'B';
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . $units[$factor] . 'B';
     }
 }

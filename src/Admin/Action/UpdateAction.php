@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Action;
 
 // ticket 19: relocated from tools/autoupdate/actions/UpdateAction.php.
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Admin\Service\UpdateAdminPagesService;
@@ -53,10 +54,15 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         if (count($vMigrationService->getCompletedMigrations()) === 0) {
             $vMessages = $vMigrationService->run();
             foreach ($vMessages as $vMessage) {
-                flash(
-                    $vMessage['text'] . ' : ' . $vMessage['status'],
-                    $vMessage['status'] == _t('AU_OK') ? 'success' : 'error'
-                );
+                // `flash()` -- the deleted procedural helper. This is the only call left, and
+                // it is on the path a long-unmigrated wiki takes when it updates, so it fataled
+                // exactly where a clear message mattered most (ticket 40).
+                $text = $vMessage['text'] . ' : ' . $vMessage['status'];
+                if ($vMessage['status'] == _t('AU_OK')) {
+                    Flash::success($text);
+                } else {
+                    Flash::error($text);
+                }
             }
         }
 

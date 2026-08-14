@@ -159,8 +159,10 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
      */
     public function securedExecution($function, $param1 = null, $param2 = null, $param3 = null)
     {
+        // outside the try, because the catch reads it: assigned as the first statement inside
+        // it could not actually be missed, but saying so is cheaper than proving it (ticket 40)
+        $isMethod = (is_array($function) && count($function) == 2);
         try {
-            $isMethod = (is_array($function) && count($function) == 2);
             if (!$isMethod) {
                 return $function($param1, $param2, $param3);
             }

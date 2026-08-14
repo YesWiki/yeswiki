@@ -603,6 +603,9 @@ class Init
             $lockpw = trim($lines[0]);
 
             // is authentification given?
+            // 0 by default: correct credentials set it nowhere, so `if ($ask)` below read an
+            // undefined variable on exactly the path that is supposed to succeed (ticket 40)
+            $ask = 0;
             if (isset($_SERVER['PHP_AUTH_USER'])) {
                 if (!(($_SERVER['PHP_AUTH_USER'] == 'admin') && ($_SERVER['PHP_AUTH_PW'] == $lockpw))) {
                     $ask = 1;

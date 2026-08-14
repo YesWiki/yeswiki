@@ -103,10 +103,18 @@ class ContactApiController extends YesWikiController
         $nameSender = (string)$request->request->get('name', '') ?: false;
         $type = (string)$request->request->get('type', '');
 
+        // Declared before the branch chain below, which assigns them in some arms and not in
+        // others while the send() at the end reads all three unconditionally. The code already
+        // wrote `$subject ?? ''` in one place, so the gap was known -- just not everywhere
+        // (ticket 40).
+        $subject = '';
+        $messageTxt = '';
+        $messageHtml = '';
+
         if ($type == 'mail') {
             $hasReadAccess = $aclService->hasAccess('read', $pageTag);
             if ($hasReadAccess) {
-                $subject = (string)$request->request->get('subject', '') ?: false;
+                $subject = (string)$request->request->get('subject', '');
                 if ($entryManager->isEntry($pageTag)) {
                     $renderedPage = $this->getService(EntryController::class)->view($pageTag);
                 } else {
@@ -126,10 +134,10 @@ class ContactApiController extends YesWikiController
         }
 
         if ($hasReadAccess) {
-            $message = check_parameters_mail($type, $mailSender, $nameSender, $mailReceiver ?? '', $subject ?? '', $messageTxt ?? '');
+            $message = check_parameters_mail($type, $mailSender, $nameSender, $mailReceiver ?? '', $subject, $messageTxt);
             if ($type != 'subscribe' && $type != 'unsubscribe' && !empty($infomsg)) {
-                $messageTxt = strip_tags($infomsg) . '\n\n' . ($messageTxt ?? '');
-                $messageHtml = $infomsg . ($messageHtml ?? '');
+                $messageTxt = strip_tags($infomsg) . '\n\n' . $messageTxt;
+                $messageHtml = $infomsg . $messageHtml;
             }
         } else {
             $message = [

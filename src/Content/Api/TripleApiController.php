@@ -15,7 +15,8 @@ class TripleApiController extends YesWikiController
     #[Route('/api/triples', methods: ['GET'], options: ['acl' => ['+']])]
     public function ByResource()
     {
-        extract($this->extractTriplesParams(INPUT_GET, 'not empty'));
+        ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
+            = $this->extractTriplesParams(INPUT_GET, 'not empty');
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
@@ -38,7 +39,8 @@ class TripleApiController extends YesWikiController
     #[Route('/api/triples/{resource}', methods: ['GET'], options: ['acl' => ['+']])]
     public function getTriplesByResource($resource)
     {
-        extract($this->extractTriplesParams(INPUT_GET, $resource));
+        ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
+            = $this->extractTriplesParams(INPUT_GET, $resource);
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
@@ -61,7 +63,8 @@ class TripleApiController extends YesWikiController
     #[Route('/api/triples/{resource}', methods: ['POST'], options: ['acl' => ['+']])]
     public function setTriple($resource)
     {
-        extract($this->extractTriplesParams(INPUT_POST, $resource));
+        ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
+            = $this->extractTriplesParams(INPUT_POST, $resource);
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
@@ -106,7 +109,8 @@ class TripleApiController extends YesWikiController
     #[Route('/api/triples/{resource}/delete', methods: ['POST'], options: ['acl' => ['+']])]
     public function deleteTriples($resource)
     {
-        extract($this->extractTriplesParams(INPUT_POST, $resource));
+        ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
+            = $this->extractTriplesParams(INPUT_POST, $resource);
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
@@ -188,6 +192,13 @@ class TripleApiController extends YesWikiController
         );
     }
 
+    /**
+     * Destructured by its callers rather than `extract()`ed, which is why the shape is declared:
+     * `extract()` puts variables into scope that no analyser can see, so every use of
+     * `$property` downstream read as possibly-undefined and sat baselined (ticket 40).
+     *
+     * @return array{property: string|null, username: string|null, apiResponse: ApiResponse|null}
+     */
     private function extractTriplesParams(string $method, $resource): array
     {
         $property = null;

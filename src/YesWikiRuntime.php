@@ -19,6 +19,7 @@ require_once __DIR__ . '/objects/YesWikiHandler.php';
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -752,9 +753,16 @@ class YesWikiRuntime
     {
         $kernel = new YesWikiKernel($this, $this->environment);
         $kernel->boot();
-        $this->services = $kernel->getContainer();
+        $container = $kernel->getContainer();
+        // `Kernel::getContainer()` is declared as returning the *interface*, which has no
+        // getParameterBag() -- that is the concrete Container's. Narrowing here says so once,
+        // instead of the call below sitting baselined as method.notFound (ticket 40).
+        if (!$container instanceof Container) {
+            throw new \RuntimeException('the kernel built a container with no parameter bag');
+        }
+        $this->services = $container;
 
-        $parameterBag = $this->services->getParameterBag();
+        $parameterBag = $container->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
         $this->services->set(YesWikiRuntime::class, $this);

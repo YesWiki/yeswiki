@@ -160,9 +160,14 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         preg_match_all('/~~(.*)~~/msU', PageBody::content(PageBody::decode($donneesbody['body'] ?? null)), $locations);
         $markers = [];
         foreach ($locations[1] as $location) {
+            // reset per iteration: $marker was declared inside the `if` below and read outside
+            // it, so a location whose regex did not match both read an undefined variable AND
+            // re-added the PREVIOUS location's marker, because the old values were still there
+            // (ticket 40)
+            $marker = [];
             // extract all informations if present
             preg_match('/<!--([0-9][0-9]*)-([0-9][0-9]*)-(.*)--><!--title-->(.*)<!--\/title-->.*<!--desc-->\"\"(.*)\"\"<!--\/desc-->/msU', $location, $elements);
-            if ($elements[1]) {
+            if (!empty($elements[1])) {
                 $marker['x'] = round($elements[1]);
                 $marker['y'] = round($elements[2]);
                 $marker['color'] = $elements[3];

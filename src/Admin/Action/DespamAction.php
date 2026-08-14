@@ -114,19 +114,18 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             } elseif (!isset($_POST['clean'])) {
                 // -- (2) Page de resultats et form. de selection des pages a effacer ----
                 //
-                if (isset($_POST['from']) && isset($_POST['2'])) {
-                    $dbService = $this->getService(DbService::class);
-                    $requete =
-                'select *
-                      from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages
-                      where
-                      time > ' . $dbService->dateSubHours(intval($_POST['from'])) . "
-                      and latest = 'Y'
-                      order by time desc";
-                    $title =
-                '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
+                // the query and the heading were built inside this guard and read outside it,
+                // so a post without both fields reached loadAll() with an undefined query
+                // (ticket 40)
+                if (!isset($_POST['from']) || !isset($_POST['2'])) {
+                    return;
                 }
-                // echo $requete;
+                $dbService = $this->getService(DbService::class);
+                $requete = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages'
+                    . ' where time > ' . $dbService->dateSubHours(intval($_POST['from']))
+                    . " and latest = 'Y' order by time desc";
+                $title = '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
+
                 $pagesFromSpammer = $this->getService(DbService::class)->loadAll($requete);
                 // Affichage des pages pour validation
                 echo "<div class=\"action_erasespam\">\n";

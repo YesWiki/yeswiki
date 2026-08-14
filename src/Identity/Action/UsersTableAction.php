@@ -156,7 +156,11 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
                 ]);
             }
             $userName = filter_var($post['username'], FILTER_UNSAFE_RAW);
-            $userName = in_array($username, [false, null], true) ? '' : htmlspecialchars(strip_tags($userName));
+            // `$username` -- lowercase n, and no such variable. It read as null, `in_array(null,
+            // [false, null], true)` is true, so this blanked the name on EVERY request and the
+            // lookup below always failed: deleting a user from the admin table has never worked,
+            // it just reported "no such user". One baselined `variable.undefined` (ticket 40).
+            $userName = in_array($userName, [false, null], true) ? '' : htmlspecialchars(strip_tags($userName));
             try {
                 $rawUserName = str_replace(['&#039;', '&#39;'], ['\'', '\''], $userName);
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-delete', false);

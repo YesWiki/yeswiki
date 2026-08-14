@@ -580,6 +580,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);
                 if (in_array(count($extract), [1, 2])) {
+                    // set and read under the same `count($extract) == 2`, which the analyser
+                    // cannot connect across the intervening statements (ticket 40)
+                    $key = null;
                     if (count($extract) == 2) {
                         $key = trim($extract[0]);
                         if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $key, $matches)) {
@@ -593,7 +596,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                         $val = $matches[1];
                     }
                     $val = ($val == 'true') ? true : (($val == 'false') ? false : $val);
-                    if (count($extract) == 2) {
+                    if ($key !== null) {
                         $result[$key] = $val;
                     } else {
                         $result[] = $val;

@@ -110,6 +110,9 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
         $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $sort);
         if ($resultat) {
             $nb_total = count($resultat);
+            // a result set holding only the current page skips every iteration below, and the
+            // render after the loop reads this either way (ticket 40)
+            $element = [];
             // affichage des resultats
             foreach ($resultat as $page) {
                 // on inclue pas la page en elle meme, sinon boucle infinie

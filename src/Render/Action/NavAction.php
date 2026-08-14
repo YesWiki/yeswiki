@@ -147,6 +147,10 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             }
             // class="active" if the url have the same url than the current one (independently of the method and the params)
             if ($haveAccess) {
+                // both are set only inside the `if ($linkParts)` arm above, and this compares
+                // against them whichever arm ran (ticket 40)
+                $method ??= '';
+                $params ??= [];
                 $listclass = ($url == $this->getService(UrlFormatter::class)->href($method, $this->getService(PageContext::class)->getTag(), $params)) ? ' class="active"' : '';
                 $listlinks .= '<li' . $listclass . '><a href="' . $url . '">'
                     . (isset($icons[$key]) ? $icons[$key] : '')

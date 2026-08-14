@@ -110,9 +110,15 @@ class TrailAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             }
             // analyse de la page sommaire pour récupérer la liste des pages
             // recuperation de la liste
+            //
+            // Both were declared inside the `if` below, so a summary page whose body holds no
+            // indented list left them undefined: two "Undefined variable" warnings per render,
+            // and a trail that silently drew nothing. Two `variable.undefined` entries in the
+            // PHPStan baseline had been saying so (ticket 40).
+            $pages = [];
+            $currentPageIndex = null;
             if (preg_match_all("/\n[\t ]+(.*)/", PageBody::content($tocPage['body']), $tocListe)) {
                 // analyse de chaque ligne de la liste pour recupérer la page cible
-                $currentPageIndex = null;
                 foreach ($tocListe[1] as $line) {
                     // suppression d'un signe de liste eventuel
                     $line = trim(preg_replace("/^([[:alnum:]]+\)|-)/", '', $line));
@@ -132,6 +138,11 @@ class TrailAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     }
                 }// foreach
             }
+            // a summary that named no page has no trail to draw
+            if ($currentPageIndex === null) {
+                return;
+            }
+
             // ecriture des liens Page Précedente/sommaire/page suivante
             if ($currentPageIndex > 0) {
                 $PrevPage = $pages[$currentPageIndex - 1];

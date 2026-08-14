@@ -73,6 +73,9 @@ class DbCommand extends Command
      *
      * @throws \Exception
      */
+    /**
+     * @return array{hostArg: list<string>, databasename: mixed, tablePrefix: mixed, username: mixed, password: mixed}
+     */
     private function getDbParams(): array
     {
         $hostname = $this->params->get('db_host');
@@ -112,7 +115,15 @@ class DbCommand extends Command
     private function export(OutputInterface $output, string $filepath): int
     {
         $realFilePath = realpath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
-        extract($this->getDbParams());
+        // destructured, not `extract()`ed: extract() puts names into scope that no analyser
+        // can see, so every one of them read as possibly-undefined below (ticket 40)
+        [
+            'hostArg' => $hostArg,
+            'databasename' => $databasename,
+            'tablePrefix' => $tablePrefix,
+            'username' => $username,
+            'password' => $password,
+        ] = $this->getDbParams();
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
                 'mysqldump',
@@ -159,7 +170,15 @@ class DbCommand extends Command
      */
     private function test(OutputInterface $output): int
     {
-        extract($this->getDbParams());
+        // destructured, not `extract()`ed: extract() puts names into scope that no analyser
+        // can see, so every one of them read as possibly-undefined below (ticket 40)
+        [
+            'hostArg' => $hostArg,
+            'databasename' => $databasename,
+            'tablePrefix' => $tablePrefix,
+            'username' => $username,
+            'password' => $password,
+        ] = $this->getDbParams();
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
                 'mysqldump',

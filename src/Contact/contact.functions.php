@@ -138,6 +138,9 @@ function filterMonthlyMailGroups($var)
 
 function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 {
+    // an unrecognised period fell through every arm and left this undefined, then interpolated
+    // it into the subject line (ticket 40)
+    $sub = '';
     if ($period == 'day') {
         $sub = _t('CONTACT_DAILY_REPORT');
     } elseif ($period == 'week') {

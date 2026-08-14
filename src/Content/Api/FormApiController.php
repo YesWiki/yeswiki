@@ -113,8 +113,11 @@ class FormApiController extends YesWikiController
     #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getForm($formId)
     {
+        // `$vFormId` here and `$vFormID` below -- one letter apart, so the base64 branch
+        // assigned a variable nothing read and the lookup got an undefined one. Fetching a form
+        // through `/api/forms/b64_…` has never worked (ticket 40).
         if (strpos($formId, 'b64_') === 0) {
-            $vFormId = base64_decode(urldecode(substr($formId, 4)), true);
+            $vFormID = base64_decode(urldecode(substr($formId, 4)), true);
         } else {
             $vFormID = $formId;
         }

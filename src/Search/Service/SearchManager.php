@@ -177,21 +177,22 @@ class SearchManager
     /**
      * Build the SQL fields conditions for keywords.
      *
-     *  @param pKeywords <string> : the keywords search string in the format :
-     *      <keywords>       = ( <token> | <exluded token> )+ [ "|" <keywords> ]
-     *      <token>          = <string without space>	|
-     *				           "'" <string with spaces between single quotes> "'" |
-     *				           '"' <string with spaces between double quotes> '"'
-     *      <excluded token> = "-" <token>
+     * @param string $pKeywords the keywords search string in the format:
+     *                          <keywords>       = ( <token> | <exluded token> )+ [ "|" <keywords> ]
+     *                          <token>          = <string without space>	|
+     *                          "'" <string with spaces between single quotes> "'" |
+     *                          '"' <string with spaces between double quotes> '"'
+     *                          <excluded token> = "-" <token>
      *
      * 	 example : toto -"tata tutu" | "titi tutu" tete -tyty
      *				=
      *            "toto" AND ("titi tutu" OR "tete") AND NOT "tata tutu" AND NOT "tyty"
      *
      *   NOTE : position of excluded fields has no signification
-     *  @param pSearchFields <array> of <fields>
-     *				   <fields> = <array> of properties
-     *		: fields descriptions (structures, etc...)
+     * @param array<string, array{descriptors: array<string, array<string, mixed>>, hasMultipleStructures: bool}> $pSearchFields
+     *                                                                                                                           field name => its descriptors. The shape was undocumented and the tag
+     *                                                                                                                           that stood here was unparseable, so nothing downstream of it was checked
+     *                                                                                                                           (ticket 40).
      *
      * @return SqlFragment fields conditions for keywords, and the values they bind
      */
@@ -225,7 +226,7 @@ class SearchManager
             foreach ($vAND as $vOR) {
                 // Remember if the token value is a regexp
 
-                $vIsRegExp = $this->isRegExp($vOR);
+                $vIsRegExp = $this->isRegExp($vOR) !== 0;
 
                 // For each ORs token, we will build a condition that apply on each search field
 
@@ -286,7 +287,7 @@ class SearchManager
         foreach ($vParsedKeywords['excludeds'] as $vExcluded) {
             // Remember if the excluded token value is a regexp
 
-            $vIsRegExp = $this->isRegExp($vExcluded);
+            $vIsRegExp = $this->isRegExp($vExcluded) !== 0;
 
             // For each excluded token, we will build a condition that apply on each search field
 
@@ -443,8 +444,8 @@ class SearchManager
     /**
      * Build the SQL fields conditions for queries.
      *
-     * @param $pQueries : <array> of <query>
-     *                  <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     * @param array<int|string, mixed> $pQueries
+     *                                           <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
      *
      * @return SqlFragment fields conditions for queries, and the values they bind
      */
@@ -529,7 +530,7 @@ class SearchManager
                 foreach ($vQuery['values'] as $vValue) {
                     // Remember if the value is a regexp
 
-                    $vIsRegExp = $this->isRegExp($vValue);
+                    $vIsRegExp = $this->isRegExp($vValue) !== 0;
 
                     switch ($vDescriptor['_mode_']) {
                         // If the field is intended to store a single value...
@@ -1262,12 +1263,15 @@ class SearchManager
      *    will match result that contain ("cat" or "my dog") and ("bulldog" or "small bird)
      *    excluding results containing "parrot" or "cocker spaniel".
      *
-     * @param pKeywords <string> : the keywords search string
+     * @param mixed $pKeywords the keywords search string. Typed `mixed` and guarded below
+     *                         rather than declared `string`: the only caller is the public
+     *                         `buildKeywordsConditions()`, which is untyped and reached from
+     *                         request data, so the guard is load-bearing (ticket 40)
      *
-     * @return <array> : an associative array containing the keys :
-     * 	- CNF =	the Conjonctive Normal Form (= [a OR b] AND [d or e]) of the keywords search string
-     *			(ie : an AND-array of OR-arrays)
-     *	- excludeds = <array> an array of excluded tokens
+     * @return array<string, mixed> an associative array containing the keys:
+     *                              - CNF =	the Conjonctive Normal Form (= [a OR b] AND [d or e]) of the keywords search string
+     *                              (ie : an AND-array of OR-arrays)
+     *                              - excludeds = <array> an array of excluded tokens
      */
     private function parseKeywords($pKeywords, $pMinKeywordLength = null)
     {
@@ -1332,15 +1336,10 @@ class SearchManager
     /**
      * Parse a query string.
      *
-     * @param $pQuery
-     *                <string> : the query string
-     *                <array> : the already parsed array
+     * @param string|array<string, mixed> $pQuery the query string, or the already parsed array
      *
-     * @return <array> of [
-     * "name" => <string>,
-     * "operator" => <string>,
-     * "values" => [ <string> ... ]
-     * ];
+     * @return array<int, array<string, mixed>> one entry per query, each
+     *                                          ["name" => string, "operator" => string, "values" => list<string>]
      */
     public function parseQuery($pQuery)
     {
@@ -1350,7 +1349,7 @@ class SearchManager
             $vQuery = $pQuery;
         }
 
-        if (trim($vQuery ?? '') == '') {
+        if (trim($vQuery) == '') {
             return [];
         }
 
@@ -1430,7 +1429,7 @@ class SearchManager
     /**
      * Get the minimum search keywords length to be use in the search methods.
      *
-     * @return <integer> the mininum search keywords length
+     * @return int the minimum search keywords length
      */
     public function getMinSearchKeywordLength()
     {
@@ -1577,9 +1576,13 @@ class SearchManager
             return implode(',', $pORs);
         }, $pKeywords['CNF']));
 
+        // Two mistakes in three lines, and they cancelled into silence: the closure used
+        // `$pORs`, which is the *other* closure's parameter and undefined here, and the key was
+        // `excluded` where parseKeywords() writes `excludeds` everywhere else. So the excluded
+        // half of a round-tripped keyword string was always empty (ticket 40).
         $vResult[] = trim(implode(' ', array_map(function ($pExcluded) {
-            return implode('-', $pORs);
-        }, $pKeywords['excluded'])));
+            return is_array($pExcluded) ? implode('-', $pExcluded) : (string)$pExcluded;
+        }, $pKeywords['excludeds'] ?? [])));
 
         return implode(' ', $vResult);
     }
@@ -1587,13 +1590,13 @@ class SearchManager
     /**
      * Aggregate keywords.
      *
-     * @param $pArguments : list of <argument>
-     *                    <argument> as
-     *                    <string> keywords specification
-     *                    OR
-     *                    null
+     * @param mixed ...$pArguments
+     *                             <argument> as
+     *                             <string> keywords specification
+     *                             OR
+     *                             null
      *
-     * @return <string> aggregated keywords
+     * @return string aggregated keywords
      */
     public function aggregateKeywords(...$pArguments): string
     {
@@ -1629,13 +1632,13 @@ class SearchManager
     /**
      * Aggregate queries.
      *
-     * @param $pArguments : list of <argument>
-     *                    <argument> as
-     *                    <array> argument array containing "query"
-     *                    <string> a query string
-     *                    null
+     * @param mixed ...$pArguments
+     *                             <argument> as
+     *                             <array> argument array containing "query"
+     *                             <string> a query string
+     *                             null
      *
-     * @return <string> aggregated queries
+     * @return string aggregated queries
      */
     public function aggregateQueries(...$pArguments): string
     {
@@ -1643,6 +1646,10 @@ class SearchManager
 
         foreach ($pArguments as $vArgument) {
             if (isset($vArgument)) {
+                // reset per iteration: an argument that is neither an array nor a string left
+                // this holding the PREVIOUS argument's query, so it was aggregated twice --
+                // the same leak PointimageAction had with $marker (ticket 40)
+                $vQuery = '';
                 if (is_array($vArgument)) {
                     $vQuery = $this->queryToString($vArgument['query'] ?? $vArgument['queries'] ?? null);
                 } elseif (is_string($vArgument)) {
@@ -1680,9 +1687,9 @@ class SearchManager
      *   - transforme les caractères accentués en leur équivalent non accentué
      *   - gère les ligatures courantes (œ, æ, ß, etc.).
      *
-     * @param <string> : chaîne d'entrée (n'importe quel encodage détectable)
+     * @param string $s chaîne d'entrée (n'importe quel encodage détectable)
      *
-     * @return <string> : chaîne lowercase, sans accents
+     * @return string chaîne lowercase, sans accents
      */
     private function toLowerCaseWithoutAccent(string $s): string
     {
@@ -1732,14 +1739,17 @@ class SearchManager
      * 		or
      *	if it begins and ends with "/".
      *
-     * @param pString <string> : the string to test
+     * The three values are not interchangeable with a boolean: `extractRegExp()` switches on
+     * them to decide how to unwrap the pattern. Callers that only need "is it one at all"
+     * compare against 0 explicitly, so the narrowing is visible rather than implied by PHP's
+     * int-to-bool coercion.
      *
-     * @return <integer> :
-     *	0 if the string doesn't represent a regexp
-     *	1 if the string represent a regexp in the old YesWiki format : ex: .*toto.*
-     *  2 if the string represent a regexp in MYSQL format /<regexp>/ : ex: / .*toto.* /
+     * @param string $pString the string to test
+     *
+     * @return int 0 if the string is not a regexp, 1 for the old YesWiki format (dot-star
+     *             around the term), 2 for the MySQL format (the term wrapped in slashes)
      */
-    private function isRegExp($pString) // return true is $pString is a regular expression
+    private function isRegExp($pString): int
     {
         if (mb_substr($pString, 0, 1) == '/' && mb_substr($pString, -1, 1) == '/') {
             return 2;
@@ -1755,10 +1765,10 @@ class SearchManager
      * + It removes beginning and ending "/" if it exists
      * + Optionnaly, it add alternatives for each character that has an accented version.
      *
-     * @param pString : <string> a regexp string recognized by isRegExp as a regexp
-     * @param pAccentInsensitive : <boolean> true to make the regexp accent insensitive
+     * @param string $pString            a regexp string recognized by isRegExp as a regexp
+     * @param bool   $pAccentInsensitive true to make the regexp accent insensitive
      *
-     * @return <string> : the transformed regexp string
+     * @return string the transformed regexp string
      */
     private function extractRegExp($pString, $pAccentInsensitive = true)
     {
@@ -1813,11 +1823,9 @@ class SearchManager
      * Build a hash from structure definition
      * The hash is a facility for associative array search.
      *
-     * @param pStructure <array> : the structure as
-     * 	[
-     * ]
+     * @param array<string, mixed> $pStructure the structure
      *
-     * @return <string> : the hash
+     * @return string the hash
      */
     private function buildFieldDescriptorHash($pStructure)
     {

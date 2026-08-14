@@ -80,6 +80,10 @@ class BreadcrumbAction extends YesWikiAction implements RegisteredAction
             list($PageTag, $method) = $matches;
         } elseif (preg_match('`^[A-Za-z0-9]+$`', $wikireq)) {
             $PageTag = $wikireq;
+        } else {
+            // a request matching neither shape left this undefined, and it is the first crumb
+            // (ticket 40)
+            $PageTag = $this->getService(PageContext::class)->getTag();
         }
 
         // Find out if the breadcrumbs were already stored.

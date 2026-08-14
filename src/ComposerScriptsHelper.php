@@ -195,6 +195,9 @@ class ComposerScriptsHelper
         if (is_link($path)) {
             return unlink($path) !== false;
         }
+        // an unopenable directory left this undefined and the rmdir() below read it: declared
+        // false, because a directory we could not enter is not one we should remove (ticket 40)
+        $continue = false;
         if ($res = opendir($path)) {
             $continue = true;
             while (($file = readdir($res)) !== false && $continue) {

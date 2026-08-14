@@ -56,6 +56,9 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
         // get the GET parameter 'incomingurl' for the incoming url
+        // declared unconditionally: the redirect at the end of the handler reads it, and it was
+        // only assigned when the request carried one (ticket 40)
+        $incomingurl = '';
         if (!empty($_REQUEST['incomingurl'])) {
             $incomingurl = filter_var($_REQUEST['incomingurl'], FILTER_VALIDATE_URL);
         }

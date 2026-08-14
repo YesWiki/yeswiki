@@ -62,6 +62,9 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                     $tab_listadress = explode('@', $list);
 
                     // en fonction de l'action demand
+                    // neither button matched leaves this undefined, and it is both displayed
+                    // and used as the recipient below (ticket 40)
+                    $listaction = '';
                     if ($_POST['action_mails'] == _t('CONTACT_BTN_SUBSCRIBE')) {
                         $listaction = $tab_listadress[0] . '-subscribe@' . $tab_listadress[1];
                     } elseif ($_POST['action_mails'] == _t('CONTACT_BTN_UNSUBSCRIBE')) {

@@ -22,6 +22,27 @@ parameters:
             message: '#PhpImap\\Exceptions\\ConnectionException#'
             path: ../src/Import/Service/ImapImporter.php
 
+        # Two more of the same kind, moved here from the baseline by ticket 40 so that they read
+        # as "this package is not installed" rather than as debt somebody should burn down:
+        #
+        # composer/composer is the plugin API. It exists when Composer runs these hooks and
+        # never when the analyser runs, because a project does not depend on Composer itself.
+        -
+            message: '#Composer\\Script\\Event#'
+            path: ../src/ComposerScriptsHelper.php
+        # spatie/image-optimizer is suggested, not required: it shells out to jpegoptim,
+        # optipng and friends, which a shared host may not have. ImageOptimizerCommand checks
+        # for the class at runtime before using it.
+        -
+            message: '#Spatie\\ImageOptimizer#'
+            path: ../src/Kernel/Command/ImageOptimizerCommand.php
+
+        # `$yeswikiConfig` is populated by `eval()` of the config file, which no analyser can
+        # follow -- it sees only the `= []` two lines above and calls the guard always-false.
+        -
+            message: '#Variable \$yeswikiConfig in empty\(\) always exists and is always falsy#'
+            path: ../src/Kernel/Entity/ConfigurationFile.php
+
     paths:
         - ../src
         # Only the bundled sample extension is repo content. extensions/* is gitignored

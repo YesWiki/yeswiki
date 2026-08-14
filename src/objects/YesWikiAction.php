@@ -23,11 +23,15 @@ abstract class YesWikiAction extends YesWikiPerformable
         // the ACL key (ticket 06). The derivation stays as the fallback for actions still
         // resolved by the directory scan.
         if ($this instanceof RegisteredPerformable) {
-            $actionName = static::performableName();
+            // `$this::` not `static::`: the instanceof narrows $this, and only through $this
+            // does the analyser know performableName() exists (ticket 40)
+            $actionName = $this::performableName();
         } else {
+            // cast because preg_replace() returns null on a failed match, and an ACL key of
+            // null is a key nothing matches -- the fallback would silently deny every action
             $actionName = strtolower(get_class($this)); // __greetingaction
-            $actionName = preg_replace('/^__|__$/', '', $actionName); // greetingaction
-            $actionName = preg_replace('/action$/', '', $actionName); // greeting
+            $actionName = (string)preg_replace('/^__|__$/', '', $actionName); // greetingaction
+            $actionName = (string)preg_replace('/action$/', '', $actionName); // greeting
         }
         // check access (only admins or follow acl if defined)
         $acl = $this->getService(ModuleAclService::class)->getModuleAcl($actionName, 'action');

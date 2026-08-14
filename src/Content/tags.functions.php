@@ -106,11 +106,20 @@ function encodingFromUTF8($matches)
     return iconv('UCS-4LE', 'UTF-8', pack('V', hexdec($matches[1])));
 }
 
-// on cherche les actions attach avec image, puis les images bazar -- afficher_image()/
-// generateWikiName() below are defined by src/bazar.functions.php (relocated from
-// tools/bazar by ticket 24), a pre-existing cross-tool dependency this function
-// inherited unchanged, not introduced by this relocation
-function get_image_from_body($page)
+/**
+ * The first image a page shows, as an `<img>` for a card or a tile.
+ *
+ * The two branches that matter used to call `afficher_image_attach()` and `afficher_image()`,
+ * which the rewrite deleted -- so `{{includepages}}`, `{{listpagestag}}` and `{{filtertags}}`
+ * fataled with "Call to undefined function" on any page whose body held an attached image or a
+ * bazar `imagebf_image`. Two `function.notFound` entries in the PHPStan baseline had been
+ * saying so (ticket 40).
+ *
+ * Both now go through `ImageResizer`, which is what every other thumbnail in the wiki uses.
+ *
+ * @param array<string, mixed> $page
+ */
+function get_image_from_body($page): string
 {
     // decoded body (ticket 09) : markup under 'content', an entry's image field as a key
     $body = $page['body'] ?? [];
@@ -118,11 +127,16 @@ function get_image_from_body($page)
     preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $content, $images);
     if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
         preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
-        $image = afficher_image_attach($page['tag'], $attachimg[1][0], $attachimg[3][0], 'filtered-image', 300, 225);
+        $image = yeswiki_thumbnail_tag(
+            $GLOBALS['yeswikiServices']->get(YesWiki\Files\Service\AttachedFilePaths::class)->uploadPath()
+                . '/' . $attachimg[1][0],
+            $attachimg[3][0] ?? '',
+            'filtered-image'
+        );
     } else {
         $imagefile = $body['imagebf_image'] ?? '';
         if ($imagefile != '') {
-            $image = afficher_image('bf_image', 'files/' . $imagefile, 'cache/' . $imagefile, 'filtered-image img-responsive', '', '', 300, 225);
+            $image = yeswiki_thumbnail_tag('files/' . $imagefile, '', 'filtered-image img-responsive');
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $content, $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
@@ -139,4 +153,28 @@ function get_image_from_body($page)
     }
 
     return $image;
+}
+
+/**
+ * A resized `<img>` for a file already on disk, or '' when it cannot be produced.
+ *
+ * Replaces the deleted `afficher_image()` / `afficher_image_attach()` pair for the one caller
+ * that still needed them. 300x225 is the size those two were always called with here.
+ */
+function yeswiki_thumbnail_tag(string $fileName, string $description, string $class): string
+{
+    if ($fileName === '' || !file_exists($fileName)) {
+        return '';
+    }
+
+    $resizer = $GLOBALS['yeswikiServices']->get(YesWiki\Files\Service\ImageResizer::class);
+    $thumbnail = $resizer->resizedFilename($fileName, '300', '225', 'fit');
+    if (!file_exists($thumbnail) && $resizer->resize($fileName, $thumbnail, 300, 225) !== $thumbnail) {
+        // the resize failed; the original still displays, just unscaled
+        $thumbnail = $fileName;
+    }
+
+    return '<img loading="lazy" class="' . htmlspecialchars($class, ENT_COMPAT, YW_CHARSET) . '"'
+        . ' src="' . htmlspecialchars($thumbnail, ENT_COMPAT, YW_CHARSET) . '"'
+        . ' alt="' . htmlspecialchars($description, ENT_COMPAT, YW_CHARSET) . '" />';
 }

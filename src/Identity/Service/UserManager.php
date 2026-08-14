@@ -613,7 +613,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->supportsClass(get_class($user))) {
+        // `instanceof` rather than `supportsClass(get_class($user))`: the two ask the same
+        // question -- supportsClass() is `is_a($class, User::class, true)` -- but only this one
+        // narrows the parameter, so the calls below stopped being method.notFound (ticket 40)
+        if (!$user instanceof User) {
             throw new UnsupportedUserException();
         }
         try {
@@ -648,7 +651,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function refreshUser(UserInterface $user): UserInterface
     {
-        if (!$this->supportsClass(get_class($user))) {
+        // instanceof for the same reason as upgradePassword(): it narrows where
+        // supportsClass(get_class($user)) only asserts
+        if (!$user instanceof User) {
             throw new UnsupportedUserException();
         }
 
