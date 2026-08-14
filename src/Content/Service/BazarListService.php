@@ -303,7 +303,7 @@ class BazarListService
 
             // [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
             if ($options['dynamic'] == false) {
-                $checkedValues = $this->parseCheckedFiltersInURLForNonDynamic();
+                $checkedValues = $this->checkedFacets();
                 // Calculate the count for each filterNode
                 $entriesValues = array_column($entries, $propName);
                 // convert string values to array
@@ -329,22 +329,119 @@ class BazarListService
         return $filters;
     }
 
-    // [old-non-dynamic-bazarlist] filters state in stored in URL
-    // ?Page&facet=field1=3,4|field2=web
-    // => ['field1' => ['3', '4'], 'field2' => ['web']]
-    private function parseCheckedFiltersInURLForNonDynamic()
+    /**
+     * The facets a reader has checked, read from the URL.
+     *
+     * Two spellings, because the boxes are a plain form now (ticket 37): the one a form
+     * submits, `?facet[bf_type][]=a&facet[bf_type][]=b`, and the one every link already out
+     * there says, `?facet=bf_type=a,b|bf_ville=nantes`.
+     *
+     * @return array<string, list<string>>
+     */
+    public function checkedFacets(): array
     {
-        $facet = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facet');
-        if (empty($facet)) {
+        $facet = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)
+            ->get()->query->all()['facet'] ?? null;
+
+        if (is_array($facet)) {
+            $result = [];
+            foreach ($facet as $key => $values) {
+                // one input per value (`facet[f][]=1&facet[f][]=3`, what the checkboxes
+                // write) or one holding the lot (`facet[f]=1,3`, what the tag input writes
+                // and what the old url spelling has always said)
+                $values = is_array($values) ? $values : explode(',', (string)$values);
+                $values = array_values(array_filter(
+                    array_map('trim', array_map('strval', $values)),
+                    static fn (string $value): bool => $value !== ''
+                ));
+                if ($values !== []) {
+                    $result[(string)$key] = $values;
+                }
+            }
+
+            return $result;
+        }
+
+        if (empty($facet) || !is_string($facet)) {
             return [];
         }
         $result = [];
         foreach (explode('|', $facet) as $field) {
-            list($key, $values) = explode('=', $field);
+            if (!str_contains($field, '=')) {
+                continue;
+            }
+            [$key, $values] = explode('=', $field, 2);
             $result[$key] = explode(',', trim($values));
         }
 
         return $result;
+    }
+
+    /**
+     * The entries the checked facets leave -- OR inside a box, AND between boxes.
+     *
+     * This used to be the browser's job: `bazar.js` hid the `.bazar-entry` elements whose
+     * `data-` attributes did not match. That only ever worked for the templates that draw
+     * one, so a card list came with facets that did nothing, and it filtered the page it had
+     * rather than the list (facet + pagination showed a page with holes in it).
+     *
+     * @param array<array-key, array<string, mixed>> $entries
+     * @param array<string, list<string>>|null       $checked defaults to what the URL says
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function filterEntriesOnFacets(array $entries, ?array $checked = null): array
+    {
+        $checked ??= $this->checkedFacets();
+        if ($checked === []) {
+            return array_values($entries);
+        }
+
+        return array_values(array_filter(
+            $entries,
+            function (array $entry) use ($checked): bool {
+                foreach ($checked as $propName => $values) {
+                    if (array_intersect($values, $this->entryValues($entry, $propName)) === []) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        ));
+    }
+
+    /**
+     * What an entry holds for a facet's property, as a list.
+     *
+     * A checkbox field stores its values comma-separated, and a facet over a *linked* entry's
+     * field (`field_-_tag_-_prop`) is not a key of the entry at all -- it only exists as one
+     * of the data attributes `EntryExtraFieldsService::appendHtmlData()` built.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return list<string>
+     */
+    private function entryValues(array $entry, string $propName): array
+    {
+        $raw = $entry[$propName] ?? null;
+        if ($raw === null || is_array($raw)) {
+            $found = [];
+            preg_match_all(
+                '/data-' . preg_quote(strtolower($propName), '/') . '="([^"]*)"/i',
+                (string)($entry['html_data'] ?? ''),
+                $found
+            );
+            $raw = implode(',', array_map(
+                static fn (string $value): string => html_entity_decode($value, ENT_QUOTES),
+                $found[1]
+            ));
+        }
+
+        return array_values(array_filter(
+            array_map('trim', explode(',', (string)$raw)),
+            static fn (string $value): bool => $value !== ''
+        ));
     }
 
     private function createFilterNode($value, $label)

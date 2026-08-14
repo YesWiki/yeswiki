@@ -50,40 +50,260 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
         return _t('SOURCE_ENTRYLIST');
     }
 
+    /**
+     * The form whose entries are listed.
+     *
+     * Since ADR-0011 that includes the Page, User and File forms, so "which Content?" and
+     * "which form?" are one question. Declared by every component that lists entries --
+     * `needFormField: true` on the whole `entrylist` YAML group is what this replaces, and
+     * a group is no longer a thing a component belongs to.
+     */
+    public static function formSetting(): Setting
+    {
+        return Setting::form('id')
+            ->label(_t('ACTION_BUILDER_CHOOSE_FORM'))
+            ->withIcon('database')
+            ->required();
+    }
+
     public static function sourceSettings(): array
     {
         return [
-            // the form whose entries are listed. Since ADR-0011 that includes the Page,
-            // User and File forms, so "which Content?" and "which form?" are one question.
-            Setting::choice('id', [])
-                ->label(_t('ACTION_BUILDER_CHOOSE_FORM'))
-                ->withIcon('database')
-                ->raw('dataFromFormField', 'forms')
-                ->required(),
+            self::formSetting(),
             // ...and which of that form's fields fill an Item's slots. This is the mapping
             // `displayfields` always was; it belongs to the Source because only a form has
             // fields to map, and a feed has nothing to say here.
+            // Paired, because the panel draws them two to a row and they read as pairs:
+            // the two lines of text at the top, then the picture beside the prose, then
+            // the two things that sit on top of a card rather than in it.
             Setting::fieldMapping('displayfields')
                 ->subSettings(
+                    // The Content's own computed title (ADR-0010) is what a list shows
+                    // when nothing is mapped -- so that is what the control says, rather
+                    // than an empty select the reader has to guess the meaning of. Every
+                    // form has one; `bf_titre` is a convention of some of them.
                     Setting::formField('title')
                         ->label(_t('AB_bazarliste_displayfields_title_label'))
-                        ->suggests('bf_titre'),
+                        ->extraFields(['title'])
+                        ->ofTypes(['text'])
+                        ->default('title'),
                     Setting::formField('subtitle')
                         ->label(_t('AB_bazarliste_displayfields_subtitle_label'))
                         ->default('')
                         ->extraFields(['owner', 'created_at', 'updated_at']),
-                    Setting::formField('description')
-                        ->label(_t('AB_bazarliste_displayfields_text_label'))
-                        ->default(''),
                     Setting::formField('visual')
                         ->label(_t('AB_bazarliste_displayfields_visual_label'))
                         ->default('')
+                        ->ofTypes(['image'])
                         ->suggests('imagebf_image'),
+                    Setting::formField('description')
+                        ->label(_t('AB_bazarliste_displayfields_text_label'))
+                        ->default(''),
                     Setting::formField('floating')
                         ->label(_t('AB_bazarliste_displayfields_floating_label'))
                         ->default('')
                         ->extraFields(['owner']),
+                    // ...and the button, which is a slot like the others -- the sixth
+                    // thing a card can show -- even though what fills it is a choice
+                    // rather than one of the form's fields. It rides in `displayfields`
+                    // because that IS the list of what goes where on an Item.
+                    Setting::choice('cta', [
+                        '' => _t('AB_bazarliste_cta_none'),
+                        'entry' => _t('AB_bazarliste_cta_entry'),
+                        'edit' => _t('AB_bazarliste_cta_edit'),
+                    ])
+                        ->label(_t('AB_bazarliste_cta_label'))
+                        ->default(''),
+                    // ...and the date, which used to be drawn whether or not anybody had
+                    // asked for one: an Item always carried its Content's creation date, so
+                    // every card in every list wore a date in a corner. A slot like the
+                    // others now -- nothing is shown until a field is named for it.
+                    Setting::formField('date')
+                        ->label(_t('AB_bazarliste_displayfields_date_label'))
+                        ->default('')
+                        // `jour` is a date on its own; the other two are the pair an
+                        // agenda form has (DateField answers to all three)
+                        ->ofTypes(['jour', 'listedatedeb', 'listedatefin'])
+                        ->extraFields(['created_at', 'updated_at']),
                 ),
+        ];
+    }
+
+    /** @return list<Setting> */
+    public static function sourceSelectionSettings(): array
+    {
+        return self::selectionSettings();
+    }
+
+    /**
+     * `query`, as conditions rather than as a string.
+     *
+     * The parameter has always existed and the palette has never offered it: writing one
+     * by hand means knowing the field names, the seven operators, and that `|` between
+     * conditions is AND while `,` inside one is OR. A composite input like the mappings,
+     * captioned with `intro` because a multi-input draws no label of its own.
+     *
+     * Shared by the Sources and by the entrylist family, which have no settings in common
+     * to declare it in -- one call site each, one declaration.
+     */
+    private static function querySetting(): Setting
+    {
+        return Setting::query('query')
+            ->raw('intro', '<h4>' . _t('AB_bazar_query_label') . '</h4>')
+            ->hint(_t('AB_bazar_query_hint'))
+            ->raw('btn-label-add', _t('AB_bazar_query_add'))
+            ->subSettings(
+                Setting::formField('name')
+                    ->label(_t('AB_bazar_query_field_label'))
+                    ->extraFields(['owner', 'created_at', 'updated_at']),
+                Setting::choice('operator', [
+                    '=' => _t('AB_bazar_query_operator_is'),
+                    '!=' => _t('AB_bazar_query_operator_is_not'),
+                    '>' => _t('AB_bazar_query_operator_greater'),
+                    '>=' => _t('AB_bazar_query_operator_greater_or_equal'),
+                    '<' => _t('AB_bazar_query_operator_lower'),
+                    '<=' => _t('AB_bazar_query_operator_lower_or_equal'),
+                ])
+                    ->label(_t('AB_bazar_query_operator_label'))
+                    ->default('='),
+                Setting::text('values')
+                    ->label(_t('AB_bazar_query_values_label'))
+                    ->hint(_t('AB_bazar_query_values_hint')),
+            );
+    }
+
+    /**
+     * Which entries, how many, in what order.
+     *
+     * A Source's own concern, not a Presentation's: what a card looks like is the same
+     * question over a feed, but "only the entries whose `bf_type` is 3, the ten most
+     * recent" is a question only a form can answer. So a Presentation gets these the way
+     * it gets the form picker -- from the Source, shown when that Source is the one chosen
+     * (ticket 37) -- and `Cards` over a form can be told everything `{{entrylist}}` could.
+     *
+     * @return list<Setting>
+     */
+    private static function selectionSettings(): array
+    {
+        // Declaration order is layout: the rail lays its settings on a six-column grid and
+        // an ordinary one takes half a row, so these read as the pairs they are written in.
+        return [
+            Setting::number('pagination')
+                ->label(_t('AB_bazar_commons_pagination_label'))
+                ->hint(_t('AB_bazar_commons_pagination_hint'))
+                ->withIcon('separator-horizontal')
+                ->min(0),
+            Setting::number('nb')
+                ->label(_t('AB_bazar_commons2_nb_label'))
+                ->hint(_t('AB_bazar_commons2_nb_hint'))
+                ->withIcon('list-numbers')
+                ->min(0),
+            // What to sort on, and which way -- offered only while the order is not
+            // random. `showIf` rather than a disabled control: a sort field beside "in a
+            // random order" is a setting that does nothing, which is worse than one that
+            // is not offered.
+            Setting::formField('field')
+                ->label(_t('AB_bazar_sort_field_label'))
+                ->default('')
+                ->extraFields(['form_id', 'created_at', 'updated_at'])
+                ->showIf(['random' => '']),
+            Setting::choice('order', [
+                'asc' => _t('AB_bazar_commons2_ordre_option_asc'),
+                'desc' => _t('AB_bazar_commons2_ordre_option_desc'),
+            ])
+                ->label(_t('AB_bazar_commons2_ordre_label'))
+                ->default('asc')
+                ->showIf(['random' => '']),
+            Setting::checkbox('random')
+                ->title(_t('AB_bazar_order_title'))
+                ->label(_t('AB_bazar_random_label'))
+                ->withIcon('arrows-shuffle')
+                ->checkedValues('1', ''),
+            // the reader's own search box over this list, which the server-rendered
+            // presentations draw as readily as the old templates (`entries/index.twig`)
+            Setting::choice('search', [
+                '' => _t('AB_attach_no'),
+                'true' => _t('AB_attach_yes'),
+            ])
+                ->label(_t('AB_bazar_commons_search_label'))
+                ->withIcon('search')
+                ->default(''),
+            self::querySetting(),
+            ...self::facetSettings(),
+        ];
+    }
+
+    /**
+     * The boxes a reader narrows the list with, and how they are laid out.
+     *
+     * Declared here as well as in the entrylist family's own panel (`commonDisplaySettings`)
+     * because they are a Source's question -- the boxes are that form's fields -- and because
+     * the presentations render them: `entries/index.twig` wraps whatever `renderEntries`
+     * produced, a card list included. They were offered on the old templates only, so the
+     * shared presentations had facets nobody could turn on.
+     *
+     * @return list<Setting>
+     */
+    private static function facetSettings(): array
+    {
+        return [
+            Setting::facets('facets')
+                // a multi-input draws no label of its own, and unlabelled it reads as an
+                // "add" button with nothing to say what it adds
+                ->raw('intro', '<h4>' . _t('AB_bazar_facettes_intro') . '</h4>')
+                ->hint(_t('AB_bazar_facettes_hint'))
+                ->raw('btn-label-add', _t('AB_bazar_facettes_btn-label-add'))
+                ->subSettings(
+                    Setting::formField('field')
+                        ->label(_t('AB_bazar_facettes_field_label'))
+                        ->extraFields([
+                            'form_id',
+                        ])
+                        ->raw('only', 'lists'),
+                    Setting::text('title')
+                        ->label(_t('AB_bazar_facettes_title_label')),
+                    Setting::icon('icon')
+                        ->label('Icone'),
+                ),
+            // Everything below is shown once there is a facet, and the value that says so is
+            // `groups` -- what the facets input writes. `showIf('facets')` is what they all
+            // said, and `facets` is the name of the *input*, not of a value any of them
+            // writes: not one of these had ever appeared in the rail.
+            //
+            // `top` is the horizontal layout: the boxes in a row above the list rather than
+            // in a column beside it, which is the only one that fits a narrow page
+            Setting::choice('filterposition', [
+                'left' => _t('AB_LEFT'),
+                'right' => _t('AB_RIGHT'),
+                'top' => _t('AB_bazar_commons2_filterposition_top'),
+            ])
+                ->label(_t('AB_bazar_commons2_filterposition_label'))
+                ->showIf('groups'),
+            Setting::choice('groupsexpanded', [
+                'false' => _t('AB_bazar_commons2_groupsexpanded_false'),
+                'true' => _t('AB_bazar_commons2_groupsexpanded_true'),
+            ])
+                ->label(_t('AB_bazar_commons2_groupsexpanded_label'))
+                ->showIf('groups'),
+            // ...and how wide that column is, which a row has no use for
+            Setting::range('filtercolsize')
+                ->label(_t('AB_bazar_commons2_filtercolsize_label'))
+                ->min(1)
+                ->max(12)
+                // "anything but the horizontal one", as a pattern rather than as a list of
+                // the others: an unset setting reads as the string `false` in the rail, and
+                // a list that spelled out `left|right` would hide this one until the position
+                // had been touched
+                ->showIf(['groups' => 'notNull', 'filterposition' => '^(?!top)']),
+            Setting::checkbox('filtersresultnb')
+                ->label(_t('AB_bazar_commons2_filtersresultnb_label'))
+                ->default(true)
+                ->showIf('groups'),
+            Setting::checkbox('resetfiltersbutton')
+                ->label(_t('AB_bazar_commons2_resetfiltersbutton_label'))
+                ->default('0')
+                ->showIf('groups')
+                ->checkedValues('1', '0'),
         ];
     }
 
@@ -127,6 +347,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
         $items = [];
         foreach ($entries as $entry) {
             $image = $field($entry, $slots['visual'] ?? null);
+            $tag = (string)($entry['tag'] ?? '');
             $items[] = new Item(
                 id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
                 // every Content carries the computed `title` (ADR-0010), so a form whose
@@ -134,16 +355,75 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 title: $field($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
                 subtitle: $field($entry, $slots['subtitle'] ?? null),
                 description: $field($entry, $slots['description'] ?? null),
-                // resolved here, because only this Source knows an attachment is a filename
-                // relative to the entry that carries it
-                image: $image === null ? null : $this->getService(AttachedFilePaths::class)->fullFilename($image),
-                url: $this->getService(UrlFormatter::class)->href('', (string)($entry['tag'] ?? '')),
-                date: self::asDate($entry['created_at'] ?? null),
+                // resolved here, because only this Source knows what an entry's picture is
+                image: $this->imageUrl($image),
+                url: $this->getService(UrlFormatter::class)->href('', $tag),
+                date: self::asDate($field($entry, $slots['date'] ?? null)),
                 badge: $field($entry, $slots['floating'] ?? null),
+                ctaUrl: $this->ctaUrl((string)($slots['cta'] ?? ''), $tag),
+                ctaLabel: self::ctaLabel((string)($slots['cta'] ?? '')),
             );
         }
 
         return $items;
+    }
+
+    /**
+     * An entry's picture, as something an `<img>` can point at.
+     *
+     * Three shapes reach this, and only the last one used to be handled -- so a card whose
+     * `visual` named an ordinary image field showed no picture at all, which is most of
+     * them:
+     *
+     *  - a file in the upload directory, which is what an image field holds and what every
+     *    other template reads as `files/{value}`;
+     *  - a URL, for an entry pointing at a picture on another site (ImageField accepts one);
+     *  - an attachment written by `{{attach}}`, whose name carries two timestamps that only
+     *    `fullFilename()` can match back to a file on disk.
+     */
+    private function imageUrl(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (preg_match('#^(https?:)?//#i', $value) === 1) {
+            return $value;
+        }
+
+        $paths = $this->getService(AttachedFilePaths::class);
+        $inUploads = rtrim($paths->uploadPath(), '/') . '/' . $value;
+        if (file_exists($inUploads)) {
+            return $inUploads;
+        }
+
+        $attached = $paths->fullFilename($value);
+
+        return $attached === '' ? null : $attached;
+    }
+
+    /**
+     * Where an item's button goes, if the list asked for one.
+     *
+     * Resolved by the Source, not by the template: "open it" and "edit it" are URLs only
+     * whatever supplied the item knows how to build, which is the same reason the image is
+     * resolved here.
+     */
+    private function ctaUrl(string $mode, string $tag): ?string
+    {
+        if ($tag === '' || !in_array($mode, ['entry', 'edit'], true)) {
+            return null;
+        }
+
+        return $this->getService(UrlFormatter::class)->href($mode === 'edit' ? 'edit' : '', $tag);
+    }
+
+    private static function ctaLabel(string $mode): ?string
+    {
+        return match ($mode) {
+            'entry' => _t('AB_bazarliste_cta_entry'),
+            'edit' => _t('AB_bazarliste_cta_edit'),
+            default => null,
+        };
     }
 
     /** An entry's stored date, as the ISO-8601 string an Item carries -- or nothing at all. */
@@ -173,6 +453,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->icon('layout-list')
                 ->previewHeight('450px')
                 ->notOffered()
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings()),
             Component::for('entrylist')
                 ->category(Category::Lists)
@@ -186,6 +467,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 // duplication this ticket set out to remove. Still recognised, so a page
                 // that says `template="liste_accordeon"` opens on all of its settings.
                 ->notOffered()
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::fieldMapping('displayfields')
@@ -229,6 +511,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->description(_t('AB_bazarcarto_description'))
                 ->hint(_t('AB_bazarcarto_hint'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::choice('provider', [
@@ -281,12 +564,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     Setting::text('width')
                         ->label(_t('AB_bazarcarto_width_label'))
                         ->hint('500px, 100%...')
-                        ->default('100%')
-                        ->advanced(),
+                        ->default('100%'),
                     Setting::text('height')
                         ->label(_t('AB_bazarcarto_height_label'))
-                        ->default('700px')
-                        ->advanced(),
+                        ->default('700px'),
                     Setting::choice('entrydisplay', [
                         'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
                         'sidebar' => _t('AB_bazarcarto_entrydisplay_option_sidebar'),
@@ -296,8 +577,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ])
                         ->label(_t('AB_bazarcarto_entrydisplay_label'))
                         ->default('sidebar')
-                        ->showIf('dynamic')
-                        ->advanced(),
+                        ->showIf('dynamic'),
                     Setting::choice('popuptemplate', [
                         '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
                         '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
@@ -308,8 +588,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         ->showIf([
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::text('popupcustomtemplate')
                         ->label(_t('AB_bazarcarto_popupcustomtemplate_label'))
                         ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
@@ -318,8 +597,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => 'custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::formField('popupselectedfields')
                         ->label(_t('AB_bazarliste_popupselectedfields_label'))
                         ->default('')
@@ -328,8 +606,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_html.twig|custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::formField('necessary_fields')
                         ->label(_t('AB_bazarliste_popupneededfields_label'))
                         ->suggests('bf_titre,imagebf_image')
@@ -338,25 +615,21 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_from_data.twig|custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::fieldMapping('displayfields')
                         ->showIf('dynamic')
                         ->subSettings(
                             Setting::formField('markerhover')
                             ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
                             ->default('bf_titre'),
-                        )
-                        ->advanced(),
+                        ),
                     Setting::checkbox('smallmarker')
                         ->label(_t('AB_bazarcarto_smallmarker_label'))
                         ->default('0')
-                        ->checkedValues('1', '0')
-                        ->advanced(),
+                        ->checkedValues('1', '0'),
                     Setting::checkbox('scrollwheelzoom')
                         ->label(_t('AB_bazarcarto_zoommolette_label'))
-                        ->default('false')
-                        ->advanced(),
+                        ->default('false'),
                 ),
             Component::for('bazarcalendar')
                 ->writes('entrylist')
@@ -366,6 +639,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->pin('template', 'calendar')
                 ->description(_t('AB_bazarcalendar_description'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::fieldMapping('fieldmapping')
@@ -400,8 +674,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ])
                         ->label(_t('AB_bazarcarto_entrydisplay_label'))
                         ->default('modal')
-                        ->suggests('modal')
-                        ->advanced(),
+                        ->suggests('modal'),
                     Setting::checkbox('showicalbutton')
                         ->label(_t('AB_bazarcarto_showicalbutton_label'))
                         ->default('false'),
@@ -414,6 +687,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->pin('template', 'agenda')
                 ->description(_t('AB_bazaragenda_description'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::fieldMapping('fieldmapping')
@@ -435,13 +709,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         ),
                     Setting::number('columns')
                         ->label(_t('AB_bazaragenda_nbcol_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::checkbox('modal')
                         ->label(_t('AB_bazaragenda_modal_label'))
                         ->default('')
-                        ->checkedValues('1', '')
-                        ->advanced(),
+                        ->checkedValues('1', ''),
                 ),
             Component::for('bazarannuaire')
                 ->writes('entrylist')
@@ -451,6 +723,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->pin('template', 'annuaire_alphabetique')
                 ->description(_t('AB_bazarannuaire_description'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings()),
             Component::for('bazarcarousel')
                 ->writes('entrylist')
@@ -461,6 +734,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->description(_t('AB_bazarcarousel_description'))
                 ->hint(_t('AB_bazarcarousel_hint'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::checkbox('notitle')
@@ -471,13 +745,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         ->label(_t('AB_bazarcarousel_avecpage_label'))
                         ->hint(_t('AB_bazarcarousel_avecpage_hint'))
                         ->default('')
-                        ->checkedValues('oui', '')
-                        ->advanced(),
+                        ->checkedValues('oui', ''),
                     Setting::checkbox('showlinkinsteadofurl')
                         ->label(_t('AB_bazarcarousel_showlinkinsteadofurl_label'))
                         ->default('')
-                        ->checkedValues('oui', '')
-                        ->advanced(),
+                        ->checkedValues('oui', ''),
                     Setting::fieldMapping('fieldmapping')
                         ->subSettings(
                             Setting::formField('bf_titre')
@@ -497,6 +769,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->description(_t('AB_bazarlistephotobox_description'))
                 ->hint(_t('AB_bazarlistephotobox_hint'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings()),
             Component::for('bazarlisteliens')
                 ->writes('entrylist')
@@ -506,6 +779,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->pin('template', 'liste_liens')
                 ->description(_t('AB_bazarlisteliens_description'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings()),
             Component::for('bazarblog')
                 ->writes('entrylist')
@@ -516,6 +790,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->description(_t('AB_bazarblog_description'))
                 ->hint(_t('AB_bazarblog_hint'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::checkbox('header')
@@ -525,13 +800,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     Setting::checkbox('show_author')
                         ->label(_t('AB_bazarblog_show_author_label'))
                         ->default('0')
-                        ->checkedValues('1', '0')
-                        ->advanced(),
+                        ->checkedValues('1', '0'),
                     Setting::checkbox('show_date')
                         ->label(_t('AB_bazarblog_show_date_label'))
                         ->default('0')
-                        ->checkedValues('1', '0')
-                        ->advanced(),
+                        ->checkedValues('1', '0'),
                     Setting::fieldMapping('fieldmapping')
                         ->subSettings(
                             Setting::formField('created_at')
@@ -554,6 +827,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 // likewise the bazar table, which is not the shared `table` Presentation:
                 // it has its own renderer, its own columns and its own export buttons.
                 ->notOffered()
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::formField('columnfieldsids')
@@ -602,29 +876,25 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displaycreationdate_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::choice('displaylastchangedate', [
                         '' => _t('NO'),
                         'yes' => _t('YES'),
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displaylastchangedate_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::choice('displayowner', [
                         '' => _t('NO'),
                         'yes' => _t('YES'),
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displayowner_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::text('defaultcolumnwidth')
                         ->label(_t('AB_bazartableau_defaultcolumnwidth_label'))
                         ->hint(_t('AB_bazartableau_defaultcolumnwidth_hint'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::columnsWidth('columnswidth')
                         ->label(_t('AB_bazartableau_columnswidth_label'))
                         ->hint(_t('AB_bazartableau_columnswidth_hint'))
@@ -634,12 +904,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             Setting::text('width')
                             ->label(_t('AB_bazartableau_columnswidth_width_label'))
                             ->default(''),
-                        )
-                        ->advanced(),
+                        ),
                     Setting::checkbox('exportallcolumns')
                         ->label(_t('AB_bazartableau_exportallcolumns_label'))
-                        ->default('false')
-                        ->advanced(),
+                        ->default('false'),
                 ),
             Component::for('bazarmapandtable')
                 ->writes('entrylist')
@@ -650,6 +918,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->description(_t('AB_bazarcarto_description'))
                 ->hint(_t('AB_bazarcarto_hint'))
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
                 ->settings(
                     Setting::choice('provider', [
@@ -702,12 +971,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     Setting::text('width')
                         ->label(_t('AB_bazarcarto_width_label'))
                         ->hint('500px, 100%...')
-                        ->default('100%')
-                        ->advanced(),
+                        ->default('100%'),
                     Setting::text('height')
                         ->label(_t('AB_bazarcarto_height_label'))
-                        ->default('300px')
-                        ->advanced(),
+                        ->default('300px'),
                     Setting::choice('entrydisplay', [
                         'direct' => _t('AB_bazarcarto_entrydisplay_option_direct'),
                         'sidebar' => _t('AB_bazarcarto_entrydisplay_option_sidebar'),
@@ -717,8 +984,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ])
                         ->label(_t('AB_bazarcarto_entrydisplay_label'))
                         ->default('sidebar')
-                        ->showIf('dynamic')
-                        ->advanced(),
+                        ->showIf('dynamic'),
                     Setting::choice('popuptemplate', [
                         '_map_popup_html.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_html'),
                         '_map_popup_from_data.twig' => _t('AB_bazarcarto_popuptemplate_entry_from_data'),
@@ -729,8 +995,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         ->showIf([
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::text('popupcustomtemplate')
                         ->label(_t('AB_bazarcarto_popupcustomtemplate_label'))
                         ->hint(_t('AB_bazarcarto_popupcustomtemplate_hint'))
@@ -739,8 +1004,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => 'custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::formField('popupselectedfields')
                         ->label(_t('AB_bazarliste_popupselectedfields_label'))
                         ->default('')
@@ -749,8 +1013,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_html.twig|custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::formField('necessary_fields')
                         ->label(_t('AB_bazarliste_popupneededfields_label'))
                         ->suggests('bf_titre,imagebf_image')
@@ -759,25 +1022,21 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             'dynamic' => true,
                             'entrydisplay' => 'popup',
                             'popuptemplate' => '_map_popup_from_data.twig|custom',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::fieldMapping('displayfields')
                         ->showIf('dynamic')
                         ->subSettings(
                             Setting::formField('markerhover')
                             ->label(_t('AB_bazarcarto_displayfields_markhover_label'))
                             ->default('bf_titre'),
-                        )
-                        ->advanced(),
+                        ),
                     Setting::checkbox('smallmarker')
                         ->label(_t('AB_bazarcarto_smallmarker_label'))
                         ->default('0')
-                        ->checkedValues('1', '0')
-                        ->advanced(),
+                        ->checkedValues('1', '0'),
                     Setting::checkbox('scrollwheelzoom')
                         ->label(_t('AB_bazarcarto_zoommolette_label'))
-                        ->default('false')
-                        ->advanced(),
+                        ->default('false'),
                     Setting::formField('columnfieldsids')
                         ->label(_t('AB_bazartableau_columnfieldsids_label'))
                         ->hint(_t('AB_bazartableau_columnfieldsids_hint'))
@@ -824,29 +1083,25 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displaycreationdate_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::choice('displaylastchangedate', [
                         '' => _t('NO'),
                         'yes' => _t('YES'),
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displaylastchangedate_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::choice('displayowner', [
                         '' => _t('NO'),
                         'yes' => _t('YES'),
                         'onlyadmins' => _t('AB_bazartableau_displayadmincol_onlyadmins'),
                     ])
                         ->label(_t('AB_bazartableau_displayowner_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::text('defaultcolumnwidth')
                         ->label(_t('AB_bazartableau_defaultcolumnwidth_label'))
                         ->hint(_t('AB_bazartableau_defaultcolumnwidth_hint'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::columnsWidth('columnswidth')
                         ->label(_t('AB_bazartableau_columnswidth_label'))
                         ->hint(_t('AB_bazartableau_columnswidth_hint'))
@@ -856,12 +1111,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             Setting::text('width')
                             ->label(_t('AB_bazartableau_columnswidth_width_label'))
                             ->default(''),
-                        )
-                        ->advanced(),
+                        ),
                     Setting::checkbox('exportallcolumns')
                         ->label(_t('AB_bazartableau_exportallcolumns_label'))
-                        ->default('false')
-                        ->advanced(),
+                        ->default('false'),
                     Setting::choice('tablewith', [
                         '' => _t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL'),
                         'only-geolocation' => _t('AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC'),
@@ -909,6 +1162,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->label($label)
                 ->icon('layout-list')
                 ->previewHeight('450px')
+                ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings());
         }
 
@@ -927,6 +1181,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
     {
         return SettingGroup::named(
             _t('AB_bazar_commons_title'),
+            // which entries at all, before anything about how they are shown. The same
+            // builder the Sources offer -- `{{entrylist template="liste_accordeon"}}` reads
+            // `query` exactly as a Presentation does, and could not be told it either.
+            self::querySetting(),
             Setting::choice('search', [
                 'true' => _t('AB_attach_yes'),
                 'false' => _t('AB_attach_no'),
@@ -960,8 +1218,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'bazarmapandtable',
                     'bazarcalendar',
                     'bazartableau',
-                ])
-                ->advanced(),
+                ]),
             Setting::number('pagination')
                 ->label(_t('AB_bazar_commons_pagination_label'))
                 ->hint(_t('AB_bazar_commons_pagination_hint'))
@@ -975,8 +1232,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ]),
             Setting::number('nb')
                 ->label(_t('AB_bazar_commons2_nb_label'))
-                ->hint(_t('AB_bazar_commons2_nb_hint'))
-                ->advanced(),
+                ->hint(_t('AB_bazar_commons2_nb_hint')),
             Setting::formField('colorfield')
                 ->label(_t('AB_bazar_commons_colorfield_label'))
                 ->onlyFor([
@@ -991,8 +1247,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->extraFields([
                     'form_id',
                 ])
-                ->raw('only', 'lists')
-                ->advanced(),
+                ->raw('only', 'lists'),
             Setting::colorMapping('colormapping')
                 ->showIf('colorfield')
                 ->onlyFor([
@@ -1014,8 +1269,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ->raw('dataFromFormField', 'colorfield'),
                     Setting::color('color')
                     ->label(_t('AB_bazar_commons_colormapping_color_label')),
-                )
-                ->advanced(),
+                ),
             Setting::formField('iconfield')
                 ->label(_t('AB_bazar_commons_iconfield_label'))
                 ->onlyFor([
@@ -1030,8 +1284,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 ->extraFields([
                     'form_id',
                 ])
-                ->raw('only', 'lists')
-                ->advanced(),
+                ->raw('only', 'lists'),
             Setting::iconMapping('iconmapping')
                 ->showIf('iconfield')
                 ->onlyFor([
@@ -1059,8 +1312,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ->raw('dataFromFormField', 'iconfield'),
                     Setting::icon('icon')
                     ->label(_t('AB_bazar_commons_iconfield_icon_label')),
-                )
-                ->advanced(),
+                ),
             Setting::checkbox('minicalendar')
                 ->label(_t('AB_bazar_commons_minical'))
                 ->default('false')
@@ -1074,8 +1326,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'bazarcarousel',
                     'bazarcalendar',
                 ])
-                ->checkedValues('1', '0')
-                ->advanced(),
+                ->checkedValues('1', '0'),
             Setting::checkbox('showmapinlistview')
                 ->label(_t('AB_bazar_commons2_showmapinlistview_label'))
                 ->hint(_t('AB_bazar_commons2_showmapinlistview_hint'))
@@ -1084,54 +1335,17 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'entrymap',
                     'bazarmapandtable',
                 ])
-                ->checkedValues('1', '0')
-                ->advanced(),
+                ->checkedValues('1', '0'),
         )->width('33%');
     }
 
     /** ...and the second block, which is about how the entries are displayed. */
     private static function commonDisplaySettings(): SettingGroup
     {
-        return SettingGroup::named(
-            _t('AB_bazar_commons2_title'),
-            Setting::facets('facets')
-                ->raw('btn-label-add', '_t(AB_bazar_facettes_btn-label-add)')
-                ->subSettings(
-                    Setting::formField('field')
-                    ->label(_t('AB_bazar_facettes_field_label'))
-                    ->extraFields([
-                        'form_id',
-                    ])
-                    ->raw('only', 'lists'),
-                    Setting::text('title')
-                    ->label(_t('AB_bazar_facettes_title_label')),
-                    Setting::icon('icon')
-                    ->label('Icone'),
-                ),
-            Setting::choice('groupsexpanded', [
-                'false' => _t('AB_bazar_commons2_groupsexpanded_false'),
-                'true' => _t('AB_bazar_commons2_groupsexpanded_true'),
-            ])
-                ->label(_t('AB_bazar_commons2_groupsexpanded_label'))
-                ->showIf('facets')
-                ->advanced(),
-            Setting::choice('filterposition', [
-                'right' => _t('AB_RIGHT'),
-                'left' => _t('AB_LEFT'),
-            ])
-                ->label(_t('AB_bazar_commons2_filterposition_label'))
-                ->showIf('facets')
-                ->advanced(),
-            Setting::range('filtercolsize')
-                ->label(_t('AB_bazar_commons2_filtercolsize_label'))
-                ->min(1)
-                ->max(12)
-                ->showIf('facets')
-                ->advanced(),
+        $settings = array_merge(self::facetSettings(), [
             Setting::checkbox('filteruserasowner')
                 ->label(_t('AB_bazar_commons2_filter_user_as_owner'))
-                ->default('false')
-                ->advanced(),
+                ->default('false'),
             Setting::choice('datefilter', [
                 'futur' => _t('AB_bazar_commons2_filter_on_date_future'),
                 'past' => _t('AB_bazar_commons2_filter_on_date_past'),
@@ -1143,17 +1357,6 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             ])
                 ->label(_t('AB_bazar_commons2_filter_on_date'))
                 ->hint(_t('AB_bazar_commons2_filter_index')),
-            Setting::checkbox('filtersresultnb')
-                ->label(_t('AB_bazar_commons2_filtersresultnb_label'))
-                ->default(true)
-                ->showIf('facets')
-                ->advanced(),
-            Setting::checkbox('resetfiltersbutton')
-                ->label(_t('AB_bazar_commons2_resetfiltersbutton_label'))
-                ->default('0')
-                ->showIf('facets')
-                ->checkedValues('1', '0')
-                ->advanced(),
             Setting::formField('field')
                 ->label(_t('AB_bazar_facettes_field_label'))
                 ->default('')
@@ -1168,8 +1371,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'created_at',
                     'updated_at',
                 ])
-                ->raw('intro', '<h3>_t(AB_bazar_sort)</h3>')
-                ->advanced(),
+                ->raw('intro', '<h3>' . _t('AB_bazar_sort') . '</h3>'),
             Setting::choice('order', [
                 'asc' => _t('AB_bazar_commons2_ordre_option_asc'),
                 'desc' => _t('AB_bazar_commons2_ordre_option_desc'),
@@ -1180,8 +1382,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'entrymap',
                     'bazarannuaire',
                     'bazarcalendar',
-                ])
-                ->advanced(),
+                ]),
             Setting::sortFields('sortfields')
                 ->showIf('dynamic')
                 ->exceptFor([
@@ -1190,7 +1391,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     'bazarcalendar',
                     'bazarcarousel',
                 ])
-                ->raw('intro', '<center><h4>_t(AB_bazar_sort_dynamique)</h4></center>')
+                ->raw('intro', '<center><h4>' . _t('AB_bazar_sort_dynamique') . '</h4></center>')
                 ->raw('btn-label-add', _t('AB_bazar_sort_add_field'))
                 ->subSettings(
                     Setting::formField('field')
@@ -1201,9 +1402,10 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                     ]),
                     Setting::text('title')
                     ->label(_t('AB_bazar_facettes_title_label')),
-                )
-                ->advanced(),
-        )->width('33%');
+                ),
+        ]);
+
+        return SettingGroup::named(_t('AB_bazar_commons2_title'), ...$settings)->width('33%');
     }
 
     // `gogomap` and `gogocarto` are retired names kept here on purpose: the GoGoCartoJs
@@ -1547,7 +1749,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             ]);
         }
         $entries = $bazarListService->getEntries($this->arguments, $vForms);
+        // the counts and the checked boxes are computed over everything the list holds, so
+        // that a second value of a box a reader has already used is still offered; what is
+        // *drawn* is only what the checked facets leave
         $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
+        $entries = $bazarListService->filterEntriesOnFacets($entries);
 
         // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
         // We use a global variable to count the number of entrylist action run on this page
@@ -1575,8 +1781,47 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             'forms' => $vForms,
             // 'formId' => $this->arguments['id'][0] ?? null,
             'selectedID' => $this->arguments['selectedID'] ?? null,
-            'facet' => $this->getRequest()->query->get('facet'),
+            'facet' => $this->getRequest()->query->all()['facet'] ?? null,
+            // where checking a box goes: this same page, minus whatever facet was already
+            // checked (htmx appends the form's values to it) and back to page one
+            'facetForm' => $this->facetForm(),
         ]);
+    }
+
+    /**
+     * Where checking a facet goes, in the two spellings the form needs.
+     *
+     * `url` is this same page with the facet selection -- and the page of it we are on --
+     * taken out, which is what htmx appends the checked boxes to and what "reset" links to.
+     * `action`/`params` are the same URL split for a plain submit, because a browser drops
+     * the query string of a GET form's action and would lose the page with it.
+     *
+     * Textual rather than rebuilt from `query->all()`: a YesWiki URL carries its page as a
+     * bare key (`?PageName&facet[x][]=y`), which `http_build_query()` would not write back.
+     *
+     * @return array{url: string, action: string, params: array<string, string>}
+     */
+    private function facetForm(): array
+    {
+        $uri = $this->getRequest()->getRequestUri();
+        [$path, $queryString] = array_pad(explode('?', $uri, 2), 2, '');
+        $kept = array_values(array_filter(
+            explode('&', (string)$queryString),
+            static fn (string $part): bool => $part !== ''
+                && preg_match('/^(facet(%5B|\[|=)|pageID=)/i', $part) !== 1
+        ));
+
+        $params = [];
+        foreach ($kept as $part) {
+            [$name, $value] = array_pad(explode('=', $part, 2), 2, '');
+            $params[urldecode($name)] = urldecode((string)$value);
+        }
+
+        return [
+            'url' => $path . ($kept === [] ? '' : '?' . implode('&', $kept)),
+            'action' => $path,
+            'params' => $params,
+        ];
     }
 
     private function renderEntries($entries, $filters = [], $pForms = ''): string
@@ -1629,8 +1874,12 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             // that renders a feed, so `template="card"` is one card and not two. Everything
             // around it -- the search form, the facets, the pager -- is still this action's.
             if (PresentationRenderer::knows($templateName)) {
+                // ...the pager included: `pagination` cuts the entries down to one page
+                // above, and a page of a list with no way to reach page two is a list
+                // that silently lost most of itself.
                 return $warning . $this->getService(PresentationRenderer::class)
-                    ->render($templateName, $this->itemsFrom($data['entries']), $this->arguments);
+                    ->render($templateName, $this->itemsFrom($data['entries']), $this->arguments)
+                    . $data['pager_links'];
             }
             if ($templateBaseName === 'tableau') {
                 return $warning . $this->renderTableau($data);

@@ -62,16 +62,13 @@ class SearchAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     Setting::text('phrase')
                         ->label(_t('AB_advanced_action_search_phrase_label')),
                     Setting::text('type')
-                        ->label(_t('AB_advanced_action_search_type_label'))
-                        ->advanced(),
+                        ->label(_t('AB_advanced_action_search_type_label')),
                     Setting::number('limit')
                         ->label(_t('AB_advanced_action_search_limit_label'))
                         ->default('')
-                        ->min(1)
-                        ->advanced(),
+                        ->min(1),
                     Setting::text('filters')
-                        ->label(_t('AB_advanced_action_search_filters_label'))
-                        ->advanced(),
+                        ->label(_t('AB_advanced_action_search_filters_label')),
                 ),
         ];
     }

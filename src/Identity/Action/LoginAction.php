@@ -58,13 +58,11 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     Setting::page('loggedinurl')
                         ->label(_t('AB_advanced_action_login_loggedinurl_label'))
                         ->hint(_t('AB_advanced_action_login_loggedinurl_hint'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::page('loggedouturl')
                         ->label(_t('AB_advanced_action_login_loggedouturl_label'))
                         ->hint(_t('AB_advanced_action_login_loggedouturl_hint'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::checkbox('userpage')
                         ->label(_t('AB_advanced_action_login_userpage_label'))
                         ->default('')
@@ -76,16 +74,13 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     Setting::page('profileurl')
                         ->label(_t('AB_advanced_action_login_profileurl_label'))
                         ->hint(_t('AB_advanced_action_login_profileurl_hint'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::text('class')
                         ->label(_t('AB_advanced_action_login_class_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::text('btnclass')
                         ->label(_t('AB_advanced_action_login_btnclass_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::checkbox('nobtn')
                         ->label(_t('AB_advanced_action_login_nobtn_label'))
                         ->default('false')

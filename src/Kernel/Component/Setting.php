@@ -119,6 +119,20 @@ final class Setting
         return new self($name, 'entry-list');
     }
 
+    /**
+     * Pick one of this wiki's forms -- what a list has to be told before anything else.
+     *
+     * The forms themselves are not declared with the setting: the rail is handed all of
+     * them once (`ActionsBuilderService`), and a component that carried the list would
+     * carry it again for every other component. Declaring which setting is the form is
+     * also what tells the rail whose fields to offer everywhere else, since a `formField`
+     * setting is a field OF this one.
+     */
+    public static function form(string $name): self
+    {
+        return new self($name, 'form-list');
+    }
+
     /** Pick a field of the form the component is pointed at. */
     public static function formField(string $name): self
     {
@@ -144,6 +158,18 @@ final class Setting
     public static function facets(string $name): self
     {
         return new self($name, 'facets');
+    }
+
+    /**
+     * Narrow a list to the entries whose fields say something: `bf_type=3|bf_ville=Lyon`.
+     *
+     * A composite input like the mappings, because that string is a list of conditions and
+     * writing one by hand means knowing the field names, the seven operators and which
+     * separator means AND (`|`) and which means OR (`,`).
+     */
+    public static function query(string $name): self
+    {
+        return new self($name, 'query');
     }
 
     public static function sortFields(string $name): self
@@ -250,12 +276,6 @@ final class Setting
         return $this->with('value', $value);
     }
 
-    /** Folded away until the rail is asked to show advanced parameters. */
-    public function advanced(): self
-    {
-        return $this->with('advanced', true);
-    }
-
     // ---------------------------------------------------------------
     // How much of a row a setting takes. The rail lays its settings out on a six-column
     // grid, so these are the three divisions that come out even. Half is the default and
@@ -333,6 +353,27 @@ final class Setting
     }
 
     /**
+     * ...and this one as well, keeping whatever it already asks for.
+     *
+     * The rail ANDs the conditions of a `showif`, so two of them are one condition -- but
+     * `showIf()` replaces rather than adds, and a Setting is shared: a Presentation folds
+     * in a Source's settings behind "when this source is chosen", and doing that with
+     * `showIf()` threw away the condition the Source's own setting was declared with.
+     *
+     * @param array<string, string|int|bool> $condition
+     */
+    public function andShowIf(array $condition): self
+    {
+        $existing = $this->payload['showif'] ?? [];
+        // the string shorthand means "set to anything", which is what the rail reads it as
+        if (is_string($existing)) {
+            $existing = [$existing => 'notNull'];
+        }
+
+        return $this->with('showif', array_merge($existing, $condition));
+    }
+
+    /**
      * Shown only for some of the Components sharing this settings block, or hidden for
      * some of them. Only meaningful on a shared SettingGroup -- a Component's own settings
      * are already only its own.
@@ -365,6 +406,26 @@ final class Setting
     public function extraFields(array $fields): self
     {
         return $this->with('extraFields', $fields);
+    }
+
+    /**
+     * Narrow a `formField` to the kinds of field that can actually play its part.
+     *
+     * A card's picture can only come from an image field and its date only from a date
+     * one, so offering every field of the form is offering a choice that mostly does not
+     * work: picking `bf_description` for the visual slot produces a broken image, and
+     * nothing says why. The names are the types a form's fields are stored under -- what
+     * `#[\Field([...])]` declares on each BazarField and what the forms API reports for
+     * each field.
+     *
+     * The pseudo-fields an `extraFields()` adds are kept whatever this says: they have no
+     * type, and a setting that asked for them meant them.
+     *
+     * @param list<string> $types
+     */
+    public function ofTypes(array $types): self
+    {
+        return $this->with('fieldTypes', $types);
     }
 
     /**

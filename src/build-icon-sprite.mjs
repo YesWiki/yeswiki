@@ -46,6 +46,14 @@ const EXTRAS = [
   'wand',
   // the entry-list presentations
   'table',
+  // ...and the settings a list is narrowed down with. A sprite id that is not built is an
+  // empty box beside a caption -- the icon draws nothing and says nothing about it.
+  'list-numbers',
+  'separator-horizontal',
+  'arrows-shuffle',
+  'filter',
+  'text-decrease',
+  'sort-ascending-letters',
 ]
 // sprite ids whose Tabler source icon has a different name — e.g. the magnifier
 // ships as "loupe" because adblock cosmetic filters hide elements whose

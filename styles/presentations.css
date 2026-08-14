@@ -68,7 +68,15 @@
 .yw-item--card .yw-item__image {
   width: 100%;
   aspect-ratio: 3 / 2;
-  object-fit: cover;
+  /* `cover` crops to fill, `contain` shows the whole picture -- the card component's
+     `imagefit` setting, which writes the variable on the grid */
+  object-fit: var(--yw-item-image-fit, cover);
+}
+
+/* ...and a button, when the list asked its items to carry one */
+.yw-item__cta {
+  align-self: flex-start;
+  margin-top: 0.75rem;
 }
 
 .yw-item--card .yw-item__body {

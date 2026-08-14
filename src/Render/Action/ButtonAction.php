@@ -48,8 +48,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                         ->suggests('https://yeswiki.net')
                         ->required(),
                     Setting::text('title')
-                        ->label(_t('AB_buttons_action_button_title_label'))
-                        ->advanced(),
+                        ->label(_t('AB_buttons_action_button_title_label')),
                     Setting::icon('icon')
                         ->label(_t('AB_buttons_action_button_icon_label')),
                     Setting::cssClass('class')
@@ -74,36 +73,30 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                                 'btn-sm' => _t('AB_buttons_action_button_size_medium'),
                                 'btn-lg' => _t('AB_buttons_action_button_size_big'),
                             ])
-                            ->label(_t('AB_buttons_action_button_size_label'))
-                            ->advanced(),
+                            ->label(_t('AB_buttons_action_button_size_label')),
                             Setting::choice('modal', [
                                 'modalbox' => _t('AB_buttons_action_button_modal_modalbox'),
                                 'modalbox-hover' => _t('AB_buttons_action_button_modal_modalbox_hover'),
                             ])
                             ->label(_t('AB_buttons_action_button_modal_label'))
-                            ->hint(_t('AB_buttons_action_button_modal_hint'))
-                            ->advanced(),
+                            ->hint(_t('AB_buttons_action_button_modal_hint')),
                             Setting::choice('pull', [
                                 'pull-right' => _t('AB_buttons_action_button_pull_right'),
                                 'btn-block' => _t('AB_buttons_action_button_pull_block'),
                             ])
-                            ->label(_t('AB_buttons_action_button_pull_label'))
-                            ->advanced(),
+                            ->label(_t('AB_buttons_action_button_pull_label')),
                             Setting::choice('new-window', [
                                 'new-window' => _t('AB_buttons_action_button_new_window_yes'),
                             ])
-                            ->label(_t('AB_buttons_action_button_new_window_label'))
-                            ->advanced(),
+                            ->label(_t('AB_buttons_action_button_new_window_label')),
                         ),
                     Setting::checkbox('hideifnoaccess')
                         ->label(_t('AB_buttons_action_button_hideifnoaccess_label'))
-                        ->default('false')
-                        ->advanced(),
+                        ->default('false'),
                     Setting::checkbox('nobtn')
                         ->label(_t('AB_buttons_action_button_nobtn_label'))
                         ->default('0')
-                        ->checkedValues(1, 0)
-                        ->advanced(),
+                        ->checkedValues(1, 0),
                 ),
         ];
     }

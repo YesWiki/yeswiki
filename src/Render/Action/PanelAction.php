@@ -58,8 +58,7 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     Setting::text('class-extra')
                         ->label(_t('AB_templates_panel_custom_class_label'))
                         ->hint(_t('AB_templates_panel_custom_class_hint'))
-                        ->writesTo('class')
-                        ->advanced(),
+                        ->writesTo('class'),
                 ),
         ];
     }

@@ -1,0 +1,12 @@
+{# One value of one facet. Shared by the two layouts -- and in the horizontal one it is also
+   the no-javascript fallback inside the dropdown's mount point. #}
+<div class="checkbox">
+  <label>
+    <input class="filter-checkbox" type="checkbox" id="{{ listId }}_{{ filterNode.id }}"
+           name="facet[{{ filterNode.name }}][]"
+           value="{{ filterNode.value }}" {{ filterNode.checked }}>
+    <span>
+      {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.count }}</span>)</span>
+    </span>
+  </label>
+</div>

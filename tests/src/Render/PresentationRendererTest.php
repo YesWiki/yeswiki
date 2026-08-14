@@ -82,6 +82,43 @@ class PresentationRendererTest extends YesWikiTestCase
     }
 
     /**
+     * A date is written the way the reader's language writes dates, and drawn only when the
+     * Item carries one.
+     *
+     * `|date('d/m/Y')` printed `12/08/2026` to everybody, which an English reader takes for
+     * the 8th of a month with 13 of them -- and the presentations drew it whether or not
+     * anybody had asked for a date, because an entry's Item always carried its creation
+     * date. It is a mapped slot now (`displayfields="date=updated_at"`), so an Item without
+     * one draws nothing at all.
+     */
+    #[DataProvider('presentations')]
+    public function testADateIsLocalisedAndOnlyDrawnWhenThereIsOne(string $presentation): void
+    {
+        $previous = $GLOBALS['prefered_language'] ?? null;
+
+        try {
+            $GLOBALS['prefered_language'] = 'fr';
+            $french = self::renderer()->render($presentation, self::items());
+            $GLOBALS['prefered_language'] = 'en';
+            $english = self::renderer()->render($presentation, self::items());
+        } finally {
+            $GLOBALS['prefered_language'] = $previous;
+        }
+
+        $this->assertStringContainsString('12 août 2026', $french, "{$presentation} in French");
+        $this->assertStringContainsString('August 12, 2026', $english, "{$presentation} in English");
+        // ...and the machine-readable form is the ISO one either way
+        $this->assertStringContainsString('2026-08-12T09:00:00+00:00', $french);
+
+        // the second Item has no date, so it has no <time> of its own: one date, two items
+        $this->assertSame(
+            1,
+            substr_count($french, '<time'),
+            "{$presentation} draws a date for the item that has one, and only that one"
+        );
+    }
+
+    /**
      * The same presentation is written `card` in page content and `card.twig` in a config,
      * and `tableau.tpl.html` in bodies old enough to predate the Twig move.
      */

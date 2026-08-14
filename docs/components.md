@@ -56,15 +56,22 @@ on two wikis.
 ## Setting
 
 One named constructor per input the browser has (`Setting::text`, `choice`, `checkbox`,
-`color`, `image`, `slider`, `formField`, `fieldMapping`, `page`, `geo`, …), so a type that
-does not exist is a call that does not compile rather than a silently hidden field.
+`color`, `image`, `slider`, `form`, `formField`, `fieldMapping`, `page`, `geo`, …), so a
+type that does not exist is a call that does not compile rather than a silently hidden
+field.
 
-Modifiers: `label` `hint` `default` `suggests` `advanced` `required` `multiple` `min` `max`
+Modifiers: `label` `hint` `default` `suggests` `required` `multiple` `min` `max`
 `withIcon` `showIf` `onlyFor` `exceptFor` `checkedValues` `extraFields` `subSettings`
 `notWritten` `decidesTag` `documentedAt` `third` `half` `full` `writesTo` `title`.
 
-Two are worth knowing:
+Three are worth knowing:
 
+- **`form()` is how a component is pointed at a form.** Every setting made of a form's
+  fields — `formField`, `fieldMapping` and the rest — is a field _of_ the form this one
+  names, and picking one is what makes the rail fetch it. A component that offers the
+  first and not the second offers selects with nothing in them, which is what the palette
+  did when `needFormField` (a property of the whole `entrylist` YAML group) had nowhere
+  left to live. `FormPickerTest` is the drift check.
 - **`default()` is load-bearing.** A setting sitting at its default is _omitted_ from the
   tag, which is what keeps a component from being written out with thirty parameters
   restating what it would have done anyway.
@@ -97,8 +104,9 @@ action owns one, because `Cards` is `{{entrylist template="card"}}` over a form 
 shape `PresentationRenderer` can draw.
 
 A **Source** is an action that supplies Items: implement `SuppliesItems` and it is offered
-inside every Presentation, discovered by the `yeswiki.item_source` tag. It declares three
-things — what it is called, what it needs to be told, and the Items themselves:
+inside every Presentation, discovered by the `yeswiki.item_source` tag. It declares four
+things — what it is called, what it must be pointed at, which of its items to take, and the
+Items themselves:
 
 ```php
 class SyndicationAction extends YesWikiAction implements RegisteredAction, SuppliesItems
@@ -110,9 +118,21 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Suppl
         return [Setting::url('url')->label(_t('…'))->withIcon('rss')->required()];
     }
 
+    /** ...and, apart, what narrows the list: the Presentation's own settings go between. */
+    public static function sourceSelectionSettings(): array
+    {
+        return [Setting::number('nb')->label(_t('…'))->default(0)];
+    }
+
     public function items(): array { /* … */ }
 }
 ```
+
+There are two: `entrylist` over a form and `syndication` over a feed. There was a third,
+`listpages`, added to prove that a Source costs one file — and retired again once ADR-0011
+had made a page an entry of the Pages form, which left it answering a question `entrylist`
+already answers. Removing one turned out to cost one file too, plus a migration over stored
+bodies (`RetireListpages`).
 
 **Adding a Source is a change to that action and nothing else** — the DI tag is declared
 against the interface, so implementing it is the whole of enrolling. That is the property
@@ -124,7 +144,7 @@ A Presentation's first setting is the source, declared `->decidesTag()`. It is t
 setting whose value is not a parameter: it names the tag the component writes, and each
 Source's own settings are folded in with `showIf(['source' => tag])` so only the chosen
 one's are shown. Sources keep their tags and their parameters — ADR-0017 rejected unifying
-them into a single `{{list source=…}}`; what is shared is only what they render *through*.
+them into a single `{{list source=…}}`; what is shared is only what they render _through_.
 
 Because a Presentation answers to several tags, an action that is a Source keeps an unpinned
 Component of its own, marked `notOffered()`: the palette does not list it, but a

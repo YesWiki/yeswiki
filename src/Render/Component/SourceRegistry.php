@@ -14,7 +14,7 @@ use YesWiki\Kernel\Performable\RegisteredPerformable;
  */
 class SourceRegistry
 {
-    /** @var list<array{tag: string, label: string, settings: list<\YesWiki\Kernel\Component\Setting>}>|null */
+    /** @var list<array{tag: string, label: string, settings: list<\YesWiki\Kernel\Component\Setting>, selection: list<\YesWiki\Kernel\Component\Setting>}>|null */
     private ?array $sources = null;
 
     /** @param iterable<object> $sourceServices services tagged `yeswiki.item_source` */
@@ -23,7 +23,7 @@ class SourceRegistry
     }
 
     /**
-     * @return list<array{tag: string, label: string, settings: list<\YesWiki\Kernel\Component\Setting>}>
+     * @return list<array{tag: string, label: string, settings: list<\YesWiki\Kernel\Component\Setting>, selection: list<\YesWiki\Kernel\Component\Setting>}>
      */
     public function all(): array
     {
@@ -43,6 +43,9 @@ class SourceRegistry
                 'tag' => $service::performableName(),
                 'label' => $service::sourceLabel(),
                 'settings' => $service::sourceSettings(),
+                // ...and, apart from them, what narrows the list down: the rail puts the
+                // Presentation's own settings between the two
+                'selection' => $service::sourceSelectionSettings(),
             ];
         }
 

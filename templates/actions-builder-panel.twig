@@ -50,21 +50,14 @@
     </div>
 
     <div class="actions-builder-panel__body" v-else>
-      {# Choose form (only for bazar actions) #}
-      <div v-if="needFormField" class="yw-form-group">
-        <label class="yw-form-label">{{ _t('ACTION_BUILDER_CHOOSE_FORM') }}</label>
-        <select :value="getSelectedFormId()" required class="yw-input" @change="setSelectedFormId" ref="formSelection">
-          <option v-for="(name, id) in formIds" :value="id" v-text="name"></option>
-        </select>
-        <span v-if="needFormField" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT')|raw }}</span>
-      </div>
-
-      {# No "which action of this group?" select: the component is already decided by the
-         time this shows -- by the cursor landing in one, or by the palette card that was
-         picked -- and the header says which one it is. #}
+      {# No "choose a form" select above the parameters, and no "which action of this
+         group?" select either. The component is decided before this shows -- by the cursor
+         landing in one, or by the palette card that was picked -- and which form it is
+         pointed at is one of its settings (`form-list`), because a Presentation is pointed
+         at a form only when a form is what it lists. #}
 
       {# Action Configuration #}
-      <div v-if="selectedAction && (!needFormField || selectedForms)" class="action-parameters-container">
+      <div v-if="selectedAction" class="action-parameters-container">
 
         <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
 
@@ -101,12 +94,6 @@
             </div>
           </div>
         </div>
-
-        {# Advanced Params Checkbox #}
-        <input-checkbox v-if="isSomeAdvancedParams" :value="displayAdvancedParams" @input="displayAdvancedParams = $event"
-                        :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS')|e('js') }}'}"
-                        class="advanced-params">
-        </input-checkbox>
 
       </div>
     </div>

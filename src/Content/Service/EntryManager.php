@@ -131,6 +131,12 @@ class EntryManager
 
         $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $data = $this->getDataFromPage($page, $semantic, $debug);
+        // ...and when it appeared, for the Contents whose body does not record it: the
+        // oldest revision is where that is written. One entry, one query -- a list asks
+        // for all of them at once instead (SearchManager::search).
+        if ($data !== [] && empty($data['created_at'])) {
+            $data['created_at'] = $this->pageManager->getCreateTime($tag);
+        }
 
         return $data;
     }
@@ -868,6 +874,14 @@ class EntryManager
         $pEntry['user'] = $pPage['user'] ?? null;
         // owner
         $pEntry['owner'] = $pPage['owner'] ?? null;
+        // when it was last changed. Only an entry saved through create()/update() records
+        // that in its body; a page, an account and a file never have, so anything asking a
+        // list for it -- a card's date, a `displayfields` mapping onto it -- got nothing at
+        // all. The revision being read is the current one, so its `time` is the answer for
+        // those. The body still wins where it has one: it is written in PHP's timezone and
+        // `time` in the database's, and the two disagree by that offset (EditBarAction
+        // reads the pair the same way round for the same reason).
+        $pEntry['updated_at'] = $pEntry['updated_at'] ?? $pPage['time'] ?? null;
 
         $pEntry = $this->applyFieldMappings($pEntry, $pFieldMappings, $pPage);
 

@@ -1,12 +1,116 @@
+/* The two columns, without the twelve-column grid core stopped shipping with Bootstrap: how
+   wide the facets are is `--yw-filters-width` (set from `filtercolsize`), and the list takes
+   what is left. `min-width: 0` on both, or a wide table refuses to shrink and pushes the
+   facets off the row. */
 .facette-container {
   display: flex;
   flex-direction: row;
+  gap: 1rem;
+  align-items: start;
+}
+.facette-container > .filters-col {
+  flex: 0 0 var(--yw-filters-width, 25%);
+  min-width: 0;
+}
+.facette-container > .results-col {
+  flex: 1 1 0;
+  min-width: 0;
 }
 .facette-container-fullwidth {
   flex-wrap: wrap;
 }
+.facette-container-fullwidth > .filters-col {
+  flex-basis: 100%;
+}
 .facette-container[data-filter-align='right'] {
   flex-direction: row-reverse;
+}
+
+/* -------------------------------------------- */
+/*            Horizontal (above) facets         */
+/* -------------------------------------------- */
+
+/* The boxes in a row above the list rather than in a column beside it: the layout a narrow
+   page and a full-width list both need. Only the container changes direction -- the boxes
+   themselves are the same panels, laid out as a wrapping row. */
+.facette-container[data-filter-align='top'] {
+  flex-direction: column;
+  /* the row's `align-items: start` shrink-wraps a column's children: stacked, both of these
+     want the full width, and the list would come out as narrow as its widest card */
+  align-items: stretch;
+}
+.facette-container[data-filter-align='top'] > .filters-col {
+  flex-basis: auto;
+  width: 100%;
+}
+.facette-container[data-filter-align='top'] .results-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  /* from the top: the pickers are different heights (a chip wraps, a label is two words)
+     and bottom-aligned they step up and down across the row */
+  align-items: start;
+}
+.facette-container[data-filter-align='top'] .results-container > .filter-box {
+  /* sized by what it holds, not by the row: one box stretched across the page reads as a
+     banner rather than as a filter */
+  flex: 0 1 auto;
+  min-width: 12rem;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+/* ...and where the box is a tag input, the row is made of those */
+.facette-container[data-filter-align='top'] .results-container {
+  gap: 0.75rem 1rem;
+}
+.yw-facet-select {
+  display: flex;
+  flex: 0 1 20rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 14rem;
+}
+.yw-facet-select__label {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.yw-facet-select .yw-tag-input {
+  margin: 0;
+}
+
+/* How many entries the selection left belongs under it: read top to bottom, the row is what
+   you did and the count is what it did. Beside the list the count comes first instead --
+   there it heads the column rather than answering it. */
+.facette-container[data-filter-align='top'] .filters {
+  display: flex;
+  flex-direction: column;
+}
+.facette-container[data-filter-align='top'] .results-container {
+  order: 1;
+}
+.facette-container[data-filter-align='top'] .results-info {
+  order: 2;
+  margin-top: 0.5rem;
+}
+
+/* the values in a row too, since the height of this block is what the reader pays for it */
+.facette-container[data-filter-align='top'] .filter-box .panel-collapse.in {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.2rem;
+  padding: 0.2rem 0.8rem 0.6rem;
+}
+.facette-container[data-filter-align='top'] .filter-box .checkbox {
+  margin: 0.2rem 0;
+}
+.facette-container[data-filter-align='top'] .results-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+.facette-container[data-filter-align='top'] .results-info .reset-filters {
+  margin-left: auto;
 }
 
 /* -------------------------------------------- */
@@ -56,17 +160,11 @@
 /* -------------------------------------------- */
 /*                    Search                    */
 /* -------------------------------------------- */
-.facette-container:not([data-filter-align='left'])
-  > .filters-col
-  > .bazar-search {
-  margin-top: 2rem;
-}
-
-@media (width >= 768px) {
+@media (width <= 768px) {
   .facette-container:not([data-filter-align='left'])
-    > [class^='filters-col '][class*='col-sm-']
+    > .filters-col
     > .bazar-search {
-    margin-top: 0;
+    margin-top: 2rem;
   }
 }
 

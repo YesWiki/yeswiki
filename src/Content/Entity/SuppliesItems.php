@@ -38,6 +38,18 @@ interface SuppliesItems
     public static function sourceSettings(): array;
 
     /**
+     * ...and which of them, how many, in what order.
+     *
+     * Apart from `sourceSettings()` because the two answer different questions and the rail
+     * puts the Presentation's own settings between them: what the list is pointed at and
+     * what its items look like come first, because that is what is being built; narrowing
+     * it down to twelve of them sorted by date is the fine print underneath.
+     *
+     * @return list<Setting>
+     */
+    public static function sourceSelectionSettings(): array;
+
+    /**
      * The list, in render order.
      *
      * Called with the action's arguments already formatted, so an implementation reads

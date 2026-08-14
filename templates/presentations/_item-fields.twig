@@ -21,11 +21,19 @@
   {% endif %}
 {% endmacro %}
 
+{# The button, when the list asked for one. Its URL and its wording are the Source's:
+   only whatever supplied the item knows what "edit this" means for it. #}
+{% macro cta(item) %}
+  {% if item.ctaUrl %}
+    <a class="yw-item__cta yw-btn yw-btn--sm yw-btn--primary" href="{{ item.ctaUrl }}">{{ item.ctaLabel }}</a>
+  {% endif %}
+{% endmacro %}
+
 {% macro meta(item) %}
   {% if item.subtitle or item.date %}
     <div class="yw-item__meta">
       {% if item.subtitle %}<span class="yw-item__subtitle">{{ item.subtitle }}</span>{% endif %}
-      {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}
+      {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}
     </div>
   {% endif %}
 {% endmacro %}

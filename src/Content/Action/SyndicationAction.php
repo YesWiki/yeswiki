@@ -9,6 +9,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\Item;
 use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FeedLoader;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
@@ -68,25 +69,21 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                         ->default('0')
                         ->checkedValues('1', '0'),
                     Setting::text('title')
-                        ->label(_t('AB_syndication_action_title_label'))
-                        ->advanced(),
+                        ->label(_t('AB_syndication_action_title_label')),
                     Setting::checkbox('newwindow')
                         ->label(_t('AB_syndication_action_nouvellefenetre_label'))
                         ->default('0')
-                        ->checkedValues('1', '0')
-                        ->advanced(),
+                        ->checkedValues('1', '0'),
                     Setting::choice('formatdate', [
                         'jm' => _t('AB_syndication_action_formatdate_option_jm'),
                         'jma' => _t('AB_syndication_action_formatdate_option_jma'),
                         'jmh' => _t('AB_syndication_action_formatdate_option_jmh'),
                         'jmah' => _t('AB_syndication_action_formatdate_option_jmah'),
                     ])
-                        ->label(_t('AB_syndication_action_formatdate_label'))
-                        ->advanced(),
+                        ->label(_t('AB_syndication_action_formatdate_label')),
                     Setting::text('mapping')
                         ->label(_t('AB_syndication_action_mapping_bazar'))
-                        ->hint(_t('AB_syndication_action_mapping_hint'))
-                        ->advanced(),
+                        ->hint(_t('AB_syndication_action_mapping_hint')),
                 ),
         ];
     }
@@ -103,10 +100,28 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 ->label(_t('AB_syndication_action_url_label'))
                 ->withIcon('rss')
                 ->required(),
+        ];
+    }
+
+    /** @return list<Setting> */
+    public static function sourceSelectionSettings(): array
+    {
+        return [
             Setting::number('nb')
                 ->label(_t('AB_syndication_action_nb_label'))
+                ->withIcon('list-numbers')
                 ->default(0)
-                ->advanced(),
+                ->min(0),
+            // A feed's summary is written for a feed reader, not for a card: some are a
+            // sentence and some are the whole article. The action has cut them to length
+            // since long before the presentations -- word boundary, tags stripped, a "read
+            // more" link on the end (`feedItemFields`) -- but nothing offered the number,
+            // so the parameter could only be typed into the tag by hand.
+            Setting::number('maxchars')
+                ->label(_t('AB_syndication_action_maxchars_label'))
+                ->hint(_t('AB_syndication_action_maxchars_hint'))
+                ->withIcon('text-decrease')
+                ->min(0),
         ];
     }
 
@@ -123,22 +138,27 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
     {
         $pages = [];
         foreach (($this->arguments['url'] ?? []) as $nburl => $url) {
-            if ($url === '') {
-                continue;
-            }
-            $feed = new \SimplePie\SimplePie();
-            $feed->set_feed_url($url);
-            $feed->enable_cache(true);
-            $feed->init();
-            $feed->handle_content_type();
-            // a feed that will not load contributes nothing rather than failing the list:
-            // several urls may be given, and one being down is not the others' problem
-            if ($feed->error()) {
-                continue;
-            }
-            foreach ($feed->get_items(0, $this->arguments['nb']) as $item) {
-                $pages[] = $this->feedItemFields($item, (int)$nburl);
-            }
+            // everything read off the feed happens inside read(): the deprecation notices
+            // SimplePie raises come from building an IRI out of an item's link, not from
+            // fetching the feed (FeedLoader)
+            $fromFeed = $this->getService(FeedLoader::class)->read(
+                (string)$url,
+                function (\SimplePie\SimplePie $feed) use ($nburl): array {
+                    // a feed that will not load contributes nothing rather than failing the
+                    // list: several urls may be given, and one being down is not the
+                    // others' problem
+                    if ($feed->error()) {
+                        return [];
+                    }
+                    $items = [];
+                    foreach ($feed->get_items(0, $this->arguments['nb']) as $item) {
+                        $items[] = $this->feedItemFields($item, (int)$nburl);
+                    }
+
+                    return $items;
+                }
+            );
+            $pages = array_merge($pages, $fromFeed ?? []);
         }
 
         return $this->itemsFrom($pages);
@@ -313,6 +333,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
     public function run(): ?string
     {
         $mappingToBazar = !empty($this->arguments['mapping']) && $this->getService(AclService::class)->isAdmin();
+        $entries = [];
         if ($mappingToBazar) {
             $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
@@ -325,21 +346,29 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
+            // what the feeds call themselves, for the heading and the link under it. Read
+            // inside the callback like everything else: `get_link()` resolves an IRI too.
+            $feedTitle = '';
+            $feedLink = '';
             foreach ($this->arguments['url'] as $cle => $url) {
-                if ($url != '') {
-                    $feed = new \SimplePie\SimplePie();
-                    $feed->set_feed_url($url);
-                    $feed->enable_cache(true);
-                    $feed->init();
-                    $feed->handle_content_type();
-                    if ($feed->error()) {
-                        return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
-                    }
-
-                    if ($feed) {
-                        $feedItems = $feed->get_items(0, $this->arguments['nb']);
-                        $nbItems = count($feedItems);
-                        foreach ($feedItems as $item) {
+                // everything read off the feed happens in here -- see FeedLoader: the
+                // notices SimplePie raises come from resolving an item's link
+                $failure = $this->getService(FeedLoader::class)->read(
+                    (string)$url,
+                    function (\SimplePie\SimplePie $feed) use (
+                        $nburl,
+                        $mappingToBazar,
+                        $entries,
+                        &$syndication,
+                        &$feedTitle,
+                        &$feedLink
+                    ): ?string {
+                        if ($feed->error()) {
+                            return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
+                        }
+                        $feedTitle = (string)$feed->get_title();
+                        $feedLink = (string)$feed->get_link();
+                        foreach ($feed->get_items(0, $this->arguments['nb']) as $item) {
                             $feedItem = $this->feedItemFields($item, $nburl);
                             if ($mappingToBazar) {
                                 $feedItem['linkToEntry'] = $feedItem['mappingInput'] = '';
@@ -379,7 +408,14 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                             // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
                             $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
                         }
+
+                        return null;
                     }
+                );
+                // one feed refusing to load is the whole action's error here, unlike
+                // items(): this rendering has a place to say so
+                if ($failure !== null) {
+                    return $failure;
                 }
                 $nburl = $nburl + 1;
             }
@@ -388,7 +424,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             if (empty($this->arguments['title'])) {
                 $title = '';
             } elseif ($this->arguments['title'] == 'rss') {
-                $title = $feed->get_title();
+                $title = $feedTitle;
             } else {
                 $title = $this->arguments['title'];
             }
@@ -412,7 +448,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 $this->render('@core/' . $this->arguments['template'], [
                     'syndication' => $syndication,
                     'title' => $title,
-                    'urlSite' => $feed->get_link(),
+                    'urlSite' => $feedLink,
                     'urlHash' => md5(implode(',', $this->arguments['url'])),
                     'showImage' => $this->arguments['showimage'],
                     'ext' => $this->arguments['newwindow'],

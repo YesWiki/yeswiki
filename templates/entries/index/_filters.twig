@@ -1,20 +1,60 @@
-<div class="filters-col col-sm-{{ params.filtercolsize }}">
-  <div class="filters no-dblclick {{ params.filterposition }}">
+{#
+  The facets, as a form the server answers (ticket 37).
+
+  Checking a box used to be a browser affair: `bazar.js` hid the `.bazar-entry` elements whose
+  data attributes did not match. Only some templates draw one of those, so a card list had
+  facets that did nothing at all -- and hiding what is on the page is not filtering a list:
+  with `pagination` you got a page with holes in it and no way to reach the rest.
+
+  So the boxes post their selection (`facet[bf_type][]=a`) and htmx swaps the answer in. Every
+  template gets working facets, the counts and the pager come back right, and the URL that
+  results is one you can send to somebody. Without javascript the same form still submits.
+
+  Laid out above the list, each facet is one tag input instead: beside the list a box can be
+  as tall as it likes, above it every value costs a line of the page before the first result.
+  Same parameter, same form, same request -- `yw-tags-input.js` in its closed mode, which is
+  core's own chip picker and needs no framework (a `v-select` here would have put Vue on a
+  reader's page for a dropdown). Its listeners are delegated, so a swapped-in row is live
+  without being initialised.
+#}
+{% set horizontal = params.filterposition == 'top' %}
+{% if horizontal %}
+  {{ include_javascript('javascripts/yw-tags-input.js') }}
+{% endif %}
+<div class="filters-col">
+  <form class="filters no-dblclick {{ params.filterposition }}"
+        method="get" action="{{ facetForm.action }}"
+        {# the path alone: everything else is a hidden input, so htmx serialises the page url
+           and the selection together. Given the url too, htmx would append the form to it and
+           each swap would push a url one copy of itself longer. #}
+        hx-get="{{ facetForm.action }}"
+        {# the selection changing, and nothing else: v-select's own search box is an input
+           inside this form, and a bare `change` would send a request when it loses focus #}
+        hx-trigger="change from:find .filter-checkbox, yw:tags-changed"
+        hx-target="#facette-container-{{ listId }}"
+        hx-select="#facette-container-{{ listId }}"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+        hx-boost="false">
+    {# what the page url says besides the facets, so a submit without htmx lands on this page #}
+    {% for name, value in facetForm.params %}
+      <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {% endfor %}
     <div class="results-info text-info">
       {% if params.filtersresultnb %}
         <span class="nb-results">{{ numEntries }}</span>
-        {% if numEntries > 1 %}
-          <span class="result-label" style="display: none;">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
-          <span class="results-label">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
-        {% else %}
-          <span class="result-label">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
-          <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
-        {% endif %}
-      {% endif %}     
+        <span class="results-label">{{ numEntries > 1 ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+      {% endif %}
       {% if params.resetfiltersbutton %}
-        <span class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 ? 'btn-block': '' }}">
+        <a class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 and not horizontal ? "btn-block": "" }}"
+           href="{{ facetForm.url }}"
+           hx-get="{{ facetForm.url }}"
+           hx-target="#facette-container-{{ listId }}"
+           hx-select="#facette-container-{{ listId }}"
+           hx-swap="outerHTML"
+           hx-push-url="true">
           {{ _t('BAZ_RESET_FILTERS') }}
-        </span>
+        </a>
         <div class="clearfix"></div>
       {% endif %}
     </div>
@@ -29,28 +69,52 @@
     {% endif %}
     <div class="results-container">
       {% for key, filter in filters %}
-        <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
-					<button class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="{{ filter.collapsed ? 'false' : 'true' }}">
-            {{ filter.icon|raw }}
-            {{ filter.title }}
-          </button>
-          <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
-            {% for filterNode in filter.nodes %}
-              {% if filterNode.count > 0 %}
-                <div class="checkbox">
-                  <label>
-                    <input class="filter-checkbox" type="checkbox" id="{{ filterNode.id }}" name="{{ filterNode.name }}" 
-                           value="{{ filterNode.value }}" {{ filterNode.checked }}>
-                    <span>
-                      {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.count }}</span>)</span>
-                    </span>
-                  </label>
-                </div>
-              {% endif %}
-            {% endfor %}
+        {% set offered = filter.nodes|filter(node => node.count > 0) %}
+        {% if horizontal %}
+          {# The option map, assembled pair by pair: `merge` renumbers integer keys, and a
+             facet's values are usually `1`, `2`, `3` -- built with it, every option ends up
+             offering the wrong value. A list of pairs is safe because appending is what
+             merge does to one. #}
+          {% set pairs = [] %}
+          {% for node in offered %}
+            {% set pairs = pairs|merge([
+              node.value|json_encode ~ ':' ~ (node.label|striptags|trim ~ ' (' ~ node.count ~ ')')|json_encode
+            ]) %}
+          {% endfor %}
+          {% set checked = offered|filter(node => node.checked) %}
+          <div class="yw-facet-select {{ key }}">
+            <label class="yw-facet-select__label" for="facet-{{ listId }}-{{ filter.propName }}">{{ filter.title }}</label>
+            <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed
+                 data-yw-tag-input-options="{{ '{' ~ pairs|join(',') ~ '}' }}">
+              {% for node in checked %}
+                <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ node.value }}">{{ node.label|striptags|trim }} ({{ node.count }})<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="{{ _t('BAZ_FILTER_REMOVE') }}">&times;</button></span>
+              {% endfor %}
+              <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
+                     id="facet-{{ listId }}-{{ filter.propName }}" placeholder="{{ _t('BAZ_FILTER_CHOOSE') }}">
+              <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
+              {# one parameter holding the lot, which is the spelling `?facet=field=1,3` has
+                 always used; the checkboxes write one input per value instead #}
+              <input type="hidden" name="facet[{{ filter.propName }}]" data-yw-tag-input-value
+                     value="{{ checked|map(node => node.value)|join(',') }}">
+            </div>
           </div>
-        </div>
+        {% else %}
+          <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
+            <button type="button" class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="{{ filter.collapsed ? 'false' : 'true' }}">
+              {{ filter.icon|raw }}
+              {{ filter.title }}
+            </button>
+            <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
+              {% for filterNode in offered %}
+                {{ include('@core/entries/index/_filter-checkbox.twig') }}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
       {% endfor %}
     </div>
-  </div>
+    <noscript>
+      <button type="submit" class="btn btn-primary btn-block">{{ _t('BAZ_FILTER_SUBMIT') }}</button>
+    </noscript>
+  </form>
 </div>

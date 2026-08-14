@@ -36,9 +36,11 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 ->description(_t('AB_bazar_action_description'))
                 ->previewHeight('450px')
                 ->settings(
+                    // the form an entry is created in -- the same setting a list is
+                    // pointed at a form with, since it is the same question
+                    EntryListAction::formSetting(),
                     Setting::page('redirecturl')
-                        ->label(_t('AB_bazar_action_redirecturl_label'))
-                        ->advanced(),
+                        ->label(_t('AB_bazar_action_redirecturl_label')),
                 ),
         ];
     }

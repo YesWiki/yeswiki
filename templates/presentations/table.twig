@@ -18,7 +18,7 @@
           <td>{{ slot.badge(item) }}{{ slot.title(item) }}</td>
           {% if items|filter(i => i.subtitle)|length %}<td>{{ item.subtitle }}</td>{% endif %}
           {% if items|filter(i => i.date)|length %}
-            <td>{% if item.date %}<time datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}</td>
+            <td>{% if item.date %}<time datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}</td>
           {% endif %}
         </tr>
       {% else %}

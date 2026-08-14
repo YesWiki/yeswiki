@@ -23,6 +23,11 @@
   function syncValue(widget) {
     const hidden = widget.querySelector('[data-yw-tag-input-value]')
     if (hidden) hidden.value = currentTags(widget).join(',')
+    // ...and say so: setting `.value` from script fires nothing, so anything downstream of
+    // the widget -- an `hx-trigger`, in the facets' case -- has no other way to know
+    widget.dispatchEvent(
+      new CustomEvent('yw:tags-changed', { bubbles: true }),
+    )
   }
 
   function hideSuggestions(widget) {
@@ -31,6 +36,54 @@
       list.hidden = true
       list.innerHTML = ''
     }
+  }
+
+  function suggestionsOf(widget) {
+    const list = widget.querySelector('[data-yw-tag-input-suggestions]')
+    if (!list || list.hidden) return []
+    return Array.from(list.querySelectorAll('[data-yw-tag-input-suggestion]'))
+  }
+
+  /**
+   * The suggestion the arrows are on.
+   *
+   * Marked with an attribute rather than with focus: focus would leave the search box, and
+   * the reader is still typing into it. `aria-activedescendant` on the input says the same
+   * thing to a screen reader, which is what focus would have done for free.
+   */
+  function activeSuggestion(widget) {
+    return widget.querySelector('[data-yw-tag-input-suggestion][data-active]')
+  }
+
+  function moveActive(widget, step) {
+    const suggestions = suggestionsOf(widget)
+    if (!suggestions.length) return
+    const current = activeSuggestion(widget)
+    const index = current ? suggestions.indexOf(current) : -1
+    // from nothing, Down takes the first and Up the last; from a suggestion it wraps
+    const next =
+      index === -1
+        ? step > 0
+          ? 0
+          : suggestions.length - 1
+        : (index + step + suggestions.length) % suggestions.length
+    setActive(widget, suggestions[next])
+  }
+
+  function setActive(widget, suggestion) {
+    const previous = activeSuggestion(widget)
+    if (previous) previous.removeAttribute('data-active')
+    const search = widget.querySelector('[data-yw-tag-input-search]')
+    if (!suggestion) {
+      if (search) search.removeAttribute('aria-activedescendant')
+      return
+    }
+    suggestion.setAttribute('data-active', '')
+    if (!suggestion.id) {
+      suggestion.id = `yw-tag-suggestion-${Math.random().toString(36).slice(2)}`
+    }
+    if (search) search.setAttribute('aria-activedescendant', suggestion.id)
+    suggestion.scrollIntoView({ block: 'nearest' })
   }
 
   function staticOptions(widget) {
@@ -203,19 +256,26 @@
     const options = staticOptions(widget)
     const closed = widget.hasAttribute('data-yw-tag-input-closed')
 
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // nothing showing yet: the first press is what opens the list
+      if (!suggestionsOf(widget).length && options) {
+        renderStaticSuggestions(widget, input)
+      }
+      if (suggestionsOf(widget).length) {
+        e.preventDefault()
+        moveActive(widget, e.key === 'ArrowDown' ? 1 : -1)
+      }
+      return
+    }
+
     if (e.key === 'Enter' || (!closed && (e.key === ',' || e.key === ';'))) {
       e.preventDefault()
       if (options && closed) {
-        // closed vocabulary: only a listed option may be added
-        const list = widget.querySelector('[data-yw-tag-input-suggestions]')
-        const firstSuggestion =
-          list && list.querySelector('[data-yw-tag-input-suggestion]')
-        if (firstSuggestion) {
-          addTag(
-            widget,
-            firstSuggestion.dataset.id,
-            firstSuggestion.textContent,
-          )
+        // closed vocabulary: only a listed option may be added -- the one the arrows are on,
+        // or the first, which is what pressing Enter straight after typing means
+        const chosen = activeSuggestion(widget) || suggestionsOf(widget)[0]
+        if (chosen) {
+          addTag(widget, chosen.dataset.id, chosen.textContent)
         }
       } else {
         // open vocabulary (with or without suggestions): free-typed tags are fine

@@ -12,6 +12,8 @@ import InputDivider from './components/InputDivider.js'
 import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
+import InputFormList from './components/InputFormList.js'
+import InputQuery from './components/InputQuery.js'
 import InputFacets from './components/InputFacets.js'
 import InputSortFields from './components/InputSortFields.js'
 import InputReaction from './components/InputReaction.js'
@@ -35,6 +37,8 @@ const components = {
   InputIcon,
   InputColor,
   InputFormField,
+  InputFormList,
+  InputQuery,
   InputHidden,
   InputDivider,
   InputFacets,
@@ -123,6 +127,18 @@ const isDefaultValue = (config, value) => {
   return fallback !== undefined && `${value}` === `${fallback}`
 }
 
+/**
+ * The forms an `id="…"` parameter points at.
+ *
+ * More than one is allowed -- `id="3,7"` lists two forms at once -- and one of them may be
+ * a form of another wiki, written `http://that.wiki->12`, whose number is the id there.
+ */
+const formIdsIn = (value) =>
+  String(value ?? '')
+    .split(',')
+    .map((id) => id.trim().replace(/^https?:\/\/.+->(\d+)$/u, '$1'))
+    .filter((id) => /^\d+$/.test(id))
+
 /** Settings whose value is one token of a shared, space-separated parameter. */
 const sharedTargets = (configs) => {
   const targets = {}
@@ -184,9 +200,15 @@ export const appConfig = {
       loadingForms: [],
       // Values
       values: {},
+      // ...and what the composite inputs (the mappings, the query, the facets) say. They
+      // write their parameters straight into the tag rather than into `values`, so a
+      // `showIf` naming one of those parameters could never be true: every setting that
+      // depended on there being a facet was invisible whatever the tag said.
+      specialValues: {},
+      // ...and the parameters as the tag being edited wrote them, untouched by the panel
+      writtenValues: {},
       actionParams: {},
       isEditingExistingAction: false,
-      displayAdvancedParams: false,
       // 'palette' to pick a component, 'settings' to configure the one that was picked
       view: 'palette',
       paletteFilter: '',
@@ -272,12 +294,21 @@ export const appConfig = {
         .filter((category) => category.actions.length > 0)
     },
     /**
-     * Whether this component has to be pointed at a form before it can render anything.
-     * Declared by the component rather than by the drawer it used to live in: `needFormField`
-     * was a property of the whole `entrylist` YAML group.
+     * What the component's form setting says, when it has one and it is on screen.
+     *
+     * Which setting that is, is declared by the component -- the one whose type is
+     * `form-list` -- rather than being the parameter called `id`, which is a video id as
+     * often as it is a form. A Presentation's form setting belongs to its `entrylist`
+     * source and is hidden when a feed is the source, and then it points at no form at all.
      */
-    needFormField() {
-      return Boolean(this.selectedAction?.needsForm)
+    selectedFormValue() {
+      const configs = this.selectedActionAllConfigs
+      const name = Object.keys(configs).find(
+        (key) => configs[key]?.type === 'form-list',
+      )
+      if (!name || !this.checkConfigDisplay(configs[name])) return ''
+
+      return this.values[name] ?? ''
     },
     // Some action group (like bazar) have common properties available for each actions
     // so we always display those commons properties in different panels
@@ -298,12 +329,6 @@ export const appConfig = {
         result.push({ params }),
       )
       return result
-    },
-    isSomeAdvancedParams() {
-      return this.configPanels.some((panel) => {
-        const props = Object.values(panel.params?.properties || {})
-        return props.some((prop) => prop?.advanced)
-      })
     },
     selectedActionAllConfigs() {
       let result = {}
@@ -524,14 +549,6 @@ export const appConfig = {
 
         const newActionId = fakeDom.tagName.toLowerCase()
         this.selectedActionId = newActionId
-        // Get Form if needed
-        if (this.needFormField) {
-          if (!this.selectedFormsIds) {
-            this.selectedFormsIds = this.getValidFormsIds()
-          }
-          this.getSelectedFormsByAjax()
-        }
-
         // ...and which component that tag belongs to, which is not always the tag's own
         // name: thirteen of them write `{{entrylist}}` and are told apart by their pins
         this.selectedActionId =
@@ -543,6 +560,11 @@ export const appConfig = {
           this.selectedAction?.properties || {},
         ).find(([, config]) => config?.decidesTag)
         if (sourceSetting) this.values[sourceSetting[0]] = newActionId
+        // what the tag itself says, kept as it was said: the panel turns some of these
+        // into objects the moment its inputs mount, and a composite input that has to be
+        // handed its parameter again -- once the form's fields are known -- can only be
+        // handed the written form of it
+        this.writtenValues = { ...this.values }
         if (this.$refs.specialInput)
           this.$refs.specialInput.forEach((component) =>
             component.parseNewValues(this.values),
@@ -552,11 +574,9 @@ export const appConfig = {
           this.$refs.specialInput.forEach((component) =>
             component.resetValues(),
           )
+        this.writtenValues = {}
         this.selectedFormsIds = null
         this.selectedActionId = ''
-        // a list is dynamic by default -- declared by the component now (`dynamic` is one
-        // of its shared settings) rather than inferred from which drawer it came out of
-        if (this.selectedAction?.needsForm) this.values.dynamic = true
       }
       this.updateActionParams()
       // (a group holding exactly one action used to be auto-selected here. A component is
@@ -574,33 +594,19 @@ export const appConfig = {
       const value = this.values[name]
       return (this.selectedAction?.tags || []).includes(value) ? value : null
     },
-    // prefer methods to computed to prevent cache
-    getSelectedFormId() {
-      if (
-        !(this.selectedFormsIds instanceof Array) ||
-        this.selectedFormsIds.length === 0
-      )
-        return ''
-
-      return this.selectedFormsIds.slice(0, 1)[0] ?? '' // only the first one
-    },
-    setSelectedFormId() {
-      const newValue = this.$refs.formSelection.value
-      if (['number', 'string'].includes(typeof newValue)) {
-        if (this.selectedFormsIds) {
-          this.selectedFormsIds[0] = newValue
-        } else {
-          this.selectedFormsIds = [newValue]
-        }
-        this.getSelectedFormsByAjax()
-      }
-    },
-    getValidFormsIds() {
-      return (this.values.id || '')
-        .split(',')
-        .filter((id) => ['number', 'string'].includes(typeof id))
-        .map((id) => id.replace(/(^[0-9]$)|^https?:\/\/.+->([0-9]+)$/u, '$1$2'))
-        .filter((e) => e.match(/^\d+$/))
+    /**
+     * Fetch the forms the component is now pointed at, so that every setting made of its
+     * fields -- the field mappings, the search fields, the colour field -- has something to
+     * offer. The form picker writes a parameter like any other setting; this is what turns
+     * that parameter into the fields the rest of the panel is built from.
+     */
+    loadFormsFor(value) {
+      const ids = formIdsIn(value)
+      const current = this.selectedFormsIds || []
+      const unchanged =
+        ids.length === current.length && ids.every((id) => current.includes(id))
+      // the watcher on selectedFormsIds does the fetching
+      if (!unchanged) this.selectedFormsIds = ids
     },
     getSelectedFormsByAjax() {
       if (!this.selectedFormsIds) return
@@ -609,9 +615,13 @@ export const appConfig = {
           Object.prototype.hasOwnProperty.call(this.loadedForms, fid),
         )
       ) {
+        // the ones asked for, not every form ever loaded: pointing a list at another form
+        // used to leave the previous one's fields on offer beside the new one's
         this.selectedForms = {}
         for (const key in this.loadedForms) {
-          this.selectedForms[key] = this.loadedForms[key]
+          if (this.selectedFormsIds.includes(key)) {
+            this.selectedForms[key] = this.loadedForms[key]
+          }
         }
         if (this.selectedAction) {
           // action choosen updateActionParams
@@ -657,9 +667,23 @@ export const appConfig = {
                 this.loadedForms[fid] = { prepared: {} }
               }
             })
-            // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
-            if (!this.selectedForms && this.isEditingExistingAction)
-              setTimeout(() => this.initValues(), 0)
+            // Hand the tag's own parameters to the composite inputs again, now that there
+            // are fields to match them against. They cannot keep them on their own: each
+            // slot of a field mapping is a field select, and one that mounts before its
+            // form has arrived reports itself empty -- which empties the mapping that was
+            // read out of the tag a moment earlier.
+            //
+            // This used to re-run initValues(), which re-reads the tag out of the DOCUMENT
+            // -- and the document is behind the panel by a debounce whenever the form was
+            // just picked in it, so picking a form threw the choice away a moment later.
+            if (this.$refs.specialInput)
+              setTimeout(
+                () =>
+                  this.$refs.specialInput.forEach((component) =>
+                    component.parseNewValues(this.writtenValues),
+                  ),
+                0,
+              )
             this.selectedForms = {}
             for (const key in this.loadedForms) {
               if (
@@ -691,6 +715,7 @@ export const appConfig = {
       const wide = [
         'class',
         'field-mapping',
+        'query',
         'icon-mapping',
         'color-mapping',
         'columns-width',
@@ -774,15 +799,6 @@ export const appConfig = {
     updateActionParams() {
       if (!this.selectedAction) return
       let result = {}
-      if (this.needFormField) {
-        if (this.values.id) {
-          const ids = this.values.id.split(',').slice(1)
-          ids.unshift(this.getSelectedFormId())
-          result.id = ids.join(',')
-        } else {
-          result.id = this.getSelectedFormId()
-        }
-      }
 
       for (const key in this.values) {
         const config = this.selectedActionAllConfigs[key]
@@ -820,11 +836,15 @@ export const appConfig = {
       // hidden with v-show, so a `showIf` that stops one being shown leaves it in $refs
       // and it went on contributing its parameter: picking a feed still wrote the form
       // mapping that only a form can have (ticket 37).
+      const special = {}
       if (this.$refs.specialInput)
         this.$refs.specialInput.forEach((p) => {
           if (p.config && !this.checkConfigDisplay(p.config)) return
-          result = { ...result, ...p.getValues() }
+          const written = p.getValues()
+          Object.assign(special, written)
+          result = { ...result, ...written }
         })
+      this.specialValues = special
 
       // default value for 'entrylist'
       if (this.selectedActionId === 'entrylist')
@@ -843,13 +863,26 @@ export const appConfig = {
       this.actionParams = orderedResult
     },
     watchSelectedActionId() {
-      if (!this.selectedAction?.needsForm && !this.isEditingExistingAction) {
-        this.values = {}
+      if (!this.isEditingExistingAction) {
+        // a component picked from the palette starts from its own defaults -- except for
+        // the form, which is kept when the new one is pointed at a form too: choosing a
+        // different shape of the same list is not a reason to be asked for it again
+        const kept = {}
+        const configs = this.selectedActionAllConfigs
+        const form = Object.keys(configs).find(
+          (key) => configs[key]?.type === 'form-list',
+        )
+        if (form && this.values[form]) kept[form] = this.values[form]
+        this.values = kept
       }
       this.initValuesOnActionSelected()
     },
   },
   watch: {
+    /** The form picker's value: what it says is which forms the panel is built from. */
+    selectedFormValue(value) {
+      this.loadFormsFor(value)
+    },
     selectedFormsIds(val, oldVal) {
       if (
         !oldVal ||

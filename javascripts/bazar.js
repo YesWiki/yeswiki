@@ -4,11 +4,6 @@
  *
  * */
 
-import { updateHash } from './url.js'
-import { parseCondition } from './search.js'
-
-let gSavedHash
-
 function isVisible(el) {
   return !!el && el.offsetParent !== null
 }
@@ -18,8 +13,6 @@ function isVisible(el) {
 // and registers the per-element initialisers below. Those keep firing on every htmx:load, so
 // a bazar list arriving in a swapped page is wired up like one that arrived with a full load.
 ywInitEach('body', () => {
-  gSavedHash = decodeURIComponent(document.location.hash.substring(1))
-
   // accordeon pour entrylist
   ywInitEach('.titre_accordeon', (title) => {
     title.addEventListener('click', () => {
@@ -144,7 +137,12 @@ ywInitEach('body', () => {
         let checked = input
         if (
           (input.tagName === 'TEXTAREA' &&
+            // every editor hides the field it writes into and shows a surface of its own,
+            // so whether the field is on screen is a question about that surface. Missing
+            // one of them here does not make the check strict, it makes it absent: the
+            // hidden textarea is dropped from the list and never validated at all
             (input.classList.contains('aceditor-textarea') ||
+              input.classList.contains('vditor-wiki') ||
               input.classList.contains('vditor-html'))) ||
           input.closest('[data-yw-tag-input]')
         ) {
@@ -668,247 +666,16 @@ ywInitEach('body', () => {
     })
   })
 
-  // facettes
-
-  // recuperer un parametre donné de l'url
-  function getURLParameter(name) {
-    const match = new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`).exec(
-      window.location.search,
-    )
-    return (
-      decodeURIComponent((match ? match[1] : '').replace(/\+/g, '%20')) || null
-    )
-  }
-
-  // modifier un parametre de l'url pour les modifier dynamiquement
-  function changeURLParameter(name, value) {
-    const s = window.location.search
-    let urlquery
-    if (getURLParameter(name) == null) {
-      urlquery = s.replace(`&${name}=`, '').replace(`?${name}=`, '')
-      if (value !== '') {
-        urlquery += s !== '' ? `&${name}=${value}` : `?${name}=${value}`
-      }
-      window.history.pushState({ filter: true }, null, urlquery)
-      // pour les url dans une iframe
-      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
-        const iframeurlquery = `${window.top.location.search.replace(
-          `&${name}=`,
-          '',
-        )}&${name}=${value}`
-        window.top.history.pushState({ filter: true }, null, iframeurlquery)
-      }
-    } else {
-      if (value !== '') {
-        urlquery =
-          s !== ''
-            ? decodeURIComponent(s).replace(
-                new RegExp(`&${name}=([^&;]+?)(&|#|;|$)`),
-                `&${name}=${value}`,
-              )
-            : `?${name}=${value}`
-      } else {
-        urlquery = decodeURIComponent(s).replace(
-          new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
-          '',
-        )
-      }
-      window.history.pushState({ filter: true }, null, urlquery)
-      // pour les url dans une iframe
-      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
-        const iframeurlquery = decodeURIComponent(
-          window.top.location.search,
-        ).replace(
-          new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
-          `&${name}=${value}`,
-        )
-        window.top.history.pushState({ filter: true }, null, iframeurlquery)
-      }
-    }
-  }
-
-  function facetteData(container) {
-    return {
-      nbresults: container.querySelectorAll('.nb-results'),
-      filterboxes: container.querySelectorAll('.filter-box'),
-      entries: Array.from(container.querySelectorAll('.bazar-entry')),
-      geometries: Array.from(
-        container.querySelectorAll('.bazar-entry-geometry'),
-      ),
-      resultlabel: container.querySelectorAll('.result-label'),
-      resultslabel: container.querySelectorAll('.results-label'),
-    }
-  }
+  // The facets no longer filter anything here: checking a box submits the facet form and
+  // the server answers with the list it leaves (`templates/entries/index/_filters.twig`).
+  // Hiding `.bazar-entry` elements only ever worked for the templates that draw one, and it
+  // filtered the page rather than the list.
 
   function show(el) {
     el.style.display = ''
   }
   function hideEl(el) {
     el.style.display = 'none'
-  }
-
-  // activer les filtres des facettes
-  function updateFilters(data) {
-    const tabfilters = []
-    let newquery = ''
-    // on filtre les resultats par boite de filtre pour faire l'intersection apres
-    data.filterboxes.forEach((box) => {
-      let select = ''
-      let first = true
-      box.querySelectorAll('.filter-checkbox:checked').forEach((checkbox) => {
-        const name = checkbox.getAttribute('name')
-        const val = checkbox.getAttribute('value')
-        const attr = `data-${name.toLowerCase()}`
-        if (first) {
-          // si ce n'est pas le premier appel, on ajoute un | pour separer les query
-          if (newquery !== '') {
-            newquery += '|'
-          }
-          newquery += `${name}=${val}`
-          first = false
-        } else {
-          newquery += `,${val}`
-          select += ','
-        }
-        // champs non multiples : exactement la valeur; champs multiples : la
-        // valeur en début/fin/milieu de la liste separee par des virgules
-        select += `[${attr}~="${val}"],[${attr}$=",${val}"],[${attr}^="${val},"],[${attr}*=",${val},"]`
-      })
-      if (select !== '') {
-        const res = data.entries.filter((entry) => entry.matches(select))
-        if (res.length > 0) {
-          tabfilters.push(res)
-        }
-      }
-    })
-
-    // on applique les changements a l'url
-    changeURLParameter('facet', newquery)
-
-    // au moins un filtre à actionner
-    let tabres = []
-    if (tabfilters.length > 0) {
-      // pour chaque boite de filtre, on fait l'intersection avec la suivante
-      tabres = tabfilters.reduce((acc, tab) =>
-        acc.filter((entry) => tab.indexOf(entry) !== -1),
-      )
-      document.body.dispatchEvent(
-        new CustomEvent('updatefilters', { detail: { entries: tabres } }),
-      )
-      data.entries.forEach((entry) => {
-        const kept = tabres.indexOf(entry) !== -1
-        if (kept) show(entry)
-        else hideEl(entry)
-        const marker = entry.parentElement
-        if (marker && marker.classList.contains('bazar-marker')) {
-          if (kept) show(marker)
-          else hideEl(marker)
-        }
-      })
-
-      // geometries need the id to be hidden
-      const idsToMatch = new Set()
-      data.entries.forEach((entry) => {
-        if (tabres.indexOf(entry) === -1 && entry.dataset.tag) {
-          idsToMatch.add(String(entry.dataset.tag))
-        }
-      })
-      data.geometries.forEach((geometry) => {
-        if (idsToMatch.has(String(geometry.dataset.id))) hideEl(geometry)
-      })
-    } else {
-      // pas de filtres: on affiche tout les résultats
-      data.entries.forEach(show)
-      data.geometries.forEach(show)
-      data.entries.forEach((entry) => {
-        const marker = entry.parentElement
-        if (marker && marker.classList.contains('bazar-marker')) show(marker)
-      })
-    }
-    // on compte les résultats visibles (points et geometries confondus)
-    const visibleIds = new Set()
-    data.entries.filter(isVisible).forEach((entry) => {
-      if (entry.dataset.tag) visibleIds.add(String(entry.dataset.tag))
-    })
-    data.geometries.filter(isVisible).forEach((geometry) => {
-      if (geometry.dataset.id) visibleIds.add(String(geometry.dataset.id))
-    })
-    const nbresults = visibleIds.size
-    data.nbresults.forEach((elParam) => {
-      const el = elParam
-      el.textContent = nbresults
-    })
-    if (nbresults > 1) {
-      data.resultlabel.forEach(hideEl)
-      data.resultslabel.forEach(show)
-    } else {
-      data.resultlabel.forEach(show)
-      data.resultslabel.forEach(hideEl)
-    }
-
-    document.body.dispatchEvent(
-      new CustomEvent('updatedfilters', { detail: { entries: tabres } }),
-    )
-
-    const vParam = new URLSearchParams(document.location.search)
-    const vKeywords = vParam.get('keywords')
-    const vSortField = vParam.get('field')
-    const vSortOrder = vParam.get('order')
-
-    const vFacet = getURLParameter('facet')
-    const vFilters = []
-    if (vFacet) {
-      vFacet
-        .split('|')
-        .map(parseCondition)
-        .forEach((pCondition) => {
-          vFilters[pCondition.name] = pCondition.values
-        })
-    }
-
-    updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters)
-  }
-
-  // process changes on visible entries according to filters
-  setTimeout(() => {
-    document
-      .querySelectorAll('.facette-container:not(.dynamic)')
-      .forEach((container) => {
-        const data = facetteData(container)
-        container.querySelectorAll('.filter-checkbox').forEach((checkbox) => {
-          checkbox.addEventListener('click', () => updateFilters(data))
-        })
-        updateFilters(data)
-      })
-  }, 500)
-
-  // gestion de l'historique : on reapplique les filtres
-  window.onpopstate = (e) => {
-    if (e.state && e.state.filter) {
-      document.querySelectorAll('.facette-container').forEach((container) => {
-        container
-          .querySelectorAll('input[type=checkbox]')
-          .forEach((checkboxParam) => {
-            const checkbox = checkboxParam
-            checkbox.checked = false
-          })
-        const urlParamFacet = getURLParameter('facet')
-        if (urlParamFacet) {
-          urlParamFacet.split('|').forEach((facet) => {
-            const tabfilter = facet.split('=')
-            if (tabfilter[1] !== '') {
-              tabfilter[1].split(',').forEach((value) => {
-                const checkbox = document.getElementById(
-                  `${tabfilter[0]}${value}`,
-                )
-                if (checkbox) checkbox.checked = true
-              })
-            }
-          })
-        }
-        updateFilters(facetteData(container))
-      })
-    }
   }
 
   // The bootstrap-tagsinput/typeahead glue that used to live here is gone: tag
@@ -947,29 +714,11 @@ ywInitEach('body', () => {
         const el = elParam
         el.textContent = nbresults
       })
-      facetteContainer
-        .querySelectorAll('.result-label')
-        .forEach(nbresults > 1 ? hideEl : show)
-      facetteContainer
-        .querySelectorAll('.results-label')
-        .forEach(nbresults > 1 ? show : hideEl)
     })
   })
 
-  // gestion du bouton de réinitialisation des filtres
-  document
-    .querySelectorAll(
-      '.facette-container:not(.dynamic) .filters .reset-filters',
-    )
-    .forEach((reset) => {
-      reset.addEventListener('click', () => {
-        document
-          .querySelectorAll(
-            '.facette-container:not(.dynamic) .filters input.filter-checkbox:checked',
-          )
-          .forEach((checkbox) => checkbox.click())
-      })
-    })
+  // the reset button is a link to the same page without the facets, so there is nothing to
+  // uncheck here: the server answers with every box unchecked
 })
 
 export function downloadCSV(csv, filename) {

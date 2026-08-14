@@ -1206,7 +1206,48 @@ class SearchManager
             $searchResults[$data['tag']] = $data;
         }
 
+        $this->fillMissingCreationTimes($searchResults);
+
         return $searchResults;
+    }
+
+    /**
+     * When the Contents that do not say so in their body were created.
+     *
+     * An entry saved through `EntryManager::create()` carries `created_at`; a page, an
+     * account and a file never have, so anything asking a list for it -- a card's date, a
+     * `displayfields` mapping onto it -- got nothing at all. Where it is really written is
+     * the oldest revision of the row, and that is one query for the whole list: asking per
+     * entry would be one query per row of a list that may hold thousands.
+     *
+     * @param array<string, array<string, mixed>> $entries keyed by tag, as search() builds them
+     */
+    private function fillMissingCreationTimes(array &$entries): void
+    {
+        $missing = [];
+        foreach ($entries as $tag => $entry) {
+            if (empty($entry['created_at'])) {
+                $missing[] = (string)$tag;
+            }
+        }
+        if ($missing === []) {
+            return;
+        }
+
+        $timeCol = $this->dbService->quoteIdentifier('time');
+        $placeholders = implode(', ', array_fill(0, count($missing), '?'));
+        $rows = $this->dbService->loadAll(
+            "SELECT tag, MIN({$timeCol}) AS created_at FROM " . $this->dbService->prefixTable('pages')
+            . " WHERE tag IN ({$placeholders}) AND parent = '' GROUP BY tag",
+            $missing
+        );
+
+        foreach ($rows as $row) {
+            $tag = (string)($row['tag'] ?? '');
+            if (isset($entries[$tag])) {
+                $entries[$tag]['created_at'] = $row['created_at'];
+            }
+        }
     }
 
     /**

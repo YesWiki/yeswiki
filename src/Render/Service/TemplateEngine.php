@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
+use Carbon\Carbon;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
@@ -542,6 +543,36 @@ class TemplateEngine
         // same regexes their PHP predecessors used
         $this->twig->addFilter(new \Twig\TwigFilter('preg_replace', function ($subject, $pattern, $replacement) {
             return preg_replace($pattern, $replacement, (string)$subject);
+        }));
+
+        /*
+         * A date written the way the reader's language writes dates: `{{ item.date|moment }}`,
+         * or `|moment('LLL')` to the minute.
+         *
+         * Twig's own `|date('d/m/Y')` is a format, and a format is a language's habit: the
+         * presentations printed `13/08/2026` to every reader, which an English one reads as
+         * the 8th of a month with 13 of them. Carbon's `isoFormat` with the reader's locale
+         * gets all nine catalogs right and asks nobody to translate a format string --
+         * EditBarAction found that out first (`inTheReadersLanguage`), and this is the same
+         * move for templates.
+         */
+        $this->twig->addFilter(new \Twig\TwigFilter('moment', function ($stamp, string $format = 'LL'): string {
+            if (!is_string($stamp) || trim($stamp) === '') {
+                return '';
+            }
+
+            try {
+                $moment = Carbon::parse($stamp);
+            } catch (\Throwable) {
+                // a value that is not a date at all: say nothing rather than something
+                return '';
+            }
+
+            // as a statement, not chained: `locale()` with no argument is the getter, so a
+            // chained call is not statically a Carbon
+            $moment->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
+
+            return $moment->isoFormat($format);
         }));
     }
 

@@ -56,14 +56,11 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                         'carre' => _t('AB_attach_pdf_ratio_option_carre'),
                     ])
                         ->label(_t('AB_attach_pdf_ratio_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::number('maxwidth')
-                        ->label(_t('AB_attach_pdf_largeur_max_label'))
-                        ->advanced(),
+                        ->label(_t('AB_attach_pdf_largeur_max_label')),
                     Setting::number('maxheight')
-                        ->label(_t('AB_attach_pdf_hauteur_max_label'))
-                        ->advanced(),
+                        ->label(_t('AB_attach_pdf_hauteur_max_label')),
                     Setting::cssClass('class')
                         ->label('Classe')
                         ->subSettings(
@@ -73,8 +70,7 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                                 'pull-right' => 'float right',
                             ])
                             ->label(_t('AB_attach_pdf_position_label'))
-                            ->default('')
-                            ->advanced(),
+                            ->default(''),
                         ),
                 ),
         ];

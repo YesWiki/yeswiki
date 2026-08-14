@@ -553,7 +553,10 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   align-items: center;
   flex-wrap: wrap;
   justify-content: end;
-  margin-right: -2em;
+  /* flush with the container's edge, which is one gutter out -- the same -1em the header
+     on the other side uses. -2em was a gutter too far: the block ended 15px past the
+     window and gave every page in the wiki a horizontal scrollbar (tests/e2e/layout). */
+  margin-right: -1em;
 }
 
 #yw-topnav
@@ -2668,8 +2671,15 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border: 0;
   cursor: pointer;
 }
-.yw-suggestions button:hover {
+.yw-suggestions button:hover,
+.yw-suggestions button[data-active] {
   background: var(--neutral-light-color, #f2f2f2);
+}
+/* the arrows move a marker rather than the focus -- the reader is still typing in the box --
+   so the highlight has to read as "this is the one Enter takes", not just as a hover */
+.yw-suggestions button[data-active] {
+  box-shadow: inset 3px 0 0 var(--primary-color);
+  font-weight: 600;
 }
 
 /* ---- Dropdown (ticket 11 pilot: replaces Bootstrap's data-toggle="dropdown") ---- */
@@ -2835,6 +2845,11 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 
 /* ---- Container (ticket 12: replaces Bootstrap's .container) ---- */
 .yw-container {
+  /* the gutters are part of the width, not added to it: without this the box is its
+     parent's content width PLUS 30px, so a container inside anything already as wide as
+     the window pushes the document 15px sideways and every page gets a horizontal
+     scrollbar (tests/e2e/layout). Same bug the Bootstrap `.container` it replaced had. */
+  box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 15px;

@@ -161,13 +161,21 @@ class AttachedFilePaths
                 : $path . '/' . $fullFileName;
         }
 
+        // quoted, because these are a FILE NAME and a page tag rather than a pattern: an
+        // author who called a picture `photo (1).jpg` was matching an optional group and a
+        // literal 1, and one whose name reached here carrying a backslash -- an escape
+        // sequence that never got decoded, say -- made preg_match refuse the pattern
+        // outright and print the refusal into the page ("PCRE2 does not support \u").
+        $name = preg_quote($parts['name'], '`');
+        $extension = preg_quote($parts['ext'], '`');
+
         $isActionBuilderPreview = $this->pageContext->getTag() === 'root';
         if ($isActionBuilderPreview) {
-            $searchPattern = '`' . $parts['name'] . '_\d{14}_\d{14}\.' . $parts['ext'] . '$`';
+            $searchPattern = '`' . $name . '_\d{14}_\d{14}\.' . $extension . '$`';
         } elseif ($this->safeMode) {
-            $searchPattern = '`^' . $pageTag . '_' . $parts['name'] . '_\d{14}_\d{14}\.' . $parts['ext'] . '$`';
+            $searchPattern = '`^' . preg_quote($pageTag, '`') . '_' . $name . '_\d{14}_\d{14}\.' . $extension . '$`';
         } else {
-            $searchPattern = '`^' . $parts['name'] . '_\d{14}_\d{14}\.' . $parts['ext'] . '$`';
+            $searchPattern = '`^' . $name . '_\d{14}_\d{14}\.' . $extension . '$`';
         }
 
         $files = $this->searchFiles($searchPattern, $path);

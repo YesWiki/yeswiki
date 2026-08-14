@@ -29,14 +29,17 @@
     {{ include("@core/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
 
-  <div class="facette-container dynamic row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" 
-       data-filter-align="{{ showFiltersSidebar ? params.filterposition : '' }}">
+  {# the same two columns as the server-rendered list, sized the same way: `filtercolsize` in
+     twelfths turned into a width, rather than a Bootstrap grid class core no longer ships #}
+  <div class="facette-container dynamic {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}"
+       data-filter-align="{{ showFiltersSidebar ? params.filterposition : '' }}"
+       {% if resultsColSize != 12 %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
 
     {% if showFiltersSidebar %}
       {{ include("@core/entries/index-dynamic/_filters.twig") }}
     {% endif %}
 
-    <div class="results-col col-sm-{{ resultsColSize }}">
+    <div class="results-col">
       <div class="bazar-list dynamic" ref="entriesContainer">
         {% block display_entries %}
         {% endblock %}

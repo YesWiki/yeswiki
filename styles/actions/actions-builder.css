@@ -471,10 +471,6 @@ input[type='range'] {
   margin-bottom: 12px;
 }
 
-.advanced-params {
-  margin-top: 2rem;
-}
-
 #actions-builder-panel .text-muted {
   font-size: 0.8em;
 }
@@ -504,6 +500,39 @@ input[type='range'] {
   margin-left: 0 !important;
 }
 
+/* The zones of a card, two to a row.
+   A field mapping takes the panel's whole width -- it is several controls, not one -- so
+   without this its slots stack in a single column while every ordinary setting beside them
+   pairs up, and the rail reads as two different layouts. The pairs are the declaration
+   order (EntryListAction::sourceSettings): the two lines of text, the picture and the
+   prose, then the two things drawn on top of a card rather than in it. */
+#actions-builder-panel .multi-input-container.field-mapping {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1rem;
+  row-gap: 1rem;
+  /* both cells of a row start at the top of it: one slot is a line taller than its
+     neighbour whenever its hint wraps, and a stretched cell aligned its label to the
+     bottom, so the pair read as two rows that had slipped */
+  align-items: start;
+
+  /* No `@media (max-width: …)` fallback to one column: the rail is a fixed width
+     (--yw-rail-width), the same on a 900px window as on a 1600px one, so a viewport query
+     dropped the pairs on a narrow SCREEN while the panel they are in had not moved. */
+}
+
+/* the row gap is the grid's now. Left to their own margins, the pair on the first row sat
+   at different heights: `.yw-form-group:first-child` has its top margin taken away (so
+   that a panel does not start with a gap), and its neighbour on the same row keeps one. */
+#actions-builder-panel .multi-input-container.field-mapping > .yw-form-group {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#actions-builder-panel .multi-input-container.field-mapping > .hint-container {
+  grid-column: 1 / -1;
+}
+
 .multi-input-container .btn-add-element {
   margin-bottom: 1.5rem;
   width: 100%;
@@ -523,19 +552,77 @@ input[type='range'] {
   margin-top: 25px;
 }
 
+/* One row of a composite input: a filter condition, a facet, a sort field.
+   Two columns and a button, because the rail is a third of the screen: three controls side
+   by side got a few pixels each (the query builder's came out ~30px wide with their
+   captions printed across them). A grid rather than a wrapping flex row -- flex sized each
+   control by what was left on its line, so the same field was a different width on every
+   row and nothing lined up; here every row has the same two columns. */
 .inline-form {
-  display: flex;
-
-  /* align-items: baseline; */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  column-gap: 0.5rem;
+  row-gap: 0.75rem;
+  align-items: start;
 }
 
+.inline-form > .yw-form-group {
+  min-width: 0;
+}
+
+/* an odd last control takes the whole line rather than leaving a hole beside it: the value
+   of a condition is the longest thing in one, and it is the one that wants the room */
+.inline-form > .yw-form-group:nth-last-child(2):nth-child(odd) {
+  grid-column: 1 / 3;
+}
+
+/* The gaps are the grid's. Left to their own margins the pair on a line sat at different
+   heights: `#actions-builder-app .yw-form-group:first-child` takes the first control's top
+   margin away -- so a panel does not start with a gap -- and its neighbour keeps one, which
+   is a caption 15px lower than the caption beside it. `!important` because that rule is. */
 .inline-form .yw-form-group {
   padding: 0 !important;
-  margin: 1rem 0 0;
+  margin: 0 !important;
 }
 
-.inline-form .btn-close-container {
+/* ...and the button is the row's, not the last control's. In its own column, beside every
+   line of the row rather than under the last of them -- which is where a wrapping row put
+   it, reading as "remove the value" rather than "remove this condition". */
+.inline-form > .btn-close-container {
+  grid-column: 3;
+  grid-row: 1 / -1;
   align-self: center;
+}
+
+/* ...and each control keeps its caption above it, as every other setting in the panel does.
+   The rule that stacks them skips composite inputs -- a mapping lays its own slots out --
+   but a ROW inside one is made of ordinary settings and wants the ordinary treatment. */
+#actions-builder-app .inline-form .input-group:has(> .yw-form-label) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 0.4rem;
+}
+
+#actions-builder-app
+  .inline-form
+  .input-group:has(> .yw-form-label)
+  > *:not(.addon-icon):not(.yw-form-label) {
+  grid-column: 1 / -1;
+}
+
+/* One condition is two lines tall now, so where one ends and the next begins has to be
+   said: without a rule between them, three filters read as six unrelated controls. */
+.multi-input-container .inline-form + .inline-form {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--neutral-soft-color, #ddd);
+}
+
+/* a hint under a control in a row is a footnote, not a paragraph */
+.inline-form .hint {
+  font-size: 0.72rem;
+  line-height: 1.25;
 }
 
 /* IFRAME PREVIEW */

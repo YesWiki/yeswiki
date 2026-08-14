@@ -265,16 +265,6 @@ return [
     'AB_advanced_action_backlinks_page_label' => 'Oinarrizko orria',
     'AB_advanced_action_include_label' => 'Sartu orri bat beste batean',
     'AB_advanced_action_redirect_label' => 'Birbideratu Wikiko beste orri batera',
-    'AB_advanced_action_listpages_label' => 'Erakutsi orrialdeak zerrenda gisa',
-    'AB_advanced_action_listpages_sort_label' => 'Ordenatu',
-    'AB_advanced_action_listpages_owner_label' => 'Erabiltzailea titularra den fitxak bakarrik erakutsi',
-    'AB_advanced_action_listpages_owner_hint' => 'Batez ere tree modurako definituta',
-    'AB_advanced_action_listpages_user_label' => 'Erabiltzaileak parte hartu duen fitxak bakarrik erakutsi',
-    'AB_advanced_action_listpages_user_hint' => 'Ezin da treerekin konbinatu',
-    'AB_advanced_action_listpages_exclude_label' => 'Baztertu orriak eta haien ondorengoak',
-    'AB_advanced_action_listpages_exclude_hint' => 'Bat
-Bereizi etiketa bakoitza \';\' \',\' \' ren arabera|Hainbat
-\' edo \'/\'',
     'AB_advanced_action_bazarrecordsindex_label' => 'Zerrendatu bazar-fitxak bakarrik',
     'AB_advanced_action_listusers_label' => 'Erabiltzaileak zerrendatzea',
     'AB_advanced_action_listusers_last_label' => 'Zerrendatu sortutako azken kontuak bakarrik',

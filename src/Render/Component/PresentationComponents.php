@@ -50,7 +50,7 @@ class PresentationComponents implements ProvidesComponents
     }
 
     /**
-     * @param list<array{tag: string, label: string, settings: list<Setting>}> $sources
+     * @param list<array{tag: string, label: string, settings: list<Setting>, selection: list<Setting>}> $sources
      */
     private function presentation(string $id, string $labelKey, string $icon, array $sources): Component
     {
@@ -78,15 +78,58 @@ class PresentationComponents implements ProvidesComponents
 
         // ...and what each Source needs to be told, shown only when it is the one chosen.
         // The Presentation never learns what those settings are; it hands them through.
+        //
+        // In three courses, because declaration order is what the rail lays out: what the
+        // list is pointed at, then what it looks like, then which of its items to take.
+        // The one being built comes before the fine print about narrowing it down.
+        return $component
+            ->settings(...self::foldIn($sources, 'settings'))
+            ->settings(...self::shapeSettings($id))
+            ->settings(...self::foldIn($sources, 'selection'));
+    }
+
+    /**
+     * Every Source's settings, each shown for the Source (or Sources) that declared it.
+     *
+     * Two Sources may want the same parameter -- `nb` is "how many" to a form and to a
+     * feed alike -- and a Component holds its settings BY NAME, so the second declaration
+     * simply replaced the first: the control that survived carried the other source's
+     * condition, so a list of a form's entries offered no limit at all and a feed offered
+     * two. Declared by both means shown for both, which the rail can say because it reads
+     * a `showif` value as a pattern.
+     *
+     * @param list<array{tag: string, label: string, settings: list<Setting>, selection: list<Setting>}> $sources
+     * @param 'settings'|'selection'                                                                     $course  which of a Source's two lists
+     *
+     * @return list<Setting>
+     */
+    private static function foldIn(array $sources, string $course): array
+    {
+        /** @var array<string, list<string>> $declaredBy */
+        $declaredBy = [];
         foreach ($sources as $source) {
-            $shown = array_map(
-                static fn (Setting $setting) => $setting->showIf(['source' => $source['tag']]),
-                $source['settings']
-            );
-            $component = $component->settings(...$shown);
+            foreach ($source[$course] as $setting) {
+                $declaredBy[$setting->name()][] = $source['tag'];
+            }
         }
 
-        return $component->settings(...self::shapeSettings($id));
+        $settings = [];
+        foreach ($sources as $source) {
+            foreach ($source[$course] as $setting) {
+                $name = $setting->name();
+                if (isset($settings[$name])) {
+                    continue;
+                }
+                // `andShowIf`, not `showIf`: a Source's setting may have a condition of
+                // its own -- "which way to sort" is meaningless once the order is random
+                // -- and replacing it would show it whenever the source is chosen.
+                $settings[$name] = $setting->andShowIf([
+                    'source' => implode('|', $declaredBy[$name]),
+                ]);
+            }
+        }
+
+        return array_values($settings);
     }
 
     /** @return list<Setting> */
@@ -103,6 +146,17 @@ class PresentationComponents implements ProvidesComponents
                 ->default(3)
                 ->min(1)
                 ->max(6),
+            // What a picture does with the space a card gives it. Cropping is the default
+            // because a row of cards is a grid and a grid wants one shape; a webmaster
+            // whose pictures are logos or portraits wants the other, and until now had to
+            // choose between a wall of ragged cards and pictures with their heads cut off.
+            Setting::choice('imagefit', [
+                'cover' => _t('PRESENTATION_IMAGE_COVER'),
+                'contain' => _t('PRESENTATION_IMAGE_CONTAIN'),
+            ])
+                ->label(_t('PRESENTATION_IMAGE_FIT'))
+                ->withIcon('crop')
+                ->default('cover'),
         ];
     }
 

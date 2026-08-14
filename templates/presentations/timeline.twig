@@ -9,7 +9,7 @@
     <article class="yw-item yw-item--timeline">
       <div class="yw-item__marker" aria-hidden="true"></div>
       <div class="yw-item__body">
-        {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|date('d/m/Y') }}</time>{% endif %}
+        {% if item.date %}<time class="yw-item__date" datetime="{{ item.date }}">{{ item.date|moment }}</time>{% endif %}
         {{ slot.badge(item) }}
         {{ slot.title(item) }}
         {% if item.subtitle %}<div class="yw-item__subtitle">{{ item.subtitle }}</div>{% endif %}

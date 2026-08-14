@@ -41,8 +41,7 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction, Pro
                 ->adminOnly()
                 ->settings(
                     Setting::text('class')
-                        ->label(_t('AB_template_actions_class'))
-                        ->advanced(),
+                        ->label(_t('AB_template_actions_class')),
                 ),
         ];
     }

@@ -36,6 +36,10 @@ final class Item
      * @param string|null  $date        ISO 8601, so a Presentation can both sort and format it
      * @param string|null  $badge       a short marker floated over the corner
      * @param list<string> $categories  tags, keywords, feed categories
+     * @param string|null  $ctaUrl      where the item's button goes, when it has one. A
+     *                                  Source resolves it: "let them edit this" is a URL
+     *                                  only whatever supplied the item knows how to build
+     * @param string|null  $ctaLabel    what that button says
      */
     public function __construct(
         public readonly string $id,
@@ -47,6 +51,8 @@ final class Item
         public readonly ?string $date = null,
         public readonly ?string $badge = null,
         public readonly array $categories = [],
+        public readonly ?string $ctaUrl = null,
+        public readonly ?string $ctaLabel = null,
     ) {
     }
 
@@ -72,6 +78,8 @@ final class Item
             'date' => $this->date,
             'badge' => $this->badge,
             'categories' => $this->categories,
+            'ctaUrl' => $this->ctaUrl,
+            'ctaLabel' => $this->ctaLabel,
         ];
     }
 }

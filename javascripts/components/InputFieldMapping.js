@@ -1,10 +1,16 @@
 import InputHelper from './InputHelper.js'
 import InputFormField from './InputFormField.js'
+import InputList from './InputList.js'
+import InputText from './InputText.js'
 
 export default {
   props: ['name', 'value', 'config', 'selectedForms', 'values'],
   emits: ['input'],
-  components: { InputFormField },
+  // A slot is usually one of the form's fields, but not always: the card's button is a
+  // choice of what it does. Only the components registered HERE resolve inside this one --
+  // the app's list lives on the root -- so a subproperty of any other type rendered as
+  // nothing at all, silently.
+  components: { InputFormField, InputList, InputText },
   mixins: [InputHelper],
   data() {
     return { mappingValues: {} }
@@ -62,7 +68,7 @@ export default {
     },
   },
   template: `
-    <div class="multi-input-container">
+    <div class="multi-input-container field-mapping">
       <template v-for="(property, propName) in config.subproperties">
         <component :is="componentIdFrom(property)" v-show="checkVisibility(property)"
                    :value="mappingValues[propName]" v-on:input="updateValue(propName, $event)"

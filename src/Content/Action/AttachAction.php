@@ -82,22 +82,19 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                         ->showIf([
                             'displaypdf' => 1,
                             'file' => '\\.pdf$',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::number('maxwidth')
                         ->label(_t('AB_attach_pdf_largeur_max_label'))
                         ->showIf([
                             'displaypdf' => 1,
                             'file' => '\\.pdf$',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::number('maxheight')
                         ->label(_t('AB_attach_pdf_hauteur_max_label'))
                         ->showIf([
                             'displaypdf' => 1,
                             'file' => '\\.pdf$',
-                        ])
-                        ->advanced(),
+                        ]),
                 ),
         ];
     }
@@ -149,14 +146,12 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 ->label(_t('AB_attach_width_label'))
                 ->showIf([
                     'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
-                ])
-                ->advanced(),
+                ]),
             Setting::number('height')
                 ->label(_t('AB_attach_height_label'))
                 ->showIf([
                     'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
-                ])
-                ->advanced(),
+                ]),
             Setting::cssClass('class')
                 ->label(_t('AB_attach_class_label'))
                 ->subSettings(
@@ -210,8 +205,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     ->hint(_t('AB_attach_class_izmir_hint'))
                     ->showIf([
                         'file' => '\\.(png|jpg|jpeg|gif)$',
-                    ])
-                    ->advanced(),
+                    ]),
                 ),
         )->width('40%');
     }

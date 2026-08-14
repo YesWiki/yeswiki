@@ -14,6 +14,16 @@ export const hasFilePicker = () =>
   document.getElementById('YesWikiFilePickerPanel') !== null
 
 /**
+ * Whether a file is being chosen right now.
+ *
+ * For an editor deciding whether a click in the document means "I have left the rail":
+ * this one is placing something the document does not have yet, and where it goes is
+ * decided by clicking in the document. The source editor makes the same exception, from
+ * the other side (`syncRailsWithCursor`).
+ */
+export const filePickerIsOpen = () => Boolean(filePicker?.isOpen)
+
+/**
  * The file button, for either of the two Vditors. They differ in what the picker writes --
  * Markdown for the HTML fields, an `{{attach}}` component for the wiki-syntax ones -- and
  * in where it goes, so both are the caller's to say.

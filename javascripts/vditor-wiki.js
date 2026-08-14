@@ -10,10 +10,15 @@
  * The widget itself, and why a component travels through Vditor as a fenced block rather
  * than as text, is vditor-components.js.
  */
-import { filePickerMenuItem, hasFilePicker } from './vditor-toolbar-file.js'
+import {
+  filePickerIsOpen,
+  filePickerMenuItem,
+  hasFilePicker,
+} from './vditor-toolbar-file.js'
 import { legacyIconToSprite } from './yw-icon-map.js'
 import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import { closeRails } from './editor-rails.js'
+import { registerEditor } from './editor-handles.js'
 import ActionsBuilder from './actions-builder.js'
 import LinkPanel from './link-panel.js'
 import {
@@ -174,6 +179,11 @@ class ComponentEditor {
    */
   insertAt(after, wikiCode) {
     const anchor = after || this.lastBlock()
+    // A page being created is an EMPTY document -- no blocks and no last child, so there is
+    // nothing to insert *after*. `anchor.after()` then threw and the component was never
+    // written: on a new page, picking one from the palette did nothing at all.
+    const place = (...nodes) =>
+      anchor ? anchor.after(...nodes) : this.content.append(...nodes)
     let inserted
 
     if (wikiCode.trim().includes('\n')) {
@@ -182,10 +192,10 @@ class ComponentEditor {
         fenceComponents(wikiCode.trim()),
       )
       inserted = holder.firstElementChild
-      anchor.after(...holder.childNodes)
+      place(...holder.childNodes)
     } else {
       inserted = componentBlockElement(wikiCode)
-      anchor.after(inserted)
+      place(inserted)
     }
 
     this.content
@@ -197,6 +207,12 @@ class ComponentEditor {
     this.highlight(inserted)
     this.sync()
     this.recordUndo()
+    // ...and show it. What the palette writes is a component the page did not have, so
+    // there is something to look at -- but with no caret in the document it goes after the
+    // last block, and on a page of any length that is well below the fold: picking a card
+    // then looked like nothing happening at all. `nearest` so a component inserted where
+    // you were already looking does not move the page under you.
+    inserted.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
 
     return inserted
   }
@@ -379,6 +395,16 @@ function initVditorWiki(textareaParam) {
       // a wrapper region moves whenever anything above it or inside it changes height,
       // which includes a preview iframe finishing loading and the window being resized
       new ResizeObserver(repaint).observe(componentEditor.content)
+      // the wiki text, in and out, for the page around the editor -- see editor-handles.js.
+      // Reading the textarea would do for "out" and nothing at all would do for "in": it
+      // is written *from* here on every sync, so anything put in it is overwritten unread.
+      registerEditor(textarea.name, {
+        getValue: () => unfenceComponents(editor.getValue()),
+        setValue(text) {
+          editor.setValue(fenceComponents(text))
+          sync()
+        },
+      })
     },
     input() {
       convertSetextHeadings()
@@ -665,7 +691,13 @@ function initVditorWiki(textareaParam) {
     const widget = event.target.closest?.('.yw-component')
     select(widget)
     if (!widget) {
-      if (!event.target.closest?.('.vditor-wysiwyg__pre')) {
+      // clicking the prose is how a rail is left -- except by the picker, which is placing
+      // something the document does not have yet and whose whole business is where in the
+      // document it should go. Clicking the spot for it must not throw the choice away.
+      if (
+        !event.target.closest?.('.vditor-wysiwyg__pre') &&
+        !filePickerIsOpen()
+      ) {
         closeRails()
         componentEditor.clearHighlight()
       }

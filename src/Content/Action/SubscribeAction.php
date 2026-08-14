@@ -46,11 +46,9 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction, Provide
                     ])
                         ->label(_t('AB_abonnement_mailinglist_label')),
                     Setting::text('nbactionmail')
-                        ->label(_t('AB_abonnement_template_label'))
-                        ->advanced(),
+                        ->label(_t('AB_abonnement_template_label')),
                     Setting::text('class')
-                        ->label(_t('AB_abonnement_class_label'))
-                        ->advanced(),
+                        ->label(_t('AB_abonnement_class_label')),
                 ),
         ];
     }

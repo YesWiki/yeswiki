@@ -330,6 +330,11 @@ function checkAll(state) {
 
   /** comments */
 
+  /** The comment box, whichever editor is drawing it. */
+  function commentEditor() {
+    return window.ywEditors?.body
+  }
+
   function resetCommentForm(form) {
     if (!form) return
     form.setAttribute('id', 'post-comment')
@@ -352,7 +357,10 @@ function checkAll(state) {
       .forEach((btn) => btn.remove())
     const postButton = form.querySelector('.btn-post-comment')
     if (postButton) postButton.textContent = _t('SAVE')
-    window['aceditor-body'].editor.setValue('')
+    // through the handle every editor publishes, not the ACeditor's own instance: the
+    // comment box is `{{aceditor name="body"}}`, and which editor that renders is the
+    // reader's choice (editor-handles.js)
+    commentEditor()?.setValue('')
   }
 
   function appendCancelButton(form) {
@@ -376,7 +384,7 @@ function checkAll(state) {
     postForm(form.getAttribute('action'), form)
       .then((payload) => {
         form.reset()
-        window['aceditor-body'].editor.setValue('')
+        commentEditor()?.setValue('')
         toastMessage(payload.success, 3000, 'alert alert-success')
         ancestorsOf(form, '.yw-comment').forEach((comment) => {
           comment.querySelectorAll('.comment-links').forEach((links) => {
@@ -482,9 +490,7 @@ function checkAll(state) {
       .querySelectorAll('label')
       .forEach((label) => label.classList.add('hide'))
     const commentBody = com.querySelector('.comment-body')
-    window['aceditor-body'].editor.setValue(
-      commentBody ? commentBody.value : '',
-    )
+    commentEditor()?.setValue(commentBody ? commentBody.value : '')
     formcom.querySelectorAll('[name="pagetag"]').forEach((input) => {
       input.value = com.dataset.commenton
     })

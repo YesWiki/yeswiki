@@ -3,14 +3,21 @@
 {% endif %}
 
 {% if filters %}
-  {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
-  <div class="facette-container row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}">
+  {# How wide the column of facets is, as a fraction of the row rather than as a Bootstrap
+     class: `filtercolsize` is still counted in twelfths, which is what a webmaster has always
+     typed, but core stopped shipping a twelve-column grid with Bootstrap (ADR-0004). #}
+  {% set beside = params.filterposition != 'top' and params.filtercolsize|number_format < 12 %}
+  {# the id is what a facet swaps: the boxes come back with their counts and checked state,
+     the entries with the pager, and both are inside it #}
+  <div id="facette-container-{{ listId }}" class="facette-container {{ beside ? '' : 'facette-container-fullwidth' }}"
+       data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}"
+       {% if beside %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
 
     {% if params.groups %}
       {{ include("@core/entries/index/_filters.twig") }}
     {% endif %}
 
-    <div class="results-col col-sm-{{ resultsColSize }}">
+    <div class="results-col">
       {{ include("@core/entries/index/_entries.twig") }}
     </div>
 
@@ -24,4 +31,3 @@
 	{{ include("@core/entries/index/_export_buttons.twig") }}
 {% endif %}
 {# end for showexportbuttons #}
-

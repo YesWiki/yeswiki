@@ -38,37 +38,32 @@ class TabsAction extends YesWikiAction implements RegisteredAction, ProvidesComp
                     Setting::number('selectedtab')
                         ->label(_t('AB_templates_tabs_selectedtab_label'))
                         ->default(1)
-                        ->min(1)
-                        ->advanced(),
+                        ->min(1),
                     Setting::choice('btnsize', [
                         'std' => _t('AB_templates_tabs_btnsize_default'),
                         'btn-xs' => _t('AB_templates_tabs_btnsize_small'),
                     ])
                         ->label(_t('AB_templates_tabs_btnsize_label'))
-                        ->default('btn-xs')
-                        ->advanced(),
+                        ->default('btn-xs'),
                     Setting::choice('btncolor', [
                         'btn-primary' => _t('AB_templates_tabs_btncolor_primary'),
                         'btn-secondary-1' => _t('AB_templates_tabs_btncolor_secondary_1'),
                         'btn-secondary-2' => _t('AB_templates_tabs_btncolor_secondary_2'),
                     ])
                         ->label(_t('AB_templates_tabs_btncolor_label'))
-                        ->default('btn-primary')
-                        ->advanced(),
+                        ->default('btn-primary'),
                     Setting::choice('bottom_nav', [
                         'yes' => _t('AB_templates_tabs_bottom_nav_yes'),
                         'no' => _t('AB_templates_tabs_bottom_nav_no'),
                     ])
                         ->label(_t('AB_templates_tabs_bottom_nav_label'))
-                        ->default('yes')
-                        ->advanced(),
+                        ->default('yes'),
                     Setting::choice('counter_on_bottom_nav', [
                         'yes' => _t('AB_templates_tabs_counter_on_bottom_nav_yes'),
                         'no' => _t('AB_templates_tabs_counter_on_bottom_nav_no'),
                     ])
                         ->label(_t('AB_templates_tabs_counter_on_bottom_nav_label'))
-                        ->default('no')
-                        ->advanced(),
+                        ->default('no'),
                 ),
         ];
     }

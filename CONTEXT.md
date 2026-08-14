@@ -114,12 +114,16 @@ A Component that renders a list of **Items** in one shape — Cards, Table, Acco
 _Avoid_: "template" for the concept (a template is the Twig file a Presentation renders through), "List" as the name of the accordion Presentation (`liste` is a Content type).
 
 **Source**:
-An Action that supplies **Items** to a Presentation rather than rendering anything on its own — `entrylist` (a form's entries), `syndication` (a feed), `listpages`, `comments`, `recentchanges`, `listusers`. A Source has no palette entry: it appears inside the source setting of every Presentation, and declares what it needs to be told (a form id, a feed url). Adding one is a change to the new Action alone — never to the Presentations, which is the whole point of the split. Distinct from a **Data source**, which is external data _imported_ into Content and has nothing to do with rendering.
+An Action that supplies **Items** to a Presentation rather than rendering anything on its own — `entrylist` (a form's entries), `syndication` (a feed), `comments`, `recentchanges`, `listusers`. A Source has no palette entry: it appears inside the source setting of every Presentation, and declares what it needs to be told (a form id, a feed url). Adding one is a change to the new Action alone — never to the Presentations, which is the whole point of the split. Distinct from a **Data source**, which is external data _imported_ into Content and has nothing to do with rendering.
 _Avoid_: "data source" (that is the importer's concept), "provider", giving a Source its own palette entry.
 
 **Item**:
 The normalised shape a Presentation renders, one per thing listed: `title`, `subtitle`, `description`, `image`, `url`, `date`, `badge`, `categories`, plus an `id` that keys it and is never shown. **Derived at render time and never stored** — it is a view of Content (or of a feed entry), not a thing in the database. What makes one Presentation work over every Source: a form's fields are mapped onto it (`displayfields`, which already does exactly this), and a feed's fields map straight across. The slots are the ones the presentations already draw, so `badge` is `displayfields`' `floating` renamed — that name said where a card puts it rather than what it is. `image` is a resolved URL, because a Presentation cannot know how to turn an attachment filename into one and the Sources each do it differently.
 _Avoid_: "entry" (an entry is Content; an Item is a view of one), "row", "result" (that is search's), `floating` (it was a position, not a thing), storing one.
+
+**Facet**:
+A box of checkboxes over one field's values, offered beside (or above) a list so a reader can narrow it — `groups="bf_type"`, laid out by `filterposition`. **Server-side**: checking a box submits the facet form, the server answers with the entries the selection leaves, and htmx swaps the list in — as a column of checkboxes beside the list, or as one chip picker per facet in a row above it (`yw-tags-input.js`, no framework — the checkboxes stay as its no-javascript fallback). The count on each value is over the whole list, not over the current selection, so a second value of a box a reader has already used is still offered. Distinct from `query`, which is the webmaster's fixed restriction on what the list holds; a facet is the reader's, and it is in the URL.
+_Avoid_: filtering by hiding rendered items (that is what it used to be, and it only worked for the templates drawing `.bazar-entry`), "filter" alone for the concept (`filtertext` is a different thing, and `query` is too).
 
 ## Decisions so far
 

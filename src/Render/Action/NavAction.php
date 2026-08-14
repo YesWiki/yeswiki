@@ -60,8 +60,7 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                         ),
                     Setting::checkbox('hideifnoaccess')
                         ->label(_t('AB_templates_nav_hide_if_no_access_label'))
-                        ->default(false)
-                        ->advanced(),
+                        ->default(false),
                 ),
         ];
     }

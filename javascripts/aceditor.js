@@ -4,6 +4,7 @@ import openModal from './aceditor-toolbar-remote-modal.js'
 import LinkPanel from './link-panel.js'
 import FilePickerPanel from './file-picker-panel.js'
 import { closeRails } from './editor-rails.js'
+import { registerEditor } from './editor-handles.js'
 import { restoreStashedValue, switchEditorTo } from './editor-switch.js'
 import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
@@ -321,5 +322,12 @@ class Aceditor {
 // and every later page gets an uninitialised editor.
 ywInitEach('.aceditor-container', (container) => {
   const { name } = container.dataset
-  window[`aceditor-${name}`] = new Aceditor(container)
+  const aceditor = new Aceditor(container)
+  window[`aceditor-${name}`] = aceditor
+  // ...and the same field under the handle every editor publishes, which is what the page
+  // around it reads and writes through -- see editor-handles.js
+  registerEditor(name, {
+    getValue: () => aceditor.editor.getValue(),
+    setValue: (text) => aceditor.editor.setValue(text),
+  })
 })

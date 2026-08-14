@@ -2,7 +2,19 @@ import { test, expect, Page } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { attachConsole, watchConsole } from '../helpers/console'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
-import { replaceEditorTextNewContent } from '../helpers/editor'
+import {
+  editorReady,
+  editorText,
+  openEditorWith,
+  useSourceEditor,
+} from '../helpers/editor'
+import {
+  clickText,
+  components,
+  componentsNamed,
+  link,
+  toolbarButton,
+} from '../helpers/wysiwyg'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -24,14 +36,11 @@ const PNG = Buffer.from(
   'base64',
 )
 
+/** The picker as the page editor offers it, which is the wysiwyg one's toolbar. */
 const openPicker = async (page: Page) => {
   await page.goto('/?PagePrincipale/edit')
-  await page.waitForFunction(
-    () => window['aceditor-body']?.editor !== undefined,
-    null,
-    { timeout: 15000 },
-  )
-  await page.locator('.aceditor-btn-file').first().click()
+  await editorReady(page)
+  await toolbarButton(page, 'yw-file').click()
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeVisible()
 }
 
@@ -200,10 +209,11 @@ test('picking a file inserts an attach action for it', async ({ page }) => {
     .click()
   await page.locator('#YesWikiFilePickerPanel .btn-insert-upload').click()
 
-  const content = await page.evaluate(() =>
-    window['aceditor-body'].editor.getValue(),
-  )
-  expect(content).toMatch(/\{\{attach file="[^"]+" desc="holiday\.png"/)
+  // a wiki-syntax field gets the component, so what lands in the page is a widget
+  await expect
+    .poll(() => editorText(page))
+    .toMatch(/\{\{attach file="[^"]+" desc="holiday\.png"/)
+  await expect(componentsNamed(page, 'attach')).toHaveCount(1)
 })
 
 /**
@@ -308,7 +318,9 @@ test('both editor toolbars stay on screen, on the same line, when the content is
   await expect.poll(async () => (await toolbar.boundingBox()).y).toBe(parked)
 
   // the ACeditor parks on exactly the same line -- a form can show both at once, and
-  // yw-core.css's --sticky-toolbar-top is what keeps them agreeing
+  // yw-core.css's --sticky-toolbar-top is what keeps them agreeing. Asked for by name,
+  // since a page opens with the wysiwyg editor and this is about the other one's bar
+  await useSourceEditor(page)
   await page.goto('/?PagePrincipale/edit')
   await page.waitForFunction(
     () => window['aceditor-body']?.editor !== undefined,
@@ -382,25 +394,20 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  await page.goto('/?PagePrincipale/edit')
-  await page.waitForFunction(
-    () => window['aceditor-body']?.editor !== undefined,
-    null,
-    { timeout: 15000 },
-  )
-  await replaceEditorTextNewContent(
+  await openEditorWith(
     page,
-    '{{button text="Hello" link="https://yeswiki.net"}}\nplain text',
+    [
+      '{{button text="Hello" link="https://yeswiki.net"}}',
+      '',
+      'plain text with a [Le lien](PagePrincipale) in it',
+    ].join('\n'),
   )
 
-  // the cursor opens the actions builder on the component
-  await page.locator('.ace-body').click()
-  await page.evaluate(() =>
-    window['aceditor-body'].editor.ace.selection.moveCursorTo(0, 12),
-  )
+  // clicking the component opens the actions builder on it
+  await components(page).first().click()
   await expect(page.locator('#actions-builder-panel')).toBeVisible()
 
-  await page.locator('.aceditor-btn-file').first().click()
+  await toolbarButton(page, 'yw-file').click()
 
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeVisible()
   await expect(
@@ -408,15 +415,14 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
     'one rail at a time',
   ).toBeHidden()
 
-  // the caret moving out of the component must not close a picker mid-choice
-  await page.evaluate(() =>
-    window['aceditor-body'].editor.ace.selection.moveCursorTo(1, 3),
-  )
+  // ...and clicking in the document must not close a picker mid-choice: where the file
+  // goes is what that click is for. Every other rail takes it as "I have left"
+  await clickText(page, 'plain text')
   await page.waitForTimeout(400)
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeVisible()
 
   // and the link rail displaces it in turn
-  await page.locator('.aceditor-btn-link').first().click()
+  await link(page, 'Le lien').click()
   await expect(page.locator('#YesWikiLinkPanel')).toBeVisible()
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeHidden()
 })

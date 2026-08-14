@@ -20,7 +20,10 @@ export default {
         }
         // Check every condition is respected
         for (const field in showIfConf) {
-          const value = (this.values[field] || false).toString()
+          // a condition may name a parameter written by a composite input rather than an
+          // ordinary setting -- "once there is a facet" names `groups`
+          const said = this.values[field] ?? this.specialValues?.[field]
+          const value = (said || false).toString()
           const expectedValue = showIfConf[field].toString()
           if (expectedValue === 'notNull')
             showIfResult = showIfResult && !['', 'false'].includes(value)
@@ -40,12 +43,19 @@ export default {
           config.showExceptFor.includes(this.selectedActionId))
       return !hideIf
     },
+    /**
+     * Whether to draw this setting at all.
+     *
+     * The same question as checkConfigDisplay() since the "advanced parameters" box went:
+     * a rail that hides half of what a component can be told, behind a checkbox, is a rail
+     * you have to know the answer before you can find. Order carries importance instead --
+     * what a component is pointed at first, the rest under it. Kept as its own name
+     * because a dozen templates ask it, and because "is this drawn" and "does this count
+     * as set" are two questions that have been the same before.
+     */
     checkVisibility(config) {
       if (!config) return false
-      return (
-        this.checkConfigDisplay(config) &&
-        (!config.advanced || this.$root.displayAdvancedParams)
-      )
+      return this.checkConfigDisplay(config)
     },
     refFrom(config) {
       if (!config) return ''
@@ -85,6 +95,9 @@ export default {
         })
       }
       const extraFieldsWithoutOptions = {
+        // not a field of the form: what a Content computes for itself, which is what a
+        // list falls back to when no field is named (ADR-0010)
+        title: _t('ACTION_BUILDER_GENERATED_TITLE'),
         created_at: _t('ACTION_BUILDER_CREATION_DATE'),
         updated_at: _t('ACTION_BUILDER_MODIFICATION_DATE'),
         owner: _t('ACTION_BUILDER_OWNER'),

@@ -59,30 +59,24 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     ])
                         ->label(_t('AB_attach_video_serveur_label'))
                         ->suggests('peertube')
-                        ->required()
-                        ->advanced(),
+                        ->required(),
                     Setting::url('peertubeinstance')
                         ->label(_t('AB_attach_video_peertubeinstance_label'))
                         ->showIf([
                             'server' => 'peertube',
-                        ])
-                        ->advanced(),
+                        ]),
                     Setting::text('id')
-                        ->label(_t('AB_attach_video_id_label'))
-                        ->advanced(),
+                        ->label(_t('AB_attach_video_id_label')),
                     Setting::choice('ratio', [
                         '' => '16/9',
                         '4par3' => '4/3',
                     ])
                         ->label(_t('AB_attach_video_ratio_label'))
-                        ->default('')
-                        ->advanced(),
+                        ->default(''),
                     Setting::number('maxwidth')
-                        ->label(_t('AB_attach_video_largeur_max_label'))
-                        ->advanced(),
+                        ->label(_t('AB_attach_video_largeur_max_label')),
                     Setting::number('maxheight')
-                        ->label(_t('AB_attach_video_hauteur_max_label'))
-                        ->advanced(),
+                        ->label(_t('AB_attach_video_hauteur_max_label')),
                     Setting::cssClass('class')
                         ->label('Classe')
                         ->subSettings(
@@ -92,8 +86,7 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                                 'pull-right' => _t('AB_RIGHT'),
                             ])
                             ->label(_t('AB_attach_video_position_label'))
-                            ->default('')
-                            ->advanced(),
+                            ->default(''),
                         ),
                 ),
         ];

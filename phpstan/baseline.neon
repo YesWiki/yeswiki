@@ -2870,12 +2870,6 @@ parameters:
 			path: ../src/Content/Action/IncludeAction.php
 
 		-
-			message: '#^Loose comparison using \=\= between ''time'' and ''time'' will always evaluate to true\.$#'
-			identifier: equal.alwaysTrue
-			count: 1
-			path: ../src/Content/Action/ListpagesAction.php
-
-		-
 			message: '#^Variable \$element might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
@@ -3032,12 +3026,6 @@ parameters:
 			path: ../src/Content/Action/SyndicationAction.php
 
 		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 1
@@ -3125,12 +3113,6 @@ parameters:
 			message: '#^Parameter \#3 \$value of function curl_setopt expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Variable \$feed might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
 			path: ../src/Content/Action/SyndicationAction.php
 
 		-
@@ -8116,12 +8098,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Service\\BazarListService\:\:isValidURL\(\) has parameter \$pURL with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/BazarListService.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\BazarListService\:\:parseCheckedFiltersInURLForNonDynamic\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: ../src/Content/Service/BazarListService.php
 

@@ -44,8 +44,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
                         ->default(''),
                     Setting::number('classcount')
                         ->label(_t('AB_tags_listpagestag_nbclasses_label'))
-                        ->min(0)
-                        ->advanced(),
+                        ->min(0),
                 ),
         ];
     }

@@ -42,11 +42,9 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
                         ->default(_t('AB_contact_action_entete_default')),
                     Setting::text('template')
                         ->label(_t('AB_contact_action_template_label'))
-                        ->hint(_t('AB_contact_action_template_hint'))
-                        ->advanced(),
+                        ->hint(_t('AB_contact_action_template_hint')),
                     Setting::text('class')
-                        ->label(_t('AB_contact_action_class_label'))
-                        ->advanced(),
+                        ->label(_t('AB_contact_action_class_label')),
                 ),
         ];
     }

@@ -46,11 +46,9 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction, Provi
                     ])
                         ->label(_t('AB_abonnement_mailinglist_label')),
                     Setting::text('nbactionmail')
-                        ->label(_t('AB_abonnement_template_label'))
-                        ->advanced(),
+                        ->label(_t('AB_abonnement_template_label')),
                     Setting::text('class')
-                        ->label(_t('AB_abonnement_class_label'))
-                        ->advanced(),
+                        ->label(_t('AB_abonnement_class_label')),
                 ),
         ];
     }

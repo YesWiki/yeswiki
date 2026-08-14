@@ -95,73 +95,67 @@ EOT,
      */
     public function getData(): array
     {
-        $feed = new \SimplePie\SimplePie();
-        $feed->set_feed_url((string)$this->config['url']);
-        $feed->enable_cache(true);
-        $data = [];
-        // the vendored SimplePie lib triggers PHP 8.1+ "null as array offset" deprecation
-        // notices internally (e.g. IRI::scheme_normalization() on a null scheme); it's
-        // third-party code we don't maintain, so silence only E_DEPRECATED for the
-        // duration of this call instead of patching vendor or hiding other error types
-        set_error_handler(static function (int $errno) {
-            return $errno === E_DEPRECATED;
-        }, E_DEPRECATED);
-        try {
-            $feed->init();
-            $feed->handle_content_type();
-            if ($feed->error()) {
-                // error() answers a string for one feed and a list when several were merged
-                $errors = $feed->error();
-                echo 'Erreur lors de la récupération du flux RSS "' . $this->config['url'] . '" : '
-                    . (is_array($errors) ? implode(', ', $errors) : $errors) . "\n";
+        // ...through FeedLoader, and everything read off the feed inside its callback: the
+        // deprecation notices SimplePie raises on PHP 8.5 come from resolving an item's
+        // link, not from fetching the feed
+        $data = $this->getService(FeedLoader::class)->read(
+            (string)$this->config['url'],
+            function (\SimplePie\SimplePie $feed): array {
+                $data = [];
+                if ($feed->error()) {
+                    // error() answers a string for one feed and a list when several were merged
+                    $errors = $feed->error();
+                    echo 'Erreur lors de la récupération du flux RSS "' . $this->config['url'] . '" : '
+                        . (is_array($errors) ? implode(', ', $errors) : $errors) . "\n";
+
+                    return $data;
+                }
+                $rssItems = $feed->get_items();
+                echo count($rssItems) . ' article(s) trouvé(s) dans le flux.' . "\n";
+                foreach ($rssItems as $item) {
+                    $content = (string)$item->get_content();
+                    preg_match_all(
+                        '~<img\s[^>]*?src\s*=\s*[\'\"]([^\'\"]*?)[\'\"][^>]*?>~',
+                        $content,
+                        $matches
+                    );
+                    $img = $matches[1][0] ?? '';
+                    if (empty($img)) {
+                        // fallback to media:content/media:thumbnail/enclosure (e.g. Le Monde RSS feeds)
+                        if ($enclosure = $item->get_enclosure()) {
+                            $img = $enclosure->get_thumbnail() ?: $enclosure->get_link();
+                        }
+                    }
+                    if (empty($img) && ($thumbnail = $item->get_thumbnail())) {
+                        $img = $thumbnail['url'];
+                    }
+                    $cats = [];
+                    $categories = $item->get_categories();
+                    if (!empty($categories)) {
+                        foreach ($categories as $category) {
+                            $cats[] = $category->get_label();
+                        }
+                    }
+                    if ($author = $item->get_author()) {
+                        $author = $author->get_name();
+                    }
+                    $data[] = [
+                        'title' => $item->get_title(),
+                        'author' => $author,
+                        'categories' => $cats,
+                        'summary' => $item->get_description(),
+                        'link' => $item->get_link(),
+                        'date' => $item->get_date('Y-m-d H:i:s'),
+                        'content' => $content,
+                        'image' => $img,
+                    ];
+                }
 
                 return $data;
             }
-            $rssItems = $feed->get_items();
-            echo count($rssItems) . ' article(s) trouvé(s) dans le flux.' . "\n";
-            foreach ($rssItems as $item) {
-                $content = (string)$item->get_content();
-                preg_match_all(
-                    '~<img\s[^>]*?src\s*=\s*[\'\"]([^\'\"]*?)[\'\"][^>]*?>~',
-                    $content,
-                    $matches
-                );
-                $img = $matches[1][0] ?? '';
-                if (empty($img)) {
-                    // fallback to media:content/media:thumbnail/enclosure (e.g. Le Monde RSS feeds)
-                    if ($enclosure = $item->get_enclosure()) {
-                        $img = $enclosure->get_thumbnail() ?: $enclosure->get_link();
-                    }
-                }
-                if (empty($img) && ($thumbnail = $item->get_thumbnail())) {
-                    $img = $thumbnail['url'];
-                }
-                $cats = [];
-                $categories = $item->get_categories();
-                if (!empty($categories)) {
-                    foreach ($categories as $category) {
-                        $cats[] = $category->get_label();
-                    }
-                }
-                if ($author = $item->get_author()) {
-                    $author = $author->get_name();
-                }
-                $data[] = [
-                    'title' => $item->get_title(),
-                    'author' => $author,
-                    'categories' => $cats,
-                    'summary' => $item->get_description(),
-                    'link' => $item->get_link(),
-                    'date' => $item->get_date('Y-m-d H:i:s'),
-                    'content' => $content,
-                    'image' => $img,
-                ];
-            }
-        } finally {
-            restore_error_handler();
-        }
+        );
 
-        return $data;
+        return $data ?? [];
     }
 
     /**
