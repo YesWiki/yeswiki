@@ -10,6 +10,8 @@
 // re-queried per keystroke: that is what lets each family button say how many files it
 // holds and the extension list name only extensions that exist. See
 // FileApiController::getFiles() for where that stops being the right trade.
+
+import prepareImageForUpload from './image-upload.js'
 import { legacyIconToSprite } from './yw-icon-map.js'
 import { claimRailSlot, registerRail } from './editor-rails.js'
 
@@ -502,8 +504,21 @@ export default class {
       return
     }
 
+    // Converted to WebP and capped in the browser, before a byte leaves the machine (see
+    // image-upload.js). Not a server-side step, because the upload itself is the slow part
+    // on the connections this matters most on -- and because the wiki keeps forever whatever
+    // it is handed. Hands back the original for anything it should not touch.
+    const button = this.panel.querySelector('.btn-do-upload')
+    button.disabled = true
+    let toUpload
+    try {
+      toUpload = await prepareImageForUpload(file)
+    } finally {
+      button.disabled = false
+    }
+
     const formData = new FormData()
-    formData.append('upFile', file)
+    formData.append('upFile', toUpload)
     formData.append('pageTag', wiki.pageTag)
 
     let response

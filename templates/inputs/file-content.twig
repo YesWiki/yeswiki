@@ -10,11 +10,16 @@
             {% if currentSize %}<span class="yw-text-muted">({{ (currentSize / 1024)|round }} ko)</span>{% endif %}
         </p>
     {% endif %}
+    {# An image chosen here is converted to WebP and capped before it is sent, exactly as
+       one uploaded through the file picker is -- this is the other way a picture gets into
+       the wiki, and the two must not disagree about what gets stored. #}
+    {{ include_javascript('javascripts/inputs/file-upload-optimize.js', false, true) }}
     <input
         type="file"
         id="{{ name }}"
         name="{{ name }}"
         class="yw-input yw-file-upload"
+        data-yw-optimise-image
         {% if required %}required{% endif %}
     />
     {% if currentFilename %}
