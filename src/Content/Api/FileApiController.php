@@ -113,7 +113,10 @@ class FileApiController extends YesWikiController
     }
 
     /**
-     * The resized copy this request asked for, generated on first use -- or null when it asked for none, or when the file is not an image, or when resizing failed.
+     * The WebP copy this request asked for, generated on first use, or null when it asked for none or the file is not a raster image.
+     *
+     * A source already inside the box is not enlarged to fill it, but is still re-encoded: the
+     * format is the point, not only the size.
      */
     private function resizedCopy(Request $request, string $path): ?string
     {
@@ -130,8 +133,9 @@ class FileApiController extends YesWikiController
         $height = min($height, self::MAX_RESIZE);
         $mode = $request->query->get('mode') === 'crop' ? 'crop' : 'fit';
 
-        if ($mode === 'fit' && $size[0] <= $width && $size[1] <= $height) {
-            return null;
+        if ($mode === 'fit') {
+            $width = min($width, $size[0]);
+            $height = min($height, $size[1]);
         }
 
         $cacheDir = FileManager::STORAGE_DIR . '/cache';

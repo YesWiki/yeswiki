@@ -157,7 +157,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
      */
     private function itemsFrom(array $pages): array
     {
-        $cache = $this->getService(RemoteImageCache::class);
         $items = [];
         foreach ($pages as $page) {
             $stamp = $page['datestamp'] ?? null;
@@ -167,7 +166,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 title: (string)($page['title'] ?? ''),
                 subtitle: ($page['source'] ?? '') !== '' ? (string)$page['source'] : null,
                 description: ($page['description'] ?? '') !== '' ? (string)$page['description'] : null,
-                image: $image === '' ? null : $cache->localUrl($image),
+                image: $image === '' ? null : $image,
                 url: ($page['url'] ?? '') !== '' ? (string)$page['url'] : null,
                 date: is_numeric($stamp) ? date('c', (int)$stamp) : null,
                 categories: array_values(array_map('strval', $page['categories'] ?? [])),

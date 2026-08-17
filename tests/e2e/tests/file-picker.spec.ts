@@ -47,6 +47,12 @@ const backToList = async (page: Page) => {
   ).toBeVisible()
 }
 
+/** The name a chosen file lands under: a raster image is converted, so it changes. */
+const storedName = (name: string, mimeType: string) =>
+  mimeType.startsWith('image/') && mimeType !== 'image/svg+xml'
+    ? name.replace(/\.[^.]+$/, '.webp')
+    : name
+
 const uploadThroughPicker = async (
   page: Page,
   name: string,
@@ -62,7 +68,7 @@ const uploadThroughPicker = async (
     .setInputFiles({ name, mimeType, buffer })
   await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
-    name,
+    storedName(name, mimeType),
   )
 }
 
@@ -84,13 +90,13 @@ test('the picker lists the files already uploaded, and filters them', async ({
   )
   await backToList(page)
 
-  await expect(resultNames(page)).toHaveText(['minutes.txt', 'holiday.png'])
+  await expect(resultNames(page)).toHaveText(['minutes.txt', 'holiday.webp'])
 
   const families = page.locator('#YesWikiFilePickerPanel .file-picker__family')
   await expect(families).toHaveText(['Tous (2)', 'Images (1)', 'Documents (1)'])
 
   await families.filter({ hasText: 'Images' }).click()
-  await expect(resultNames(page)).toHaveText(['holiday.png'])
+  await expect(resultNames(page)).toHaveText(['holiday.webp'])
 
   const extensions = page.locator(
     '#YesWikiFilePickerPanel [data-yw-file-picker-extensions] option',
@@ -423,12 +429,43 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
 })
 
 /** A small image is left exactly as it was. */
-test('a small image is uploaded untouched', async ({ page }) => {
+test('every raster image is stored as WebP, however small', async ({
+  page,
+}) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)
 
   await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
-    'holiday.png',
+    'holiday.webp',
+  )
+})
+
+test('an animated GIF keeps its frames, and its format', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openPicker(page)
+  await page
+    .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
+    .click()
+
+  await page.evaluate(() => {
+    const gif = Uint8Array.from(
+      atob(
+        'R0lGODlhAQABAIAAAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQJAAAAACwAAAAAAQABAAACAkQBACH5BAkAAAAALAAAAAABAAEAAAICRAEAOw==',
+      ),
+      (c) => c.charCodeAt(0),
+    )
+    const transfer = new DataTransfer()
+    transfer.items.add(new File([gif], 'wave.gif', { type: 'image/gif' }))
+    const input = document.querySelector(
+      '#YesWikiFilePickerPanel input[name="upFile"]',
+    ) as HTMLInputElement
+    input.files = transfer.files
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
+
+  await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
+    'wave.gif',
   )
 })

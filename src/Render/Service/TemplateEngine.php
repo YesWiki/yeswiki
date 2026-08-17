@@ -9,6 +9,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -186,23 +187,31 @@ class TemplateEngine
             }
             throw new \Exception('`$tokenId` should be a string or an array !');
         });
-        $this->addTwigHelper('image_at', function ($url, $width, $height = null) {
+        $this->addTwigHelper('image_at', function ($url, $width = 0, $height = null) {
             $url = (string)$url;
             $width = (int)$width;
             $height = (int)($height ?: $width);
-            if ($url === '' || $width < 1) {
+            if ($url === '') {
                 return $url;
             }
 
             $base = $this->urlFormatter->getBaseUrl();
-            if (!str_starts_with($url, $base) || preg_match('#api/files/[^/?&]+/download#', $url) !== 1) {
-                return $url;
+            if (str_starts_with($url, $base) || !preg_match('#^https?://#i', $url)) {
+                if ($width < 1 || preg_match('#api/files/[^/?&]+/download#', $url) !== 1) {
+                    return $url;
+                }
+
+                return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query([
+                    'width' => $width,
+                    'height' => $height,
+                ]);
             }
 
-            return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query([
-                'width' => $width,
-                'height' => $height,
-            ]);
+            return $this->container->get(RemoteImageCache::class)->localUrl(
+                $url,
+                $width > 0 ? $width : null,
+                $height > 0 ? $height : null
+            );
         });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {

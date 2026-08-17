@@ -7,7 +7,7 @@
   {% if item.image %}
     {% set w = width|default(0) %}
     <img class="yw-item__image"
-         src="{{ w > 0 ? image_at(item.image, w, (w * 2 / 3)|round) : item.image }}"
+         src="{{ image_at(item.image, w, w > 0 ? (w * 2 / 3)|round : 0) }}"
          alt="{{ alt|default('') }}" loading="lazy" />
   {% endif %}
 {% endmacro %}

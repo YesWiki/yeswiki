@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Services;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Action\SyndicationAction;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -181,25 +180,28 @@ class RemoteImageCacheTest extends YesWikiTestCase
         $this->assertSame([], glob('cache/remote/*.webp') ?: []);
     }
 
-    /** The feed reader really does route its images through here. */
-    public function testSyndicationTurnsAFeedImageIntoALocalOne(): void
+    /**
+     * A Presentation asks for the size it will draw, and gets a local copy of that size.
+     *
+     * A syndicated Item carries the publisher's own URL; the shared image macro reaches it
+     * through `image_at`, which is where the fetching and the shrinking happen. A four-column
+     * card wall must not download the banner a one-column list would.
+     */
+    public function testAPresentationGetsTheSizeItAsksFor(): void
     {
-        $wiki = $this->getWiki();
-        $wiki->services->set(RemoteImageCache::class, $this->cache($this->png(3000, 1500)));
+        $cache = $this->cache($this->png(3000, 1500));
 
-        $action = new SyndicationAction();
-        $action->setServices($wiki->services);
-        $itemsFrom = new \ReflectionMethod($action, 'itemsFrom');
+        $wide = $cache->localUrl(self::REMOTE, 1170, 780);
+        $narrow = $cache->localUrl(self::REMOTE, 390, 260);
 
-        $items = $itemsFrom->invoke($action, [[
-            'title' => 'An article',
-            'url' => 'https://news.example/article',
-            'image' => self::REMOTE,
-        ]]);
+        $this->assertNotSame($wide, $narrow, 'one cached copy per size asked for');
 
-        $this->assertCount(1, $items);
-        $this->assertNotSame(self::REMOTE, $items[0]->image);
-        $this->assertStringContainsString('cache/remote/', (string)$items[0]->image);
+        $wideSize = (array)getimagesize($this->pathOf($wide));
+        $narrowSize = (array)getimagesize($this->pathOf($narrow));
+
+        $this->assertSame(1170, $wideSize[0]);
+        $this->assertSame(390, $narrowSize[0]);
+        $this->assertLessThan(filesize($this->pathOf($wide)), filesize($this->pathOf($narrow)));
     }
 
     /** An address this server should not be making a request to is not one it makes. */

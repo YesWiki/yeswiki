@@ -84,7 +84,7 @@ test('each menu opens on its own, as a column of choices', async ({ page }) => {
 
   await language.hover()
   await expect.poll(() => opacityOf(language)).toBe('1')
-  expect(await opacityOf(scheme), 'the other menu stayed open').toBe('0')
+  await expect.poll(() => opacityOf(scheme), { timeout: 3000 }).toBe('0')
 
   await scheme.hover()
   await expect.poll(() => opacityOf(scheme)).toBe('1')

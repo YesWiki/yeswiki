@@ -4,7 +4,7 @@
 <div class="yw-items yw-items--list">
   {% for item in items %}
     <article class="yw-item yw-item--list{{ item.image ? ' has-image' : '' }}">
-      {{ slot.image(item, item.title) }}
+      {{ slot.image(item, item.title, 192) }}
       <div class="yw-item__body">
         {{ slot.badge(item) }}
         {{ slot.title(item) }}
