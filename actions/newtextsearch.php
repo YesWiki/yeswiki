@@ -49,7 +49,7 @@ if (!$phrase && isset($_GET['phrase'])) {
 // dans le cas contraire, présenter une zone de saisie
 if (!$paramPhrase) {
     echo $this->FormOpen('', '', 'get');
-    echo '<div class="input-prepend input-append input-group input-group-lg">
+    echo '<div class="input-prepend input-group input-group-lg">
           <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
           <input name="phrase" type="text" class="form-control" placeholder="' . (($label) ? $label : '') . '" size="', $size, '" value="', $phrase, '" >
           <span class="input-group-btn">
