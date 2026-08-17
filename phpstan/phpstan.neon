@@ -43,6 +43,29 @@ parameters:
             message: '#Variable \$yeswikiConfig in empty\(\) always exists and is always falsy#'
             path: ../src/Kernel/Entity/ConfigurationFile.php
 
+        # Both helpers loop `do { $name = random(); } while (getOneByName($name))`, then CREATE
+        # that user, then read it back. PHPStan carries the loop's narrowing -- "getOneByName()
+        # of this name is null" -- across the create() it cannot see, so it calls the
+        # assertNotNull() always-false. The assertion is what makes a failed fixture fail on the
+        # spot instead of somewhere unrelated, so it stays.
+        -
+            message: '#assertNotNull\(\) with null and non-falsy-string will always evaluate to false#'
+            paths:
+                - ../tests/src/services/AuthenticationServiceTest.php
+                - ../tests/src/services/UserManagerTest.php
+
+        # ZipArchive::registerCancelCallback() and registerProgressCallback() need libzip >= 1.6.
+        # PHP's stub declares them unconditionally, so PHPStan calls the method_exists() guards
+        # always-true -- but whether they exist depends on how the extension was built, which is
+        # exactly what those guards are for. The analyser is more optimistic than reality here,
+        # which is the opposite of the usual case and the reason this is not a burn-down item.
+        # It follows that whether this fires depends on the build the analyser runs against, so
+        # it must not be reported as unmatched on the builds where the stub and reality agree.
+        -
+            message: '#method_exists\(\) with ZipArchive and .register(Cancel|Progress)Call#'
+            path: ../src/Admin/Service/ArchiveService.php
+            reportUnmatched: false
+
     paths:
         - ../src
         # Only the bundled sample extension is repo content. extensions/* is gitignored

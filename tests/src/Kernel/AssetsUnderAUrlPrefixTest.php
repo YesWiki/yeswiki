@@ -58,7 +58,7 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
     public function testAPublishedAssetIsServedThroughThatPrefixToo(): void
     {
         $this->underAPrefix(function (): void {
-            foreach (['styles/bazar/entries/index.css' => 'text/css',
+            foreach (['styles/yw-entries.css' => 'text/css',
                 'javascripts/link-panel.js' => 'text/javascript'] as $path => $type) {
                 $asset = $this->fetch('/ecto/' . AssetPublisher::PUBLISHED_PREFIX . 'dev/' . $path);
                 $this->assertStringContainsString('200', $asset['status'], $this->diag($path, $asset));

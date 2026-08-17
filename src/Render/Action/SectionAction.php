@@ -11,6 +11,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
@@ -270,6 +271,29 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         'wow heartBeat' => 'AB_templates_section_animation_heartbat',
     ];
 
+    /**
+     * The animation this section carries, as the class pair stored content already uses --
+     * and the stylesheet that makes it move, declared only when there is one to run.
+     *
+     * The parameter was being *written* by the settings rail and read by nobody, and
+     * `styles/animate.css` was registered by nobody either, so all twelve of the choices
+     * above had been doing nothing at all. Two halves of one dead feature (ADR-0020).
+     *
+     * Conditional on purpose: ADR-0014's whole point is that a page downloads what it turns
+     * out to need, and a page with no animated section needs none of this.
+     */
+    private function animationClass(): string
+    {
+        $animation = trim((string)($this->arguments['animation'] ?? ''));
+        if ($animation === '' || !array_key_exists($animation, self::ANIMATION_LABELS)) {
+            return '';
+        }
+
+        $this->getService(AssetRegistry::class)->addCssFile('styles/animate.css');
+
+        return ' ' . $animation;
+    }
+
     /** @return array<string, string> */
     private static function patternOptions(): array
     {
@@ -298,13 +322,13 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             || str_ends_with($patternId, '-reverse');
         $patternId = (string)preg_replace('/-reverse$/', '', $patternId);
 
-        $patternbg = $reversed ? 'var(--main-bg-color)' : $bgcolor;
-        $patterncolor = $reversed ? $bgcolor : 'var(--main-bg-color)';
+        $patternbg = $reversed ? 'var(--yw-surface)' : $bgcolor;
+        $patterncolor = $reversed ? $bgcolor : 'var(--yw-surface)';
         $patternborder = false;
 
         // A gradient is built from the one colour it is given, shaded and tinted, so it
         // needs no second colour picker and works with whatever colour is chosen.
-        $base = $bgcolor !== '' ? $bgcolor : 'var(--main-bg-color)';
+        $base = $bgcolor !== '' ? $bgcolor : 'var(--yw-surface)';
         $shade = "color-mix(in srgb, $base 62%, #000)";
         $tint = "color-mix(in srgb, $base 74%, #fff)";
 
@@ -316,7 +340,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 $patternborder = true;
                 $pattern = <<<css
                     border-color: $bgcolor;
-                    background-color: var(--main-bg-color);
+                    background-color: var(--yw-surface);
                 css;
                 break;
             case 'point':
@@ -485,7 +509,8 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 . ($patternborder ? ' pattern-border' : '')
                 . ($visible ? '' : ' remove-this-div-on-page-load ')
                 . " pattern-$patternId"
-                . (!empty($class) ? ' ' . $class : '');
+                . (!empty($class) ? ' ' . $class : '')
+                . $this->animationClass();
 
             // How tall it is at least, as a share of the window -- a banner is given room
             // rather than capped. `height` is the older parameter and stays what it always

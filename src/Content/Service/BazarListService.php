@@ -641,6 +641,7 @@ class BazarListService
             foreach ($vPostFix as $vID) {
                 $vFieldMapping = preg_split('/\->?/', $vID);
 
+                $vFieldMapping = $vFieldMapping === false ? [] : $vFieldMapping;
                 if (count($vFieldMapping) > 1) {
                     $vIDs[] = ['url' => $vURL, 'id' => $vFieldMapping[0], 'localFormId' => $vFieldMapping[1]];
                 } else {
@@ -712,7 +713,7 @@ class BazarListService
         }
         $value = is_scalar($value)
             ? strval($value)
-            : json_encode($value);
+            : (string)json_encode($value);
 
         return strtoupper(removeAccents($value));
     }

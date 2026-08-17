@@ -62,9 +62,13 @@ class AuthenticationServiceTest extends YesWikiTestCase
         $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $userManager->create($name, $email, $password);
+        $user = $userManager->getOneByName($name);
+        // asserted rather than returned as null: a helper that silently hands back no user
+        // makes every test using it fail somewhere else, on something unrelated
+        self::assertNotNull($user, "the fixture user '$name' was not created");
 
         return [
-            'user' => $userManager->getOneByName($name),
+            'user' => $user,
             'password' => $password,
         ];
     }

@@ -275,7 +275,14 @@ class FileManager
             }
         }
 
-        return $this->getOne($tag);
+        $created = $this->getOne($tag);
+        // declared `: array`; a file whose row cannot be read straight back is a failure worth
+        // a message rather than a TypeError in the caller (ticket 40)
+        if ($created === null) {
+            throw new \Exception("the file '$tag' was written but cannot be read back");
+        }
+
+        return $created;
     }
 
     /**
@@ -313,7 +320,7 @@ class FileManager
         $search = ['@[éèêëÊË]@i', '@[àâäÂÄ]@i', '@[îïÎÏ]@i', '@[ûùüÛÜ]@i', '@[ôöÔÖ]@i', '@[ç]@i', '@[ ]@i', '@[^a-zA-Z0-9_\.\-]@'];
         $replace = ['e', 'a', 'i', 'u', 'o', 'c', '_', ''];
 
-        return preg_replace($search, $replace, mb_convert_encoding($filename, 'ISO-8859-1', 'UTF-8'));
+        return (string)preg_replace($search, $replace, mb_convert_encoding($filename, 'ISO-8859-1', 'UTF-8'));
     }
 
     public function delete(string $tag): void

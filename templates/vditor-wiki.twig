@@ -39,7 +39,6 @@
    global it reads is there by the time it runs #}
 {{ include_javascript('javascripts/vditor-wiki.js', false, true) }}
 {{ include_css('styles/vendor/vditor/index.css') }}
-{{ include_css('styles/bazar/inputs/textarea.css') }}
-{{ include_css('styles/vditor-wiki.css') }}
-{# the palette and the settings panel are the ACeditor's rails, unchanged #}
-{{ include_css('styles/actions/aceditor.css') }}
+{# one bundle now holds Vditor's own overrides, the editor chrome and the ACeditor's rails --
+   the palette and the settings panel included #}
+{{ include_css('styles/yw-editor.css') }}

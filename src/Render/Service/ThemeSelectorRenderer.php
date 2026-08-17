@@ -109,19 +109,6 @@ class ThemeSelectorRenderer extends YesWikiController
         }
         $listWikinames = '["' . implode('","', $listWikinames) . '"]';
 
-        $ts = [
-            'TEMPLATE_CHOOSE_FONT',
-            'TEMPLATE_SEARCH_POINTS',
-            'TEMPLATE_APPLY',
-            'TEMPLATE_CANCEL',
-            'TEMPLATE_THEME_NOT_SAVE',
-            'TEMPLATE_FILE_NOT_ADDED',
-            'TEMPLATE_FILE_NOT_DELETED',
-            'TEMPLATE_FILE_ALREADY_EXISTING',
-            'TEMPLATE_PRESET_ERROR',
-        ];
-        $ts = array_combine($ts, $ts);
-
         return $this->renderWithThemeSelector('@core/theme-selector-with-form.twig', [
             'mode' => $mode,
             'id' => $id,
@@ -129,9 +116,6 @@ class ThemeSelectorRenderer extends YesWikiController
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
             'showAdminActions' => $this->getService(AclService::class)->isAdmin(),
-            'themeSelectorTranslation' => array_map('_t', $ts),
-            'customCSSPresetsPath' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
-            'customCSSPresetsPrefix' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
             'availableLanguages' => $GLOBALS['available_languages'],
             'preferedLanguage' => $GLOBALS['prefered_language'],
             'languagesList' => $GLOBALS['languages_list'],

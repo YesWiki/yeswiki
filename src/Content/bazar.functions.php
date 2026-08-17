@@ -134,7 +134,7 @@ function getHtmlDataAttributes($entry, $formtab = '')
  * @global string classe CSS du paragraphe (facultatif "field" par défaut)
  * @global string balise HTML du paragraphe (facultatif "field" par défaut)
  *
- * @return string HTML
+ * @return void this echoes its output rather than returning it
  */
 function show($val, $label = '', $class = 'field', $tag = 'p', $entry = '')
 {
@@ -184,17 +184,22 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $entry = '')
     }
 }
 
-/** removeAccents() Renvoie une chaine de caracteres avec les accents en moins.
- *   @param  string  chaine de caracteres avec de potentiels accents a enlever
+/**
+ * removeAccents() Renvoie une chaine de caracteres avec les accents en moins.
  *
- *   return  string chaine de caracteres, sans accents
+ * @param string $str     chaine de caracteres avec de potentiels accents a enlever
+ * @param string $charset
+ *
+ * @return string chaine de caracteres, sans accents
  */
 function removeAccents($str, $charset = YW_CHARSET)
 {
+    // every preg_replace() below returns `string|null`, and each fed the next: a failure at any
+    // step made the rest operate on null (ticket 40)
     $str = htmlentities($str, ENT_NOQUOTES, $charset);
-    $str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
-    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
-    $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+    $str = (string)preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+    $str = (string)preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+    $str = (string)preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
 
     return $str;
 }
@@ -223,11 +228,11 @@ function generateWikiName($name, $occurrence = 1)
         $name = '';
         foreach ($temp as $mot) {
             // on vire d'eventuels autres caracteres speciaux
-            $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+            $name .= (string)preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
         }
 
         // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $name);
+        $var = (string)preg_replace('/[^A-Z]/', '', $name);
         if (strlen($var) < 2) {
             $last = ucfirst(substr($name, strlen($name) - 1));
             $name = substr($name, 0, -1) . $last;
@@ -236,11 +241,11 @@ function generateWikiName($name, $occurrence = 1)
         $name = '';
         foreach ($temp as $mot) {
             // on vire d'eventuels autres caracteres speciaux
-            $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+            $name .= (string)preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
         }
 
         // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $name);
+        $var = (string)preg_replace('/[^A-Z]/', '', $name);
         if (strlen($var) < 2) {
             $last = ucfirst(substr($name, strlen($name) - 1));
             $name = substr($name, 0, -1) . $last;
@@ -297,10 +302,12 @@ function sanitizeFilename($string = '')
     // our list of "dangerous characters", add/remove characters if necessary
     $dangerous_characters = [' ', '"', "'", '&', '/', '\\', '?', '#', '(', ')', '+'];
     // every forbidden character is replace by an underscore
-    $string = str_replace($dangerous_characters, '-', removeAccents($string));
+    // (string) around the whole thing: str_replace() returns an array when given one, and
+    // nothing here ever passes one -- but the signature says it might
+    $string = (string)str_replace($dangerous_characters, '-', removeAccents((string)$string));
 
     // Only allow one dash separator at a time (and make string lowercase)
-    return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
+    return mb_strtolower((string)preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
 
 function resizeImage($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
@@ -335,11 +342,11 @@ function resizeImage($image_src, $image_dest, $largeur, $hauteur, $method = 'fit
 
 function renameUrlToSanitizedFilename($url)
 {
-    $str = preg_replace('/[\r\n\t ]+/', ' ', basename($url));
-    $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
+    $str = (string)preg_replace('/[\r\n\t ]+/', ' ', basename($url));
+    $str = (string)preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
     $str = str_replace(' ', '-', $str);
 
-    return preg_replace('/-+/', '-', $str);
+    return (string)preg_replace('/-+/', '-', $str);
 }
 
 function copyUrlToLocalFile($url, $localPath)
@@ -347,16 +354,21 @@ function copyUrlToLocalFile($url, $localPath)
     if (file_exists($localPath)) {
         return true;
     } elseif ($ch = curl_init($url)) { // teste l'existance du fichier a distance
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $imgcontent = curl_exec($ch);
         $error = curl_error($ch);
         if (PHP_VERSION_ID < 80500) {
             curl_close($ch);
         }
-        $file = fopen($localPath, 'w+');
-        fputs($file, $imgcontent);
-        fclose($file);
+        // curl_exec() returns false on failure, and `fputs($file, false)` writes an empty
+        // string -- so a failed download left a zero-byte image behind and then reported the
+        // error (ticket 40)
+        $file = is_string($imgcontent) ? fopen($localPath, 'w+') : false;
+        if ($file !== false) {
+            fputs($file, (string)$imgcontent);
+            fclose($file);
+        }
         if ($error) {
             echo $error;
 
@@ -432,7 +444,7 @@ function renderEntryView($inApp, $entryId, $form = '')
  * the parameter is a value-map and a field name is given, pick the entry's matched
  * value (first match for comma-separated checkbox values), else the default.
  * Deleted by mistake in the wave-2 dead-code purge while the bazar list templates
- * (liste_liens, material-card, map, tableau, ...) still call it — restored for
+ * (liste_liens, map, tableau, ...) still call it — restored for
  * ticket 07, where the Twig `customValueForEntry` helper delegates here.
  *
  * @param array<mixed>|string|null $parameter

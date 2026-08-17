@@ -241,12 +241,6 @@ parameters:
 			path: ../src/Admin/Action/EditConfigAction.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Admin/Action/EditConfigAction.php
-
-		-
 			message: '#^Method YesWiki\\Admin\\Action\\MailPeriodAction\:\:groupName\(\) has parameter \$period with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -541,12 +535,6 @@ parameters:
 			path: ../src/Admin/Command/ArchiveCommand.php
 
 		-
-			message: '#^Call to function is_array\(\) with array\<mixed\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 3
-			path: ../src/Admin/Controller/ArchiveController.php
-
-		-
 			message: '#^Method YesWiki\\Admin\\Controller\\ArchiveController\:\:getArchive\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -580,18 +568,6 @@ parameters:
 			message: '#^Property YesWiki\\Admin\\Controller\\ArchiveController\:\:\$params has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Admin/Controller/ArchiveController.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: ../src/Admin/Controller/ArchiveController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 7
 			path: ../src/Admin/Controller/ArchiveController.php
 
 		-
@@ -1363,12 +1339,6 @@ parameters:
 			path: ../src/Admin/Entity/PackageCollection.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 4
-			path: ../src/Admin/Entity/PackageCollection.php
-
-		-
 			message: '#^Method YesWiki\\Admin\\Entity\\PackageCore\:\:__construct\(\) has parameter \$address with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -1735,12 +1705,6 @@ parameters:
 			path: ../src/Admin/Service/ArchiveService.php
 
 		-
-			message: '#^Cannot access offset 0 on array\<int\|string, list\<string\>\|string\>\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
 			message: '#^If condition is always false\.$#'
 			identifier: if.alwaysFalse
 			count: 2
@@ -1785,12 +1749,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:assertEnoughtSpace\(\) has parameter \$blacklistedRootFolders with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:checkIfNeedStop\(\) should return bool but returns int\|false\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Admin/Service/ArchiveService.php
 
@@ -1909,12 +1867,6 @@ parameters:
 			path: ../src/Admin/Service/ArchiveService.php
 
 		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getPrivateFolder\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getRunningUIDdata\(\) has parameter \$info with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1922,24 +1874,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getRunningUIDdata\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getRunningUIDdata\(\) should return array but returns false\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getUID\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:getUID\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Admin/Service/ArchiveService.php
@@ -2061,138 +1995,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:writeOutput\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Offset ''uid'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 7
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$dir_handle of function closedir expects resource\|null, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$dir_handle of function readdir expects resource\|null, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$directory of function disk_free_space expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$directory of function opendir expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function str_ends_with expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function strpos expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function strstr expects string, list\<string\>\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$path of function realpath expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$pathto of method ZipArchive\:\:extractTo\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$string of function strlen expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$string of function strlen expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$string of function substr expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#1 \$string of function substr expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#2 \$files of method ZipArchive\:\:extractTo\(\) expects array\<string\>\|string\|null, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, array\<string\>\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#4 \$outputFile of method YesWiki\\Admin\\Service\\ArchiveService\:\:writeOutput\(\) expects string, array\|float\|int\|string\|false\|null given\.$#'
-			identifier: argument.type
-			count: 15
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Parameter \#9 \$outputFile of method YesWiki\\Admin\\Service\\ArchiveService\:\:createZip\(\) expects string, array\|float\|int\|string\|false\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
-			message: '#^Part \$sanitizeWebsiteName \(array\<string\>\|string\|null\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: ../src/Admin/Service/ArchiveService.php
 
@@ -2419,12 +2221,6 @@ parameters:
 			path: ../src/ComposerScriptsHelper.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/ComposerScriptsHelper.php
-
-		-
 			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:formatArguments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2455,22 +2251,10 @@ parameters:
 			path: ../src/Contact/Api/ContactApiController.php
 
 		-
-			message: '#^Offset ''tag'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Contact/Api/ContactApiController.php
-
-		-
 			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
 			identifier: argument.type
 			count: 1
 			path: ../src/Contact/Api/ContactApiController.php
-
-		-
-			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../src/Contact/contact.functions.php
 
 		-
 			message: '#^Function FindMailFromWikiPage\(\) has no return type specified\.$#'
@@ -2671,18 +2455,6 @@ parameters:
 			path: ../src/Content/Action/AdminTagAction.php
 
 		-
-			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Action/BazarAction.php
-
-		-
-			message: '#^Call to function is_scalar\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Action/BazarAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\BazarAction\:\:formatArguments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2806,12 +2578,6 @@ parameters:
 			message: '#^Property YesWiki\\Content\\Action\\EntryImportAction\:\:\$formManager has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Action/EntryImportAction.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
 			path: ../src/Content/Action/EntryImportAction.php
 
 		-
@@ -3115,48 +2881,6 @@ parameters:
 			path: ../src/Content/Action/SyndicationAction.php
 
 		-
-			message: '#^Parameter \#1 \$datetime of function strtotime expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#1 \$string of function strlen expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#1 \$text of function truncate expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#2 \$timestamp of function date expects int\|null, int\|false given\.$#'
-			identifier: argument.type
-			count: 4
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Parameter \#3 \$value of function curl_setopt expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\TagCloudAction\:\:buildSelectionTagsClause\(\) has parameter \$tags with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3203,18 +2927,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: ../src/Content/Action/TrailAction.php
-
-		-
-			message: '#^Call to function is_array\(\) with list\<non\-falsy\-string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
-			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 3
-			path: ../src/Content/Action/UserFavoritesAction.php
 
 		-
 			message: '#^Loose comparison using \!\= between non\-falsy\-string and '''' will always evaluate to true\.$#'
@@ -3325,12 +3037,6 @@ parameters:
 			path: ../src/Content/Action/UserFavoritesAction.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:formatArguments\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -3339,12 +3045,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/ValueAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:run\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Content/Action/ValueAction.php
 
@@ -3453,30 +3153,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Api\\EntryApiController\:\:getEntryUrl\(\) has parameter \$sourceUrl with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Api/EntryApiController.php
-
-		-
-			message: '#^Offset ''label'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Api/EntryApiController.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function strpos expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Content/Api/EntryApiController.php
-
-		-
-			message: '#^Parameter \#1 \$string of function urldecode expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Content/Api/EntryApiController.php
-
-		-
-			message: '#^Parameter \#2 \$string of function explode expects string, string\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: ../src/Content/Api/EntryApiController.php
 
@@ -3715,24 +3391,6 @@ parameters:
 			path: ../src/Content/Api/RelationApiController.php
 
 		-
-			message: '#^Call to function is_array\(\) with bool\|float\|int\|string\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Call to function is_scalar\(\) with \*NEVER\* will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Call to function is_string\(\) with non\-falsy\-string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Api\\TripleApiController\:\:ByResource\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -3777,36 +3435,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Api\\TripleApiController\:\:setTriple\(\) has parameter \$resource with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Parameter \#1 \$method of method YesWiki\\Content\\Api\\TripleApiController\:\:extractTriplesParams\(\) expects string, int given\.$#'
-			identifier: argument.type
-			count: 4
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Parameter \#2 \$default of method Symfony\\Component\\HttpFoundation\\InputBag\<bool\|float\|int\|string\|null\>\:\:get\(\) expects bool\|float\|int\|string\|null, array given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and 0 will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Unable to resolve the template type TDefault in call to method Symfony\\Component\\HttpFoundation\\InputBag\<bool\|float\|int\|string\|null\>\:\:get\(\)$#'
-			identifier: argument.templateType
-			count: 2
-			path: ../src/Content/Api/TripleApiController.php
-
-		-
-			message: '#^Variable \$rawValue in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
 			count: 1
 			path: ../src/Content/Api/TripleApiController.php
 
@@ -4021,12 +3649,6 @@ parameters:
 			path: ../src/Content/Controller/EntryController.php
 
 		-
-			message: '#^Offset ''prepared'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
 			message: '#^Parameter \#1 \$string of function urldecode expects string, float\|int\<min, \-1\>\|int\<1, max\>\|string\|true given\.$#'
 			identifier: argument.type
 			count: 1
@@ -4120,12 +3742,6 @@ parameters:
 			message: '#^Property YesWiki\\Content\\Controller\\EntryController\:\:\$tripleStore has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
 			path: ../src/Content/Controller/EntryController.php
 
 		-
@@ -4855,12 +4471,6 @@ parameters:
 			path: ../src/Content/Field/BazarField.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -5461,12 +5071,6 @@ parameters:
 			path: ../src/Content/Field/EmailField.php
 
 		-
-			message: '#^Offset ''tag'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Field\\EmailField\:\:\$seeEmailAcls has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -5655,12 +5259,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:updateEntryAfterFileDelete\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Offset ''extension'' might not exist on array\{dirname\?\: string, basename\: string, extension\?\: string, filename\: string\}\.$#'
-			identifier: offsetAccess.notFound
 			count: 1
 			path: ../src/Content/Field/FileField.php
 
@@ -6403,12 +6001,6 @@ parameters:
 			path: ../src/Content/Field/RadioField.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Content/Field/RadioField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\RadioListField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -7003,18 +6595,6 @@ parameters:
 			path: ../src/Content/Field/TextareaField.php
 
 		-
-			message: '#^Offset 4 does not exist on array\{non\-empty\-list\<string\>, non\-empty\-list\<non\-falsy\-string\>, non\-empty\-list\<''gif''\|''jpeg''\|''jpg''\|''png''\|''svg''\|''webp''\>, non\-empty\-list\<string\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Field\\TextareaField\:\:\$numRows has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -7036,18 +6616,6 @@ parameters:
 			message: '#^Method YesWiki\\Content\\Handler\\DuplicateHandler\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: ../src/Content/Handler/DuplicateHandler.php
-
-		-
-			message: '#^Offset ''form_id'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Handler/DuplicateHandler.php
-
-		-
-			message: '#^Offset ''titre_liste'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
 			path: ../src/Content/Handler/DuplicateHandler.php
 
 		-
@@ -7109,12 +6677,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: ../src/Content/Handler/ShowHandler.php
-
-		-
-			message: '#^Cannot access offset 0 on list\<string\>\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/Service/BazarListService.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -7393,12 +6955,6 @@ parameters:
 			path: ../src/Content/Service/BazarListService.php
 
 		-
-			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/BazarListService.php
-
-		-
 			message: '#^Parameter \#2 \$string of function explode expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -7449,18 +7005,6 @@ parameters:
 		-
 			message: '#^Instanceof between mixed and YesWiki\\Content\\Field\\CheckboxEntryField will always evaluate to false\.$#'
 			identifier: instanceof.alwaysFalse
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:arrayToCSV\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:arrayToCSV\(\) should return string\|null but returns string\|false\|null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Content/Service/CSVManager.php
 
@@ -7639,18 +7183,6 @@ parameters:
 			path: ../src/Content/Service/CSVManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:getCSVfromFormId\(\) has parameter \$pOptions with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:getCSVfromFormId\(\) has parameter \$pParams with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:getCSVfromFormId\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -7707,12 +7239,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:getHeaders\(\) has parameter \$form with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\CSVManager\:\:getHeaders\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
 			count: 1
 			path: ../src/Content/Service/CSVManager.php
 
@@ -7807,138 +7333,6 @@ parameters:
 			path: ../src/Content/Service/CSVManager.php
 
 		-
-			message: '''
-				#^PHPDoc tag @param has invalid value \(\<array\> \$pParams \: parameters for SearchManager\:\:search
-					        	\[
-									"query" \=\> \<string\>\|\<array\> the query
-									"keywords" \=\> \<string\> the keywords string
-								\]\)\: Unexpected token "\<", expected type at offset 66 on line 4$#
-			'''
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '''
-				#^PHPDoc tag @param has invalid value \(\<array\>\|null \$pOptions \=
-							 \[
-								"fakeMode" \=\> \<bool\> to create a template \(default false\),
-								"keysInsteadOfValues" \=\> \<bool\> export keys instead of values \(default false\)
-							\]\)\: Unexpected token "\<", expected type at offset 269 on line 9$#
-			'''
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$array of function array_keys expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$headers of method YesWiki\\Content\\Service\\CSVManager\:\:getTemplateCSVLine\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$object of function date_format expects DateTimeInterface, DateTime\|false given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function rewind expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function stream_get_contents expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$string of function strlen expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$string of function substr expects string, int\|string given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#1 \$string of function trim expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 4
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$content of method ZipArchive\:\:addFromString\(\) expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$headers of method YesWiki\\Content\\Service\\CSVManager\:\:getCSVLineFromEntry\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$headers of method YesWiki\\Content\\Service\\CSVManager\:\:getColumnIndexesForPropertyNames\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$headers of method YesWiki\\Content\\Service\\CSVManager\:\:getEntryFromCSVLine\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$key of method YesWiki\\Content\\Service\\CSVManager\:\:array_splice_from_key\(\) expects string, int\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#2 \$offset of function array_splice expects int, int\<0, max\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Service\\CSVManager\:\:\$debug has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -7965,18 +7359,6 @@ parameters:
 		-
 			message: '#^Property YesWiki\\Content\\Service\\CSVManager\:\:\$importdone has no type specified\.$#'
 			identifier: missingType.property
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Unable to resolve the template type T in call to function array_values$#'
-			identifier: argument.templateType
-			count: 1
-			path: ../src/Content/Service/CSVManager.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: ../src/Content/Service/CSVManager.php
 
@@ -8797,20 +8179,8 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Offset ''form_id'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^PHPDoc tag @return with type mixed is not subtype of native type array\|null\.$#'
 			identifier: return.phpDocType
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Parameter \#1 \$previousData of method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
@@ -8818,12 +8188,6 @@ parameters:
 			message: '#^Parameter \#1 \$separator of function explode expects non\-empty\-string, string given\.$#'
 			identifier: argument.type
 			count: 2
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Parameter \#2 \$previousData of method YesWiki\\Content\\Service\\EntryManager\:\:assignRestrictedFields\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
 		-
@@ -8989,12 +8353,6 @@ parameters:
 			path: ../src/Content/Service/FileManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\FileManager\:\:create\(\) should return array but returns array\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Content/Service/FileManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\FileManager\:\:getAllFileTags\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -9003,12 +8361,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Service\\FileManager\:\:getOne\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/FileManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\FileManager\:\:sanitizeFilename\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Content/Service/FileManager.php
 
@@ -9775,26 +9127,8 @@ parameters:
 			path: ../src/Content/Service/IcalFormatter.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\IcalFormatter\:\:isAllDay\(\) should return bool but returns int\|false\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Content/Service/IcalFormatter.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\IcalFormatter\:\:isICALForm\(\) has parameter \$form with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/IcalFormatter.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\IcalFormatter\:\:renderAndStripTags\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Content/Service/IcalFormatter.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\IcalFormatter\:\:splitAtnthChar\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Content/Service/IcalFormatter.php
 
@@ -9806,12 +9140,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#2 \$length of function array_chunk expects int\<1, max\>, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Service/IcalFormatter.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: ../src/Content/Service/IcalFormatter.php
@@ -10114,12 +9442,6 @@ parameters:
 			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:encodeMetadata\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: ../src/Content/Service/PageManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\PageManager\:\:encodeMetadata\(\) should return string but returns string\|false\.$#'
-			identifier: return.type
-			count: 2
 			path: ../src/Content/Service/PageManager.php
 
 		-
@@ -10585,24 +9907,6 @@ parameters:
 			path: ../src/Content/bazar.functions.php
 
 		-
-			message: '#^Function removeAccents\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function removeAccents\(\) has parameter \$charset with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function removeAccents\(\) has parameter \$str with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
 			message: '#^Function renameUrlToSanitizedFilename\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -10717,12 +10021,6 @@ parameters:
 			path: ../src/Content/bazar.functions.php
 
 		-
-			message: '#^Function show\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 2
-			path: ../src/Content/bazar.functions.php
-
-		-
 			message: '#^Function userIsAllowedTo\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -10737,64 +10035,6 @@ parameters:
 		-
 			message: '#^Function userIsAllowedTo\(\) has parameter \$request with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '''
-				#^PHPDoc tag @param has invalid value \(string  chaine de caracteres avec de potentiels accents a enlever
-
-				  return  string chaine de caracteres, sans accents\)\: Unexpected token "chaine", expected variable at offset 101 on line 2$#
-			'''
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fputs expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#1 \$string of function mb_strtolower expects string, array\<string\>\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#1 \$string of function strlen expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#2 \$data of function fputs expects string, bool\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 3
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
-			identifier: argument.type
 			count: 1
 			path: ../src/Content/bazar.functions.php
 
@@ -10833,24 +10073,6 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/syndication.functions.php
-
-		-
-			message: '#^Call to function is_array\(\) with list\<non\-falsy\-string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 4
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Cannot access offset int\<0, max\> on list\<string\>\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Content/tags.functions.php
 
 		-
 			message: '#^Function encodingFromUTF8\(\) has no return type specified\.$#'
@@ -10943,12 +10165,6 @@ parameters:
 			path: ../src/Content/tags.functions.php
 
 		-
-			message: '#^Parameter \#1 \$array of function array_slice expects array, list\<string\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
 			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
 			identifier: argument.type
 			count: 1
@@ -10959,330 +10175,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../src/Federation/Action/EntryFollowAction.php
-
-		-
-			message: '#^Cannot access offset ''host'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Cannot access offset ''scheme'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$actorUri with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollower\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$actorUri with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:addFollowing\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:fetchAllOutboxItems\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getActor\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getActor\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowers\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowers\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowing\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFollowing\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormActorUri\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormActorUri\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$collectionType with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getFormCollectionUri\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$activity with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:getRecipients\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:isEnabled\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:isEnabled\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$activityType with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:notifyFollowers\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$activity with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:postActivity\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$activity with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:processActivity\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$actorUri with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollower\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$actorUri with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:removeFollowing\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:syncActorPosts\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\ActivityPubService\:\:syncActorPosts\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$AS_PREFIX has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$container has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$httpClient has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$httpSignatureService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$params has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$semanticTransformer has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$ssrfUrlValidator has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$tripleStore has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Property YesWiki\\Federation\\Service\\ActivityPubService\:\:\$webfingerService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Federation/Service/ActivityPubService.php
-
-		-
-			message: '#^Cannot access offset ''host'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Federation/Service/HttpSignatureService.php
-
-		-
-			message: '#^Cannot access offset ''path'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: ../src/Federation/Service/HttpSignatureService.php
 
 		-
 			message: '#^Method YesWiki\\Federation\\Service\\HttpSignatureService\:\:generateSignature\(\) has no return type specified\.$#'
@@ -11363,20 +10255,8 @@ parameters:
 			path: ../src/Federation/Service/WebFinger.php
 
 		-
-			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getInteractionUrl\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: ../src/Federation/Service/WebFinger.php
-
-		-
 			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getLinks\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Federation/Service/WebFinger.php
-
-		-
-			message: '#^Method YesWiki\\Federation\\Service\\WebFinger\:\:getProfileId\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
 			count: 1
 			path: ../src/Federation/Service/WebFinger.php
 
@@ -11903,12 +10783,6 @@ parameters:
 			path: ../src/Identity/Action/UserSettingsAction.php
 
 		-
-			message: '#^Offset ''name'' might not exist on YesWiki\\Identity\\Entity\\User\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Identity/Action/UserSettingsAction.php
-
-		-
 			message: '#^Parameter \#2 \$user of method YesWiki\\Identity\\Action\\UserSettingsAction\:\:update\(\) expects YesWiki\\Identity\\Entity\\User, YesWiki\\Identity\\Entity\\User\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -12203,12 +11077,6 @@ parameters:
 			path: ../src/Identity/Controller/CaptchaController.php
 
 		-
-			message: '#^Negated boolean expression is always true\.$#'
-			identifier: booleanNot.alwaysTrue
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
 			message: '#^Offset ''black''\|''blue''\|''gold''\|''green''\|''grey''\|''orange''\|''pink''\|''purple''\|''red''\|''royalblue''\|''turkoise''\|''white''\|''yellow'' might not exist on array\{grey\: array\{200, 196, 196\}, white\: array\{255, 255, 255\}, black\: array\{0, 0, 0\}\}\.$#'
 			identifier: offsetAccess.notFound
 			count: 1
@@ -12223,66 +11091,6 @@ parameters:
 		-
 			message: '#^PHPDoc tag @var with type array\<int\> is not subtype of native type array\{0, 0, 0\}\|array\{144, 0, 144\}\|array\{200, 196, 196\}\|array\{214, 34, 34\}\|array\{216, 155, 68\}\|array\{216, 68, 204\}\|array\{234, 231, 19\}\|array\{255, 208, 0\}\|array\{255, 255, 255\}\|array\{34, 132, 214\}\|array\{65, 105, 225\}\|array\{68, 211, 216\}\|array\{68, 214, 34\}\.$#'
 			identifier: varTag.nativeType
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^PHPDoc tag @var with type bool\|GdImage is not subtype of native type \(GdImage\|false\)\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^PHPDoc tag @var with type bool\|int is not subtype of native type int\<0, max\>\|false\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^PHPDoc tag @var with type bool\|string is not subtype of native type string\|false\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#1 \$width of function imagecreatetruecolor expects int\<1, max\>, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#1 \$word of method YesWiki\\Identity\\Controller\\CaptchaController\:\:check\(\) expects string, bool\|float\|int\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#2 \$hash of method YesWiki\\Identity\\Controller\\CaptchaController\:\:check\(\) expects string, bool\|float\|int\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#2 \$red of function imagecolorallocate expects int\<0, 255\>, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#2 \$string of function explode expects string, string\|true given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#3 \$green of function imagecolorallocate expects int\<0, 255\>, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Identity/Controller/CaptchaController.php
-
-		-
-			message: '#^Parameter \#4 \$blue of function imagecolorallocate expects int\<0, 255\>, int given\.$#'
-			identifier: argument.type
 			count: 1
 			path: ../src/Identity/Controller/CaptchaController.php
 
@@ -12307,12 +11115,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Entity\\User\:\:getArrayCopy\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Entity/User.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Entity\\User\:\:getUserIdentifier\(\) should return non\-empty\-string but returns string\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Identity/Entity/User.php
 
@@ -12659,12 +11461,6 @@ parameters:
 			path: ../src/Identity/Service/CsrfTokenChecker.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Identity/Service/CsrfTokenChecker.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Service\\GroupManager\:\:addMembers\(\) has parameter \$members with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -12685,12 +11481,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Service\\GroupManager\:\:updateMembers\(\) has parameter \$members with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Service/GroupManager.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string group_name\)\: Unexpected token "group_name", expected variable at offset 104 on line 4$#'
-			identifier: phpDoc.parseError
 			count: 1
 			path: ../src/Identity/Service/GroupManager.php
 
@@ -12767,18 +11557,6 @@ parameters:
 			path: ../src/Identity/Service/GroupOperationsService.php
 
 		-
-			message: '''
-				#^PHPDoc tag @return has invalid value \(\: int
-				     \- 0 if ok
-				     \- 1 if user doesn't exist
-				     \- 2 if group doesn't exist
-				     \- 3 if group is recursive\)\: Unexpected token "\:", expected type at offset 406 on line 10$#
-			'''
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Identity/Service/GroupOperationsService.php
-
-		-
 			message: '#^PHPDoc tag @return with type bool is incompatible with native type void\.$#'
 			identifier: return.phpDocType
 			count: 1
@@ -12817,12 +11595,6 @@ parameters:
 		-
 			message: '#^Property YesWiki\\Identity\\Service\\GroupOperationsService\:\:\$userManager has no type specified\.$#'
 			identifier: missingType.property
-			count: 1
-			path: ../src/Identity/Service/GroupOperationsService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: ../src/Identity/Service/GroupOperationsService.php
 
@@ -13151,12 +11923,6 @@ parameters:
 			path: ../src/Identity/Service/UserManager.php
 
 		-
-			message: '#^Method YesWiki\\Identity\\Service\\UserManager\:\:loadUserByIdentifier\(\) should return Symfony\\Component\\Security\\Core\\User\\UserInterface but returns YesWiki\\Identity\\Entity\\User\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Identity/Service/UserManager.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Service\\UserManager\:\:login\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -13193,12 +11959,6 @@ parameters:
 			path: ../src/Identity/Service/UserManager.php
 
 		-
-			message: '#^Method YesWiki\\Identity\\Service\\UserManager\:\:refreshUser\(\) should return Symfony\\Component\\Security\\Core\\User\\UserInterface but returns YesWiki\\Identity\\Entity\\User\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Identity/Service/UserManager.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Service\\UserManager\:\:update\(\) has parameter \$newValues with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -13219,18 +11979,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Service\\UserManager\:\:valueOrDefault\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Service/UserManager.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string email \(optionnal if parameters by array\)\)\: Unexpected token "email", expected variable at offset 105 on line 3$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Identity/Service/UserManager.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string plainPassword \(optionnal if parameters by array\)\)\: Unexpected token "plainPassword", expected variable at offset 167 on line 4$#'
-			identifier: phpDoc.parseError
 			count: 1
 			path: ../src/Identity/Service/UserManager.php
 
@@ -13433,44 +12181,14 @@ parameters:
 			path: ../src/Identity/Service/UserOperationsService.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Identity/Service/UserOperationsService.php
-
-		-
 			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../src/Import/Service/ImportFilesManager.php
 
 		-
-			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:cURLDownload\(\) with return type void returns string but should not return anything\.$#'
-			identifier: return.void
-			count: 2
-			path: ../src/Import/Service/ImportFilesManager.php
-
-		-
 			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadAttachments\(\) has parameter \$wikiPage with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Import/Service/ImportFilesManager.php
-
-		-
-			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadDirectLinkAttachment\(\) with return type void returns null but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: ../src/Import/Service/ImportFilesManager.php
-
-		-
-			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Import/Service/ImportFilesManager.php
-
-		-
-			message: '#^Method YesWiki\\Import\\Service\\ImportFilesManager\:\:downloadHiddenAttachment\(\) should return array but return statement is missing\.$#'
-			identifier: return.missing
 			count: 1
 			path: ../src/Import/Service/ImportFilesManager.php
 
@@ -13555,12 +12273,6 @@ parameters:
 		-
 			message: '#^Property YesWiki\\Import\\Service\\ImportFilesManager\:\:\$uploadPath has no type specified\.$#'
 			identifier: missingType.property
-			count: 1
-			path: ../src/Import/Service/ImportFilesManager.php
-
-		-
-			message: '#^Result of method YesWiki\\Import\\Service\\ImportFilesManager\:\:cURLDownload\(\) \(void\) is used\.$#'
-			identifier: method.void
 			count: 1
 			path: ../src/Import/Service/ImportFilesManager.php
 
@@ -13703,12 +12415,6 @@ parameters:
 			path: ../src/Kernel/Command/TestConsoleServiceCommand.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Kernel/Command/TestConsoleServiceCommand.php
-
-		-
 			message: '#^Class YesWiki\\Kernel\\Entity\\Collection implements generic interface ArrayAccess but does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -13717,18 +12423,6 @@ parameters:
 		-
 			message: '#^Class YesWiki\\Kernel\\Entity\\Collection implements generic interface Iterator but does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
-			count: 1
-			path: ../src/Kernel/Entity/Collection.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Entity\\Collection\:\:next\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: ../src/Kernel/Entity/Collection.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Entity\\Collection\:\:rewind\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
 			count: 1
 			path: ../src/Kernel/Entity/Collection.php
 
@@ -13807,18 +12501,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Kernel\\Entity\\ConfigurationFile\:\:load\(\) has parameter \$arrayName with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/Entity/ConfigurationFile.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Entity\\ConfigurationFile\:\:next\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: ../src/Kernel/Entity/ConfigurationFile.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Entity\\ConfigurationFile\:\:rewind\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
 			count: 1
 			path: ../src/Kernel/Entity/ConfigurationFile.php
 
@@ -13913,19 +12595,7 @@ parameters:
 			path: ../src/Kernel/Entity/Messages.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\AssetPublisher\:\:sanitizeVersion\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Kernel/Service/AssetPublisher.php
-
-		-
 			message: '#^Parameter \#1 \$string of function rawurldecode expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Kernel/Service/AssetPublisher.php
-
-		-
-			message: '#^Parameter \#1 \$version of static method YesWiki\\Kernel\\Service\\AssetPublisher\:\:isValidVersion\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: ../src/Kernel/Service/AssetPublisher.php
@@ -13993,12 +12663,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Kernel\\Service\\ConsoleService\:\:findExecutable\(\) has parameter \$extraDirs with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Kernel/Service/ConsoleService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\ConsoleService\:\:formatHtmlForCLI\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Kernel/Service/ConsoleService.php
 
@@ -14207,12 +12871,6 @@ parameters:
 			path: ../src/Kernel/Service/DbService.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Kernel/Service/DbService.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\EnvironmentConfiguration\:\:apply\(\) has parameter \$config with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14417,12 +13075,6 @@ parameters:
 			path: ../src/Kernel/Service/Mailer.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\Mailer\:\:sanitizeLinksIfNeeded\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Kernel/Service/Mailer.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\Mailer\:\:send\(\) has parameter \$mailSender with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -14573,12 +13225,6 @@ parameters:
 			path: ../src/Kernel/Service/Performer.php
 
 		-
-			message: '#^Method YesWiki\\Kernel\\Service\\Performer\:\:list\(\) should return list\<string\> but returns list\<int\|string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Kernel/Service/Performer.php
-
-		-
 			message: '#^Method YesWiki\\Kernel\\Service\\Performer\:\:renderError\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -14652,12 +13298,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Kernel\\Service\\TripleStore\:\:getAll\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Kernel/Service/TripleStore.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\TripleStore\:\:getMatching\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Kernel/Service/TripleStore.php
@@ -15095,12 +13735,6 @@ parameters:
 			path: ../src/Render/Service/ContentAssetScanner.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Service\\MarkdownFormatterService\:\:renderActionsOnly\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Render/Service/MarkdownFormatterService.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Service\\TabsRenderer\:\:getParams\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -15371,20 +14005,8 @@ parameters:
 			path: ../src/Render/Service/TemplateHelperService.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:getDataParameter\(\) should return array but returns null\.$#'
-			identifier: return.type
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:getDescriptionFromBody\(\) has parameter \$page with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:getDescriptionFromBody\(\) should return string but returns string\|false\.$#'
-			identifier: return.type
 			count: 1
 			path: ../src/Render/Service/TemplateHelperService.php
 
@@ -15415,12 +14037,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:postFormat\(\) has parameter \$output with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\TemplateHelperService\:\:recupDroits\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Service/TemplateHelperService.php
 
@@ -15497,12 +14113,6 @@ parameters:
 			path: ../src/Render/Service/TemplateHelperService.php
 
 		-
-			message: '#^PHPDoc tag @return has invalid value \(array\(\)\)\: Unexpected token "\(", expected TOKEN_HORIZONTAL_WS at offset 151 on line 6$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
 			message: '#^Parameter \#1 \$dir_handle of function closedir expects resource\|null, resource\|false given\.$#'
 			identifier: argument.type
 			count: 1
@@ -15527,43 +14137,13 @@ parameters:
 			path: ../src/Render/Service/TemplateHelperService.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
 			message: '#^Argument of an invalid type list\<string\>\|false supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:addCustomCSSPreset\(\) has parameter \$post with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:addCustomCSSPreset\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:checkPOSTToAddCustomCSSPreset\(\) has parameter \$post with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:deleteCustomCSSPreset\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:extractPropValuesFromPreset\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
@@ -15582,12 +14162,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:getFontDescription\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:getPresetsData\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
@@ -15644,18 +14218,6 @@ parameters:
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:setFavorite\(\) has parameter \$newVal with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Parameter \#1 \$css of method YesWiki\\Render\\Service\\ThemeManager\:\:parseCSS\(\) expects string, bool\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Parameter \#1 \$path of function basename expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 6
 			path: ../src/Render/Service/ThemeManager.php
 
 		-
@@ -15923,12 +14485,6 @@ parameters:
 			path: ../src/Search/Service/SearchManager.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 4
-			path: ../src/Search/Service/SearchManager.php
-
-		-
 			message: '#^Variable \$pParameter in empty\(\) always exists and is not falsy\.$#'
 			identifier: empty.variable
 			count: 1
@@ -16069,12 +14625,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Action/ReactionsAction.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: ../src/Social/Action/ReactionsAction.php
 
@@ -16361,282 +14911,6 @@ parameters:
 			path: ../src/Social/Field/ReactionsField.php
 
 		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$content with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:addCommentIfAuthorized\(\) has parameter \$idComment with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:delete\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$loggedUser with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) has parameter \$owner with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:extractTaggedUsernamesFromContent\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$min_brightness with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$spec with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:genColorCodeFromText\(\) has parameter \$text with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentForm\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentForm\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$comments with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$first with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentList\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentsCount\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getCommentsCount\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getParentPage\(\) has parameter \$alreadyFoundTags with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:getParentPage\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadComments\(\) has parameter \$username with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadComments\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:loadCommentsRecursive\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$showOnlyOnce with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:renderCommentsForPage\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterCreate\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterDelete\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailAfterModify\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$owner with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$loggedUser with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$owner with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentComment with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) has parameter \$parentPage with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has parameter \$comment with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Service\\CommentService\:\:setUserData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
 			message: '#^Parameter \#1 \$num of function dechex expects int, float\|int\<0, max\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -16645,78 +14919,6 @@ parameters:
 		-
 			message: '#^Parameter \#3 \$pad_string of function str_pad expects string, int given\.$#'
 			identifier: argument.type
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToOwnerAtCreation\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Parameter \#3 \$parentPage of method YesWiki\\Social\\Service\\CommentService\:\:sendEmailToTaggedUserAtCreation\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$aclService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$commentsActivated has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$dbService has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$eventDispatcher has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$mailer has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$pageManager has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$pagesWhereCommentWereRendered has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$params has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$templateEngine has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: ../src/Social/Service/CommentService.php
-
-		-
-			message: '#^Property YesWiki\\Social\\Service\\CommentService\:\:\$userManager has no type specified\.$#'
-			identifier: missingType.property
 			count: 1
 			path: ../src/Social/Service/CommentService.php
 
@@ -18641,12 +16843,6 @@ parameters:
 			path: ../tests/src/services/ArchiveServiceTest.php
 
 		-
-			message: '#^Method YesWiki\\Test\\Core\\Service\\AuthenticationServiceTest\:\:createRandomUser\(\) should return array\{user\: YesWiki\\Identity\\Entity\\User, password\: string\} but returns array\{user\: null, password\: string\}\.$#'
-			identifier: return.type
-			count: 1
-			path: ../tests/src/services/AuthenticationServiceTest.php
-
-		-
 			message: '#^Method YesWiki\\Test\\Core\\Service\\AuthenticationServiceTest\:\:testCheckPassword\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -18878,12 +17074,6 @@ parameters:
 			message: '#^Offset ''activitypub_private_key'' might not exist on array\|null\.$#'
 			identifier: offsetAccess.notFound
 			count: 3
-			path: ../tests/src/services/FormManagerContentTest.php
-
-		-
-			message: '#^Offset ''activitypub_username'' might not exist on array\|null\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
 			path: ../tests/src/services/FormManagerContentTest.php
 
 		-
@@ -19435,12 +17625,6 @@ parameters:
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
-			count: 1
-			path: ../tests/src/services/UserManagerTest.php
-
-		-
-			message: '#^Method YesWiki\\Test\\Core\\Service\\UserManagerTest\:\:createRandomUser\(\) should return YesWiki\\Identity\\Entity\\User but returns null\.$#'
-			identifier: return.type
 			count: 1
 			path: ../tests/src/services/UserManagerTest.php
 

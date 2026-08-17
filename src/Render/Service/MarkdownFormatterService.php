@@ -67,7 +67,7 @@ class MarkdownFormatterService
     {
         $actionRunner = $this->actionRunner;
 
-        return preg_replace_callback(
+        return (string)preg_replace_callback(
             '/\{\{(.*?)\}\}|./s',
             function (array $matches) use ($actionRunner): string {
                 if (!isset($matches[1])) {

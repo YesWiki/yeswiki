@@ -2,7 +2,7 @@
    sits at the end rather than being dropped -- a list that silently loses rows is worse
    than one with an undated tail. #}
 {% import "@core/presentations/_item-fields.twig" as slot %}
-{{ include_css('styles/presentations.css') }}
+{{ include_css('styles/yw-entries.css') }}
 
 <div class="yw-items yw-items--timeline">
   {% for item in items|sort((a, b) => (b.date ?? '') <=> (a.date ?? '')) %}

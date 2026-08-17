@@ -269,7 +269,11 @@ class TextareaField extends BazarField
 
     private function sanitizeBase64Img(string $text, array $entry): string
     {
-        $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
+        // Only three capturing groups, and the filename is not one of them: the trailing
+        // atomic group captures nothing, so $matches[4] never existed and every pasted image
+        // fell through to the random-hex fallback below. The data-filename attribute is read
+        // separately now, from the matched tag (ticket 40).
+        $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
             $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
@@ -277,7 +281,9 @@ class TextareaField extends BazarField
             foreach ($matches[0] as $index => $textToReplace) {
                 $imageType = $matches[2][$index];
                 $imageContent = base64_decode($matches[3][$index]);
-                $fileName = $matches[4][$index];
+                $fileName = preg_match('/data-filename="([^"]*)"/', $textToReplace, $nameMatch)
+                    ? $nameMatch[1]
+                    : '';
                 if (empty(trim($fileName))) {
                     $fileName = bin2hex(random_bytes(10)) . '.' . $imageType;
                 }
@@ -341,7 +347,7 @@ class TextareaField extends BazarField
      */
     private function sanitizeFileName(string $inputString): string
     {
-        return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
+        return removeAccents((string)preg_replace('/--+/u', '-', (string)preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 
     /**

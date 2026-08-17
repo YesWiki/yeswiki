@@ -1,6 +1,6 @@
 {% extends "@core/layouts/input.twig" %}
 {% block input %}
-    {{ include_css("styles/bazar/inputs/file.css") }}
+    {{ include_css("styles/yw-entries.css") }}
     {% if value %}
         <div class="bazar-entry-edit-image">
             {% if isUrl|default(false) %}<span class="url-indicator"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg></span>{% endif %}

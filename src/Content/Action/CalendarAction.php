@@ -21,7 +21,7 @@ class CalendarAction extends YesWikiAction implements RegisteredAction
             $classes = array_combine($classes, $classes);
         }
         // ticket 22 renamed the PARAMETER; `minical` stays as the CSS class, which
-        // styles/bazar/calendar.css targets in nine rules and BazarCalendar.js reads. A
+        // styles/yw-entries.css targets in nine rules and BazarCalendar.js reads. A
         // class name is a value, not a parameter name, and is out of this ticket's scope.
         $minicalendar = (isset($arg['minicalendar']) && $arg['minicalendar'] == 'true') || (isset($classes) && in_array('minical', $classes));
         if ($minicalendar) {

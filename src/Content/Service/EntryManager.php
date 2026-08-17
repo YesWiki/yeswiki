@@ -475,6 +475,9 @@ class EntryManager
         $data['tag'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['tag'], false, null, false, true);
+        if ($previousData === null) {
+            throw new \Exception("cannot update entry '{$data['tag']}': it does not exist");
+        }
         $data['form_id'] = $previousData['form_id'];
 
         // We need to check antispam before data are modified

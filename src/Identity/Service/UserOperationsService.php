@@ -117,8 +117,6 @@ class UserOperationsService extends YesWikiController
             return $user;
         }
         throw new \Exception(_t('USER_CREATION_FAILED') . '.');
-
-        return null;
     }
 
     /**

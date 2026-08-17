@@ -123,13 +123,13 @@ class CoreAssetsTest extends YesWikiTestCase
     {
         $registry = $wiki->services->get(\YesWiki\Kernel\Service\AssetRegistry::class);
         $registry->drain();
-        $registry->addCssFile('styles/bazar/bazar.css');
+        $registry->addCssFile('styles/yw-core.css');
 
         $page = $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)
             ->renderPage('<p>page content</p>');
 
         $headEnd = strpos($page, '</head>');
-        $stylesheet = strpos($page, 'styles/bazar/bazar.css');
+        $stylesheet = strpos($page, 'styles/yw-core.css');
         $this->assertNotFalse($headEnd, 'the skeleton must render a head');
         $this->assertNotFalse($stylesheet, 'the declared stylesheet must be emitted');
         $this->assertLessThan($headEnd, $stylesheet, 'it must be emitted inside <head>, not after the body');

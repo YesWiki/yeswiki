@@ -109,13 +109,13 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         $body = PageBody::content($page['body']);
         // on cherche les actions attach avec image, puis les images bazar
         preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $body, $images);
-        if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
+        if (isset($images[0][0]) && $images[0][0] != '') {
             preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
 
             return $this->getFileName($page, $attachimg[1][0]);
         }
         preg_match_all('/"imagebf_image":"(.*)"/U', $body, $image);
-        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+        if (isset($image[1][0]) && $image[1][0] != '') {
             $imagefile = mb_convert_encoding(
                 preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
@@ -129,15 +129,13 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             return $imagefile;
         }
         preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $body, $image);
-        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+        if (isset($image[1][0]) && $image[1][0] != '') {
             return $image[1][0];
         }
         preg_match_all("/\<img.*src=\"(.*)\"/U", $body, $image);
-        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+        if (isset($image[1][0]) && $image[1][0] != '') {
             return $image[1][0];
         }
-
-        return '';
 
         return '';
     }

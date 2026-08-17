@@ -133,7 +133,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
 
         // @core/inputs/file.twig declares its own stylesheet; the designer page only learns
         // about it through this field
-        $this->assertStringContainsString('styles/bazar/inputs/file.css', $answer);
+        $this->assertStringContainsString('styles/yw-entries.css', $answer);
         // ...and it arrives as an out-of-band swap into <head>, so its lifetime is not the
         // preview card's: deleting the card must not unstyle the other previews
         $this->assertStringContainsString('hx-swap-oob="beforeend:head"', $answer);

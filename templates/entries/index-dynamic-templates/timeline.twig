@@ -1,8 +1,8 @@
 {% extends "@core/entries/index-dynamic-templates/card.twig" %}
 
 {% block assets %}
-  {{ include_css('styles/bazar/card.css') }}
-  {{ include_css('styles/bazar/timeline.css') }}
+  {{ include_css('styles/yw-entries.css') }}
+  {{ include_css('styles/yw-entries.css') }}
   {{ include_javascript('javascripts/components/TimelineYear.js', false, true) }}
 {% endblock %}
 
@@ -17,7 +17,7 @@
             class="bazar-entry timeline-container bazar-card{{ isModal ? ' modalbox' : ''}}"
             {% if not isLink %}@click="openEntry(entry)"{% endif %}
             :class="{'with-image': Object.keys(entry).includes('visual')}"
-            :style="[entry.color ? {'--entry-color': entry.color}: {'--entry-color': 'var(--neutral-color)'}]"
+            :style="[entry.color ? {'--entry-color': entry.color}: {'--entry-color': 'var(--yw-text)'}]"
             {% if isModal %}
             data-size="modal-lg" data-header="false" data-iframe="1"
             {% endif %}

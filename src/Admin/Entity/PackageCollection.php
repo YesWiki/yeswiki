@@ -65,19 +65,15 @@ class PackageCollection extends Collection
         switch ($type) {
             case 'yeswiki':
                 return $this::CORE_CLASS;
-                break;
 
             case 'extension':
                 return $this::TOOL_CLASS;
-                break;
 
             case 'theme':
                 return $this::THEME_CLASS;
-                break;
 
             default:
                 throw new \Exception(_t('AU_UNKWON_PACKAGE_TYPE'), 1);
-                break;
         }
     }
 }

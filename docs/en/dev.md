@@ -255,25 +255,79 @@ All the css files in the `custom/styles/` directory are included.
 
 ### Custom Css-Presets
 
-For themes using presets, you can have custom presets.
+A **Preset** is a complete set of the Design tokens a wiki _decides_: its colours, the
+colours of its top bar and footer and headings, its three spacing steps, its type, and four
+multipliers. It is a file, and a wiki can have its own.
 
-- They should be in folder `custom/css-presets/`.
-- Their extension should be `.css`
-- Their content should be like this:
+- They live in `custom/css-presets/`.
+- Their extension is `.css`.
+- They must be **complete**: every AUTHORED `--yw-*` token, colour tokens once per Colour
+  scheme and the rest once. Core validates that rather than filling gaps, and the
+  Personnalisation screen names what a file leaves out. Roughly 50 declarations; the shipped
+  presets under `themes/yeswiki/presets/` are the ones to copy from, and
+  `styles/yw-core.css` declares the same set as core's own default.
+- They must NOT declare a **derived** token — `--yw-primary-hover`, `--yw-text-muted`, the
+  border shades, the focus ring, `--yw-*-surface` / `--yw-*-text` for a status colour, the
+  shadow colours, `--yw-radius-sm|md|lg`. `--yw-on-primary` and its six siblings are a third
+  case, **resolved**: a preset carries them, but `save()` writes them — they are whichever of
+  `--yw-ink-on-light` / `--yw-ink-on-dark` reads better on each fill, and CSS cannot make that
+  choice because it needs a luminance as a number. Core computes each from the token above it
+  (ADR-0021), which is what makes one authored colour correct in both Colour schemes.
+  Declaring one is not an error — it wins, as any CSS in a preset does — but it is then a
+  value nobody keeps in step.
+- A **measure** is a multiple, never a typed length: the spacing steps are in `rem`, and
+  `rem` is the wiki's base type size, so they scale with it.
+
+The shape:
 
 ```css
 :root {
-  --primary-color: #1a89a0;
-  --secondary-color-1: #d8604c;
-  --secondary-color-2: #d78958;
-  --neutral-color: #4e5056;
-  --neutral-soft-color: #b0b1b3;
-  --neutral-light-color: #ffffff;
-  --main-text-fontsize: 17px;
-  --main-text-fontfamily: 'Nunito', sans-serif;
-  --main-title-fontfamily: 'Nunito', sans-serif;
+  --yw-primary: #0c5d6a;
+  --yw-ink-on-light: #14171a;
+  --yw-ink-on-dark: #ffffff;
+  /* ...every authored colour, then the scheme-independent ones... */
+  --yw-navbar-bg: #0c5d6a;
+  --yw-navbar-text: #ffffff;
+  --yw-heading: #0c5d6a;
+  --yw-heading-scale: 1;
+  --yw-font-body: 'Nunito', sans-serif;
+  --yw-font-size-base: 17px;
+  --yw-space-sm: 0.25rem;
+  --yw-space-md: 0.75rem;
+  --yw-space-lg: 2rem;
+  --yw-border-width: 1px;
+  --yw-radius-scale: 1;
+  --yw-shadow-strength: 1;
+}
+
+/* The dark set, twice: once for a viewer whose system asks for it and who has not said
+   otherwise, once for a viewer who asked for it explicitly. The toggle has to win in both
+   directions, so neither block can be written in terms of the other. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --yw-primary: #4bb8c9;
+    /* ...the colour tokens again... */
+  }
+}
+
+:root[data-theme='dark'] {
+  --yw-primary: #4bb8c9;
+  /* ...the same values... */
 }
 ```
+
+The nine variables presets used before this release (`--primary-color`, `--neutral-color`,
+`--main-text-fontsize`…) are **retired, not aliased** (ADR-0020). An upgrade rewrites an
+existing preset onto the nine tokens they correspond to and flags it as incomplete; nothing
+reads the old names any more.
+
+Two things that look like tokens and are not:
+
+- `--yw-navbar-height` is a **Layout setting**: `/admin/layout` writes it inline on `<html>`,
+  which beats every stylesheet. A Preset may not declare it — the declaration could never
+  take effect.
+- A component's own geometry (`--yw-dashboard-rail-width`, `--yw-timeline-year-pad`) is
+  declared on the component and means nothing outside it.
 
 ### Custom Squelette
 

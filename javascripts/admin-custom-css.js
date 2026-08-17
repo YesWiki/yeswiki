@@ -4,11 +4,16 @@
 // the screen falls back to if this module never loads. ACE is layered over it and writes
 // back into it, rather than replacing it -- an editor that failed to start would otherwise
 // take the stylesheet with it.
+//
+// ywInitEach rather than a one-shot at module level: this screen arrives through an hx-boost
+// navigation, and a module is evaluated once per *document*, not once per page. Set up at the
+// top level, the editor was built on the first arrival and never again -- leave the screen and
+// come back and the stylesheet showed as a bare textarea.
 import AceWrapper from './ace-wrapper.js'
 
-const textarea = document.getElementById('custom_css')
+ywInitEach('#custom_css', (textarea) => {
+  if (textarea.readOnly) return
 
-if (textarea && !textarea.readOnly) {
   // ACE needs an element of its own: it takes the node over completely, and the textarea
   // has to survive as the thing the form submits
   const host = document.createElement('div')
@@ -34,4 +39,4 @@ if (textarea && !textarea.readOnly) {
   textarea.form?.addEventListener('submit', () => {
     textarea.value = editor.getValue()
   })
-}
+})

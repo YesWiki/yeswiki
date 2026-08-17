@@ -66,8 +66,6 @@ class TestConsoleServiceCommand extends Command
         $consoleService->startConsoleAsync('core:testconsoleservice', ['-f', $file, '-t', $childtext, '-w', $wait]);
         $this->writeToFile("cache/$file", $text);
         exit;
-
-        return Command::SUCCESS;
     }
 
     private function writeToFile(string $file, string $content)

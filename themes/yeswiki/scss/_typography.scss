@@ -1,9 +1,9 @@
 /* ---- typography ---- */
 body {
-  font-family: var(--main-text-fontfamily);
-  font-size: var(--main-text-fontsize);
-  color: var(--main-text-color);
-  background: var(--main-bg-color);
+  font-family: var(--yw-font-body);
+  font-size: var(--yw-font-size-base);
+  color: var(--yw-text);
+  background: var(--yw-surface);
 }
 
 h1,
@@ -12,39 +12,53 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--main-title-fontfamily);
+  font-family: var(--yw-font-heading);
 }
 
+/* The heading ramp: a colour and a size per level, both the Preset's (ADR-0021).
+
+   There were no rules here at all before: headings took the browser's own `em`-based
+   defaults, so a wiki could choose the heading FONT and two heading COLOURS but not how big
+   any heading was -- and `em` compounds, so a heading inside a panel came out a different
+   size from the same heading in the page body.
+
+   Every value is a token now, one per level. Bare element selectors, so any component that
+   sizes or colours its own headings still wins on specificity, exactly as it did over the
+   browser's defaults. */
 h1 {
-  color: var(--title-h1-color);
+  font-size: var(--yw-heading-1-size);
+  color: var(--yw-heading-1);
 }
 h2 {
-  color: var(--title-h2-color);
+  font-size: var(--yw-heading-2-size);
+  color: var(--yw-heading-2);
 }
 h3 {
-  color: var(--title-h3-color);
+  font-size: var(--yw-heading-3-size);
+  color: var(--yw-heading-3);
 }
 h4 {
-  color: var(--title-h4-color);
+  font-size: var(--yw-heading-4-size);
+  color: var(--yw-heading-4);
 }
 h5 {
-  color: var(--title-h5-color);
+  font-size: var(--yw-heading-5-size);
+  color: var(--yw-heading-5);
+}
+h6 {
+  font-size: var(--yw-heading-6-size);
+  color: var(--yw-heading-6);
 }
 
 a {
-  color: var(--link-color);
+  color: var(--yw-primary);
 }
 a:hover,
 a:focus {
-  color: var(--link-hover-color);
-}
-
-.yw-btn,
-.btn {
-  border-radius: var(--btn-border-radius);
+  color: var(--yw-primary-hover);
 }
 
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--checkbox-color);
+  accent-color: var(--yw-primary);
 }

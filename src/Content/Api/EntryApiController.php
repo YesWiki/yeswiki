@@ -48,9 +48,9 @@ class EntryApiController extends YesWikiController
 
         $vKeywords = $vSearchManager->aggregateKeywords($get->get('keywords', ''), $get->get('q', ''));
 
-        $vSearchFields = $get->has('searchfields') ? urldecode($get->get('searchfields')) : null;
-        $vFieldMapping = $get->has('fieldmapping') ? urldecode($get->get('fieldmapping')) : null;
-        $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
+        $vSearchFields = $get->has('searchfields') ? urldecode((string)$get->get('searchfields')) : null;
+        $vFieldMapping = $get->has('fieldmapping') ? urldecode((string)$get->get('fieldmapping')) : null;
+        $vDateFilter = $get->has('datefilter') ? urldecode((string)$get->get('datefilter')) : null;
         $vOrdre = $get->get('order', 'asc');
         $vField = $get->get('field', 'title');
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
@@ -85,7 +85,7 @@ class EntryApiController extends YesWikiController
                 'minDate' => $vMinDate,
             ]);
 
-            $acceptHeader = $this->getRequest()->headers->get('accept', '');
+            $acceptHeader = (string)$this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 return $this->getAllSemanticEntries($formId, $entries);
             } // add entries in html format if asked
@@ -98,7 +98,7 @@ class EntryApiController extends YesWikiController
             } elseif ($output == 'ical') {
                 return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $get->all());
             } elseif ($get->has('fields')) {
-                $fields = explode(',', $get->get('fields'));
+                $fields = explode(',', (string)$get->get('fields'));
                 $lightEntries = [];
                 if (!empty($entries) && !empty($fields)) {
                     foreach ($entries as $id => $entry) {
@@ -166,7 +166,7 @@ class EntryApiController extends YesWikiController
                 '@context' => $context,
                 '@id' => $this->getService(UrlFormatter::class)->href('fiche/' . $formId, 'api'),
                 '@type' => ['ldp:Container', 'ldp:BasicContainer'],
-                'dcterms:title' => $form['label'],
+                'dcterms:title' => $form['label'] ?? '',
                 'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
@@ -200,14 +200,14 @@ class EntryApiController extends YesWikiController
     public function createEntry($formId)
     {
         $request = $this->getRequest();
-        if (strpos($request->headers->get('content-type', ''), 'application/ld+json') !== false) {
+        if (strpos((string)$request->headers->get('content-type', ''), 'application/ld+json') !== false) {
             // pre-split ApiController fell through here and created the entry twice,
             // discarding the semantic response
             return $this->createSemanticEntry($formId);
         }
 
         $postData = $request->request->all();
-        if (empty($postData) && strpos($request->headers->get('content-type', ''), 'application/json') !== false) {
+        if (empty($postData) && strpos((string)$request->headers->get('content-type', ''), 'application/json') !== false) {
             $jsonData = json_decode($request->getContent(), true);
             if (is_array($jsonData)) {
                 $postData = $jsonData;

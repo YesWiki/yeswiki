@@ -67,7 +67,7 @@ class TripleStore
      * @param string $val_op
      *                         The operator of comparison between the effective value and $valueq (default: '=')
      *
-     * @return array The list of all the triples that match the asked criteria
+     * @return list<array<string, mixed>> The list of all the triples that match the asked criteria
      */
     public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=', $val_op = '='): array
     {

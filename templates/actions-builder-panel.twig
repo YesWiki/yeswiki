@@ -1,5 +1,5 @@
 {# The actions builder, docked as a right-hand rail beside the editor rather than shown
-   as a modal -- same idiom as the form designer (styles/form-builder.css's .yw-fb).
+   as a modal -- same idiom as the form designer (styles/yw-admin.css's .yw-fb).
    Sits OUTSIDE the edited form, as a sibling of .yw-designer__canvas: its selects and
    inputs are configuration, not fields, and would otherwise be posted with the page.
    Hidden until a toolbar button opens it (javascripts/actions-builder-app.js). #}
@@ -115,4 +115,4 @@
 {{ include_css('styles/vendor/vue-select/vue-select.css') }}
 
 {{ include_javascript('javascripts/actions-builder.js', false, true) }}
-{{ include_css('styles/actions/actions-builder.css') }}
+{{ include_css('styles/yw-editor.css') }}

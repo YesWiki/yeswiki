@@ -46,10 +46,8 @@ class AssetRegistry
         'tools/templates/libs/vendor/izmir/izmir.min.css' => 'styles/vendor/izmir/izmir.min.css',
         'tools/templates/presentation/styles/animate.css' => 'styles/animate.css',
         'tools/templates/presentation/styles/install.css' => 'styles/install.css',
-        'tools/templates/presentation/styles/preset-sidenav.css' => 'styles/preset-sidenav.css',
         'tools/templates/javascripts/change-theme.js' => 'javascripts/change-theme.js',
         'tools/templates/javascripts/template-edit.js' => 'javascripts/template-edit.js',
-        'tools/templates/presentation/javascripts/preset-sidenav.js' => 'javascripts/preset-sidenav.js',
         'tools/templates/javascripts/reload-gerer-droits.js' => 'javascripts/reload-gerer-droits.js',
     ];
 

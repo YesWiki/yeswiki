@@ -311,7 +311,7 @@ class AssetPublisher
 
     public static function sanitizeVersion(string $version): string
     {
-        $version = preg_replace('/[^A-Za-z0-9._-]/', '-', $version);
+        $version = (string)preg_replace('/[^A-Za-z0-9._-]/', '-', $version);
 
         return self::isValidVersion($version) ? $version : 'dev';
     }

@@ -44,8 +44,8 @@ To be relevant for news, like displaying news that have a date before today -->
   {% endfor %}
 </div>
 
-{{ include_css('styles/bazar/agenda.css') }}
-{{ include_css('styles/bazar/news.css') }}
+{{ include_css('styles/yw-entries.css') }}
+{{ include_css('styles/yw-entries.css') }}
 {% set width = params.columns|default('') is empty ? 25 : 100 / params.columns %}
 
 {% endif %}

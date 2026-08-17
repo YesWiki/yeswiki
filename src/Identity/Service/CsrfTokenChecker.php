@@ -41,8 +41,6 @@ class CsrfTokenChecker extends YesWikiController
 
             default:
                 throw new \Exception('Unknown type for parameter `$inputType` !');
-
-                return false;
         }
         if (is_null($inputToken) || $inputToken === false) {
             throw new TokenNotFoundException(_t('NO_CSRF_TOKEN_ERROR'));

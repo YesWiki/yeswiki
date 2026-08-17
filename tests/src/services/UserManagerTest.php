@@ -172,6 +172,7 @@ class UserManagerTest extends YesWikiTestCase
         $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         $userManager->create($name, $email, $password);
         $user = $userManager->getOneByName($name);
+        self::assertNotNull($user, "the fixture user '$name' was not created");
 
         return $user;
     }

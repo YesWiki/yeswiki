@@ -12,6 +12,8 @@ function tokenTruncate($string, $your_desired_width)
 
     $length = 0;
     $last_part = 0;
+    // preg_split() returns false on a pattern error; an empty list simply ends the loop at once
+    $parts = $parts === false ? [] : $parts;
     for (; $last_part < $parts_count; $last_part++) {
         $length += strlen($parts[$last_part]);
         if ($length > $your_desired_width) {
@@ -86,11 +88,11 @@ function get_title_from_body($page)
         $title = $entryTitle;
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
-        if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+        if (isset($titles[1][0]) && $titles[1][0] != '') {
             $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $content, $titles);
-            if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+            if (isset($titles[1][0]) && $titles[1][0] != '') {
                 $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];
@@ -125,7 +127,7 @@ function get_image_from_body($page): string
     $body = $page['body'] ?? [];
     $content = YesWiki\Content\Entity\PageBody::content($body);
     preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $content, $images);
-    if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
+    if (isset($images[0][0]) && $images[0][0] != '') {
         preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
         $image = yeswiki_thumbnail_tag(
             $GLOBALS['yeswikiServices']->get(YesWiki\Files\Service\AttachedFilePaths::class)->uploadPath()
@@ -139,11 +141,11 @@ function get_image_from_body($page): string
             $image = yeswiki_thumbnail_tag('files/' . $imagefile, '', 'filtered-image img-responsive');
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $content, $image);
-            if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+            if (isset($image[1][0]) && $image[1][0] != '') {
                 $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
             } else {
                 preg_match_all("/\<img.*src=\"(.*)\"/U", $content, $image);
-                if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+                if (isset($image[1][0]) && $image[1][0] != '') {
                     $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
                 } else {
                     $image = '';

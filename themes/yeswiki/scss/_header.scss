@@ -1,7 +1,7 @@
 /* ---- header ---- */
 #yw-header {
-  background: var(--header-bg-color);
-  color: var(--header-text-color);
+  background: var(--yw-surface-raised);
+  color: var(--yw-text);
 }
 
 #yw-header .navbar-header {
@@ -11,12 +11,12 @@
 #yw-header .yw-headerpage {
   max-width: 1170px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 var(--yw-space-md-x);
 }
 
 #yw-header h1,
 #yw-header h2 {
-  color: var(--header-title-color);
+  color: var(--yw-heading-1);
 }
 
 /* Nothing to show when PageHeader is empty -- unless an admin's "edit the banner" pencil is

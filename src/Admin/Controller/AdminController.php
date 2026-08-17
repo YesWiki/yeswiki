@@ -253,8 +253,16 @@ class AdminController extends YesWikiController
 
         return $this->page('@core/admin/preset.twig', 'admin/preset', [
             'presets' => $presets->all(),
-            'variables' => PresetService::VARIABLES,
+            'tokens' => PresetService::TOKENS,
+            'groups' => PresetService::GROUPS,
+            'schemes' => PresetService::SCHEMES,
             'swatches' => PresetService::SWATCHES,
+            // the colours a field can be pointed AT rather than given a value of its own
+            'palette' => PresetService::PALETTE,
+            // which fields share a line -- see PresetService::rowsByGroup()
+            'rows' => PresetService::rowsByGroup(),
+            // fill => the property its automatically-chosen ink is written to
+            'inkFor' => PresetService::INK_FOR,
             // what the two font selects offer, each option drawn in the stack it names
             'fontStacks' => PresetService::FONT_STACKS,
             'defaultPreset' => $presets->default(),
@@ -301,9 +309,19 @@ class AdminController extends YesWikiController
                     break;
 
                 case 'save':
-                    $values = [];
-                    foreach (array_keys(PresetService::VARIABLES) as $variable) {
-                        $values[$variable] = (string)$request->request->get($variable, '');
+                    // One field per token per Colour scheme. Read by name rather than
+                    // taking the posted arrays whole: what a Preset may declare is a closed
+                    // list, and a form is not where that list is decided.
+                    $values = ['light' => [], 'dark' => []];
+                    $posted = [
+                        'light' => (array)$request->request->all('light'),
+                        'dark' => (array)$request->request->all('dark'),
+                    ];
+                    foreach (PresetService::TOKENS as $token => $definition) {
+                        $values['light'][$token] = trim((string)($posted['light'][$token] ?? ''));
+                        if ($definition['kind'] === PresetService::KIND_COLOR) {
+                            $values['dark'][$token] = trim((string)($posted['dark'][$token] ?? ''));
+                        }
                     }
                     // the preset being edited, so a save replaces it -- renaming included.
                     // Empty when the rail was opened by "create a preset".

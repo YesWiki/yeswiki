@@ -39,6 +39,20 @@ class TrailActionTest extends YesWikiTestCase
         );
     }
 
+    /**
+     * The fixtures go when the tests do.
+     *
+     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
+     * page in somebody's index, for ever.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        foreach ([self::SUMMARY, self::MEMBER] as $tag) {
+            $pageManager->deleteOrphaned($tag);
+        }
+    }
+
     public function testASummaryThatListsNothingRendersNoTrailRatherThanDying(): void
     {
         $this->summaryContaining('Just a sentence, with no indented list at all.');

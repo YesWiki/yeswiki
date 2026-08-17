@@ -5,6 +5,7 @@ namespace YesWiki\Federation\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
@@ -12,16 +13,16 @@ use YesWiki\Kernel\Service\TripleStore;
 
 class ActivityPubService
 {
-    public static $AS_PREFIX = 'https://www.w3.org/ns/activitystreams#';
+    public static string $AS_PREFIX = 'https://www.w3.org/ns/activitystreams#';
 
-    protected $params;
-    protected $httpClient;
-    protected $webfingerService;
-    protected $container;
-    protected $httpSignatureService;
-    protected $semanticTransformer;
-    protected $tripleStore;
-    protected $ssrfUrlValidator;
+    protected ParameterBagInterface $params;
+    protected HttpClientInterface $httpClient;
+    protected WebfingerService $webfingerService;
+    protected ContainerInterface $container;
+    protected HttpSignatureService $httpSignatureService;
+    protected SemanticTransformer $semanticTransformer;
+    protected TripleStore $tripleStore;
+    protected SsrfUrlValidator $ssrfUrlValidator;
 
     public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, ContainerInterface $container, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator)
     {
@@ -35,26 +36,44 @@ class ActivityPubService
         $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
-    public function isEnabled($form)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function isEnabled(array $form): bool
     {
         return isset($form['activitypub_enable']) && $form['activitypub_enable'] === '1';
     }
 
-    public function getFormActorUri($form)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function getFormActorUri(array $form): string
     {
-        $parsed = parse_url($this->params->get('base_url'));
+        // parse_url() returns false for a malformed URL, and the keys are all optional even
+        // when it succeeds -- a wiki whose base_url is not a full URL would have fataled here
+        // rather than produced a wrong actor URI (ticket 40)
+        $baseUrl = $this->params->get('base_url');
+        $parsed = parse_url(is_string($baseUrl) ? $baseUrl : '');
+        $scheme = is_array($parsed) ? ($parsed['scheme'] ?? 'https') : 'https';
+        $host = is_array($parsed) ? ($parsed['host'] ?? '') : '';
 
-        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['id'];
+        return $scheme . '://' . $host . '/actors/' . $form['id'];
     }
 
-    public function getFormCollectionUri($form, $collectionType)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function getFormCollectionUri(array $form, string $collectionType): string
     {
-        $parsed = parse_url($this->params->get('base_url'));
-
-        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['id'] . '/' . $collectionType;
+        return $this->getFormActorUri($form) . '/' . $collectionType;
     }
 
-    public function getActor($form)
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    public function getActor(array $form): array
     {
         $actorUrl = $this->getFormActorUri($form);
 
@@ -95,7 +114,13 @@ class ActivityPubService
         return $actor['inbox'];
     }
 
-    protected function getRecipients($form, $activity)
+    /**
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $activity
+     *
+     * @return list<string>
+     */
+    protected function getRecipients(array $form, array $activity): array
     {
         if (\is_array($activity['to'])) {
             $recipients = $activity['to'];
@@ -118,7 +143,11 @@ class ActivityPubService
         return $newRecipients;
     }
 
-    public function postActivity($activity, $form)
+    /**
+     * @param array<string, mixed> $activity
+     * @param array<string, mixed> $form
+     */
+    public function postActivity(array $activity, array $form): void
     {
         $activity['@context'] = 'https://www.w3.org/ns/activitystreams';
         $activity['actor'] = $this->getFormActorUri($form);
@@ -148,7 +177,11 @@ class ActivityPubService
         }
     }
 
-    public function processActivity($activity, $form)
+    /**
+     * @param array<string, mixed> $activity
+     * @param array<string, mixed> $form
+     */
+    public function processActivity(array $activity, array $form): void
     {
         switch ($activity['type']) {
             case 'Accept':
@@ -211,41 +244,67 @@ class ActivityPubService
         }
     }
 
-    public function getFollowers($form)
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return list<string>
+     */
+    public function getFollowers(array $form): array
     {
         $followers = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', null, '', '');
 
-        return array_map(fn ($f) => $f['value'], $followers);
+        return array_map(fn ($f) => is_string($f['value']) ? $f['value'] : '', $followers);
     }
 
-    public function getFollowing($form)
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return list<string>
+     */
+    public function getFollowing(array $form): array
     {
         $following = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', null, '', '');
 
-        return array_map(fn ($f) => $f['value'], $following);
+        return array_map(fn ($f) => is_string($f['value']) ? $f['value'] : '', $following);
     }
 
-    public function addFollowing($form, $actorUri)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function addFollowing(array $form, string $actorUri): void
     {
         $this->tripleStore->create($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function addFollower($form, $actorUri)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function addFollower(array $form, string $actorUri): void
     {
         $this->tripleStore->create($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function removeFollowing($form, $actorUri)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function removeFollowing(array $form, string $actorUri): void
     {
         $this->tripleStore->delete($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function removeFollower($form, $actorUri)
+    /**
+     * @param array<string, mixed> $form
+     */
+    public function removeFollower(array $form, string $actorUri): void
     {
         $this->tripleStore->delete($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function notifyFollowers($form, $entry, $activityType)
+    /**
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
+     */
+    public function notifyFollowers(array $form, array $entry, string $activityType): void
     {
         $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
         unset($object['@context']);
@@ -257,6 +316,11 @@ class ActivityPubService
         ], $form);
     }
 
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return array{created: int, updated: int, deleted: int}
+     */
     public function syncActorPosts(string $actorUri, array $form): array
     {
         $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
@@ -350,6 +414,9 @@ class ActivityPubService
         return $stats;
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function fetchAllOutboxItems(string $outboxUrl): array
     {
         $items = [];

@@ -129,6 +129,59 @@ test('an admin copies a template, edits it, and the wiki renders the edit', asyn
   )
 })
 
+/**
+ * The same pair of defects the stylesheet screen had, on the screen that shares its shape.
+ *
+ * `admin-custom-templates.js` also built its editor at module top level, and an ES module is
+ * evaluated once per document -- so an hx-boost navigation away and back left the override
+ * showing as a bare textarea. And the screen declared no editor bundle, so ACE kept the white
+ * ground and `blue` keywords of the theme it injects at runtime.
+ */
+test('the template editor is dark when the reader is, and survives leaving the screen', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+
+  await page.goto('/?PagePrincipale')
+  await page.locator('.yw-topnav-tools').hover()
+  await page.locator('[data-yw-scheme-set="dark"]').click()
+
+  await page.goto('/?admin/custom-templates')
+  await page
+    .locator('.yw-templates__start select')
+    .selectOption('admin/keywords.twig')
+  await page.locator('button[name="create"]').click()
+
+  const editor = page.locator('.yw-templates__ace')
+  await expect(editor).toBeVisible()
+
+  const surface = await page.evaluate(() => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--yw-surface-raised)'
+    document.body.appendChild(probe)
+    const value = getComputedStyle(probe).color
+    probe.remove()
+    return value
+  })
+  await expect
+    .poll(() => editor.evaluate((el) => getComputedStyle(el).backgroundColor))
+    .toBe(surface)
+
+  // away through the rail and back to the same override, which is a boosted navigation
+  await page.locator('.yw-dashboard__sidebar a[href*="admin/preset"]').click()
+  await expect(page.locator('#yw-template-source')).toHaveCount(0)
+  await page
+    .locator('.yw-dashboard__sidebar a[href*="admin/custom-templates"]')
+    .click()
+  await page.locator('.yw-templates__table a[href*="file="]').first().click()
+
+  await expect(
+    page.locator('.yw-templates__ace'),
+    'the editor did not come back: the module ran once for the whole document',
+  ).toBeVisible()
+  await expect(page.locator('#yw-template-source')).toBeHidden()
+})
+
 test('a template that does not compile is refused, and the wiki keeps working', async ({
   page,
 }) => {

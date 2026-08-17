@@ -41,18 +41,6 @@ class ThemeManager implements EventSubscriberInterface
         'truetype' => '',
     ];
 
-    private const POST_DATA_KEYS = [
-        'primary-color',
-        'secondary-color-1',
-        'secondary-color-2',
-        'neutral-color',
-        'neutral-soft-color',
-        'neutral-light-color',
-        'main-text-fontsize',
-        'main-text-fontfamily',
-        'main-title-fontfamily',
-    ];
-
     protected $errorMessage;
     protected $favorites;
     protected $fileContent;
@@ -136,15 +124,15 @@ class ThemeManager implements EventSubscriberInterface
                     }
                     switch ($val) {
                         case 'theme':
-                            $customThemePath = basename(realpath(getcwd() . '/custom/themes/' . $requestVal));
-                            $classicThemePath = basename(realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requestVal));
+                            $customThemePath = basename((string)realpath(getcwd() . '/custom/themes/' . $requestVal));
+                            $classicThemePath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requestVal));
                             $requested[$val] = !empty($customThemePath) ? $customThemePath : $classicThemePath;
                             break;
 
                         case 'squelette':
                             $requestVal = self::normalizeSqueletteName($requestVal);
-                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
-                            $classicPath = basename(realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
+                            $customPath = basename((string)realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
+                            $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
@@ -159,8 +147,8 @@ class ThemeManager implements EventSubscriberInterface
 
                         default:
                             // ugly append of "s" to get the path of styleS, presetS and squeletteS
-                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
-                            $classicPath = basename(realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
+                            $customPath = basename((string)realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
+                            $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
                                 $requested[$val] = $customPath;
@@ -586,16 +574,19 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     /**
-     * add a css custom preset (only admins can change a file).
+     * Write an instance preset, verbatim, and install any webfont its type asks for.
      *
-     * @return array ['status' => bool, 'message' => '...','errorCode'=>0]
-     *               errorCode : 0 : not connected user
-     *               1 : bad post data
-     *               2 : file already existing but user not admin
-     *               3 : custom/css-presets not existing and not possible to create it
-     *               4 : file not created
+     * The CSS is PresetService's: a Preset is a complete token set in two Colour schemes,
+     * which is a shape this service has no business rebuilding from a list of keys. What is
+     * left here is what belongs to the instance's filesystem -- the hibernation and admin
+     * checks, the directory, and fetching a webfont the preset names so the wiki serves it
+     * itself rather than asking Google on every page view.
+     *
+     * @param list<string> $fontFamilies the families to install, usually body and headings
+     *
+     * @return array{status: bool, message: string, errorCode: int|null}
      */
-    public function addCustomCSSPreset(string $filename, array $post): array
+    public function writeCustomCSSPreset(string $filename, string $css, array $fontFamilies = []): array
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -604,175 +595,68 @@ class ThemeManager implements EventSubscriberInterface
             return ['status' => false, 'message' => 'Not connected user', 'errorCode' => 0];
         }
 
-        if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
-            return ['status' => false, 'message' => 'Bad post data', 'errorCode' => 1];
-        }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-
-        $fileContent = ":root {\r\n";
-        foreach (self::POST_DATA_KEYS as $key) {
-            $fileContent .= '  --' . $key . ': ' . $post[$key] . ";\r\n";
-        }
-        $fileContent .= "}\r\n";
-
-        if (file_exists($path . DIRECTORY_SEPARATOR . $filename) && !$this->container->get(AclService::class)->isAdmin()) {
+        $filePath = $path . DIRECTORY_SEPARATOR . $filename;
+        if (file_exists($filePath) && !$this->container->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'File already existing but user not admin', 'errorCode' => 2];
         }
-        // check if folder exists
-        if (!is_dir($path)) {
-            if (!mkdir($path)) {
-                return ['status' => false, 'message' => $path . ' not existing and not possible to create it', 'errorCode' => 3];
-            }
-        }
-        // create or update
-        file_put_contents($path . DIRECTORY_SEPARATOR . $filename, $fileContent);
-        $data = (file_exists($path . DIRECTORY_SEPARATOR . $filename))
-            ? ['status' => true, 'message' => $filename . ' created/updated', 'errorCode' => null]
-            : ['status' => false, 'message' => $filename . ' not created', 'errorCode' => 4];
-
-        $filePath = self::CUSTOM_CSS_PRESETS_PATH . DIRECTORY_SEPARATOR . $filename;
-        if ($data['status'] && file_exists($filePath)) {
-            // append font data
-
-            $mainTextFontFamily = (empty($post['main-text-fontfamily']) || !is_string($post['main-text-fontfamily'])) ? '' : $post['main-text-fontfamily'];
-            $fontString = empty($mainTextFontFamily) ? '' : $this->installAndGetCSSForFont($mainTextFontFamily);
-
-            $mainTitleFontFamily = (empty($post['main-title-fontfamily']) || !is_string($post['main-title-fontfamily'])) ? '' : $post['main-title-fontfamily'];
-            if ($mainTitleFontFamily != $mainTextFontFamily) {
-                $newFontString = empty($mainTitleFontFamily) ? '' : $this->installAndGetCSSForFont($mainTitleFontFamily);
-                if (!empty($newFontString)) {
-                    $fontString .= "\n$newFontString";
-                }
-            }
-
-            if (!empty($fontString)) {
-                file_put_contents($filePath, "\n$fontString\n", FILE_APPEND);
-            }
+        if (!is_dir($path) && !mkdir($path) && !is_dir($path)) {
+            return ['status' => false, 'message' => $path . ' not existing and not possible to create it', 'errorCode' => 3];
         }
 
-        return $data;
-    }
-
-    /**
-     * check post to add custom CSS Preset.
-     */
-    private function checkPOSTToAddCustomCSSPreset(array $post): bool
-    {
-        foreach (self::POST_DATA_KEYS as $key) {
-            if (empty($post[$key])) {
-                return false;
-            }
+        file_put_contents($filePath, $css);
+        if (!file_exists($filePath)) {
+            return ['status' => false, 'message' => $filename . ' not created', 'errorCode' => 4];
         }
 
-        return true;
+        $fontCss = '';
+        foreach (array_unique(array_filter($fontFamilies)) as $family) {
+            $installed = $this->installAndGetCSSForFont($family);
+            if (!empty($installed)) {
+                $fontCss .= "\n$installed";
+            }
+        }
+        if (!empty($fontCss)) {
+            file_put_contents($filePath, "\n$fontCss\n", FILE_APPEND);
+        }
+
+        return ['status' => true, 'message' => $filename . ' created/updated', 'errorCode' => null];
     }
 
     /**
      * get presets data.
      *
-     * @return array
-     *               [
-     *               'themePresets' => [],
-     *               'dataHtmlForPresets' => [],
-     *               'selectedPresetName' => ''/null,
-     *               'customCSSPresets' => [],
-     *               'dataHtmlForCustomCSSPresets' => [],
-     *               'selectedCustomPresetName' => ''/null,
-     *               'currentCSSValues' => [],
-     *               ]
+     * Which presets exist and which one the wiki wears. What a preset *contains* is
+     * PresetService's answer -- it is a complete token set in two Colour schemes now, not
+     * nine values that could be spread over an element's data- attributes.
+     *
+     * @return array{themePresets: array<string, string>, selectedPresetName: string|null, customCSSPresets: array<string, string>, selectedCustomPresetName: string|null}
      */
     public function getPresetsData(): ?array
     {
         $themePresets = $this->getTemplates()[$this->getFavoriteTheme()]['presets'] ?? [];
-        $dataHtmlForPresets = array_map(function ($value) {
-            return $this->extractDataFromPreset($value);
-        }, $themePresets);
         $customCSSPresets = $this->getCustomCSSPresets();
-        $dataHtmlForCustomCSSPresets = array_map(function ($value) {
-            return $this->extractDataFromPreset($value);
-        }, $customCSSPresets);
         $favoritePreset = $this->getFavoritePreset();
+        $selectedPresetName = null;
+        $selectedCustomPresetName = null;
         if (!empty($favoritePreset)) {
             $presetName = $favoritePreset;
-            if (substr($presetName, 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX) {
+            if (str_starts_with($presetName, self::CUSTOM_CSS_PRESETS_PREFIX)) {
                 $presetName = substr($presetName, strlen(self::CUSTOM_CSS_PRESETS_PREFIX));
-                if (in_array($presetName, array_keys($customCSSPresets))) {
-                    $currentCSSValues = $this->extractPropValuesFromPreset($customCSSPresets[$presetName]);
+                if (array_key_exists($presetName, $customCSSPresets)) {
                     $selectedCustomPresetName = $presetName;
                 }
-            } else {
-                if (in_array($presetName, array_keys($themePresets))) {
-                    $currentCSSValues = $this->extractPropValuesFromPreset($themePresets[$presetName]);
-                    $selectedPresetName = $presetName;
-                }
+            } elseif (array_key_exists($presetName, $themePresets)) {
+                $selectedPresetName = $presetName;
             }
         }
 
         return [
             'themePresets' => $themePresets,
-            'dataHtmlForPresets' => $dataHtmlForPresets,
-            'selectedPresetName' => $selectedPresetName ?? null,
+            'selectedPresetName' => $selectedPresetName,
             'customCSSPresets' => $customCSSPresets,
-            'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
-            'selectedCustomPresetName' => $selectedCustomPresetName ?? null,
-            'currentCSSValues' => $currentCSSValues ?? [],
+            'selectedCustomPresetName' => $selectedCustomPresetName,
         ];
-    }
-
-    /**
-     * extract data from preset.
-     *
-     * @return string data to put in html
-     */
-    private function extractDataFromPreset(string $presetContent): string
-    {
-        $data = '';
-        $values = $this->extractPropValuesFromPreset($presetContent);
-        foreach ($values as $prop => $value) {
-            $data .= ' data-' . $prop . '="' . str_replace('"', '\'', $value) . '"';
-        }
-        if (
-            !empty($data)
-            && !empty($values['primary-color'])
-            && !empty($values['main-text-fontsize']
-            && !empty($values['main-text-fontfamily']))
-        ) {
-            $data .= ' style="';
-            $data .= 'color:' . $values['primary-color'] . ';';
-            $data .= 'font-family:' . str_replace('"', '\'', $values['main-text-fontfamily']) . ';';
-            $data .= 'font-size:' . $values['main-text-fontsize'] . ';';
-            $data .= '"';
-        }
-
-        return $data;
-    }
-
-    /**
-     * extract properties values from preset contents.
-     */
-    private function extractPropValuesFromPreset(string $presetContent): array
-    {
-        // extract root part
-        $matches = [];
-        $results = [];
-        $error = false;
-        if (preg_match('/^:root\s*{((?:.|\n)*)}\s*[^{]*/', $presetContent, $matches)) {
-            $vars = $matches[1];
-
-            if (preg_match_all('/\s*--([0-9a-z\-]*):\s*([^;]*);\s*/', $vars, $matches)) {
-                foreach ($matches[0] as $index => $val) {
-                    $newmatch = [];
-                    if (preg_match('/[a-z\-]*color[a-z0-9\-]*/', $matches[1][$index], $newmatch)) {
-                        if (!preg_match('/^#[A-Fa-f0-9]*$/', $matches[2][$index], $newmatch)) {
-                            $error = true;
-                        }
-                    }
-                    $results[$matches[1][$index]] = $matches[2][$index];
-                }
-            }
-        }
-
-        return $error ? [] : $results;
     }
 
     /**
@@ -838,7 +722,7 @@ class ThemeManager implements EventSubscriberInterface
         $errorNb = curl_errno($ch);
         curl_close($ch);
         if (!$errorNb) {
-            $data = $this->parseCSS($result);
+            $data = $this->parseCSS(is_string($result) ? $result : '');
         }
 
         return $data;

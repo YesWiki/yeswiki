@@ -237,6 +237,56 @@
     }
   })
 
+  // ---- the Colour scheme switcher (ADR-0020) --------------------------------------
+  //
+  // Three states offered as three marks rather than cycled through by one button: "follow my
+  // system" is a choice of its own, and reaching it should not depend on how many times you
+  // have already clicked. The line they sit on is revealed by hover (see yw-core.css); this
+  // is only about what a click does and which mark is filled.
+  //
+  // The *state* is applied by the tiny inline script CoreAssets puts at the top of the head
+  // (window.ywScheme), which is what stops the wrong scheme being painted first. Nothing here
+  // runs before paint, and nothing here needs to.
+  //
+  // ywInitEach rather than a load listener: an hx-boost navigation replaces the body, so the
+  // controls on screen after a navigation are different elements from the ones wired at load.
+  const SCHEME_ICON = { system: 'device-desktop', light: 'sun', dark: 'moon' }
+
+  /** The readout beside the options: which scheme is on, as its own glyph and its name. */
+  function paintSchemeState() {
+    const scheme = window.ywScheme ? window.ywScheme.current() : 'system'
+
+    document.querySelectorAll('[data-yw-scheme]').forEach((readout) => {
+      const use = readout.querySelector('use')
+      if (use) {
+        // only the fragment is swapped: the sprite's address is whatever the server said it
+        // was, which on a farm is a cache/assets/{version}/ path and not a source-tree one
+        const href = use.getAttribute('href') || ''
+        use.setAttribute('href', `${href.split('#')[0]}#${SCHEME_ICON[scheme]}`)
+      }
+      const label =
+        readout.dataset[`label${scheme[0].toUpperCase()}${scheme.slice(1)}`]
+      if (label) readout.setAttribute('title', label)
+    })
+
+    document.querySelectorAll('[data-yw-scheme-set]').forEach((option) => {
+      option.setAttribute(
+        'aria-pressed',
+        option.dataset.ywSchemeSet === scheme ? 'true' : 'false',
+      )
+    })
+  }
+
+  ywInitEach('[data-yw-scheme-set]', (option) => {
+    option.addEventListener('click', () => {
+      if (window.ywScheme) window.ywScheme.set(option.dataset.ywSchemeSet)
+    })
+  })
+
+  // once per arrival, and again whenever the scheme changes from anywhere
+  ywInitEach('[data-yw-scheme]', paintSchemeState)
+  document.addEventListener('yw:scheme', paintSchemeState)
+
   // A field asking for focus on arrival -- the /search page's search box, today.
   //
   // The `autofocus` attribute alone is not enough and the reason is ticket 16: an internal

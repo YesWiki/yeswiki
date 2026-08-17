@@ -2142,7 +2142,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
         $js = '';
 
         $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/leaflet/leaflet.css');
-        $this->getService(AssetRegistry::class)->addCssFile('styles/bazar/bazarcarto.css');
+        $this->getService(AssetRegistry::class)->addCssFile('styles/yw-map.css');
         $this->getService(AssetRegistry::class)->addCssFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet/leaflet.min.js');

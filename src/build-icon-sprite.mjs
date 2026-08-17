@@ -59,6 +59,12 @@ const EXTRAS = [
   'list-details',
   'qrcode',
   'message-circle',
+  // the Colour scheme toggle: the three states it cycles through (ADR-0020). System-follows
+  // is a screen rather than a time of day -- the reader is being told whose choice is in
+  // force, and the answer there is "your computer's".
+  'sun',
+  'moon',
+  'device-desktop',
 ]
 // sprite ids whose Tabler source icon has a different name — e.g. the magnifier
 // ships as "loupe" because adblock cosmetic filters hide elements whose

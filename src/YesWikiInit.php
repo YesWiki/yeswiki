@@ -256,6 +256,11 @@ class Init
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from yeswiki.config.php
+            // Which languages this wiki offers besides `default_language` -- the list its
+            // language switcher holds. Empty is the ordinary case and means a wiki in one
+            // language, which shows no switcher at all. Chosen at install time and on
+            // /admin/config; see LanguageService::offeredLanguages().
+            'other_languages' => [],
             'yeswiki_name' => '', // backup yeswiki_name if deleted from yeswiki.config.php
             'htmlPurifierActivated' => true,
             'htmlPurifierSafeIframeRegexp' => '~^https://.*~', // regex for domains allowed as <iframe> src ; very permissive by default, restrict for public wikis

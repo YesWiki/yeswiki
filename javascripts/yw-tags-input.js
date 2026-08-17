@@ -25,9 +25,7 @@
     if (hidden) hidden.value = currentTags(widget).join(',')
     // ...and say so: setting `.value` from script fires nothing, so anything downstream of
     // the widget -- an `hx-trigger`, in the facets' case -- has no other way to know
-    widget.dispatchEvent(
-      new CustomEvent('yw:tags-changed', { bubbles: true }),
-    )
+    widget.dispatchEvent(new CustomEvent('yw:tags-changed', { bubbles: true }))
   }
 
   function hideSuggestions(widget) {

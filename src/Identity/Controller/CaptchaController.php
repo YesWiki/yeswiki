@@ -189,8 +189,8 @@ class CaptchaController extends YesWikiController
                 if (empty($post->get('captcha'))) {
                     $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
                 } elseif (!$this->check(
-                    $post->get('captcha', ''),
-                    $post->get('captcha_hash', '')
+                    (string)$post->get('captcha', ''),
+                    (string)$post->get('captcha_hash', '')
                 )) {
                     $error = _t('CAPTCHA_ERROR_WRONG_WORD');
                 }
@@ -338,11 +338,12 @@ class CaptchaController extends YesWikiController
          * @var int[] $colorSet extracted color set
          */
         $colorSet = array_key_exists($name, self::COLOURS) ? self::COLOURS[$name] : self::TONES[$name];
-        /**
-         * @var int|bool $color
-         */
-        $color = imagecolorallocate($image, $colorSet[0], $colorSet[1], $colorSet[2]);
-        if ($color === false || !is_integer($color)) {
+        // clamped for the analyser, which sees the two palettes' union as plain `int`. Every
+        // declared value is already in range, so this is a no-op on the palettes as they stand
+        // and a correction rather than a TypeError if one ever is not (ticket 40).
+        $channel = static fn (int $value): int => max(0, min(255, $value));
+        $color = imagecolorallocate($image, $channel($colorSet[0]), $channel($colorSet[1]), $channel($colorSet[2]));
+        if ($color === false) {
             throw new \Exception('Not possible to generate color');
         }
 
@@ -377,23 +378,12 @@ class CaptchaController extends YesWikiController
      */
     protected function createImage(int $imageWidth)
     {
-        /**
-         * @var \GdImage|bool $image
-         */
-        $image = imagecreatetruecolor($imageWidth, self::IMAGE_HEIGHT);
-        /**
-         * @var string|bool $phpVersion
-         */
-        $phpVersion = phpversion();
-        /**
-         * @var bool $phpHigherThan8
-         */
-        $phpHigherThan8 = !empty($phpVersion) && (explode('.', $phpVersion)[0] >= 8);
-        if (
-            $image === false
-            || ($phpHigherThan8 && !($image instanceof \GdImage))
-            || (!$phpHigherThan8 && !is_resource($image))
-        ) {
+        // The `is_resource()` half of this was for PHP 7, where GD returned a resource rather
+        // than a GdImage. composer.json has required ^8.3 since the rewrite, so that arm could
+        // never run -- and the `@var string|bool` on phpversion() was making the analyser
+        // uncertain about a function that returns a string (ticket 40).
+        $image = imagecreatetruecolor(max(1, $imageWidth), self::IMAGE_HEIGHT);
+        if ($image === false) {
             throw new \Exception('Not possible to generate image');
         }
 

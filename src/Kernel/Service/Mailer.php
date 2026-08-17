@@ -58,7 +58,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
                 'entry' => $data,
                 'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -90,7 +90,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-list-deleted-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
                 'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
                 'baseUrl' => $baseUrl,
@@ -187,7 +187,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
                 'entry' => $data,
                 'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -251,7 +251,7 @@ class Mailer
             && $this->params->get('contact_use_long_wiki_urls_in_emails')
         ) {
             $baseUrl = $this->getBaseUrl();
-            $text = preg_replace('/(' . preg_quote("href=\"{$baseUrl}/?", '/') . ')(?=' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:&|\\"))/u', '$1wiki=', $text);
+            $text = (string)preg_replace('/(' . preg_quote("href=\"{$baseUrl}/?", '/') . ')(?=' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:&|\\"))/u', '$1wiki=', $text);
         }
 
         return $text;

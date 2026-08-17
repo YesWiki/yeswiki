@@ -25,6 +25,20 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ApiControllerMetadatasRegressionPage';
 
+    /**
+     * The fixtures go when the tests do.
+     *
+     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
+     * page in somebody's index, for ever.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        foreach ([self::PAGE_TAG] as $tag) {
+            $pageManager->deleteOrphaned($tag);
+        }
+    }
+
     public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();

@@ -313,114 +313,175 @@ permet de :
 
 ### Créer une configuration graphique personnalisée
 
-Le thème Margot permet de définir des variantes de couleur pour votre wiki , via
-menu roue crantée/ Apparance L'interface vous permet de modifier les couleurs
-utilisées dans le thème : couleur primaire, couleur secondaire 1, couleur
-secondaire 2, couleur de texte, couleur neutre , couleur claire (fond) - puis de
-nommer cette configuration custom et la sauvegarder. La configuration
-personnalisée pourra être appliquée à l'ensemble du site ou à certaines pages
-selon vote besoin.
+L'écran **Personnalisation** (menu Gestion du site) est une **galerie** — la page occupe
+toute la largeur et montre les composants du wiki, des listes de fiches et deux mises en page
+courantes — avec un **tiroir à droite** qui contient tout ce qu'on peut lui faire. Le tiroir a
+deux écrans : la liste des _préréglages_, et l'éditeur qu'ouvre le crayon d'une carte. La
+croix le referme et rend la largeur à la galerie ; le bouton en haut de page le rappelle.
+
+Un préréglage décrit **tout** l'aspect du wiki : ses couleurs, celles de sa barre de menu et
+de son pied de page, la couleur et la taille de chacun de ses six niveaux de titre, son
+rythme d'espacement,
+l'arrondi de ses coins, l'épaisseur de ses traits, la force de ses ombres et sa typographie —
+sous forme de _jetons de style_ (`--yw-*`).
+
+Trois règles à connaître :
+
+- **Un préréglage ne décrit que des décisions.** Ce qui se déduit d'une décision est calculé
+  par YesWiki : la couleur au survol se déduit de la couleur principale, le texte secondaire
+  du texte, le fond et l'encre d'un message de succès de la seule couleur « succès ». Il y a
+  donc 31 valeurs à régler et non 49, et il n'y a rien à maintenir en accord.
+- **Un préréglage est complet ou il est en erreur.** Il déclare chaque jeton _demandé_, les
+  couleurs une fois par mode d'affichage (clair et sombre), le reste une seule fois. L'écran
+  indique ce qui manque plutôt que de le compléter à votre place — une couleur devinée est
+  une couleur fausse que personne ne remarque.
+- **Le mode clair/sombre appartient au visiteur**, le préréglage à la page. Un lecteur
+  choisit clair ou sombre (ou « comme mon système ») avec le bouton de la barre du haut ;
+  la page choisit le préréglage. Aucun des deux n'écrase l'autre. Comme les valeurs calculées
+  se recalculent dans chaque mode, une couleur d'état choisie une fois est juste dans les deux.
+
+Les mesures — espacements, arrondi, épaisseur des traits, force des ombres, taille des titres
+— se règlent au **curseur** et jamais en tapant une longueur : ce sont des multiples de la
+taille du texte, donc un wiki au texte plus grand a des pages proportionnellement plus aérées.
+Trois espacements suffisent : dans un contrôle, dans un composant, entre composants — chacun
+réglé **sur deux axes**, vertical et horizontal, parce qu'un texte est plus large que haut :
+le blanc qui paraît juste à côté d'un mot n'est pas celui qui paraît juste au-dessus d'une
+ligne de mots.
+
+Une couleur peut **pointer vers une autre** plutôt que d'avoir une valeur à elle : le bouton
+à côté du champ ouvre la palette du préréglage, et choisir « Couleur principale » écrit
+`var(--yw-primary)` dans le champ. Les deux restent alors accordées — changez la couleur
+principale et tous les titres qui la suivent changent avec elle. « Une couleur à elle… »
+défait le lien en gardant la couleur affichée. Une boucle (A pointe vers B qui pointe vers A)
+est refusée à l'enregistrement : le navigateur, lui, se contenterait de tout afficher en noir.
+
+L'éditeur ne montre que les couleurs **du mode en cours**. Le sélecteur clair/sombre de la
+barre du haut bascule la page _et_ les champs : vous modifiez donc les couleurs sombres en
+regardant la page sombre. Les couleurs qui servent d'encre affichent leur **contraste** avec
+le fond sur lequel elles se posent, mesuré selon WCAG 2.1 et noté AAA / AA / AA-large / ✕ —
+une note par mode, car une encre qui passe sur une page blanche peut échouer sur la page
+presque noire. Visez AA (4,5) pour du texte courant ; AA-large (3) ne suffit que pour un titre.
+
+Les préréglages livrés avec le thème ne sont pas modifiables : `themes/` est du code, remplacé
+à chaque mise à jour. Le bouton « copier » en fait une copie dans `custom/css-presets/`, et
+c'est cette copie que l'on édite.
+
+> **Mise à jour depuis une version antérieure** : les neuf variables `--primary-color`,
+> `--neutral-color`… ont été remplacées par les jetons `--yw-*`, puis le jeu de jetons a été
+> réduit à ce qui est une décision. Vos préréglages sont convertis automatiquement : ce qui
+> est désormais calculé en est retiré, les onze espacements deviennent trois, et les couleurs
+> de la barre, du pied de page et des titres sont déduites de ce que le fichier disait déjà —
+> le wiki a donc la même allure après la mise à jour qu'avant.
+>
+> Le style de thème `colored-navbar` a disparu : la couleur de la barre est un réglage du
+> préréglage (« Fond de la barre de menu »). Si vous l'utilisiez, la conversion donne à vos
+> préréglages sa barre colorée.
 
 #### Astuce
 
 Pour modifier la police de caractères par défaut, 2 solutions possibles :
 
-- choisir parmi la liste de police de caractère disponibles dans l'outil de
-  configuration graphique (la police sélectionnée sera automatiquement
-  téléchargée)
-- ou copier vos polices sur votre serveur dans le dossier /custom/fonts puis
-  modifier PageCss pour ajouter le chargement des polices
+- choisir parmi la liste de polices de caractères disponibles dans l'écran Personnalisation
+  (les piles proposées n'ont rien à télécharger : ce sont des polices déjà présentes chez le
+  lecteur)
+- ou copier vos polices sur votre serveur dans le dossier /custom/fonts puis les déclarer
+  dans le CSS personnalisé du wiki (écran « CSS personnalisé »)
 
 Exemple
 
 ```css
-/* Typo utilisée ubuntu-regular - latin */
-/* ubuntu-regular - latin */
-/* ubuntu-mono-700 - latin */
+/* Typo utilisée ubuntu-mono-700 - latin */
 @font-face {
   font-family: 'Ubuntu Mono';
   font-style: normal;
   font-weight: 700;
-  src: url('custom/fonts/ubuntu-mono-v10-latin-700.eot'); /* IE9 Compat Modes */
   src:
     local(''),
-    url('custom/fonts/ubuntu-mono-v10-latin-700.eot?#iefix')
-      format('embedded-opentype'),
-    /* IE6-IE8 */ url('custom/fonts/ubuntu-mono-v10-latin-700.woff2')
-      format('woff2'),
-    /* Super Modern Browsers */
-      url('custom/fonts/ubuntu-mono-v10-latin-700.woff') format('woff'),
-    /* Modern Browsers */ url('custom/fonts/ubuntu-mono-v10-latin-700.ttf')
-      format('truetype'),
-    /* Safari, Android, iOS */
-      url('custom/fonts/ubuntu-mono-v10-latin-700.svg#UbuntuMono ')
-      format('svg'); /* Legacy iOS */
+    url('custom/fonts/ubuntu-mono-v10-latin-700.woff2') format('woff2'),
+    url('custom/fonts/ubuntu-mono-v10-latin-700.woff') format('woff');
 }
 :root {
-  --main-title-fontfamily: 'Ubuntu Mono', sans-serif;
+  --yw-font-heading: 'Ubuntu Mono', sans-serif;
 }
 ```
 
 ### Ajouter du code CSS personnalisé
 
-Il est possible d'ajouter du code CSS personnalisé sur une page wiki dédiée :
-PageCss. Cette page ne doit contenir que du CSS. Il sera chargé en dernier afin
-de pouvoir surcharger des classes CSS et personnaliser l'affichage. Par défaut,
-cette page contient des variables CSS qui sont utilisables avec le thème Margot.
-Vous pouvez ajouter tout code CSS qui vous sera utile.
+L'écran **CSS personnalisé** (menu Gestion du site) contient la feuille de style du wiki,
+chargée après toutes les autres : c'est là que l'on surcharge ce qu'un préréglage ne dit pas.
+
+Les règles de YesWiki ne consomment que des jetons `--yw-*`, ce qui veut dire qu'une seule
+déclaration suffit pour changer quelque chose partout :
 
 ```css
 :root {
-  /* couleurs des titres */
-  --title-h1-color: var(--neutral-color);
-  --title-h2-color: var(--primary-color);
-  --title-h3-color: var(--secondary-color-1);
-  --title-h4-color: var(--secondary-color-2);
+  /* la couleur principale : titres, liens, boutons, onglet actif... */
+  --yw-primary: #0c5d6a;
 
-  /* couleur pour les messages positifs par défaut vert */
-  --success-color: #3cab3b;
+  /* le fond de la page, et celui des cartes et panneaux posés dessus */
+  --yw-surface: #ffffff;
+  --yw-surface-raised: #ffffff;
 
-  /* couleur pour les messages d'erreur par défaut rouge */
-  --danger-color: #d8604c;
+  /* le texte. Le texte secondaire (`--yw-text-muted`) en est calculé : c'est cette
+     couleur fondue dans le fond, et il n'y a donc rien à garder en accord. */
+  --yw-text: #4e5056;
 
-  /* couleur pour les messages d'alerte par défaut orange */
-  --warning-color: #d78958;
+  /* les traits. Les variantes marquée et légère en sont calculées. */
+  --yw-border: #d8d9dc;
+  --yw-border-width: 1px;
 
-  /* couleur de fond de la partie centrale votre wiki */
-  --main-container-bg-color: var(--neutral-light-color);
+  /* messages : succès, erreur, avertissement, information. Une seule couleur chacun :
+     le fond du message et son encre en sont calculés, contre le fond et le texte de la
+     page — ce qui les rend justes en clair comme en sombre sans les écrire deux fois. */
+  --yw-success: #1f8a7d;
+  --yw-danger: #c0392b;
+  --yw-warning: #d99100;
+  --yw-info: #1989a0;
 
-  /* couleur des liens */
-  --link-color: var(--primary-color);
+  /* la barre de menu et le pied de page */
+  --yw-navbar-bg: #ffffff;
+  --yw-navbar-text: #4e5056;
+  --yw-footer-bg: #ffffff;
+  --yw-footer-text: #4e5056;
 
-  /* couleur des liens au survol */
-  --link-hover-color: var(--primary-color);
+  /* les titres : la couleur des h1 à h3, celle des h4 à h6, et la taille de toute
+     l'échelle d'un coup */
+  --yw-heading: #0c5d6a;
+  --yw-heading-sub: #d8604c;
+  --yw-heading-scale: 1;
 
-  /* couleur de la barre de menu */
-  --navbar-bg-color: var(--primary-color);
-  --navbar-text-color: var(--neutral-light-color);
-  --navbar-link-color: var(--neutral-light-color);
-  --navbar-link-bg-color: transparent;
-  --navbar-link-hover-color: rgba(255, 255, 255, 0.85);
-  --navbar-link-bg-hover-color: transparent;
-  --navbar-border: none;
-  --navbar-border-radius: 0;
-  --navbar-shadow: none;
+  /* Le rythme : trois espacements, et rien d'autre. `rem` est ici la taille du texte du
+     wiki, donc ce sont des multiples de celle-ci — un wiki au texte plus grand a des
+     pages proportionnellement plus aérées, sans rien changer d'autre. */
+  --yw-space-sm: 0.25rem; /* dans un contrôle */
+  --yw-space-md: 0.75rem; /* dans un composant */
+  --yw-space-lg: 2rem; /* entre composants */
 
-  --header-bg-color: var(--neutral-light-color);
-  --header-text-color: var(--neutral-color);
-  --header-title-color: var(--primary-color);
+  /* et trois multiplicateurs : 0 donne des coins carrés, aucun trait, aucune ombre */
+  --yw-radius-scale: 1;
+  --yw-shadow-strength: 1;
+}
 
-  /* couleur de fond du pied de page */
-  --footer-bg-color: transparent;
-  --footer-text-color: var(--main-text-color);
-  --footer-title-color: var(--main-text-color);
-  --footer-border-top: 3px solid var(--neutral-soft-color);
+/* Le mode sombre est un second jeu de valeurs, pas une seconde feuille de style. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --yw-surface: #14171a;
+    --yw-text: #e3e5e8;
+  }
+}
 
-  --btn-border: none;
-  --btn-border-radius: 0.5em;
-  --checkbox-color: var(--primary-color);
+:root[data-theme='dark'] {
+  --yw-surface: #14171a;
+  --yw-text: #e3e5e8;
 }
 ```
+
+La liste complète des jetons est en haut de `styles/yw-core.css`, qui est aussi le préréglage
+par défaut de YesWiki.
+
+> Les anciens noms (`--primary-color`, `--neutral-soft-color`, `--navbar-bg-color`,
+> `--title-h1-color`…) ne sont plus lus par rien : ils ont été retirés, pas conservés en
+> alias. Un CSS personnalisé qui les déclare ne fait plus rien.
 
 ### Visualiser/modifier le thème graphique affecté à chaque page de votre wiki
 
@@ -754,6 +815,32 @@ modifier les informations de cet espace.
   default_language** : à la création du wiki, la langue choisie est le français.
   Le fait de modifier ce paramètre modifiera la langue pour les menus et
   paramètres en mode édition et les pages comme la page de configuration.
+  C'est la langue _principale_ du wiki, choisie à l'installation et modifiable
+  ici dans une liste. Ce doit être une vraie langue : `auto` n'existe plus, car
+  une première visite interroge déjà le navigateur avant cette valeur (voir
+  ci-dessous), et ce que `auto` ajoutait était un wiki incapable de dire dans
+  quelle langue il est écrit pour la personne dont il n'a pas la langue.
+- **Autres langues - other_languages** : les langues vers lesquelles une lectrice
+  ou un lecteur peut basculer le wiki, en plus de la principale. Elles se cochent
+  à l'installation et ici. N'en cocher aucune (le cas par défaut) donne un wiki
+  en une seule langue : **aucun sélecteur de langue n'apparaît alors**, et le
+  wiki ne répond plus à un `?lang=` qu'il ne propose pas. Cela traduit
+  l'interface, pas les pages que vous écrivez.
+
+  **Dans quelle langue une visiteuse ou un visiteur voit-il le wiki ?** Dans
+  l'ordre : la langue demandée dans l'adresse (`?lang=`, ce que fait le sélecteur
+  de langue) ; puis celle choisie la dernière fois, gardée dans un cookie pendant
+  un an ; puis celle que la page déclare pour elle-même ; puis **celle du
+  navigateur**, si le wiki la propose ; et enfin la langue principale. Autrement
+  dit : quelqu'un qui arrive pour la première fois lit le wiki dans sa propre
+  langue quand le wiki l'a, et dans la langue principale sinon.
+
+  Le sélecteur de langue et celui du mode clair/sombre appartiennent au visiteur
+  et non au wiki : ils sont à droite du séparateur dans la barre du haut, ne sont
+  pas configurables dans le menu rapide de l'écran _Mise en page_, et ne peuvent
+  pas en être retirés — une page dont on ne peut changer ni les couleurs ni la
+  langue est une page que certaines personnes ne peuvent pas lire.
+
 - **Icône du site (emoji ou URL vers une image PNG) - favicon** : ce paramètre
   permet de modifier l'icône qui apparaît dans l'onglet du navigateur (Chrome,
   Firefox...)

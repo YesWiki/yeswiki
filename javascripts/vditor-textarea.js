@@ -14,6 +14,12 @@
 // only in what the picker writes -- so it lives in a module of its own rather than in
 // whichever of the two editors happened to need it first
 import { filePickerMenuItem, hasFilePicker } from './vditor-toolbar-file.js'
+import { followScheme, vditorThemeOptions } from './editor-scheme.js'
+
+// Where Vditor loads its own parts from: its parser, its icons, and the content stylesheet a
+// theme is. A local directory rather than its default CDN -- a wiki must not need the open
+// internet to open an editor.
+const VDITOR_CDN = 'javascripts/vendor/vditor'
 
 function initVditor(textareaParam) {
   const textarea = textareaParam
@@ -30,7 +36,10 @@ function initVditor(textareaParam) {
   // `after`/`input` fire asynchronously (Vditor loads its own parser script first), well
   // after this constructor call returns and `editor` is assigned -- safe to close over it.
   const editor = new Vditor(container, {
-    cdn: 'javascripts/vendor/vditor',
+    cdn: VDITOR_CDN,
+    // light or dark, whichever the reader is in (ADR-0020) -- chrome, prose and code, which
+    // are three settings Vditor keeps apart and which have to move together
+    ...vditorThemeOptions(VDITOR_CDN),
     mode: 'wysiwyg',
     lang,
     minHeight,
@@ -78,7 +87,7 @@ function initVditor(textareaParam) {
     customWysiwygToolbar() {},
     // a long entry scrolls the toolbar off the top otherwise, exactly as it would the
     // ACeditor's -- which has been sticky since it was written. Vditor's own `pin` adds
-    // .vditor-toolbar--pin; where it parks is styles/bazar/inputs/textarea.css.
+    // .vditor-toolbar--pin; where it parks is styles/yw-editor.css.
     toolbarConfig: { pin: true },
     after() {
       editor.setValue(editor.html2md(textarea.value))
@@ -95,6 +104,10 @@ function initVditor(textareaParam) {
       textarea.dispatchEvent(new Event('change', { bubbles: true }))
     },
   })
+
+  // ...and it keeps following: a reader can change the scheme while the editor is open, and
+  // an editor that stayed light on a page that went dark is the brightest thing on screen
+  followScheme(editor, VDITOR_CDN)
 }
 
 function scan(root) {

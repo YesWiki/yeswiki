@@ -268,7 +268,7 @@ class Performer
         }
 
         return array_values(array_unique(array_merge(
-            array_keys($this->objectList[$objectType]),
+            array_map('strval', array_keys($this->objectList[$objectType])),
             $this->registry->names($objectType)
         )));
     }

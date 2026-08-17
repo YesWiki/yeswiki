@@ -77,7 +77,9 @@ class TripleApiController extends YesWikiController
         if (empty($username)) {
             $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
         }
-        $value = $this->getRequest()->request->get('value', []);
+        // `InputBag::get()` refuses an array default -- and returns null for an array
+        // parameter. `all()` is the accessor for one.
+        $value = $this->getRequest()->request->all()['value'] ?? [];
         if (is_array($value)) {
             $rawValue = array_filter($value, function ($elem) {
                 return is_scalar($elem);
@@ -121,7 +123,7 @@ class TripleApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         }
-        $rawFilters = $this->getRequest()->request->get('filters', []);
+        $rawFilters = $this->getRequest()->request->all()['filters'] ?? [];
         if (is_array($rawFilters)) {
             $rawFilters = array_filter($rawFilters, function ($elem) {
                 return is_scalar($elem);
@@ -197,9 +199,14 @@ class TripleApiController extends YesWikiController
      * `extract()` puts variables into scope that no analyser can see, so every use of
      * `$property` downstream read as possibly-undefined and sat baselined (ticket 40).
      *
+     * `$method` is `INPUT_GET` or `INPUT_POST`, which are **ints**. It was declared `string`,
+     * so PHP coerced the constant and `$method === INPUT_POST` inside compared `"0"` to `0`
+     * with `===`: always false. Every call read the query string, and `POST /api/triples` never
+     * saw `property` or `user` sent in the body (ticket 40).
+     *
      * @return array{property: string|null, username: string|null, apiResponse: ApiResponse|null}
      */
-    private function extractTriplesParams(string $method, $resource): array
+    private function extractTriplesParams(int $method, $resource): array
     {
         $property = null;
         $username = null;

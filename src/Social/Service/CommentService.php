@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\HashCashService;
@@ -22,16 +23,17 @@ use YesWiki\Render\Service\TemplateEngine;
 class CommentService implements EventSubscriberInterface
 {
     protected ContainerInterface $container;
-    protected $aclService;
-    protected $dbService;
-    protected $eventDispatcher;
-    protected $mailer;
-    protected $pageManager;
-    protected $params;
-    protected $pagesWhereCommentWereRendered;
-    protected $userManager;
-    protected $templateEngine;
-    protected $commentsActivated;
+    protected AclService $aclService;
+    protected DbService $dbService;
+    protected EventDispatcher $eventDispatcher;
+    protected Mailer $mailer;
+    protected PageManager $pageManager;
+    protected ParameterBagInterface $params;
+    /** @var list<string> */
+    protected array $pagesWhereCommentWereRendered;
+    protected UserManager $userManager;
+    protected TemplateEngine $templateEngine;
+    protected mixed $commentsActivated;
 
     protected UrlFormatter $urlFormatter;
 
@@ -61,7 +63,10 @@ class CommentService implements EventSubscriberInterface
         $this->commentsActivated = $this->params->get('comments_activated');
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return array<string, string>
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             'comment.created' => 'sendEmailAfterCreate',
@@ -70,7 +75,12 @@ class CommentService implements EventSubscriberInterface
         ];
     }
 
-    public function addCommentIfAuthorized($content, $idComment = '')
+    /**
+     * @param array<string, mixed> $content
+     *
+     * @return array<string, mixed>
+     */
+    public function addCommentIfAuthorized(array $content, string $idComment = ''): array
     {
         if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             return [
@@ -121,13 +131,19 @@ class CommentService implements EventSubscriberInterface
                 // default ACLs for comments : visible for all, writable by owner, commentable like parent.
                 $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
                 $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
-                $parentCommentAcl = $parentCommentAcl['list'];
+                $parentCommentAcl = $parentCommentAcl['list'] ?? '';
                 $this->aclService->save($idComment, 'write', '%');
                 $this->aclService->save($idComment, 'read', '*');
                 $this->aclService->save($idComment, 'comment', $parentCommentAcl);
             }
 
             $comment = $this->pageManager->getOne($idComment);
+            if (empty($comment)) {
+                return [
+                    'code' => 500,
+                    'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
+                ];
+            }
             $com['tag'] = $comment['tag'];
             $com['commentOn'] = $comment['parent'];
             $com['rawbody'] = PageBody::content($comment['body']);
@@ -173,6 +189,9 @@ class CommentService implements EventSubscriberInterface
     /**
      * delete a comment.
      */
+    /**
+     * @return array<string, mixed>
+     */
     public function delete(string $commentTag): array
     {
         // delete children comments
@@ -181,6 +200,9 @@ class CommentService implements EventSubscriberInterface
             $this->pageManager->deleteOrphaned($com['tag']);
         }
         $comment = $this->pageManager->getOne($commentTag);
+        if (empty($comment)) {
+            return [];
+        }
         $parentPage = $this->getParentPage($commentTag);
         $this->pageManager->deleteOrphaned($commentTag);
         $errors = $this->eventDispatcher->yesWikiDispatch('comment.deleted', [
@@ -199,9 +221,9 @@ class CommentService implements EventSubscriberInterface
      *
      * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
      *
-     * @return array all comments and their corresponding properties
+     * @return array<array<string, mixed>> all comments and their corresponding properties
      */
-    public function loadCommentsRecursive($tag, bool $bypassAcls = false)
+    public function loadCommentsRecursive(string $tag, bool $bypassAcls = false): array
     {
         $comments = $this->loadComments($tag);
         foreach ($comments as $k => $c) {
@@ -216,9 +238,9 @@ class CommentService implements EventSubscriberInterface
      *
      * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
      *
-     * @return array all comments and their corresponding properties
+     * @return array<array<string, mixed>> all comments and their corresponding properties
      */
-    public function loadComments($tag, bool $bypassAcls = false, $username = null)
+    public function loadComments(string $tag, bool $bypassAcls = false, ?string $username = null): array
     {
         $query = 'SELECT * FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
         $params = [];
@@ -261,7 +283,10 @@ class CommentService implements EventSubscriberInterface
         return $comments;
     }
 
-    public function getCommentList($tag, $first = true, $comments = null)
+    /**
+     * @param array<mixed>|null $comments
+     */
+    public function getCommentList(string $tag, bool $first = true, ?array $comments = null): string
     {
         $com = [];
         $com['first'] = $first;
@@ -292,7 +317,7 @@ class CommentService implements EventSubscriberInterface
         return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-list.twig', $com);
     }
 
-    public function getCommentsCount($tag)
+    public function getCommentsCount(string $tag): int
     {
         return $this->dbService->countRows("
             SELECT * FROM {$this->dbService->prefixTable('pages')}
@@ -313,7 +338,7 @@ class CommentService implements EventSubscriberInterface
 
         return $this->dbService->loadAll(
             'select * from ' . $this->dbService->prefixTable('pages')
-            . ' where parent != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim
+            . " where parent != '' and latest = 'Y' " . 'order by time desc ' . $lim
         );
     }
 
@@ -328,12 +353,15 @@ class CommentService implements EventSubscriberInterface
         $pages = [];
 
         // load ids of the first revisions of latest comments
-        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . ' where parent != "" group by tag order by id desc')) {
+        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . " where parent != '' group by tag order by id desc")) {
             // load complete comments
             $num = 0;
             $comments = [];
             foreach ($ids as $id) {
                 $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . " where id = '" . $id['id'] . "' limit 1");
+                if (empty($comment)) {
+                    continue;
+                }
                 if (!isset($comments[$comment['parent']]) && $num < $limit) {
                     $comments[$comment['parent']] = $comment;
                     $num++;
@@ -343,6 +371,9 @@ class CommentService implements EventSubscriberInterface
             // now using these ids, load the actual pages
             foreach ($comments as $comment) {
                 $page = $this->pageManager->getOne($comment['parent']);
+                if (empty($page)) {
+                    continue;
+                }
                 $page['comment_user'] = $comment['user'];
                 $page['comment_time'] = $comment['time'];
                 $page['comment_tag'] = $comment['tag'];
@@ -353,7 +384,11 @@ class CommentService implements EventSubscriberInterface
         return $pages;
     }
 
-    private function setUserData(array $comment, string $key, array &$data)
+    /**
+     * @param array<string, mixed> $comment
+     * @param array<string, mixed> $data
+     */
+    private function setUserData(array $comment, string $key, array &$data): void
     {
         if (in_array($key, ['user', 'owner'], true) && !empty($comment[$key])) {
             $data[$key] = $comment[$key];
@@ -366,7 +401,7 @@ class CommentService implements EventSubscriberInterface
         }
     }
 
-    public function getCommentForm($tag)
+    public function getCommentForm(string $tag): string
     {
         $options = [];
         if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
@@ -382,7 +417,7 @@ class CommentService implements EventSubscriberInterface
                     $hashCashCode = $hashCash->getJavascriptCode('post-comment');
                 }
                 $page = $this->pageManager->getOne($tag);
-                $commentOn = !empty($page['parent']) ? $page['parent'] : $page['tag'];
+                $commentOn = !empty($page['parent']) ? $page['parent'] : ($page['tag'] ?? $tag);
                 $tempTag = ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
@@ -401,7 +436,7 @@ class CommentService implements EventSubscriberInterface
         return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-form.twig', $options);
     }
 
-    public function renderCommentsForPage($tag, $showOnlyOnce = true)
+    public function renderCommentsForPage(string $tag, bool $showOnlyOnce = true): string
     {
         if (!$this->commentsActivated) {
             return '';
@@ -449,15 +484,8 @@ class CommentService implements EventSubscriberInterface
     * @param $spec Integer between 2-10, determines how unique each color will be
     */
 
-    public function genColorCodeFromText($text, $min_brightness = 100, $spec = 10)
+    public function genColorCodeFromText(string $text, int $min_brightness = 100, int $spec = 10): string
     {
-        // Check inputs
-        if (!is_int($min_brightness)) {
-            throw new \Exception("$min_brightness is not an integer");
-        }
-        if (!is_int($spec)) {
-            throw new \Exception("$spec is not an integer");
-        }
         if ($spec < 2 or $spec > 10) {
             throw new \Exception("$spec is out of range");
         }
@@ -488,7 +516,7 @@ class CommentService implements EventSubscriberInterface
         return '#' . $output;
     }
 
-    public function sendEmailAfterCreate(Event $event)
+    public function sendEmailAfterCreate(Event $event): void
     {
         $data = $event->getData();
         if (!empty($data['data']['commentOn'])) {
@@ -507,9 +535,14 @@ class CommentService implements EventSubscriberInterface
         }
     }
 
-    protected function sendEmailToOwnerAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    /**
+     * @param array<string, mixed>|null $parentComment
+     * @param array<string, mixed>|null $parentPage
+     * @param array<string, mixed>      $data
+     */
+    protected function sendEmailToOwnerAtCreation(?array $parentComment, User $loggedUser, ?array $parentPage, array $data, ?User $owner): void
     {
-        if (!empty($owner) && !empty($loggedUser) && $owner['email'] != $loggedUser['email']) {
+        if (!empty($owner) && $owner['email'] != $loggedUser['email']) {
             $baseUrl = $this->mailer->getBaseUrl();
             $formattedData = [
                 'baseUrl' => $baseUrl,
@@ -526,7 +559,12 @@ class CommentService implements EventSubscriberInterface
         }
     }
 
-    protected function sendEmailToTaggedUserAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    /**
+     * @param array<string, mixed>|null $parentComment
+     * @param array<string, mixed>|null $parentPage
+     * @param array<string, mixed>      $data
+     */
+    protected function sendEmailToTaggedUserAtCreation(?array $parentComment, User $loggedUser, ?array $parentPage, array $data, ?User $owner): void
     {
         $taggedUsers = $this->extractTaggedUsernamesFromContent($data['comment'], $loggedUser, $owner);
         if (!empty($taggedUsers)) {
@@ -548,7 +586,12 @@ class CommentService implements EventSubscriberInterface
         }
     }
 
-    protected function extractTaggedUsernamesFromContent(array $comment, $loggedUser, $owner): array
+    /**
+     * @param array<string, mixed> $comment
+     *
+     * @return array<string, User>
+     */
+    protected function extractTaggedUsernamesFromContent(array $comment, User $loggedUser, ?User $owner): array
     {
         $users = [];
         try {
@@ -580,12 +623,12 @@ class CommentService implements EventSubscriberInterface
         return $filteredUsers;
     }
 
-    public function sendEmailAfterModify(Event $event)
+    public function sendEmailAfterModify(Event $event): void
     {
         $data = $event->getData();
     }
 
-    public function sendEmailAfterDelete(Event $event)
+    public function sendEmailAfterDelete(Event $event): void
     {
         $data = $event->getData();
     }
@@ -594,7 +637,9 @@ class CommentService implements EventSubscriberInterface
      * retrieve parent page of the current tag
      * RECURSIVE.
      *
-     * @return array|null $page, null is not parent found
+     * @param list<string> $alreadyFoundTags
+     *
+     * @return array<string, mixed>|null $page, null is not parent found
      */
     protected function getParentPage(string $commentTag, array $alreadyFoundTags = []): ?array
     {

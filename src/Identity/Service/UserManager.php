@@ -160,14 +160,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     /**
      * @param array|string $wikiNameOrUser array to create the wiki or wikiname
-     * @param string email (optionnal if parameters by array)
-     * @param string plainPassword (optionnal if parameters by array)
-     * @param string|null $forcedTag the tag to store the account at, when the caller has
-     *                               already settled it -- creating an account from the User
-     *                               form has to know the tag before it saves, because a
-     *                               field like the profile picture formats its upload
-     *                               against it (ticket 13). Defaults to suggesting one from
-     *                               the name, which is what every other caller wants.
+     * @param string       $email          optional if parameters are passed as an array
+     * @param string       $plainPassword  optional if parameters are passed as an array
+     * @param string|null  $forcedTag      the tag to store the account at, when the caller has
+     *                                     already settled it -- creating an account from the User
+     *                                     form has to know the tag before it saves, because a
+     *                                     field like the profile picture formats its upload
+     *                                     against it (ticket 13). Defaults to suggesting one from
+     *                                     the name, which is what every other caller wants.
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
      */
@@ -658,7 +658,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         // currently force refresh
-        return $this->getOneByName($user->getName());
+        $refreshed = $this->getOneByName($user->getName());
+        // `getOneByName()` is `?User` and this is declared `UserInterface`: an account deleted
+        // between two requests returned null into Symfony's security layer, which is a
+        // TypeError rather than the UserNotFoundException the docblock promises (ticket 40)
+        if ($refreshed === null) {
+            throw new UserNotFoundException("no user named '{$user->getName()}' any more");
+        }
+
+        return $refreshed;
     }
 
     /**
@@ -680,7 +688,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        return $this->getOneByName($identifier);
+        $user = $this->getOneByName($identifier);
+        // same as refreshUser(): the return type is not nullable and Symfony's contract is that
+        // an unknown identifier throws. Returning null made a login attempt with a username
+        // nobody has fail as a TypeError inside the security layer (ticket 40).
+        if ($user === null) {
+            throw new UserNotFoundException("no user named '$identifier'");
+        }
+
+        return $user;
     }
 
     /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */

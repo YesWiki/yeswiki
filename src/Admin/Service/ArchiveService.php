@@ -128,8 +128,11 @@ class ArchiveService
         if (!empty($uid)) {
             $info = $this->getInfoFromFile($privatePath);
             if (isset($info[$uid])) {
-                $inputFile = $info[$uid]['input'];
-                $outputFile = $info[$uid]['output'];
+                // cast because the info file is decoded JSON, so every value is `mixed` as far
+                // as the analyser is concerned -- and $outputFile alone accounted for sixteen
+                // baselined argument.type entries downstream (ticket 40)
+                $inputFile = (string)$info[$uid]['input'];
+                $outputFile = (string)$info[$uid]['output'];
             }
         }
         if (!empty($outputFile)) {
@@ -453,7 +456,7 @@ class ArchiveService
         $privatePath = $this->getPrivateFolder();
         $uidData = $this->getUID($privatePath);
         $info = $this->getInfoFromFile($privatePath);
-        $uid = $uidData['uid'] ?? '';
+        $uid = $uidData['uid'];
         if (empty($uid) || !isset($info[$uid])) {
             return '';
         }
@@ -620,12 +623,24 @@ class ArchiveService
      */
     protected function restoreFilesFromZip(\ZipArchive $zip): void
     {
-        $wikiRoot = realpath(getcwd());
+        // `realpath(getcwd())` is `string|false`, and extracting a restore to `false` writes
+        // it somewhere nobody asked for. Checked rather than cast: this is the one place in the
+        // wiki that unpacks an archive over the live tree (ticket 40).
+        $cwd = getcwd();
+        $wikiRoot = $cwd === false ? false : realpath($cwd);
+        if ($wikiRoot === false) {
+            throw new \Exception('cannot resolve the wiki directory to restore into');
+        }
         $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
         $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
+            // getNameIndex() returns false for an unreadable entry; skipping it beats passing
+            // false to strpos() and treating it as the empty string
+            if ($name === false) {
+                continue;
+            }
             if (strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
                 continue;
             }
@@ -758,7 +773,7 @@ class ArchiveService
             return false;
         }
 
-        return preg_match('/^STOP.*/', $content);
+        return preg_match('/^STOP.*/', $content) === 1;
     }
 
     /**
@@ -782,9 +797,14 @@ class ArchiveService
         if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
             throw new \Exception('Can only be started from main directory');
         }
+        // getcwd() is `string|false`, and preg_replace() returns null on failure. The archive
+        // root is the base every relative path in the zip is measured against, so it is checked
+        // rather than coerced (ticket 40).
         $pathToArchive = getcwd();
-
-        $pathToArchive = preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
+        if ($pathToArchive === false) {
+            throw new \Exception('cannot resolve the directory to archive');
+        }
+        $pathToArchive = (string)preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
 
@@ -828,9 +848,9 @@ class ArchiveService
 
             while (count($dirs)) {
                 $dir = current($dirs);
-                $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", '$1', $dir);
-                $baseDirName = preg_replace('/\\\\/', '/', substr($dir, $dirnamePathLen));
-                $baseDirName = preg_replace("/^\//", '', $baseDirName);
+                $dir = (string)preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", '$1', $dir);
+                $baseDirName = (string)preg_replace('/\\\\/', '/', substr($dir, $dirnamePathLen));
+                $baseDirName = (string)preg_replace("/^\//", '', $baseDirName);
                 if (empty($baseDirName) || (!empty($baseDirName) && $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders, $blacklistedRootFolders))) {
                     if (!empty($baseDirName)) {
                         $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
@@ -838,6 +858,12 @@ class ArchiveService
                     }
 
                     $dh = opendir($dir);
+                    // a directory we cannot open contributes nothing rather than making
+                    // readdir() throw on a false handle
+                    if ($dh === false) {
+                        array_shift($dirs);
+                        continue;
+                    }
                     while (false !== ($file = readdir($dh))) {
                         if ($file != '.' && $file != '..') {
                             $localName = $dir . DIRECTORY_SEPARATOR . $file;
@@ -983,23 +1009,17 @@ class ArchiveService
             if (
                 is_dir($folderPath)
             ) {
-                return preg_replace("/(\/|\\\\)$/", '', $folderPath);
+                return (string)preg_replace("/(\/|\\\\)$/", '', $folderPath);
             }
             throw new \Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . '] is not a directory.');
         } else {
-            $sanitizeWebsiteName = preg_replace(
-                '/-+$/',
-                '',
-                preg_replace(
-                    "/[.\/\\{}\[\]#?&=!;:\\\$<>]/",
-                    '-',
-                    preg_replace(
-                        "/^https?:\/\//",
-                        '',
-                        $this->params->get('base_url')
-                    )
-                )
-            );
+            // each preg_replace() returns `string|null`, and they were nested three deep so the
+            // null of one became the subject of the next. Flattened and cast, which also makes
+            // the three steps readable (ticket 40).
+            $websiteName = (string)$this->params->get('base_url');
+            $websiteName = (string)preg_replace("/^https?:\/\//", '', $websiteName);
+            $websiteName = (string)preg_replace("/[.\/\\{}\[\]#?&=!;:\\\$<>]/", '-', $websiteName);
+            $sanitizeWebsiteName = (string)preg_replace('/-+$/', '', $websiteName);
             $tmp = sys_get_temp_dir();
             $slash = DIRECTORY_SEPARATOR;
             $dirName = "yeswiki-$sanitizeWebsiteName";
@@ -1042,13 +1062,23 @@ class ArchiveService
                     && preg_match('/^[A-Za-z]:.*$/', $localPath)
             )
         );
-        $basePath = realpath(getcwd());
+        // Both realpath() calls are `string|false`, and the comparison below used to run on
+        // whatever came back. With $basePath false, `strlen(false)` is 0 and `'' == false` is
+        // TRUE under loose comparison -- so an unresolvable working directory reported the
+        // folder as local and went on to probe it over HTTP with a nonsense path (ticket 40).
+        $cwd = getcwd();
+        $basePath = $cwd === false ? false : realpath($cwd);
         $realLocalPath = $isAbsolutePath
             ? realpath($localPath)
-            : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath));
-        $isLocal = (substr($realLocalPath, 0, strlen($basePath)) == $basePath);
+            : ($basePath === false
+                ? false
+                : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath)));
 
-        if (!$isLocal) {
+        // a path that does not resolve is not inside the web root, so nothing serves it
+        if ($basePath === false || $realLocalPath === false) {
+            return true;
+        }
+        if (!str_starts_with($realLocalPath, $basePath)) {
             return true;
         }
         if (!file_exists("$localPath/$testFileName")) {
@@ -1067,7 +1097,9 @@ class ArchiveService
         ]);
         $headers = @get_headers($url, true, $ct);
 
-        return !$headers || !empty($headers[0]) && !strstr(get_headers($url, true, $ct)[0], '200 OK');
+        $status = $headers === false ? null : ($headers[0] ?? null);
+
+        return !is_string($status) || !strstr($status, '200 OK');
     }
 
     /**
@@ -1255,7 +1287,8 @@ class ArchiveService
         }
         $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
-        $freeSpace = disk_free_space(realpath(getcwd()));
+        $cwd = getcwd();
+        $freeSpace = $cwd === false ? false : disk_free_space((string)realpath($cwd));
         if ($freeSpace < $estimateZipSize) {
             throw new \Exception('Not enough free space for a new archive!');
         }
@@ -1422,7 +1455,13 @@ class ArchiveService
      *
      * @return array|null ['uid' => string, 'input' => string, 'output' => string]
      */
-    private function getUID(string $privateFolder = ''): ?array
+    /**
+     * Declared nullable and never returning null: it either builds the two log files or throws.
+     * The fiction cost seven baselined offset errors at its two call sites (ticket 40).
+     *
+     * @return array{uid: string, input: string|false, output: string|false}
+     */
+    private function getUID(string $privateFolder = ''): array
     {
         if (empty($privateFolder)) {
             $privateFolder = $this->getPrivateFolder();
@@ -1493,8 +1532,11 @@ class ArchiveService
      */
     private function getRunningUIDdata(string $uid, array $info): array
     {
+        // `return false` from a method declared `: array`, straight into a keyed list()
+        // destructuring at the only call site -- a TypeError the moment the output file is
+        // missing, which is exactly when this is asked (ticket 40)
         if (!is_file($info['output'])) {
-            return false;
+            return ['running' => false, 'finished' => false, 'stopped' => false, 'output' => ''];
         }
         $output = @file_get_contents($info['output']);
 

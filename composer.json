@@ -1,103 +1,103 @@
 {
-    "name": "yeswiki/yeswiki",
-    "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
-    "homepage": "https://yeswiki.net",
-    "license": "AGPL-3.0-or-later",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "scripts": {
-        "test": "bash tests/tests.sh",
-        "analyse": "phpstan analyse -c phpstan/phpstan.neon --no-progress",
-        "post-install-cmd": [
-            "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
-        ],
-        "post-update-cmd": [
-            "YesWiki\\Core\\ComposerScriptsHelper::postUpdate"
-        ]
-    },
-    "require": {
-        "php": "^8.3",
-        "ext-ctype": "*",
-        "ext-curl": "*",
-        "ext-fileinfo": "*",
-        "ext-filter": "*",
-        "ext-gd": "*",
-        "ext-iconv": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-pcre": "*",
-        "ext-pdo": "*",
-        "ext-zip": "^1.0",
-        "caxy/php-htmldiff": "^0.1.13",
-        "endroid/qr-code": "^6.0",
-        "enshrined/svg-sanitize": "^0.22.0",
-        "ezyang/htmlpurifier": "^4.19",
-        "jbroadway/urlify": "^1.2",
-        "league/commonmark": "^2.4",
-        "league/html-to-markdown": "^5.1",
-        "nesbot/carbon": "^2.66.0",
-        "phpmailer/phpmailer": "^6.2",
-        "simplepie/simplepie": "^1.8",
-        "stefangabos/zebra_image": "^3.0",
-        "symfony/config": "^7.4",
-        "symfony/console": "^7.4",
-        "symfony/dependency-injection": "^7.4",
-        "symfony/dotenv": "^7.4",
-        "symfony/event-dispatcher": "^7.4",
-        "symfony/http-client": "^7.4",
-        "symfony/http-foundation": "^7.4",
-        "symfony/http-kernel": "^7.4",
-        "symfony/mime": "^7.4",
-        "symfony/process": "^7.4",
-        "symfony/routing": "^7.4",
-        "symfony/security-core": "^7.4",
-        "symfony/security-csrf": "^7.4",
-        "symfony/string": "^7.4",
-        "symfony/yaml": "^7.4",
-        "tamtamchik/simple-flash": "^3.0",
-        "twig/twig": "^3.0"
-    },
-    "conflict": {},
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.4",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^12",
-        "symfony/var-dumper": "^7.4"
-    },
-    "config": {
-        "allow-plugins": {},
-        "optimize-autoloader": true,
-        "platform": {
-            "php": "8.3.0"
-        },
-        "platform-check": true,
-        "sort-packages": true
-    },
-    "bin": [
-        "yeswicli"
+  "name": "yeswiki/yeswiki",
+  "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
+  "homepage": "https://yeswiki.net",
+  "license": "AGPL-3.0-or-later",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+    "test": "bash tests/tests.sh",
+    "analyse": "phpstan analyse -c phpstan/phpstan.neon --no-progress",
+    "post-install-cmd": [
+      "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
     ],
-    "autoload": {
-        "classmap": [
-            "src/ComposerScriptsHelper.php"
-        ],
-        "psr-4": {
-            "YesWiki\\Search\\": "src/Search/",
-            "YesWiki\\Render\\": "src/Render/",
-            "YesWiki\\Identity\\": "src/Identity/",
-            "YesWiki\\Content\\": "src/Content/",
-            "YesWiki\\Admin\\": "src/Admin/",
-            "YesWiki\\Kernel\\": "src/Kernel/",
-            "YesWiki\\Import\\": "src/Import/",
-            "YesWiki\\Contact\\": "src/Contact/",
-            "YesWiki\\Files\\": "src/Files/",
-            "YesWiki\\Federation\\": "src/Federation/",
-            "YesWiki\\Social\\": "src/Social/"
-        }
+    "post-update-cmd": [
+      "YesWiki\\Core\\ComposerScriptsHelper::postUpdate"
+    ]
+  },
+  "require": {
+    "php": "^8.3",
+    "ext-ctype": "*",
+    "ext-curl": "*",
+    "ext-fileinfo": "*",
+    "ext-filter": "*",
+    "ext-gd": "*",
+    "ext-iconv": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-pcre": "*",
+    "ext-pdo": "*",
+    "ext-zip": "^1.0",
+    "caxy/php-htmldiff": "^0.1.13",
+    "endroid/qr-code": "^6.0",
+    "enshrined/svg-sanitize": "^0.22.0",
+    "ezyang/htmlpurifier": "^4.19",
+    "jbroadway/urlify": "^1.2",
+    "league/commonmark": "^2.4",
+    "league/html-to-markdown": "^5.1",
+    "nesbot/carbon": "^2.66.0",
+    "phpmailer/phpmailer": "^6.2",
+    "simplepie/simplepie": "^1.8",
+    "stefangabos/zebra_image": "^3.0",
+    "symfony/config": "^7.4",
+    "symfony/console": "^7.4",
+    "symfony/dependency-injection": "^7.4",
+    "symfony/dotenv": "^7.4",
+    "symfony/event-dispatcher": "^7.4",
+    "symfony/http-client": "^7.4",
+    "symfony/http-foundation": "^7.4",
+    "symfony/http-kernel": "^7.4",
+    "symfony/mime": "^7.4",
+    "symfony/process": "^7.4",
+    "symfony/routing": "^7.4",
+    "symfony/security-core": "^7.4",
+    "symfony/security-csrf": "^7.4",
+    "symfony/string": "^7.4",
+    "symfony/yaml": "^7.4",
+    "tamtamchik/simple-flash": "^3.0",
+    "twig/twig": "^3.0"
+  },
+  "conflict": {},
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.4",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^12",
+    "symfony/var-dumper": "^7.4"
+  },
+  "config": {
+    "allow-plugins": {},
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.3.0"
     },
-    "suggest": {
-        "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
-        "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
-        "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL",
-        "php-imap/php-imap": "Required by the IMAP importer to read a mailbox (also needs ext-imap)"
+    "platform-check": true,
+    "sort-packages": true
+  },
+  "bin": [
+    "yeswicli"
+  ],
+  "autoload": {
+    "classmap": [
+      "src/ComposerScriptsHelper.php"
+    ],
+    "psr-4": {
+      "YesWiki\\Search\\": "src/Search/",
+      "YesWiki\\Render\\": "src/Render/",
+      "YesWiki\\Identity\\": "src/Identity/",
+      "YesWiki\\Content\\": "src/Content/",
+      "YesWiki\\Admin\\": "src/Admin/",
+      "YesWiki\\Kernel\\": "src/Kernel/",
+      "YesWiki\\Import\\": "src/Import/",
+      "YesWiki\\Contact\\": "src/Contact/",
+      "YesWiki\\Files\\": "src/Files/",
+      "YesWiki\\Federation\\": "src/Federation/",
+      "YesWiki\\Social\\": "src/Social/"
     }
+  },
+  "suggest": {
+    "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
+    "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
+    "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL",
+    "php-imap/php-imap": "Required by the IMAP importer to read a mailbox (also needs ext-imap)"
+  }
 }

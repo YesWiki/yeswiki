@@ -57,14 +57,76 @@ class CoreAssets
         // keeps that ordering intact.
         $this->csrfTokenManager->getToken('main');
 
+        $this->registerColourScheme();
         $this->registerStyles();
         $this->registerScripts();
     }
 
+    /**
+     * The viewer's Colour scheme, applied before anything is painted (ADR-0020).
+     *
+     * Inline and declared FIRST, so it is the first thing in the head and runs while the
+     * document is still being parsed: a stored preference has to reach `<html>` before the
+     * browser paints, or a visitor who chose dark gets a white flash on every navigation --
+     * which is worse than having no dark mode at all.
+     *
+     * Delivered here rather than written into a squelette for a reason that is not tidiness:
+     * a theme's squelette can simply not have it, and the failure -- a flash, on slow
+     * connections, for people who chose dark -- is one nobody would report. Declared assets
+     * end up in the head of every page whatever the theme does with them.
+     *
+     * The three states are *stored* as two: "follow my system" is the absence of a stored
+     * choice, so a visitor who never touched the toggle keeps following their machine even
+     * if this wiki's idea of the default changes.
+     */
+    private function registerColourScheme(): void
+    {
+        $this->assets->addJs(<<<'JS'
+            (function () {
+              var KEY = 'yw-scheme';
+              var root = document.documentElement;
+              function read() {
+                // localStorage throws rather than returning null in a locked-down browser
+                // (private mode, third-party-cookie blocking in a frame), and a wiki that
+                // cannot remember a preference must still render
+                try {
+                  return window.localStorage.getItem(KEY) || 'system';
+                } catch (e) {
+                  return 'system';
+                }
+              }
+              function apply(scheme) {
+                if (scheme === 'light' || scheme === 'dark') {
+                  root.setAttribute('data-theme', scheme);
+                } else {
+                  root.removeAttribute('data-theme');
+                }
+              }
+              apply(read());
+              window.ywScheme = {
+                current: read,
+                set: function (scheme) {
+                  try {
+                    if (scheme === 'system') window.localStorage.removeItem(KEY);
+                    else window.localStorage.setItem(KEY, scheme);
+                  } catch (e) {
+                    // the choice is lost on the next page; the current one still changes
+                  }
+                  apply(scheme);
+                  document.dispatchEvent(new CustomEvent('yw:scheme', { detail: { scheme: scheme } }));
+                }
+              };
+            })();
+            JS, false, true);
+    }
+
     private function registerStyles(): void
     {
-        // ticket 16: Bootstrap CSS is not loaded anymore -- yw-core.css (base styles
-        // + the yw-* design system, ADR-0004) is the only core-provided styling
+        // ticket 16: Bootstrap CSS is not loaded anymore. ADR-0020: one always-loaded
+        // bundle, `yw-core`, which is the design tokens, the base styles, the yw-* design
+        // system (ADR-0004) and the three sheets that used to be registered separately here
+        // -- the tag cloud, attached files and bazar's own. The other five bundles are
+        // declared by whatever turns out to need them, which is the whole of ADR-0014.
         $this->assets->addCssFile('styles/yw-core.css');
 
         $theme = $this->themeManager->getFavoriteTheme();
@@ -110,13 +172,6 @@ class CoreAssets
                 $this->assets->addCssFile($file);
             }
         }
-
-        // relocated from the per-tool linkstyle__.php hooks as each tool became core:
-        // the tag cloud and rss icon (ticket 10), attached-file display (ticket 17), and
-        // bazar entries / calendar / map display (ticket 24)
-        $this->assets->addCssFile('styles/actions/tags-nuage.css');
-        $this->assets->addCssFile('styles/actions/attach.css');
-        $this->assets->addCssFile('styles/bazar/bazar.css');
 
         $this->registerBackgroundImage();
 

@@ -55,35 +55,6 @@ class ArchiveController extends YesWikiController
             $response->headers->set('Access-Control-Max-Age', '86400');
 
             return $response;
-
-            $zipContent = file_get_contents($filePath);
-            $zipSize = filesize($filePath);
-            // to prevent existing headers because of handlers /show or others
-            $nbObLevels = ob_get_level();
-            for ($i = 1; $i < $nbObLevels; $i++) {
-                ob_end_clean();
-            }
-            for ($i = 1; $i < $nbObLevels; $i++) {
-                ob_start();
-            }
-
-            return new Response(
-                $zipContent, // content
-                Response::HTTP_OK,
-                [   // headers
-                    'Access-Control-Allow-Origin' => '*',
-                    'Access-Control-Allow-Credentials' => 'true',
-                    'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
-                    'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
-                    'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-                    'Access-Control-Max-Age' => '86400',
-                    // end of part inspired from ApiResponse
-                    // Set the Content-Type, Content-Disposition and Content-Length headers.
-                    'Content-Type' => 'application/zip',
-                    'Content-Disposition' => "attachment; filename=$id",
-                    'Content-Length' => $zipSize,
-                ]
-            );
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
                 ['error' => 'an exception occures : ' . $this->getService(ThrowableFormatter::class)->dump($pThrowable)],
@@ -99,10 +70,14 @@ class ArchiveController extends YesWikiController
             switch ($action) {
                 case 'delete':
                     $post = $this->getRequest()->request;
+                    // `$post->all('filesnames')` THROWS a BadRequestException when the value is
+                    // not an array, so this guard never fired and the clean 400 below was
+                    // unreachable -- a bad request got a Symfony exception instead (ticket 40)
+                    $rawFilenames = $post->all()['filesnames'] ?? null;
                     if (!empty($id)) {
                         $filenames = [$id];
-                    } elseif (is_array($post->all('filesnames'))) {
-                        $filenames = $post->all('filesnames');
+                    } elseif (is_array($rawFilenames)) {
+                        $filenames = $rawFilenames;
                     } else {
                         return new ApiResponse(
                             ['error' => "\$_POST['filesnames'] should be set and be an array for action 'delete'"],
@@ -115,11 +90,10 @@ class ArchiveController extends YesWikiController
                         $results,
                         $results['main'] ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
                     );
-                    break;
                 case 'startArchive':
                     try {
                         $post = $this->getRequest()->request;
-                        $postParams = $post->all('params');
+                        $postParams = $post->all()['params'] ?? null;
                         if ($post->has('params') && !is_array($postParams)) {
                             return new ApiResponse(
                                 ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
@@ -146,7 +120,6 @@ class ArchiveController extends YesWikiController
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
-                    break;
                 case 'stopArchive':
                     $uidRaw = $this->getRequest()->request->get('uid');
                     if (empty($uidRaw) || !is_string($uidRaw)) {
@@ -162,7 +135,6 @@ class ArchiveController extends YesWikiController
                         [],
                         $result ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
                     );
-                    break;
                 case 'restore':
                     if (empty($id)) {
                         return new ApiResponse(
@@ -183,7 +155,6 @@ class ArchiveController extends YesWikiController
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
-                    break;
 
                 case 'futureDeletedArchives':
                     $files = $this->archiveService->archivesToDelete(true);
@@ -192,14 +163,12 @@ class ArchiveController extends YesWikiController
                         ['files' => $files],
                         Response::HTTP_OK
                     );
-                    break;
 
                 default:
                     return new ApiResponse(
                         ['error' => "Not supported action : $action"],
                         Response::HTTP_BAD_REQUEST
                     );
-                    break;
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(

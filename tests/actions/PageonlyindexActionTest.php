@@ -27,6 +27,22 @@ require_once 'tests/YesWikiTestCase.php';
 class PageonlyindexActionTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'PageonlyindexRegressionPage';
+    private const ENTRY_TAG = 'PageonlyindexRegressionEntry';
+
+    /**
+     * The fixtures go when the test does.
+     *
+     * They used to stay, and the suite runs against a real wiki -- the developer's own, on
+     * SQLite -- so both of them turned up in its page index, and the entry produced a debug
+     * warning on every list that touched it (see the `tag` in its body, below).
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        foreach ([self::PAGE_TAG, self::ENTRY_TAG] as $tag) {
+            $pageManager->deleteOrphaned($tag);
+        }
+    }
 
     public function testItListsPagesAndNotEntries(): void
     {
@@ -35,8 +51,12 @@ class PageonlyindexActionTest extends YesWikiTestCase
 
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'An ordinary page.'], '', true);
         $pageManager->save(
-            'PageonlyindexRegressionEntry',
-            [PageBody::CONTENT => '', 'form_id' => '1', 'bf_titre' => 'An entry'],
+            self::ENTRY_TAG,
+            // `tag` in the body, like every entry EntryManager writes: reading one back
+            // without it warns and falls back to the page's own tag (EntryManager::
+            // getDataFromPage), which is a fixture that does not look like the thing it stands
+            // in for
+            [PageBody::CONTENT => '', 'tag' => self::ENTRY_TAG, 'form_id' => '1', 'bf_titre' => 'An entry'],
             '',
             true,
             null,
@@ -48,6 +68,6 @@ class PageonlyindexActionTest extends YesWikiTestCase
             ->run('pageonlyindex', 'action', []);
 
         $this->assertStringContainsString(self::PAGE_TAG, $html, 'a page must appear in the page-only index');
-        $this->assertStringNotContainsString('PageonlyindexRegressionEntry', $html, 'an entry must not');
+        $this->assertStringNotContainsString(self::ENTRY_TAG, $html, 'an entry must not');
     }
 }

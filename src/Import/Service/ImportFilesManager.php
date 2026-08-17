@@ -62,7 +62,7 @@ class ImportFilesManager
      * @param string $to        local path
      * @param bool   $overwrite overwrite existing file ? (default:false)
      *
-     * @return void
+     * @return string the curl error, or '' when the download succeeded
      */
     private function cURLDownload($from, $to, $overwrite = false)
     {
@@ -185,7 +185,7 @@ class ImportFilesManager
      * @param string $filename  file name
      * @param bool   $overwrite overwrite existing file ? (default:false)
      *
-     * @return void
+     * @return string the curl error, or '' when the download succeeded
      */
     public function downloadDirectLinkAttachment($remoteUrl, $filename, $overwrite = false)
     {
@@ -244,7 +244,8 @@ class ImportFilesManager
      * @param string $filename       file name
      * @param bool   $overwrite      overwrite existing file ? (default:false)
      *
-     * @return array all file attachments
+     * @return void it downloads the file; the `@return array all file attachments` this
+     *              carried described a different method entirely
      */
     public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
     {

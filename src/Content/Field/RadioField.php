@@ -30,7 +30,6 @@ abstract class RadioField extends EnumField
                 ]);
 
                 return $htmlReturn;
-                break;
             default:
                 $options = $this->getOptions();
                 if ($this->displayFilterLimit && (count($options) > $this->displayFilterLimit)) {

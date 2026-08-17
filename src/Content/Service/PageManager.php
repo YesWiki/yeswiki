@@ -976,12 +976,12 @@ class PageManager
     private function encodeMetadata(array $metadata): string
     {
         if (YW_CHARSET != 'UTF-8') {
-            return json_encode(array_map(function ($value) {
+            return (string)json_encode(array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $metadata));
         }
 
-        return json_encode($metadata);
+        return (string)json_encode($metadata);
     }
 
     /**

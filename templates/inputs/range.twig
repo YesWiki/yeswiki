@@ -1,7 +1,7 @@
 {% extends "@core/layouts/input.twig" %}
 
 {% block input %}
-    {{ include_css('styles/bazar/inputs/range.css') }}
+    {{ include_css('styles/yw-entries.css') }}
 
     <div class="input-group range-wrap">
         {% set defaultValue = ((((field.size != "0" and field.size is empty) ? 0 : field.size)|number_format + 

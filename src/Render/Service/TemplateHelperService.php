@@ -263,11 +263,11 @@ class TemplateHelperService
             if (is_array($datas)) {
                 return $datas;
             }
-
-            return null;
         }
 
-        return null;
+        // declared `: array`, and returning null from it was a TypeError for any caller that
+        // reached this line -- no data is an empty list (ticket 40)
+        return [];
     }
 
     /**
@@ -311,7 +311,7 @@ class TemplateHelperService
      *
      * @param string $page
      *
-     * @return array()
+     * @return array<int|string, mixed>
      */
     public function recupDroits($page)
     {
@@ -429,8 +429,9 @@ class TemplateHelperService
                 )
             )
         );
+        // strtok() returns false when there is nothing to tokenise, i.e. an empty description
         $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
 
-        return $desc;
+        return $desc === false ? '' : $desc;
     }
 }

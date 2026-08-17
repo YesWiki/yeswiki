@@ -2,7 +2,7 @@
    default here -- an empty value emits `repeat(, minmax(0, 1fr))`, which the browser drops,
    leaving one column and no clue why (the same trap the Vue card documents). #}
 {% import "@core/presentations/_item-fields.twig" as slot %}
-{{ include_css('styles/presentations.css') }}
+{{ include_css('styles/yw-entries.css') }}
 
 {% set columns = params.columns|default(3) %}
 {# `contain` shows a whole logo where `cover` would crop it; the default keeps a row of

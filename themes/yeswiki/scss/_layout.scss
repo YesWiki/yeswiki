@@ -8,12 +8,12 @@
   width: 100%;
   max-width: 1170px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 var(--yw-space-md-x);
 }
 
 #yw-main {
   max-width: 1170px;
   margin: 0 auto;
-  padding: 20px 15px;
-  background: var(--main-container-bg-color);
+  padding: var(--yw-space-lg-y) var(--yw-space-md-x);
+  background: var(--yw-surface-raised);
 }

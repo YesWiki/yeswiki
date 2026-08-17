@@ -75,7 +75,7 @@ function checkAll(state) {
     // X-Requested-With is what lets the server tell this apart from a plain form
     // submission of the same form to the same url: routes that have to serve both answer
     // JSON here and redirect-with-a-flash there (ticket 35). fetch sends no such header
-    // of its own, and `Accept` is `*​/*` either way, so it has to be explicit.
+    // of its own, and `Accept` is `*/*` either way, so it has to be explicit.
     return fetch(url, {
       method: 'POST',
       body,

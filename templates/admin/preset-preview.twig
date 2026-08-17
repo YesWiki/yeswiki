@@ -125,12 +125,196 @@ Le contenu du troisième onglet.
 
 ## `{{section}}`
 
-{{section class="cover black shape-rounded text-center" bgcolor="var(--primary-color)" height="180"}}
+{{section class="cover black shape-rounded text-center" bgcolor="var(--yw-primary)" height="180"}}
 ### Une section sur la couleur primaire
 Le texte doit rester lisible sur le fond choisi par le préréglage.
 {{end elem="section"}}
 
-{{section class="full-width text-center" bgcolor="var(--secondary-color-2)" height="180"}}
+{{section class="full-width text-center" bgcolor="var(--yw-tertiary)" height="180"}}
 ### Une section pleine largeur sur la seconde couleur secondaire
 {{end elem="section"}}
+
+## Un formulaire
+{% endverbatim %}
+
+{# A form, because half of what a Preset decides is what an input looks like -- its border,
+   its corner, its focus ring, the gap between a label and its field -- and none of that is
+   visible anywhere else in this gallery. Markup rather than an `{{action}}`: every action
+   that renders a form needs a form definition and entries to point at, which a wiki being
+   set up for the first time has none of. #}
+<div class="yw-form-row">
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="yw-preview-text">Un champ texte</label>
+    <input class="yw-input" id="yw-preview-text" type="text" value="Une valeur saisie" readonly>
+  </div>
+  <div class="yw-form-group">
+    <label class="yw-form-label" for="yw-preview-select">Une liste</label>
+    <select class="yw-input" id="yw-preview-select">
+      <option>Premier choix</option>
+      <option>Deuxième choix</option>
+    </select>
+  </div>
+</div>
+{# No `<textarea>` here, deliberately: the formatter escapes one, as it must -- wiki content
+   that could inject a text area into a page is content that could rewrite the form around
+   it. It shares `.yw-input` with the fields above, so what it would show is already shown. #}
+<div class="yw-form-group">
+  <label class="yw-form-label" for="yw-preview-disabled">Un champ désactivé</label>
+  <input class="yw-input" id="yw-preview-disabled" type="text" value="Non modifiable" disabled>
+</div>
+<div class="yw-form-group">
+  <label class="yw-form-label"><input class="yw-input" type="checkbox" checked> Une case cochée</label>
+</div>
+
+<div class="yw-alert yw-alert--success">Un message de succès&nbsp;: son fond et son encre sont calculés à partir de la seule couleur «&nbsp;succès&nbsp;».</div>
+<div class="yw-alert yw-alert--info">Un message d'information.</div>
+<div class="yw-alert yw-alert--warning">Un avertissement.</div>
+<div class="yw-alert yw-alert--danger">Une erreur.</div>
+
+{# The three ways a list of entries is drawn, rendered through the SAME templates a page
+   uses -- `@core/presentations/*` -- rather than hand-written markup that would agree with
+   itself and with nothing else. The items are fabricated here on purpose: an entry list
+   needs a form and entries, and this screen is exactly where a wiki that has neither is
+   being set up. Six of them, so a card grid wraps onto a second row and the gap between
+   rows is visible, and only four carry an image -- a row mixing cards that have one with
+   cards that do not is where a card grid's alignment actually breaks.
+
+   The images are inline SVG data URIs rather than files: a flat rectangle is all that is
+   needed to see a card's shape, and nothing here should depend on an upload existing. Their
+   colours are literals on purpose -- they stand in for a photograph somebody uploaded, which
+   is precisely the thing a Preset does NOT get to recolour, and judging a preset against
+   images that obligingly match it would be judging it against nothing. #}
+{% set previewItems = [
+  {
+    title: 'Une première entrée',
+    subtitle: 'Catégorie',
+    date: '2026-03-14',
+    badge: 'Nouveau',
+    url: '#',
+    description: '<p>Une description courte, telle qu\'une fiche en produit une.</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche',
+    image: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%204%203%22%3E%3Crect%20width=%224%22%20height=%223%22%20fill="%230c5d6a%22/%3E%3C/svg%3E'
+  },
+  {
+    title: 'Une deuxième entrée, au titre nettement plus long que les autres',
+    subtitle: 'Autre catégorie',
+    date: '2026-02-02',
+    url: '#',
+    description: '<p>Les cartes d\'une même rangée doivent garder la même hauteur quand un titre déborde.</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche',
+    image: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%204%203%22%3E%3Crect%20width=%224%22%20height=%223%22%20fill="%23d8604c%22/%3E%3C/svg%3E'
+  },
+  {
+    title: 'Une troisième entrée',
+    subtitle: 'Catégorie',
+    date: '2026-01-20',
+    url: '#',
+    description: '<p>Celle-ci n\'a pas d\'image&nbsp;: une liste mélange les deux.</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche'
+  },
+  {
+    title: 'Une quatrième entrée',
+    subtitle: 'Catégorie',
+    date: '2025-12-08',
+    badge: 'Archivé',
+    url: '#',
+    description: '<p>Une quatrième, pour que la grille passe à la ligne.</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche',
+    image: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%204%203%22%3E%3Crect%20width=%224%22%20height=%223%22%20fill="%23d78958%22/%3E%3C/svg%3E'
+  },
+  {
+    title: 'Une cinquième entrée',
+    subtitle: 'Autre catégorie',
+    date: '2025-11-30',
+    url: '#',
+    description: '<p>Le blanc entre deux cartes est l\'espacement «&nbsp;entre composants&nbsp;».</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche'
+  },
+  {
+    title: 'Une sixième entrée',
+    subtitle: 'Catégorie',
+    date: '2025-10-11',
+    url: '#',
+    description: '<p>Et celle-ci ferme la seconde rangée.</p>',
+    ctaUrl: '#',
+    ctaLabel: 'Voir la fiche',
+    image: 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%204%203%22%3E%3Crect%20width=%224%22%20height=%223%22%20fill="%231989a0%22/%3E%3C/svg%3E'
+  }
+] %}
+
+{# `flat`, and it is load-bearing: what this file produces is WIKI SOURCE, and Markdown
+   reads any line indented by four spaces as a code block. The presentation templates emit
+   indented markup, so including one raw put the second card onwards inside a `<pre><code>`
+   -- a gallery that rendered exactly one card and printed the other five as source, while
+   every class name a test could look for was still present. Trimming each line leaves the
+   markup intact and leaves Markdown nothing to mistake for code. #}
+{% macro flat(html) %}{{ html|split("\n")|map(line => line|trim)|join("\n")|raw }}{% endmacro %}
+{% import _self as source %}
+
+<h2>Une liste en cartes</h2>
+{{ source.flat(include('@core/presentations/card.twig', { items: previewItems, params: { columns: 3 } })) }}
+
+<h2>Une liste en lignes</h2>
+{{ source.flat(include('@core/presentations/list.twig', { items: previewItems|slice(0, 3) })) }}
+
+<h2>Une liste en tableau</h2>
+{{ source.flat(include('@core/presentations/table.twig', { items: previewItems })) }}
+
+{% verbatim %}
+## Une mise en page courante
+
+{{section class="cover black text-center" bgcolor="var(--yw-primary)" height="240"}}
+# Le titre de la page d'accueil
+Une accroche sur la couleur principale, puis un bouton.
+
+{{button class="yw-btn--lg" text="Commencer" link="PagePrincipale"}}
+{{end elem="section"}}
+
+{{grid}}
+{{col size="8"}}
+## Le contenu principal
+Une colonne large pour le texte, une étroite à côté pour ce qui l'accompagne : c'est la
+mise en page que prend la plupart des pages d'un wiki. Les marges entre les deux colonnes,
+et entre ce bloc et la section au-dessus, sont l'espacement « entre composants ».
+
+Un deuxième paragraphe, pour que l'interligne et l'espace entre paragraphes se voient à la
+taille de texte choisie.
+
+### Un sous-titre dans la colonne
+Le contraste d'un titre sur le fond des cartes n'est pas le même que sur le fond de la page.
+{{end elem="col"}}
+{{col size="4"}}
+{{panel class="yw-panel--primary" title="Dans la marge"}}
+Un panneau latéral, avec une liste :
+
+- un premier lien
+- un deuxième lien
+- un troisième lien
+{{end elem="panel"}}
+
+{{panel title="Un second bloc"}}
+Deux panneaux l'un sous l'autre montrent l'espacement qui les sépare.
+{{end elem="panel"}}
+{{end elem="col"}}
+{{end elem="grid"}}
+
+{{grid}}
+{{col size="4"}}
+### Trois arguments
+La rangée de trois colonnes égales, l'autre mise en page que tout le monde écrit.
+{{end elem="col"}}
+{{col size="4"}}
+### Le deuxième
+Chacune doit garder la même largeur et le même blanc entre elles.
+{{end elem="col"}}
+{{col size="4"}}
+### Le troisième
+Et se replier l'une sous l'autre sur un écran étroit.
+{{end elem="col"}}
+{{end elem="grid"}}
 {% endverbatim %}

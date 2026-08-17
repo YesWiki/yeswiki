@@ -16,7 +16,7 @@ test.beforeEach(async () => {
 
 /**
  * The actions builder is a docked rail beside the editor, not a modal over it -- the
- * shape the form designer established (styles/form-builder.css's .yw-fb).
+ * shape the form designer established (styles/yw-admin.css's .yw-fb).
  *
  * It is a rail rather than an overlay in the DOM as well as visually: it is a sibling of
  * the edited form, not a child, because its selects and inputs configure what is being

@@ -10,11 +10,15 @@
 // JavaScript rules with it, so a template highlights as markup *and* as Twig. It spawns no
 // worker, which is the right answer here -- an HTML validator would report every
 // `{% if %}` inside an attribute as a broken tag.
+//
+// ywInitEach rather than a one-shot at module level, for the same reason as the custom-CSS
+// screen: an ES module is evaluated once per document, and every admin screen arrives through
+// an hx-boost navigation, so a top-level setup builds the editor on the first arrival only.
 import AceWrapper from './ace-wrapper.js'
 
-const textarea = document.getElementById('yw-template-source')
+ywInitEach('#yw-template-source', (textarea) => {
+  if (textarea.readOnly) return
 
-if (textarea && !textarea.readOnly) {
   // ACE takes its host node over completely, so it gets one of its own and the textarea
   // survives as the thing the form submits
   const host = document.createElement('div')
@@ -39,4 +43,4 @@ if (textarea && !textarea.readOnly) {
   textarea.form?.addEventListener('submit', () => {
     textarea.value = editor.getValue()
   })
-}
+})

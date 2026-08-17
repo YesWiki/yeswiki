@@ -198,7 +198,7 @@ class IcalFormatter extends YesWikiController
      */
     protected function isAllDay(string $date): bool
     {
-        return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/', $date);
+        return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/', $date) === 1;
     }
 
     /**
@@ -395,9 +395,9 @@ class IcalFormatter extends YesWikiController
         $output = wordwrap($output, $length, "\r\n ", true);
         // prevent errors when cutting between \r\n
         // replace "\r\n \r\n" to prevent empty lines
-        $output = preg_replace('/(?:\\r ?\\r\\n \\n|\\r\\n \\r\\n )/', "\r\n ", $output);
+        $output = (string)preg_replace('/(?:\\r ?\\r\\n \\n|\\r\\n \\r\\n )/', "\r\n ", $output);
         // remove last " \r\n" to prevent empty lines
-        $output = preg_replace('/\\r\\n (?:\\r\\n)?$/', "\r\n", $output);
+        $output = (string)preg_replace('/\\r\\n (?:\\r\\n)?$/', "\r\n", $output);
 
         return $output;
     }
@@ -434,7 +434,7 @@ class IcalFormatter extends YesWikiController
         $renderedInput = $this->markdownFormatter->format($input);
         $cleanedRendered = strip_tags($renderedInput, '<a>');
         // extract links
-        $output = preg_replace('/<a.*href=(?:"|\')([^"\']*)(?:"|\').*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
+        $output = (string)preg_replace('/<a.*href=(?:"|\')([^"\']*)(?:"|\').*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
 
         return $output;
     }

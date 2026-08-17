@@ -2,7 +2,7 @@
 <strong>{{ _t('WEBHOOKS_CONFIG_TITLE') }}</strong>
 <p class="yw-text-info">{{ _t('WEBHOOKS_CONFIG_DESC') }}</p>
 
-{{ include_css('styles/webhooks/webhooks-form.css') }}
+{{ include_css('styles/yw-admin.css') }}
 <form action="{{ url }}" method="POST" class="webhooks-form">
     <div class="yw-form-group">
         {% set userIsAdmin = hasAcl('@admins') %}

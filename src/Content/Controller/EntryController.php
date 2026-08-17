@@ -570,6 +570,9 @@ class EntryController extends YesWikiController
     private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
     {
         $html = [];
+        if ($form === null) {
+            return $html;
+        }
         // which field renders as the heading -- the one the form names its entries with,
         // matching TextField::renderStatic() rather than assuming bf_titre (ticket 11)
         $titleFieldName = $this->getService(FormPropertiesService::class)->titleFieldName($form);
@@ -788,13 +791,11 @@ class EntryController extends YesWikiController
             case '<':
                 // start before date and whatever finish
                 return $date->diff($entryStartDate)->invert == 1;
-                break;
             case '>':
                 // start after date or (before date but and end should be after date, end is needed)
                 return
                     $date->diff($entryStartDate)->invert == 0
                     || !$this->dateIsStrictlyBefore($entryEndDate, $date);
-                break;
             case '=':
             default:
                 // start before next day midnight and should end after date midnigth

@@ -1,3 +1,5 @@
+{# the entry list and its filter rail (ADR-0020: the bundle an entry list triggers) #}
+{{ include_css('styles/yw-entries.css') }}
 {% if params.search %}
   {{ include("@core/entries/index/_search_input.twig") }}
 {% endif %}

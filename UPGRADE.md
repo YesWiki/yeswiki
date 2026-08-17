@@ -36,11 +36,11 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 
 ### Requirements
 
-| | Doryphore | Ectoplasme |
-|---|---|---|
-| PHP | 7.4+ | **8.3+** (8.3, 8.4 and 8.5 are tested in CI) |
-| Database | MySQL/MariaDB | **MySQL/MariaDB, SQLite or PostgreSQL** — all three are supported and tested |
-| Extensions | | `ctype curl fileinfo filter gd iconv json mbstring pcre pdo zip` + the PDO driver for your database |
+|            | Doryphore     | Ectoplasme                                                                                          |
+| ---------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| PHP        | 7.4+          | **8.3+** (8.3, 8.4 and 8.5 are tested in CI)                                                        |
+| Database   | MySQL/MariaDB | **MySQL/MariaDB, SQLite or PostgreSQL** — all three are supported and tested                        |
+| Extensions |               | `ctype curl fileinfo filter gd iconv json mbstring pcre pdo zip` + the PDO driver for your database |
 
 ---
 
@@ -60,7 +60,7 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
    > **Read the output.** `migrate` prints one line per migration and **exits 0 even when a
    > migration fails** — `MigrationService` collects per-migration errors into a message list
    > rather than aborting. A failure looks like `AU_ERROR | Migration X (date) failed with
-   > error ...`, and the migration stays pending, so fixing the cause and re-running is safe.
+error ...`, and the migration stays pending, so fixing the cause and re-running is safe.
    > Do not read a zero exit status as success; grep the output for `AU_ERROR`.
 
 4. **Work through [Still by hand](#still-by-hand).**
@@ -75,7 +75,7 @@ Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date
 ## What migrations do for you
 
 Nothing in this section needs your attention. It is here so you can tell whether a change you
-notice was intended, and so the list of what is *not* automated is meaningful by contrast.
+notice was intended, and so the list of what is _not_ automated is meaningful by contrast.
 
 **Tables.** `acls`, `nature`, `users`, `referrers` and `links` are dropped. Their contents move
 into `pages` rows first where they still exist as concepts — users and uploaded files are now
@@ -99,6 +99,32 @@ incomplete, `./yeswicli search:reindex` rebuilds it.
 **Layout pages become configuration.** `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become
 `layout_*` config keys; `PageCss` becomes `custom/styles/custom.css`; `LookWiki` is retired and
 its links point at `admin/preset`.
+
+**Your presets are rewritten, and get shorter.** A Preset used to declare 49 values; it now
+declares the 31 that are _decisions_, and core computes the rest — every hover colour, the
+muted text, the border shades, the focus ring, the panel and ink behind each status colour,
+the shadow colours and the corner radii. The eleven spacing steps become three, and the
+measures become sliders rather than lengths you type. What each of your files still said is
+carried over; the top bar's and footer's colours, a colour for each of the six heading levels
+and the multipliers are seeded from what your preset already implied, so nothing is left blank
+and nothing is flagged incomplete. Heading _sizes_ are new — until now a heading's size was the
+browser's business and not a Preset's — so they start from core's ramp.
+
+**The `colored-navbar` theme style is gone**, because the top bar's colours are a Preset's
+now (`--yw-navbar-bg`, `--yw-navbar-text`). If you were using it, the migration gives your
+presets its coloured bar and puts your `favorite_style` back to the theme's default — so the
+bar looks the same, and it is now a colour picker on `admin/preset` rather than a stylesheet
+in a different screen.
+
+Spacing is also **two numbers per step now** — vertical and horizontal — because text is wider
+than it is tall. Your converted preset gets its old value on the vertical axis and core's ratio
+on the horizontal, so it stays proportionally as tight or as roomy as you had it.
+
+**Expect the spacing to shift.** Collapsing eleven steps to three remaps 890 rules: the
+widest gaps get narrower (`6rem` → `2rem`) and the commonest one tightens slightly (`1rem` →
+`0.75rem`). Headings also get explicit sizes where they previously took the browser's, so a
+heading may be a little larger. All three are one slider each on `admin/preset` if the result
+is not what you want.
 
 **Per-action ACLs are re-keyed to the new action names.** This one is worth knowing about
 because of what it prevents: per-action permissions live in your config under
@@ -136,25 +162,25 @@ and use `docs/action-name-renames.json` as the mapping.
 
 The renames, for reference when fixing those files:
 
-| old | new |
-|---|---|
-| `{{bazarliste}}` | `{{entrylist}}` |
-| `{{bazarcarto}}` | `{{entrymap}}` |
-| `{{bazartable}}` | `{{entrytable}}` |
-| `{{bazarexport}}` / `{{bazarimport}}` | `{{entryexport}}` / `{{entryimport}}` |
-| `{{bazarfollow}}` | `{{entryfollow}}` |
-| `{{bazaruserpage}}` | `{{entryuserpage}}` |
-| `{{bazarlistecategorie}}` | `{{entrylistcategory}}` |
-| `{{calendrier}}` | `{{calendar}}` |
-| `{{abonnement}}` / `{{desabonnement}}` | `{{subscribe}}` / `{{unsubscribe}}` |
-| `{{nuagetag}}` | `{{tagcloud}}` |
-| `{{valeur}}` | `{{value}}` |
-| `{{gererdroits}}` / `{{gererthemes}}` | `{{adminacls}}` / `{{adminthemes}}` |
-| `{{ariane}}` | `{{breadcrumb}}` |
-| `{{doubleclic}}` | `{{doubleclick}}` |
-| `{{barreredaction}}` | `{{editbar}}` |
-| `{{titrepage}}` | `{{pagetitle}}` |
-| `{{moteurrecherche}}` | `{{searchform}}` |
+| old                                    | new                                   |
+| -------------------------------------- | ------------------------------------- |
+| `{{bazarliste}}`                       | `{{entrylist}}`                       |
+| `{{bazarcarto}}`                       | `{{entrymap}}`                        |
+| `{{bazartable}}`                       | `{{entrytable}}`                      |
+| `{{bazarexport}}` / `{{bazarimport}}`  | `{{entryexport}}` / `{{entryimport}}` |
+| `{{bazarfollow}}`                      | `{{entryfollow}}`                     |
+| `{{bazaruserpage}}`                    | `{{entryuserpage}}`                   |
+| `{{bazarlistecategorie}}`              | `{{entrylistcategory}}`               |
+| `{{calendrier}}`                       | `{{calendar}}`                        |
+| `{{abonnement}}` / `{{desabonnement}}` | `{{subscribe}}` / `{{unsubscribe}}`   |
+| `{{nuagetag}}`                         | `{{tagcloud}}`                        |
+| `{{valeur}}`                           | `{{value}}`                           |
+| `{{gererdroits}}` / `{{gererthemes}}`  | `{{adminacls}}` / `{{adminthemes}}`   |
+| `{{ariane}}`                           | `{{breadcrumb}}`                      |
+| `{{doubleclic}}`                       | `{{doubleclick}}`                     |
+| `{{barreredaction}}`                   | `{{editbar}}`                         |
+| `{{titrepage}}`                        | `{{pagetitle}}`                       |
+| `{{moteurrecherche}}`                  | `{{searchform}}`                      |
 
 `{{bazar}}` **keeps its name.** It is the BazaR admin console rather than an entry, `bazar` is
 the product's own word for that screen, and it is the most widely written action call in the
@@ -194,7 +220,7 @@ dropped tables and the deleted `Wiki` class.
 
 ### 3. Custom `.tpl.html` templates must be ported to Twig
 
-The `tpl.html` engine is gone. Stored *names* alias to `.twig` (above), which means your
+The `tpl.html` engine is gone. Stored _names_ alias to `.twig` (above), which means your
 `custom/templates/mylist.tpl.html` file is never loaded — the alias looks for `mylist.twig`.
 
 Port each one and save it with a `.twig` extension. **No migration can do this**: it is a
@@ -215,7 +241,7 @@ override is arbitrary code against an interface that changed.
 
 FontAwesome is no longer shipped. Icons come from a generated Tabler sprite. Core templates map
 historical names through `iconFromLegacy()`, so shipped markup is fine, but
-`<i class="fa fa-user"></i>` written in *your* template or page renders nothing.
+`<i class="fa fa-user"></i>` written in _your_ template or page renders nothing.
 
 Use the `icon()` Twig helper, or `iconFromLegacy()` if you want the legacy name translated.
 
@@ -247,18 +273,18 @@ Check whether any page or template of yours depends on these, because nothing re
   — they were output formats, state changes, a form and a cron job wearing a page's URL. Each has a
   replacement, but **the old paths return nothing, with no redirect**:
 
-  | gone | use instead |
-  |---|---|
-  | `?PageName/rss` | `?api/entries/rss` (same query parameters) |
-  | `?PageName/tagrss` | `?api/tags/rss&tags=…` |
-  | `?PageName/xml` | `?api/pages/PageName/xml` |
-  | `?PageName/addcomment` | `POST ?api/comments` (already where the form posted) |
-  | `?PageName/claim` | `POST ?api/pages/PageName/claim`, `…/comments-access` |
-  | `?PageName/mail` | `?api/contact/form&pageTag=…` |
-  | `?PageName/sendmail&key=…&period=…` | `./yeswicli contact:send-digest -p day` |
-  | `?PageName/filemanager` | the `{{filemanager}}` action |
-  | `?PageName/qrcodetroc` | the `{{qrcodetroc}}` action |
-  | `?PageName/listpages&tags=X` | `?search&tags=X` |
+  | gone                                | use instead                                           |
+  | ----------------------------------- | ----------------------------------------------------- |
+  | `?PageName/rss`                     | `?api/entries/rss` (same query parameters)            |
+  | `?PageName/tagrss`                  | `?api/tags/rss&tags=…`                                |
+  | `?PageName/xml`                     | `?api/pages/PageName/xml`                             |
+  | `?PageName/addcomment`              | `POST ?api/comments` (already where the form posted)  |
+  | `?PageName/claim`                   | `POST ?api/pages/PageName/claim`, `…/comments-access` |
+  | `?PageName/mail`                    | `?api/contact/form&pageTag=…`                         |
+  | `?PageName/sendmail&key=…&period=…` | `./yeswicli contact:send-digest -p day`               |
+  | `?PageName/filemanager`             | the `{{filemanager}}` action                          |
+  | `?PageName/qrcodetroc`              | the `{{qrcodetroc}}` action                           |
+  | `?PageName/listpages&tags=X`        | `?search&tags=X`                                      |
 
   **If you subscribe to a feed, or link to one from another site, it stops working.** A feed reader
   gives its owner no signal beyond the feed going quiet, so re-publish the new address. Links inside
@@ -270,11 +296,11 @@ Check whether any page or template of yours depends on these, because nothing re
     wrote your site-wide contact passphrase into web-server logs, proxy logs and browser history.
     Replace the cron line with `cd /path/to/wiki && ./yeswicli contact:send-digest -p day`. **A wiki
     with no cron needs no line at all**: the digests now go out from the wiki's own housekeeping
-    pass. If you keep a real cron *and* have mailing-list groups, set
+    pass. If you keep a real cron _and_ have mailing-list groups, set
     `contact_disable_periodic_digest` to true so both do not send.
   - **Keyword navigation moved into search.** A tag link at the bottom of a page now opens
     `?search&tags=<keyword>`, and `tags=` takes a comma-separated list that Content must carry
-    *all* of. This is a new capability, not just a relocation: keywords used to be folded into the
+    _all_ of. This is a new capability, not just a relocation: keywords used to be folded into the
     index's free-text column, so a keyword could only be matched as loosely as any other word.
     **The keyword index fills as the search queue drains** — a tag link finds nothing until then,
     which `./yeswicli search:reindex` forces.
@@ -309,7 +335,7 @@ needing a reset, and what keeps it findable by the lost-password flow. Affected 
 
 If you have disabled password reset by email (`contact_disable_email_for_password`), the message
 tells them to ask an administrator instead — so make sure an administrator is reachable, and note
-that an admin whose *own* password is md5 must reset it the same way.
+that an admin whose _own_ password is md5 must reset it the same way.
 
 **No migration can do this for you**, and none pretends to: rehashing needs the plain password,
 which by construction nobody has. Expect reset requests in the days after you upgrade, in

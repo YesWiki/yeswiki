@@ -90,8 +90,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
 
                 if ($vID['isExternal']) {
                     throw new \Exception('The specified ID for import should be local');
-
-                    return 'The specified ID for import should be local';
                 }
 
                 $vForm = $vForms[$vID['key']];
@@ -119,8 +117,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
 
                 if ($vID['isExternal']) {
                     throw new \Exception('The specified ID for import should be local');
-
-                    return 'The specified ID for import should be local';
                 }
 
                 $importedEntries = $this->CSVManager->importEntry($this->arguments['importentries'], $vID['id']);

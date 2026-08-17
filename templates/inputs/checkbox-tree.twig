@@ -8,7 +8,7 @@
     {{ _self.node(node, field, values, displaySelectAllLimit) }}
   {% endfor %}
 
-	{{ include_css('styles/bazar/inputs/checkbox-tree.css') }}
+	{{ include_css('styles/yw-entries.css') }}
 	{{ include_javascript('javascripts/inputs/checkbox-tree.js') }}
 	<input type="hidden" value="{{ oldValue ?? '\'\''}}" name="{{ field.propertyName ~ field.fromFormId }}">
 {% endblock %}

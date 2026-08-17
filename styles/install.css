@@ -5,7 +5,13 @@
   */
 
 body {
-  padding-top: 30px;
+  /* The installer lays a form out as label-then-field on one line: every offset below is
+     that label column, so it is one number rather than five that have to be kept in step.
+     Component geometry -- install.css is loaded by the installer and nothing else -- so
+     it is not a Design token and no Preset declares it. */
+  --yw-install-label-width: 230px;
+
+  padding-top: var(--yw-space-lg);
 }
 
 p,
@@ -19,32 +25,32 @@ a:focus {
 }
 
 .ok {
-  color: #080;
+  color: var(--yw-success);
   font-weight: bold;
 }
 
 .failed {
-  color: #800;
+  color: var(--yw-danger);
   font-weight: bold;
 }
 
 legend {
-  color: #18657f;
-  padding-left: 15px;
+  color: var(--yw-primary);
+  padding-left: var(--yw-space-md);
   font-size: 20px;
-  margin-bottom: 10px;
-  margin-top: 30px;
+  margin-bottom: var(--yw-space-md);
+  margin-top: var(--yw-space-lg);
   line-height: 32px;
 }
 
 .legend-first {
-  margin-bottom: -20px;
+  margin-bottom: calc(-1 * var(--yw-space-lg));
 }
 
 .jumbotron h1 {
   display: inline;
   font-size: 32px;
-  margin-bottom: 20px;
+  margin-bottom: var(--yw-space-lg);
 }
 
 .jumbotron h4 {
@@ -60,14 +66,14 @@ legend {
 }
 
 .plusinfos {
-  margin-top: -2px;
+  margin-top: calc(-1 * var(--yw-space-sm));
 }
 
 .accordion-inner {
-  border-radius: 4px;
-  background-color: #a6d9e7;
-  padding: 10px 20px;
-  margin-bottom: 20px;
+  border-radius: var(--yw-radius-sm);
+  background-color: var(--yw-primary);
+  padding: var(--yw-space-md) var(--yw-space-lg);
+  margin-bottom: var(--yw-space-lg);
 }
 
 .accordion-heading {
@@ -77,21 +83,21 @@ legend {
 
 .continuer,
 .revenir {
-  margin-left: 80px;
-  padding: 20px 75px;
+  margin-left: var(--yw-space-lg);
+  padding: var(--yw-space-lg) var(--yw-space-lg);
 }
 
 .form-actions {
-  margin-bottom: 100px;
+  margin-bottom: var(--yw-space-lg);
 }
 
 .accordion-inner .yw-form-label {
-  width: 232px;
+  width: var(--yw-install-label-width);
 }
 
 .checkbox {
-  margin-left: 240px;
-  padding-right: 20px;
+  margin-left: calc(var(--yw-install-label-width) + var(--yw-space-md));
+  padding-right: var(--yw-space-lg);
 }
 
 .accordion-inner legend {
@@ -99,20 +105,20 @@ legend {
 }
 
 .dl-horizontal dt {
-  width: 230px;
+  width: var(--yw-install-label-width);
   font-weight: 600;
 }
 
 .dl-horizontal dd {
-  margin-left: 245px;
+  margin-left: calc(var(--yw-install-label-width) + var(--yw-space-md));
 }
 
 .dl-horizontal dd.droits-admin {
-  margin-left: 230px;
+  margin-left: var(--yw-install-label-width);
 }
 
 .dl-horizontal ul {
-  margin-left: 50px;
+  margin-left: var(--yw-space-lg);
   list-style-type: square;
 }
 
@@ -121,7 +127,7 @@ legend {
 }
 
 span {
-  color: #31b0d5;
+  color: var(--yw-primary);
   font-weight: 600;
 }
 
@@ -130,18 +136,18 @@ span {
 }
 
 .yw-form-group {
-  margin-bottom: 15px;
+  margin-bottom: var(--yw-space-md);
 }
 
 legend span {
   font-size: 12px;
-  color: #333;
+  color: var(--yw-text);
   font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
   font-weight: normal;
 }
 
 dl {
-  margin-bottom: 12px;
+  margin-bottom: var(--yw-space-md);
 }
 
 .soustitre {

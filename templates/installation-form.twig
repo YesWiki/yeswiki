@@ -65,11 +65,42 @@
             {%- if env.default_language is defined %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}"
             {%- else %} onchange="const f = this.closest('.form-yeswiki-install'); f.action = '{{ baseUrl }}?installAction=default&lang=' + this.value; f.submit();"
             {%- endif %}>
-            {% for lang in availableLanguages %}
+            {# A real language, always. `auto` used to be here and meant "no language named,
+               let the browser decide" -- which is what a first visit does anyway now: the
+               browser is asked before this default is, over the languages the wiki offers.
+               What `auto` actually did was leave the wiki unable to say what it was written
+               in, for the visitor whose language it does not have. #}
+            {% for lang in installedLanguages %}
               <option value="{{ lang }}" {% if lang == locale %}selected="selected"{% endif %}>{{ attribute(languagesList, lang).nativeName|capitalize }}</option>
             {% endfor %}
-            <option value="auto">{{ _t('NAVIGATOR_LANGUAGE') }}</option>
           </select>
+        </div>
+      </div>
+
+      {# Which OTHER languages this wiki offers its readers -- the list its language switcher
+         will hold, beside the one above. Nothing ticked is the ordinary case and means a wiki
+         in one language, which then shows no switcher at all rather than seven options
+         nobody chose to publish.
+
+         The wiki's own content is not translated by this: what changes is the interface, the
+         `?lang=` a reader can ask for, and the language a page may name for itself. #}
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('OTHER_LANGUAGES') }}</label>
+        <div class="col-sm-9">
+          <p class="help-block">{{ _t('OTHER_LANGUAGES_INFOS') }}</p>
+          {# The main language is not one of the OTHERS. Filtered on what the select above
+             holds rather than on the interface language: they are the same after choosing one
+             (that select reloads this form in the language it names, which is what keeps this
+             list right without any script here) -- except for `auto`, which names no language,
+             and where every language really is on offer. #}
+          {% set mainLanguage = config.default_language|default(locale) %}
+          {% for lang in installedLanguages|filter(lang => lang != mainLanguage) %}
+            <label class="yw-checkbox-inline">
+              <input type="checkbox" name="config[other_languages][]" value="{{ lang }}"
+                {%- if lang in config.other_languages|default([]) %} checked{% endif %}>
+              {{ attribute(languagesList, lang).nativeName|capitalize }}
+            </label>
+          {% endfor %}
         </div>
       </div>
 

@@ -22,7 +22,7 @@ et autre astuces de mise en forme. Par exemple, un texte en **gras** s'affiche
 - Pour supprimer les balises, il faut les supprimer avant **ET** après l'élément
   impacté
 - Pour des balises plus complexes comme
-  `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}`
+  `{{section bgcolor="var(--yw-primary)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}`
   (oui, on sait, ça fait peur au début) il faut bien supprimer tout ce qui est
   avant **ET** après "Texte encadré".
 

@@ -1,27 +1,31 @@
 /* ---- footer ---- */
+/* The footer's colours are the Preset's (ADR-0021). `transparent` was not a decision anybody
+   made -- it was the absence of one, and it meant the only way to give a wiki a dark footer
+   strip under a light page was to write CSS by hand. */
 #yw-footer {
-  margin-top: 2em;
-  padding: 20px 0;
-  background: var(--footer-bg-color);
-  color: var(--footer-text-color);
-  border-top: var(--footer-border);
+  margin-top: var(--yw-space-lg-y);
+  padding: var(--yw-space-lg-y) 0;
+  background: var(--yw-footer-bg);
+  color: var(--yw-footer-text);
 }
 
+/* the footer's headings take its own ink rather than the page's heading colour: a footer is
+   a strip of small print, and a coloured h2 in it reads as a mistake */
 #yw-footer h1,
 #yw-footer h2,
 #yw-footer h3 {
-  color: var(--footer-title-color);
+  color: var(--yw-footer-text);
 }
 
 #yw-footer ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 1em;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 #yw-footer a {
-  color: var(--footer-text-color);
+  color: var(--yw-footer-text);
 }

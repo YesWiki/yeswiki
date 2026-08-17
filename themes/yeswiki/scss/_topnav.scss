@@ -1,7 +1,7 @@
 /* ---- top bar ---- */
 
 /* The bar's height is a setting (ticket 30, /admin/layout). `--yw-navbar-height` is declared
-   in styles/yw-core.css, because core stylesheets derive `--sticky-toolbar-top` from it; the
+   in styles/yw-core.css, because core stylesheets derive `--yw-sticky-toolbar-top` from it; the
    squelette then writes it inline on <html>, which beats every stylesheet including this one.
 
    `min-height` on the bar itself with `box-sizing: border-box`, so the number is the height you
@@ -19,13 +19,20 @@
 
    Centring them means first giving the fast-access block a placement that does not depend on
    floating; that is a separate change with its own before/after, not a line to slip in here. */
+/* The bar's colours are the PRESET's since ADR-0021 (`--yw-navbar-bg` / `--yw-navbar-text`),
+   not this file's. They used to be hard-coded to the raised surface here, and a second
+   stylesheet -- `colored-navbar.css`, a whole theme style whose entire content was repainting
+   the bar with the brand colour -- existed to say otherwise. That is a Preset's decision, so
+   there is one way to make the bar coloured now and it is a colour picker.
+
+   Its border and its hovered link are DERIVED from those two (core's derived block), which is
+   what the deleted stylesheet could not do: a hairline matched to the page background is
+   invisible once the bar is no longer the page background. */
 #yw-topnav {
-  background: var(--navbar-bg-color);
-  color: var(--navbar-text-color);
-  border-bottom: var(--navbar-border-bottom);
-  border-radius: var(--navbar-border-radius);
-  box-shadow: var(--navbar-shadow);
-  padding: 6px 0;
+  background: var(--yw-navbar-bg);
+  color: var(--yw-navbar-text);
+  border-bottom: var(--yw-border-width) solid var(--yw-navbar-border);
+  padding: var(--yw-space-sm-y) 0;
   z-index: 100;
   box-sizing: border-box;
   min-height: var(--yw-navbar-height);
@@ -33,10 +40,10 @@
 
 #yw-topnav .navbar-brand {
   display: inline-block;
-  font-family: var(--main-title-fontfamily);
+  font-family: var(--yw-font-heading);
   font-size: 1.2em;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--yw-navbar-text);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -67,7 +74,7 @@
 #yw-topnav .yw-brand--logo-text {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 /* top-bar buttons sit flat on the bar (margot light.css look) -- except the chrome pencil,
@@ -77,14 +84,14 @@
 #yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit) {
   background: transparent;
   border-color: transparent;
-  color: var(--navbar-link-color);
+  color: var(--yw-navbar-text);
 }
 
 #yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):hover,
 #yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):focus,
 #yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):hover,
 #yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):focus {
-  color: var(--navbar-link-hover-color);
+  color: var(--yw-navbar-active);
   filter: none;
 }
 
@@ -97,7 +104,7 @@
 #yw-topnav .topnavpage ul:not(.yw-dropdown__menu):not(.dropdown-menu) {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25em;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -107,30 +114,28 @@
   list-style: none;
 }
 
-#yw-topnav .topnavpage>* a,
-#yw-topnav .yw-topnav-fast-access>*>a {
+#yw-topnav .topnavpage > * a,
+#yw-topnav .yw-topnav-fast-access > * > a {
   display: block;
-  padding: 8px 12px;
-  color: var(--navbar-link-color);
-  background: var(--navbar-link-bg-color);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  color: var(--yw-navbar-text);
   text-decoration: none;
 }
 
-#yw-topnav .yw-topnav-fast-access>*>a {
-  border-radius: 4px;
+#yw-topnav .yw-topnav-fast-access > * > a {
+  border-radius: var(--yw-radius-sm);
 }
 
 #yw-topnav .topnavpage a:hover,
-#yw-topnav .topnavpage .active-list>a,
+#yw-topnav .topnavpage .active-list > a,
 #yw-topnav .topnavpage a.active-link {
-  color: var(--navbar-link-hover-color);
-  background: var(--navbar-link-bg-hover-color);
+  color: var(--yw-navbar-active);
 }
 
-/* dropdown menus opened from the top bar sit on a light panel: keep their
-   links readable there rather than navbar-colored */
+/* dropdown menus opened from the top bar sit on the page's own panel, not on the bar: keep
+   their links the page's ink rather than the bar's, whatever the bar was painted */
 #yw-topnav .yw-dropdown__menu a,
 #yw-topnav .dropdown-menu a {
-  color: var(--main-text-color);
+  color: var(--yw-text);
   background: transparent;
 }

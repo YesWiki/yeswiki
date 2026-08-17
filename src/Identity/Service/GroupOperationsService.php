@@ -129,8 +129,6 @@ class GroupOperationsService extends YesWikiController
             return ['name' => $name, 'members' => $entry];
         }
         throw new \Exception(_t('ERROR_SAVING_GROUP') . '.');
-
-        return null;
     }
 
     public function getAll(): array
@@ -176,11 +174,8 @@ class GroupOperationsService extends YesWikiController
      * @param string $groupName (without !/@)
      * @param string $member    (with !/@ if present)
      *
-     *  @return : int
-     *      - 0 if ok
-     *      - 1 if user doesn't exist
-     *      - 2 if group doesn't exist
-     *      - 3 if group is recursive
+     * @return int 0 if ok, 1 if the user does not exist, 2 if the group does not exist,
+     *             3 if the group is recursive
      */
     private function checkMemberValidity(string $groupName, string $member): int
     {

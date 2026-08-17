@@ -1,3 +1,5 @@
+{# the entry form's own styling (ADR-0020: the bundle entries trigger) #}
+{{ include_css('styles/yw-entries.css') }}
 {{ include_javascript('javascripts/bazar.js', true, true) }}
 {{ error|raw }}
 <h3 class="titre_type_fiche">{{ _t('BAZ_TITRE_SAISIE_FICHE') }}&nbsp;{{ form.label }}</h3>

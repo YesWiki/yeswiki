@@ -4,13 +4,13 @@ Every Content's body is JSON (ADR-0011, ticket 09), stored in a `LONGTEXT` / `TE
 
 We measured it rather than argued it. `./yeswicli content:body-bench` seeds two identical corpora, one `TEXT` and one native, and runs the query shapes `SearchManager` and `BazarListService` really emit. 200,000 entries across three forms, seven fields each, on the compose stack's MySQL 8 and PostgreSQL 16. Median of five runs, milliseconds:
 
-| query | MySQL `LONGTEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
-|---|---|---|---|---|
-| filter on `form_id` | 1226 | 633 (−48%) | 407 | 51 (−88%) |
-| filter on one field | 1173 | 648 (−45%) | 401 | 47 (−88%) |
-| filter on a checkbox (LIKE) | 1263 | 695 (−45%) | 392 | 51 (−87%) |
-| two filters | 1389 | 669 (−52%) | 388 | 48 (−88%) |
-| project 7 fields, ordered, LIMIT 20 | 1454 | 730 (−50%) | 1947 | 78 (−96%) |
+| query                               | MySQL `LONGTEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
+| ----------------------------------- | ---------------- | ------------ | ----------------- | ------------------ |
+| filter on `form_id`                 | 1226             | 633 (−48%)   | 407               | 51 (−88%)          |
+| filter on one field                 | 1173             | 648 (−45%)   | 401               | 47 (−88%)          |
+| filter on a checkbox (LIKE)         | 1263             | 695 (−45%)   | 392               | 51 (−87%)          |
+| two filters                         | 1389             | 669 (−52%)   | 388               | 48 (−88%)          |
+| project 7 fields, ordered, LIMIT 20 | 1454             | 730 (−50%)   | 1947              | 78 (−96%)          |
 
 **MySQL halves.** The column stops being parsed as text into a JSON document once per row per expression, and starts being read out of the compact binary form it is already in.
 
@@ -20,16 +20,16 @@ We measured it rather than argued it. `./yeswicli content:body-bench` seeds two 
 CASE WHEN body ~ '^\s*\{' THEN (body::jsonb #>> ARRAY['bf_ville']) ELSE NULL END
 ```
 
-— a regex match **and** a text-to-`jsonb` cast, per row, *per extracted field*, because a `TEXT` column may hold something that is not JSON at all. That is why the projection query is the worst case by far: seven fields means seven casts of the whole document on every row, and it is the query an entry list actually runs. A `jsonb` column cannot hold a non-document, so the guard and the cast both disappear and the expression becomes `body #>> ARRAY['bf_ville']`.
+— a regex match **and** a text-to-`jsonb` cast, per row, _per extracted field_, because a `TEXT` column may hold something that is not JSON at all. That is why the projection query is the worst case by far: seven fields means seven casts of the whole document on every row, and it is the query an entry list actually runs. A `jsonb` column cannot hold a non-document, so the guard and the cast both disappear and the expression becomes `body #>> ARRAY['bf_ville']`.
 
 ## Why not "just index the hot paths" instead
 
 That was the competing outcome, and it is the cheaper ticket, so we measured it too — a stored generated column plus a normal index on MySQL, an expression index on PostgreSQL:
 
-| | MySQL `LONGTEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
-|---|---|---|---|---|
-| filter on `form_id`, indexed | 665 | 521 | 123 | 118 |
-| every other query | unchanged | unchanged | unchanged | unchanged |
+|                              | MySQL `LONGTEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
+| ---------------------------- | ---------------- | ------------ | ----------------- | ------------------ |
+| filter on `form_id`, indexed | 665              | 521          | 123               | 118                |
+| every other query            | unchanged        | unchanged    | unchanged         | unchanged          |
 
 An index does close most of the gap — **for the one path it indexes**. Every other query is exactly where it was, because the planner still has to interpret the column for every field that has no index of its own. And there is no set of paths to pick: the filtered field is whatever a webmaster put in their form, so the hot paths are per-wiki and unknowable from core. Indexing is a real optimisation and stays available on either column type; it is not a substitute for the column type.
 
@@ -61,9 +61,9 @@ This ADR originally left `metadata` as `TEXT` on the grounds that nothing filter
 
 Measured with the same rig (`content:body-bench`), on the same 200k corpus, with a query that touches `body` not at all so what it reports is the ACL predicate alone:
 
-| | MySQL `TEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
-|---|---|---|---|---|
-| ACL predicate alone | 788 | 687 (−13%) | 147 | 57 (−62%) |
+|                     | MySQL `TEXT` | MySQL `JSON` | PostgreSQL `TEXT` | PostgreSQL `JSONB` |
+| ------------------- | ------------ | ------------ | ----------------- | ------------------ |
+| ACL predicate alone | 788          | 687 (−13%)   | 147               | 57 (−62%)          |
 
 The shape is the same as `body`'s and the size is not, for a reason worth writing down: **PostgreSQL's `::jsonb` cast costs in proportion to the document it casts**, and a `metadata` document is a few dozen bytes where a `body` is a kilobyte or more. So the ACL predicate is cheap in absolute terms even at four evaluations per row — but it is still paying a cast per evaluation, and dropping it is a 62% saving on PostgreSQL.
 
@@ -76,5 +76,5 @@ MySQL's −13% would not have justified this on its own. It did not have to: onc
 ## Considered options
 
 - **Keep `TEXT` everywhere and close the question** — rejected by the PostgreSQL numbers. An 8× to 25× difference on the query every entry list runs is not a micro-optimisation, and at the scale this rewrite targets (hundreds of thousands to millions of Contents) it is the difference between a list that renders and one that times out.
-- **Keep `TEXT`, add generated/indexed columns for the hot paths** — rejected as *the* answer, kept as a complement. Measured above: it fixes one path and leaves the rest, and core cannot know which paths a wiki's forms will make hot.
+- **Keep `TEXT`, add generated/indexed columns for the hot paths** — rejected as _the_ answer, kept as a complement. Measured above: it fixes one path and leaves the rest, and core cannot know which paths a wiki's forms will make hot.
 - **Native JSON on MySQL only** — rejected. PostgreSQL is where the gain is largest; it would be an odd dialect to leave out.

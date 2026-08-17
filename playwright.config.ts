@@ -40,6 +40,15 @@ export default defineConfig({
     /* local instances are served with a self-signed certificate */
     ignoreHTTPSErrors: true,
 
+    /* The browser's language, and it is load-bearing.
+     *
+     * A wiki answers a first-time visitor in their own language when it offers it, ahead of
+     * its own `default_language` -- so a headless Chromium asking for `en-US` would read this
+     * French test wiki (which offers `en`) in English, and every assertion on a French label
+     * would fail for a reason that has nothing to do with what it is testing. Saying `fr-FR`
+     * here is the suite being a French reader, which is what it has always assumed it was. */
+    locale: 'fr-FR',
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 

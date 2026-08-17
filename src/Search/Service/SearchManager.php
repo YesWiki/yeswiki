@@ -513,8 +513,6 @@ class SearchManager
                     break;
                 default:
                     throw new \Exception($vOperator . ' is not recognized');
-
-                    return [];
             }
 
             // We need to add conditions that take into account all the possible structures
@@ -1625,8 +1623,6 @@ class SearchManager
         if (isset($vResult)) {
             return $vResult;
         }
-
-        return '';
     }
 
     /**
@@ -1677,8 +1673,6 @@ class SearchManager
         if (isset($vResult)) {
             return $vResult;
         }
-
-        return '';
     }
 
     /**
@@ -1777,9 +1771,6 @@ class SearchManager
         switch ($this->isRegExp($pString)) {
             case 0:
                 throw new \Exception($pString . ' is not a regexp');
-
-                return '';
-                break;
             case 1:
                 $vString = '^' . $pString . '$';
                 break;

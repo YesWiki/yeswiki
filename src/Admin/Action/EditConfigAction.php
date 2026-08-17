@@ -70,6 +70,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         'yeswiki_name' => 'core',
         'root_page' => 'core',
         'default_language' => 'core',
+        'other_languages' => 'core',
         'favicon' => 'core',
         'debug' => 'core',
         'timezone' => 'core',
@@ -176,7 +177,32 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             'keysList' => $keysList,
             'placeholders' => $placeholders,
             'help' => $this->getHelp(),
+            'languages' => $this->languageChoices(),
+            // read as themselves rather than off `$data`, which renders every value as the
+            // string a text box would hold -- `['en','es']` is a list here, not a literal
+            'defaultLanguage' => $this->params->has('default_language') ? (string)$this->params->get('default_language') : '',
+            'otherLanguages' => $this->params->has('other_languages') ? (array)$this->params->get('other_languages') : [],
         ]);
+    }
+
+    /**
+     * The languages this wiki could offer: what YesWiki is translated into, here.
+     *
+     * The two language keys are a choice rather than free text -- `zz` in a text box has
+     * never meant anything, and `other_languages` is a list, which a text box can only
+     * express as PHP source somebody has to get right by hand.
+     *
+     * @return array<string, string> code => the language's own name for itself
+     */
+    private function languageChoices(): array
+    {
+        $names = (array)($GLOBALS['languages_list'] ?? []);
+        $choices = [];
+        foreach ((array)($GLOBALS['installed_languages'] ?? []) as $code) {
+            $choices[(string)$code] = (string)($names[$code]['nativeName'] ?? $code);
+        }
+
+        return $choices;
     }
 
     /**
@@ -297,8 +323,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
 
             return $result;
         }
-
-        return [];
     }
 
     /**
@@ -334,7 +358,13 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 switch ($length) {
                     case 1:
                         $new_value = $this->arguments['post'][$firstLevelKey] ?? null;
-                        if (is_null($new_value) || $new_value === '') {
+                        if (is_array($new_value)) {
+                            // a checkbox list posts an array of its own -- `other_languages`,
+                            // today. Nothing ticked posts nothing at all, which falls to the
+                            // branch below and drops the key: its default is the empty list,
+                            // so "none of them" and "never said" are the same wiki.
+                            $config->$firstLevelKey = array_values(array_filter($new_value, 'is_string'));
+                        } elseif (is_null($new_value) || $new_value === '') {
                             unset($config->$firstLevelKey);
                         } else {
                             $config->$firstLevelKey = $this->strtoarray($new_value);

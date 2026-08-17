@@ -1,12 +1,140 @@
+/* fun -- the same wiki with every box softened. Corner roundness is one number now
+   (`--yw-radius-scale`), and this is what it is for: 2 is double core's radii, everywhere,
+   from a button's corner to a modal's. */
+
+/* A complete Preset: every AUTHORED Design token, colour tokens once per Colour
+   scheme and the rest once (ADR-0020, simplified by ADR-0021). Written by the
+   Personnalisation screen -- editing it by hand is fine, but leave nothing out:
+   core refuses an incomplete Preset by name rather than filling the gap from
+   somebody else's values.
+
+   What is NOT here, core derives from what is: every hover colour, the muted
+   text, the two border shades, the focus ring, the panel and ink behind each
+   status colour, the shadow colours and the three corner radii. Declaring one
+   here would work -- it would simply win over core's -- but it would then be a
+   value nobody keeps in step, and the usual result is a dark scheme quietly
+   matched to a light surface. The measures are multiples of the base type size:
+   `rem` is that size, and the three scales are bare multipliers. */
 :root {
-  /* light primary and secondary colors over a dark neutral */
-  --primary-color: #87d2e8;
-  --secondary-color-1: #f09989;
-  --secondary-color-2: #f0c431;
-  --neutral-color: #173150;
-  --neutral-soft-color: #768597;
-  --neutral-light-color: #f0e7dc;
-  --main-text-fontsize: 17px;
-  --main-text-fontfamily: 'Nunito', sans-serif;
-  --main-title-fontfamily: 'Nunito', sans-serif;
+  --yw-primary: #87d2e8;
+  --yw-secondary: #f09989;
+  --yw-tertiary: #f0c431;
+  --yw-ink-on-light: #173150;
+  --yw-ink-on-dark: #ffffff;
+  --yw-surface: #ffffff;
+  --yw-surface-raised: #ffffff;
+  --yw-surface-sunken: #f1f2f4;
+  --yw-text: #173150;
+  --yw-text-inverse: #ffffff;
+  --yw-border: #d2d6da;
+  --yw-border-width: 1px;
+  --yw-success: #1f8a7d;
+  --yw-danger: #c0392b;
+  --yw-warning: #d99100;
+  --yw-info: #1989a0;
+  --yw-navbar-bg: #87d2e8;
+  --yw-navbar-text: #101314;
+  --yw-footer-bg: #ffffff;
+  --yw-footer-text: #173150;
+  --yw-heading-1: #87d2e8;
+  --yw-heading-2: #87d2e8;
+  --yw-heading-3: #87d2e8;
+  --yw-heading-4: #f0c431;
+  --yw-heading-5: #f0c431;
+  --yw-heading-6: #f0c431;
+  --yw-heading-1-size: 2rem;
+  --yw-heading-2-size: 1.5rem;
+  --yw-heading-3-size: 1.25rem;
+  --yw-heading-4-size: 1.1rem;
+  --yw-heading-5-size: 1rem;
+  --yw-heading-6-size: 0.9rem;
+  --yw-font-body: 'Nunito', sans-serif;
+  --yw-font-heading: 'Nunito', sans-serif;
+  --yw-font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
+    'DejaVu Sans Mono', monospace;
+  --yw-font-size-base: 17px;
+  --yw-space-sm-y: 0.25rem;
+  --yw-space-sm-x: 0.35rem;
+  --yw-space-md-y: 0.75rem;
+  --yw-space-md-x: 1rem;
+  --yw-space-lg-y: 2rem;
+  --yw-space-lg-x: 1.5rem;
+  --yw-radius-scale: 2;
+  --yw-shadow-strength: 1;
+  --yw-on-primary: #173150;
+  --yw-on-secondary: #173150;
+  --yw-on-tertiary: #173150;
+  --yw-on-success: #ffffff;
+  --yw-on-danger: #ffffff;
+  --yw-on-warning: #173150;
+  --yw-on-info: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --yw-primary: #87d2e8;
+    --yw-secondary: #f09989;
+    --yw-tertiary: #f5d878;
+    --yw-surface: #151719;
+    --yw-surface-raised: #1e2124;
+    --yw-surface-sunken: #0e0f11;
+    --yw-text: #e3e5e8;
+    --yw-text-inverse: #151719;
+    --yw-border: #393f46;
+    --yw-success: #3fbfa8;
+    --yw-danger: #e2705f;
+    --yw-warning: #e0a53c;
+    --yw-info: #4bb8c9;
+    --yw-navbar-bg: #87d2e8;
+    --yw-navbar-text: #0b1114;
+    --yw-footer-bg: #151719;
+    --yw-footer-text: #e3e5e8;
+    --yw-heading-1: #87d2e8;
+    --yw-heading-2: #87d2e8;
+    --yw-heading-3: #87d2e8;
+    --yw-heading-4: #f5d878;
+    --yw-heading-5: #f5d878;
+    --yw-heading-6: #f5d878;
+    --yw-on-primary: #173150;
+    --yw-on-secondary: #173150;
+    --yw-on-tertiary: #173150;
+    --yw-on-success: #173150;
+    --yw-on-danger: #173150;
+    --yw-on-warning: #173150;
+    --yw-on-info: #173150;
+  }
+}
+
+:root[data-theme='dark'] {
+  --yw-primary: #87d2e8;
+  --yw-secondary: #f09989;
+  --yw-tertiary: #f5d878;
+  --yw-surface: #151719;
+  --yw-surface-raised: #1e2124;
+  --yw-surface-sunken: #0e0f11;
+  --yw-text: #e3e5e8;
+  --yw-text-inverse: #151719;
+  --yw-border: #393f46;
+  --yw-success: #3fbfa8;
+  --yw-danger: #e2705f;
+  --yw-warning: #e0a53c;
+  --yw-info: #4bb8c9;
+  --yw-navbar-bg: #87d2e8;
+  --yw-navbar-text: #0b1114;
+  --yw-footer-bg: #151719;
+  --yw-footer-text: #e3e5e8;
+  --yw-heading-1: #87d2e8;
+  --yw-heading-2: #87d2e8;
+  --yw-heading-3: #87d2e8;
+  --yw-heading-4: #f5d878;
+  --yw-heading-5: #f5d878;
+  --yw-heading-6: #f5d878;
+  --yw-on-primary: #173150;
+  --yw-on-secondary: #173150;
+  --yw-on-tertiary: #173150;
+  --yw-on-success: #173150;
+  --yw-on-danger: #173150;
+  --yw-on-warning: #173150;
+  --yw-on-info: #173150;
 }

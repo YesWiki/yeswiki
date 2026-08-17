@@ -212,8 +212,6 @@ class ComposerScriptsHelper
         }
 
         return false;
-
-        return false;
     }
 
     private static function delete($path)

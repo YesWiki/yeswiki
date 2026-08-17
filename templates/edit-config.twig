@@ -16,10 +16,47 @@
               <div class="field-container">
                 <label for="{{ key }}">{{ help[key] ?? key }}</label>
                 {% if help[key] %}<span> - {{ key }}</span>{% endif %}
-                <input type="text" class="yw-input" id="{{ key }}" name="{{ key }}" value="{{ value }}"
-                  {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
-                  {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
-                  />
+
+                {# The two language keys are a CHOICE, and the only two here that are. What a
+                   wiki can offer is what YesWiki is translated into on this server, so a text
+                   box could only be wrong in ways nobody would see until a reader asked for a
+                   language that answers nothing -- and `other_languages` is a list, which a
+                   text box can express only as PHP source somebody types by hand. #}
+                {% if key == 'default_language' %}
+                  {# A real language, always -- there is no `auto` here any more. A first
+                     visit already asks the browser before it asks this, over the languages
+                     the wiki offers; what `auto` added was a wiki unable to say what it was
+                     written in for the visitor whose language it does not have. #}
+                  <select class="yw-input" id="{{ key }}" name="{{ key }}" data-yw-main-language>
+                    {% for code, name in languages %}
+                      <option value="{{ code }}"{{ code == defaultLanguage ? ' selected' : '' }}>{{ name|capitalize }}</option>
+                    {% endfor %}
+                  </select>
+
+                {% elseif key == 'other_languages' %}
+                  {# The wiki's own language is not one of the OTHERS -- and which one that is
+                     changes with the select above, before anything is saved. So every language
+                     is rendered and the one in the select is hidden, by the server on arrival
+                     and by admin-config-languages.js on every change after that. Rendering only
+                     the others would leave the list unable to give a language back when the
+                     main one changes away from it. #}
+                  <div data-yw-other-languages>
+                    {% for code, name in languages %}
+                      <label class="yw-checkbox-inline" data-language="{{ code }}"
+                             {{- code == defaultLanguage ? ' hidden' : '' }}>
+                        <input type="checkbox" name="{{ key }}[]" value="{{ code }}"
+                          {{- code in otherLanguages and code != defaultLanguage ? ' checked' : '' }}>
+                        {{ name|capitalize }}
+                      </label>
+                    {% endfor %}
+                  </div>
+
+                {% else %}
+                  <input type="text" class="yw-input" id="{{ key }}" name="{{ key }}" value="{{ value }}"
+                    {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
+                    {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
+                    />
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -39,6 +76,8 @@
     </div>
   </div>
 </form>
+
+{{ include_javascript('javascripts/admin-config-languages.js') }}
 
 <style>
   #edit-config { margin-top: 2rem; }

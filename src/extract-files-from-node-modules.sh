@@ -62,6 +62,12 @@ mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
 mkdir -p javascripts/vendor/vditor/dist/css/content-theme &&
 	copy_css node_modules/vditor/dist/css/content-theme/light.css javascripts/vendor/vditor/dist/css/content-theme/light.css &&
 	copy_css node_modules/vditor/dist/css/content-theme/dark.css javascripts/vendor/vditor/dist/css/content-theme/dark.css
+# ...and the highlighting inside a code block, which Vditor fetches from that same base on its
+# own -- one per Colour scheme, because a code block is the one part of a written page that
+# brings its own colours and they have to flip with everything else (ADR-0020)
+mkdir -p javascripts/vendor/vditor/dist/js/highlight.js/styles &&
+	copy_css node_modules/vditor/dist/js/highlight.js/styles/github.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github.min.css &&
+	copy_css node_modules/vditor/dist/js/highlight.js/styles/github-dark.min.css javascripts/vendor/vditor/dist/js/highlight.js/styles/github-dark.min.css
 
 # fullcalendar
 mkdir -p styles/vendor/fullcalendar &&

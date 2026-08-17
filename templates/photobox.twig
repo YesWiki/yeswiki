@@ -23,7 +23,9 @@
 {% endfor %}
 </ul>
 {{ pager_links|raw }}
-<link rel="stylesheet" href="styles/bazar/photobox.css">
+{# declared rather than linked by hand: a farm instance serves its assets from
+   cache/assets/{version}/, and a hand-written source path there is a 404 #}
+{{ include_css('styles/yw-content.css') }}
 <style>
 .pbgallery {margin:0;padding:0;}
 #gallery{{ galleryId }} li {margin: {{ thumbmargin }}px}

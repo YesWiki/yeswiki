@@ -144,6 +144,8 @@
     </form>
   </section>
 
-  {{ include_css('styles/admin-custom-templates.css') }}
+  {{ include_css('styles/yw-admin.css') }}
+  {# the editor bundle paints ACE's surface from the wiki's tokens -- see custom-css.twig #}
+  {{ include_css('styles/yw-editor.css') }}
   {{ include_javascript('javascripts/admin-custom-templates.js', false, true) }}
 {% endblock %}

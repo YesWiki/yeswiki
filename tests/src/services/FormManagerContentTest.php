@@ -242,6 +242,7 @@ class FormManagerContentTest extends YesWikiTestCase
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($form);
             $this->assertTrue($activityPubService->isEnabled($form));
             $this->assertSame('someactor', $form['activitypub_username']);
             $this->assertNotEmpty($form['activitypub_private_key']);

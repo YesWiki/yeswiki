@@ -50,6 +50,11 @@ esac
 
 curl --silent --fail --show-error \
           -F "config[default_language]=fr" \
+          `# two more languages, so the suite covers a wiki that offers a choice: the` \
+          `# language switcher only exists where there is something to switch to, and` \
+          `# this is also the only place the installer's own handling of the list runs` \
+          -F "config[other_languages][]=en" \
+          -F "config[other_languages][]=es" \
           -F "config[wakka_name]=MyTestWiki" \
           -F "config[root_page]=PagePrincipale" \
           -F "config[base_url]=http://yeswiki-web/?" \

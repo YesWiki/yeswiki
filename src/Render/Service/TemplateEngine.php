@@ -379,6 +379,46 @@ class TemplateEngine
             'brand' => $this->renderLayout('brand', $chrome),
             'navbar' => $this->renderLayout('navbar', $chrome),
             'quickMenu' => $this->renderLayout('quick-menu', $chrome),
+            'tools' => $this->renderChromeTools(),
+        ]);
+    }
+
+    /**
+     * The viewer's own controls at the end of the bar: Colour scheme, and language.
+     *
+     * Not part of the chrome a `LayoutChrome` describes, and deliberately: everything else in
+     * the bar is what an admin decided to put there, and these two are what a *visitor*
+     * decides. An admin removing "light or dark" from the navbar would be removing it from
+     * the readers who need it, so it is not offered as a choice (ADR-0020).
+     *
+     * The language list is the wiki's installed languages, and is empty of interest below two
+     * -- the template draws no control at all in that case rather than one option nobody can
+     * change anything with.
+     */
+    private function renderChromeTools(): string
+    {
+        $current = (string)($GLOBALS['prefered_language'] ?? '');
+        $available = (array)($GLOBALS['available_languages'] ?? []);
+        $names = (array)($GLOBALS['languages_list'] ?? []);
+
+        $languages = [];
+        foreach ($available as $code) {
+            $code = (string)$code;
+            $languages[] = [
+                'code' => $code,
+                // its own name, in itself: a reader looking for their language is not looking
+                // for the English word for it
+                'label' => (string)($names[$code]['nativeName'] ?? $code),
+                // the page they are on, in that language. `lang` in the parameters rather
+                // than appended, so UrlFormatter leaves the current one out (see href()).
+                'href' => $this->urlFormatter->href('', $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), ['lang' => $code], false),
+                'current' => $code === $current,
+            ];
+        }
+
+        return $this->render('@core/layout/tools.twig', [
+            'languages' => $languages,
+            'language' => $current,
         ]);
     }
 

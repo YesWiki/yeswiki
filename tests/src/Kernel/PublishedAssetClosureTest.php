@@ -12,7 +12,7 @@ require_once 'tests/YesWikiTestCase.php';
  *
  * A farm instance's docroot holds no styles of its own: `AssetRegistry` copies each
  * registered file into `cache/assets/{version}/` and links it there. But nobody registers
- * the sheets `bazar.css` `@import`s, the fonts a stylesheet's `url()` names, or the modules
+ * the sheets a stylesheet `@import`s, the images and fonts its `url()`s name, or the modules
  * `aceditor.js` imports -- the browser derives those from inside the file it was handed, and
  * asks for them at the matching published path.
  *
@@ -55,16 +55,17 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         return $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . $version . '/' . $relPath;
     }
 
-    public function testTheSheetsAStylesheetImportsArePublishedWithIt(): void
+    public function testTheFilesAStylesheetPointsAtArePublishedWithIt(): void
     {
-        $url = AssetPublisher::publishedUrl('styles/bazar/bazar.css', '1');
+        $url = AssetPublisher::publishedUrl('styles/yw-content.css', '1');
 
         $this->assertNotNull($url, 'the stylesheet itself');
-        // styles/bazar/bazar.css opens with four `@import url('./entries/...')`
-        foreach (['index.css', 'index-filters.css', 'form.css', 'view.css'] as $imported) {
+        // the images its rules name with `url()`, which nothing registers: the browser
+        // derives them from inside the file it was handed
+        foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
             $this->assertFileExists(
-                $this->published('styles/bazar/entries/' . $imported),
-                $imported . ' is imported by bazar.css and must be published with it'
+                $this->published('src/assets/images/' . $referenced),
+                $referenced . ' is named by yw-content.css and must be published with it'
             );
         }
     }
@@ -280,10 +281,10 @@ class PublishedAssetClosureTest extends YesWikiTestCase
      */
     public function testATreePublishedWithoutItsReferencesIsRepaired(): void
     {
-        // publish the whole closure, then take the imports away again: an old instance
-        AssetPublisher::publishedUrl('styles/bazar/bazar.css', '1');
-        foreach (['index.css', 'index-filters.css', 'form.css', 'view.css'] as $imported) {
-            unlink($this->published('styles/bazar/entries/' . $imported));
+        // publish the whole closure, then take the references away again: an old instance
+        AssetPublisher::publishedUrl('styles/yw-content.css', '1');
+        foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
+            unlink($this->published('src/assets/images/' . $referenced));
         }
         $marker = $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . '1/.references-published';
         if (is_file($marker)) {
@@ -293,7 +294,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         // anything at all being published now triggers the sweep
         AssetPublisher::publishedUrl('styles/yw-core.css', '1');
 
-        $this->assertFileExists($this->published('styles/bazar/entries/index.css'));
+        $this->assertFileExists($this->published('src/assets/images/bazar/loading.gif'));
         $this->assertFileExists(
             $marker,
             'and it is marked, so the sweep does not run on every request'

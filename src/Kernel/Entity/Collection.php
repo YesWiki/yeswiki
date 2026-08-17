@@ -49,7 +49,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function rewind()
     {
-        return reset($this->list);
+        reset($this->list);
     }
 
     #[\ReturnTypeWillChange]
@@ -77,7 +77,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function next()
     {
-        return next($this->list);
+        next($this->list);
     }
 
     /*************************************************************************

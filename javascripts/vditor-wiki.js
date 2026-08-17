@@ -37,6 +37,12 @@ import {
   tagOfBlock,
   unfenceComponents,
 } from './vditor-components.js'
+import { followScheme, vditorThemeOptions } from './editor-scheme.js'
+
+// Where Vditor loads its own parts from: its parser, its icons, and the content stylesheet a
+// theme is. A local directory rather than its default CDN -- a wiki must not need the open
+// internet to open an editor.
+const VDITOR_CDN = 'javascripts/vendor/vditor'
 
 /**
  * The four callouts, and the icon each is recognised by. Only the four the wiki has styles
@@ -258,7 +264,10 @@ function initVditorWiki(textareaParam) {
   let componentEditor = null
 
   const editor = new Vditor(container, {
-    cdn: 'javascripts/vendor/vditor',
+    cdn: VDITOR_CDN,
+    // light or dark, whichever the reader is in (ADR-0020) -- chrome, prose and code, which
+    // are three settings Vditor keeps apart and which have to move together
+    ...vditorThemeOptions(VDITOR_CDN),
     mode: 'wysiwyg',
     lang,
     minHeight: Math.min(600, Math.max(300, rows * 30)),
@@ -411,6 +420,10 @@ function initVditorWiki(textareaParam) {
       sync()
     },
   })
+
+  // ...and it keeps following: a reader can change the scheme while the editor is open, and
+  // an editor that stayed light on a page that went dark is the brightest thing on screen
+  followScheme(editor, VDITOR_CDN)
 
   /**
    * The textarea stays the thing that gets posted: the editor writes into it and says so,

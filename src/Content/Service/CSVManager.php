@@ -47,13 +47,27 @@ class CSVManager
     /**
      * get headers from a form.
      *
-     * @param array $form form from which headers shoudl be extracted
-     *
      * @return array ['propertyName1' => ['field' => field, 'fullHeader' => 'jjjjk'],
      *               'propertyName2' => ['field' => field, 'fullHeader' => 'jjjjk']]
      *               null if error
      */
-    private function getHeaders(array $form): ?array
+    /**
+     * Declared `?array` and never returning null, which made every caller's `$headers` nullable
+     * and accounted for six baselined argument.type entries (ticket 40).
+     *
+     * @return array<string, mixed>
+     */
+    /**
+     * A stored `Y-m-d H:i:s` as `d/m/Y H:i:s`, or the raw value when it does not parse.
+     */
+    private static function formatStoredDate(mixed $stored): string
+    {
+        $date = is_string($stored) ? date_create_from_format('Y-m-d H:i:s', $stored) : false;
+
+        return $date === false ? (string)$stored : date_format($date, 'd/m/Y H:i:s');
+    }
+
+    private function getHeaders(array $form): array
     {
         $headers = [];
         foreach ($form['prepared'] as $field) {
@@ -80,13 +94,21 @@ class CSVManager
     /**
      * convert array to csv.
      *
-     * @return string csv
+     * Returns '' for no rows rather than null: the docblock always said `string`, the signature
+     * said `?string`, and every caller trims the result -- so the nullability was fiction that
+     * cost five baselined argument.type entries (ticket 40).
+     *
+     * @param array<int, array<int|string, mixed>>|null $data
      */
-    public function arrayToCSV(?array $data): ?string
+    public function arrayToCSV(?array $data): string
     {
+        $csv = '';
         if (!empty($data)) {
             // output up to 50MB is kept in memory, if it becomes bigger it will automatically be written to a temporary file
             $csvResource = fopen('php://temp/maxmemory:' . (50 * 1024 * 1024), 'r+');
+            if ($csvResource === false) {
+                throw new \Exception('could not open a temporary stream to build the CSV');
+            }
 
             foreach ($data as $line) {
                 // output the column headings
@@ -101,22 +123,16 @@ class CSVManager
             fclose($csvResource);
         }
 
-        return $csv ?? null;
+        return (string)$csv;
     }
 
     /**
      * get CSV of all entries from form.
      *
-     * @param <array> $pParams : parameters for SearchManager::search
-     *	        	[
-     *					"query" => <string>|<array> the query
-     *					"keywords" => <string> the keywords string
-     *				]
-     * @param <array>|null $pOptions =
-     *			 [
-     * 				"fakeMode" => <bool> to create a template (default false),
-     *				"keysInsteadOfValues" => <bool> export keys instead of values (default false)
-     *			]
+     * @param array<string, mixed>      $pParams  parameters for SearchManager::search:
+     *                                            "query" (string|array) and "keywords" (string)
+     * @param array<string, mixed>|null $pOptions "fakeMode" (bool) to create a template,
+     *                                            "keysInsteadOfValues" (bool) to export keys
      *
      * @return array|null csv; null is empty or error
      */
@@ -138,8 +154,6 @@ class CSVManager
 
         if (empty($vForm)) {
             throw new \Exception('Cannot get form');
-
-            return null;
         }
 
         $csv_raw = [];
@@ -204,8 +218,11 @@ class CSVManager
         // line
         $line = [];
         // create date and latest date
-        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['created_at']), 'd/m/Y H:i:s');
-        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['updated_at']), 'd/m/Y H:i:s');
+        // date_create_from_format() returns false for a value it cannot parse, and
+        // date_format(false, ...) is a TypeError -- so one entry with a malformed stored date
+        // took the whole export down rather than exporting that row oddly (ticket 40)
+        $line[] = self::formatStoredDate($entry['created_at'] ?? null);
+        $line[] = self::formatStoredDate($entry['updated_at'] ?? null);
 
         foreach ($headers as $propertyName => $header) {
             $value = $entry[$propertyName] ?? null;
@@ -487,6 +504,11 @@ class CSVManager
     private function array_splice_from_key(array &$line, string $key)
     {
         $index = array_search($key, array_keys($line));
+        // array_search() returns false when the key is absent, and array_splice($line, false)
+        // is array_splice($line, 0) -- it would drop the FIRST column instead of none (ticket 40)
+        if ($index === false) {
+            return;
+        }
         array_splice($line, $index, 1);
     }
 
@@ -498,6 +520,9 @@ class CSVManager
         foreach (['datetime_create', 'datetime_latest'] as $value) {
             $first_found_key = array_search($value, $data['firstLine'], true);
             if ($first_found_key !== false) {
+                // the keys of `firstLine` are `key_<n>` strings; array_search() is declared
+                // `int|string|false` because it cannot know that
+                $first_found_key = (string)$first_found_key;
                 $this->array_splice_from_key($data['firstLine'], $first_found_key);
                 // update columnindexes
                 $data['columnIndexes'][$value] = (int)substr($first_found_key, strlen('key_'));
@@ -530,6 +555,8 @@ class CSVManager
         foreach ($data['headers'] as $propertyName => $header) {
             $first_found_key = array_search($condition($propertyName, $header), $data['firstLine'], true);
             if ($first_found_key !== false) {
+                // `key_<n>` string keys again; see detectHeadersFromFirstLine()
+                $first_found_key = (string)$first_found_key;
                 // remove from firstLine
                 $this->array_splice_from_key($data['firstLine'], $first_found_key);
                 // to remove already found headers
@@ -593,7 +620,7 @@ class CSVManager
     {
         // not found indexes
         $notFoundIndexes = array_map(function ($key) {
-            return (int)substr($key, strlen('key_'));
+            return (int)substr((string)$key, strlen('key_'));
         }, array_keys($data['firstLine']));
         // detect modified fields after one detected
         foreach ($notFoundIndexes as $index) {
@@ -761,7 +788,7 @@ class CSVManager
 
         // convert values to index
         $indexes = array_map(function ($option) use ($options, $flippedOptions) {
-            $option = trim($option);
+            $option = trim((string)$option);
             if (isset($flippedOptions[$option])) {
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];
@@ -810,7 +837,7 @@ class CSVManager
                     '$1',
                     $imageorig,
                 );
-                $nomimage = str_replace(' ', '_', $nomimage);
+                $nomimage = str_replace(' ', '_', (string)$nomimage);
                 $value = $nomimage;
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
@@ -886,7 +913,7 @@ class CSVManager
     public function arrayToCSVToDisplay(?array $data): ?string
     {
         // format file
-        $csv = $this->arrayToCSV($data) ?? '';
+        $csv = $this->arrayToCSV($data);
 
         // replace '<' and '> by html entities to prevent error in <pre> displaying
         $csvToDisplay = str_replace('<', htmlentities('<'), $csv);

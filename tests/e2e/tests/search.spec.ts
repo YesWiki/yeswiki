@@ -264,7 +264,7 @@ test('leaving a result behind leaves the search behind with it', async ({
 })
 
 test('the cards display gets the wiki card layout', async ({ page }) => {
-  // styles/bazar/card.css is what turns the cards into a grid, and it used to be declared
+  // styles/yw-entries.css is what turns the cards into a grid, and it used to be declared
   // from search-results.twig -- which is served as an htmx fragment, and a fragment response
   // has no <head> for include_css to write into. The stylesheet never loaded and every card
   // came out as a full-width line. Declared from search-action.twig now, which also has to be

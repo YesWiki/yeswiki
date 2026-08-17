@@ -179,7 +179,10 @@ class InstallationController
             'config' => $this->config,
             'env' => $this->env,
             'locale' => $GLOBALS['prefered_language'],
-            'availableLanguages' => $GLOBALS['available_languages'],
+            // everything YesWiki is translated into here, not what some wiki offers: this
+            // screen is where "which languages does this wiki offer" is answered for the
+            // first time
+            'installedLanguages' => $GLOBALS['installed_languages'] ?? $GLOBALS['available_languages'],
             'languagesList' => $GLOBALS['languages_list'],
             'availableDrivers' => $availableDrivers,
             'yeswikiVersion' => ucfirst(YESWIKI_VERSION) . ' ' . YESWIKI_RELEASE,

@@ -411,7 +411,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
 
     private function changePassword(?User $user, array $post)
     {
-        if ($this->userLoggedIn) {
+        if ($this->userLoggedIn && $user !== null) {
             // User wants to change password
             if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) { // check password first
                 $this->errorPasswordChange = _t('USER_WRONG_PASSWORD') . ' !';
@@ -424,7 +424,8 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     $this->authenticationService->setPassword($user, $password);
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_PASSWORD_CHANGED') . ' !');
                     // reload $user
-                    $user = $this->userManager->getOneByName($user['name']);
+                    $userName = $user['name'];
+                    $user = $this->userManager->getOneByName($userName);
                     if (!empty($user)) {
                         $this->authenticationService->login($user);
                     }

@@ -97,11 +97,11 @@ function getPageTitle($page)
         $title = $entryTitle;
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
-        if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+        if (isset($titles[1][0]) && $titles[1][0] != '') {
             $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $content, $titles);
-            if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+            if (isset($titles[1][0]) && $titles[1][0] != '') {
                 $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];

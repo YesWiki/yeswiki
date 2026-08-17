@@ -38,6 +38,11 @@
     </button>
   </form>
 
-  {{ include_css('styles/admin-custom-css.css') }}
+  {{ include_css('styles/yw-admin.css') }}
+  {# a screen that builds an ACE editor declares the editor bundle: ACE's surface -- its
+     background, its gutter, its selection -- is painted from the wiki's tokens there, and
+     without it ACE keeps its own built-in white and this screen alone stayed light on a dark
+     page (ADR-0020). #}
+  {{ include_css('styles/yw-editor.css') }}
   {{ include_javascript('javascripts/admin-custom-css.js', false, true) }}
 {% endblock %}

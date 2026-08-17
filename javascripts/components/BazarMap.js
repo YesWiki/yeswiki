@@ -121,12 +121,10 @@ const BazarMapComponent = {
                 })
                 return {
                   fillColor:
-                    props._umap_options?.color ??
-                    wiki.cssVar('--primary-color'),
+                    props._umap_options?.color ?? wiki.cssVar('--yw-primary'),
                   fillOpacity: props._umap_options?.opacity ?? 0.3,
                   color:
-                    props._umap_options?.color ??
-                    wiki.cssVar('--primary-color'),
+                    props._umap_options?.color ?? wiki.cssVar('--yw-primary'),
                   opacity: 1,
                   weight: 3,
                   ...props,

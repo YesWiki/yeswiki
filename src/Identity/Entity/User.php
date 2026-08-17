@@ -132,6 +132,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
      */
     public function getUserIdentifier(): string
     {
-        return $this->getName();
+        // Symfony declares this `non-empty-string`: an account with no name identifies nobody,
+        // and returning '' would make the security layer look one up by the empty identifier
+        $name = $this->getName();
+        if ($name === '') {
+            throw new \LogicException('a user with no name has no identifier');
+        }
+
+        return $name;
     }
 }

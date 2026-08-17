@@ -74,9 +74,12 @@ class UrlFormatter
             }
             $href .= ($this->params->get('rewrite_mode') ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
         }
-        if (isset($_GET['lang']) && $_GET['lang'] != '') {
-            $href .= '&lang=' . $GLOBALS['prefered_language'];
-        }
+        // No language rides along any more. It used to: every URL this built carried
+        // `&lang=` once a reader had switched, which reached exactly the links YesWiki
+        // generated and no others -- so following a link somebody wrote by hand dropped the
+        // reader back into the wiki's own language halfway through reading it, and sharing a
+        // URL handed your language to whoever opened it. The choice is a cookie now
+        // (LanguageService::COOKIE), which every request carries and no URL has to.
 
         return $href;
     }

@@ -121,7 +121,7 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function rewind()
     {
-        return reset($this->_parameters);
+        reset($this->_parameters);
     }
 
     #[\ReturnTypeWillChange]
@@ -145,7 +145,7 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function next()
     {
-        return next($this->_parameters);
+        next($this->_parameters);
     }
 
     /*************************************************************************

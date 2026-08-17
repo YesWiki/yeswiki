@@ -1,0 +1,2440 @@
+/* ============================================================
+   yw-admin — the admin and management screens
+
+   The dashboard and everything reached from its rail: the Layout, Personnalisation,
+   templates and CSS screens, the content and backup tables, the form designer, the
+   documentation, a page's revisions. All of it is behind an admin or manager check, and a
+   visitor reading a wiki page downloads none of it.
+
+   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
+   file: merging everything would have made ADR-0014's conditional declaration decorative and
+   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
+   it came from; add to the section a rule belongs to rather than to the end.
+
+   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
+   (declared by a section that carries an animation) and `styles/install.css` (the installer
+   renders before any of this exists).
+   ============================================================ */
+
+/* ============================================================
+   from styles/dashboard.css
+   ============================================================ */
+
+/* The dashboard and admin routes: a rail of routes pinned to the left of the viewport,
+   content in the page's own container.
+
+   Built on yw-core's variables and nothing else -- these screens ship with core and must
+   look like core on any theme, including one that brings no CSS framework at all
+   (ADR-0004).
+
+   The rail is OUT of the container, like the editor rails (.yw-designer__sidebar) are on
+   the right: a page container is centred and narrow, and a navigation column taken out of
+   it would eat a third of the reading width on every screen. Pinned to the viewport it
+   uses the empty gutter instead, and only claims layout space when the window is too
+   narrow for that gutter to exist. */
+.yw-dashboard {
+  /* How wide the rail is, and therefore how far the canvas is pushed clear of it below.
+     Component geometry rather than a Design token: only these screens mean anything by it. */
+  --yw-dashboard-rail-width: 220px;
+}
+
+.yw-dashboard__sidebar {
+  position: fixed;
+  left: 0;
+  top: var(--yw-sticky-toolbar-top);
+  z-index: 9;
+  width: var(--yw-dashboard-rail-width);
+  max-height: calc(100vh - var(--yw-sticky-toolbar-top));
+  overflow-y: auto;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
+    var(--yw-space-md-x);
+}
+
+/* Wide enough for the gutter beside the centred container to hold the rail: the content
+   keeps the whole container. Below that, the content is pushed clear of the rail rather
+   than sliding under it. The number is the container's own width plus a rail on each side
+   -- yw-core's `.page` is 1170 wide, so 1170 + 2x245.
+   The selector is two classes deep on purpose: `.page` is on the same element and comes
+   from a stylesheet loaded after this one, so a single class would lose the tie. */
+@media (max-width: 1660px) {
+  .yw-dashboard > .yw-dashboard__canvas {
+    margin-left: calc(var(--yw-dashboard-rail-width) + var(--yw-space-lg-x));
+  }
+}
+
+.yw-dashboard__section {
+  margin: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-sm-y);
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+.yw-dashboard__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-dashboard__link {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.yw-dashboard__link:hover,
+.yw-dashboard__link:focus-visible {
+  background: var(--yw-surface-sunken);
+  text-decoration: none;
+}
+
+/* the current route is named by aria-current as well; this is its visible half */
+.yw-dashboard__link--current {
+  background: color-mix(in srgb, var(--yw-primary) 12%, transparent);
+  color: var(--yw-primary);
+  font-weight: 600;
+}
+
+.yw-dashboard__link .yw-icon {
+  flex: 0 0 auto;
+  opacity: 0.75;
+}
+
+.yw-dashboard__canvas {
+  min-width: 0;
+}
+
+.yw-dashboard__intro {
+  margin-bottom: var(--yw-space-lg-y);
+}
+
+/* Cards flow two-up where there is room and stack where there is not, so a screen with
+   one long list and a screen with six short ones both read as one column of sections. */
+.yw-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-dashboard__card {
+  min-width: 0;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-sunken);
+  margin: var(--yw-space-md-y) 0;
+}
+
+.yw-dashboard__card--wide {
+  grid-column: 1 / -1;
+}
+
+.yw-dashboard__card > h2 {
+  margin-top: 0;
+  font-size: 1.05rem !important;
+}
+
+.yw-dashboard__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-dashboard__links li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  flex-wrap: wrap;
+  padding: var(--yw-space-sm-y) 0;
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-dashboard__links li:last-child {
+  border-bottom: none;
+}
+
+.yw-dashboard__links code {
+  font-size: 0.8em;
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+/* below this the rail stops being a column: it becomes the list of links the page opens
+   with, which is what a phone can show without a second viewport */
+@media (max-width: 800px) {
+  .yw-dashboard__sidebar {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin-bottom: var(--yw-space-md-y);
+    padding-left: 0;
+  }
+
+  .yw-dashboard > .yw-dashboard__canvas {
+    margin-left: 0;
+  }
+
+  .yw-dashboard__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  }
+}
+
+/* ---- the /api route list -------------------------------------------------- */
+
+.yw-api {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.yw-api td {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x) var(--yw-space-sm-y) 0;
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+  vertical-align: top;
+}
+
+.yw-api tr:last-child td {
+  border-bottom: none;
+}
+
+.yw-api__methods {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* the one thing a reader scans this page for, so it is a badge rather than prose */
+.yw-api__method {
+  display: inline-block;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-text-muted);
+  color: var(--yw-text-inverse);
+  font-family: var(--yw-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.yw-api__method + .yw-api__method {
+  margin-left: var(--yw-space-sm-x);
+}
+
+.yw-api__method--get {
+  background: var(--yw-success);
+}
+
+.yw-api__method--post {
+  background: var(--yw-primary);
+}
+
+.yw-api__method--put,
+.yw-api__method--patch {
+  background: var(--yw-warning);
+  color: var(--yw-text);
+}
+
+.yw-api__method--delete {
+  background: var(--yw-danger);
+}
+
+.yw-api__url {
+  word-break: break-all;
+}
+
+.yw-api__params {
+  list-style: none;
+  margin: var(--yw-space-sm-y) 0 0;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.yw-api__params li {
+  padding: var(--yw-space-sm-y) 0 var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-left: 2px solid var(--yw-border);
+}
+
+.yw-api__pattern {
+  opacity: 0.7;
+  font-family: var(--yw-font-mono);
+}
+
+.yw-api__params em {
+  opacity: 0.7;
+}
+
+.yw-api__acl {
+  width: 1%;
+  white-space: nowrap;
+  font-size: 0.85em;
+}
+
+/* ---- the account screens (/user) ---------------------------------------------------- */
+
+/* Signing in, signing up, recovering a password: one card, centred, and no rail beside it.
+
+   The width is the same 350px `.yw-input` caps itself at in yw-core. That is what makes the
+   fields and the buttons match: an input is `width: 100%; max-width: 350px` while a block
+   button is `width: 100%` with no cap, so on a full-width canvas every button was as wide
+   as the page while every field stopped a third of the way across. Constrain the card and
+   the two agree by construction, with nothing to keep in sync. */
+.yw-account-guest {
+  display: flex;
+  justify-content: center;
+  padding: var(--yw-space-lg-y) var(--yw-space-md-x) var(--yw-space-lg-y);
+}
+
+.yw-account-guest__card {
+  width: 100%;
+  max-width: 350px;
+}
+
+/* whichever heading the screen or its action starts with -- the sign-in screen writes its
+   own, the signup and reset forms bring theirs */
+.yw-account-guest__card > h1,
+.yw-account-guest__card h2 {
+  margin-top: 0;
+  margin-bottom: var(--yw-space-lg-y);
+  font-size: 1.5rem;
+}
+
+/* every form in the card submits at the width of its fields: a 350px input above an 81px
+   button is the ragged edge this card exists to remove */
+.yw-account-guest__card [type='submit'] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* "lost password?" and "remember me" sit between the last field and the button, and read
+   as part of neither unless they are given room */
+.yw-account-guest__card .login-form small {
+  display: block;
+  margin-bottom: var(--yw-space-md-y);
+}
+
+/* the checkbox is a field, the button is the action: they need the same air between them
+   as the fields have between one another, or the button reads as part of the checkbox */
+.yw-account-guest__card .checkbox {
+  margin: 0 0 var(--yw-space-lg-y);
+}
+
+/* the checkbox is the one input that must NOT fill the line */
+.yw-account-guest__card .checkbox .yw-input,
+.yw-account-guest__card input[type='checkbox'] {
+  width: auto;
+  display: inline-block;
+}
+
+.yw-account-guest__card hr {
+  margin: var(--yw-space-lg-y) 0 var(--yw-space-md-y);
+}
+
+/* Each account screen answers more than one question (pages *and* changes, votes *and*
+   comments), so the answers are separated rather than run together. */
+.yw-account__section + .yw-account__section {
+  margin-top: var(--yw-space-lg-y);
+  padding-top: var(--yw-space-lg-y);
+  border-top: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-account__aside {
+  margin-top: var(--yw-space-lg-y);
+  font-size: 0.9em;
+}
+
+/* the navbar's account button is styled in yw-core.css: it renders on every page of the
+   wiki, and this stylesheet only loads on the dashboard and account screens */
+
+/* ============================================================
+   from styles/admin-layout.css
+   ============================================================ */
+
+/* The Layout screen: the brand, and the two menus as lists of rows (ticket 30). */
+
+.yw-layout__hint {
+  margin: 0 0 var(--yw-space-md-y);
+  color: var(--yw-text);
+  font-size: 0.9em;
+}
+
+/* The logo row: the image as chosen, then the buttons that change it. No text field --
+   what goes in there is an api/files/…/download address nobody types. */
+.yw-layout__logo-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  align-items: center;
+}
+
+/* Bounded, because what is chosen here is whatever image the wiki holds: a 2000px banner
+   picked by mistake must show as a wrong choice, not as a screen that scrolled away. */
+.yw-layout__logo-preview {
+  display: block;
+  max-width: 240px;
+  max-height: 80px;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  background: var(--yw-surface-sunken);
+}
+
+/* `hidden` has to actually hide: both of these declare a `display`, which beats the UA
+   sheet's [hidden] rule. Same trap the file picker and the preset rail each hit once, and
+   the Remove button is a fresh chance to hit it again. */
+.yw-layout__logo-preview[hidden],
+.yw-layout__logo-remove[hidden] {
+  display: none;
+}
+
+.yw-layout__modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: 0;
+  padding: 0;
+}
+
+.yw-layout__mode {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  font-weight: normal;
+  margin: 0;
+}
+
+/* One row per entry, and the row is a line: label, link, and the buttons that act on it.
+   Wraps rather than scrolls on a narrow screen -- these are ordinary text fields, and a
+   menu is edited as often on a laptop as on a wide monitor. */
+.yw-layout__rows {
+  list-style: none;
+  margin: 0 0 var(--yw-space-md-y);
+  padding: 0;
+}
+
+.yw-layout__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin-bottom: var(--yw-space-sm-y);
+  /* the page suggestions on the link field are absolutely positioned by
+     javascripts/yw-autocomplete.js, which measures `field.offsetTop` *before* it makes the
+     parent relative -- so a row that is not already positioned is measured against some
+     ancestor and the list lands away from the field. Stating it here settles the
+     measurement rather than relying on that order. */
+  position: relative;
+}
+
+/* the whole of what "child of the row above" looks like: indented, and marked with a rule
+   so the nesting survives a row being dragged past the screen edge */
+.yw-layout__row--child {
+  margin-left: var(--yw-space-lg-x);
+  padding-left: var(--yw-space-md-x);
+  border-left: 2px solid var(--yw-border);
+}
+
+.yw-layout__row .yw-input {
+  min-width: 0;
+}
+
+/* The shared dropdown (javascripts/yw-autocomplete.js) is styled `width: 100%` of its
+   positioned ancestor. In the tag input that ancestor is a small wrapper around the field, so
+   100% *is* the field; here it is the whole row, and the list came out 893px wide over a
+   350px field -- wider than the row itself. The helper already sets `min-width` inline from
+   the field, so `auto` is what follows it: at least as wide as the field, growing only with
+   the longest name, and capped so a pathological page name cannot span the row either. */
+.yw-layout__row .yw-suggestions {
+  width: auto;
+  max-width: 24rem;
+}
+
+.yw-layout__label {
+  flex: 2 1 160px;
+}
+
+.yw-layout__link {
+  flex: 3 1 200px;
+}
+
+.yw-layout__icon {
+  flex: 0 1 110px;
+}
+
+.yw-layout__row-tools {
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin-left: auto;
+}
+
+.yw-layout__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin: var(--yw-space-md-y) 0 0;
+  font-weight: normal;
+}
+
+.yw-layout__missing {
+  color: var(--yw-text);
+  font-size: 0.85em;
+}
+
+/* the one save on the screen, and it saves all of it */
+.yw-layout__save {
+  margin: var(--yw-space-md-y) 0 var(--yw-space-lg-y);
+}
+
+/* The live-preview hint: what the bar at the top of this page is doing while you type. */
+.yw-layout__live {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+/* The bar-height slider and its readout on one line, the slider taking what is left. */
+.yw-layout__slider {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-layout__slider input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yw-layout__slider output {
+  flex: 0 0 auto;
+  min-width: 4.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--yw-text);
+}
+
+/* ============================================================
+   from styles/admin-preset.css
+   ============================================================ */
+
+/* The Personnalisation screen: the preset list, the rail that edits one, and the frame
+   around the component gallery (ticket 30). */
+
+/* The list is a column beside the gallery, not a wall above it. Clicking a preset repaints
+   the components, and that is the whole screen -- so what changes has to still be on screen
+   when it changes. The list column is narrow on purpose: a preset is a name and six
+   swatches, and the width belongs to what it does. */
+/* The page's title, and the button that brings the drawer back once it has been shut. */
+.yw-preset-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  flex-wrap: wrap;
+}
+
+.yw-preset-head h1 {
+  margin: 0;
+}
+
+/* Only a control while there is something for it to do. A button that opens the drawer,
+   shown beside an open drawer, reads as a second and disagreeing copy of it -- and this is
+   the one screen where the drawer is open on arrival, so that is the usual state. */
+body:has(#yw-preset-rail:not([hidden])) .yw-preset-head__open {
+  display: none;
+}
+
+/* THE GALLERY GETS THE WINDOW, not the reading column.
+
+   Every other dashboard screen is a column of forms and reads better narrow, so the canvas
+   sits inside the wiki's centred 1170px container. This one is a page being looked at with a
+   rail on each side of it, and inside that container there is no room for both: measured at
+   1600px wide, the left nav's 254px and the drawer's 414px left the gallery 502px -- half of
+   what an ordinary page gets, so the thing being judged was laid out like nothing the wiki
+   will ever render.
+
+   `calc(50% - 50vw)` is the full-bleed trick: 50% of the container plus half the viewport
+   back off it is exactly the distance to the window's edge, whatever the container's width.
+   Each rail's own width is then added back, so the canvas ends flush against both.
+
+   Specificity is deliberate -- `.yw-dashboard > .yw-dashboard__canvas` is the rule this has
+   to beat, and `body:has(.yw-preset-head)` alone would lose to it. */
+@media (min-width: 1280px) {
+  body:has(.yw-preset-head) .yw-dashboard > .yw-dashboard__canvas {
+    margin-left: 0;
+    margin-right: calc(50% - 50vw + var(--yw-space-lg-x));
+  }
+
+  /* and clear of the drawer while it is open. `:has`, so this follows it being opened and
+     shut with no class to keep in step. Below this width there is no room to reserve: the
+     drawer overlays the gallery instead, and its close button is how you get the width back. */
+  body:has(.yw-preset-head):has(#yw-preset-rail:not([hidden]))
+    .yw-dashboard
+    > .yw-dashboard__canvas {
+    margin-right: calc(
+      50% - 50vw + var(--yw-rail-width) + var(--yw-space-lg-x)
+    );
+  }
+}
+
+/* One face of the drawer at a time. Spelled out because `hidden` is only a UA rule: any
+   author `display` on this class -- a `flex` added later for the header, say -- would beat
+   it and put the editor and the list on screen together. */
+.yw-preset-rail__screen[hidden] {
+  display: none;
+}
+
+/* Back to the list. Square-ish and quiet: it is a direction, not an action. */
+.yw-rail__back {
+  flex: 0 0 auto;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  line-height: 1;
+}
+
+/* Cards rather than a select: a preset IS its colours, and a list of names says nothing
+   about what choosing one does. One per row, in the column: presets are compared with each
+   other, and a grid makes that a scan around a wall rather than down a list. */
+.yw-preset-cards {
+  list-style: none;
+  margin: var(--yw-space-md-y) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+/* One row per preset: its colours, its name, and the buttons that act on it, all on the same
+   line. Stacking the buttons under the name made every card three lines tall, which turned a
+   list of five presets into a scroll.
+   The background is a variable because the tools sit ON this line, over the end of it: they
+   need the card's own background to mask a name they overlap, and it has to follow the hover
+   tint or they read as a lighter patch. */
+.yw-preset-card {
+  --yw-preset-card-bg: var(--yw-surface-sunken);
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  overflow: hidden;
+  background: var(--yw-preset-card-bg);
+}
+
+.yw-preset-card:hover,
+.yw-preset-card:focus-within {
+  --yw-preset-card-bg: color-mix(
+    in srgb,
+    var(--yw-surface-sunken) 10%,
+    var(--yw-surface-sunken)
+  );
+}
+
+/* Two different states, and they must not be confusable: `--default` is the preset the
+   whole wiki wears, `--trying` is the one this page is wearing right now and nobody else
+   is. Both have to survive not having colour to say it with -- a tint would be swallowed
+   by a preset's own palette -- so they are an outline, solid against dashed. Which one is
+   the wiki's is said a second time by the filled star in the card's tools; there is no
+   corner mark, because a glyph that small was the thing nobody saw. */
+.yw-preset-card--default {
+  outline: 2px solid var(--yw-focus-ring);
+  outline-offset: -2px;
+}
+
+.yw-preset-card--trying {
+  outline: 2px dashed var(--yw-secondary);
+  outline-offset: -2px;
+}
+
+/* both at once is the ordinary case once you try on what is already the default */
+.yw-preset-card--trying.yw-preset-card--default {
+  outline-style: solid;
+}
+
+/* the whole card is the button: a swatch strip is a target people aim at, and a small
+   "select" link beside it would be a smaller one for no reason. The right padding is the
+   room the star sits in, so the mark never lands on top of a name. */
+.yw-preset-card__choose {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  /* 44px is one small button plus the tools' own inset: what the star stands in */
+  padding: var(--yw-space-sm-y) var(--yw-space-lg-x) var(--yw-space-sm-y)
+    var(--yw-space-md-x);
+  text-align: left;
+  cursor: pointer;
+}
+
+.yw-preset-card__swatches {
+  display: flex;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 26px;
+  border-radius: var(--yw-radius-sm);
+  overflow: hidden;
+  border: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-preset-card__swatch {
+  flex: 1 1 0;
+}
+
+/* the "no preset" card has nothing to show, so it shows that rather than an empty strip */
+.yw-preset-card__swatches--none {
+  align-items: center;
+  justify-content: center;
+  color: var(--yw-text);
+}
+
+/* beside the swatches, not under them: `min-width: 0` is what lets the name ellipsis rather
+   than push the row wider than the column */
+.yw-preset-card__label {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.yw-preset-card__name {
+  display: block;
+  font-weight: bold;
+  line-height: 1.2;
+  /* a preset can name a font this browser does not have and a size in any unit: the card
+     must not grow to whatever that turns out to be */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-preset-card__badge {
+  display: block;
+  font-size: 0.8em;
+  line-height: 1.2;
+  color: var(--yw-text);
+}
+
+/* A Preset that leaves a token out is not a variant, it is unfinished -- said on the card
+   rather than only when it is opened, because the wiki may already be wearing it. */
+.yw-preset-card__badge--incomplete {
+  display: inline-block;
+  margin-top: var(--yw-space-sm-y);
+  padding: 0 var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-full);
+  color: var(--yw-warning-text);
+  background: var(--yw-warning-surface);
+  cursor: help;
+}
+
+/* The buttons sit at the right end of the name's line, and only while the card is under the
+   pointer or holds focus: five rows each showing four icons is a wall of buttons, and what
+   is being compared here is the colours. They overlay the line rather than reserve room on
+   it, so nothing moves when they appear -- hence the card's own background behind them.
+   `visibility` rather than `display`, so the star below can claim itself back (see there). */
+.yw-preset-card__tools {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-preset-card-bg);
+  visibility: hidden;
+}
+
+.yw-preset-card:hover .yw-preset-card__tools,
+.yw-preset-card:focus-within .yw-preset-card__tools {
+  visibility: visible;
+}
+
+/* the delete button sits in a form of its own -- two forms per card, because one submit
+   button can only say one thing */
+.yw-preset-card__tools form {
+  margin: 0;
+}
+
+/* The star is on every card, and reads as on or off: filled and in the wiki's primary
+   colour for the preset in use, a plain outline for the rest. Bigger than the tools beside
+   it because it is the only one of them that says something about the current state --
+   and, filled, the way back to no preset at all. */
+.yw-preset-card__star .yw-icon {
+  width: 1.3em;
+  height: 1.3em;
+  vertical-align: -0.3em;
+}
+
+/* The one button that is not hidden until the pointer arrives: which preset the wiki wears
+   has to be readable off the list at rest, and a mark you have to go looking for is the
+   thing this screen already got wrong once. `visibility` is inherited, so an element can
+   take itself back out of a hidden ancestor -- which is why the tools are hidden that way.
+   It is last in the tools, so at rest it stands at the right end of the row, in the space
+   the card's right padding keeps clear of the name. */
+.yw-preset-card__star--on {
+  visibility: visible;
+  color: var(--yw-primary);
+}
+
+/* the "no preset" card's own star when it is the one in use: the same mark in the same
+   place, but nothing to click -- there is no preset to take off */
+span.yw-preset-card__star {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+/* The token set is long -- forty-nine of them -- so the rail groups it the way the set is
+   grouped, and a group is a fieldset with the group's name on it rather than a run of
+   fields somebody has to count their way down. */
+/* Tighter than a form elsewhere: this rail is fifty controls, and every millimetre of
+   vertical padding is multiplied by fifty. */
+.yw-preset-rail .yw-form-group {
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.yw-preset-rail__group {
+  margin: 0 0 var(--yw-space-md-y);
+  padding: 0;
+  border: 0;
+  border-top: var(--yw-border-width) solid var(--yw-border-subtle);
+}
+
+.yw-preset-rail__group legend {
+  padding: 0 var(--yw-space-md-x) 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--yw-text-muted);
+}
+
+/* The two Colour schemes of one colour, stacked and labelled. Side by side would halve the
+   width of a field whose value can be `rgb(0 0 0 / 50%)`, and the pair is read down the
+   rail rather than across it. */
+/* Two fields to a line where the token table pairs them. `minmax(0, 1fr)` rather than `1fr`:
+   the hex field inside has a min-content width of its own, and a bare `1fr` refuses to go
+   below it, which pushes the grid wider than the drawer and puts a scrollbar on it. */
+.yw-preset-rail__row--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  align-items: end;
+}
+
+/* One scheme at a time: the one the page is being read in. Both are in the DOM and both post;
+   the other is `hidden` and the wiki's own light/dark toggle swaps them. Spelled out because
+   `hidden` is only a UA rule -- an author `display` added later would beat it and put both
+   schemes on screen at once. */
+.yw-preset-rail__scheme[hidden],
+.yw-preset-rail__badge-slot[hidden] {
+  display: none;
+}
+
+/* the label and its contrast score share a line: the score used to have a row of its own,
+   which was twenty rows of rail spent on it */
+.yw-preset-rail__label-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* the scheme's name on the left, its contrast score on the right, on one line above the
+   colour they describe */
+/* Every label in the rail is now the line that carries the contrast score, so the flex lives
+   on `.yw-form-label` inside the rail rather than on a wrapper of its own. */
+.yw-preset-rail .yw-form-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin-bottom: 0.15rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: var(--yw-text-muted);
+}
+
+/* HOW LEGIBLE this colour is on the one it sits on, scored against WCAG 2.1 and coloured by
+   the grade rather than only stated -- a number alone is a thing to look up, and the whole
+   point is to be able to tell at a glance while dragging.
+
+   Its own colours are literals, not tokens, and that is deliberate: this badge reports on the
+   preset being edited, and the preset is repainting the page live. A "fail" drawn in
+   `--yw-danger` would be recoloured by the very values it is warning about, and could end up
+   invisible exactly when it matters. */
+.yw-preset-rail__contrast {
+  flex: 0 0 auto;
+  padding: 0 0.35em;
+  border-radius: var(--yw-radius-sm);
+  font-family: var(--yw-font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: #4a4a4a;
+  color: #ffffff;
+}
+
+.yw-preset-rail__contrast[data-grade='AAA'] {
+  background: #1a7f4f;
+  color: #ffffff;
+}
+
+.yw-preset-rail__contrast[data-grade='AA'] {
+  background: #3f7d20;
+  color: #ffffff;
+}
+
+/* large text only: legible at 24px, not at body size */
+.yw-preset-rail__contrast[data-grade='AA-large'] {
+  background: #8a6100;
+  color: #ffffff;
+}
+
+.yw-preset-rail__contrast[data-grade='fail'] {
+  background: #a32217;
+  color: #ffffff;
+}
+
+/* The dark half needs no ground of its own any more. It used to be drawn on a forced
+   `#14171a` panel so that a near-black which reads on white could be caught vanishing on the
+   page it was for -- necessary while both schemes were on screen at once and the page could
+   only be one of them. Now the page IS in the scheme you are editing, so the real ground is
+   right there behind the rail, and a second fake one would only disagree with it. */
+
+/* A swatch and the literal side by side: the picker is convenient, the text is the truth.
+   See admin-preset.js -- the text input is the field that posts. */
+.yw-preset-rail__color {
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  align-items: center;
+}
+
+/* the hex box must be allowed to shrink: two of these now share the drawer's width, and an
+   input's default min-width is its size attribute, not zero */
+.yw-preset-rail__color .yw-input {
+  min-width: 0;
+  padding-left: var(--yw-space-sm-x);
+  padding-right: var(--yw-space-sm-x);
+}
+
+/* The button that opens the palette: as small as the picker beside it, because it is the
+   third control on a line that already has two. */
+.yw-preset-rail__palette-open {
+  flex: 0 0 auto;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  line-height: 1;
+}
+
+/* The palette itself: one popover for every colour field, positioned by the JS under
+   whichever button opened it. Absolute inside the rail rather than fixed, so it scrolls with
+   the field it belongs to instead of hanging in the air over a different one -- which works
+   because `.yw-designer__sidebar` is `position: fixed` and is therefore already the
+   containing block. Restating that here would be a second copy of it to keep in step. */
+.yw-preset-palette {
+  position: absolute;
+  right: var(--yw-space-md-x);
+  z-index: 2;
+  width: min(19rem, calc(100% - 2 * var(--yw-space-md-x)));
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+  box-shadow: 0 4px 24px var(--yw-shadow-color-strong);
+}
+
+.yw-preset-palette[hidden] {
+  display: none;
+}
+
+.yw-preset-palette__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--yw-text-muted);
+}
+
+.yw-preset-palette__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-preset-palette__list li[hidden] {
+  display: none;
+}
+
+.yw-preset-palette__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-x);
+  width: 100%;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: 0;
+  border-radius: var(--yw-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.yw-preset-palette__pick:hover,
+.yw-preset-palette__pick:focus-visible {
+  background: var(--yw-surface-hover);
+}
+
+/* the chip is the colour, so it needs an edge of its own -- a white one on a white panel is
+   otherwise an empty square */
+.yw-preset-palette__chip {
+  flex: 0 0 auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: var(--yw-border-width) solid var(--yw-border-strong);
+  border-radius: var(--yw-radius-sm);
+}
+
+.yw-preset-palette__pick--own {
+  border-top: var(--yw-border-width) solid var(--yw-border-subtle);
+  border-radius: 0;
+  color: var(--yw-text-muted);
+  font-style: italic;
+}
+
+.yw-preset-rail__picker {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+/* Slider and read-out on one line, the read-out sized to `24px` and no more: it is a length
+   in pixels, and a box wide enough for a sentence says a sentence is expected. The slider
+   takes what is left, because it is the control being used. */
+.yw-preset-rail__size {
+  display: flex;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  align-items: center;
+}
+
+.yw-preset-rail__slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--yw-primary);
+}
+
+/* Which half of the preset is on screen, said once at the top of the editor rather than on
+   every field. `--yw-info-surface` and `--yw-info-text` are derived, so this follows the
+   preset being edited -- which is the point: it is part of the page you are changing. */
+.yw-preset-rail__scheme-note {
+  margin: 0 0 var(--yw-space-md-y);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-info-surface);
+  color: var(--yw-info-text);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.yw-preset-rail__hint {
+  margin: 0 0 var(--yw-space-md-y);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--yw-text-muted);
+}
+
+/* A readout, not an input: a measure is chosen by dragging (ADR-0021). Tabular figures and
+   a fixed width so the number does not shift the slider sideways as it is dragged past a
+   digit boundary, which reads as the control fighting back. */
+.yw-preset-rail__size-value {
+  flex: 0 0 4.5em;
+  width: 4.5em;
+  text-align: right;
+  font-family: var(--yw-font-mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--yw-text-muted);
+}
+
+/* The select shows its own choice (the JS sets font-family on it), so what a stack looks
+   like is on screen without opening the list. A size up from the rail's other inputs, since
+   what is being judged here is the shape of the letters. */
+.yw-preset-rail__font {
+  font-size: 1.05rem;
+}
+
+/* Each option drawn in the stack it names. Declared here as well as inline on the option so
+   the list has a size that shows the difference between two of them; the family itself has
+   to stay inline, because it is per option. */
+.yw-preset-rail__font option {
+  font-size: 1.05rem;
+  padding: var(--yw-space-sm-y) 0;
+}
+
+.yw-preset-rail__copy-notice {
+  margin: 0 0 var(--yw-space-md-y);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  font-size: 0.9em;
+}
+
+/* `hidden` has to actually hide. This one is a paragraph, so the UA rule would win -- but
+   it is stated anyway, beside the rail whose own [hidden] is overridden on purpose in
+   yw-core.css, so the two are not read as disagreeing. */
+.yw-preset-rail__copy-notice[hidden] {
+  display: none;
+}
+
+/* The Preset screen's component gallery (ticket 30) -- the whole right-hand column, with no
+   card around it and nothing said above it.
+
+   Deliberately almost empty: the gallery exists to show what the *theme and preset* do to
+   ordinary components, so anything styled here is a lie told to the person judging them.
+   What is left is the frame around the gallery, which is not part of what it previews. */
+.yw-preset-preview {
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  /* a section with `full-width` breaks out of its container by design; inside a preview it
+     must stay in the box rather than run across the dashboard */
+  overflow-x: auto;
+  margin: var(--yw-space-md-y) 0 !important;
+}
+
+/* the gallery repeats headings for scale, so the first one must not carry the page-title
+   margin that assumes it is alone at the top */
+.yw-preset-preview > h1:first-child {
+  margin-top: 0;
+}
+
+/* ============================================================
+   from styles/admin-custom-templates.css
+   ============================================================ */
+
+/* The Custom Templates screen (ticket 30): a list of overrides, and one open in an editor. */
+
+/* Not small print. What is written on this screen runs, and the screen says so where it
+   cannot be missed rather than in a footnote under the box. */
+.yw-templates__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-templates__hint,
+.yw-templates__empty {
+  margin: 0 0 var(--yw-space-md-y);
+  color: var(--yw-text);
+  font-size: 0.9em;
+}
+
+/* A template is code, so it gets a code box: monospace, tall enough to hold a block, and
+   no wrapping -- an indented Twig block that wraps is unreadable. */
+.yw-templates__editor {
+  width: 100%;
+  min-height: 28em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* `hidden` has to actually hide: `textarea.yw-input` declares a `display`, which beats the
+   UA sheet's `[hidden] { display: none }`. Same trap the CSS screen, the file picker and the
+   preset rail each hit once. */
+.yw-templates__editor[hidden] {
+  display: none;
+}
+
+/* The ACE surface admin-custom-templates.js puts over the textarea. Sized here rather than
+   by ACE's own minLines so the box does not jump when the editor replaces the textarea. */
+.yw-templates__ace {
+  width: 100%;
+  min-height: 28em;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  font-size: 0.9em;
+}
+
+.yw-templates__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-top: var(--yw-space-md-y);
+}
+
+/* The shipped original, collapsed. Scrolls inside its own box: a 400-line template must not
+   make the page scroll sideways. */
+.yw-templates__original {
+  margin-top: var(--yw-space-lg-y);
+}
+
+.yw-templates__original summary {
+  cursor: pointer;
+  color: var(--yw-text);
+}
+
+.yw-templates__original-source {
+  max-height: 32em;
+  overflow: auto;
+  margin-top: var(--yw-space-md-y);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-sunken);
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.yw-templates__table {
+  width: 100%;
+}
+
+.yw-templates__row-tools {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.yw-templates__row--editing {
+  background: var(--yw-surface-sunken);
+}
+
+.yw-templates__unmatched {
+  color: var(--yw-text);
+}
+
+/* the picker and its button on one line, the select taking what is left: template paths are
+   long, and a 12em select showing "admin/cust…" picks the wrong one */
+.yw-templates__start {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  align-items: center;
+}
+
+.yw-templates__start .yw-input {
+  flex: 1 1 20em;
+  min-width: 0;
+}
+
+/* ============================================================
+   from styles/admin-custom-css.css
+   ============================================================ */
+
+/* The custom-CSS screen's editing box (ticket 30). A stylesheet is code, so it gets a
+   code box: monospace, no spellcheck squiggles, and tall enough to see a rule set at a
+   time. Its own file rather than a rule in yw-core.css, because only one screen loads it. */
+.yw-custom-css__editor {
+  width: 100%;
+  min-height: 24em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* `hidden` has to actually hide. `textarea.yw-input` declares a `display`, and an author
+   declaration beats the UA stylesheet's `[hidden] { display: none }` -- so once ACE takes
+   over, the textarea it hides stays on the page underneath the editor. Stated explicitly,
+   as `.form-card[hidden]` already does for the same reason. */
+.yw-custom-css__editor[hidden] {
+  display: none;
+}
+
+/* The ACE surface that admin-custom-css.js puts over the textarea. Sized here rather than
+   by ACE's own maxLines/minLines so the box does not jump between the server-rendered
+   textarea and the editor replacing it. */
+.yw-custom-css__ace {
+  width: 100%;
+  min-height: 24em;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  font-size: 0.9em;
+}
+
+/* ============================================================
+   from styles/actions/admin-content.css
+   ============================================================ */
+
+.admin-content-wrapper {
+  position: relative;
+  padding-left: var(--yw-space-md-x);
+  padding-right: var(--yw-space-md-x);
+}
+.admin-content-filter-bar {
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+}
+.admin-content-filter-bar form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+.admin-content-filter-bar .yw-form-group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.admin-content-filter-bar .yw-form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--yw-text-muted);
+  margin-bottom: var(--yw-space-sm-y);
+  white-space: nowrap;
+}
+.admin-content-filter-bar .yw-input {
+  height: 30px;
+  font-size: 13px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+}
+.admin-content-filter-bar input[type='search'],
+.admin-content-filter-bar input[type='text'] {
+  width: 160px;
+}
+.admin-content-filter-bar select {
+  width: auto;
+  min-width: 120px;
+}
+.admin-bulk-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: var(--yw-primary);
+  color: var(--yw-on-primary);
+  padding: var(--yw-space-md-y) var(--yw-space-lg-x);
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  box-shadow: 0 -2px 8px var(--yw-shadow-color-strong);
+  transition: transform 0.25s ease;
+  transform: translateY(100%);
+}
+.admin-bulk-panel.visible {
+  transform: translateY(0);
+}
+.admin-bulk-panel .bulk-count {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+.admin-bulk-panel .yw-btn {
+  font-size: 13px;
+}
+
+.admin-content-table-wrap {
+  position: relative;
+  /* The table is as wide as its widest page name, and page names have no limit -- so without
+     this it pushes the *document* sideways and the whole window gets a horizontal scrollbar.
+     That is not just untidy: the filter bar above is a wrapping flex row, so every time the
+     table is swapped (which is every keystroke in the filter box) the page's width changes,
+     the row crosses its wrap threshold, and the search box jumps between sharing a line and
+     taking one of its own. Scrolling the table inside its own box keeps the page's width a
+     constant. */
+  overflow-x: auto;
+}
+.admin-content-spinner {
+  display: none;
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+.htmx-request .admin-content-spinner {
+  display: block;
+}
+
+.acl-badge {
+  display: inline-block;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin: var(--yw-space-sm-y) 0;
+}
+.acl-badge-success {
+  background: var(--yw-success);
+  color: var(--yw-text);
+}
+.acl-badge-warning {
+  background: var(--yw-warning);
+  color: var(--yw-text);
+}
+.acl-badge-danger {
+  background: var(--yw-danger);
+  color: var(--yw-text);
+}
+.acl-badge-primary {
+  background: var(--yw-primary);
+  color: var(--yw-text);
+}
+.acl-badge-default {
+  background: var(--yw-surface-sunken);
+  color: var(--yw-text-muted);
+}
+
+.sort-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sort-link:hover {
+  text-decoration: underline;
+}
+.sort-icon {
+  color: var(--yw-text);
+  margin-left: var(--yw-space-sm-x);
+  font-size: 10px;
+}
+.sort-icon.active {
+  color: var(--yw-primary);
+}
+
+.admin-content-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--yw-space-md-y);
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.tag-pill {
+  display: inline-block;
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  font-size: 11px;
+  color: var(--yw-text);
+  margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.col-cb {
+  width: 36px;
+  text-align: center;
+}
+
+#admin-content-table-container tbody tr {
+  cursor: pointer;
+}
+#admin-content-table-container tbody tr a {
+  cursor: auto;
+}
+
+.yw-table--condensed > tbody > tr > td {
+  line-height: 1.1rem;
+}
+
+.yw-table > thead > tr > th {
+  font-weight: 600;
+}
+
+.admin-content-table-wrapper {
+  margin-bottom: 0;
+}
+.admin-content-table {
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.admin-content-pager-top {
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.admin-content-pager .yw-pagination {
+  margin: 0;
+}
+
+.admin-content-no-results {
+  padding: var(--yw-space-lg-y) 0;
+}
+
+.col-type {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.col-time {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.col-acl {
+  font-size: 12px;
+  vertical-align: middle;
+}
+.col-theme {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.col-tags {
+  font-size: 11px;
+}
+
+#admin-content-table-container {
+  max-height: calc(100vh - 260px);
+  overflow-x: auto;
+  overflow-y: auto;
+}
+#admin-content-table-container .yw-table > thead > tr > th {
+  position: sticky;
+  top: 0;
+  background: var(--yw-surface-raised);
+  z-index: 3;
+  box-shadow: 0 1px 2px var(--yw-shadow-color);
+}
+
+/* ============================================================
+   from styles/actions/admin-backups.css
+   ============================================================ */
+
+.backups-container {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.admin-backups-container .archive-buttons {
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+.backups-container .archive-item.archive-filename {
+  word-break: break-all;
+}
+
+.backups-container .archive-item.archive-item-title {
+  font-weight: bold;
+  border-bottom: 2px solid var(--yw-primary);
+  padding-bottom: var(--yw-space-sm-y);
+}
+
+.btn-wrap {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x) !important;
+}
+
+@media (width <= 600px) {
+  .backups-container .archive-item.archive-item-title .btn-wrap {
+    max-width: 50px;
+    overflow-x: hidden;
+  }
+}
+
+.relativeSpinner {
+  position: relative;
+}
+
+.admin-backups-container .alert pre,
+.preupdate-backups-container .alert pre {
+  color: initial;
+}
+
+/* ============================================================
+   from styles/form-builder.css
+   ============================================================ */
+
+/* form-builder.css — vanilla form designer (ticket 26)
+   Elementor-style: left sidebar (palette <-> field settings), field-card canvas. */
+
+.yw-fb {
+  display: flex;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  align-items: flex-start;
+  min-height: 420px;
+}
+
+.yw-fb__error {
+  flex-basis: 100%;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-danger);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-danger);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+/* ------------------------------------------------ sidebar */
+
+.yw-fb__sidebar {
+  /* the sidebar sits on the RIGHT of the canvas (old-builder muscle memory) */
+  order: 2;
+  flex: 0 0 340px;
+  max-width: 340px;
+  position: sticky;
+  /* below the top bar, whatever height it is set to (ticket 30) -- this was `58px` */
+  top: calc(var(--yw-sticky-toolbar-top) + 10px);
+  border: var(--yw-border-width) solid var(--yw-border-subtle);
+  border-radius: var(--yw-radius-md);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.yw-fb__sidebar-title {
+  margin: 0 0 var(--yw-space-md-y);
+  font-size: 1rem;
+}
+
+.yw-fb__palette-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-fb__palette-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-md-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border-subtle);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+  cursor: grab;
+  font-size: 0.72rem;
+  text-align: center;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.yw-fb__palette-item:hover {
+  border-color: var(--yw-primary);
+  color: var(--yw-primary);
+}
+
+.yw-fb__palette-icon svg,
+.yw-fb__palette-icon i {
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+  fill: currentColor;
+}
+
+.yw-fb__filter {
+  margin-bottom: var(--yw-space-md-y);
+}
+
+/* floating button opening the sidebar drawer on narrow screens */
+.yw-fb__drawer-toggle {
+  display: none;
+}
+
+/* ------------------------------------------------ settings */
+
+.yw-fb__settings-header {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-fb__settings-header .yw-fb__sidebar-title {
+  margin: 0;
+}
+
+.yw-fb__hint {
+  font-size: 0.85rem;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-left: 3px solid var(--yw-primary);
+  background: var(--yw-surface-raised);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-fb__attribute {
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-fb__attribute > label {
+  display: block;
+  margin-bottom: var(--yw-space-sm-y);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.yw-fb__attribute .yw-input {
+  width: 100%;
+}
+
+/* quieter inputs inside the designer: yw-core's default field border (--yw-border) is a
+   line meant to be seen on a page, and a rail is already a box */
+.yw-fb .yw-input {
+  background: var(--yw-surface-raised);
+  border-color: var(--yw-border-subtle);
+}
+
+.yw-fb__description {
+  display: block;
+  color: var(--yw-text);
+  margin-top: var(--yw-space-sm-y);
+}
+
+.yw-fb__separator {
+  border: 0;
+  border-top: var(--yw-border-width) solid var(--yw-border-subtle);
+  margin: var(--yw-space-md-y) 0;
+}
+
+.yw-fb__advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin: var(--yw-space-md-y) 0;
+}
+
+.yw-fb__checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-fb__check {
+  font-weight: normal;
+  font-size: 0.85rem;
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  align-items: center;
+  margin: 0;
+}
+
+.yw-fb__list-actions {
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  margin-top: var(--yw-space-sm-y);
+}
+
+.yw-fb__file-preview {
+  max-width: 100%;
+  max-height: 120px;
+  display: block;
+  margin-bottom: var(--yw-space-sm-y);
+}
+
+/* ------------------------------------------------ canvas */
+
+.yw-fb__canvas {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-fb__empty {
+  border: 2px dashed var(--yw-border-subtle);
+  border-radius: var(--yw-radius-md);
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  text-align: center;
+  color: var(--yw-text);
+}
+
+.yw-fb__card {
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+  cursor: pointer;
+}
+
+.yw-fb__card--selected {
+  border-color: var(--yw-primary);
+  box-shadow: 0 0 0 1px var(--yw-primary);
+}
+
+.yw-fb__card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  background-color: var(--yw-surface-sunken);
+  border-bottom: var(--yw-border-width) solid var(--yw-border-subtle);
+  font-size: 0.9rem;
+}
+
+.yw-fb__card-drag {
+  cursor: grab;
+  color: var(--yw-text);
+}
+
+.yw-fb__card-icon svg,
+.yw-fb__card-icon i {
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+  fill: currentColor;
+}
+
+.yw-fb__card-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-fb__card-name {
+  font-size: 0.75rem;
+  background: var(--yw-surface-sunken);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+}
+
+.yw-fb__card-required {
+  color: var(--yw-danger);
+  font-weight: bold;
+}
+
+/* a field of the Content type's core structure: it can be relabelled, reordered and
+   re-permissioned like any other, but not deleted or duplicated (ticket 10) */
+.yw-fb__card-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  font-size: 0.75rem;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-text);
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  cursor: help;
+}
+
+.yw-fb__card--locked .yw-fb__card-drag {
+  /* reordering stays allowed -- only removal does not */
+  opacity: 1;
+}
+
+.yw-fb__card-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-fb__card-action {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--yw-text);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-fb__card-action:hover {
+  color: var(--yw-primary);
+}
+
+.yw-fb__card-body {
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  pointer-events: none; /* previews are inert */
+}
+
+/* the card body holds the field's real entry-form markup, served by
+   `api/forms/preview` — it keeps the site's own input styling, only trimmed of
+   the vertical rhythm a full form needs and dimmed while it is being refreshed */
+.yw-fb__card-preview {
+  overflow-x: auto;
+  transition: opacity 0.15s ease;
+}
+
+.yw-fb__card-preview--pending {
+  opacity: 0.45;
+}
+
+.yw-fb__card-preview .yw-form-group {
+  margin: 0;
+}
+
+.yw-fb__card-preview :disabled {
+  /* disabled only keeps the previews out of the surrounding form's submission
+     and validation — they should not look unavailable */
+  opacity: 1;
+  cursor: default;
+  color: inherit;
+  background-color: var(--yw-surface-raised);
+}
+
+.yw-fb__card-nopreview {
+  color: var(--yw-text);
+  font-size: 0.85rem;
+}
+
+/* dragged palette clone inside the canvas */
+.yw-fb__canvas .yw-fb__palette-item {
+  flex-direction: row;
+  justify-content: center;
+}
+
+@media (max-width: 800px) {
+  .yw-fb__sidebar {
+    position: fixed;
+    z-index: 1040;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(340px, 90vw);
+    max-height: none;
+    border-radius: 0;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    box-shadow: -4px 0 12px var(--yw-shadow-color);
+  }
+
+  .yw-fb--drawer-open .yw-fb__sidebar {
+    transform: none;
+  }
+
+  .yw-fb__drawer-toggle {
+    display: block;
+    position: fixed;
+    z-index: 1041;
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* ============================================================
+   from styles/webhooks/webhooks-form.css
+   ============================================================ */
+
+/* outgoing-webhooks admin form (ticket 20) — replaces the extension's
+   Bootstrap col-sm-2/2/8 grid with a wrapping flex row per webhook */
+.webhooks-form .yw-form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  align-items: flex-start;
+}
+
+.webhooks-form-col {
+  flex: 1 1 150px;
+}
+
+.webhooks-form-col--url {
+  flex: 3 1 300px;
+}
+
+.webhooks-form-submit {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--yw-space-md-y);
+}
+
+/* ============================================================
+   from styles/handlers/revisions.css
+   ============================================================ */
+
+.revision-page-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.revision-page-title h1 {
+  margin: 0;
+  flex: 1 auto;
+}
+
+.timeline-container {
+  position: relative;
+  height: 2rem;
+  margin: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.timeline-item {
+  position: absolute;
+  bottom: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  transform: translateX(-50%) translateY(50%);
+  background-color: var(--yw-surface-raised);
+  transition: all 0.2s;
+  border-radius: 50%;
+  border: 4px solid var(--yw-border);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.timeline-item:hover,
+.timeline-item.active {
+  background-color: var(--yw-surface-sunken);
+  width: 2.1rem;
+  height: 2.1rem;
+  z-index: 3;
+}
+
+.timeline-item.active,
+.timeline-item.active + .timeline-item-text {
+  background-color: var(--yw-secondary);
+  border-color: var(--yw-secondary);
+}
+
+.timeline-item-text {
+  display: none;
+  position: absolute;
+  bottom: 1.3rem;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background-color: var(--yw-surface-sunken);
+  color: var(--yw-text-muted);
+  font-weight: bold;
+}
+
+.timeline-item:hover + .timeline-item-text {
+  display: block;
+}
+
+.timeline-bar {
+  position: absolute;
+  height: 6px;
+  background-color: var(--yw-surface-sunken);
+  bottom: 0;
+  transform: translateY(50%);
+  left: 0;
+  right: 0;
+  border-radius: var(--yw-radius-sm);
+}
+
+.view-types-selector {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  border-bottom: 15px double var(--yw-border);
+}
+
+.view-types-selector li {
+  /* the tabs read as the page's own text rather than as links: a row of six accent-coloured
+     words is a row of six things competing with the diff underneath them */
+  --yw-primary: var(--yw-text);
+
+  cursor: pointer;
+}
+
+.view-types-selector .code-or-preview {
+  flex: 1 auto;
+  text-align: right;
+  margin: 0;
+}
+
+.view-types-selector .code-or-preview span {
+  color: var(--yw-primary);
+  padding-left: var(--yw-space-lg-x);
+}
+
+.revision-title-container {
+  display: flex;
+  align-items: center;
+  margin: var(--yw-space-lg-y) 0 var(--yw-space-lg-y);
+}
+
+.revision-title {
+  flex: 1 auto;
+}
+
+.revision-title h3 {
+  margin: 0 0 var(--yw-space-md-y);
+  font-size: 1.3rem;
+}
+
+.revision-title-container i[disabled] {
+  color: var(--yw-text-muted);
+  cursor: not-allowed;
+}
+
+.revision-title-container i:not([disabled]):hover {
+  cursor: pointer;
+  color: var(--yw-secondary);
+}
+
+.spinner-loader {
+  margin-top: var(--yw-space-lg-y);
+  opacity: 0.5;
+}
+
+.preview-container .preview-content {
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  background-color: var(--yw-surface-sunken);
+  min-height: 800px;
+}
+
+.preview-container pre {
+  white-space: pre-line; /* breaks line so we don't need to horizontally scroll */
+  font-family: var(--yw-font-mono);
+  font-size: 1rem;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.preview-container pre.ignored-action {
+  font-size: 0.9em;
+  background-color: var(--yw-surface-sunken);
+  color: var(--yw-text-muted);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin: 0;
+}
+
+ins {
+  text-decoration: none !important;
+  display: inline-block;
+}
+
+pre ins {
+  display: inline;
+}
+
+ins:not(.mod) {
+  color: var(--yw-on-success) !important;
+  background-color: var(--yw-success) !important;
+}
+
+ins:not(.mod) a {
+  color: var(--yw-on-success) !important;
+}
+
+del {
+  display: inline-block;
+  color: var(--yw-on-danger) !important;
+  background-color: var(--yw-danger) !important;
+  text-decoration: line-through !important;
+}
+
+ins img,
+del img {
+  margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.preview-container table.entry-code td {
+  vertical-align: top;
+}
+
+.preview-container table.entry-code td.key {
+  font-weight: bold;
+}
+
+.preview-container table.entry-code td.key pre {
+  white-space: pre-line; /* breaks line so we don't need to horizontally scroll */
+}
+
+.preview-container table.entry-code td + td {
+  padding-left: var(--yw-space-md-x);
+}
+
+/* ============================================================
+   from styles/doc.css
+   ============================================================ */
+
+/* The documentation route, styled by core rather than by docsify's own theme.
+
+   `/doc` used to answer with a standalone document that loaded docsify's vue theme -- a
+   full-page theme, styling `body`, `.content` and `.sidebar` globally. Inside a wiki page
+   that theme would restyle the wiki, so it is gone, and what is left here is the markup
+   docsify generates, dressed in yw-core's variables.
+
+   Docsify REPLACES its mount element, so the container in doc.twig becomes the <main>
+   below and everything it builds lives inside .yw-dashboard__canvas -- except two controls
+   it appends to <body> itself, hidden further down. */
+
+.yw-dashboard__canvas main {
+  position: relative;
+  display: flex;
+  /* the documentation's own navbar takes a full row of its own above the two columns */
+  flex-wrap: wrap;
+  gap: var(--yw-space-lg-y) var(--yw-space-lg-x);
+  align-items: flex-start;
+}
+
+/* ---- the documentation's own table of contents ---------------------------- */
+
+.yw-dashboard__canvas .sidebar {
+  /* second in the row, whatever order docsify built the DOM in: the documentation's own
+     table of contents belongs on the far side of the reading column, so the page reads
+     dashboard rail | text | contents rather than two rails against each other */
+  order: 2;
+  flex: 0 0 240px;
+  position: sticky;
+  top: var(--yw-sticky-toolbar-top);
+  max-height: calc(100vh - var(--yw-sticky-toolbar-top));
+  overflow-y: auto;
+  padding-left: var(--yw-space-md-x);
+  border-left: var(--yw-border-width) solid var(--yw-border);
+  font-size: 0.95em;
+}
+
+/* pressing \ collapses it; docsify drops the class rather than setting a style */
+.yw-dashboard__canvas .sidebar:not(.show) {
+  display: none;
+}
+
+.yw-dashboard__canvas .sidebar-nav ul,
+.yw-dashboard__canvas .sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--yw-space-md-x);
+}
+
+.yw-dashboard__canvas .sidebar-nav > ul {
+  padding-left: 0;
+}
+
+.yw-dashboard__canvas .sidebar-nav li {
+  margin: var(--yw-space-sm-y) 0;
+}
+
+.yw-dashboard__canvas .sidebar-nav a {
+  display: block;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.yw-dashboard__canvas .sidebar-nav a:hover,
+.yw-dashboard__canvas .sidebar-nav a:focus-visible {
+  background: var(--yw-surface-sunken);
+  text-decoration: none;
+}
+
+/* docsify marks the section being read; the dashboard rail marks the current route the
+   same way, so the two levels of "where am I" look like one system */
+.yw-dashboard__canvas .sidebar-nav a.active,
+.yw-dashboard__canvas .sidebar-nav li.active > a {
+  background: color-mix(in srgb, var(--yw-primary) 12%, transparent);
+  color: var(--yw-primary);
+  font-weight: 600;
+}
+
+.yw-dashboard__canvas .sidebar .search {
+  padding: 0 0 var(--yw-space-md-y);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-dashboard__canvas .sidebar .search .input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-dashboard__canvas .sidebar .search input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: var(--body-bg-color, var(--yw-surface-raised));
+  color: inherit;
+}
+
+.yw-dashboard__canvas .sidebar .search .clear-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.yw-dashboard__canvas .sidebar .search .matching-post {
+  padding: var(--yw-space-sm-y) 0;
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-dashboard__canvas .sidebar .search p {
+  margin: var(--yw-space-sm-y) 0;
+  font-size: 0.9em;
+}
+
+/* ---- the page itself ------------------------------------------------------ */
+
+.yw-dashboard__canvas .content {
+  order: 1;
+  /* basis 0, not auto: with the row wrapping for the navbar, an auto basis is the text's
+     own width and the table of contents wraps to a row of its own below it */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* docsify's own top navigation (`_navbar.md`), which the documentation maintains itself.
+   Only its list is shown: the markdown also carries a title line and a bare "back to my
+   wiki" link, both of which documentation.js clones into the list anyway, and neither of
+   which reads as navigation stacked above it. */
+.yw-dashboard__canvas .app-nav > :not(ul) {
+  display: none;
+}
+
+.yw-dashboard__canvas .app-nav {
+  order: 0;
+  flex: 1 0 100%;
+  margin: 0 0 var(--yw-space-md-y);
+  padding-bottom: var(--yw-space-md-y);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-dashboard__canvas .app-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-dashboard__canvas .app-nav li {
+  position: relative;
+}
+
+.yw-dashboard__canvas .app-nav a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.yw-dashboard__canvas .app-nav a:hover,
+.yw-dashboard__canvas .app-nav a.active {
+  color: var(--yw-primary);
+}
+
+/* its dropdowns, which docsify shows on hover */
+.yw-dashboard__canvas .app-nav li ul {
+  display: none;
+  position: absolute;
+  z-index: 3;
+  top: 100%;
+  left: 0;
+  flex-direction: column;
+  min-width: 12rem;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: var(--body-bg-color, var(--yw-surface-raised));
+  box-shadow: 0 2px 8px var(--yw-shadow-color);
+}
+
+.yw-dashboard__canvas .app-nav li:hover > ul,
+.yw-dashboard__canvas .app-nav li:focus-within > ul {
+  display: flex;
+}
+
+.yw-dashboard__canvas .markdown-section {
+  max-width: 46rem;
+}
+
+.yw-dashboard__canvas .markdown-section img {
+  max-width: 100%;
+  height: auto;
+}
+
+.yw-dashboard__canvas .markdown-section pre {
+  overflow-x: auto;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-sunken);
+}
+
+.yw-dashboard__canvas .markdown-section table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.yw-dashboard__canvas .markdown-section th,
+.yw-dashboard__canvas .markdown-section td {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+}
+
+/* docsify's own "> quote" callouts */
+.yw-dashboard__canvas .markdown-section blockquote {
+  margin: var(--yw-space-md-y) 0;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-left: 3px solid var(--yw-primary);
+  background: var(--yw-surface-sunken);
+}
+
+/* ---- docsify's own chrome, which the wiki already provides ----------------- */
+
+/* Its skip-to-content button, appended to <body> and therefore outside everything above.
+   The wiki skeleton already ships one (#yw-a11y-jump-content, .sr-only-focusable), so this
+   one is a second, visible copy of a control that is meant to be invisible until focused --
+   which is exactly how it looked: a stray button in the top-left corner of the page. */
+body > button.primary {
+  display: none;
+}
+
+/* the hamburger that collapses the table of contents: docsify draws it as three bare
+   <span>s and its shortcut (\\) still works, so the control is hidden rather than dressed */
+.yw-dashboard__canvas .sidebar-toggle {
+  display: none;
+}
+
+/* docsify's "back to top", another bare control its theme used to draw: a small round
+   button pinned to the bottom-right of the reading column, rather than the 16x6 sliver of
+   nothing it renders as unstyled */
+.yw-dashboard__canvas .back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: 50%;
+  background: var(--yw-surface-sunken);
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.yw-dashboard__canvas .back-to-top:hover {
+  background: color-mix(in srgb, var(--yw-primary) 12%, transparent);
+}
+
+/* docsify wraps every heading in a link to its own anchor: it is a heading, not a link */
+.yw-dashboard__canvas .markdown-section h1 > a,
+.yw-dashboard__canvas .markdown-section h2 > a,
+.yw-dashboard__canvas .markdown-section h3 > a,
+.yw-dashboard__canvas .markdown-section h4 > a,
+.yw-dashboard__canvas .markdown-section h5 > a,
+.yw-dashboard__canvas .markdown-section h6 > a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (max-width: 800px) {
+  .yw-dashboard__canvas main {
+    display: block;
+  }
+
+  .yw-dashboard__canvas .sidebar {
+    position: static;
+    max-height: none;
+    padding-left: 0;
+    border-left: none;
+    border-top: var(--yw-border-width) solid var(--yw-border);
+    margin-top: var(--yw-space-md-y);
+  }
+}

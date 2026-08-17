@@ -246,7 +246,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             }
         }
         if (!empty($this->arguments['maxchars'])) {
-            $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
+            $feedItem['description'] = (string)preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
             $descLen = strlen($feedItem['description']);
             // check if text longer than max chars specified
             if ($descLen > 0
@@ -261,19 +261,24 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             }
         }
 
-        $feedItem['datestamp'] = strtotime($item->get_date('j M Y, g:i a'));
-        switch ($this->arguments['formatdate']) {
+        // an item with no date gave `strtotime(null)` -> false -> `date(..., false)`, which PHP
+        // reads as timestamp 0: every dateless feed entry was stamped 01.01.1970. No date now
+        // means no date, which is what the `default` arm below already does (ticket 40).
+        $rawDate = $item->get_date('j M Y, g:i a');
+        $timestamp = is_string($rawDate) ? strtotime($rawDate) : false;
+        $feedItem['datestamp'] = $timestamp;
+        switch ($timestamp === false ? '' : $this->arguments['formatdate']) {
             case 'jm':
-                $feedItem['date'] = date('d.m', $feedItem['datestamp']);
+                $feedItem['date'] = date('d.m', (int)$timestamp);
                 break;
             case 'jma':
-                $feedItem['date'] = date('d.m.Y', $feedItem['datestamp']);
+                $feedItem['date'] = date('d.m.Y', (int)$timestamp);
                 break;
             case 'jmh':
-                $feedItem['date'] = date('d.m H:m', $feedItem['datestamp']);
+                $feedItem['date'] = date('d.m H:m', (int)$timestamp);
                 break;
             case 'jmah':
-                $feedItem['date'] = date('d.m.Y H:m', $feedItem['datestamp']);
+                $feedItem['date'] = date('d.m.Y H:m', (int)$timestamp);
                 break;
             default:
                 $feedItem['date'] = '';
@@ -472,8 +477,11 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
             $fp = fopen($destPath, 'wb');
             $ch = curl_init($sourceUrl);
+            if ($fp === false || $ch === false) {
+                return '';
+            }
             curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -483,7 +491,11 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             curl_exec($ch);
             $errors = curl_error($ch);
             if (!empty($errors)) {
-                var_dump($errors);
+                // `var_dump($errors)` -- debug output straight into the page, on every failed
+                // download of a feed's image. Closing the handles matters too: the early return
+                // leaked both (ticket 40).
+                curl_close($ch);
+                fclose($fp);
 
                 return '';
             }

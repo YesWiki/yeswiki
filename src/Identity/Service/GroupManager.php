@@ -64,8 +64,6 @@ class GroupManager
     /**
      * get direct members of group. Do not list member of child groups.
      *
-     * @param string group_name
-     *
      * @return string[]
      */
     public function getMembers(string $group_name): array

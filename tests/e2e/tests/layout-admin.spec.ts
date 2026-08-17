@@ -322,6 +322,54 @@ test('the three chrome pages that are still pages are linked, not replaced', asy
 })
 
 /**
+ * The pencil on the navbar covers nothing on the navbar.
+ *
+ * It is revealed by hovering the bar and it is 215px wide with its label, so where it landed
+ * decided whether an admin could use the bar at all: centred on it, it covered the account
+ * button and the viewer's scheme and language controls completely -- and reaching for either
+ * is exactly what made it appear on top of them. `elementFromPoint`, not a screenshot: what
+ * matters is which element would receive the click.
+ *
+ * Asserted for the other two pencils as well, because the same button in a different corner
+ * has the same reach -- and because the first placement that cleared the bar landed on the
+ * banner's pencil instead.
+ */
+test('the chrome pencils cover no control an admin needs', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?PagePrincipale')
+
+  // hovering the bar is what reveals it, and is also how you reach everything in it
+  await page.locator('#yw-topnav').hover()
+  await expect(page.locator('#yw-topnav .yw-chrome-edit')).toBeVisible()
+
+  const covered = await page.evaluate(() => {
+    const pencil = document.querySelector('#yw-topnav .yw-chrome-edit')
+    const hits = (selector: string) => {
+      const element = document.querySelector(selector)
+      if (!element) return null
+      const box = element.getBoundingClientRect()
+      const at = document.elementFromPoint(
+        box.left + box.width / 2,
+        box.top + box.height / 2,
+      )
+      return at && pencil?.contains(at) ? selector : null
+    }
+    return [
+      hits('.yw-topnav-tools'),
+      hits('.yw-topnav-fast-access .yw-avatar'),
+      hits('#yw-header .yw-chrome-editable > .yw-chrome-edit'),
+      hits('.yw-page-actions'),
+    ].filter(Boolean)
+  })
+
+  expect(covered, 'the navbar pencil is sitting on top of these').toEqual([])
+
+  // and it is still the thing you click when you click it
+  await page.locator('#yw-topnav .yw-chrome-edit').click()
+  await expect(page).toHaveURL(/admin\/layout/)
+})
+
+/**
  * Moving a menu entry moves its submenu with it.
  *
  * The rows are a flat list, and a move used to swap a row with the one next to it -- so

@@ -192,8 +192,6 @@ abstract class BazarField implements \JsonSerializable
         return [$this->propertyName => $this->getValue($entry) ?? $this->default];
 
         // We cannot : let's return nothing
-
-        return [];
     }
 
     // Format input values before save

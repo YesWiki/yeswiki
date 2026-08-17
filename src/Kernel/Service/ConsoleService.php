@@ -144,7 +144,7 @@ class ConsoleService
             $bufferedOutput
         );
 
-        return $output;
+        return (string)$output;
     }
 
     /**

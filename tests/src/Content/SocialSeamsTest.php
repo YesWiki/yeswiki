@@ -32,6 +32,19 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class SocialSeamsTest extends YesWikiTestCase
 {
+    private const COMMENT_PAGE = 'SocialSeamsCommentPage';
+
+    /**
+     * The fixture goes when the test does.
+     *
+     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
+     * page in somebody's index, for ever.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        self::getWiki()->services->get(PageManager::class)->deleteOrphaned(self::COMMENT_PAGE);
+    }
+
     public function testSocialContributesTheEntryFieldsContentNoLongerAnswers(): void
     {
         $contributor = self::getWiki()->services->get(ContributesSocialEntryFields::class);
@@ -69,7 +82,7 @@ class SocialSeamsTest extends YesWikiTestCase
     public function testTheAppendixRendersTheCommentBox(): void
     {
         $wiki = self::getWiki();
-        $tag = 'SocialSeamsCommentPage';
+        $tag = self::COMMENT_PAGE;
         $wiki->services->get(PageManager::class)->save($tag, [PageBody::CONTENT => 'a page'], '', true);
         $wiki->services->get(AclService::class)->save($tag, 'comment', '@admins');
 

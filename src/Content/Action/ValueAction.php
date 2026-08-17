@@ -89,7 +89,7 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         if (!empty($text) && $text != 'lien') {
             $fragment = $htmlPurifierService->cleanHTML(trim(array_shift($matches[1])));
 
-            return preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">' . htmlspecialchars(trim($text)) . '</a>', $fragment);
+            return (string)preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">' . htmlspecialchars(trim($text)) . '</a>', $fragment);
         }
 
         if (!empty($text) && $text == 'lien') {

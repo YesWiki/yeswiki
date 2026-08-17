@@ -144,17 +144,16 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     /**
      * check if get is scalar then return it or result of callback.
      *
-     * @param callable $callback
-     *
      * @return scalar
      */
-    protected function sanitizedGet(string $key, $callback)
+    protected function sanitizedGet(string $key, callable $callback)
     {
         $val = $this->getRequest()->query->get($key);
 
-        return (isset($val) && is_scalar($val))
-            ? $val
-            : (is_callable($callback) ? $callback() : null);
+        // `is_scalar($val)` and `is_callable($callback)` were both already guaranteed -- the
+        // query bag yields scalars or null, and the callback is declared `callable` now rather
+        // than tested for at every call (ticket 40)
+        return isset($val) ? $val : $callback();
     }
 
     public function run()

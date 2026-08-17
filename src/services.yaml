@@ -93,7 +93,6 @@ services:
       $providers: !tagged_iterator yeswiki.component_provider
       $container: '@service_container'
 
-
   YesWiki\Render\Service\:
     resource: 'Render/Service/*'
 

@@ -28,6 +28,20 @@ class ApiControllerContactTest extends YesWikiTestCase
     private const PRIVATE_PAGE_TAG = 'ApiControllerContactTestPrivatePage';
     private const PUBLIC_PAGE_TAG = 'ApiControllerContactTestPublicPage';
 
+    /**
+     * The fixtures go when the tests do.
+     *
+     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
+     * page in somebody's index, for ever.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        foreach ([self::PRIVATE_PAGE_TAG, self::PUBLIC_PAGE_TAG] as $tag) {
+            $pageManager->deleteOrphaned($tag);
+        }
+    }
+
     protected function tearDown(): void
     {
         // avoid leaking $GLOBALS['wiki'] into later tests (same convention as

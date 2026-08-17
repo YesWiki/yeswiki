@@ -69,19 +69,16 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
 
     public function run()
     {
+        // A `title` is mandatory, and the error return says so. Below it sat the superseded
+        // fallback -- auto-numbering an id from a `$GLOBALS['nbreactions']` counter -- which
+        // the return made unreachable and which nothing else in the wiki reads (ticket 40).
         if (empty($this->arguments['title'])) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('REACTION_TITLE_PARAM_NEEDED'),
             ]);
-            if (empty($GLOBALS['nbreactions'])) {
-                $GLOBALS['nbreactions'] = 0;
-            }
-            $GLOBALS['nbreactions'] = $GLOBALS['nbreactions'] + 1;
-            $idreaction = 'reaction' . $GLOBALS['nbreactions'];
-        } else {
-            $idreaction = \URLify::slug($this->arguments['title']);
         }
+        $idreaction = \URLify::slug($this->arguments['title']);
 
         $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         $username = empty($user['name']) ? '' : $user['name'];

@@ -153,7 +153,9 @@ class FileField extends BazarField
             $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
             $pathinfo = pathinfo($filePath);
-            $extension = strtolower($pathinfo['extension']);
+            // a name with no dot in it has no 'extension' key at all, and the check below
+            // already treats an empty extension as "not authorised" (ticket 40)
+            $extension = strtolower($pathinfo['extension'] ?? '');
             $extension = preg_replace('/_$/', '', $extension);
             if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
                 if (!file_exists($filePath)) {

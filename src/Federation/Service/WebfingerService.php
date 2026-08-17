@@ -91,6 +91,9 @@ class WebfingerService
         $webfinger = $this->getWebfingerObject($handle);
 
         $interactionUrl = $webfinger->getInteractionUrl();
+        if ($interactionUrl === null) {
+            throw new \Exception("the remote actor '$handle' publishes no subscribe template");
+        }
 
         return str_replace('{uri}', urlencode($actorToFollow), $interactionUrl);
     }

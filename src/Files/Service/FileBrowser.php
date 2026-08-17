@@ -162,7 +162,7 @@ class FileBrowser
         // the old Image field
         $patterns[] = $cachePath . '/vignette_' . $base;
         $patterns[] = $cachePath . '/image_' . $base;
-        // the old agenda/blog/material-card/news/photobox/trombinoscope templates
+        // the old agenda/blog/news/photobox/trombinoscope templates
         foreach ($threeOrFour as $width) {
             foreach ($threeOrFour as $height) {
                 $patterns[] = $cachePath . '/image_' . $width . '[x_]' . $height . '_' . $base;

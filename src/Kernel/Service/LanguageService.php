@@ -37,6 +37,17 @@ namespace YesWiki\Kernel\Service {
     {
         public const SUPPORTED_LANGUAGES = ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro'];
 
+        /**
+         * Where a reader's choice of language is kept.
+         *
+         * A cookie rather than the URL: `?lang=` only reaches the pages whose links YesWiki
+         * itself generated, so a reader who followed a link somebody wrote by hand fell back
+         * to the wiki's own language halfway through reading it. A year, because choosing
+         * which language you read a wiki in is not a decision anybody wants to make twice.
+         */
+        public const COOKIE = 'yw-lang';
+        private const COOKIE_LIFETIME = 31536000;
+
         private static $instance;
 
         public static function getInstance(): self
@@ -69,8 +80,12 @@ namespace YesWiki\Kernel\Service {
                 $this->loadTranslations(require_once $this->langDir() . '/yeswikijs_fr.php', true);
             }
 
-            $GLOBALS['available_languages'] = $this->detectAvailableLanguages();
             $wiki = $GLOBALS['wiki'] ?? '';
+            // what YesWiki is translated into HERE, and what this wiki chooses to offer of it:
+            // two different questions, and the language switcher and the installer ask the
+            // first while everything else asks the second
+            $GLOBALS['installed_languages'] = $this->installedLanguages();
+            $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
             $GLOBALS['prefered_language'] = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages']);
         }
 
@@ -93,12 +108,56 @@ namespace YesWiki\Kernel\Service {
         }
 
         /**
-         * Automatically detects the languages available in the lang dir,
+         * The languages this wiki offers its readers: its own, plus any it has turned on.
+         *
+         * `other_languages` is the choice, made at install time and on the configuration
+         * screen. **Its absence means the wiki offers the language it was installed in and no
+         * other** -- which is what a wiki that has never been asked the question is actually
+         * doing, and it is why a monolingual wiki shows no language switcher at all rather
+         * than seven options nobody chose to publish.
+         *
+         * A `default_language` naming no installed language falls back to offering all of
+         * them. That is not a feature: `auto` is no longer offered by either screen and a
+         * migration rewrote the wikis that had it. It is what a configuration nobody can read
+         * should do -- offer everything rather than nothing.
+         *
+         * @param \YesWiki\YesWikiRuntime|object|string $wiki      the runtime, an object exposing ->config, or '' before boot
+         * @param string[]                              $installed what is available to offer
+         *
+         * @return string[]
+         */
+        public function offeredLanguages($wiki, array $installed): array
+        {
+            // Pre-boot, and the installer: everything YesWiki speaks is on the table. The
+            // installer is where the choice is MADE -- restricting it there would stop its own
+            // language select from working, since switching it asks for a `?lang=` the wiki
+            // does not offer yet. Which is why this reads the runtime rather than any object
+            // carrying a config: the installer passes the latter, deliberately.
+            if (!($wiki instanceof \YesWiki\YesWikiRuntime) || !is_array($wiki->config)) {
+                return $installed;
+            }
+
+            $offered = [];
+            $default = $wiki->config['default_language'] ?? '';
+            if (is_string($default) && in_array($default, $installed, true)) {
+                $offered[] = $default;
+            }
+            foreach ((array)($wiki->config['other_languages'] ?? []) as $language) {
+                if (is_string($language) && in_array($language, $installed, true) && !in_array($language, $offered, true)) {
+                    $offered[] = $language;
+                }
+            }
+
+            return $offered === [] ? $installed : $offered;
+        }
+
+        /**
+         * Automatically detects the languages installed in the lang dir,
          * filtered by officially supported languages.
          *
-         * @return string[] available languages
+         * @return string[] installed languages
          */
-        public function detectAvailableLanguages(): array
+        public function installedLanguages(): array
         {
             $availableLanguages = [];
             if ($d = @opendir($this->langDir())) {
@@ -119,10 +178,25 @@ namespace YesWiki\Kernel\Service {
         /**
          * Determine which language out of an available set the user prefers most.
          *
-         * Priority: lang= GET parameter, then the (posted) installer configuration, then
-         * the page's metadata, then the configured default_language, then content
-         * negotiation on the Accept-Language header (based on
-         * http://php.net/manual/en/function.http-negotiate-language.php#example-4353).
+         * In order, and the order is the whole design:
+         *
+         *  1. **`?lang=`** -- somebody just asked for it. This is what the language switcher
+         *     links to, and it is also what writes the cookie below.
+         *  2. **The cookie** -- somebody asked for it before. A choice made once holds for
+         *     every page afterwards, including pages reached by a link written by hand,
+         *     which is what carrying the language in the URL could never do.
+         *  3. The installer's posted configuration, which exists for one screen.
+         *  4. **The page's own `lang` metadata** -- a page declaring what it is written in,
+         *     which loses to a reader who has said what they read in.
+         *  5. **The browser** (`Accept-Language`), negotiated over what this wiki OFFERS: a
+         *     visitor arriving for the first time gets their own language when the wiki has
+         *     it. It beats `default_language`, which is the answer for everyone else.
+         *  6. **`default_language`**, which is a real language and not `auto`: a wiki says
+         *     what it is written in, and "let the browser decide" is what step 5 already is.
+         *
+         * The last two swapped places here: the configured default used to win, so a wiki
+         * offering English to an English reader still greeted them in its own language and
+         * the offer meant nothing until they found the switcher.
          *
          * @param \YesWiki\YesWikiRuntime|object|string $wiki               the runtime, an object exposing ->config, or '' before boot
          * @param array                                 $availableLanguages language-tag-strings (must be lowercase) that are available
@@ -133,6 +207,9 @@ namespace YesWiki\Kernel\Service {
         {
             // sanitize parameters
             $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $availableLanguages)) ? $_GET['lang'] : '';
+            $cookieLang = (isset($_COOKIE[self::COOKIE]) && in_array($_COOKIE[self::COOKIE], $availableLanguages))
+                ? (string)$_COOKIE[self::COOKIE]
+                : '';
 
             $pageMetadataLang = '';
             if ($page != '' && $wiki instanceof \YesWiki\YesWikiRuntime) {
@@ -149,6 +226,11 @@ namespace YesWiki\Kernel\Service {
                 return $getLang;
             }
 
+            // second: the choice they made last time
+            if (!empty($cookieLang)) {
+                return $cookieLang;
+            }
+
             $postConfigLang = '';
             if (isset($_POST['config'])) {
                 // just for installation
@@ -162,7 +244,6 @@ namespace YesWiki\Kernel\Service {
                 }
             }
 
-            // second priority
             if (!empty($postConfigLang)) {
                 return $postConfigLang;
             }
@@ -174,17 +255,13 @@ namespace YesWiki\Kernel\Service {
 
             $httpAcceptLang = ($httpAcceptLanguage !== 'auto') ? $httpAcceptLanguage : ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
 
-            // third priority
+            // the page says what it is written in, and a reader who has said nothing follows it
             if (!empty($pageMetadataLang)) {
                 return $pageMetadataLang;
             }
 
-            // fourth priority if 'auto' or other word not representing an available lang, allow usage of http_accept_language
-            if (!empty($configLang)) {
-                return $configLang;
-            }
-
-            // fifth priority 'httpAcceptLang'
+            // then the browser, over what this wiki offers -- and `default_language` after it,
+            // at the bottom of this function, for the visitor whose language is not on offer
 
             // standard  for HTTP_ACCEPT_LANGUAGE is defined under
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
@@ -202,8 +279,11 @@ namespace YesWiki\Kernel\Service {
                 PREG_SET_ORDER
             );
 
-            // default language (in case of no hits) is french, like the devs speak
-            $bestLang = 'fr';
+            // What the wiki says it is written in, for a visitor whose browser asks for
+            // something this wiki does not have. `'fr'` behind it is the last resort of a
+            // configuration that names no language at all -- YesWiki's historical answer,
+            // kept because something has to be returned and the devs speak French.
+            $bestLang = $configLang ?: 'fr';
             $bestQval = 0;
 
             foreach ($hits as $arr) {
@@ -243,8 +323,16 @@ namespace YesWiki\Kernel\Service {
          */
         public function loadPreferredLanguage($wiki, ?string $page = ''): void
         {
+            // Recomputed here, not only in initialize(): that one runs at file-load time,
+            // before there is a configuration to read the wiki's choice from, so it can only
+            // answer "everything installed". This is the first point at which the wiki can
+            // say which of them it actually offers.
+            $GLOBALS['installed_languages'] ??= $this->installedLanguages();
+            $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
+
             $lang = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
             $GLOBALS['prefered_language'] = $lang;
+            $this->rememberChoice($lang, $GLOBALS['available_languages']);
 
             if ($lang != 'fr' && file_exists($this->langDir() . '/yeswiki_' . $lang . '.php')) {
                 // this will overwrite the values of $GLOBALS['translations'] in the selected language
@@ -255,6 +343,42 @@ namespace YesWiki\Kernel\Service {
             }
 
             $this->projectJavascriptKeys();
+        }
+
+        /**
+         * Keep an explicit `?lang=` choice, so the next page needs no parameter.
+         *
+         * Only when it was asked for in the URL: that is the language switcher's link, and it
+         * is the one moment a reader has said which language they want. A cookie written from
+         * anything else -- the browser's own header, the wiki's default -- would freeze the
+         * first answer and stop both from ever being consulted again.
+         *
+         * @param string[] $available the languages this wiki offers
+         */
+        private function rememberChoice(string $lang, array $available): void
+        {
+            $asked = isset($_GET['lang']) ? (string)$_GET['lang'] : '';
+            if ($asked === '' || $asked !== $lang || !in_array($lang, $available, true)) {
+                return;
+            }
+            if (($_COOKIE[self::COOKIE] ?? '') === $lang) {
+                return; // already what it says
+            }
+            // CLI has no headers to send, and a page that has started printing cannot grow one
+            if (\PHP_SAPI === 'cli' || headers_sent()) {
+                return;
+            }
+
+            $_COOKIE[self::COOKIE] = $lang;
+            setcookie(self::COOKIE, $lang, [
+                'expires' => time() + self::COOKIE_LIFETIME,
+                'path' => '/',
+                'samesite' => 'Lax',
+                // readable by nothing but the wiki: no script needs it, and it is sent with
+                // every request anyway
+                'httponly' => true,
+                'secure' => !empty($_SERVER['HTTPS']),
+            ]);
         }
 
         /**

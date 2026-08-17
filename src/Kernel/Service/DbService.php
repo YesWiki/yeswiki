@@ -94,8 +94,6 @@ class DbService
                 throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             }
             exit(_t('DB_CONNECT_FAIL'));
-
-            exit(_t('DB_CONNECT_FAIL'));
         }
     }
 

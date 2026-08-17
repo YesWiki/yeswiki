@@ -1,9 +1,13 @@
 // themes/yeswiki — the yw-native default theme (ticket 16).
+//
+// There is no `_root` partial any more: the derived tier it declared (29 variables --
+// --navbar-bg-color, --title-h1-color, --link-color and the rest) was retired with the
+// nine base ones in ADR-0020. A theme's rules consume Design tokens directly now, which
+// is what lets a Colour scheme reach them.
 // SCSS sources; compiled + minified into ../styles/*.css by `yarn build-theme`
 // (see package.json). The compiled CSS is committed so production servers
 // need no node — same convention as the vendored assets.
 
-@use 'root';
 @use 'typography';
 @use 'layout';
 @use 'topnav';

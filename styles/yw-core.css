@@ -1,4 +1,26 @@
 /* ============================================================
+   yw-core — every page
+
+   Core's own styling: the design tokens, the layout zones, the yw-* design system and
+   the legacy vocabulary that shares its rules. CoreAssets declares it on every render, so
+   nothing in here may be specific to a screen -- what a page only sometimes needs belongs
+   to one of the five conditional bundles beside it.
+
+   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
+   file: merging everything would have made ADR-0014's conditional declaration decorative and
+   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
+   it came from; add to the section a rule belongs to rather than to the end.
+
+   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
+   (declared by a section that carries an animation) and `styles/install.css` (the installer
+   renders before any of this exists).
+   ============================================================ */
+
+/* ============================================================
+   from styles/yw-core.css
+   ============================================================ */
+
+/* ============================================================
    yw-core.css — all of core's own CSS in one file.
 
    Part 1: base application styles (:root tokens, layout zones,
@@ -11,50 +33,470 @@
    part 1 rules come first, so ties resolve exactly as before.
    ============================================================ */
 
-/* Default color, in case someone use these variable outside of margot template */
+/* ============================================================
+   DESIGN TOKENS (ADR-0020, simplified by ADR-0021)
+
+   Every value core's rules consume resolves through one of these `--yw-*` custom
+   properties. What is declared here is core's *default* Preset; a Preset file
+   (themes/<theme>/presets/*.css, custom/css-presets/*.css) restates the authored set and
+   is linked after this file, so it wins.
+
+   Four rules govern the set, and all four are load-bearing:
+
+   1. **Rules consume roles, never raw values.** `--yw-surface`, `--yw-text-muted`,
+      `--yw-border` say what a colour is *for*; that is what makes a Colour scheme a swap
+      rather than a rewrite. The measures (`--yw-space-*`, `--yw-radius-*`) are the one
+      palette tier that rules address directly, because a step on a scale already is its
+      own role.
+   2. **AUTHORED and DERIVED are different tiers.** A Preset declares the authored tier and
+      nothing else; PresetService::TOKENS is that list, and an incomplete Preset is an error
+      (Personnalisation names the missing ones) rather than a file core fills the gaps in.
+      The derived tier below is computed from it and a Preset may not declare it -- see the
+      block header there for why each one is derived rather than asked for.
+   3. **A measure is a multiple, not a length.** Spacing is three steps expressed in `rem`,
+      and `rem` here IS the wiki's base type size (`html { font-size: --yw-font-size-base }`),
+      so `--yw-space-md: 0.75rem` reads as "three quarters of the base size" and a preset
+      that asks for bigger type gets proportionally bigger gaps for free. Radius, border
+      width and shadow strength are unitless multipliers for the same reason. Nothing in a
+      Preset is a hard-coded pixel except the base size itself.
+   4. **A Layout setting is not a token.** `--yw-navbar-height` looks identical and is
+      governed by the opposite rule: an admin screen writes it inline on <html>, which
+      beats every stylesheet. A Preset may neither declare it nor be validated against it,
+      because such a declaration could never take effect. If an admin screen writes it,
+      it is not a token.
+
+   The Colour scheme (light/dark) is the viewer's, the Preset is the page's, and the two
+   are orthogonal: this block is the light set, the two below are the same dark set
+   applied by OS preference and by explicit choice. Anything that is not a colour --
+   spacing, corner radius, type -- is declared once, here, and never restated in a
+   scheme block.
+   ============================================================ */
+
+/* ---- AUTHORED: the tier a Preset declares ---------------------------------- */
 :root {
-  --primary-color: #240046;
-  --secondary-color-1: #ff006e;
-  --secondary-color-2: #ff5400;
-  --neutral-color: #3e4c59;
-  --neutral-soft-color: #4a4e69;
-  --neutral-light-color: #f5f7fa;
-  --main-text-fontsize: 15px;
-  --main-text-fontfamily:
+  /* -- brand ------------------------------------------------------------------ */
+  --yw-primary: #0c5d6a;
+  --yw-secondary: #d0442d;
+  --yw-tertiary: #d78958;
+
+  /* The two inks, and the only colours here that do NOT flip with the scheme: "the ink for a
+     light ground" means the same thing at midnight as at noon, because a light ground is
+     light in both. They answer two questions that used to have a token each -- what goes on
+     a brand fill (`--yw-on-primary`) and what goes on a ground the preset did not choose at
+     all (`--yw-text-on-dark`): an uploaded photo, an entry's own colour, a section
+     background a page author typed. */
+  --yw-ink-on-light: #14171a;
+  --yw-ink-on-dark: #ffffff;
+
+  /* -- surfaces --------------------------------------------------------------- */
+  --yw-surface: #ffffff;
+  --yw-surface-raised: #ffffff;
+  --yw-surface-sunken: #f2f2f2;
+
+  /* -- text ------------------------------------------------------------------- */
+  --yw-text: #4e5056;
+  /* text and icons ON a filled surface -- a coloured button, a tooltip, a dark strip.
+     It flips with the scheme because what it sits on flips with it. */
+  --yw-text-inverse: #ffffff;
+
+  /* -- lines ------------------------------------------------------------------ */
+  --yw-border: #d8d9dc;
+
+  /* -- status ------------------------------------------------------------------
+     One colour each. The panel behind a message and the ink on it are DERIVED from it
+     below, against the page's own surface and text -- so a status colour is chosen once
+     and reads correctly in both schemes. */
+  --yw-success: #1f8a7d;
+  --yw-danger: #c0392b;
+  --yw-warning: #d99100;
+  --yw-info: #1989a0;
+
+  /* -- chrome ------------------------------------------------------------------
+     The top bar and the footer. These were a theme's business until ADR-0021: the theme
+     hard-coded the bar to `--yw-surface-raised` and shipped a second stylesheet
+     (`colored-navbar.css`) whose whole content was painting it `--yw-primary` instead.
+     That is a Preset's decision, so it is a token and the second stylesheet is gone. */
+  --yw-navbar-bg: #ffffff;
+  --yw-navbar-text: #4e5056;
+  --yw-footer-bg: #ffffff;
+  --yw-footer-text: #4e5056;
+
+  /* -- headings ----------------------------------------------------------------
+     A colour AND a size for each of the six levels. Two colours and one scale over a ramp
+     core wrote could say "bigger titles" but not "my h2 sits too close to my h1", and could
+     not give a level a colour of its own at all.
+
+     The sizes are `rem`, like every other measure: multiples of the base type size, and not
+     `em`, which compounds -- that is what used to make the same heading come out one size in
+     a page and another inside a panel. The defaults are the ramp as it was. */
+  --yw-heading-1: #0c5d6a;
+  --yw-heading-2: #0c5d6a;
+  --yw-heading-3: #0c5d6a;
+  --yw-heading-4: #d0442d;
+  --yw-heading-5: #d0442d;
+  --yw-heading-6: #d0442d;
+
+  --yw-on-primary: #14171a;
+  --yw-on-secondary: #14171a;
+  --yw-on-tertiary: #14171a;
+  --yw-on-success: #14171a;
+  --yw-on-danger: #14171a;
+  --yw-on-warning: #14171a;
+  --yw-on-info: #14171a;
+  --yw-heading-1-size: 2rem;
+  --yw-heading-2-size: 1.5rem;
+  --yw-heading-3-size: 1.25rem;
+  --yw-heading-4-size: 1.1rem;
+  --yw-heading-5-size: 1rem;
+  --yw-heading-6-size: 0.9rem;
+
+  /* -- type (scheme-independent) ---------------------------------------------- */
+  --yw-font-body:
     Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
     sans-serif;
-  --main-title-fontfamily:
+  --yw-font-heading:
     Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
     sans-serif;
-  --success-color: #26a69a;
-  --danger-color: #ff006e;
-  --warning-color: #ffc300;
-  /* How tall the top bar is. A setting since ticket 30 (/admin/layout): the squelette writes
-     this same property inline on <html>, which beats this declaration and every other one.
-     Declared here in core rather than in a theme, because core stylesheets derive from it. */
+  --yw-font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
+    'DejaVu Sans Mono', monospace;
+  /* the one hard-coded length in the whole set, and the unit everything else is a
+     multiple of: `html` computes its font-size from it, which is what makes `rem`
+     mean "multiple of the wiki's base size" three lines down */
+  --yw-font-size-base: 15px;
+
+  /* -- spacing (scheme-independent) -------------------------------------------
+     THREE steps, not eleven. The eleven-step ramp ADR-0020 introduced asked a webmaster
+     to type eleven lengths in a rail before they could see any of them, and the middle
+     six differed by amounts nobody could name. Three is what a rule actually chooses
+     between: inside a control, inside a component, between components.
+
+       sm -- gaps within one control: an icon from its label, a chip's padding
+       md -- gaps within one component: a panel's padding, one form field to the next
+       lg -- gaps between components: section to section, the page's own margins
+
+     ...and each on TWO AXES. A step is not one number, because text is wider than it is
+     tall: the blank that reads as comfortable beside a word is not the blank that reads
+     as comfortable above a line of them, and every design system that ships one number
+     per step ends up with buttons that look squashed or paragraphs that look loose.
+     Every rule in core is axis-explicit -- there were 890 uses and all 890 were a margin,
+     a padding or a gap, so there is no third case that needed a neutral value and none is
+     offered.
+
+     In `rem`, so they are multiples of the wiki's base size rather than fixed pixels. */
+  --yw-space-sm-y: 0.25rem;
+  --yw-space-sm-x: 0.35rem;
+  --yw-space-md-y: 0.75rem;
+  --yw-space-md-x: 1rem;
+  --yw-space-lg-y: 2rem;
+  --yw-space-lg-x: 1.5rem;
+
+  /* -- shape (scheme-independent) ---------------------------------------------
+     Multipliers rather than lengths, because "how round" and "how heavy" are one decision
+     each and a rail can offer them as one slider each. 0 is a legitimate setting for all
+     three: square corners, borderless, flat. */
+  --yw-radius-scale: 1;
+  --yw-border-width: 1px;
+  --yw-shadow-strength: 1;
+
+  /* the base opacity a shadow has before `--yw-shadow-strength` scales it. Not a token:
+     it is the scheme's, not the Preset's -- a shadow on a dark ground has to be deeper to
+     be seen at all, which is a fact about the ground rather than about anybody's brand. */
+  --yw-shadow-alpha: 15%;
+
+  /* ---- NOT tokens ---------------------------------------------------------- */
+
+  /* How wide a docked rail is, in one place: the actions builder, the link editor and the
+     file picker all dock in the same slot and have to agree. On `:root` rather than on
+     `.yw-designer__sidebar`, where it used to be, because a screen whose rail is open by
+     default (Personnalisation) has to push its own canvas clear of it -- and the canvas is
+     the rail's SIBLING, so it could not read a value declared on the rail. */
+  --yw-rail-width: 380px;
+
+  /* How tall the top bar is. A Layout setting since ticket 30 (/admin/layout): the
+     squelette writes this same property inline on <html>, which beats this declaration
+     and every other one. Declared here in core rather than in a theme, because core
+     stylesheets derive from it -- and it is declared here rather than in a Preset
+     because a Preset's copy could never take effect. */
   --yw-navbar-height: 48px;
 
   /* How far down a sticky editor toolbar parks: clear of the sticky top bar. Shared,
      because a form can carry both an ACeditor and a Vditor and the two have to agree.
 
-     DERIVED, not a second setting. This was `46px` -- a hard-coded guess at the bar's height,
-     which was right only while the bar had one fixed height. Once the height became a slider,
-     every sticky thing on the page (the dashboard rail, the editor toolbars, the docs nav)
-     kept parking at 46px and the taller bar covered them. The fallback is for a theme that
-     declares no bar height of its own. */
-  --sticky-toolbar-top: var(--yw-navbar-height, 48px);
+     DERIVED from the setting above, not a second setting and not a token. This was
+     `46px` -- a hard-coded guess at the bar's height, which was right only while the bar
+     had one fixed height. Once the height became a slider, every sticky thing on the page
+     (the dashboard rail, the editor toolbars, the docs nav) kept parking at 46px and the
+     taller bar covered them. The fallback is for a theme that declares no bar height. */
+  --yw-sticky-toolbar-top: var(--yw-navbar-height, 48px);
+}
+
+/* ---- DERIVED: computed from the authored tier, never declared by a Preset ----
+
+   ADR-0020 rejected derivation outright -- "presets author every value explicitly" -- and
+   ADR-0021 reverses that for the values below and only those. The test each one passes is
+   the same: **is there a preset anybody would plausibly write where this is not a function
+   of the value above it?** A hover colour is always the primary nudged toward the text; a
+   muted text is always the text faded into the surface; the panel behind a success message
+   is always that green washed into the page. Asking for all three doubled the rail without
+   ever changing the answer, and a webmaster who typed one of them by hand got a wiki whose
+   dark mode was subtly wrong, because they had matched it to the light surface.
+
+   Custom properties substitute lazily, which is what makes this work: every one of these
+   is written once here and re-resolves against whatever the scheme blocks below (or a
+   Preset) last said. That is why the dark set has to restate only what it authors.
+
+   `color-mix(in oklab, ...)` throughout: oklab mixes perceptually, so "70% of the way to
+   the text colour" darkens a yellow and a blue by the same apparent amount. Baseline in
+   every browser this release supports. */
+:root {
+  /* a hover is the brand nudged toward the ink -- which in a dark scheme means nudged
+     toward white, and therefore lighter, with no second value to keep in step */
+  --yw-primary-hover: color-mix(
+    in oklab,
+    var(--yw-primary) 82%,
+    var(--yw-text)
+  );
+
+  --yw-surface-hover: color-mix(
+    in oklab,
+    var(--yw-surface) 92%,
+    var(--yw-text)
+  );
+  --yw-overlay: rgb(0 0 0 / 50%);
+
+  --yw-text-muted: color-mix(in oklab, var(--yw-text) 72%, var(--yw-surface));
+
+  --yw-border-strong: color-mix(in oklab, var(--yw-border) 55%, var(--yw-text));
+  --yw-border-subtle: color-mix(
+    in oklab,
+    var(--yw-border) 45%,
+    var(--yw-surface)
+  );
+
+  /* the panel a status message sits in, and the ink on it. Against the PAGE's surface and
+     text, so the same four authored colours give a pale wash on white and a deep one on
+     near-black without anybody authoring the second set. */
+  --yw-success-surface: color-mix(
+    in oklab,
+    var(--yw-success) 12%,
+    var(--yw-surface)
+  );
+  --yw-success-text: color-mix(in oklab, var(--yw-success) 70%, var(--yw-text));
+  --yw-danger-surface: color-mix(
+    in oklab,
+    var(--yw-danger) 12%,
+    var(--yw-surface)
+  );
+  --yw-danger-text: color-mix(in oklab, var(--yw-danger) 70%, var(--yw-text));
+  --yw-warning-surface: color-mix(
+    in oklab,
+    var(--yw-warning) 12%,
+    var(--yw-surface)
+  );
+  --yw-warning-text: color-mix(in oklab, var(--yw-warning) 70%, var(--yw-text));
+  --yw-info-surface: color-mix(in oklab, var(--yw-info) 12%, var(--yw-surface));
+  --yw-info-text: color-mix(in oklab, var(--yw-info) 70%, var(--yw-text));
+
+  /* the bar's own hairline and its hovered/active link, both from the two colours the bar
+     was actually given -- so a bar painted with the brand gets a border that reads on the
+     brand, rather than one matched to a page background it is no longer sitting on */
+  --yw-navbar-border: color-mix(
+    in oklab,
+    var(--yw-navbar-bg) 88%,
+    var(--yw-navbar-text)
+  );
+  --yw-navbar-active: color-mix(
+    in oklab,
+    var(--yw-navbar-text) 78%,
+    var(--yw-navbar-bg)
+  );
+
+  /* THE INK ON EACH FILL. Resolved rather than derived, and it is the one computed value in
+     the whole set that a stylesheet cannot keep up to date by itself: choosing between two
+     authored colours needs the luminance of a third, which CSS will not give you as a number.
+     `oklch(from …)` and `contrast-color()` both work in the browsers this release supports,
+     and both only ever answer black or white -- not what somebody who set an off-white ink
+     asked for. So PresetService::resolve() picks, save() writes the answer into the preset,
+     and the rail recomputes it live while you drag.
+
+     What these are stated here for is core's own colours, which are the ones a wiki wears
+     with no preset on. A Preset restates all seven.
+
+     This is also what stopped white landing on a yellow warning button: the status fills used
+     `--yw-text-inverse`, which flips with the SCHEME rather than with the colour underneath,
+     so in light mode it was white on `#d99100`. */
+  --yw-on-primary: #ffffff;
+  --yw-on-secondary: #ffffff;
+  --yw-on-tertiary: #14171a;
+  --yw-on-success: #ffffff;
+  --yw-on-danger: #ffffff;
+  --yw-on-warning: #14171a;
+  --yw-on-info: #ffffff;
+
+  /* a focus ring is the brand: two colours to keep legible against every surface was one
+     more than anybody kept in step, and a ring in some other hue reads as an error state */
+  --yw-focus-ring: var(--yw-primary);
+
+  /* Every shadow in the wiki -- 60 declarations, including the inset ones, the glows and
+     the text-shadows -- resolves its colour through these two, so one slider makes the
+     whole wiki flat (0), ordinary (1) or dramatic (2+). The blur radii stay where each
+     rule put them: opacity is what reads as "how much shadow", and scaling 60 hand-tuned
+     geometries by one number would only break the ones that are doing a job. */
+  --yw-shadow-color: rgb(
+    0 0 0 / calc(var(--yw-shadow-alpha) * var(--yw-shadow-strength))
+  );
+  --yw-shadow-color-strong: rgb(
+    0 0 0 / calc(var(--yw-shadow-alpha) * 2.2 * var(--yw-shadow-strength))
+  );
+
+  /* `3px`, `4px`, `5px` and `6px` were 102 declarations of the same intention; now they
+     are one slider. A circle (`50%`) is a shape rather than a step on this scale, and
+     `--yw-radius-full` is a pill rather than a step, so neither scales. */
+  --yw-radius-sm: calc(0.25rem * var(--yw-radius-scale));
+  --yw-radius-md: calc(0.5rem * var(--yw-radius-scale));
+  --yw-radius-lg: calc(1rem * var(--yw-radius-scale));
+  --yw-radius-full: 999px;
+}
+
+/* The dark set, twice: once for a viewer whose system asks for it and who has not said
+   otherwise, once for a viewer who has asked for it explicitly. The two blocks carry the
+   same values -- the toggle has to be able to win in both directions, so neither can be
+   expressed in terms of the other.
+
+   Only the AUTHORED colours are restated. Everything in the derived block above
+   re-resolves through these by itself, which is most of what ADR-0021 bought: the dark
+   scheme used to restate 31 colours and now restates 17.
+
+   `:not([data-theme='light'])` is what makes the toggle's third state work: forced light
+   on a dark desktop is an attribute that switches the media query off, not a second copy
+   of the light set. yw-scheme.js sets the attribute before first paint. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --yw-primary: #4bb8c9;
+    --yw-secondary: #e8836f;
+    --yw-tertiary: #e0a06f;
+
+    --yw-surface: #14171a;
+    --yw-surface-raised: #1d2125;
+    --yw-surface-sunken: #101315;
+
+    --yw-text: #e3e5e8;
+    --yw-text-inverse: #14171a;
+
+    --yw-border: #383e44;
+
+    --yw-success: #3fbfa8;
+    --yw-danger: #e2705f;
+    --yw-warning: #e0a53c;
+    --yw-info: #4bb8c9;
+
+    --yw-navbar-bg: #1d2125;
+    --yw-navbar-text: #e3e5e8;
+    --yw-footer-bg: #14171a;
+    --yw-footer-text: #e3e5e8;
+
+    --yw-heading-1: #4bb8c9;
+    --yw-heading-2: #4bb8c9;
+    --yw-heading-3: #4bb8c9;
+    --yw-heading-4: #e8836f;
+    --yw-heading-5: #e8836f;
+    --yw-heading-6: #e8836f;
+
+    --yw-on-primary: #14171a;
+    --yw-on-secondary: #14171a;
+    --yw-on-tertiary: #14171a;
+    --yw-on-success: #14171a;
+    --yw-on-danger: #14171a;
+    --yw-on-warning: #14171a;
+    --yw-on-info: #14171a;
+
+    --yw-on-primary: #14171a;
+    --yw-on-secondary: #14171a;
+    --yw-on-tertiary: #14171a;
+    --yw-on-success: #14171a;
+    --yw-on-danger: #14171a;
+    --yw-on-warning: #14171a;
+    --yw-on-info: #14171a;
+
+    --yw-overlay: rgb(0 0 0 / 70%);
+    --yw-shadow-alpha: 45%;
+  }
+}
+
+:root[data-theme='dark'] {
+  --yw-primary: #4bb8c9;
+  --yw-secondary: #e8836f;
+  --yw-tertiary: #e0a06f;
+
+  --yw-surface: #14171a;
+  --yw-surface-raised: #1d2125;
+  --yw-surface-sunken: #101315;
+
+  --yw-text: #e3e5e8;
+  --yw-text-inverse: #14171a;
+
+  --yw-border: #383e44;
+
+  --yw-success: #3fbfa8;
+  --yw-danger: #e2705f;
+  --yw-warning: #e0a53c;
+  --yw-info: #4bb8c9;
+
+  --yw-navbar-bg: #1d2125;
+  --yw-navbar-text: #e3e5e8;
+  --yw-footer-bg: #14171a;
+  --yw-footer-text: #e3e5e8;
+
+  --yw-heading-1: #4bb8c9;
+  --yw-heading-2: #4bb8c9;
+  --yw-heading-3: #4bb8c9;
+  --yw-heading-4: #e8836f;
+  --yw-heading-5: #e8836f;
+  --yw-heading-6: #e8836f;
+
+  --yw-on-primary: #14171a;
+  --yw-on-secondary: #14171a;
+  --yw-on-tertiary: #14171a;
+  --yw-on-success: #14171a;
+  --yw-on-danger: #14171a;
+  --yw-on-warning: #14171a;
+  --yw-on-info: #14171a;
+
+  --yw-overlay: rgb(0 0 0 / 70%);
+  --yw-shadow-alpha: 45%;
+}
+
+/* The scheme is the page's ground: without this, a dark set repaints every box the wiki
+   draws and leaves the canvas behind them white. `color-scheme` is what tells the browser
+   to draw its OWN furniture -- scrollbars, form controls, the space past the end of the
+   document -- to match, which no stylesheet of ours can reach. */
+html {
+  background-color: var(--yw-surface);
+  color: var(--yw-text);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    color-scheme: dark;
+  }
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 /* once the top bar has taken itself away, the toolbar takes its place. This is why the two
    are not one variable: "how tall the bar is" and "how far down to park" differ exactly here,
    when the bar has scrolled off and there is nothing to clear. */
 body.nav-up {
-  --sticky-toolbar-top: 0px;
+  --yw-sticky-toolbar-top: 0px;
 }
 
 html {
   font-size: var(
-    --main-text-fontsize
+    --yw-font-size-base
   ) !important; /* the base the whole UI computes rem units from */
 
   /* Where a fragment link lands. The top bar is `position: sticky`, so it covers whatever the
@@ -64,7 +506,7 @@ html {
      contents, and any `#anchor` a page author writes by hand.
 
      From the bar's own height, so it follows the Layout screen's slider (ticket 30) rather
-     than being a number that is right at exactly one setting. Not `--sticky-toolbar-top`:
+     than being a number that is right at exactly one setting. Not `--yw-sticky-toolbar-top`:
      that one drops to 0 when the bar hides itself on scroll, and the bar is back in place by
      the time you have landed.
 
@@ -76,34 +518,52 @@ html {
   scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 1em);
 }
 
+/* Body text shrinks with the window. A RULE on `html`, not a smaller
+   `--yw-font-size-base` in a media query: the theme used to do the latter, and a media
+   query adds no specificity, so a Preset's own `:root` declaration -- later in the cascade
+   -- simply won. The shrink had therefore stopped happening on every wiki wearing a Preset.
+   A ratio rather than a fixed 15px/13px, so a Preset that asks for large type still gets
+   large type on a phone, only less of it. */
+@media (max-width: 1200px) {
+  html {
+    font-size: calc(var(--yw-font-size-base) * 0.88) !important;
+  }
+}
+
+@media (max-width: 800px) {
+  html {
+    font-size: calc(var(--yw-font-size-base) * 0.76) !important;
+  }
+}
+
 /* Mise en forme */
 .indent {
-  margin-left: 40px;
+  margin-left: var(--yw-space-lg-x);
 }
 
 .additions {
-  color: var(--success-color);
+  color: var(--yw-success-text);
 }
 
 .deletions {
-  color: var(--danger-color);
+  color: var(--yw-danger-text);
 }
 
 .add,
 .add * {
-  color: white !important;
-  background-color: var(--success-color) !important;
+  color: var(--yw-on-success) !important;
+  background-color: var(--yw-success) !important;
 }
 
 .del,
 .del * {
-  color: white !important;
-  background-color: var(--danger-color) !important;
+  color: var(--yw-on-danger) !important;
+  background-color: var(--yw-danger) !important;
   text-decoration: line-through !important;
 }
 
 .trail_button {
-  color: var(--secondary-color-1);
+  color: var(--yw-secondary);
 }
 
 /* Adds edit icon after link tag */
@@ -112,7 +572,7 @@ a[data-missing-tag]::after {
   display: inline-block;
   width: 0.8em;
   height: 0.8em;
-  margin-left: 0.4em;
+  margin-left: var(--yw-space-sm-x);
   background-color: currentColor;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' /%3E%3Cpath d='M13.5 6.5l4 4' /%3E%3C/svg%3E")
     no-repeat center / contain;
@@ -127,40 +587,36 @@ span.missingpage,
 
 /* previsualisation page */
 .page_preview {
-  background-color: #ffffbf;
-  padding-bottom: 30px;
-  border-bottom: 5px solid grey;
-  margin-bottom: 30px;
+  background-color: var(--yw-warning-surface);
+  padding-bottom: var(--yw-space-lg-y);
+  border-bottom: 5px solid var(--yw-border-strong);
+  margin-bottom: var(--yw-space-lg-y);
 }
 
 .page > section:first-child {
-  margin-top: -20px;
-}
-
-#form_graphical_options .preset-settings-container {
-  display: none;
+  margin-top: calc(-1 * var(--yw-space-lg-y));
 }
 
 /* Divers mise en forme */
 .code {
-  margin: 3px 0;
+  margin: var(--yw-space-sm-y) 0;
   display: flex;
 }
 
 .searchbox {
-  background: #fffff8;
+  background: var(--yw-surface-raised);
   border: 0;
-  border-bottom: 1px solid #cca;
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
   padding: 0;
   margin: 0;
 }
 
 .debug {
   font-size: 0.9em;
-  color: var(--neutral-color);
-  background: #fff;
-  border: 1px dotted var(--neutral-color);
-  padding: 1em;
+  color: var(--yw-text);
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) dotted var(--yw-border);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   margin: 0 auto;
 }
 
@@ -171,8 +627,8 @@ span.missingpage,
   max-height: 20em;
   overflow-y: auto;
   margin: 0;
-  padding-left: 2.5em;
-  font-family: monospace;
+  padding-left: var(--yw-space-lg-x);
+  font-family: var(--yw-font-mono);
   font-size: 0.85em;
   line-height: 1.5;
 }
@@ -192,15 +648,15 @@ span.missingpage,
 }
 
 .footer {
-  margin: 1rem 0;
+  margin: var(--yw-space-md-y) 0;
   padding: 0;
   font-size: 0.85em;
   text-align: center;
 }
 
 .footer a {
-  color: #333;
-  padding: 2px 5px;
+  color: var(--yw-text);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
   text-decoration: none;
   display: inline-block;
   margin: 0;
@@ -225,8 +681,8 @@ span.missingpage,
    setting (ticket 30), a taller bar simply covered the cluster: it is *meant* to sit under
    the bar, so there was nothing to see and no clue why.
 
-   From `--yw-navbar-height` and NOT from `--sticky-toolbar-top`, which is the other variable
-   and looks interchangeable here. It is not: `--sticky-toolbar-top` drops to 0 on
+   From `--yw-navbar-height` and NOT from `--yw-sticky-toolbar-top`, which is the other
+   variable and looks interchangeable here. It is not: `--yw-sticky-toolbar-top` drops to 0 on
    `body.nav-up`, when the bar has scrolled away, and a *fixed* box reading it would jump
    upward into the bar's own strip every time the bar hid itself. Sticky boxes want the
    parking offset; this one wants the bar's height. */
@@ -260,7 +716,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-page-actions {
 }
 
 body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
-  top: calc(var(--sticky-toolbar-top) + 64px + 2.25rem);
+  top: calc(var(--yw-sticky-toolbar-top) + 64px + 2.25rem);
   /* bottom-anchored instead of a viewport-height cap, so the rail ends on screen wherever it
      starts and scrolls inside itself rather than off the page */
   max-height: none;
@@ -273,11 +729,11 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
    being looked at. */
 .yw-page-actions .yw-btn,
 .yw-chrome-edit {
-  background: var(--main-container-bg-color, #fff);
-  border-color: var(--neutral-soft-color, #e5e5e5);
-  color: var(--main-text-color, #333);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
-  margin-top: 0.25em;
+  background: var(--yw-surface-raised);
+  border-color: var(--yw-border);
+  color: var(--yw-text);
+  box-shadow: 0 1px 3px var(--yw-shadow-color);
+  margin-top: var(--yw-space-sm-y);
   white-space: nowrap;
 }
 
@@ -285,22 +741,22 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 .yw-page-actions .yw-btn:focus,
 .yw-chrome-edit:hover,
 .yw-chrome-edit:focus {
-  background: var(--neutral-light-color, #f5f5f5);
-  color: var(--main-text-color, #333);
+  background: var(--yw-surface-hover);
+  color: var(--yw-text);
   filter: none;
 }
 
 /* Deleting says so in its colour, not in a block of it -- the same shape the form
    designer's destructive buttons already use. */
 .yw-page-actions .yw-btn--danger {
-  color: var(--danger-color);
+  color: var(--yw-danger);
 }
 
 .yw-page-actions .yw-btn--danger:hover,
 .yw-page-actions .yw-btn--danger:focus {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: #fff;
+  background: var(--yw-danger);
+  border-color: var(--yw-danger);
+  color: var(--yw-on-danger);
 }
 
 /* No gap between the button and what it reveals: a gap is a dead zone the pointer falls
@@ -310,8 +766,8 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.25rem;
-  padding-top: 0.35rem;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding-top: var(--yw-space-sm-y);
 }
 
 .yw-page-actions__more .yw-btn {
@@ -354,14 +810,14 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
+    gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+    margin-bottom: var(--yw-space-md-y);
   }
 
   .yw-page-actions__more {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
     padding-top: 0;
   }
 }
@@ -378,7 +834,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 .yw-page-info__danger,
 .yw-page-info__danger:hover,
 .yw-page-info__danger:focus {
-  color: var(--danger-color);
+  color: var(--yw-danger);
 }
 
 /* The facts, at the bottom: small, muted, left-aligned prose rather than a row of
@@ -391,12 +847,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 0.25rem 1.5rem;
-  margin-top: 2.5rem;
+  gap: var(--yw-space-sm-y) var(--yw-space-lg-x);
+  margin-top: var(--yw-space-lg-y);
   font-size: 0.8rem;
   line-height: 1.6;
   text-align: left;
-  color: var(--neutral-color, #666);
+  color: var(--yw-text);
 }
 
 .yw-page-info__line {
@@ -408,12 +864,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 .yw-page-info a {
   color: inherit;
   padding: 0;
-  margin-right: 0.75rem;
+  margin-right: var(--yw-space-md-x);
 }
 
 .yw-page-info a:hover,
 .yw-page-info a:focus {
-  color: var(--link-color, inherit);
+  color: var(--yw-primary);
   text-decoration: underline;
 }
 
@@ -424,7 +880,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 }
 
 .yw-page-info__author {
-  margin-right: 0.75rem;
+  margin-right: var(--yw-space-md-x);
 }
 
 .yw-page-info__type {
@@ -434,7 +890,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 .yw-page-info__actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   margin-left: auto;
 }
 
@@ -444,7 +900,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 
 /* Ajustements mode édition */
 #ACEditor .form-actions {
-  margin: 15px 0;
+  margin: var(--yw-space-md-y) 0;
 }
 
 .img-responsive img {
@@ -459,27 +915,27 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 }
 
 #bgCarousel {
-  margin-bottom: 20px;
+  margin-bottom: var(--yw-space-lg-y);
 }
 
 #bgCarousel img.bgimg,
 #bgCarousel div.mozaicimg {
   float: left;
-  margin: 2px;
-  border: 1px solid #ccc;
+  margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border);
   width: 100px;
   height: 75px;
-  border-radius: 4px;
+  border-radius: var(--yw-radius-sm);
 }
 
 #bgCarousel .choosen {
-  box-shadow: 0 0 2px 3px #ffff21;
+  box-shadow: 0 0 2px 3px var(--yw-warning);
 }
 
 #bgCarousel .item {
   display: block;
   height: 162px;
-  margin: 0 53px;
+  margin: 0 var(--yw-space-lg-x);
 }
 
 /* lanceur d'accordéon */
@@ -508,7 +964,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 
 /* barres de progression */
 .progressbar {
-  margin: -5px 5px 0 0;
+  margin: calc(-1 * var(--yw-space-sm-y)) var(--yw-space-sm-x) 0 0;
 }
 
 /* page wiki en format boite modale */
@@ -522,8 +978,8 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 #yw-topnav > .container {
   display: flex;
   flex-direction: row;
-  row-gap: 1em;
-  column-gap: 1em;
+  row-gap: var(--yw-space-md-y);
+  column-gap: var(--yw-space-md-x);
   align-items: center;
 }
 
@@ -536,13 +992,13 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 
 #yw-topnav > .container > .navbar-header {
   width: max-content;
-  margin-right: 1em;
-  margin-left: -1em;
+  margin-right: var(--yw-space-md-x);
+  margin-left: calc(-1 * var(--yw-space-md-x));
 }
 
 #yw-topnav > .container > .topnavpage {
   flex: 1;
-  margin-right: 1em;
+  margin-right: var(--yw-space-md-x);
 }
 
 #yw-topnav > .container > .yw-topnav-fast-access {
@@ -553,10 +1009,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   align-items: center;
   flex-wrap: wrap;
   justify-content: end;
-  /* flush with the container's edge, which is one gutter out -- the same -1em the header
-     on the other side uses. -2em was a gutter too far: the block ended 15px past the
-     window and gave every page in the wiki a horizontal scrollbar (tests/e2e/layout). */
-  margin-right: -1em;
 }
 
 #yw-topnav
@@ -571,6 +1023,185 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
    other two pencils -- it is not one of the bar's own flat controls */
 #yw-topnav > .container > .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit) {
   border: none;
+}
+
+/* ---- the viewer's own controls, at the very end of the bar (ADR-0020) --------
+   The Colour scheme and the language belong to whoever is READING, and everything else in
+   the bar belongs to whoever configured it. So they sit apart, behind a divider: what is to
+   its left is this wiki's, what is to its right is YesWiki's. An admin cannot take them off
+   the bar, because a page whose colours or language a visitor cannot change is a page some
+   visitors cannot read. */
+#yw-topnav > .container > .yw-topnav-tools {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding-left: var(--yw-space-md-x);
+  margin-left: var(--yw-space-sm-x);
+  border-left: var(--yw-border-width) solid var(--yw-border-subtle);
+}
+
+/* Flush with the container's edge, one gutter out -- the same -1em the header on the other
+   side uses, moved here from `.yw-topnav-fast-access` when these became the last thing in
+   the row (two blocks each pulling themselves a gutter right would put the second one past
+   the window).
+
+   The wide bar only: below 768px the container wraps and this line is in flow rather than
+   overlaying, so the same pull would end past the window -- a horizontal scrollbar on every
+   page, which is what `.yw-topnav-fast-access` has been caught by twice (tests/e2e/layout). */
+@media (min-width: 768px) {
+  #yw-topnav > .container > .yw-topnav-tools {
+    margin-right: calc(-1 * var(--yw-space-md-x));
+  }
+}
+
+/* Narrow: there is no pointer to reveal anything with, so the line is simply part of the bar
+   -- the same fallback the floating action cluster uses. It is pushed to the end of whatever
+   row it lands on and wraps to one of its own only if it has to, which is the difference
+   between a wiki in one language (three small marks, which fit beside the account button) and
+   a wiki in seven (a row of its own). The container's `flex-wrap` decides, not a width here:
+   a cluster that always claimed the full width would cost every phone a band of navbar on
+   every page for controls most readers touch once. */
+@media (max-width: 767px) {
+  #yw-topnav > .container > .yw-topnav-tools {
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+}
+
+/* What is on, without asking: the scheme's own glyph and the language's code. Quieter than
+   the bar's buttons -- it is a readout rather than a control, and the controls are one
+   movement away. */
+.yw-topnav-tools__current {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  opacity: 0.65;
+  cursor: default;
+}
+
+.yw-topnav-tools:hover .yw-topnav-tools__current,
+.yw-topnav-tools:focus-within .yw-topnav-tools__current {
+  opacity: 1;
+}
+
+/* Narrow: the readout goes. It says what the marks beside it already show, and here they are
+   all on screen at once. After the rule it overrides rather than before it -- same
+   specificity, so the later one is the one that wins. */
+@media (max-width: 767px) {
+  .yw-topnav-tools__current {
+    display: none;
+  }
+}
+
+/* The options, on ONE line. Below, where there is no pointer to reveal anything with, that
+   line is simply part of the bar. */
+.yw-topnav-tools__panel {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  white-space: nowrap;
+}
+
+.yw-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-switcher__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9em;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  border-radius: var(--yw-radius-full);
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.yw-switcher__option:hover,
+.yw-switcher__option:focus-visible {
+  opacity: 1;
+  background: var(--yw-surface-hover);
+}
+
+/* the one in force is filled rather than merely darker: this is a row of small marks, and
+   "which of these am I in" has to be answerable at a glance */
+.yw-switcher__option[aria-pressed='true'],
+.yw-switcher__option--on {
+  opacity: 1;
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
+}
+
+.yw-switcher__code {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Every option is named for a screen reader and drawn as a mark for everyone else: a line of
+   six words in the navbar is a second menu, which is exactly what this is not. The `title`
+   carries the same name for a pointer. */
+.yw-switcher__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Where there IS a pointer, the line is not in the bar at all until it is reached for: six
+   controls sitting there permanently would be the loudest thing on a navbar whose own links
+   are the point. It overlays rather than expanding in flow -- growing the row would shove the
+   account button sideways on every hover -- which is what the panel's own ground, border and
+   shadow are for. The same treatment, and the same reasoning, as the chrome pencils.
+
+   Hidden by opacity rather than by `display`, so the options stay in the tab order: reaching
+   one with a keyboard is what `:focus-within` then reveals the line for. */
+@media (hover: hover) and (min-width: 768px) {
+  .yw-topnav-tools__panel {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    /* As wide as the line it holds. Without it the box is shrink-to-fit against the space
+       left of `right: 100%` -- which is none, since that edge IS the cluster's left edge --
+       and ten marks come out stacked three deep behind the bar. */
+    width: max-content;
+    padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+    background: var(--yw-surface-raised);
+    border: var(--yw-border-width) solid var(--yw-border);
+    border-radius: var(--yw-radius-full);
+    box-shadow: 0 2px 8px var(--yw-shadow-color);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .yw-topnav-tools:hover > .yw-topnav-tools__panel,
+  .yw-topnav-tools:focus-within > .yw-topnav-tools__panel {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yw-topnav-tools__panel {
+    transition: none;
+  }
 }
 
 /* menu du haut fixe */
@@ -589,7 +1220,7 @@ input[type='url'] {
   background-repeat: no-repeat;
   background-position: 0.5em center;
   background-size: 1.15em 1.15em;
-  padding-left: 2.2em;
+  padding-left: var(--yw-space-lg-x);
 }
 
 /* The two ways to fill a file or image field, on one line: the rail that finds or uploads
@@ -599,7 +1230,7 @@ input[type='url'] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 .file-or-url .yw-input {
@@ -648,7 +1279,7 @@ input[type='url'] {
   border-radius: 50%;
   overflow: hidden;
   vertical-align: middle;
-  background: var(--yw-avatar-bg, var(--neutral-soft-color, #e5e5e5));
+  background: var(--yw-avatar-bg, var(--yw-surface-sunken));
   color: var(--yw-avatar-fg, inherit);
   /* the initials fill the disc without touching it, whatever the disc's size */
   font-size: calc(var(--yw-avatar-size) * 0.42);
@@ -684,8 +1315,8 @@ input[type='url'] {
 .yw-account-face {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-lg-y);
 }
 
 .yw-account-face .yw-avatar {
@@ -711,7 +1342,7 @@ input[type='url'] {
 
 .dropdown-menu .login-form {
   margin: 0;
-  padding: 18px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 .form-search {
@@ -723,11 +1354,11 @@ input[type='url'] {
 }
 
 .bazar-entry button.panel-heading {
-  border-radius: 4px;
+  border-radius: var(--yw-radius-sm);
 }
 
 .accordion-group .panel-title {
-  color: var(--primary-color);
+  color: var(--yw-primary);
   position: relative;
 }
 
@@ -751,13 +1382,13 @@ input[type='url'] {
 }
 
 .panel-heading > i {
-  margin-right: 8px;
+  margin-right: var(--yw-space-md-x);
 }
 
 /* on /iframe page, we use white background, can be overwritten in the theme */
 .yeswiki-page-widget {
   padding: 0;
-  background: #fff;
+  background: var(--yw-surface-raised);
   background-image: none;
   min-height: auto !important;
 }
@@ -818,14 +1449,14 @@ body {
    Tooltip section below), so it needs no <img> asset and no JS. */
 .tooltip_aide {
   display: inline-block;
-  margin-right: 0.25em;
-  color: var(--neutral-soft-color);
+  margin-right: var(--yw-space-sm-x);
+  color: var(--yw-text-muted);
   cursor: help;
 }
 
 .symbole_obligatoire::after {
   content: '*';
-  margin-right: 0.25em;
+  margin-right: var(--yw-space-sm-x);
 }
 
 .acl-advanced {
@@ -833,7 +1464,7 @@ body {
 }
 
 .acl-single-container {
-  margin-bottom: 10px;
+  margin-bottom: var(--yw-space-md-y);
   display: flex;
   align-items: center;
 }
@@ -869,7 +1500,7 @@ body {
 }
 
 .switch label input[type='checkbox']:checked + .lever {
-  background-color: #84c7c1;
+  background-color: var(--yw-success);
 }
 
 .switch label input[type='checkbox']:checked + .lever::before,
@@ -878,7 +1509,7 @@ body {
 }
 
 .switch label input[type='checkbox']:checked + .lever::after {
-  background-color: #26a69a;
+  background-color: var(--yw-success);
 }
 
 .switch label .lever {
@@ -887,12 +1518,12 @@ body {
   position: relative;
   width: 36px;
   height: 14px;
-  background-color: rgb(0 0 0 / 38%);
-  border-radius: 15px;
-  margin-right: 10px;
+  background-color: var(--yw-overlay);
+  border-radius: var(--yw-radius-lg);
+  margin-right: var(--yw-space-md-x);
   transition: background 0.3s ease;
   vertical-align: middle;
-  margin: 0 16px;
+  margin: 0 var(--yw-space-md-x);
 }
 
 .switch label .lever::before,
@@ -925,15 +1556,15 @@ body {
 }
 
 .switch label .lever::before {
-  background-color: rgb(38 166 154 / 15%);
+  background-color: var(--yw-success-surface);
 }
 
 .switch label .lever::after {
-  background-color: #f1f1f1;
+  background-color: var(--yw-surface-sunken);
   box-shadow:
-    0 3px 1px -2px rgb(0 0 0 / 20%),
-    0 2px 2px 0 rgb(0 0 0 / 14%),
-    0 1px 5px 0 rgb(0 0 0 / 12%);
+    0 3px 1px -2px var(--yw-shadow-color),
+    0 2px 2px 0 var(--yw-shadow-color),
+    0 1px 5px 0 var(--yw-shadow-color);
 }
 
 .yw-input[type='checkbox'] {
@@ -945,18 +1576,18 @@ body {
 }
 
 .login-form-dropdown {
-  padding: 5px 15px 10px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x) var(--yw-space-md-y);
   width: 300px;
 }
 
 .switch input[type='checkbox'][disabled] + .lever {
   cursor: default;
-  background-color: rgb(0 0 0 / 12%);
+  background-color: var(--yw-surface-sunken);
 }
 
 .switch label input[type='checkbox'][disabled] + .lever::after,
 .switch label input[type='checkbox'][disabled]:checked + .lever::after {
-  background-color: #949494;
+  background-color: var(--yw-border-strong);
 }
 
 #search {
@@ -965,7 +1596,7 @@ body {
   right: 0;
   width: 0;
   height: 0;
-  background-color: rgb(0 0 0 / 70%);
+  background-color: var(--yw-overlay);
   transition: all 0.3s ease-in-out;
   transform: translate(0, -100%) scale(0, 0);
   opacity: 0;
@@ -985,14 +1616,14 @@ body {
   position: relative;
   top: 50%;
   width: 100%;
-  color: rgb(255 255 255);
-  background: rgb(0 0 0 / 0%);
+  color: var(--yw-surface-raised);
+  background: transparent;
   font-weight: 300;
   text-align: center;
   border: 0;
   margin: 0 auto;
-  margin-top: -51px;
-  padding: 0 1rem;
+  margin-top: calc(-1 * var(--yw-space-lg-y));
+  padding: 0 var(--yw-space-md-x);
   outline: none;
   box-shadow: none;
 }
@@ -1009,7 +1640,7 @@ body {
   top: 15px;
   right: 15px;
   opacity: 1;
-  padding: 0 15px;
+  padding: 0 var(--yw-space-md-x);
   font-size: 30px;
   font-weight: bold;
 }
@@ -1028,7 +1659,7 @@ body {
 
 .toast-message .alert {
   display: inline-block;
-  box-shadow: 0 0 9px 1px rgb(0 0 0 / 42%);
+  box-shadow: 0 0 9px 1px var(--yw-shadow-color-strong);
 }
 
 .yeswiki-iframe-body > .container {
@@ -1043,8 +1674,8 @@ body {
 
 /* VUE SELECT */
 .v-select {
-  border: 2px solid var(--primary-color);
-  border-radius: 3px !important;
+  border: 2px solid var(--yw-primary);
+  border-radius: var(--yw-radius-sm) !important;
 }
 
 .v-select .vs__dropdown-toggle {
@@ -1062,8 +1693,8 @@ body {
   height: auto !important;
   position: absolute;
   inset: 0;
-  background-color: #ececec;
-  border-radius: 0.5rem;
+  background-color: var(--yw-surface-sunken);
+  border-radius: var(--yw-radius-md);
   opacity: 0.3;
 }
 
@@ -1074,51 +1705,51 @@ body {
 section.pattern-border {
   border-width: 4px;
   border-style: solid;
-  padding: 2rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-rounded {
-  border-radius: 0.5rem;
-  padding: 2rem;
+  border-radius: var(--yw-radius-md);
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-circle {
   border-radius: 50%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-blob1 {
   border-radius: 50% 50% 59% 41% / 35% 50% 50% 65%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-blob2 {
   border-radius: 33% 67% 50% 50% / 25% 19% 81% 75%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-blob3 {
   border-radius: 33% 67% 50% 50% / 65% 73% 27% 35%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-blob4 {
   border-radius: 23% 77% 27% 73% / 41% 31% 69% 59%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.shape-blob5 {
   border-radius: 75% 25% 76% 24% / 50% 50% 50% 50%;
-  padding: 4rem;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
 section.full-width:not(.with-bg-pattern) {
-  padding: 2rem 0;
+  padding: var(--yw-space-lg-y) 0;
 }
 
 section > div {
   width: 100%;
-  padding: 1em;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 /* The background PICTURE of a section, on a layer of its own between the colour and the
    words.
@@ -1161,11 +1792,11 @@ section.with-bg-image > * {
 }
 
 .yeswiki-page-comments {
-  margin-top: 2em;
+  margin-top: var(--yw-space-lg-y);
 }
 
 .yw-comment {
-  margin: 1em 0 3em;
+  margin: var(--yw-space-md-y) 0 var(--yw-space-lg-y);
 }
 
 .yw-comment .comment-info {
@@ -1179,11 +1810,11 @@ section.with-bg-image > * {
 .yw-comment .user-pic {
   width: 32px;
   height: 32px;
-  margin: 0 1em 0 0;
+  margin: 0 var(--yw-space-md-x) 0 0;
 }
 
 .yw-comment .comment-date {
-  color: var(--neutral-color);
+  color: var(--yw-text);
 }
 
 .yw-comment .comment-html {
@@ -1195,7 +1826,7 @@ section.with-bg-image > * {
 }
 
 .comment-reponses {
-  margin-left: 3em;
+  margin-left: var(--yw-space-lg-x);
 }
 
 .api-container code {
@@ -1203,17 +1834,22 @@ section.with-bg-image > * {
 }
 
 .comment-reponses .yw-comment {
-  margin: 1em 0;
+  margin: var(--yw-space-md-y) 0;
 }
 
-/* === trick to manage lists'translation === */
+/* === trick to manage lists'translation ===
+   A `lang` attribute inside a page means "this bit is the X version of it", so everything
+   that is not the language being read is hidden. It is about CONTENT, and the language
+   switcher is not content: its options are marked with the language they *lead to*, which
+   this rule read as "hide all of them but the one you are already in" -- a switcher with one
+   option, and the one you cannot use. */
 
-html[lang='ca'] [lang]:not([lang='ca']),
-html[lang='en'] [lang]:not([lang='en']),
-html[lang='es'] [lang]:not([lang='es']),
-html[lang='fr'] [lang]:not([lang='fr']),
-html[lang='nl'] [lang]:not([lang='nl']),
-html[lang='pt'] [lang]:not([lang='pt']) {
+html[lang='ca'] [lang]:not([lang='ca']):not(.yw-switcher__option),
+html[lang='en'] [lang]:not([lang='en']):not(.yw-switcher__option),
+html[lang='es'] [lang]:not([lang='es']):not(.yw-switcher__option),
+html[lang='fr'] [lang]:not([lang='fr']):not(.yw-switcher__option),
+html[lang='nl'] [lang]:not([lang='nl']):not(.yw-switcher__option),
+html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
   display: none;
 }
 
@@ -1233,7 +1869,7 @@ html[lang='pt'] [lang]:not([lang='pt']) {
 
 /* reactions */
 .reactions-container {
-  margin: 2em 0;
+  margin: var(--yw-space-lg-y) 0;
 }
 
 .reactions-flex {
@@ -1249,7 +1885,7 @@ html[lang='pt'] [lang]:not([lang='pt']) {
 
 .mini-react {
   font-weight: bold;
-  color: var(--primary-color);
+  color: var(--yw-primary);
 }
 
 .mini-react > img {
@@ -1265,21 +1901,21 @@ html[lang='pt'] [lang]:not([lang='pt']) {
 .reaction-content {
   width: 9em;
   text-align: center;
-  margin: 0 1em 1em 0;
+  margin: 0 var(--yw-space-md-x) var(--yw-space-md-y) 0;
   padding: 0;
   font-size: 0.9em;
 }
 
 .reaction-title {
-  color: var(--neutral-color);
+  color: var(--yw-text);
   text-transform: uppercase;
   font-size: 12px;
-  margin-top: 1em;
+  margin-top: var(--yw-space-md-y);
   word-wrap: anywhere;
 }
 
 .reaction-numbers {
-  color: var(--neutral-color);
+  color: var(--yw-text);
   font-size: 1.1em;
   font-weight: bold;
 }
@@ -1290,16 +1926,16 @@ html[lang='pt'] [lang]:not([lang='pt']) {
   flex-direction: column;
   place-content: center space-between;
   height: 100%;
-  border: 1px solid rgb(0 0 0 / 20%);
-  border-radius: 0.5em;
-  padding: 1em 0.5em;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   transition: all 200ms ease-in;
   box-shadow: none;
 }
 
 .link-reaction:hover {
-  border: 1px solid rgb(0 0 0 / 50%);
-  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
+  border: var(--yw-border-width) solid var(--yw-border-strong);
+  box-shadow: 0 0 3px var(--yw-shadow-color-strong);
   text-decoration: none;
 }
 
@@ -1315,12 +1951,12 @@ html[lang='pt'] [lang]:not([lang='pt']) {
 }
 
 .user-reaction {
-  border: 3px solid var(--primary-color);
+  border: 3px solid var(--yw-primary);
 }
 
 .user-reaction:hover {
-  border: 3px solid rgb(0 0 0 / 50%);
-  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
+  border: 3px solid var(--yw-border-strong);
+  box-shadow: 0 0 3px var(--yw-shadow-color-strong);
   text-decoration: none;
 }
 
@@ -1353,7 +1989,7 @@ td.users-table-break-word {
 }
 
 .yeswiki-tab .yeswiki-tab-btnnav {
-  margin-top: 0.6rem;
+  margin-top: var(--yw-space-md-y);
 }
 
 /* hide login text on navbar, but show it in dropdown menu */
@@ -1375,9 +2011,10 @@ td.users-table-break-word {
    yw-* design system (ADR-0004)
    ============================================================ */
 /* ---- Buttons ------------------------------------------------ */
-.yw-btn {
+.yw-btn,
+.btn {
   display: inline-block;
-  padding: 6px 12px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
@@ -1385,55 +2022,74 @@ td.users-table-break-word {
   white-space: nowrap;
   vertical-align: middle;
   cursor: pointer;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--neutral-color);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-raised);
+  color: var(--yw-text);
   text-decoration: none;
 }
-.yw-btn:hover {
+.yw-btn:hover,
+.btn:hover {
   filter: brightness(0.95);
 }
-.yw-btn:disabled {
+.yw-btn:disabled,
+.yw-btn.disabled,
+.btn:disabled,
+.btn.disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.yw-btn--sm {
-  padding: 3px 8px;
+.yw-btn--sm,
+.btn-xs,
+.btn-mini,
+.btn-sm {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 12px;
 }
 /* box-sizing, because a <button> gets it from the browser's form-control defaults and an
    <a> does not: a block link came out 26px (padding + border) wider than the block button
    below it, which is what made a stack of buttons look ragged. */
-.yw-btn--block {
+.yw-btn--block,
+.btn-block {
   display: block;
   width: 100%;
   box-sizing: border-box;
 }
-.yw-btn--primary {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #fff;
+.yw-btn--primary,
+.btn-primary {
+  background: var(--yw-primary);
+  border-color: var(--yw-primary);
+  color: var(--yw-on-primary);
 }
-.yw-btn--danger {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: #fff;
+.yw-btn--primary:hover,
+.btn-primary:hover {
+  color: var(--yw-primary);
+  background-color: var(--yw-surface-sunken);
 }
-.yw-btn--warning {
-  background: var(--warning-color);
-  border-color: var(--warning-color);
-  color: #fff;
+.yw-btn--danger,
+.btn-danger,
+.btn-error {
+  background: var(--yw-danger);
+  border-color: var(--yw-danger);
+  color: var(--yw-on-danger);
 }
-.yw-btn--info {
-  background: var(--secondary-color-2, var(--primary-color));
-  border-color: var(--secondary-color-2, var(--primary-color));
-  color: #fff;
+.yw-btn--warning,
+.btn-warning {
+  background: var(--yw-warning);
+  border-color: var(--yw-warning);
+  color: var(--yw-on-warning);
 }
-.yw-btn--success {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  color: #fff;
+.yw-btn--info,
+.btn-info {
+  background: var(--yw-tertiary);
+  border-color: var(--yw-tertiary);
+  color: var(--yw-on-tertiary);
+}
+.yw-btn--success,
+.btn-success {
+  background: var(--yw-success);
+  border-color: var(--yw-success);
+  color: var(--yw-on-success);
 }
 
 /* ---- Search box ------------------------------------------------
@@ -1452,17 +2108,17 @@ td.users-table-break-word {
   width: 100%;
   max-width: 42rem;
   /* centred: this is the primary control on a search page, not a form row */
-  margin: 0 auto 1rem;
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 999px;
+  margin: 0 auto var(--yw-space-md-y);
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-full);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 .yw-searchbox:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+  border-color: var(--yw-primary);
+  box-shadow: 0 0 0 3px var(--yw-shadow-color);
 }
 /* the icon sits INSIDE the field: absolutely positioned and click-through, so
    the whole width stays a text target */
@@ -1472,7 +2128,7 @@ td.users-table-break-word {
   display: flex;
   align-items: center;
   pointer-events: none;
-  color: var(--neutral-soft-color);
+  color: var(--yw-text-muted);
 }
 .yw-searchbox__icon .yw-icon {
   width: 1.25rem;
@@ -1486,13 +2142,14 @@ td.users-table-break-word {
      wrong for the one control a search page is about */
   max-width: none;
   margin: 0;
-  padding: 0.75rem 1rem 0.75rem 3rem;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
+    var(--yw-space-lg-x);
   font-size: 1.05rem;
   line-height: 1.4;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   background: transparent;
   border: 0;
-  border-radius: 999px 0 0 999px;
+  border-radius: var(--yw-radius-full) 0 0 var(--yw-radius-full);
 }
 .yw-searchbox__input:focus {
   outline: none;
@@ -1504,16 +2161,16 @@ td.users-table-break-word {
 .yw-searchbox__button {
   position: relative;
   flex: 0 0 auto;
-  margin: 0.3rem;
-  padding: 0.5rem 1.25rem;
+  margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-md-y) var(--yw-space-lg-x);
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.4;
-  color: #fff;
+  color: var(--yw-on-primary);
   white-space: nowrap;
-  background: var(--primary-color);
+  background: var(--yw-primary);
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--yw-radius-full);
   cursor: pointer;
 }
 .yw-searchbox__button:hover {
@@ -1530,7 +2187,7 @@ td.users-table-break-word {
     display: none;
   }
   .yw-searchbox__button {
-    padding: 0.5rem 0.8rem;
+    padding: var(--yw-space-md-y) var(--yw-space-md-x);
   }
 }
 
@@ -1543,7 +2200,8 @@ td.users-table-break-word {
   margin: 0;
 }
 .yw-searchbox--inline .yw-searchbox__input {
-  padding: 0.45rem 0.75rem 0.45rem 2.5rem;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
+    var(--yw-space-lg-x);
   font-size: 0.95rem;
 }
 .yw-searchbox--inline .yw-searchbox__icon {
@@ -1554,8 +2212,8 @@ td.users-table-break-word {
   height: 1rem;
 }
 .yw-searchbox--inline .yw-searchbox__button {
-  margin: 0.2rem;
-  padding: 0.35rem 0.9rem;
+  margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 0.85rem;
 }
 
@@ -1563,12 +2221,12 @@ td.users-table-break-word {
 .yw-searchbox-aside {
   display: flex;
   justify-content: center;
-  margin: 0 auto 1rem;
+  margin: 0 auto var(--yw-space-md-y);
 }
 .yw-searchbox-aside .yw-input {
   max-width: 24rem;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
+  border-radius: var(--yw-radius-full);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 /* ---- Result display switcher and layouts -----------------------
@@ -1583,10 +2241,10 @@ td.users-table-break-word {
 .yw-search-form {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.75rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: center;
   max-width: 46rem;
-  margin: 0 auto 0.5rem;
+  margin: 0 auto var(--yw-space-md-y);
 }
 .yw-search-form .yw-searchbox {
   flex: 1 1 auto;
@@ -1608,8 +2266,8 @@ td.users-table-break-word {
   display: inline-flex;
   padding: 0;
   margin: 0;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 999px;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-full);
 }
 .yw-display-switch input {
   position: absolute;
@@ -1624,10 +2282,10 @@ td.users-table-break-word {
 .yw-display-switch__option {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.7rem;
-  color: var(--neutral-color);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  color: var(--yw-text);
   cursor: pointer;
-  border-radius: 999px;
+  border-radius: var(--yw-radius-full);
 }
 .yw-display-switch__option .yw-icon {
   width: 1.05rem;
@@ -1637,11 +2295,11 @@ td.users-table-break-word {
   filter: brightness(0.95);
 }
 .yw-display-switch input:checked + .yw-display-switch__option {
-  color: #fff;
-  background: var(--primary-color);
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
 }
 .yw-display-switch input:focus-visible + .yw-display-switch__option {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--yw-focus-ring);
   outline-offset: 2px;
 }
 
@@ -1651,16 +2309,16 @@ td.users-table-break-word {
    bazar entry list, the syndication list, the pages accordion and search.
    <details> does the work, so all that is left here is the affordance. */
 .yw-accordion__item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
 }
 .yw-accordion__item:last-child {
   border-bottom: 0;
 }
 .yw-accordion__summary {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: baseline;
-  padding: 0.75rem 0;
+  padding: var(--yw-space-md-y) 0;
   font-weight: 600;
   cursor: pointer;
   /* the default triangle is replaced by the chevron below, which can be animated */
@@ -1691,14 +2349,14 @@ summary.yw-accordion__summary {
   color: inherit;
 }
 .yw-accordion__body {
-  padding: 0 0 1rem 1.25rem;
+  padding: 0 0 var(--yw-space-md-y) var(--yw-space-lg-x);
 }
 /* the summary is the control, so it takes the focus ring rather than the whole panel */
 .yw-accordion__item:focus-within {
   outline: none;
 }
 .yw-accordion__summary:focus-visible {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--yw-focus-ring);
   outline-offset: -2px;
 }
 
@@ -1708,18 +2366,18 @@ summary.yw-accordion__summary {
    card outline, which an entry card gets from its image. */
 .yw-search-results--cards {
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 1rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 .yw-search-results--cards .bazar-card {
-  padding: 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
 }
 .yw-search-results--cards .bazar-card:hover {
-  border-color: var(--primary-color);
+  border-color: var(--yw-primary);
 }
 .yw-search-results--cards .yw-search-result-title {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--yw-space-md-y);
 }
 
 /* ---- Facets ----------------------------------------------------
@@ -1730,9 +2388,9 @@ summary.yw-accordion__summary {
 .yw-facets {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   justify-content: center;
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--yw-space-lg-y);
   padding: 0;
   list-style: none;
 }
@@ -1752,25 +2410,25 @@ summary.yw-accordion__summary {
 .yw-facet__label {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.4rem;
-  padding: 0.35rem 0.9rem;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 0.9rem;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   cursor: pointer;
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 999px;
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-full);
 }
 .yw-facet__label:hover {
   filter: brightness(0.97);
 }
 .yw-facet input:checked + .yw-facet__label {
-  color: #fff;
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
+  border-color: var(--yw-primary);
 }
 .yw-facet input:focus-visible + .yw-facet__label {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--yw-focus-ring);
   outline-offset: 2px;
 }
 .yw-facet__count {
@@ -1786,11 +2444,11 @@ summary.yw-accordion__summary {
    beside a disclosure triangle or inside a card would be noise. */
 ol.yw-search-results {
   margin: 0;
-  padding-left: 2.5rem;
+  padding-left: var(--yw-space-lg-x);
   list-style: decimal;
 }
 ol.yw-search-results > li::marker {
-  color: var(--neutral-color);
+  color: var(--yw-text);
 }
 ul.yw-search-results,
 div.yw-search-results {
@@ -1803,15 +2461,15 @@ div.yw-search-results {
    own padding -- so applying this to every result gave accordion rows a double border and a
    visible gap between them. */
 ol.yw-search-results > .yw-search-result {
-  padding: 0.9rem 0;
-  border-bottom: 1px solid var(--neutral-soft-color);
-  border-bottom-color: rgba(0, 0, 0, 0.08);
+  padding: var(--yw-space-md-y) 0;
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+  border-bottom-color: var(--yw-text);
 }
 ol.yw-search-results > .yw-search-result:last-child {
   border-bottom: 0;
 }
 .yw-search-result-title {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--yw-space-sm-y);
   font-size: 1.05rem;
   line-height: 1.3;
   /* A page's title is very often its tag, and a tag is one unbroken word -- so
@@ -1825,35 +2483,35 @@ ol.yw-search-results > .yw-search-result:last-child {
    of it makes every row start with the same handful of words */
 .yw-search-result-type {
   display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.1rem 0.5rem;
+  margin-left: var(--yw-space-md-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: lowercase;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   vertical-align: 0.1em;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 999px;
+  background: var(--yw-surface-sunken);
+  border-radius: var(--yw-radius-full);
 }
 .yw-search-result-excerpt {
   margin: 0;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   opacity: 0.85;
 }
 .yw-search-count,
 .yw-search-empty,
 .yw-search-prompt {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--yw-space-md-y);
   text-align: center;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   opacity: 0.8;
 }
 .yw-search-pagination {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: var(--yw-space-lg-y);
 }
 .yw-search-body {
   min-height: 2.5rem;
@@ -1887,42 +2545,54 @@ ol.yw-search-results > .yw-search-result:last-child {
 /* ---- Form controls -------------------------------------------- */
 .yw-input,
 select.yw-input,
-textarea.yw-input {
+textarea.yw-input,
+.form-control {
   display: block;
   width: 100%;
-  padding: 6px 8px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 13px;
   line-height: 1.4;
-  color: var(--neutral-color);
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
+  color: var(--yw-text);
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
   box-sizing: border-box;
   max-width: 350px;
 }
-.yw-input:focus {
-  outline: 2px solid var(--primary-color);
+.yw-input:focus,
+.form-control:focus {
+  outline: 2px solid var(--yw-focus-ring);
   outline-offset: -1px;
 }
-.yw-form-group {
-  margin: 1rem 0;
+.yw-form-group,
+.form-group {
+  margin: var(--yw-space-md-y) 0;
 }
 .yw-form-group > label,
-.yw-form-label {
+.yw-form-label,
+.control-label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--yw-space-sm-y);
   font-weight: 600;
 }
 .yw-radio-inline,
 .yw-checkbox-inline {
   display: inline-block;
   font-weight: normal;
-  margin-right: 12px;
+  margin-right: var(--yw-space-md-x);
+}
+
+/* `display: inline-block` above beats the UA's `[hidden] { display: none }`, so one of these
+   that something hid would stay on screen -- and a hidden checkbox still posts. The same trap
+   the dashboard rail and the forms list have each been caught by. */
+.yw-radio-inline[hidden],
+.yw-checkbox-inline[hidden] {
+  display: none;
 }
 .yw-form-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 .yw-form-row > .yw-form-group {
   flex: 1 1 220px;
@@ -1931,40 +2601,43 @@ textarea.yw-input {
 .yw-box {
   max-height: 150px;
   overflow-y: auto;
-  padding: 8px 10px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   font-size: 12px;
-  background: var(--neutral-light-color, #f5f5f5);
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
 }
 
 /* ---- Alerts --------------------------------------------------- */
-.yw-alert {
+.yw-alert,
+.alert {
   position: relative;
-  padding: 10px 32px 10px 12px;
-  margin-bottom: 12px;
-  border: 1px solid transparent;
-  border-radius: 4px;
+  padding: var(--yw-space-md-y) var(--yw-space-lg-x) var(--yw-space-md-y)
+    var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+  border: var(--yw-border-width) solid transparent;
+  border-radius: var(--yw-radius-sm);
 }
-.yw-alert--info {
-  background: #eef6f7;
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+.yw-alert--info,
+.alert-info {
+  background: var(--yw-info-surface);
+  border-color: var(--yw-info);
 }
-.yw-alert--success {
-  background: #eef8ee;
-  border-color: var(--success-color);
-  color: var(--success-color);
+.yw-alert--success,
+.alert-success {
+  background: var(--yw-success-surface);
+  border-color: var(--yw-success);
 }
-.yw-alert--warning {
-  background: #fdf3ec;
-  border-color: var(--warning-color);
-  color: var(--warning-color);
+.yw-alert--warning,
+.alert-warning {
+  background: var(--yw-warning-surface);
+  border-color: var(--yw-warning);
 }
-.yw-alert--danger {
-  background: #fbeeec;
-  border-color: var(--danger-color);
-  color: var(--danger-color);
+.yw-alert--danger,
+.alert-danger,
+.alert-error {
+  background: var(--yw-danger-surface);
+  border-color: var(--yw-danger);
 }
 
 /* ---- alerts and quotes as PROSE ---------------------------------------------
@@ -1979,7 +2652,12 @@ textarea.yw-input {
 .yw-alert--info,
 .yw-alert--success,
 .yw-alert--warning,
-.yw-alert--danger {
+.yw-alert--danger,
+.alert-info,
+.alert-success,
+.alert-warning,
+.alert-danger,
+.alert-error {
   color: inherit;
   border-left-width: 4px;
 }
@@ -1987,11 +2665,13 @@ textarea.yw-input {
 /* A box of prose should not open with a gap or end with one: the padding is the box's job,
    the margins belong to the paragraphs *between*. */
 .yw-alert > :first-child,
+.alert > :first-child,
 blockquote > :first-child {
   margin-top: 0;
 }
 
 .yw-alert > :last-child,
+.alert > :last-child,
 blockquote > :last-child {
   margin-bottom: 0;
 }
@@ -2001,15 +2681,15 @@ blockquote > :last-child {
    an indented paragraph. A rule down the left and quieter text is the least that says
    "someone else said this". */
 blockquote {
-  margin: 1rem 0;
-  padding: 0.4rem 0 0.4rem 1rem;
-  border-left: 4px solid var(--neutral-soft-color, #ddd);
-  color: var(--neutral-color, #777);
+  margin: var(--yw-space-md-y) 0;
+  padding: var(--yw-space-sm-y) 0 var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-left: 4px solid var(--yw-border);
+  color: var(--yw-text);
 }
 
 /* A quote inside a quote is a reply: it steps in again rather than doubling the rule. */
 blockquote blockquote {
-  margin: 0.6rem 0;
+  margin: var(--yw-space-md-y) 0;
 }
 
 /* `> — someone`, the conventional attribution line: last child, so it needs no markup of its
@@ -2018,12 +2698,13 @@ blockquote > p:last-child > em:only-child,
 blockquote > footer,
 blockquote > cite {
   display: block;
-  margin-top: 0.4rem;
+  margin-top: var(--yw-space-sm-y);
   font-style: normal;
   font-size: 0.9em;
   opacity: 0.85;
 }
-.yw-close {
+.yw-close,
+.close {
   position: absolute;
   top: 6px;
   right: 8px;
@@ -2036,7 +2717,8 @@ blockquote > cite {
   cursor: pointer;
   opacity: 0.6;
 }
-.yw-close:hover {
+.yw-close:hover,
+.close:hover {
   opacity: 1;
 }
 .yw-modal__header .yw-close {
@@ -2053,7 +2735,7 @@ blockquote > cite {
    the canvas takes the whole width, with no state class to keep in sync. */
 .yw-designer {
   display: flex;
-  gap: 16px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: flex-start;
 }
 .yw-designer__canvas {
@@ -2068,14 +2750,10 @@ blockquote > cite {
      -- they disagreed, and a rail starting 20vh down and running 85vh tall ends 5vh past
      the bottom of the window. What fell off the end was the sticky footer, which is to say
      the button the whole rail exists to offer. */
-  --yw-rail-top: calc(var(--sticky-toolbar-top) + 64px);
-  /* How wide a rail is, in one place: the actions builder, the link editor and the file
-     picker all dock in the same slot and have to agree. */
-  --yw-rail-width: 380px;
-
+  --yw-rail-top: calc(var(--yw-sticky-toolbar-top) + 64px);
   position: fixed;
   top: var(--yw-rail-top);
-  border-radius: 6px 0 0 6px;
+  border-radius: var(--yw-radius-md) 0 0 var(--yw-radius-md);
   right: 0;
   z-index: 10;
   box-sizing: border-box;
@@ -2085,9 +2763,9 @@ blockquote > cite {
      and it is exactly the height the footer would be hidden behind */
   max-height: calc(100dvh - var(--yw-rail-top) - 1rem);
   overflow-y: auto;
-  border: 1px solid var(--neutral-soft-color);
-  padding: 12px;
-  background: var(--neutral-light-color, #f1f1f1);
+  border: var(--yw-border-width) solid var(--yw-border);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
   transform: translateX(0);
   transition:
     transform 0.25s ease,
@@ -2121,8 +2799,8 @@ blockquote > cite {
    Opaque, because what is behind it is another rail and not the page. */
 .yw-designer__sidebar.yw-rail--over {
   z-index: 20;
-  background: var(--neutral-light-color, #f1f1f1);
-  box-shadow: -4px 0 16px rgb(0 0 0 / 18%);
+  background: var(--yw-surface-sunken);
+  box-shadow: -4px 0 16px var(--yw-shadow-color);
 }
 
 /* The chrome a rail shares with the next one: a header that stays put while what is under
@@ -2131,14 +2809,15 @@ blockquote > cite {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   position: sticky;
   top: -12px;
   z-index: 1;
-  margin: -12px -12px 10px;
-  padding: 10px 12px;
-  background: var(--neutral-light-color, #f1f1f1);
-  border-bottom: 1px solid var(--neutral-soft-color);
+  margin: calc(-1 * var(--yw-space-md-y)) calc(-1 * var(--yw-space-md-x))
+    var(--yw-space-md-y);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
 }
 
 .yw-rail__title {
@@ -2157,14 +2836,15 @@ blockquote > cite {
 .yw-rail__footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: 16px -12px -12px;
-  padding: 10px 12px;
-  background: var(--neutral-light-color, #f1f1f1);
-  border-top: 1px solid var(--neutral-soft-color);
+  margin: var(--yw-space-md-y) calc(-1 * var(--yw-space-md-x))
+    calc(-1 * var(--yw-space-md-y));
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
+  border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
 /* below this there is no room for two columns: the rail becomes an overlay on the side
@@ -2178,7 +2858,7 @@ blockquote > cite {
     max-width: none;
     max-height: none;
     border-radius: 0;
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+    box-shadow: -4px 0 12px var(--yw-shadow-color);
   }
 }
 
@@ -2191,9 +2871,9 @@ blockquote > cite {
   position: fixed;
   inset: 0;
   z-index: 1050;
-  padding: 20px;
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--yw-overlay);
 }
 .yw-modal--open {
   display: flex;
@@ -2210,7 +2890,7 @@ blockquote > cite {
 .yw-modal__dialog {
   width: 100%;
   max-width: 600px;
-  margin: 30px auto;
+  margin: var(--yw-space-lg-y) auto;
 }
 .yw-modal__dialog--lg {
   max-width: 900px;
@@ -2219,30 +2899,30 @@ blockquote > cite {
   max-width: 340px;
 }
 .yw-modal__content {
-  background: #fff;
-  border-radius: 6px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  background: var(--yw-surface-raised);
+  border-radius: var(--yw-radius-md);
+  box-shadow: 0 4px 24px var(--yw-shadow-color-strong);
 }
 .yw-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--neutral-light-color, #eee);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-bottom: var(--yw-border-width) solid var(--yw-border-subtle);
 }
 .yw-modal__title {
   margin: 0;
   font-size: 17px;
 }
 .yw-modal__body {
-  padding: 16px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 .yw-modal__footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--neutral-light-color, #eee);
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-top: var(--yw-border-width) solid var(--yw-border-subtle);
 }
 /* Remote-load modal (ticket 16): loading indicator shown while the fetch is in flight,
    and the iframe variant used for [data-yw-modal-iframe] openers. */
@@ -2252,11 +2932,12 @@ blockquote > cite {
   height: 16px;
   margin: 0 auto;
   background:
-    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 0% 50%,
-    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 50%
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent) 0%
       50%,
-    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 100%
-      50%;
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent) 50%
+      50%,
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent)
+      100% 50%;
   background-size: calc(100% / 3) 13.4px;
   background-repeat: no-repeat;
   animation: yw-modal-loading-dots 1s infinite linear;
@@ -2294,25 +2975,31 @@ blockquote > cite {
 }
 
 /* ---- Table -------------------------------------------------- */
-.yw-table {
+.yw-table,
+.table {
   width: 100%;
   border-collapse: collapse;
 }
 .yw-table th,
-.yw-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--neutral-light-color, #eee);
+.yw-table td,
+.table th,
+.table td {
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border-bottom: var(--yw-border-width) solid var(--yw-border-subtle);
   vertical-align: top;
 }
 .yw-table--condensed th,
-.yw-table--condensed td {
-  padding: 4px 8px;
+.yw-table--condensed td,
+.table-condensed th,
+.table-condensed td {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
 }
-.yw-table--striped tbody tr:nth-child(odd) {
-  background: var(--neutral-light-color, #f9f9f9);
+.yw-table--striped tbody tr:nth-child(odd),
+.table-striped tbody tr:nth-child(odd) {
+  background: var(--yw-surface-sunken);
 }
 .yw-table--hover tbody tr:hover {
-  background: #eef6f7;
+  background: var(--yw-surface-hover);
 }
 
 /* A table that fits its container instead of scrolling sideways: no cell may set a
@@ -2335,7 +3022,7 @@ blockquote > cite {
 .yw-table__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
 /* The forms admin: core's own Content types listed apart from a webmaster's (ticket 10).
@@ -2345,7 +3032,7 @@ blockquote > cite {
    cell of five. A card gives each form the width of a paragraph and lets its actions read
    as belonging to it. */
 .forms-list__section + .forms-list__section {
-  margin-top: 32px;
+  margin-top: var(--yw-space-lg-y);
 }
 
 .forms-list__section-header {
@@ -2353,15 +3040,15 @@ blockquote > cite {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
-  margin-bottom: 12px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
 }
 
 .forms-list__section-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   margin-left: auto;
 }
 
@@ -2375,31 +3062,31 @@ blockquote > cite {
 }
 
 .forms-list__hint {
-  margin-bottom: 12px;
-  color: var(--neutral-color, #777);
+  margin-bottom: var(--yw-space-md-y);
+  color: var(--yw-text);
   font-size: 0.9em;
 }
 
 .forms-list__empty {
-  margin: 12px 0;
-  color: var(--neutral-color, #777);
+  margin: var(--yw-space-md-y) 0;
+  color: var(--yw-text);
   font-style: italic;
 }
 
 .forms-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
-  gap: 12px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 .form-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 6px;
-  background: var(--neutral-light-color, #f9f9f9);
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-sunken);
 }
 
 /* `display: flex` above beats the UA's `[hidden] { display: none }`, so a card the filter
@@ -2419,16 +3106,16 @@ blockquote > cite {
 
 /* the id, beside the name it identifies rather than in a column of its own */
 .form-card__id {
-  margin-left: 4px;
-  color: var(--neutral-color, #777);
-  font-family: monospace;
+  margin-left: var(--yw-space-sm-x);
+  color: var(--yw-text);
+  font-family: var(--yw-font-mono);
   font-size: 0.8em;
   font-weight: normal;
 }
 
 .form-card__description {
-  margin: 4px 0 0;
-  color: var(--neutral-color, #777);
+  margin: var(--yw-space-sm-y) 0 0;
+  color: var(--yw-text);
   font-size: 0.9em;
   line-height: 1.35;
 }
@@ -2437,9 +3124,9 @@ blockquote > cite {
 .form-card__stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 10px;
-  margin: 6px 0 0;
-  color: var(--neutral-color, #777);
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
+  margin: var(--yw-space-sm-y) 0 0;
+  color: var(--yw-text);
   font-size: 0.85em;
 }
 
@@ -2457,7 +3144,7 @@ blockquote > cite {
 .form-card__entries {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
 /* Exports are one-word links, not buttons: there can be six of them on a card, and six
@@ -2466,28 +3153,28 @@ blockquote > cite {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 8px;
+  gap: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 0.85em;
 }
 
 .form-card__formats-label {
-  color: var(--neutral-color, #777);
+  color: var(--yw-text);
   font-size: 0.9em;
   text-transform: lowercase;
 }
 
 .form-card__format {
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: var(--neutral-color, #777);
-  font-family: monospace;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-text);
+  font-family: var(--yw-font-mono);
   text-decoration: none;
 }
 
 .form-card__format:hover,
 .form-card__format:focus-visible {
-  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-  color: var(--primary-color);
+  background: color-mix(in srgb, var(--yw-primary) 12%, transparent);
+  color: var(--yw-primary);
   text-decoration: none;
 }
 
@@ -2496,23 +3183,23 @@ blockquote > cite {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid var(--neutral-soft-color);
+  padding-top: var(--yw-space-md-y);
+  border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
 /* emptying and deleting a form are the only irreversible actions here: quiet until meant */
 .form-card__destructive .yw-btn--danger {
   background: transparent;
-  border: 1px solid var(--neutral-soft-color);
-  color: var(--danger-color);
+  border: var(--yw-border-width) solid var(--yw-border);
+  color: var(--yw-danger);
 }
 
 .form-card__destructive .yw-btn--danger:hover:not([disabled]) {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: #fff;
+  background: var(--yw-danger);
+  border-color: var(--yw-danger);
+  color: var(--yw-on-danger);
 }
 
 /* ---- Datatable (ticket 16: replaces jQuery DataTables — vanilla sort/search/paginate) ---- */
@@ -2521,8 +3208,8 @@ blockquote > cite {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
 }
 .yw-datatable__search {
   max-width: 240px;
@@ -2530,7 +3217,7 @@ blockquote > cite {
 .yw-datatable__page-size {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   margin: 0;
   margin-right: auto;
   white-space: nowrap;
@@ -2547,7 +3234,7 @@ table.yw-table--sortable th[data-yw-sort] {
 table[data-yw-datatable] th[data-yw-sort]::after,
 table.yw-table--sortable th[data-yw-sort]::after {
   content: '\2195';
-  margin-left: 4px;
+  margin-left: var(--yw-space-sm-x);
   opacity: 0.35;
 }
 table[data-yw-datatable] th[data-yw-sort='asc']::after,
@@ -2561,39 +3248,39 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   opacity: 1;
 }
 .yw-datatable__empty {
-  padding: 12px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-align: center;
-  color: var(--neutral-soft-color);
+  color: var(--yw-text-muted);
 }
 .yw-datatable__pagination {
-  margin-top: 8px;
+  margin-top: var(--yw-space-md-y);
   justify-content: center;
 }
 
 /* ---- Pagination ----------------------------------------------- */
 .yw-pagination {
   display: flex;
-  gap: 4px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   padding: 0;
   margin: 0;
   list-style: none;
 }
 .yw-pagination__link {
   display: inline-block;
-  padding: 3px 8px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 12px;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 3px;
-  color: var(--primary-color);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  color: var(--yw-primary);
   text-decoration: none;
 }
 .yw-pagination__item--active .yw-pagination__link {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #fff;
+  background: var(--yw-primary);
+  border-color: var(--yw-primary);
+  color: var(--yw-on-primary);
 }
 .yw-pagination__item--disabled .yw-pagination__link {
-  color: var(--neutral-soft-color);
+  color: var(--yw-text-muted);
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -2604,21 +3291,21 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  background: #fff;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-raised);
 }
 .yw-tag-input__chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
   font-size: 12px;
-  background: var(--neutral-light-color, #f2f2f2);
-  border-radius: 10px;
-  color: var(--neutral-color);
+  background: var(--yw-surface-sunken);
+  border-radius: var(--yw-radius-md);
+  color: var(--yw-text);
 }
 .yw-tag-input__chip-remove {
   padding: 0;
@@ -2637,7 +3324,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   flex: 1 1 120px;
   min-width: 120px;
   border: 0;
-  padding: 2px 4px;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 .yw-tag-input__search:focus {
   outline: none;
@@ -2653,18 +3340,18 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   width: 100%;
   max-height: 220px;
   overflow-y: auto;
-  margin: 2px 0 0;
-  padding: 4px 0;
+  margin: var(--yw-space-sm-y) 0 0;
+  padding: var(--yw-space-sm-y) 0;
   list-style: none;
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  box-shadow: 0 2px 8px var(--yw-shadow-color);
 }
 .yw-suggestions button {
   display: block;
   width: 100%;
-  padding: 5px 10px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   text-align: left;
   font-size: 13px;
   background: none;
@@ -2673,34 +3360,37 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 }
 .yw-suggestions button:hover,
 .yw-suggestions button[data-active] {
-  background: var(--neutral-light-color, #f2f2f2);
+  background: var(--yw-surface-hover);
 }
 /* the arrows move a marker rather than the focus -- the reader is still typing in the box --
    so the highlight has to read as "this is the one Enter takes", not just as a hover */
 .yw-suggestions button[data-active] {
-  box-shadow: inset 3px 0 0 var(--primary-color);
+  box-shadow: inset 3px 0 0 var(--yw-primary);
   font-weight: 600;
 }
 
 /* ---- Dropdown (ticket 11 pilot: replaces Bootstrap's data-toggle="dropdown") ---- */
-.yw-dropdown {
+.yw-dropdown,
+.dropdown,
+.dropup {
   position: relative;
   display: inline-block;
 }
-.yw-dropdown__menu {
+.yw-dropdown__menu,
+.dropdown-menu {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
   z-index: 20;
   min-width: 160px;
-  margin: 2px 0 0;
-  padding: 4px 0;
+  margin: var(--yw-space-sm-y) 0 0;
+  padding: var(--yw-space-sm-y) 0;
   list-style: none;
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--yw-surface-raised);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  box-shadow: 0 2px 8px var(--yw-shadow-color);
 }
 /* a closed dropdown menu must stay hidden regardless of surrounding layout
    rules (same rationale as the .yw-modal guard above) */
@@ -2710,17 +3400,20 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-dropdown--open > .yw-dropdown__menu {
   display: block;
 }
-.yw-dropdown__menu li {
+.yw-dropdown__menu li,
+.dropdown-menu li {
   list-style: none;
 }
 .yw-dropdown__menu a,
-.yw-dropdown__menu button {
+.yw-dropdown__menu button,
+.dropdown-menu > li > a,
+.dropdown-menu > a {
   display: block;
   width: 100%;
-  padding: 5px 12px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   text-align: left;
   font-size: 13px;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   text-decoration: none;
   background: none;
   border: 0;
@@ -2728,19 +3421,22 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   white-space: nowrap;
 }
 .yw-dropdown__menu a:hover,
-.yw-dropdown__menu button:hover {
-  background: var(--neutral-light-color, #f2f2f2);
+.yw-dropdown__menu button:hover,
+.dropdown-menu > li > a:hover,
+.dropdown-menu > a:hover {
+  background: var(--yw-surface-hover);
 }
 .yw-dropdown__menu .yw-dropdown__divider {
   height: 0;
-  margin: 4px 0;
-  border-top: 1px solid var(--neutral-light-color, #eee);
+  margin: var(--yw-space-sm-y) 0;
+  border-top: var(--yw-border-width) solid var(--yw-border-subtle);
 }
-.yw-dropdown__caret {
+.yw-dropdown__caret,
+.caret {
   display: inline-block;
   width: 0;
   height: 0;
-  margin-left: 4px;
+  margin-left: var(--yw-space-sm-x);
   vertical-align: middle;
   border-top: 4px solid;
   border-right: 4px solid transparent;
@@ -2770,77 +3466,100 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 }
 
 /* ---- Panel/accordion (ticket 12: replaces Bootstrap's .panel/.panel-group) ---- */
-.yw-panel {
-  margin-bottom: 15px;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
+.yw-panel,
+.panel {
+  margin-bottom: var(--yw-space-md-y);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
 }
-.yw-panel__heading {
+.yw-panel__heading,
+.panel-heading {
   display: block;
   width: 100%;
-  padding: 10px 15px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-align: left;
-  background: var(--neutral-light-color, #f5f5f5);
+  background: var(--yw-surface-sunken);
   border: 0;
-  border-bottom: 1px solid var(--neutral-soft-color);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
 }
 .yw-panel--warning {
-  border-color: var(--warning-color);
+  border-color: var(--yw-warning);
 }
 .yw-panel--warning > .yw-panel__heading {
-  border-color: var(--warning-color);
-  background: color-mix(in srgb, var(--warning-color) 15%, #fff);
+  border-color: var(--yw-warning);
+  background: color-mix(
+    in srgb,
+    var(--yw-warning) 15%,
+    var(--yw-surface-raised)
+  );
 }
 .yw-panel--primary {
-  border-color: var(--primary-color);
+  border-color: var(--yw-primary);
 }
 .yw-panel--primary > .yw-panel__heading {
-  border-color: var(--primary-color);
-  background: color-mix(in srgb, var(--primary-color) 15%, #fff);
+  border-color: var(--yw-primary);
+  background: color-mix(
+    in srgb,
+    var(--yw-primary) 15%,
+    var(--yw-surface-raised)
+  );
 }
 .yw-panel--success {
-  border-color: var(--success-color);
+  border-color: var(--yw-success);
 }
 .yw-panel--success > .yw-panel__heading {
-  border-color: var(--success-color);
-  background: color-mix(in srgb, var(--success-color) 15%, #fff);
+  border-color: var(--yw-success);
+  background: color-mix(
+    in srgb,
+    var(--yw-success) 15%,
+    var(--yw-surface-raised)
+  );
 }
 .yw-panel--danger {
-  border-color: var(--danger-color);
+  border-color: var(--yw-danger);
 }
 .yw-panel--danger > .yw-panel__heading {
-  border-color: var(--danger-color);
-  background: color-mix(in srgb, var(--danger-color) 15%, #fff);
+  border-color: var(--yw-danger);
+  background: color-mix(
+    in srgb,
+    var(--yw-danger) 15%,
+    var(--yw-surface-raised)
+  );
 }
-.yw-panel__title {
+.yw-panel__title,
+.panel-title {
   margin: 0;
   font-size: 14px;
 }
-.yw-panel__body {
-  padding: 15px;
+.yw-panel__body,
+.panel-body {
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
 /* ---- List group (ticket 14: replaces Bootstrap's .list-group/.list-group-item) ---- */
-.yw-list-group {
+.yw-list-group,
+.list-group {
   list-style: none;
   margin: 0;
   padding-left: 0;
 }
-.yw-list-group__item {
+.yw-list-group__item,
+.list-group-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-align: left;
   background: none;
-  border: 1px solid var(--neutral-soft-color);
+  border: var(--yw-border-width) solid var(--yw-border);
   border-top: 0;
 }
-.yw-list-group__item:first-child {
-  border-top: 1px solid var(--neutral-soft-color);
+.yw-list-group__item:first-child,
+.list-group-item:first-child {
+  border-top: var(--yw-border-width) solid var(--yw-border);
 }
 .yw-list-group__item--active {
-  color: #fff;
-  background: var(--primary-color);
+  color: var(--yw-on-primary);
+  background: var(--yw-primary);
 }
 
 /* ---- Container (ticket 12: replaces Bootstrap's .container) ---- */
@@ -2852,71 +3571,88 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 var(--yw-space-md-x);
 }
 
 /* ---- Grid/columns (ticket 12: replaces Bootstrap's .row/.col-md-*) ---- */
-.yw-row {
+.yw-row,
+.row {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px;
+  margin: 0 calc(-1 * var(--yw-space-md-x));
 }
-.yw-col {
+.yw-col,
+.row > [class*='col-'] {
   box-sizing: border-box;
-  padding: 0 10px;
+  padding: 0 var(--yw-space-md-x);
 }
 
 /* ---- Label (ticket 12: replaces Bootstrap's .label) ---- */
-.yw-label {
+.yw-label,
+.label,
+.label-default {
   display: inline-block;
-  padding: 2px 6px;
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
-  color: #fff;
-  background: var(--neutral-soft-color);
-  border-radius: 4px;
+  color: var(--yw-text-inverse);
+  background: var(--yw-text-muted);
+  border-radius: var(--yw-radius-sm);
 }
-.yw-label--primary {
-  background: var(--primary-color);
+.yw-label--primary,
+.label-primary {
+  background: var(--yw-primary);
 }
-.yw-label--danger {
-  background: var(--danger-color);
+.yw-label--danger,
+.label-danger {
+  background: var(--yw-danger);
 }
-.yw-label--warning {
-  background: var(--warning-color);
+.yw-label--warning,
+.label-warning {
+  background: var(--yw-warning);
 }
-.yw-label--success {
-  background: var(--success-color);
+.yw-label--success,
+.label-success {
+  background: var(--yw-success);
 }
-.yw-label--info {
-  background: var(--secondary-color-2, var(--primary-color));
+.yw-label--info,
+.label-info {
+  background: var(--yw-tertiary);
 }
 
 /* ---- Nav (ticket 12: replaces Bootstrap's .nav/.nav-tabs) ---- */
-.yw-nav {
+.yw-nav,
+ul.nav,
+ul.nav-tabs {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
-  margin: 1em 0;
+  margin: var(--yw-space-md-y) 0;
   padding: 0;
 }
-.yw-nav li {
+.yw-nav li,
+ul.nav li,
+ul.nav-tabs li {
   list-style: none;
 }
-.yw-nav li a {
+.yw-nav li a,
+ul.nav li a,
+ul.nav-tabs li a {
   display: block;
-  padding: 8px 12px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-decoration: none;
-  color: var(--neutral-color);
+  color: var(--yw-text);
   /* transparent, not absent: the active state below adds a 2px bottom border, and without
      a placeholder here the active link is 2px taller than its neighbours -- which makes the
      whole navbar change height depending on which page you are on */
   border-bottom: 2px solid transparent;
 }
-.yw-nav li.active a {
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
+.yw-nav li.active a,
+ul.nav li.active a,
+ul.nav-tabs li.active a {
+  color: var(--yw-primary);
+  border-bottom: 2px solid var(--yw-primary);
 }
 
 /* ---- Tabs (ticket 16: replaces Bootstrap's tab plugin panes) ----
@@ -2934,15 +3670,17 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 }
 
 /* ---- Progress bar (ticket 12: replaces Bootstrap's .progress) ---- */
-.yw-progressbar {
+.yw-progressbar,
+.progress {
   height: 16px;
   overflow: hidden;
-  background: var(--neutral-light-color, #f5f5f5);
-  border-radius: 4px;
+  background: var(--yw-surface-sunken);
+  border-radius: var(--yw-radius-sm);
 }
-.yw-progressbar__bar {
+.yw-progressbar__bar,
+.progress-bar {
   height: 100%;
-  background: var(--primary-color);
+  background: var(--yw-primary);
   transition: width 0.3s ease;
 }
 
@@ -2958,13 +3696,13 @@ progress.yw-progressbar {
   vertical-align: middle;
 }
 progress.yw-progressbar::-webkit-progress-bar {
-  background: var(--neutral-light-color, #f5f5f5);
+  background: var(--yw-surface-sunken);
 }
 progress.yw-progressbar::-webkit-progress-value {
-  background: var(--primary-color);
+  background: var(--yw-primary);
 }
 progress.yw-progressbar::-moz-progress-bar {
-  background: var(--primary-color);
+  background: var(--yw-primary);
 }
 
 /* ---- Breadcrumb (ticket 12: replaces Bootstrap's .breadcrumb) ---- */
@@ -2973,18 +3711,18 @@ progress.yw-progressbar::-moz-progress-bar {
   flex-wrap: wrap;
   list-style: none;
   margin: 0;
-  padding: 8px 0;
+  padding: var(--yw-space-md-y) 0;
 }
 .yw-breadcrumb li {
   list-style: none;
 }
 .yw-breadcrumb li + li::before {
   content: '/';
-  padding: 0 6px;
-  color: var(--neutral-soft-color);
+  padding: 0 var(--yw-space-sm-x);
+  color: var(--yw-text-muted);
 }
 .yw-breadcrumb__active {
-  color: var(--neutral-soft-color);
+  color: var(--yw-text-muted);
 }
 
 /* ---- Tooltip (ticket 16: replaces Bootstrap's data-toggle="tooltip", pure CSS, no JS) ----
@@ -3024,17 +3762,17 @@ progress.yw-progressbar::-moz-progress-bar {
 [data-yw-tooltip]::after,
 [data-toggle='tooltip'][title]::after,
 [data-tooltip='tooltip'][title]::after {
-  margin-bottom: 6px;
-  padding: 4px 8px;
+  margin-bottom: var(--yw-space-sm-y);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   max-width: 240px;
   width: max-content;
   white-space: pre-line;
   font-size: 12px;
   font-weight: normal;
   line-height: 1.4;
-  color: #fff;
-  background: var(--neutral-color, #333);
-  border-radius: 4px;
+  color: var(--yw-text-inverse);
+  background: var(--yw-text);
+  border-radius: var(--yw-radius-sm);
 }
 [data-yw-tooltip]::after {
   content: attr(data-yw-tooltip);
@@ -3047,9 +3785,10 @@ progress.yw-progressbar::-moz-progress-bar {
 [data-toggle='tooltip'][title]::before,
 [data-tooltip='tooltip'][title]::before {
   content: '';
-  margin-bottom: 1px;
+  margin-bottom: var(--yw-space-sm-y);
   border: 5px solid transparent;
-  border-top-color: var(--neutral-color, #333);
+  /* the little arrow under the strip, so it is the strip's colour and not a line's */
+  border-top-color: var(--yw-text);
 }
 [data-yw-tooltip]:hover::after,
 [data-yw-tooltip]:hover::before,
@@ -3076,13 +3815,13 @@ progress.yw-progressbar::-moz-progress-bar {
 }
 [data-yw-tooltip-placement='bottom']::after {
   margin-bottom: 0;
-  margin-top: 6px;
+  margin-top: var(--yw-space-sm-y);
 }
 [data-yw-tooltip-placement='bottom']::before {
   margin-bottom: 0;
-  margin-top: 1px;
+  margin-top: var(--yw-space-sm-y);
   border-top-color: transparent;
-  border-bottom-color: var(--neutral-color, #333);
+  border-bottom-color: var(--yw-border);
 }
 
 /* ---- TOC (ticket 13: replaces tools/toc's jQuery scrollspy/animate follow-scroll script) ---- */
@@ -3090,7 +3829,7 @@ progress.yw-progressbar::-moz-progress-bar {
   position: sticky;
   /* derived, like everything else that parks below the bar: `50px` was a guess at the bar's
      height, right only while the bar had one (ticket 30) */
-  top: calc(var(--sticky-toolbar-top) + 2px);
+  top: calc(var(--yw-sticky-toolbar-top) + 2px);
   z-index: 5;
 }
 .yw-toc__menu {
@@ -3104,22 +3843,28 @@ progress.yw-progressbar::-moz-progress-bar {
   padding-left: 0;
 }
 .yw-text-muted {
-  color: var(--neutral-soft-color);
+  color: var(--yw-text-muted);
 }
 .yw-text-center {
   text-align: center;
 }
-.yw-text-danger {
-  color: var(--danger-color);
+/* A status as WORDS takes the status's dark ink, not its accent: an accent is sized to be
+   seen as a fill or a rule, and a sentence of it on the page's own ground is thin at both
+   schemes' contrast. */
+.yw-text-danger,
+.text-danger {
+  color: var(--yw-danger-text);
 }
 .yw-text-warning {
-  color: var(--warning-color);
+  color: var(--yw-warning-text);
 }
-.yw-text-info {
-  color: var(--primary-color);
+.yw-text-info,
+.text-info {
+  color: var(--yw-info-text);
 }
-.yw-text-success {
-  color: var(--success-color);
+.yw-text-success,
+.text-success {
+  color: var(--yw-success-text);
 }
 .yw-hide {
   display: none;
@@ -3133,7 +3878,7 @@ progress.yw-progressbar::-moz-progress-bar {
   position: absolute;
   width: 1px;
   height: 1px;
-  margin: -1px;
+  margin: calc(-1 * var(--yw-space-sm-y)) calc(-1 * var(--yw-space-sm-x));
   padding: 0;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
@@ -3159,264 +3904,101 @@ progress.yw-progressbar::-moz-progress-bar {
   clear: both;
   content: '';
 }
-.text-danger {
-  color: var(--danger-color);
-}
-
-.text-success {
-  color: var(--success-color);
-}
 .text-muted {
-  color: var(--neutral-soft-color);
-}
-.text-info {
-  color: var(--primary-color);
+  color: var(--yw-text-muted);
 }
 .text-center {
   text-align: center;
 }
 
 /* ============================================================
-   Legacy Bootstrap vocabulary (ticket 16)
-   Bootstrap itself is fully removed. Templates and wiki content
-   accumulated over the years still carry its class names, so this
-   compatibility layer styles that vocabulary with the yw-* look.
-   New code should use the yw-* classes above; these rules exist so
-   old markup keeps rendering, not as an API to build on.
+   Legacy Bootstrap vocabulary (ticket 16, dissolved in ADR-0020)
+
+   Bootstrap itself is fully removed. Templates and wiki content accumulated over the
+   years still carry its class names, so those names keep rendering -- but they are no
+   longer styled by rules of their own. Every legacy name that has a yw-* counterpart
+   now shares that counterpart's rule (`.yw-btn, .btn { ... }`), which is what stops the
+   two drifting apart: there were 747 lines here restating the design system in the old
+   vocabulary, and the two copies had already diverged on padding, radius and colour.
+
+   What is left below is the names with no yw-* counterpart at all. They are still not an
+   API: new code uses the yw-* classes, and nothing but old markup should reach these.
    ============================================================ */
-.btn {
-  display: inline-block;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--neutral-color);
-  text-decoration: none;
-}
-.btn:hover {
-  filter: brightness(0.95);
-}
-.btn:disabled,
-.btn.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.btn-xs,
-.btn-mini,
-.btn-sm {
-  padding: 3px 8px;
-  font-size: 12px;
-}
-.btn-lg {
-  padding: 10px 16px;
-  font-size: 15px;
-}
-.btn-block {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-}
-.btn-primary {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #fff;
-}
 
-.yw-btn--primary:hover {
-  color: var(--primary-color);
-  background-color: var(--neutral-light-color);
-}
-
-.btn-danger,
-.btn-error {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: #fff;
-}
-.btn-warning {
-  background: var(--warning-color);
-  border-color: var(--warning-color);
-  color: #fff;
-}
-.btn-success {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  color: #fff;
-}
-.btn-info {
-  background: var(--secondary-color-2, var(--primary-color));
-  border-color: var(--secondary-color-2, var(--primary-color));
-  color: #fff;
-}
+/* a button that only looks like a link */
+.yw-btn--link,
 .btn-link {
   background: none;
   border-color: transparent;
-  color: var(--primary-color);
+  color: var(--yw-primary);
   text-decoration: underline;
 }
+
+.yw-btn--lg,
+.btn-lg {
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  font-size: 1.15rem;
+}
+
 .btn-group {
   display: inline-flex;
 }
 .btn-group > .btn:not(:first-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  margin-left: -1px;
+  margin-left: calc(-1 * var(--yw-space-sm-x));
 }
 .btn-group > .btn:not(:last-child) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-.alert {
-  position: relative;
-  padding: 10px 32px 10px 12px;
-  margin-bottom: 12px;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  background: var(--neutral-light-color, #f5f5f5);
-}
-.alert-info {
-  background: #eef6f7;
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-.alert-success {
-  background: #eef8ee;
-  border-color: var(--success-color);
-  color: var(--success-color);
-}
-.alert-warning {
-  background: #fdf3ec;
-  border-color: var(--warning-color);
-  color: var(--warning-color);
-}
-.alert-danger,
-.alert-error {
-  background: #fbeeec;
-  border-color: var(--danger-color);
-  color: var(--danger-color);
-}
-.alert .close {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-}
-.close {
-  padding: 0;
-  font-size: 18px;
-  line-height: 1;
-  color: inherit;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  opacity: 0.6;
-}
-.close:hover {
-  opacity: 1;
-}
-
-.label {
-  display: inline-block;
-  padding: 2px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  color: #fff;
-  background: var(--neutral-soft-color);
-  border-radius: 4px;
-}
-.label-default {
-  background: var(--neutral-soft-color);
-}
-.label-primary {
-  background: var(--primary-color);
-}
-.label-info {
-  background: var(--secondary-color-2, var(--primary-color));
-}
-.label-success {
-  background: var(--success-color);
-}
-.label-warning {
-  background: var(--warning-color);
-}
-.label-danger {
-  background: var(--danger-color);
-}
+/* a count on a control -- a pill rather than the label's rectangle */
 .badge {
   display: inline-block;
   min-width: 10px;
-  padding: 2px 7px;
-  font-size: 11px;
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
-  background: var(--neutral-soft-color);
-  border-radius: 10px;
+  color: var(--yw-text-inverse);
+  background: var(--yw-text-muted);
+  border-radius: var(--yw-radius-full);
 }
 
 .well {
-  padding: 12px;
-  margin-bottom: 16px;
-  background: var(--neutral-light-color, #f5f5f5);
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-bottom: var(--yw-space-md-y);
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
 }
 
-.form-control {
-  display: block;
-  width: 100%;
-  padding: 6px 8px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--neutral-color);
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-.form-control:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: -1px;
-}
-.form-group {
-  margin-bottom: 10px;
-}
-.control-label {
-  display: inline-block;
-  margin-bottom: 3px;
-  font-weight: 600;
-}
 .help-block {
   display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--neutral-soft-color);
+  margin-top: var(--yw-space-sm-y);
+  font-size: 0.8rem;
+  color: var(--yw-text-muted);
 }
 .has-error .form-control,
+.has-error .yw-input,
 .form-group.has-error input {
-  border-color: var(--danger-color);
+  border-color: var(--yw-danger);
 }
 .has-error .help-block,
 .has-error .control-label,
 .has-error .yw-form-label {
-  color: var(--danger-color);
+  color: var(--yw-danger-text);
 }
 .has-success .form-control,
+.has-success .yw-input,
 .form-group.has-success input {
-  border-color: var(--success-color);
+  border-color: var(--yw-success);
 }
 .has-success .help-block,
 .has-success .control-label,
 .has-success .yw-form-label {
-  color: var(--success-color);
+  color: var(--yw-success-text);
 }
 .input-group {
   display: flex;
@@ -3431,9 +4013,9 @@ progress.yw-progressbar::-moz-progress-bar {
 .input-group-btn {
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  background: var(--neutral-light-color, #f5f5f5);
-  border: 1px solid var(--neutral-soft-color);
+  padding: 0 var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
+  border: var(--yw-border-width) solid var(--yw-border);
 }
 .input-group > :first-child {
   border-top-right-radius: 0;
@@ -3444,77 +4026,16 @@ progress.yw-progressbar::-moz-progress-bar {
   border-bottom-left-radius: 0;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--neutral-light-color, #eee);
-  vertical-align: top;
-  text-align: left;
-}
-.table-condensed th,
-.table-condensed td {
-  padding: 4px 8px;
-}
-.table-striped tbody tr:nth-child(odd) {
-  background: var(--neutral-light-color, #f9f9f9);
-}
-
 .table-responsive {
   overflow-x: auto;
 }
 
 /* legacy dropdown markup: yw-core.js toggles .open on .dropdown-menu's parent */
-.dropdown,
-.dropup {
-  position: relative;
-  display: inline-block;
-}
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  min-width: 160px;
-  margin: 2px 0 0;
-  padding: 4px 0;
-  list-style: none;
-  background: #fff;
-  border: 1px solid var(--neutral-soft-color);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 *:not(.open) > .dropdown-menu {
   display: none !important;
 }
 .open > .dropdown-menu {
   display: block;
-}
-.dropdown-menu > li > a,
-.dropdown-menu > a {
-  display: block;
-  padding: 5px 14px;
-  color: var(--neutral-color);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.dropdown-menu > li > a:hover,
-.dropdown-menu > a:hover {
-  background: var(--neutral-light-color, #f5f5f5);
-}
-.caret {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-left: 4px;
-  vertical-align: middle;
-  border-top: 4px dashed;
-  border-right: 4px solid transparent;
-  border-left: 4px solid transparent;
 }
 
 /* legacy collapse markup: yw-core.js toggles .in on .collapse targets */
@@ -3522,74 +4043,14 @@ progress.yw-progressbar::-moz-progress-bar {
   display: none !important;
 }
 
-/* legacy panel markup */
-.panel {
-  margin-bottom: 0.25em;
-  border: 1px solid var(--primary-color);
-  background: #fff;
-  border-radius: 4px;
-}
-.panel-heading {
-  display: block;
-  width: 100%;
-  padding: 10px 15px;
-  text-align: left;
-  background: var(--main-bg-color);
-  border: 0;
-  border-bottom: 1px solid var(--neutral-soft-color);
-  cursor: pointer;
-}
-.panel-title {
-  margin: 0;
-  font-size: 14px;
-}
-.panel-body {
-  padding: 1rem;
-}
 .panel-footer {
-  padding: 10px 15px;
-  background: var(--neutral-light-color, #f5f5f5);
-  border-top: 1px solid var(--neutral-soft-color);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  background: var(--yw-surface-sunken);
+  border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-.progress {
-  height: 16px;
-  overflow: hidden;
-  background: var(--neutral-light-color, #f5f5f5);
-  border-radius: 4px;
-}
-.progress-bar {
-  height: 100%;
-  background: var(--primary-color);
-  transition: width 0.3s ease;
-}
-
-.list-group {
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-}
-.list-group-item {
-  display: block;
-  padding: 8px 12px;
-  background: #fff;
-  border: 1px solid var(--neutral-light-color, #ddd);
-}
-.list-group-item + .list-group-item {
-  border-top: 0;
-}
-
-/* legacy grid: minimal flex approximation of Bootstrap's row/col-* */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -8px;
-}
-.row > [class*='col-'] {
-  padding: 0 8px;
-  box-sizing: border-box;
-  width: 100%;
-}
+/* legacy grid: the column widths. The row and the columns themselves are .yw-row/.yw-col's
+   rule; only the twelfths have no yw-* counterpart. */
 @media (min-width: 768px) {
   .row > .col-sm-1,
   .row > .col-md-1,
@@ -3653,41 +4114,12 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* Legacy .nav / .nav-tabs (stored wiki content using the {{nav}} action with the
-   old Bootstrap class names) — same look as .yw-nav */
-ul.nav,
-ul.nav-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-ul.nav li,
-ul.nav-tabs li {
-  list-style: none;
-}
-ul.nav li a,
-ul.nav-tabs li a {
-  display: block;
-  padding: 8px 12px;
-  text-decoration: none;
-  color: var(--neutral-color);
-  /* see .yw-nav li a: reserves the active state's border so the bar keeps its height */
-  border-bottom: 2px solid transparent;
-}
-ul.nav li.active a,
-ul.nav-tabs li.active a {
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
-}
-
 /* /PageName/share: the social share icon row (ShareHandler) */
 .yw-share-buttons {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   align-items: center;
-  margin: 0.5rem 0 1rem;
+  margin: var(--yw-space-md-y) 0 var(--yw-space-md-y);
 }
 .yw-share-buttons .bouton_share {
   color: inherit;
@@ -3776,7 +4208,7 @@ ul.nav-tabs li.active a {
   display: block;
   height: 100%;
   width: 100%;
-  background: var(--yw-color-primary, #2a6cb0);
+  background: var(--yw-color-primary, var(--yw-primary));
 }
 
 @keyframes yw-progress-grow {
@@ -3819,8 +4251,8 @@ ul.nav-tabs li.active a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4em;
-  padding: 5px 10px;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 0.875rem;
   line-height: 1.2;
 }
@@ -3871,22 +4303,21 @@ ul.nav-tabs li.active a {
   }
 }
 
-/* The navbar's pencil leaves the centred container and joins the others in the gutter.
-   `.container` is `position: static`, so this resolves against `#yw-topnav` -- which is
-   `position: sticky`, and therefore a containing block. Without it the pencil sat at the
-   container's right edge, ~85px left of the floating cluster and the other two pencils:
-   four buttons doing one job, on two different vertical lines.
+/* The navbar's pencil leaves the centred container. `.container` is `position: static`, so
+   this resolves against `#yw-topnav` -- which is `position: sticky`, and therefore a
+   containing block -- and the pencil is placed against the window rather than against the
+   centred column, like the other two.
 
    Nothing is reserved for it on the bar. There used to be: the pencil was on screen at all
    times, so below 1250px -- where the centred container fills the window and leaves no gutter
    to sit in -- the block holding the account button was padded 5rem to keep the two apart.
-   Now the pencil is only there while the navbar is hovered, and a permanent gap in the bar to
-   the right of the avatar, on every page, for a control that is not in it, costs more than the
-   overlap it avoided. So it overlays instead, which is what its background, border and shadow
-   were always for; when it is gone the row sits flush with the container edge again.
+   Now the pencil is only there while the navbar is hovered, and a permanent gap in the bar,
+   on every page, for a control that is not in it, costs more than the overlap it avoided. So
+   it overlays instead, which is what its background, border and shadow were always for.
 
-   Its label does run left over the fast-access buttons while it is shown -- unavoidable once
-   there is a label, since even at 1250px the gutter is ~40px and the button is ~4x that. */
+   A labelled button is ~215px wide, and there is no 215px of the bar that holds nothing --
+   even at 1250px the gutter is ~40px. So it cannot sit ON the bar at all without covering
+   something: see the media query below. */
 #yw-topnav .yw-chrome-edit {
   position: absolute;
   right: 1rem;
@@ -3894,6 +4325,34 @@ ul.nav-tabs li.active a {
   transform: translateY(-50%);
   /* above the sticky bar's own stacking, so it is not the bar that receives the click */
   z-index: 1;
+}
+
+/* On a bar that is one row, it hangs UNDER it rather than lying across its right end.
+   Measured, not guessed: centred on the bar the button spans 1050-1265px on a 1280px window,
+   and what lives there is the account button (1097-1149) and the viewer's scheme and language
+   controls (1168-1225). Both were covered completely -- `elementFromPoint` on either returned
+   `.yw-chrome-edit__label` -- so an admin could neither open their own account menu nor switch
+   the wiki to dark, because reaching for them is what made the pencil appear on top of them.
+
+   And under the LEFT end, not the right: the right end of the strip below the bar is where the
+   banner's own pencil lives (measured: 1089-1265px, within a few pixels of the same line), so
+   right-aligning would trade covering two controls for landing on another pencil -- two
+   labelled buttons in one place, each revealed by hovering a region the other sits in. The
+   left is empty, and it is where the menu this button edits actually is.
+
+   Hovering it still counts as hovering the navbar -- `:hover` matches ancestors in the
+   document tree, not in the box tree -- so moving the pointer down onto it does not make it
+   fade away first.
+
+   Only where the bar is one row. Below 768px the container wraps, the viewer's controls take a
+   line of their own, and the pencil already sits between the rows covering neither. */
+@media (min-width: 768px) {
+  #yw-topnav .yw-chrome-edit {
+    top: 100%;
+    right: auto;
+    left: 1rem;
+    transform: none;
+  }
 }
 
 /* On the banner and the footer it floats in the corner of the region rather than sitting in
@@ -3922,5 +4381,456 @@ ul.nav-tabs li.active a {
 @media print {
   .yw-chrome-edit {
     display: none;
+  }
+}
+
+/* ============================================================
+   from styles/actions/tags-nuage.css
+   ============================================================ */
+
+/********* Ebook *********/
+#ebook-selection-container .list-group-item:hover {
+  cursor: pointer;
+}
+
+#ebook-selection-container .movable {
+  margin-right: var(--yw-space-md-x);
+}
+
+/***********************************  Nuage de mot clés  ************************************/
+.nuage {
+  margin: 0;
+  padding: 0;
+}
+
+.tag-list {
+  display: block;
+  float: left;
+  list-style-type: none;
+  background-image: none;
+  color: var(--yw-text);
+  margin: 0;
+  padding: 0;
+}
+
+.tag-label {
+  margin-left: var(--yw-space-sm-x);
+}
+
+a.size6 {
+  font-size: 38px;
+  color: var(--yw-secondary);
+  padding: 0 var(--yw-space-sm-x);
+}
+
+a.size5 {
+  font-size: 34px;
+  color: var(--yw-secondary);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+a.size4 {
+  font-size: 29px;
+  color: var(--yw-secondary);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+a.size3 {
+  font-size: 24px;
+  color: var(--yw-secondary);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+a.size2 {
+  font-size: 19px;
+  color: var(--yw-secondary);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+a.size1 {
+  font-size: 14px;
+  color: var(--yw-secondary);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+a.size5:hover,
+a.size6:hover {
+  color: var(--yw-secondary);
+}
+
+a.size1:hover,
+a.size2:hover,
+a.size3:hover,
+a.size4:hover {
+  color: var(--yw-secondary);
+}
+
+.tag-link {
+  cursor: pointer;
+}
+
+/***********************************  FIN Nuage de mot clés  ************************************/
+
+/******************************** icone rss *********************************/
+.rss-icon {
+  position: relative;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jZ3Ty0tUYRjH8fcfcD3/QS3aRdOmsEVBlCiIiEq4bGFNFy3KQE0NSZls8FYKmgw2YlqUpOY4GTaOpWimRHb1wiiFMjnnzDmeOTf4tgimRiciX/gt3geez/s8i1cIIUTs7inklnzk5jzkplzkxhzkhmxkTxbS7Uyk+gwk93GkumNItUeJ1hwhWpOOEEKIWGsh9loIe3UcKxzECo9hrYxiLQewloYxF4cwvzzF/PwE89NDzA+9mAvdmO99RG8cQsgt+dir4xjzHah9Nag9Vai+MpSuUrShSjR/BfpENfHxcuIvrxF/cRnt+UWMd51EKw8i5OY8rHAQ420b248++Rgt0I7acx5tsCTRrI24MOY72Kw4gJCbcrHCYxizd7A35rHX57DXZ5MgYy6ANnKLrf6zaCMutGen0d808ePKHoTcmIO1Moox04g+7UGfcqO/vok+UY39ber3NDODqI+uovadRPWlEw+WEXE5EHJDNtZyAH3ag9J5iVj7BWKtRagPitnqL0bzFyUQzd+GVLcXxev8A/BkYS0No0+5k/efGUC5V4Lk3ofidSbqat+5ZEC6nYm5OIQ+WYv9fRp7LZQEqb4zKF4n5sdeAJSu0m1AfQbm1wHioetsDRSi3D+c9KLmb0PxOpNqO4GFbtTeE2wUpLFRkJayQfE60V95dwKb5fvRQ1X/bPgrEHE5iAfLUgKJvVPcUwL/kx3AbhJxOX79yIjLwW4ihBA/AUnxGQfZBYPZAAAAAElFTkSuQmCC');
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* bootstrap-tagsinput styling removed (ticket 10): the tag-input widget is now
+   yw-core.css's .yw-tag-input, no bootstrap-tagsinput dependency left to style */
+
+/* ============================================================
+   from styles/actions/attach.css
+   ============================================================ */
+
+/*
+ * Les classes effets graphiques pour les images
+ */
+
+/* Style the figures */
+
+.attached_file {
+  text-decoration: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+
+.attached_file img {
+  vertical-align: top;
+}
+
+/* Style the figure captions, hiding them by default */
+
+figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  font-size: 0.9em;
+  text-shadow: none;
+  color: var(--yw-text-inverse);
+  background-color: var(--yw-overlay);
+  opacity: 0;
+  filter: alpha(opacity=0);
+  transition: opacity 0.2s ease-in-out;
+  padding: var(--yw-space-sm-y) 0;
+}
+
+/* Display the captions on hover */
+
+figure:hover figcaption {
+  opacity: 1;
+}
+
+/* Add padding and margin to the caption contents */
+
+figcaption * {
+  padding: 0 var(--yw-space-md-x);
+  margin: 0;
+}
+
+figcaption *:first-child {
+  padding-top: var(--yw-space-sm-y);
+}
+
+figcaption *:last-child {
+  padding-bottom: var(--yw-space-sm-y);
+}
+
+/* fichiers attaches */
+.attached_file.attach_left,
+.attached_file.left {
+  float: left;
+  margin: 0 var(--yw-space-md-x) var(--yw-space-md-y) 0;
+}
+
+.attached_file.attach_right,
+.attached_file.right {
+  float: right;
+  margin: 0 0 var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.attached_file.attach_center,
+.attached_file.center {
+  display: table;
+  clear: both;
+  text-align: center;
+  margin: 0 auto var(--yw-space-md-y);
+  width: auto;
+}
+
+.whiteborder {
+  box-sizing: border-box;
+  border: 8px solid var(--yw-border-subtle);
+  background: var(--yw-surface-raised);
+  box-shadow: 1px 1px 2px var(--yw-shadow-color);
+}
+
+.lightshadow {
+  box-shadow: 1px 1px 2px var(--yw-shadow-color);
+}
+
+.zoom {
+  transition: transform 0.2s ease-out;
+}
+
+.zoom:hover {
+  transform: scale(1.1);
+  z-index: 5;
+  box-shadow: 2px 2px 15px 0 var(--yw-shadow-color);
+}
+
+/* pointimage */
+.pointimage-container {
+  position: relative;
+  display: inline-block;
+}
+
+.pointimage-container .attached_file {
+  cursor: default !important;
+}
+
+.img-marker {
+  position: absolute;
+  display: block;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  border: var(--yw-border-width) solid var(--yw-border-subtle);
+  box-shadow: 1px 1px 1px 0 var(--yw-shadow-color-strong);
+}
+
+.btn-add-point,
+.btn-cancel {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: none;
+}
+
+.btn-edit-points {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: none;
+}
+
+.pointimage-container:hover .btn-add-point,
+.pointimage-container:hover .btn-cancel,
+.pointimage-container:hover .btn-edit-points {
+  display: block;
+}
+
+/* vanilla-JS popover for pointimage markers (replaces Bootstrap's .popover) */
+.yw-popover--pointimage {
+  display: none;
+  position: absolute;
+  z-index: 1010;
+  min-width: 200px;
+  max-width: 300px;
+  background: var(--yw-surface-raised);
+  color: var(--yw-text);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  box-shadow: 0 4px 24px var(--yw-shadow-color-strong);
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-popover--pointimage.yw-popover--open {
+  display: block;
+}
+
+.yw-popover--pointimage .yw-popover__title {
+  font-weight: bold;
+  margin-bottom: var(--yw-space-sm-y);
+  padding-right: var(--yw-space-md-x);
+}
+
+.yw-popover--pointimage .yw-popover__content {
+  overflow: auto;
+  max-height: 300px;
+}
+
+.yw-popover--pointimage .btn-close-popover {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.modal-pointimage .wiki-textarea {
+  height: 260px !important;
+}
+
+/* background image */
+.background-image {
+  background-clip: border-box;
+  background-origin: padding-box;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 15px;
+  height: auto;
+}
+
+.one-quarter-height {
+  height: 25vh !important;
+}
+
+.one-third-height {
+  height: 33vh !important;
+}
+
+.half-height {
+  height: 50vh !important;
+}
+
+.two-third-height {
+  height: 66vh !important;
+}
+
+.three-quarter-height {
+  height: 75vh !important;
+}
+
+.full-height {
+  height: 100vh !important;
+}
+
+.background-image.cover {
+  background-size: cover;
+}
+
+.background-image.fixed {
+  background-attachment: fixed;
+}
+
+.background-image.center.full-width {
+  background-position: center top;
+}
+
+.background-image.center:not(.full-width) {
+  background-position: center top;
+  margin: 0 !important;
+}
+
+.background-image.parallax {
+  transform: translateZ(-3px) scale(1.1);
+}
+
+.headerpage .background-image {
+  margin: calc(-1 * var(--yw-space-lg-y)) calc(-1 * var(--yw-space-lg-x));
+  padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
+}
+
+/* The two an author writes on a section whose background they chose themselves. They mean
+   the words: a page saying `class="white"` over its own dark photograph wants white, not
+   whatever happens to read on the current Colour scheme. So both are the fixed inks. */
+.white,
+.white h1,
+.white h2,
+.white h3,
+.white h4,
+.white h5,
+.white h6,
+.white a,
+.white a:hover {
+  color: var(--yw-ink-on-dark) !important;
+}
+
+.black,
+.black h1,
+.black h2,
+.black h3,
+.black h4,
+.black h5,
+.black h6,
+.black a,
+.black a:hover {
+  color: var(--yw-text) !important;
+}
+
+/* embedded pdf or videos */
+.embed-responsive {
+  margin-top: var(--yw-space-md-y);
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.embed-responsive.pdf {
+  padding-bottom: 138%;
+}
+
+.embed-responsive.pdf-landscape {
+  padding-bottom: 75%;
+
+  /* 1/138% */
+}
+
+.embed-responsive.pdf-square {
+  padding-bottom: 100%;
+}
+
+.pdf-block-loading {
+  position: absolute;
+  z-index: 1000;
+  top: 30vh;
+  left: 48%;
+}
+
+/* ============================================================
+   from styles/bazar/bazar.css
+   ============================================================ */
+
+.throbber {
+  width: 56px;
+  height: 1.5rem;
+  background:
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent) 0%
+      50%,
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent) 50%
+      50%,
+    radial-gradient(circle closest-side, var(--yw-primary) 90%, transparent)
+      100% 50%;
+  background-size: calc(100% / 3) 13.4px;
+  background-repeat: no-repeat;
+  animation: dots-7ar3yq 1s infinite linear;
+  margin-right: var(--yw-space-md-x);
+}
+
+@keyframes dots-7ar3yq {
+  20% {
+    background-position:
+      0% 0%,
+      50% 50%,
+      100% 50%;
+  }
+
+  40% {
+    background-position:
+      0% 100%,
+      50% 0%,
+      100% 50%;
+  }
+
+  60% {
+    background-position:
+      0% 50%,
+      50% 100%,
+      100% 0%;
+  }
+
+  80% {
+    background-position:
+      0% 50%,
+      50% 50%,
+      100% 100%;
   }
 }

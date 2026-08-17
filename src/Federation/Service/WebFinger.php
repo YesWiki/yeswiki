@@ -94,11 +94,12 @@ class WebFinger
     }
 
     /**
-     * Get ActivityPhp profile id URL.
+     * Get ActivityPhp profile id URL, or null when the response declares no self link.
      *
-     * @return string
+     * Declared `@return string` and falling off the end of the loop, so "no such link" came
+     * back as null from something every caller treated as a string (ticket 40).
      */
-    public function getProfileId()
+    public function getProfileId(): ?string
     {
         foreach ($this->links as $link) {
             if (isset($link['rel'], $link['type'], $link['href'])) {
@@ -109,14 +110,12 @@ class WebFinger
                 }
             }
         }
+
+        return null;
     }
 
-    /**
-     * Get interaction url.
-     *
-     * @return string
-     */
-    public function getInteractionUrl()
+    /** Get interaction url, or null when the response declares no subscribe template. */
+    public function getInteractionUrl(): ?string
     {
         foreach ($this->links as $link) {
             if (isset($link['rel'], $link['template'])) {
@@ -125,6 +124,8 @@ class WebFinger
                 }
             }
         }
+
+        return null;
     }
 
     /**

@@ -17,7 +17,8 @@
     </a>
   {% endfor %}
   {% if account %}{{ action('login')|raw }}{% endif %}
-  {# last, so it is the rightmost thing on the bar -- and empty for anyone who is not an
-     admin, which is why there is no permission test here #}
+  {# last of the CONFIGURABLE things on the bar, and empty for anyone who is not an admin,
+     which is why there is no permission test here. Past it, outside this block, come the
+     two controls that are the viewer's rather than the wiki's (layout/tools.twig). #}
   {{ editChrome|default('')|raw }}
 </div>
