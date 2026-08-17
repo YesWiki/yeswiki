@@ -12,18 +12,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The entries RSS feed, after pear/xml_util was dropped for DOM.
- *
- * The point of these assertions is that the feed PARSES. The old builder escaped each
- * value and then ran html_entity_decode() over the finished document to turn escaped
- * `<![CDATA[` markers back into real CDATA -- which un-escaped every other value too, so
- * an `&` or a `<` anywhere in the wiki's own RSS config produced a feed no reader could
- * read. Nothing in the previous test suite would have noticed.
- *
- * Ticket 35 moved it from the `/PageName/rss` handler to `GET /api/entries/rss`: the feed is a
- * bazar list, so the page it used to hang off contributed nothing but a URL to reach it by.
- */
+/** The entries RSS feed, after pear/xml_util was dropped for DOM. */
 class EntriesFeedTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'RssHandlerTestPage';
@@ -42,9 +31,7 @@ class EntriesFeedTest extends YesWikiTestCase
         $output = $this->runRssOn($wiki, 'a plain page');
 
         $doc = new \DOMDocument();
-        // the body goes in the message: when this fails it is almost never a syntax slip
-        // in the builder but something upstream returning a PHP message instead of a feed
-        // -- RssHandler::run() catches every Throwable and answers with its text
+
         $this->assertTrue($doc->loadXML($output), "the feed must parse as XML, got:\n" . substr($output, 0, 500));
 
         $root = $doc->documentElement;
@@ -52,15 +39,14 @@ class EntriesFeedTest extends YesWikiTestCase
         $this->assertSame('rss', $root->nodeName);
         $this->assertSame('2.0', $root->getAttribute('version'));
         $this->assertSame(1, $doc->getElementsByTagName('channel')->length);
-        // the self link a reader follows to refresh, under the namespace it needs
+
         $selfLinks = $doc->getElementsByTagNameNS('http://www.w3.org/2005/Atom', 'link');
         $this->assertSame(1, $selfLinks->length);
         $this->assertSame('self', $selfLinks->item(0)?->attributes?->getNamedItem('rel')?->nodeValue);
     }
 
     /**
-     * The regression the rewrite fixes: a title carrying XML metacharacters used to be
-     * written into the document unescaped, and the whole feed stopped parsing.
+     * The regression the rewrite fixes: a title carrying XML metacharacters used to be written into the document unescaped, and the whole feed stopped parsing.
      */
     #[Depends('testWikiExisting')]
     public function testMetacharactersInTheConfigDoNotBreakTheFeed(YesWikiRuntime $wiki): void
@@ -85,16 +71,14 @@ class EntriesFeedTest extends YesWikiTestCase
     }
 
     /**
-     * A feed is built out of whatever anyone ever pasted into the wiki, and XML 1.0 has
-     * characters it simply cannot carry -- a control byte, a broken UTF-8 sequence. Inside
-     * CDATA or not, one of them makes the document unparseable for every reader.
+     * A feed is built out of whatever anyone ever pasted into the wiki, and XML 1.0 has characters it simply cannot carry -- a control byte, a broken UTF-8 sequence.
      */
     #[Depends('testWikiExisting')]
     public function testCharactersXmlCannotCarryDoNotBreakTheFeed(YesWikiRuntime $wiki): void
     {
         $config = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
         $previous = $config['BAZ_RSS_DESCRIPTIONSITE'] ?? null;
-        // a form feed, a NUL, and a truncated multi-byte sequence
+
         $config['BAZ_RSS_DESCRIPTIONSITE'] = "before\x0cmid\x00\xC3after";
         try {
             $output = $this->runRssOn($wiki, 'a plain page');
@@ -112,9 +96,7 @@ class EntriesFeedTest extends YesWikiTestCase
     }
 
     /**
-     * The feed no longer needs a page at all -- it is built from the query string -- but one is
-     * still created here so the wiki has some content to list, which is what makes the escaping
-     * assertions meaningful rather than vacuous.
+     * The feed no longer needs a page at all -- it is built from the query string -- but one is still created here so the wiki has some content to list, which is what makes the escaping assertions meaningful rather than vacuous.
      */
     private function runRssOn(YesWikiRuntime $wiki, string $content): string
     {

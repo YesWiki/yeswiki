@@ -3,29 +3,27 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * The mutable runtime configuration array (historic Wiki::$config /
- * GetConfigValue()). Distinct from the compiled container's frozen parameter
- * bag on purpose: a handful of runtime writers mutate values after boot
- * (toast settings, the current page's lang, tests toggling use_hashcash) and
- * readers must observe those writes. Bound by reference so the historic
- * array and this service stay one storage during the transition.
+ * The mutable runtime configuration array (historic Wiki::$config / GetConfigValue()).
  *
  * @implements \ArrayAccess<string, mixed>
  */
 class RuntimeConfig implements \ArrayAccess
 {
-    /** @var array<mixed> */
+    /**
+     * @var array<mixed>
+     */
     protected $values = [];
 
-    /** @param array<mixed> $values */
+    /**
+     * @param array<mixed> $values
+     */
     public function bind(array &$values): void
     {
         $this->values = &$values;
     }
 
     /**
-     * Historic Wiki::GetConfigValue(): scalars come back trimmed, a missing or
-     * null key yields $default when truthy, '' otherwise.
+     * Historic Wiki::GetConfigValue(): scalars come back trimmed, a missing or null key yields $default when truthy, '' otherwise.
      */
     public function getValue(string $name, mixed $default = null): mixed
     {
@@ -34,7 +32,9 @@ class RuntimeConfig implements \ArrayAccess
             : ($default != null ? $default : '');
     }
 
-    /** @return array<mixed> */
+    /**
+     * @return array<mixed>
+     */
     public function all(): array
     {
         return $this->values;
@@ -46,8 +46,7 @@ class RuntimeConfig implements \ArrayAccess
     }
 
     /**
-     * By reference so nested element writes (`$config['a']['b'] = ...`) reach the
-     * shared storage instead of a temporary copy.
+     * By reference so nested element writes (`$config['a']['b'] = ...`) reach the shared storage instead of a temporary copy.
      */
     public function &offsetGet(mixed $offset): mixed
     {

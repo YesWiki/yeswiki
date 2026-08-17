@@ -7,25 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * What a published stylesheet points at must be published with it.
- *
- * A farm instance's docroot holds no styles of its own: `AssetRegistry` copies each
- * registered file into `cache/assets/{version}/` and links it there. But nobody registers
- * the sheets a stylesheet `@import`s, the images and fonts its `url()`s name, or the modules
- * `aceditor.js` imports -- the browser derives those from inside the file it was handed, and
- * asks for them at the matching published path.
- *
- * They used to arrive only through the request interception, which needs the webserver to
- * send missing files to index.php. Where the vhost has no such fallback -- a wiki in a plain
- * subdirectory on a shared host -- the page rendered, every registered asset was served off
- * disk, and precisely the imported sheets 404'd. Reported from a farm as "bloquée en raison
- * d'un type MIME (« text/html ») incorrect": the webserver's own error page, offered as a
- * stylesheet.
- *
- * Driven at the publishing layer, not through a server: this is about what ends up on disk,
- * before any request is made.
- */
+/** What a published stylesheet points at must be published with it. */
 class PublishedAssetClosureTest extends YesWikiTestCase
 {
     private string $instance = '';
@@ -34,7 +16,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->getWiki(); // for the path constants
+        $this->getWiki();
         $this->previousCwd = (string)getcwd();
         $this->instance = sys_get_temp_dir() . '/yeswiki-closure-test-' . getmypid();
         if (!is_dir($this->instance) && !mkdir($this->instance, 0755, true)) {
@@ -60,8 +42,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $url = AssetPublisher::publishedUrl('styles/yw-content.css', '1');
 
         $this->assertNotNull($url, 'the stylesheet itself');
-        // the images its rules name with `url()`, which nothing registers: the browser
-        // derives them from inside the file it was handed
+
         foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
             $this->assertFileExists(
                 $this->published('src/assets/images/' . $referenced),
@@ -78,9 +59,6 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         }
         AssetPublisher::publishedUrl('javascripts/aceditor.js', '1');
 
-        // the ones the farm reported: aceditor.js imports them by relative path, and
-        // mode-yeswiki.js is imported by ace-wrapper.js rather than fetched by ACE's own
-        // loader -- a module fetched by a URL built at runtime is one nothing can publish
         foreach (['link-panel.js', 'file-picker-panel.js', 'editor-rails.js', 'mode-yeswiki.js'] as $imported) {
             if (!is_file(\YESWIKI_SOURCE_DIR . '/javascripts/' . $imported)) {
                 continue;
@@ -92,9 +70,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * ...including transitively, and without looping on a cycle.
-     */
+    /** ...including transitively, and without looping on a cycle. */
     public function testItFollowsTheChainAndSurvivesACycle(): void
     {
         $dir = $this->instance . '/custom/closure';
@@ -110,8 +86,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
     }
 
     /**
-     * Only relative references, and only what may be served: an absolute URL belongs to
-     * whoever hosts it, and `url()` must not become a way to publish anything on disk.
+     * Only relative references, and only what may be served: an absolute URL belongs to whoever hosts it, and `url()` must not become a way to publish anything on disk.
      */
     public function testItPublishesNeitherRemoteNorUnservableReferences(): void
     {
@@ -139,15 +114,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $this->assertSame(['custom/closure/refs.css'], $published, 'nothing but the sheet itself');
     }
 
-    /**
-     * A source file that changed is published again, release string or not.
-     *
-     * Freshness used to be keyed on the version: anything but `dev` was taken as final and
-     * the published copy was never looked at again. That is right for a released instance
-     * and wrong for every instance following a branch -- and those are the ones where a fix
-     * is pulled and nothing changes, because the wiki goes on serving the copy it published
-     * the first time.
-     */
+    /** A source file that changed is published again, release string or not. */
     public function testAChangedSourceFileIsPublishedAgainUnderTheSameVersion(): void
     {
         $dir = $this->instance . '/custom/closure';
@@ -157,7 +124,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $this->assertStringContainsString('.before', (string)file_get_contents($this->published('custom/closure/changing.css')));
 
         file_put_contents($dir . '/changing.css', ".after { color: blue }\n");
-        touch($dir . '/changing.css', time() + 2); // an edit a second after the copy
+        touch($dir . '/changing.css', time() + 2);
         AssetPublisher::publishedUrl('custom/closure/changing.css', '1');
 
         $this->assertStringContainsString(
@@ -167,15 +134,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * ...and the URL moves with it, or no browser will ever ask for the new copy.
-     *
-     * Published assets are served `immutable, max-age=1 year`: the version folder in the path
-     * IS the cache key. Keyed on the release string alone it never moves on an instance
-     * following a branch -- the update lands on disk, the URL stays, and every returning
-     * visitor goes on running the code they cached. A stamp records that the sources moved on
-     * and lands in the next request's URLs.
-     */
+    /** ...and the URL moves with it, or no browser will ever ask for the new copy. */
     public function testTheUrlMovesWhenTheSourceChanges(): void
     {
         $dir = $this->instance . '/custom/closure';
@@ -188,12 +147,11 @@ class PublishedAssetClosureTest extends YesWikiTestCase
 
         file_put_contents($dir . '/moving.css', ".after { color: blue }\n");
         touch($dir . '/moving.css', time());
-        AssetPublisher::publishedUrl('custom/closure/moving.css', '1'); // the request that notices
+        AssetPublisher::publishedUrl('custom/closure/moving.css', '1');
 
         $stamp = AssetPublisher::publishedStamp();
         $this->assertNotSame('', $stamp, 'the sources moving on is recorded');
 
-        // the next request asks under the stamped version, which no browser has seen
         $second = AssetPublisher::publishedUrl('custom/closure/moving.css', '1-' . $stamp);
         $this->assertNotSame($first, $second);
         $this->assertStringContainsString(
@@ -203,23 +161,13 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * An instance published by a YesWiki that had no stamp gets one from what is on disk.
-     *
-     * This is the state the first attempt left behind, and it could not get out of it: the
-     * stamp was written when a published file was *caught* going stale, and an instance whose
-     * copies had already been refreshed had nothing stale left to catch. No stamp, so the URL
-     * never moved, so every browser kept serving the modules it had cached -- for good, since
-     * no second update to those files was coming. Published copies carry their source's
-     * mtime, so the tree can say how old it is without being asked at the right moment.
-     */
+    /** An instance published by a YesWiki that had no stamp gets one from what is on disk. */
     public function testATreeWithNoStampGetsOneFromItsOwnFiles(): void
     {
         AssetPublisher::publishedUrl('styles/yw-core.css', '1');
         $stampFile = $this->instance . '/' . AssetPublisher::PUBLISHED_PREFIX . '.sources-changed';
         $this->assertFileExists($stampFile);
 
-        // an instance published before any of this existed: files current, no stamp
         unlink($stampFile);
 
         $stamp = AssetPublisher::publishedStamp();
@@ -233,20 +181,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $this->assertFileExists($stampFile, 'written down, so the walk happens once');
     }
 
-    /**
-     * No file of ours points above the source tree.
-     *
-     * `javascripts/entries-index-dynamic.js` opened with
-     * `import Panel from '../../../../javascripts/shared-components/Panel.js'` -- four levels
-     * up, correct back when the file lived in `tools/bazar/presentation/javascripts/` and
-     * never corrected when it moved. Browsers clamp the extra `..` at the site root, so on a
-     * standalone install it kept resolving to the same file and nothing ever complained.
-     *
-     * On a farm it does not: from `cache/assets/{version}/javascripts/` those four levels
-     * land exactly on the site root, and the import goes to the unversioned source path --
-     * a path that only answers where the webserver sends misses to index.php. Reported as
-     * `/ecto/javascripts/shared-components/Panel.js` blocked for its MIME type.
-     */
+    /** No file of ours points above the source tree. */
     public function testNoAssetOfOursReferencesSomethingAboveTheSourceTree(): void
     {
         $root = \YESWIKI_SOURCE_DIR;
@@ -255,7 +190,7 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $broken = [];
         foreach ($tree as $file) {
             $path = (string)$file;
-            // vendored builds are somebody else's business, and are not ES modules anyway
+
             if (!str_ends_with($path, '.js') || str_contains($path, '/vendor/')) {
                 continue;
             }
@@ -274,14 +209,9 @@ class PublishedAssetClosureTest extends YesWikiTestCase
         $this->assertSame([], $broken, 'relative imports must resolve where they say they do');
     }
 
-    /**
-     * An instance published by an older YesWiki has the sheets and not their imports. It gets
-     * swept once, when anything is next published -- otherwise it would stay broken until the
-     * next release changed the version.
-     */
+    /** An instance published by an older YesWiki has the sheets and not their imports. */
     public function testATreePublishedWithoutItsReferencesIsRepaired(): void
     {
-        // publish the whole closure, then take the references away again: an old instance
         AssetPublisher::publishedUrl('styles/yw-content.css', '1');
         foreach (['bazar/loading.gif', 'step-circle-icon.svg'] as $referenced) {
             unlink($this->published('src/assets/images/' . $referenced));
@@ -291,7 +221,6 @@ class PublishedAssetClosureTest extends YesWikiTestCase
             unlink($marker);
         }
 
-        // anything at all being published now triggers the sweep
         AssetPublisher::publishedUrl('styles/yw-core.css', '1');
 
         $this->assertFileExists($this->published('src/assets/images/bazar/loading.gif'));

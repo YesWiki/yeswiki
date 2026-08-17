@@ -140,7 +140,6 @@ const componentParams = {
     deleteAllSelected() {
       const uuid = this.getUuid()
       multiDeleteService.updateNbSelected(`MultiDeleteModal${uuid}`)
-      // if something to do before showing modal
     },
     getAdminsButtons(entryId, entryTitle, entryUrl, candelete) {
       const isExternal = this.$root.isExternalUrl({
@@ -180,8 +179,6 @@ const componentParams = {
           'defaultcolumnwidth',
         )
         if (columnfieldsids.every((id) => id.length === 0)) {
-          // backup: the form's first field, whatever it is called. Was the literal
-          // 'bf_titre', so a form without one showed an empty table (ticket 11)
           columnfieldsids = Object.keys(fields).slice(0, 1)
         }
         const data = { columns: [] }
@@ -275,8 +272,6 @@ const componentParams = {
                 field: fields[id],
                 visible: true,
                 printable: true,
-                // the first column carries the link to the entry, like the static
-                // table does when the form's title field is not among the columns
                 addLink: idx === 0,
               },
             })
@@ -287,7 +282,6 @@ const componentParams = {
         })
         if (await this.sanitizedParamAsync('exportallcolumns')) {
           Object.keys(fields).forEach((id) => {
-            // append fields not displayed
             if (!columnfieldsids.includes(id)) {
               this.registerField(data, {
                 ...options,
@@ -637,7 +631,6 @@ const componentParams = {
                 anchorData =
                   'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart.anchorImageExt'
               } else {
-                // maybe from other entry
                 regExp = new RegExp(
                   `^([A-Za-z0-9-_]+)(_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
                 )
@@ -657,7 +650,6 @@ const componentParams = {
                   anchorData =
                     'anchorOtherEntryId_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
                 } else {
-                  // last possible format
                   regExp = new RegExp('^(.*)\\.([^.]+)$')
                   if (regExp.test(formattedData)) {
                     ;[, anchorImageSpecificPart, anchorImageExt] =
@@ -782,14 +774,12 @@ const componentParams = {
           }
         }
         case 'checkboxfieldsincolumns':
-          // default true
           return name in params
             ? ![false, 0, '0', 'false'].includes(params[name])
             : true
         case 'displayvaluesinsteadofkeys':
         case 'exportallcolumns':
         case 'displayimagesasthumbnails':
-          // default false
           return name in params
             ? [true, 1, '1', 'true'].includes(params[name])
             : false
@@ -880,7 +870,7 @@ const componentParams = {
   },
   watch: {
     entries(newVal, oldVal) {
-      this.updateFieldsFromRoot() // because updated in same time than entries (but not reactive)
+      this.updateFieldsFromRoot()
       const sanitizedNewVal = newVal.filter(
         (e) => typeof e === 'object' && e !== null && 'tag' in e,
       )
@@ -895,8 +885,6 @@ const componentParams = {
     params() {
       Waiter.resolve('params')
     },
-    // multidelete modal open/close hooks are handled by multidelete.js's
-    // delegated yw-modal-shown/yw-modal-hidden listeners
   },
   template: `
     <div>

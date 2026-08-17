@@ -2,7 +2,6 @@
   <div class="alert alert-danger">{{ error|raw }}</div>
 {% endif %}
 
-{# Preview #}
 {% if preview and hasContent %}
   <h1>{{ _t('EDIT_PREVIEW') }}</h1>
   <div class="page_preview">
@@ -10,12 +9,9 @@
   </div>
 {% endif %}
 
-{# the edited form and the actions-builder rail are siblings in one flex row: the rail
-   configures what is being edited, it is not part of what gets posted #}
 <div class="yw-designer">
 <div class="yw-designer__canvas">
 
-{# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
 <form id="ACEditor" name="ACEditor" enctype="multipart/form-data" hx-boost="false"
       action="{{ url({ handler: handler }) }}" method="POST">
 
@@ -25,31 +21,19 @@
 
   <input type="hidden" name="previous" value="{{ previous }}" />
 
-  {# The Page form's own fields (ticket 10). Whatever the webmaster declared before the
-     `content` field renders above the editor and whatever comes after renders below, so
-     the designer decides this page's layout the same way it decides an entry's. #}
   {% for input in fieldsBeforeContent %}{{ input|raw }}{% endfor %}
 
-  {# A Content type with no `content` field has no prose: an account and a file are not
-     wiki markup, so they get their fields and no editor at all. #}
   {% if hasContent %}
     {% if preview %}
       <input type="hidden" name="body" value="{{ body|raw }}" />
     {% else %}
-      {# `saveButton`: it was dropped when ticket 10 made `content` one field among the
-         form's own, on the reasoning that the form's own Save below was enough. Asked for
-         back -- the toolbar is where your hands already are while writing, and reaching the
-         foot of a long page to save is the reach the floating cluster exists to avoid. #}
+
       {{ renderAction('aceditor', { name: 'body', value: body, saveButton: true })|raw }}
     {% endif %}
   {% endif %}
 
   {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
 
-  {# "come back to where I was" survives the POST: the form posts to the editor's own
-     address, so a parameter that only lived in the query string would be gone by the time
-     EditHandler redirects. This is what makes the banner/footer pencils a round trip rather
-     than a one-way ticket to a page nobody was reading. #}
   {% set incomingUrl = request.request.incomingurl|default(request.get.incomingurl|default('')) %}
   {% if incomingUrl is not empty %}
     <input type="hidden" name="incomingurl" value="{{ incomingUrl }}"/>
@@ -73,16 +57,6 @@
     {% endfor %}
   {% endif %}
 
-  {# What you can do while editing, said twice: floating in the corner, so it is at hand
-     wherever you are in a long page, and again at the foot of the form, where a form's
-     buttons have always been and where you end up after filling one in. Same buttons from
-     one macro, so the two cannot drift apart.
-
-     `{{editbar}}` renders no cluster on an edit screen -- one corner, one set of actions --
-     and these live in the editor's own template rather than in the bar so that the only way
-     to save a page is never in a template a theme may leave out.
-
-     Inside the <form>, so the buttons submit it without naming it. #}
   <nav class="yw-page-actions yw-page-actions--editing" aria-label="{{ _t('TEMPLATE_SAVE') }}">
     {{ _self.saveButton(saveValue, true) }}
     <div class="yw-page-actions__more">
@@ -94,8 +68,6 @@
     {{ _self.saveButton(saveValue, false) }}
     {{ _self.otherActions(config, preview, cancelUrl, deleteUrl, false) }}
 
-    {# Reedit Button: only ever here. It belongs to the preview screen, which is a page you
-       are reading rather than a corner you are working from. #}
     {% if preview %}
       <button type="submit" name="submit" value="reedit" class="yw-btn">
         {{ icon('arrow-back-up') }}
@@ -103,24 +75,19 @@
       </button>
     {% endif %}
 
-    {# Theme Button #}
     {% if not preview %}
       <span class="theme-container">
-        {# Filled by tools/template/handler/page/edit__ #}
-        {# TODO: stop using all those edit__, and put directly the code here #}
+
       </span>
     {% endif %}
   </div>
 
 </form>
 
-</div>{# .yw-designer__canvas #}
+</div>
 {{ include('@core/aceditor-rails.twig') }}
-</div>{# .yw-designer #}
+</div>
 
-{# The buttons themselves, in one place. `floating` is the only difference between the two
-   copies: in the corner the cluster collapses to the save button and shrinks the rest, at
-   the foot of the form they are one plain row. #}
 {% macro saveButton(saveValue, floating) %}
   <button type="submit"
           name="submit"
@@ -139,15 +106,12 @@
       <span>{{ _t('EDIT_PREVIEW') }}</span>
     </button>
   {% endif %}
-  {# leaving, then destroying: the two ways out, in that order, and the one that keeps the
-     page comes first #}
+
   <a href="{{ cancelUrl }}" class="yw-btn {{ size }} link-cancel">
     {{ icon('x') }}
     <span>{{ _t('TEMPLATE_CANCEL') }}</span>
   </a>
-  {# Delete only in the floating cluster, never in the row at the foot of the form. A red
-     button sitting beside Save, at exactly the spot the eye lands after filling a form in,
-     is an accident waiting to be had -- and deleting a page is not part of editing it. #}
+
   {% if deleteUrl and floating %}
     <a href="{{ deleteUrl }}"
        title="{{ _t('TEMPLATE_DELETE_PAGE') }}"

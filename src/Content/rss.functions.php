@@ -8,10 +8,8 @@ if (!function_exists('rssdiff')) {
     {
         $output = '';
         $services = $GLOBALS['yeswikiServices'];
-        // TODO : cache ?
 
         if ($idfirst == $idlast) {
-            // $idfirst was interpolated with no escaping at all; both values bind now
             $previousdiff = $services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
                 'select id from '
                 . $services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
@@ -31,8 +29,7 @@ if (!function_exists('rssdiff')) {
         $pageB = $services->get(YesWiki\Content\Service\PageManager::class)->getById($idlast);
 
         $entryManager = $services->get(EntryManager::class);
-        // getById() hands back a decoded body (ticket 09) : an entry is diffed field by
-        // field (this used to split the stored JSON on `,"`), a page line by line
+
         if ($entryManager->isEntry($tag)) {
             $toPairs = function (array $body): array {
                 $pairs = [];
@@ -71,7 +68,6 @@ if (!function_exists('rssdiff')) {
 
         $services->get(YesWiki\Kernel\Service\InclusionStack::class)->register($tag);
         if ($added) {
-            // remove blank lines
             $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
             $output .= '<div class="additions">' . implode("\n", $added) . '</div>';
         }

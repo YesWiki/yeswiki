@@ -139,7 +139,6 @@ const createOpeningHoursCreateComponent = (
 const elements = document.getElementsByTagName('opening-hours-create')
 const arr = Array.prototype.slice.call(elements)
 arr.forEach((el) => {
-  // Capture dataset before mounting (Vue 3 replaces the mount element)
   const openingHoursData = el.dataset.openinghours || ''
   const fieldData = el.dataset.field || '{}'
   const titleData = el.dataset.title || ''

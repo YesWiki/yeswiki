@@ -80,7 +80,7 @@ class TabsRenderer extends YesWikiController
         if ($params['isClosed'] === true) {
             return '';
         }
-        // close not opened tabs
+
         if ($params['counter'] !== false) {
             for ($i = $params['counter'] - 1; $i < count($params['titles']); $i++) {
                 if ($params['tabOpened'] === false) {

@@ -15,7 +15,6 @@ import { parseCondition } from './search.js'
  */
 
 export function parseSearchParams(pParams) {
-  // Return params as a structured object
   const vParams = new URLSearchParams(pParams)
 
   const vParseds = {}
@@ -23,13 +22,9 @@ export function parseSearchParams(pParams) {
   for (const cKey of vParams.keys()) {
     const vValue = vParams.get(cKey)
 
-    if (
-      cKey === 'q' ||
-      cKey === 'keywords'
-    ) // keywords supports for clarity (q parameter is confusing with query parameter)
-    {
+    if (cKey === 'q' || cKey === 'keywords') {
       if (vValue && vValue.trim() !== '')
-        vParseds.keywords = decodeURIComponent(vValue) // privilegiate use of "keywords"
+        vParseds.keywords = decodeURIComponent(vValue)
     } else if (cKey === 'field' || cKey === 'order') {
       vParseds[cKey] = vValue
     } else if (cKey === 'query') {
@@ -60,10 +55,7 @@ export function parseSearchParams(pParams) {
  * @return the concatenated URL parameters as <string> or <object>
  */
 
-/**
- * Deep-merge plain objects/arrays into pTarget (the jQuery $.extend(true, …) shape
- * this file historically relied on — ticket 26 removed the last jQuery usage).
- */
+/** Deep-merge plain objects/arrays into pTarget (the jQuery $.extend(true, …) shape this file historically relied on — ticket 26 removed the last jQuery usage). */
 export function deepMergeParams(pTarget, ...pSources) {
   pSources.forEach((pSource) => {
     Object.entries(pSource || {}).forEach(([pKey, pValue]) => {
@@ -90,10 +82,7 @@ export function deepMergeParams(pTarget, ...pSources) {
   return pTarget
 }
 
-/**
- * Serialize a (possibly nested) parameters object to an URL query string with
- * PHP-style bracket notation — the jQuery $.param encoding the API expects.
- */
+/** Serialize a (possibly nested) parameters object to an URL query string with PHP-style bracket notation — the jQuery $.param encoding the API expects. */
 export function serializeSearchParams(pParams) {
   const vPairs = []
   const add = (pKey, pValue) => {
@@ -135,8 +124,6 @@ export function mergeSearchParams(
 
   deepMergeParams(vMerged, vParamsObject1, vParamsObject2)
 
-  // Merge query parameter
-
   if (
     vParamsObject1.query &&
     vParamsObject1.query.length > 0 &&
@@ -172,7 +159,6 @@ export function mergeSearchParams(
   }
 
   if (vQuery !== undefined) {
-    // Remove duplicates and rebuild the query string
     if (typeof vQuery === 'string') {
       vQuery = [...new Set(vQuery.split('|'))].join('|')
     } else {
@@ -186,8 +172,6 @@ export function mergeSearchParams(
     if (vQuery.trim() !== '') vMerged.query = vQuery
   }
 
-  // Merge keywords parameter
-
   if (vParamsObject1.keywords && vParamsObject2.keywords) {
     vKeywords = `${vParamsObject1.keywords}|${vParamsObject2.keywords}`
   } else if (vParamsObject1.keywords) {
@@ -197,10 +181,6 @@ export function mergeSearchParams(
   }
 
   if (vKeywords != null && vKeywords.trim() !== '') {
-    // URI encode the keywords
-
-    // Remove duplicates and rebuild the query string
-
     vKeywords = [...new Set(vKeywords.split('|'))].join('|')
 
     if (vKeywords.trim() !== '') vMerged.keywords = vKeywords
@@ -209,10 +189,6 @@ export function mergeSearchParams(
   if (pOptions.returnMode === 'string') return serializeSearchParams(vMerged)
   return vMerged
 }
-
-/*
- * updateHash with given parameters
- */
 
 export function updateHash(
   pSavedHash = '',
@@ -264,8 +240,6 @@ export function updateHash(
     overrideQuery: true,
   })
 
-  // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
-
   history.pushState(
     {},
     '',
@@ -274,5 +248,5 @@ export function updateHash(
       : location.pathname + location.search,
   )
 
-  updateExportLinks(vMergedParams) // Export
+  updateExportLinks(vMergedParams)
 }

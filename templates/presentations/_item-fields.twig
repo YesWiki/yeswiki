@@ -1,8 +1,4 @@
-{# The slots every presentation draws, in one place: an Item is the same shape wherever it
-   came from, so "how a title is drawn" should not be answered four times.
 
-   `description` is HTML -- a feed's summary arrives as markup and a form's long text is
-   formatted before it gets here -- so it is the one slot that is not escaped. #}
 {% macro badge(item) %}
   {% if item.badge %}<span class="yw-item__badge">{{ item.badge }}</span>{% endif %}
 {% endmacro %}
@@ -21,8 +17,6 @@
   {% endif %}
 {% endmacro %}
 
-{# The button, when the list asked for one. Its URL and its wording are the Source's:
-   only whatever supplied the item knows what "edit this" means for it. #}
 {% macro cta(item) %}
   {% if item.ctaUrl %}
     <a class="yw-item__cta yw-btn yw-btn--sm yw-btn--primary" href="{{ item.ctaUrl }}">{{ item.ctaLabel }}</a>

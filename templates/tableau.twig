@@ -1,14 +1,10 @@
 {% import "@core/multidelete-macro.twig" as multidelete %}
-{{ infoRes|raw }} {# affiche le nombre de résultats #}
-
-{# l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
-, on utilise $params['listindex'] qui s'incrémente à chaque fois qu'on appelle entrylist
-pour différencier les différents tableaux table_1 table_2 #}
+{{ infoRes|raw }} 
 
 <table id="table_{{ params.listindex}}" class="yw-table in-tableau-template" data-yw-datatable>
   <thead>
     <tr>
-      {# Column titles #}
+
           {% if displayadmincol %}
             {{ multidelete.insertSelectAll('entry-list-'~ params.listindex,'top') }}
           {% endif %}
@@ -38,14 +34,13 @@ pour différencier les différents tableaux table_1 table_2 #}
               entry.external-data is not empty or not(
                 userIsAdmin() or userIsOwner(entry.tag))) }}
         {% endif %}
-        {# is the form's own title field one of the visible columns? if so it carries the
-           link to the entry; otherwise the first non-map column does (ticket 11) #}
+
         {% set searchTitle = titleFieldName is not empty and (titleFieldName in columnsInfo|filter(
           info => info['not-visible'] is not defined or not info['not-visible'])|map(
             p => p.propertyName)) %}
         {% for info in columnsInfo %}
           {% set val = entry[info.propertyName] %}
-          {# sanitize possible errors in values from checkbox #}
+
           {% set val = val is iterable ? val|filter(v => v == 1)|keys|join(',') : val %}
           {% set exportval = val %}
           {% if info.key is empty and displayvaluesinsteadofkeys and (optionsIfDisplayvaluesinsteadofkeys[info.propertyName] is not empty) %}
@@ -149,7 +144,7 @@ pour différencier les différents tableaux table_1 table_2 #}
       </tr>
     {% endfor %}
     {% if sumFieldsIds is not empty or displayadmincol %}
-      {# sums by col #}
+
       <tfoot>
         <tr>
           {% if displayadmincol %}

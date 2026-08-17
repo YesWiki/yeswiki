@@ -1,5 +1,3 @@
-// users-table.js — admin user creation/deletion on the users table page
-// (ticket 16: vanilla JS; the table itself is a yw-datatable now)
 const usersTableService = {
   isRunning: false,
   postForm(url, data) {
@@ -30,7 +28,6 @@ const usersTableService = {
         const { signuptime } = data.user
         if (inputName) inputName.value = ''
         if (inputEmail) inputEmail.value = ''
-        // append a row to the users table (admin view column layout)
         const table = document.querySelector('#users-table-action table')
         const tbody = table ? table.tBodies[0] : null
         if (tbody) {
@@ -141,7 +138,7 @@ if (userTableDeleteModal) {
     const deleteButton = modal.querySelector('button.start-btn-delete-user')
     if (!deleteButton) return
     deleteButton.removeAttribute('disabled')
-    const opener = event.detail.relatedTarget // Button that triggered the modal
+    const opener = event.detail.relatedTarget
     const name = opener ? opener.dataset.name : ''
     const nameHolder = modal.querySelector('#userNameToDelete')
     if (nameHolder) nameHolder.textContent = name

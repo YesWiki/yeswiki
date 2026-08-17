@@ -10,14 +10,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The surfaces an admin actually reaches the importers through.
- *
- * Route and action discovery are both directory-driven, and both fail quietly: an action that
- * is not registered renders as literal text in the page, and a route that is not discovered
- * answers an empty body rather than an error (the afternoon ADR-0013 records). Neither shows
- * up in a unit test of the code behind them, so the wiring is asserted on its own.
- */
+/** The surfaces an admin actually reaches the importers through. */
 class ImporterAdminSurfaceTest extends YesWikiTestCase
 {
     public function testWikiExisting(): YesWikiRuntime

@@ -39,16 +39,6 @@ class BazarListService
     /**
      * Refuse an id naming another wiki, explaining what to do instead (ticket 34).
      *
-     * `{{entrylist id="https://other.wiki|4"}}` used to fetch that wiki's entries over HTTP on
-     * every page view, through a 1,000-line cache. Content from elsewhere is imported now, so it
-     * is *this* wiki's -- searchable, under our ACLs, and there when the source wiki is not.
-     *
-     * A BadRequestHttpException rather than a bare \Exception on purpose: Performer renders an
-     * HttpException as its message alone, so the reader gets this sentence in place of the list
-     * and the rest of the page still works. A plain exception would render the same message
-     * wrapped in PERFORMABLE_ERROR and a stack dump, and in the API this is already the idiom for
-     * "the request asks for something unsupported".
-     *
      * @param list<array{url: string, id: string, localFormId?: string}> $externals
      */
     protected function refuseExternalIds(array $externals): void
@@ -123,41 +113,35 @@ class BazarListService
         $this->refuseExternalIds($vIDs['externals']);
         $vLocalIDs = $vIDs['locals'];
 
-        // Unconditional now. It used to be `count($vLocalIDs) > 0 || count($vExternalIDs) == 0`,
-        // which existed only to skip the local search when every id named another wiki.
         $vEntries = $this->container->get(SearchManager::class)->search(
             array_merge($pOptions, ['formsIds' => $vLocalIDs]),
-            true, // filter on read ACL,
-            true // use Guard
+            true,
+            true
         );
 
-        // filter entries on datefilter parameter
         if (!empty($pOptions['datefilter'])) {
             $vEntries = $this->container->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
         }
 
-        // Sort entries
         if ($pOptions['random'] ?? false) {
             shuffle($vEntries);
         } else {
             usort($vEntries, $this->buildFieldSorter($pOptions['order'] ?? 'asc', $pOptions['field'] ?? 'title'));
         }
 
-        // Limit entries
         if ($pOptions['nb'] ?? false) {
             $vEntries = array_slice($vEntries, 0, $pOptions['nb']);
         }
 
         $vEntries = $this->replaceDefaultImage($pOptions, $vForms, $vEntries);
 
-        // add extra informations (comments, reactions, metadatas)
         if (($pOptions['extrafields'] ?? false) === true) {
             foreach ($vEntries as $i => $vEntry) {
                 $this->entryExtraFields->setEntryId($vEntry['tag']);
                 foreach (EntryExtraFieldsService::EXTRA_FIELDS as $vField) {
                     $vEntries[$i][$vField] = $this->entryExtraFields->get($vField);
                 }
-                // for the linked entries, we need to add some informations to html_data
+
                 if (!empty($vEntries[$i]['linked_data'])) {
                     $vEntries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($vEntries[$i]['linked_data']);
                 }
@@ -167,13 +151,8 @@ class BazarListService
         return $vEntries;
     }
 
-    // Use bazarlist options like groups, titles, groupicons, groupsexpanded
-    // To create a filters array to be used by the view
-    // Note for [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
-    // But with the new dynamic bazalist, everything is done on the front
     public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
     {
-        // add default options
         $options = array_merge([
             'groups' => [],
             'dynamic' => true,
@@ -187,7 +166,7 @@ class BazarListService
         $allFields = array_merge(...array_column($formsUsed, 'prepared'));
 
         $propNames = $options['groups'];
-        // Special value groups=all use all available Enum fields
+
         if (count($propNames) == 1 && $propNames[0] == 'all') {
             $enumFields = array_filter($allFields, function ($field) {
                 return $field instanceof EnumField;
@@ -200,7 +179,6 @@ class BazarListService
         $filters = [];
         $linkedSep = '_-_';
         foreach ($propNames as $index => $propName) {
-            // Create a filter object to be returned to the view
             $filter = [
                 'propName' => $propName,
                 'title' => '',
@@ -209,11 +187,9 @@ class BazarListService
                 'collapsed' => true,
             ];
 
-            // Check if linked data value
             if (str_contains($propName, $linkedSep)) {
                 $field = $propName;
             } else {
-                // Check if an existing Form Field existing by this propName
                 foreach ($allFields as $aField) {
                     if ($aField->getPropertyName() == $propName) {
                         $field = $aField;
@@ -221,13 +197,11 @@ class BazarListService
                     }
                 }
             }
-            // Depending on the propName, get the list of filter nodes
+
             if (!empty($field) && $field instanceof EnumField) {
-                // ENUM FIELD
                 $filter['title'] = $field->getLabel();
 
                 if (!empty($field->getOptionsTree()) && $options['dynamic'] == true) {
-                    // OptionsTree only supported by bazarlist dynamic
                     foreach ($field->getOptionsTree() as $node) {
                         $filter['nodes'][] = $this->recursivelyCreateNode($node);
                     }
@@ -237,7 +211,6 @@ class BazarListService
                     }
                 }
             } elseif ($propName == 'form_id') {
-                // SPECIAL PROPNAME form_id
                 $filter['title'] = _t('BAZ_TYPE_FICHE');
                 foreach ($formsUsed as $form) {
                     $filter['nodes'][] = $this->createFilterNode($form['id'], $form['label']);
@@ -257,7 +230,6 @@ class BazarListService
                             $filter['title'] = $finalField->getLabel();
                             if ($finalField instanceof EnumField) {
                                 if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
-                                    // OptionsTree only supported by bazarlist dynamic
                                     foreach ($finalField->getOptionsTree() as $node) {
                                         $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
                                     }
@@ -267,12 +239,10 @@ class BazarListService
                                     }
                                 }
                             }
-                            // TODO: options?
                         }
                     }
                 }
             } else {
-                // OTHER PROPNAME (for example a field that is not an Enum)
                 $foundField = $this->formManager->findFieldWithId($formIdsUsed, $propName);
                 if (!empty($foundField)) {
                     $filter['title'] = $foundField->getLabel();
@@ -280,7 +250,6 @@ class BazarListService
                     $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
                 }
 
-                // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
 
                 usort($uniqValues, function ($a, $b) {
@@ -291,27 +260,26 @@ class BazarListService
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
             }
-            // Filter Icon
+
             if (!empty($options['groupicons'][$index])) {
                 $filter['icon'] = '<i class="' . $options['groupicons'][$index] . '"></i> ';
             }
-            // Custom title
+
             if (!empty($options['titles'][$index])) {
                 $filter['title'] = $options['titles'][$index];
             }
-            // Initial Collapsed state
+
             $filter['collapsed'] = ($index != 0) && !$options['groupsexpanded'];
 
-            // [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
             if ($options['dynamic'] == false) {
                 $checkedValues = $this->checkedFacets();
-                // Calculate the count for each filterNode
+
                 $entriesValues = array_column($entries, $propName);
-                // convert string values to array
+
                 $entriesValues = array_map(function ($val) {
                     return explode(',', $val ?? '');
                 }, $entriesValues);
-                // flatten the array
+
                 $entriesValues = array_merge(...$entriesValues);
                 $countedValues = array_count_values($entriesValues);
                 $adjustedNodes = [];
@@ -333,10 +301,6 @@ class BazarListService
     /**
      * The facets a reader has checked, read from the URL.
      *
-     * Two spellings, because the boxes are a plain form now (ticket 37): the one a form
-     * submits, `?facet[bf_type][]=a&facet[bf_type][]=b`, and the one every link already out
-     * there says, `?facet=bf_type=a,b|bf_ville=nantes`.
-     *
      * @return array<string, list<string>>
      */
     public function checkedFacets(): array
@@ -347,9 +311,6 @@ class BazarListService
         if (is_array($facet)) {
             $result = [];
             foreach ($facet as $key => $values) {
-                // one input per value (`facet[f][]=1&facet[f][]=3`, what the checkboxes
-                // write) or one holding the lot (`facet[f]=1,3`, what the tag input writes
-                // and what the old url spelling has always said)
                 $values = is_array($values) ? $values : explode(',', (string)$values);
                 $values = array_values(array_filter(
                     array_map('trim', array_map('strval', $values)),
@@ -381,11 +342,6 @@ class BazarListService
     /**
      * The entries the checked facets leave -- OR inside a box, AND between boxes.
      *
-     * This used to be the browser's job: `bazar.js` hid the `.bazar-entry` elements whose
-     * `data-` attributes did not match. That only ever worked for the templates that draw
-     * one, so a card list came with facets that did nothing, and it filtered the page it had
-     * rather than the list (facet + pagination showed a page with holes in it).
-     *
      * @param array<array-key, array<string, mixed>> $entries
      * @param array<string, list<string>>|null       $checked defaults to what the URL says
      *
@@ -414,10 +370,6 @@ class BazarListService
 
     /**
      * What an entry holds for a facet's property, as a list.
-     *
-     * A checkbox field stores its values comma-separated, and a facet over a *linked* entry's
-     * field (`field_-_tag_-_prop`) is not a key of the entry at all -- it only exists as one
-     * of the data attributes `EntryExtraFieldsService::appendHtmlData()` built.
      *
      * @param array<string, mixed> $entry
      *
@@ -505,10 +457,6 @@ class BazarListService
         return $array;
     }
 
-    /* Get the unique ID (local or external) contained in $pIDs as [ "locals" => [...], "externals" => [...] ]
-    or throw an exception if there is less or more than 1
-    */
-
     public function getTheID($pIDs, $pThrowException = true)
     {
         $vIDs = $this->getIDs($pIDs);
@@ -531,15 +479,12 @@ class BazarListService
             $this->refuseExternalIds($vExternalIDs);
         }
 
-        // `isExternal` is kept in the shape, always false: callers destructure this array and an
-        // absent key would be a silent null rather than a compile error.
         return ['id' => $vLocalIDs[0], 'key' => $vLocalIDs[0], 'isExternal' => false];
     }
 
     public function getIDs($pIDs)
     {
         if ($pIDs === null) {
-            // just the ids: getAll() would prepare every form in the wiki to read one key
             $vLocalIDs = $this->formManager->getAllIds();
             $vExternalIDs = [];
         } else {
@@ -592,18 +537,16 @@ class BazarListService
 
     protected function isValidURL($pURL)
     {
-        return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+        return true;
     }
 
     protected function parseIDs($pIDs)
     {
         if (is_array($pIDs)) {
             if (isset($pIDs['locals'])) {
-                // already parsed
                 return $pIDs;
-            }   // Ensure it is a string
+            }
             $pIDs = implode(',', $pIDs);
-            // Ensure $pIDs is a string
         }
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
@@ -679,9 +622,6 @@ class BazarListService
 
     private function buildFieldSorter($order, $sortField): callable
     {
-        // stored wiki content still says {{entrylist champ="date_creation_fiche"}} or
-        // champ="bf_titre" -- legacy entry-key names are aliased to the renamed ones
-        // (ADR-0010; bf_titre maps to the computed `title`)
         $sortField = EntryManager::LEGACY_ENTRY_KEYS[$sortField] ?? $sortField;
 
         return function ($a, $b) use ($order, $sortField) {

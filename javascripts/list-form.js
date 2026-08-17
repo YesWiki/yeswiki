@@ -2,7 +2,6 @@ import ListNode from './list-node.js'
 
 const { createApp } = Vue
 
-// Capture dataset before mounting (Vue 3 replaces the mount element)
 const mountElement = document.querySelector('.list-form')
 const elementDataset = mountElement ? { ...mountElement.dataset } : {}
 const initialList = elementDataset.list
@@ -21,7 +20,6 @@ const app = createApp({
   },
   mounted() {
     const nodes = initialList.nodes || []
-    // vueRef is used to give a unique and fixed ID to each node
     nodes.forEach((node) => this.addVueRefProp(node))
     this.rootNode.children = nodes
   },
@@ -35,7 +33,6 @@ const app = createApp({
   },
   methods: {
     onSubmit(event) {
-      // check for id presence and uniquness
       this.allIds = []
       this.collectIds(this.rootNode)
       if (this.allIds.some((id) => !id)) {

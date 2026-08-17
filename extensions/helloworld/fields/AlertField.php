@@ -2,13 +2,11 @@
 
 namespace YesWiki\HelloWorld\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Field\BazarField;
 
 /**
- * Display an alert box with the text given in the second row
- * alerte***Warning, you are watching a very important page!***.
+ * Display an alert box with the text given in the second row alerte***Warning, you are watching a very important page!***.
  */
 #[\Field(['alerte'])]
 class AlertField extends BazarField
@@ -26,15 +24,11 @@ class AlertField extends BazarField
 
     protected function renderInput($entry)
     {
-        // No input need to be displayed for this example field
         return null;
     }
 
     public function formatValuesBeforeSave($entry)
     {
-        // Here you can perform operations on each create/update operation
-
-        // Return the values you want to be saved in the entry
         return ['alert' => _t('HELLOWORLD_FIELD_ALERT')];
     }
 

@@ -8,13 +8,10 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 #[\Field(['labelhtml'])]
 class LabelField extends BazarField
 {
-    // Text to display on the edit/create pages
     protected $formText;
 
-    // Text to display on the view page
     protected $viewText;
 
-    // use wiki syntax instead of plain html
     protected $useWikiSyntax;
 
     protected const FIELD_FORM_TEXT = 1;
@@ -39,7 +36,6 @@ class LabelField extends BazarField
 
     protected function getValue($entry)
     {
-        // no value for labelhtml
         return null;
     }
 
@@ -70,13 +66,11 @@ class LabelField extends BazarField
         return is_string($this->formText) && strpos(ltrim($this->formText), '</div>') === 0;
     }
 
-    // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
         return [];
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

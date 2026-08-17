@@ -7,7 +7,6 @@ class DropColumnsFromNature extends YesWikiMigration
 {
     public function run()
     {
-        // drop old nature table fields
         $this->dbService->schema()->dropColumn('nature', 'bn_ce_id_menu');
         $this->dbService->schema()->dropColumn('nature', 'bn_commentaire');
         $this->dbService->schema()->dropColumn('nature', 'bn_appropriation');
@@ -18,12 +17,9 @@ class DropColumnsFromNature extends YesWikiMigration
         $this->dbService->schema()->dropColumn('nature', 'bn_type_fiche');
         $this->dbService->schema()->dropColumn('nature', 'bn_label_class');
 
-        // Modify bn_ce_i18n column - different syntax per database
         $driver = $this->dbService->getDriver();
         switch ($driver) {
             case 'sqlite':
-                // SQLite has limited ALTER TABLE support, column type changes require table recreation
-                // For now, we skip this as SQLite is flexible with types
                 break;
             case 'pgsql':
                 $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ALTER COLUMN bn_ce_i18n TYPE VARCHAR(5), ALTER COLUMN bn_ce_i18n SET DEFAULT '', ALTER COLUMN bn_ce_i18n SET NOT NULL");
@@ -34,12 +30,10 @@ class DropColumnsFromNature extends YesWikiMigration
                 break;
         }
 
-        // add semantic bazar fields
         if (!$this->dbService->schema()->columnExists('nature', 'bn_sem_context')) {
             $this->addSemanticColumns();
         }
 
-        // add only_one_entry fields
         $formManager = $this->getService(FormManager::class);
         if (!$formManager->isAvailableOnlyOneEntryOption()) {
             $this->addOnlyOneEntryColumn();
@@ -78,11 +72,9 @@ class DropColumnsFromNature extends YesWikiMigration
         $quotedCol = $this->dbService->quoteIdentifier('bn_only_one_entry');
         switch ($driver) {
             case 'sqlite':
-                // SQLite doesn't have ENUM, use TEXT with CHECK constraint
                 $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN $quotedCol TEXT NOT NULL DEFAULT 'N' CHECK($quotedCol IN ('Y', 'N'))");
                 break;
             case 'pgsql':
-                // PostgreSQL: use VARCHAR with CHECK constraint
                 $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN $quotedCol VARCHAR(1) NOT NULL DEFAULT 'N' CHECK($quotedCol IN ('Y', 'N'))");
                 break;
             case 'mysql':

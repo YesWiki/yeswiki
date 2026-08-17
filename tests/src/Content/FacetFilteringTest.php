@@ -9,21 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The facets filter the list, on the server (ticket 37).
- *
- * They used to filter it in the browser: `bazar.js` read the checked boxes and hid the
- * `.bazar-entry` elements whose `data-` attributes did not match. Three things were wrong with
- * that, and they are what these tests are about.
- *
- * Only some templates draw a `.bazar-entry` -- the shared presentations draw `.yw-item` cards
- * -- so a card list came with facets that did nothing whatsoever, which is how this was
- * reported. Hiding what is on the page is not the same as filtering a list: with `pagination`
- * the reader got one page with holes in it and no way to reach the entries the filter left on
- * the other pages. And the count beside the boxes was recomputed from what stayed visible.
- *
- * So the boxes are a form now. What they post is what these assert on.
- */
+/** The facets filter the list, on the server (ticket 37). */
 class FacetFilteringTest extends YesWikiTestCase
 {
     private ?Request $previousRequest = null;
@@ -77,11 +63,7 @@ class FacetFilteringTest extends YesWikiTestCase
         $this->assertSame(['bf_type' => ['1', '3']], $service->checkedFacets());
     }
 
-    /**
-     * ...and the one the tag input writes, which holds a facet's values in one parameter.
-     * `1,3` is two values, not a value called "1,3" -- the same reading the older url
-     * spelling has always had.
-     */
+    /** ...and the one the tag input writes, which holds a facet's values in one parameter. */
     public function testOneParameterMayHoldSeveralValues(): void
     {
         $service = $this->facets('facet%5Bbf_type%5D=1%2C3');
@@ -89,11 +71,7 @@ class FacetFilteringTest extends YesWikiTestCase
         $this->assertSame(['bf_type' => ['1', '3']], $service->checkedFacets());
     }
 
-    /**
-     * ...and the spelling every link already out there uses. `?facet=a=1,2|b=x` was what the
-     * javascript wrote into the address bar for years, so those URLs are in mails, in bookmarks
-     * and in page bodies; they have to keep meaning what they meant.
-     */
+    /** ...and the spelling every link already out there uses. */
     public function testTheOlderUrlSpellingStillMeansTheSame(): void
     {
         $service = $this->facets('facet=bf_type%3D1%2C3%7Cbf_ville%3DNantes');
@@ -115,8 +93,7 @@ class FacetFilteringTest extends YesWikiTestCase
     }
 
     /**
-     * Two values of one box are an OR -- "type 1 or type 3" -- and that is not a detail: it is
-     * what makes a box a set of alternatives rather than a radio button.
+     * Two values of one box are an OR -- "type 1 or type 3" -- and that is not a detail: it is what makes a box a set of alternatives rather than a radio button.
      */
     public function testValuesOfOneBoxAreAlternatives(): void
     {
@@ -143,9 +120,7 @@ class FacetFilteringTest extends YesWikiTestCase
     }
 
     /**
-     * A checkbox field holds its values comma-separated, and `2,3` means both of them -- not
-     * one value spelled "2,3". Matching the whole string is the mistake that makes a facet over
-     * a multiple-choice field return nothing at all.
+     * A checkbox field holds its values comma-separated, and `2,3` means both of them -- not one value spelled "2,3".
      */
     public function testAValueInsideAMultipleChoiceFieldCounts(): void
     {
@@ -162,9 +137,7 @@ class FacetFilteringTest extends YesWikiTestCase
     }
 
     /**
-     * A facet over a *linked* entry's field is not a key of the entry at all: it only exists
-     * as one of the data attributes `EntryExtraFieldsService::appendHtmlData()` wrote, which
-     * is where the browser used to read it from.
+     * A facet over a *linked* entry's field is not a key of the entry at all: it only exists as one of the data attributes `EntryExtraFieldsService::appendHtmlData()` wrote, which is where the browser used to read it from.
      */
     public function testAFacetOverALinkedEntrysFieldReadsItsDataAttribute(): void
     {

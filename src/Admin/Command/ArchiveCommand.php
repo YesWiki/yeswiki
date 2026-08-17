@@ -25,11 +25,9 @@ class ArchiveCommand extends Command
     {
         $this
             ->setName('core:archive')
-            // the short description shown while running "./yeswicli list"
+
             ->setDescription('Create archive of the YesWiki.')
 
-            // the full command description shown when running the command with
-            // the "--help" option
             ->setHelp("Create archive of the YesWiki.\n" .
                 "To save only the database use '--database-only'\n" .
                 "To save only the files use '--files-only'\n")
@@ -45,7 +43,7 @@ class ArchiveCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        ob_start(); // This code is necessary because Symfony stop the process if a response is sent back.
+        ob_start();
 
         $databaseOnly = $input->getOption('database-only');
         $filesOnly = $input->getOption('files-only');
@@ -71,7 +69,7 @@ class ArchiveCommand extends Command
 
         $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
 
-        ob_end_clean(); // This code is necessary because Symfony stop the process if a response is sent back.
+        ob_end_clean();
 
         return Command::SUCCESS;
     }

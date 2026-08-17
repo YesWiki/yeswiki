@@ -3,32 +3,27 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * The page being served: its tag, loaded record, requested method and metadata
- * (historic Wiki::$tag/$page/$method/$metadatas, including element writes like
- * `$wiki->page['body'] = ...`). This service owns the state; the Runtime seeds
- * it at boot with what Init derived from the URL.
+ * The page being served: its tag, loaded record, requested method and metadata (historic Wiki::$tag/$page/$method/$metadatas, including element writes like `$wiki->page['body'] = ...`).
  */
 class PageContext
 {
     protected ?string $tag = null;
 
     /**
-     * The tag the *request* asked for, as opposed to `$tag`, which follows whatever is
-     * being rendered right now: a bazar list, an `{{include}}` and a field's static render
-     * all point `$tag` at the Content they are rendering and put it back afterwards.
-     *
-     * The distinction matters to anything with a side effect. `{{redirect}}` on an entry
-     * must redirect when someone opens that entry, and must not when the entry merely
-     * appears in a list of a hundred others -- which it did, hijacking the whole list.
+     * The tag the *request* asked for, as opposed to `$tag`, which follows whatever is being rendered right now: a bazar list, an `{{include}}` and a field's static render all point `$tag` at the Content they are rendering and put it back afterwards.
      */
     protected ?string $requestedTag = null;
 
-    /** @var array<mixed>|null */
+    /**
+     * @var array<mixed>|null
+     */
     protected $page;
 
     protected string $method = '';
 
-    /** @var array<mixed> */
+    /**
+     * @var array<mixed>
+     */
     protected $metadata = [];
 
     public function getTag(): string
@@ -53,9 +48,7 @@ class PageContext
     }
 
     /**
-     * Whether what is being rendered right now *is* the page the request asked for, rather
-     * than Content embedded in it. Before any request tag is recorded (CLI, tests) this
-     * answers true, so nothing changes behaviour outside a served page.
+     * Whether what is being rendered right now *is* the page the request asked for, rather than Content embedded in it.
      */
     public function isRenderingRequestedPage(): bool
     {
@@ -65,9 +58,6 @@ class PageContext
     /**
      * The page record loaded for the current request, or null before one is set.
      *
-     * Its `body` is a decoded body (see YesWiki\Content\Entity\PageBody), never the JSON
-     * text held in the column: whoever sets the record decodes it first (ticket 09).
-     *
      * @return array<mixed>|null
      */
     public function getPage(): ?array
@@ -75,7 +65,9 @@ class PageContext
         return $this->page ?: null;
     }
 
-    /** @param array<mixed>|null $page */
+    /**
+     * @param array<mixed>|null $page
+     */
     public function setPage(?array $page): void
     {
         $this->page = $page;
@@ -87,9 +79,7 @@ class PageContext
         $this->page[$key] = $value;
     }
 
-    /**
-     * Set the current page record and align the tag with it (historic Wiki::SetPage()).
-     */
+    /** Set the current page record and align the tag with it (historic Wiki::SetPage()). */
     public function assignPage(mixed $page): void
     {
         if (!empty($page)) {
@@ -115,8 +105,7 @@ class PageContext
     }
 
     /**
-     * The effective method (historic Wiki::GetMethod()): the iframe variants render
-     * through their non-iframe counterparts.
+     * The effective method (historic Wiki::GetMethod()): the iframe variants render through their non-iframe counterparts.
      */
     public function getMethod(): string
     {
@@ -134,13 +123,17 @@ class PageContext
         $this->method = $method;
     }
 
-    /** @return array<mixed> */
+    /**
+     * @return array<mixed>
+     */
     public function getMetadata(): array
     {
         return $this->metadata;
     }
 
-    /** @param array<mixed> $metadata */
+    /**
+     * @param array<mixed> $metadata
+     */
     public function setMetadata(array $metadata): void
     {
         $this->metadata = $metadata;

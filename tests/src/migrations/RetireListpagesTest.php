@@ -9,26 +9,13 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Retiring `{{listpages}}`. The mapping itself is ListpagesRewriterTest's; what is left to
- * prove here is what the migration adds on top of it, and it is the same thing ticket 33's
- * sweep had to prove: **every revision, not just the latest.**.
- *
- * A sweep over `latest = 'Y'` would leave the history calling an action that no longer
- * exists -- so the revisions handler renders an error, a diff across the migration blames
- * the last author, and restoring an older revision brings the dead call back.
- *
- * The fixture is inserted with raw SQL because that is the only way to produce the state
- * this migration exists for: a row as an unmigrated wiki holds it, unindexed and uncached.
- */
+/** Retiring `{{listpages}}`. */
 class RetireListpagesTest extends YesWikiTestCase
 {
     private const TAG = 'TestRetireListpages';
 
     public static function setUpBeforeClass(): void
     {
-        // YesWikiMigration is only autoloadable once getWiki() has registered
-        // src/autoload.inc.php's fallback autoloader
         self::getWiki();
         require_once 'src/migrations/20260813150000_RetireListpages.php';
     }
@@ -67,7 +54,6 @@ class RetireListpagesTest extends YesWikiTestCase
             }
             $this->assertStringContainsString('template="card"', $contents[1]);
 
-            // idempotent: the second pass has nothing left to match
             $before = $this->bodiesFor($dbService, $pages);
             $this->runMigration($wiki, $dbService);
             $this->assertSame($before, $this->bodiesFor($dbService, $pages));
@@ -116,8 +102,6 @@ class RetireListpagesTest extends YesWikiTestCase
 
     private function insertRevision(DbService $dbService, string $pages, string $body, string $latest): void
     {
-        // `user` and `time` are reserved words on PostgreSQL and must be quoted, or this
-        // fixture cannot be inserted on one of the three supported drivers
         $dbService->query(
             "INSERT INTO {$pages} (tag, {$dbService->quoteIdentifier('time')}, body, owner,"
             . " {$dbService->quoteIdentifier('user')}, latest, type, parent)"
@@ -126,7 +110,9 @@ class RetireListpagesTest extends YesWikiTestCase
         );
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function bodiesFor(DbService $dbService, string $pages): array
     {
         $rows = $dbService->loadAll("SELECT body FROM {$pages} WHERE tag = ? ORDER BY id", [self::TAG]);
@@ -134,7 +120,9 @@ class RetireListpagesTest extends YesWikiTestCase
         return array_map(static fn (array $row): string => (string)$row['body'], $rows);
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function contentsFor(DbService $dbService, string $pages): array
     {
         return array_map(

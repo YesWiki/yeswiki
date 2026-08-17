@@ -106,10 +106,8 @@ return [
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'இந்த பக்கத்தை கிதுபில் மாற்றவும்',
     'LINK_TO_CHANGE_PASSWORD' => 'கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு',
 
-    // relocated from tools/tags/lang/tagsjs_ta.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'நோம்ப்ரே டி பக்கங்கள்: {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_ta.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'நகல்',
     'ACTION_BUILDER_PREVIEW' => 'கண்ணோட்டம் (சொடுக்க முடியாதது)',
     'ACTION_BUILDER_ONLINEDOC' => 'நிகழ்நிலை ஆவணங்கள்',
@@ -117,19 +115,15 @@ return [
     'ACTION_BUILDER_MODIFICATION_DATE' => 'மாற்றியமைத்த தேதி',
     'ACTION_BUILDER_CREATION_DATE' => 'உருவாக்கிய தேதி',
     'ACTION_BUILDER_FORM_ID' => 'வடிவம்',
-    // relocated from tools/attach/lang/attachjs_ta.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'தோல்வி',
 
-    // relocated from tools/contact/lang/contactjs_ta.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'இந்தப் புலத்தின் நுழைவு கட்டாயமாகும்.',
     'CONTACT_EMAIL_NOT_VALID' => 'உள்ளிட்ட மின்னஞ்சல் செல்லுபடியாகாது.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'தேடு...',
     'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
     'DATATABLE_PAGE_SIZE_LABEL' => 'காட்டு',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'சேமிக்கப்படாத மாற்றங்கள் உள்ளன. இந்தப் பக்கத்தை விட்டு வெளியேறவா?',
 ];

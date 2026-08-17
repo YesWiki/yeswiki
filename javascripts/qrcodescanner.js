@@ -1,6 +1,4 @@
-// do speech synthesis of the text inside the selector
 function speak(selector) {
-  // cut former speech
   window.speechSynthesis.cancel()
   const toSpeak = new SpeechSynthesisUtterance(
     document.querySelector(selector).textContent,
@@ -8,12 +6,6 @@ function speak(selector) {
   window.speechSynthesis.speak(toSpeak)
 }
 
-// reset the scanner to allow re-scanning and clear the current media player
-// NB: this file used to carry a whole relation-linking/stepper subsystem copy-pasted from
-// qrcodescan.js (reset/stepHandler/firstpeople/secondpeople/step), but qrscanner.twig's markup
-// has no .step1/.step2/.step3/stepper elements at all -- that code was dead and would have
-// thrown (querying non-existent elements) the moment the reset button was actually clicked.
-// Removed; this scanner variant is about playing linked media, not linking two scanned entries.
 function reset() {
   lastResult = 0
   document.getElementById('multimedia-player').innerHTML = ''
@@ -34,12 +26,10 @@ function isValidHttpUrl(string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// handler of the qrcode data when successfully read
 function successHandler(data) {
   const url = new URL(data)
   url.search = ''
   console.log(url.href)
-  // do something when code is read and is a string
   const isReadableString = typeof data === 'string' || data instanceof String
   if (isReadableString && data !== 'undefined' && isValidHttpUrl(data)) {
     fetch(`${data}/raw`)
@@ -48,7 +38,7 @@ function successHandler(data) {
         const cardData = JSON.parse(response)
         console.log(cardData)
         const song = `${url.href}files/${cardData.fichierbf_file}`
-        console.log(song) // TODO test if url exists
+        console.log(song)
         const player = document.getElementById('multimedia-player')
         const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
         const audio = `<audio id="audio-player" controls autoplay src="${song}"></audio>`
@@ -65,11 +55,10 @@ let lastResult
 
 const qrinfos = document.getElementById('qrinfos')
 
-// This method will trigger user permissions
 const qrCodeFormats = {
   formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
 }
-const html5QrCode = new Html5Qrcode(/* element id */ 'qrreader', qrCodeFormats)
+const html5QrCode = new Html5Qrcode('qrreader', qrCodeFormats)
 const config = { fps: 20, qrbox: 250 }
 const qrCodeSuccessCallback = (decodedText) => {
   if (decodedText !== lastResult) {
@@ -77,20 +66,12 @@ const qrCodeSuccessCallback = (decodedText) => {
     successHandler(decodedText)
   }
 }
-// we prefer back camera for scanning from mobile phone
 html5QrCode
-  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {
-    // parse error, ignore it.
-  })
+  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {})
   .catch((err) => {
-    // Start failed, handle it.
     console.error(err)
   })
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
-// the body's *contents*, so a body-keyed initialiser runs once per session and every
-// later page is left uninitialised.
 ywInitEach('#qrinfos', () => {
   if (qrinfos.dataset.speak === 'true') {
     function mutate() {
@@ -107,7 +88,6 @@ ywInitEach('#qrinfos', () => {
     }
     observer.observe(target, observerConfig)
 
-    // first load
     speak('#qrinfos .yw-alert')
   }
 })

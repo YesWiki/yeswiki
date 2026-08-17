@@ -9,13 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Two additions to the page syntax, asked for in HedgeDoc's spelling: `:::info` callouts and
- * `[^1]` footnotes.
- *
- * Footnotes are CommonMark's own extension, so what is worth asserting is only that it is
- * switched on and produces the ids the backlinks point at. The alerts are ours
- * (`AlertExtension`), and every case below is a decision made in that parser rather than a
- * demonstration that markdown works.
+ * Two additions to the page syntax, asked for in HedgeDoc's spelling: `:::info` callouts and `[^1]` footnotes.
  */
 class AlertsAndFootnotesTest extends YesWikiTestCase
 {
@@ -52,8 +46,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
     }
 
     /**
-     * A container, which is the whole reason for having this beside `{{panel}}`: you can put
-     * one around prose that is already written, and what is inside stays markdown.
+     * A container, which is the whole reason for having this beside `{{panel}}`: you can put one around prose that is already written, and what is inside stays markdown.
      */
     public function testWhatIsInsideIsStillMarkdown(): void
     {
@@ -64,9 +57,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         $this->assertStringContainsString('<strong>gras</strong>', $html);
     }
 
-    /**
-     * The two whose meaning is carried by colour alone get told to a screen reader as well.
-     */
+    /** The two whose meaning is carried by colour alone get told to a screen reader as well. */
     public function testTheAlarmingOnesAnnounceThemselves(): void
     {
         $this->assertStringContainsString('role="alert"', $this->format(":::danger\nx\n:::"));
@@ -74,12 +65,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         $this->assertStringNotContainsString('role="alert"', $this->format(":::info\nx\n:::"));
     }
 
-    /**
-     * An unknown type is left as the text it is.
-     *
-     * The alternative -- accept anything and emit `yw-alert--note` -- renders as an unstyled
-     * block, which reads as a broken page rather than as a word nobody defined.
-     */
+    /** An unknown type is left as the text it is. */
     public function testAnUnknownTypeIsNotAnAlert(): void
     {
         $html = $this->format(":::note\npas une alerte\n:::");
@@ -96,12 +82,7 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         $this->assertStringNotContainsString('yw-alert', $html);
     }
 
-    /**
-     * An alert nobody closed still renders everything after it.
-     *
-     * Requiring the closing fence would mean a missing `:::` silently swallows the rest of
-     * the page -- the failure mode this parser must not have.
-     */
+    /** An alert nobody closed still renders everything after it. */
     public function testAnUnclosedAlertStillRendersItsContent(): void
     {
         $html = $this->format(":::danger\nquand même affiché");
@@ -123,19 +104,15 @@ class AlertsAndFootnotesTest extends YesWikiTestCase
         );
     }
 
-    // ------------------------------------------------------------------ footnotes
-
     public function testAFootnoteBecomesAReferenceAndANote(): void
     {
         $html = $this->format("Une affirmation[^1].\n\n[^1]: La preuve.");
 
-        // the reference, and the note it points at -- ids matched, because a footnote whose
-        // link goes nowhere is worse than no footnote
         $this->assertMatchesRegularExpression('/<sup[^>]*id="fnref:1"/', $html);
         $this->assertStringContainsString('href="#fn:1"', $html);
         $this->assertMatchesRegularExpression('/id="fn:1"/', $html);
         $this->assertStringContainsString('La preuve.', $html);
-        // ...and back again
+
         $this->assertStringContainsString('href="#fnref:1"', $html);
     }
 

@@ -5,14 +5,7 @@ namespace YesWiki\Content\Service;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 
-/**
- * Answers "which of this form's fields plays role X?" (ticket 11).
- *
- * Core asks this instead of reading a literal field name out of user data. The answer
- * comes from the form's explicit `field_roles` map when it has one, and otherwise from
- * the field's own type -- which is why existing forms need no migration and no webmaster
- * action: a `listedatedeb` field has always been the start date, nobody just said so.
- */
+/** Answers "which of this form's fields plays role X?" (ticket 11). */
 class FieldRoleResolver
 {
     /**
@@ -29,9 +22,7 @@ class FieldRoleResolver
         $explicit = FieldRole::normalizeMap($form[FieldRole::FORM_PROPERTY] ?? null)[$role] ?? null;
         if ($explicit !== null) {
             $field = $this->findByName($form['prepared'], $explicit);
-            // an explicit mapping to an incompatible field is a misconfiguration, not an
-            // instruction: fall through to the type default rather than returning
-            // something the caller cannot use
+
             if ($field !== null && $this->isCompatible($field, $role)) {
                 return $field;
             }
@@ -61,8 +52,7 @@ class FieldRoleResolver
     }
 
     /**
-     * The value $entry holds for $role, or null when the form has no such field or the
-     * entry left it empty.
+     * The value $entry holds for $role, or null when the form has no such field or the entry left it empty.
      *
      * @param array<string, mixed>|null $form
      * @param array<string, mixed>      $entry
@@ -95,8 +85,7 @@ class FieldRoleResolver
     }
 
     /**
-     * Which of $roles the form cannot answer, so a feature can say what is missing
-     * instead of rendering nothing.
+     * Which of $roles the form cannot answer, so a feature can say what is missing instead of rendering nothing.
      *
      * @param array<string, mixed>|null $form
      *
@@ -107,7 +96,9 @@ class FieldRoleResolver
         return array_values(array_filter($roles, fn (string $role) => $this->field($form, $role) === null));
     }
 
-    /** @param array<int, mixed> $prepared */
+    /**
+     * @param array<int, mixed> $prepared
+     */
     private function findByName(array $prepared, string $name): ?BazarField
     {
         foreach ($prepared as $field) {

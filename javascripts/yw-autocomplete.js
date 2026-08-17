@@ -1,16 +1,3 @@
-// yw-autocomplete.js -- small vanilla autocomplete/typeahead helper (ticket 16, replaces
-// bootstrap3-typeahead). Not auto-init from markup: each caller wires it explicitly to a
-// specific <input>, mirroring how bootstrap3-typeahead itself was invoked programmatically
-// rather than scanned from data attributes. Reuses the existing `.yw-suggestions` dropdown
-// styling already shipped for the yw-tag-input widget (yw-core.css).
-//
-// Usage: ywAutocomplete(inputEl, {
-//   source: (query) => items | Promise<items>,  // items are opaque: strings, or objects
-//   render: (item) => string,                   // display label for an item (default: String(item))
-//   items: 8,                                   // max suggestions shown
-//   minLength: 0,                                // don't query below this input length
-//   onSelect: (item) => {}                       // called with the exact item the source provided
-// })
 window.ywAutocomplete = function (fieldParam, options = {}) {
   const field = fieldParam
   const maxItems = options.items || 8
@@ -62,8 +49,6 @@ window.ywAutocomplete = function (fieldParam, options = {}) {
       const button = document.createElement('button')
       button.type = 'button'
       button.textContent = renderLabel(item)
-      // mousedown (not click) fires before the input's blur-closes-the-list handler,
-      // so the selection isn't lost to blur running first
       button.addEventListener('mousedown', (e) => {
         e.preventDefault()
         select(item)

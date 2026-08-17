@@ -16,15 +16,8 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Render\Service\MarkdownFormatterService;
 
-/**
- * `{{despam}}` -- converted from the procedural actions/despam.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{despam}}` -- converted from the procedural actions/despam.php by ticket 06. */
 class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -56,10 +49,6 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -70,23 +59,8 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
     private function emit(): void
     {
-        // TODO
-        // -- case pour selectionner tout
-        // -- attention au cas ou la version mais aussi la page est effacee
-        //   (cf. handler deletepage) (et les commentaires)
-        // -- ne rien loguer si rien n'a ete efface
-        // -- idealement la derniere page affiche les resultats mais ne renettoie
-        //    pas les pages si elle est rechargee
-        // -- test pour savoir si quelque chose a bien ete efface
-
         $despam_url = $this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag());
 
-        // -- (1) Formulaire d'accueil de l'action -------------------------------
-        //
-        // Le formulaire est affiche si aucun spammer n'a encore été précisé ou
-        // si le champ a été laisse vide et validé
-
-        // Action réservée aux admins
         if ($this->getService(AclService::class)->isAdmin()) {
             if (empty($_POST['spammer']) && empty($_POST['from']) && !isset($_POST['clean'])) {
                 echo "<div class=\"action_erasespam\">\n" .
@@ -112,11 +86,6 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
               "</form>\n" .
               "</div>\n\n";
             } elseif (!isset($_POST['clean'])) {
-                // -- (2) Page de resultats et form. de selection des pages a effacer ----
-                //
-                // the query and the heading were built inside this guard and read outside it,
-                // so a post without both fields reached loadAll() with an undefined query
-                // (ticket 40)
                 if (!isset($_POST['from']) || !isset($_POST['2'])) {
                     return;
                 }
@@ -127,7 +96,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 $title = '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
 
                 $pagesFromSpammer = $this->getService(DbService::class)->loadAll($requete);
-                // Affichage des pages pour validation
+
                 echo "<div class=\"action_erasespam\">\n";
                 echo $title;
                 echo '<form method="post" action="' . $despam_url . "\">\n";
@@ -158,8 +127,6 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     echo '</p><table>';
 
                     foreach ($revisions as $revision) {
-                        // Si c'est la derniere version on saute cette iteration
-                        // ce n'est pas elle qu'on va vouloir restaurer...
                         if (!isset($revision1)) {
                             $revision1 = '';
                             continue;
@@ -175,8 +142,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     }
                     echo "</table>\n";
                     unset($revision1);
-                    echo // " . . . . ",$this->getService(MarkdownFormatterService::class)->format($page["user"]),"</p>\n",
-              "</td>\n",
+                    echo "</td>\n",
                     "</tr>\n",
                     '';
                 }
@@ -193,19 +159,12 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                     throw new \Exception(_t('WIKI_IN_HIBERNATION'));
                 }
-                // -- (3) Nettoyage des pages et affichage de la page de resultats -------
-                //
+
                 $deletedPages = '';
                 $restoredPages = '';
 
-                // -- 3.1 Effacement ---
-                // On efface chaque element du tableau suppr[]
-                // Pour chaque page selectionnee
                 if (!empty($_POST['suppr'])) {
                     foreach ($_POST['suppr'] as $page) {
-                        // Effacement de la page en utilisant la méthode adéquate
-                        // (si DeleteOrphanedPage ne convient pas, soit on créé
-                        // une autre, soit on la modifie
                         if ($this->getService(PageOperationsService::class)->delete($page)) {
                             $deletedPages .= $page . ', ';
                         }
@@ -213,12 +172,10 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                     $deletedPages = trim($deletedPages, ', ');
                 }
 
-                // -- 3.2 Restauration des pages sélectionnées ---
                 if (!empty($_POST['rev'])) {
-                    // print_r($_POST["rev"]);
                     foreach ($_POST['rev'] as $rev_id) {
                         echo $rev_id . '<br>';
-                        // Selectionne la revision
+
                         $dbService = $this->getService(DbService::class);
                         $revision = $this->getService(DbService::class)->loadSingle(
                             'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages where id = ? limit 1',
@@ -228,11 +185,6 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                             continue;
                         }
 
-                        // Demote the current revision and promote the chosen one, atomically:
-                        // the same demote-then-insert pair PageManager::save() runs, so the same
-                        // hazard -- a failure in between leaves the page with no `latest = 'Y'`
-                        // row and it vanishes. One transaction per restored revision, so a
-                        // failure on the fifth keeps the four already restored.
                         $userCol = $dbService->quoteIdentifier('user');
                         $timeCol = $dbService->quoteIdentifier('time');
                         $pagesTable = $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages';
@@ -242,8 +194,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                                 'UPDATE ' . $pagesTable . " SET latest = 'N' WHERE latest = 'Y' AND tag = ?",
                                 [$revision['tag']]
                             );
-                            // `time` takes the driver's own now() expression, so it is the one
-                            // slot in the VALUES list that is not a placeholder
+
                             $dbService->query(
                                 'INSERT INTO ' . $pagesTable
                                 . " (tag, {$timeCol}, owner, {$userCol}, latest, body) VALUES (?, " . $dbService->now() . ', ?, ?, ?, ?)',
@@ -252,9 +203,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                                     $revision['owner'],
                                     'despam',
                                     'Y',
-                                    // the revision is a raw row, so its body is re-encoded rather
-                                    // than copied verbatim: a row left in the legacy shape lands
-                                    // in the new one
+
                                     PageBody::encode(PageBody::decode($revision['body'])),
                                 ]
                             );

@@ -3,13 +3,13 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * The stack of pages being included into one another ({{include}}, handlers rendering
- * other pages). Element 0 is the innermost inclusion, element 1 its parent, and so on.
- * Tags are stored lowercased, matching the case-insensitive wiki-name semantics.
+ * The stack of pages being included into one another ({{include}}, handlers rendering other pages).
  */
 class InclusionStack
 {
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     protected $inclusions = [];
 
     /**
@@ -38,15 +38,16 @@ class InclusionStack
         return in_array(strtolower($pageTag), $this->inclusions);
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function getAll(): array
     {
         return $this->inclusions;
     }
 
     /**
-     * Replace the whole stack (e.g. to format a page outside the current inclusion
-     * chain) and return the previous one so the caller can restore it.
+     * Replace the whole stack (e.g.
      *
      * @param list<string> $stack
      *

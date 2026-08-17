@@ -7,8 +7,6 @@ export default class {
     this.parse(string)
   }
 
-  // Given a string like "foo=bar .toto.test #hello"
-  // return { attrs: { foo: "bar"}, id: "hello", classes: ['toto', 'test'] }
   parse(string) {
     if (!string) return
 

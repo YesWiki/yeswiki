@@ -1,18 +1,9 @@
-{# The whole top bar, as one block (ticket 30).
 
-   It exists so that the squelette and the live preview on `/admin/layout` render the *same*
-   markup: the preview posts the form, gets this back rendered from what was typed, and swaps
-   it in. A second "preview" template would be a drawing of the navbar that drifts from the
-   navbar the first time either is touched.
-
-   Which is also why the menu toggle is in here rather than left in the squelette -- it is
-   part of the bar, so it has to survive the swap. #}
 <button class="yw-btn btn-menu">{{ icon('menu-2') }}</button>
 <div class="navbar-header">
   {{ brand|raw }}
 </div>
 {{ navbar|raw }}
 {{ quickMenu|raw }}
-{# ...and last, past the divider, the two controls that are the viewer's rather than the
-   wiki's. Outside the quick menu because an admin does not get to remove them. #}
+
 {{ tools|raw }}

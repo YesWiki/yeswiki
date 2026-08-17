@@ -10,13 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Assigning roles explicitly (ticket 11, part 2).
- *
- * Part 1 gave every role a default from the field's own type, which is why no existing
- * form needed touching. What it could not answer is the ambiguous form: two date fields,
- * two images, and core silently picking the first. This is the webmaster saying which.
- */
+/** Assigning roles explicitly (ticket 11, part 2). */
 class FieldRoleAssignmentTest extends YesWikiTestCase
 {
     private static ?string $formId = null;
@@ -108,9 +102,6 @@ class FieldRoleAssignmentTest extends YesWikiTestCase
 
     public function testAMapNamingAnIncompatibleFieldFallsBackRatherThanBreaking(): void
     {
-        // bf_titre is a texte: it cannot hold a start date. Storage keeps what it was
-        // given (the designer is where a webmaster is told); the resolver refuses to
-        // hand a caller something it cannot use.
         $form = $this->withRoles([FieldRole::START_DATE => 'bf_titre']);
 
         $this->assertSame(
@@ -143,7 +134,6 @@ class FieldRoleAssignmentTest extends YesWikiTestCase
             ])
         );
 
-        // one field cannot be both ends of the same event
         $this->assertSame(
             ['start_date' => 'the_date'],
             FieldRole::normalizeMap(['start_date' => 'the_date', 'end_date' => 'the_date'])
@@ -161,10 +151,7 @@ class FieldRoleAssignmentTest extends YesWikiTestCase
     }
 
     /**
-     * The designer offers one select per role, filtered to the field types that can play
-     * it, with the form's current choice preselected. The options themselves are filled
-     * in the browser from the fields on the canvas, so what is pinned here is the select
-     * and the contract the script reads off it.
+     * The designer offers one select per role, filtered to the field types that can play it, with the form's current choice preselected.
      */
     public function testTheDesignerRendersASelectForEveryRole(): void
     {

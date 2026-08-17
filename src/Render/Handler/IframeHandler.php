@@ -57,19 +57,14 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= $this->renderWikiPage();
             }
         } else {
-            // if no read access to the page
-
-            // on recupere les entetes html mais pas ce qu'il y a dans le body
             $output .= '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclick iframe="1"}}')
                 . '>' . "\n";
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
-                // si une page PageLogin existe, on l'affiche
                 $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(PageBody::content($contenu['body'])));
             } else {
-                // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
@@ -79,22 +74,14 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        // common footer for all iframe page
         $output .= '</div><!-- end .page-widget -->' . "\n";
 
-        // on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
         if ($this->getRequest()->query->get('edit') == '1') {
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{editbar}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        // An iframe wants the wiki's <head> and none of the theme's chrome. It used to get
-        // there by splitting the rendered header on '<body' and regexing the footer for its
-        // first '<script'; ticket 15 made that unnecessary -- renderHead() is exactly the
-        // first half, and every script it needs is now declared into it rather than flushed
-        // at the end of the body. Called after $output is built, so the assets that content
-        // declared are included.
         return $this->getService(TemplateEngine::class)->renderHead()
             . "<body>\n" . $output . "\n</body>\n</html>";
     }
@@ -107,7 +94,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     private function renderBazarEntry(): string
     {
         $output = '';
-        // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
+
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
         $tab_valeurs = ($this->getService(PageContext::class)->getPage() ?? [])['body'];
         if (YW_CHARSET != 'UTF-8') {
@@ -117,7 +104,6 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         }
         $entry = $this->entryController->view($this->getService(PageContext::class)->getTag(), 0, true);
         if (!empty($entry)) {
-            // affichage de la page formatee
             $output .= $this->replaceLinksWithIframeIfNeeded($entry);
         }
 
@@ -132,18 +118,18 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     private function renderWikiPage(): string
     {
         $output = '';
-        // on ajoute le bouton pour les favoris
+
         $user = $this->authenticationService->getLoggedUser();
         if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
             $currentuser = $user['name'];
             $tag = $this->getService(PageContext::class)->getTag();
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $tag);
-            // TODO use twig (with other part of this handler also)
+
             $this->assetRegistry->addJsFile('javascripts/favorites.js');
             $extraClass = $isUserFavorite ? ' user-favorite' : '';
             $iconClass = $isUserFavorite ? 'fas' : 'far';
             $title = ($isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD');
-            // HEREDOC syntax
+
             $output .= <<<HTML
                 <a href="#"
                     title="$title"
@@ -156,7 +142,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 </a>
             HTML;
         }
-        // on ajoute un bouton de partage, si &share=1 est présent dans l'url
+
         if ($this->getRequest()->query->get('share') == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
                 . $this->getService(UrlFormatter::class)->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
@@ -164,7 +150,6 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 . '</a>';
         }
 
-        // affichage de la page formatée
         $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body'])));
 
         return $output;
@@ -178,7 +163,6 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     private function replaceLinksWithIframeIfNeeded(string $input): string
     {
         if ($this->getRequest()->query->get('iframelinks') == '0') {
-            // pas de modification des urls
             return $input;
         }
 

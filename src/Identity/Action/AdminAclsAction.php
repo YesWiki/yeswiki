@@ -2,11 +2,6 @@
 
 namespace YesWiki\Identity\Action;
 
-/*
- * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
- * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
- */
-
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
@@ -47,14 +42,13 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
 
     public function run()
     {
-        // action réservée aux admins
         if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACLS_RESERVED_FOR_ADMINS'),
             ]);
         }
-        // get services
+
         $this->dbService = $this->getService(DbService::class);
         $this->hibernationService = $this->getService(HibernationService::class);
         $this->utils = $this->getService(TemplateHelperService::class);
@@ -64,12 +58,8 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
         list('success' => $success, 'error' => $error) = $this->manageChangeRights($request->request->all());
         list('filter' => $filter, 'search' => $search, 'searchParams' => $searchParams) = $this->getFilterAndSearch($request->query->all(), $request->request->all());
 
-        // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();
 
-        // récupération de la liste des pages (ACLs live in the pages row's own metadata
-        // column, not a separate acls table -- no join/subquery needed, just extract each
-        // privilege straight out of this same row)
         $pagesTableName = trim($this->dbService->prefixTable('pages'));
         $aclReadExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.read');
         $aclWriteExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.write');
@@ -114,7 +104,6 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
         $success = '';
         $error = '';
 
-        // Modification de droits
         if (isset($post['geredroits_modifier'])) {
             if (!isset($post['selectpage'])) {
                 $error = _t('ACLS_NO_SELECTED_PAGE');
@@ -168,7 +157,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
     {
         $filter = $get['filter'] ?? '';
         $search = '';
-        // the values the $search fragment binds, in the order its placeholders appear
+
         $searchParams = [];
         if (!empty($filter)) {
             $filter = strval($filter);
@@ -183,8 +172,6 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
                 'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
-                // the form the entry belongs to, asked of the field rather than of the body's
-                // stored bytes -- a native JSON column normalises those (ADR-0018)
                 $search = ' AND ' . $this->dbService->jsonExtract('body', '$.form_id') . ' = ?'
                     . " AND {$typeCol} = '" . PageType::ENTRY . "'";
                 $searchParams[] = $filter;

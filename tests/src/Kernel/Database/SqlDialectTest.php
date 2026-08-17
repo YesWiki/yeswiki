@@ -11,10 +11,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Database\SqliteDialect;
 
 /**
- * Ticket 05 (CP3) split the per-driver SQL out of DbService, where 30 of 43 methods
- * branched on $this->driver. These pin each dialect's fragments so a future driver change
- * cannot quietly alter MySQL or SQLite: before the split there was nothing to test without
- * a live connection, which is why none of this was covered.
+ * Ticket 05 (CP3) split the per-driver SQL out of DbService, where 30 of 43 methods branched on $this->driver.
  */
 class SqlDialectTest extends TestCase
 {
@@ -39,7 +36,6 @@ class SqlDialectTest extends TestCase
 
     public function testUnknownDriverFallsBackToMySql(): void
     {
-        // preserves the `default:` branch of the switch statements this replaced
         $this->assertInstanceOf(MySqlDialect::class, SqlDialectFactory::forDriver('oracle'));
         $this->assertInstanceOf(MySqlDialect::class, SqlDialectFactory::forDriver(''));
     }
@@ -66,9 +62,9 @@ class SqlDialectTest extends TestCase
         $this->assertSame("datetime('now', '-7 days')", $d->dateSubDays(7));
         $this->assertSame('"user"', $d->quoteIdentifier('user'));
         $this->assertSame(' COLLATE NOCASE', $d->collateClause());
-        // json_extract() errors on non-JSON, so the guard must be present
+
         $this->assertStringContainsString('json_valid', $d->jsonExtract('body', '$.title'));
-        // GROUP_CONCAT supports neither ORDER BY nor DISTINCT-with-separator here
+
         $this->assertStringNotContainsString('ORDER BY', $d->groupConcat('tag', 'tag'));
         $this->assertStringNotContainsString('SEPARATOR', $d->groupConcat('tag', 'tag'));
     }
@@ -76,7 +72,7 @@ class SqlDialectTest extends TestCase
     public function testSqliteFindInSetCoversEveryPositionInTheList(): void
     {
         $sql = (new SqliteDialect())->findInSet("'b'", 'tags');
-        // start, middle, end, and sole value
+
         $this->assertSame(3, substr_count($sql, 'LIKE'));
         $this->assertStringContainsString("tags = 'b'", $sql);
 
@@ -93,8 +89,7 @@ class SqlDialectTest extends TestCase
         $this->assertSame('', $d->collateClause(), 'pgsql uses ILIKE rather than COLLATE');
         $this->assertSame('~', $d->regexpOperator());
         $this->assertSame('!~', $d->regexpOperator(true));
-        // one quoted element per path segment, via #>> -- see
-        // testANestedJsonPathAddressesTheNestedKey for why `->>` with the whole path was wrong
+
         $this->assertStringContainsString("#>> ARRAY['title']", $d->jsonExtract('body', '$.title'));
     }
 
@@ -110,37 +105,10 @@ class SqlDialectTest extends TestCase
         $this->assertNotSame($d->findInSet("'x'", 'c', false), $d->findInSet("'x'", 'c', true));
     }
 
-    /**
-     * The quote character inside a name is escaped, not merely wrapped around.
-     *
-     * quoteIdentifier() used to concatenate delimiters and inspect nothing, so a name carrying
-     * the delimiter closed the quoting early -- a method whose whole job is to make a name safe
-     * to interpolate, that did not. No caller passes such a name today (they pass literals like
-     * `time`), which is exactly why nothing would have caught it.
-     *
-     * Note what this still does NOT make safe: an arbitrary user-supplied identifier. An
-     * identifier cannot be bound, so it has to be constrained before it arrives -- see
-     * SearchManager::asSafeIdentifier() and FieldNameIsNotSqlTest.
-     */
-    /**
-     * A NESTED json path must address a nested key.
-     *
-     * PostgreSqlDialect stripped the leading `$.` and passed the remainder to `->>`, which takes
-     * a single key -- so `$.acls.read` looked for a top-level key literally named `acls.read`,
-     * found none, and returned NULL for every row. The only nested paths in the codebase are the
-     * ACL ones, which made it a security bug: with every read ACL reading as NULL,
-     * AclService's predicate fell back to `default_read_acl` for the whole table and page-level
-     * read ACLs stopped filtering on PostgreSQL entirely.
-     *
-     * Asserted as "the segments are addressed separately", which is the property; each driver
-     * spells it its own way (`JSON_EXTRACT`/`json_extract` take the path whole, PostgreSQL needs
-     * `#>>` with an array).
-     */
+    /** A NESTED json path must address a nested key. */
     #[DataProvider('dialects')]
     public function testANestedJsonPathAddressesTheNestedKey(SqlDialect $d, string $driver): void
     {
-        // `metadata` is read through jsonExtractText() -- it is JSON in a TEXT column and stays
-        // that way (ADR-0018) -- but the property is the path's, so both forms are asserted.
         foreach ([$d->jsonExtractText('metadata', '$.acls.read'), $d->jsonExtract('body', '$.acls.read')] as $nested) {
             $this->assertStringNotContainsString(
                 "'acls.read'",
@@ -149,15 +117,12 @@ class SqlDialectTest extends TestCase
             );
 
             if ($driver === 'pgsql') {
-                // the two segments, each its own quoted element
                 $this->assertStringContainsString("#>> ARRAY['acls', 'read']", $nested);
             } else {
-                // these engines parse the path themselves
                 $this->assertStringContainsString('$.acls.read', $nested);
             }
         }
 
-        // a flat path must keep working -- every other caller uses one
         $this->assertStringContainsString(
             $driver === 'pgsql' ? "ARRAY['form_id']" : '$.form_id',
             $d->jsonExtract('body', '$.form_id')
@@ -165,8 +130,7 @@ class SqlDialectTest extends TestCase
     }
 
     /**
-     * A path segment can be a form field name, which is user data -- so it must not be able to
-     * end the literal it sits in.
+     * A path segment can be a form field name, which is user data -- so it must not be able to end the literal it sits in.
      */
     #[DataProvider('dialects')]
     public function testAQuoteInAJsonPathSegmentCannotEndTheLiteral(SqlDialect $d, string $driver): void
@@ -180,10 +144,7 @@ class SqlDialectTest extends TestCase
         );
     }
 
-    /**
-     * ADR-0018. `body` is the dialect's own JSON type where there is one; SQLite says TEXT and
-     * means it, which is why the method returns a type rather than a nullable "native or not".
-     */
+    /** ADR-0018. */
     #[DataProvider('dialects')]
     public function testJsonColumnTypeIsTheDialectsOwn(SqlDialect $d, string $driver): void
     {
@@ -194,13 +155,7 @@ class SqlDialectTest extends TestCase
     }
 
     /**
-     * The seam ADR-0018 turns on: reading a column that is known to be JSON is not the same
-     * expression as reading JSON out of a text column, and only PostgreSQL had anything to
-     * drop -- the regex guard and the `::jsonb` cast it paid per row *per extracted field*.
-     *
-     * Asserted as "cheaper than, and a strict subset of" rather than by pinning the exact SQL:
-     * what matters is that the native form stops proving the column is JSON, not how it is
-     * spelled.
+     * The seam ADR-0018 turns on: reading a column that is known to be JSON is not the same expression as reading JSON out of a text column, and only PostgreSQL had anything to drop -- the regex guard and the `::jsonb` cast it paid per row *per extracted field*.
      */
     #[DataProvider('dialects')]
     public function testOnlyPostgreSqlDropsAnythingForANativeColumn(SqlDialect $d, string $driver): void
@@ -225,9 +180,7 @@ class SqlDialectTest extends TestCase
     }
 
     /**
-     * `LIKE` over a whole body -- an administrator's free-text filter, which has no path to
-     * extract because it is not asking about a field. PostgreSQL has no `jsonb LIKE` operator
-     * at all, so the cast is the difference between a query and a syntax error.
+     * `LIKE` over a whole body -- an administrator's free-text filter, which has no path to extract because it is not asking about a field.
      */
     #[DataProvider('dialects')]
     public function testJsonAsTextCastsOnlyWhereTheOperatorIsMissing(SqlDialect $d, string $driver): void
@@ -255,7 +208,7 @@ class SqlDialectTest extends TestCase
             $quoted,
             "$driver must double a $delimiter inside the name rather than let it end the quoting"
         );
-        // the delimiters are balanced, which is what "cannot break out" means in practice
+
         $this->assertSame(0, substr_count($quoted, $delimiter) % 2);
     }
 }

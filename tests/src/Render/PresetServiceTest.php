@@ -8,23 +8,10 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The Preset vocabulary (ticket 30, rewritten onto Design tokens by ADR-0020).
- *
- * Everything asserted here is a *query*: what presets exist, what a file says, what a typed
- * name would become. The three writers -- select(), save(), delete() -- rewrite the wiki's
- * configuration file and the contents of custom/css-presets/, so they are exercised through
- * the browser (tests/e2e/tests/preset.spec.ts) rather than against the working tree. What is
- * covered here instead is that each of them refuses the case that would do damage, since
- * every one of those refusals happens before anything is written.
- */
+/** The Preset vocabulary (ticket 30, rewritten onto Design tokens by ADR-0020). */
 class PresetServiceTest extends YesWikiTestCase
 {
-    /**
-     * The eighteen properties ADR-0021 took out of a Preset's hands, and the two it always
-     * computed. Core declares every one of them, from the tokens above it; nothing here may
-     * appear in PresetService::TOKENS, and nothing may stop being declared.
-     */
+    /** The eighteen properties ADR-0021 took out of a Preset's hands, and the two it always computed. */
     private const DERIVED = [
         'yw-text',
         'yw-text-inverse',
@@ -53,8 +40,6 @@ class PresetServiceTest extends YesWikiTestCase
     {
         $names = array_column($this->service()->all(), 'name');
 
-        // the five the yeswiki theme ships; a theme losing its presets would leave the
-        // screen with nothing but "no preset" and look like a rendering bug
         foreach (['default', 'fun', 'landes', 'red', 'yellow'] as $preset) {
             $this->assertContains($preset, $names);
         }
@@ -68,12 +53,7 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertFalse($default['custom'], 'themes/ is code -- nothing here may write to it');
     }
 
-    /**
-     * The shipped presets are complete, which is the property every other one is judged by.
-     *
-     * If a shipped preset can be incomplete, the rule is decoration: the screen would be
-     * flagging the wiki's own defaults.
-     */
+    /** The shipped presets are complete, which is the property every other one is judged by. */
     public function testTheShippedPresetsAreComplete(): void
     {
         foreach ($this->service()->all() as $preset) {
@@ -91,14 +71,7 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertSame([], $this->service()->missingIn($this->service()->coreDefaults()));
     }
 
-    /**
-     * `default` IS core's own token set, value for value.
-     *
-     * The one thing that file must never do is disagree with core: "no preset" and "the
-     * default preset" would then look different, and the preset offered as the one to copy
-     * from would not be the wiki you were looking at. Nothing enforces this at write time --
-     * they are two files -- so it is enforced here.
-     */
+    /** `default` IS core's own token set, value for value. */
     public function testTheDefaultPresetIsExactlyCoresOwnValues(): void
     {
         $service = $this->service();
@@ -123,24 +96,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * Core's own ink clears WCAG AA against the ground it sits on, in both schemes.
-     *
-     * The rail scores this live for whoever is editing; nothing was scoring what YesWiki
-     * itself ships, and `--yw-secondary` sat at 3.69 and `--yw-heading-sub` at 2.76 on white
-     * -- the wiki's own h4-h6 failing the check the screen asks webmasters to pass.
-     *
-     * **Core and `default` only, deliberately.** `fun`, `landes`, `red` and `yellow` do not
-     * all clear AA and are not held to it here: a bright yellow or a pale cyan cannot be
-     * AA-legible as body-size ink on white at any lightness, so the only way to pass would be
-     * to stop being that colour -- which is a decision about YesWiki's palettes, not one a
-     * test gets to make. What core ships as its *default* is a different matter: it is what
-     * every wiki wears until somebody chooses otherwise.
-     *
-     * AA (4.5) and not AAA: AAA on white forces a brand colour to near-black. Only pairs the
-     * token table declares are checked -- a fill like `--yw-tertiary` is not ink, and neither
-     * is a status colour, whose read value is the derived `--yw-*-text`.
-     */
+    /** Core's own ink clears WCAG AA against the ground it sits on, in both schemes. */
     public function testCoreAndTheDefaultPresetClearAaOnEveryPairTheyDeclare(): void
     {
         foreach ($this->service()->all() as $preset) {
@@ -206,16 +162,7 @@ class PresetServiceTest extends YesWikiTestCase
         return (max($first, $second) + 0.05) / (min($first, $second) + 0.05);
     }
 
-    /**
-     * A colour may point at another, and a LOOP of them is refused before it is written.
-     *
-     * The loop is the reason this exists. A custom property whose value refers back to itself,
-     * however long the chain, is invalid at computed-value time: the browser does not warn,
-     * does not fall back, and does not leave the property unset in a way a rule can notice --
-     * every colour in the loop simply computes to black. Measured in a browser, not assumed.
-     * So nothing else will catch it, and a webmaster who pointed the brand at the heading that
-     * was already pointing at the brand would get a black wiki and no clue why.
-     */
+    /** A colour may point at another, and a LOOP of them is refused before it is written. */
     public function testALoopOfReferencesIsRefused(): void
     {
         $service = $this->service();
@@ -223,17 +170,14 @@ class PresetServiceTest extends YesWikiTestCase
 
         $this->assertNull($service->cycleIn($base), 'core itself must be clean');
 
-        // pointing one colour at another is fine, and is the whole point of the palette
         $pointed = $base;
         $pointed['light']['yw-heading-1'] = 'var(--yw-primary)';
         $this->assertNull($service->cycleIn($pointed));
 
-        // a colour that is its own value
         $self = $base;
         $self['light']['yw-primary'] = 'var(--yw-primary)';
         $this->assertSame(['yw-primary', 'yw-primary'], $service->cycleIn($self));
 
-        // two of them pointing at each other, named in order so the message can show the loop
         $two = $base;
         $two['light']['yw-heading-1'] = 'var(--yw-secondary)';
         $two['light']['yw-secondary'] = 'var(--yw-heading-1)';
@@ -242,8 +186,6 @@ class PresetServiceTest extends YesWikiTestCase
             $service->cycleIn($two)
         );
 
-        // ...including one buried in a function, in the dark scheme only. Any `var()` is a
-        // reference, not only a value that is nothing but one.
         $mixed = $base;
         $mixed['dark']['yw-primary'] = 'color-mix(in oklab, var(--yw-heading-3) 50%, white)';
         $mixed['dark']['yw-heading-3'] = 'var(--yw-primary)';
@@ -288,7 +230,6 @@ class PresetServiceTest extends YesWikiTestCase
             );
         }
 
-        // curated: every authored colour would be a wall rather than a palette
         $colours = array_filter(
             PresetService::TOKENS,
             fn ($definition) => in_array(
@@ -304,16 +245,7 @@ class PresetServiceTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A stack the CSS formatter has wrapped is still the stack it was.
-     *
-     * A long `font-family` gets broken over several lines when the file is formatted, so the
-     * value came back with newlines and indentation inside it. Nothing rendered wrong -- CSS
-     * treats them as whitespace -- but every exact comparison against it failed: the rail did
-     * not recognise its own `Monospace Code` stack and showed the raw text as a bespoke
-     * option, and isSystemStack() stopped recognising it and had ThemeManager ask Google for a
-     * webfont called `ui-monospace`.
-     */
+    /** A stack the CSS formatter has wrapped is still the stack it was. */
     public function testAWrappedFontStackIsStillRecognised(): void
     {
         $service = $this->service();
@@ -351,15 +283,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * What installFont() refuses before it touches the network.
-     *
-     * Each of these would otherwise become a curl call: a nonsense family is a request to
-     * Google for nothing, and a source URL is a request THIS SERVER makes to an address
-     * somebody typed into an admin form. `file://` would read the disk and a bare IP is the
-     * shape of somebody probing the network the server sits in, so both are refused before a
-     * connection is opened rather than after.
-     */
+    /** What installFont() refuses before it touches the network. */
     public function testInstallingAFontRefusesWhatItShouldNotFetch(): void
     {
         $service = $this->service();
@@ -373,7 +297,6 @@ class PresetServiceTest extends YesWikiTestCase
             }
         }
 
-        // a local stack needs no download, and asking for one is a sign of a confused screen
         $this->expectException(\InvalidArgumentException::class);
         $service->installFont(PresetService::FONT_STACKS['Neo-Grotesque']);
     }
@@ -400,19 +323,11 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * A preset describes its own fonts, because its `@font-face` blocks already say it all.
-     *
-     * This is what makes copying a look between wikis work: the stylesheet alone is useless
-     * without the files it names, and a *guess* at those file names cannot know which weights
-     * exist. Reading the blocks gives family, style, weight, `unicode-range` and a URL each --
-     * every weight and both slopes, as facts rather than a convention.
-     */
+    /** A preset describes its own fonts, because its `@font-face` blocks already say it all. */
     public function testAPresetDescribesTheFontsItNeeds(): void
     {
         $service = $this->service();
 
-        // a preset with no webfont has nothing to describe, and must not invent any
         $this->assertSame([], $service->fontsOf('default.css', 'https://wiki.example'));
         $this->assertSame([], $service->fontsOf('there-is-no-such-preset.css'));
 
@@ -439,7 +354,7 @@ class PresetServiceTest extends YesWikiTestCase
             $this->assertSame('700', $fonts[0]['weight'], 'the weight is the whole point');
             $this->assertSame('latin', $fonts[0]['subset']);
             $this->assertSame('U+0000-00FF', $fonts[0]['unicodeRange']);
-            // absolute, because the wiki asking is not this one and `../../` means nothing there
+
             $this->assertSame(
                 'https://wiki.example/custom/fonts/nunito/nunito-italic-700-latin.woff2',
                 $fonts[0]['url']
@@ -449,16 +364,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * A downloaded family is declared to the browser, whether or not a preset names it.
-     *
-     * **This is the bug that made the font selector look broken.** A family's `@font-face`
-     * rules were written into a *preset*, when that preset was saved -- so a font could be
-     * fully downloaded, offered in the select, chosen, and still be a name no browser had
-     * ever heard of. Picking it set `font-family` on the document and every word carried on
-     * rendering in the fallback: no error, no console warning, nothing to see. Identical, from
-     * the webmaster's side, to the choice not registering at all.
-     */
+    /** A downloaded family is declared to the browser, whether or not a preset names it. */
     public function testEveryInstalledFamilyIsDeclaredWhateverNamesIt(): void
     {
         $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-face';
@@ -477,11 +383,9 @@ class PresetServiceTest extends YesWikiTestCase
             $css = $this->service()->installedFontFaces('https://wiki.example');
 
             $this->assertStringContainsString("font-family: 'Zz Test Face'", $css);
-            // the subset survives, because it came from Google's own answer rather than
-            // from a file name -- it is the reason the rules are kept at all
+
             $this->assertStringContainsString('unicode-range: U+0000-00FF', $css);
-            // absolute: a preset stores `../../custom/fonts/…` relative to ITSELF, and this
-            // is served from a route, so nothing a browser resolved it against would find it
+
             $this->assertStringContainsString(
                 'url(https://wiki.example/custom/fonts/zz-test-face/zz-test-face-italic-700-latin.woff2)',
                 $css
@@ -493,13 +397,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * A family installed before its rules were kept is described from its file names.
-     *
-     * `<family>-<style>-<weight>-<subset>.woff2` is what importFontFile writes, so style and
-     * weight are recoverable -- which is what stops an upgrade turning every already-installed
-     * font into one the rail offers and cannot draw.
-     */
+    /** A family installed before its rules were kept is described from its file names. */
     public function testAFamilyWithNoStoredRulesIsDescribedFromItsFiles(): void
     {
         $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-old';
@@ -522,13 +420,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The mono face is fetched and declared like the other two.
-     *
-     * It was left out of the list handed to the writer: a preset whose code blocks named a
-     * webfont was written with no `@font-face` for it at all. Same silent nothing as an
-     * uninstalled font, on the one token nobody looks at twice.
-     */
+    /** The mono face is fetched and declared like the other two. */
     public function testTheMonospaceFontIsInstalledLikeTheOthers(): void
     {
         $source = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/Render/Service/PresetService.php');
@@ -539,12 +431,11 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /** fontsOf() addressed by path rather than by preset id, for a fixture on disk. */
-    /** @return list<array{family: string, style: string, weight: string, subset: string, unicodeRange: string, url: string}> */
+    /**
+     * @return list<array{family: string, style: string, weight: string, subset: string, unicodeRange: string, url: string}>
+     */
     private function fontsOfFile(PresetService $service, string $path, string $baseUrl): array
     {
-        // find() resolves an id against the theme and custom directories, so a fixture has to
-        // be put where one of them will see it
         $copy = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . basename($path);
         @mkdir(ThemeManager::CUSTOM_CSS_PRESETS_PATH, 0777, true);
         copy($path, $copy);
@@ -556,14 +447,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The two inks are the ONLY text colours a Preset sets, and everything else follows.
-     *
-     * `--yw-text` and `--yw-text-inverse` used to be authored, and authored per scheme -- four
-     * values expressing one decision, with four chances to disagree. They are derived now:
-     * the page's ink is whichever of the pair suits the scheme in force, and the inverse is
-     * the other. Asked once, answered everywhere.
-     */
+    /** The two inks are the ONLY text colours a Preset sets, and everything else follows. */
     public function testTextIsDerivedFromTheTwoInks(): void
     {
         $this->assertArrayNotHasKey('yw-text', PresetService::TOKENS, 'the page ink is not authored');
@@ -571,38 +455,25 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertArrayHasKey('yw-ink-on-light', PresetService::TOKENS);
         $this->assertArrayHasKey('yw-ink-on-dark', PresetService::TOKENS);
 
-        // both are scheme-independent: a light ground is light at midnight too
         foreach (['yw-ink-on-light', 'yw-ink-on-dark'] as $ink) {
             $this->assertSame(PresetService::KIND_COLOR_FIXED, PresetService::TOKENS[$ink]['kind'], $ink);
         }
 
-        // ...and each is scored against the surface of the scheme where it IS the page's ink;
-        // against the other scheme's surface it would report a pairing that never happens
         $this->assertSame('light.yw-surface', PresetService::TOKENS['yw-ink-on-light']['contrast']);
         $this->assertSame('dark.yw-surface', PresetService::TOKENS['yw-ink-on-dark']['contrast']);
     }
 
-    /**
-     * A background a page author typed gets an ink core chose -- where core can tell.
-     *
-     * This is the one ground a stylesheet cannot measure, so it used to be left to
-     * `class="white"`/`"black"`: an author guessing, and guessing again every time the
-     * preset's colours moved. Two shapes are answerable and the rest deliberately are not --
-     * guessing wrong here is unreadable text on somebody's cover image.
-     */
+    /** A background a page author typed gets an ink core chose -- where core can tell. */
     public function testCoreChoosesTheInkForABackgroundItCanRead(): void
     {
         $service = $this->service();
 
-        // a literal is measured against the wiki's own two inks
         $this->assertSame('var(--yw-ink-on-light)', $service->inkForBackground('#f9c401'), 'bright yellow wants dark ink');
         $this->assertSame('var(--yw-ink-on-dark)', $service->inkForBackground('#0c5d6a'), 'deep teal wants light ink');
 
-        // a fill already has a resolved ink: use that answer rather than computing a second
         $this->assertSame('var(--yw-on-primary)', $service->inkForBackground('var(--yw-primary)'));
         $this->assertSame('var(--yw-on-warning)', $service->inkForBackground('var(--yw-warning)'));
 
-        // and everything else is left alone rather than guessed at
         foreach ([
             'var(--yw-surface)',
             'color-mix(in oklab, red, blue)',
@@ -614,16 +485,7 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The Google catalogue is vendored, and a family is checked against it before anything
-     * is fetched.
-     *
-     * A shape regex was the old check, and `Opne Sans` passes one: it is a perfectly
-     * well-formed family name, Google answers a request for it with nothing at all, and the
-     * webmaster gets a blank failure after a network round trip. The catalogue turns that
-     * into "no such font" before a connection is opened, and hands back Google's own casing,
-     * which is what the download URL and the folder name are built from.
-     */
+    /** The Google catalogue is vendored, and a family is checked against it before anything is fetched. */
     public function testAFamilyIsCheckedAgainstTheVendoredCatalogue(): void
     {
         $service = $this->service();
@@ -633,22 +495,14 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertContains('Nunito', $catalogue);
         $this->assertContains('JetBrains Mono', $catalogue);
 
-        // matched case-insensitively, answered in the catalogue's casing
         $this->assertSame('Open Sans', $service->googleFontNamed('open sans'));
         $this->assertSame('Open Sans', $service->googleFontNamed('  OPEN SANS  '));
 
-        // ...and a typo is not a font
         $this->assertSame('', $service->googleFontNamed('Opne Sans'));
         $this->assertSame('', $service->googleFontNamed(''));
     }
 
-    /**
-     * Installing refuses what is not in the catalogue WITHOUT reaching the network.
-     *
-     * Asserted by the exception type: an unknown family is an argument problem, and a family
-     * that is real but could not be fetched is a runtime one. If this ever started throwing
-     * the latter, the check had stopped happening before the download.
-     */
+    /** Installing refuses what is not in the catalogue WITHOUT reaching the network. */
     public function testAnUnknownFamilyIsRefusedBeforeAnyDownload(): void
     {
         $service = $this->service();
@@ -664,7 +518,6 @@ class PresetServiceTest extends YesWikiTestCase
             }
         }
 
-        // a local stack is not a download either
         $this->expectException(\InvalidArgumentException::class);
         $service->installFont(PresetService::FONT_STACKS['Neo-Grotesque']);
     }
@@ -702,9 +555,7 @@ class PresetServiceTest extends YesWikiTestCase
     }
 
     /**
-     * The dark set lives inside a media query, and a preset carries it twice -- once for the
-     * system preference and once for the explicit choice. Both blocks have to be read, or a
-     * preset that leads with either would list as missing every colour it actually declares.
+     * The dark set lives inside a media query, and a preset carries it twice -- once for the system preference and once for the explicit choice.
      */
     public function testTheDarkSchemeIsReadFromBothOfItsBlocks(): void
     {
@@ -724,8 +575,7 @@ class PresetServiceTest extends YesWikiTestCase
     }
 
     /**
-     * A Preset is complete or it is an error, and the error names what is missing -- the one
-     * thing that turns "your preset is wrong" into something a webmaster can act on.
+     * A Preset is complete or it is an error, and the error names what is missing -- the one thing that turns "your preset is wrong" into something a webmaster can act on.
      */
     public function testAnIncompletePresetNamesWhatItLeavesOut(): void
     {
@@ -736,7 +586,7 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertContains('--yw-primary (dark)', $missing, 'a colour is authored once per scheme');
         $this->assertContains('--yw-surface', $missing);
         $this->assertNotContains('--yw-primary', $missing, 'the one value it does declare is not missing');
-        // the Layout setting is not a token: a Preset neither declares it nor is judged on it
+
         $this->assertNotContains('--yw-navbar-height', $missing);
     }
 
@@ -757,9 +607,7 @@ class PresetServiceTest extends YesWikiTestCase
     }
 
     /**
-     * Deliberately more forgiving than ThemeManager's own parser, which returns nothing at
-     * all when one colour is not a hex literal -- a hand-edited file would then show as
-     * having no colours rather than as having one unusual one.
+     * Deliberately more forgiving than ThemeManager's own parser, which returns nothing at all when one colour is not a hex literal -- a hand-edited file would then show as having no colours rather than as having one unusual one.
      */
     public function testOneOddValueDoesNotHideTheOthers(): void
     {
@@ -769,16 +617,7 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertSame('#abcdef', $values['light']['yw-surface']);
     }
 
-    /**
-     * Core DERIVES what a Preset used to be asked for, and asks for nothing it derives.
-     *
-     * This is the ADR-0021 contract from both sides, and both halves fail silently on their
-     * own. A derived property that stopped being declared in core leaves every rule that
-     * consumes it resolving to nothing -- `border: 1px solid` with no colour, which renders
-     * as the initial `currentColor` and looks like a styling choice. And a derived property
-     * that came BACK into TOKENS would make every existing preset incomplete overnight, and
-     * be written into new ones as a value core immediately overrides.
-     */
+    /** Core DERIVES what a Preset used to be asked for, and asks for nothing it derives. */
     public function testEveryDerivedValueIsDeclaredByCoreAndAskedOfNobody(): void
     {
         $core = $this->service()->coreDefaults();
@@ -791,8 +630,6 @@ class PresetServiceTest extends YesWikiTestCase
             );
         }
 
-        // and core really does declare them: read out of the stylesheet rather than restated
-        // here, which is the same reason coreDefaults() parses the file instead of listing it
         $declared = $this->declaredByCore();
         foreach (self::DERIVED as $property) {
             $this->assertContains(
@@ -802,19 +639,12 @@ class PresetServiceTest extends YesWikiTestCase
             );
         }
 
-        // the authored half is in the same file, which is what makes core the default Preset
         foreach (array_keys(PresetService::TOKENS) as $token) {
             $this->assertArrayHasKey($token, $core['light'], $token);
         }
     }
 
-    /**
-     * A derived colour is written once and re-resolves per scheme -- that is what it buys.
-     *
-     * The dark blocks restate the AUTHORED colours and nothing else. If one of them started
-     * restating a derived property too, the derivation would be decorative for that property
-     * and the two copies would drift, which is exactly the failure the tier exists to end.
-     */
+    /** A derived colour is written once and re-resolves per scheme -- that is what it buys. */
     public function testTheDarkSchemeRestatesOnlyWhatItAuthors(): void
     {
         $css = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/styles/yw-core.css');
@@ -823,7 +653,7 @@ class PresetServiceTest extends YesWikiTestCase
         foreach (self::DERIVED as $property) {
             $this->assertArrayNotHasKey($property, $dark, $property . ' is derived: the dark set must not restate it');
         }
-        // ...and it does restate every colour it authors, or the dark scheme has a gap
+
         foreach (PresetService::TOKENS as $token => $definition) {
             if ($definition['kind'] === PresetService::KIND_COLOR) {
                 $this->assertArrayHasKey($token, $dark, $token . ' has no dark value');
@@ -831,19 +661,11 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * A measure is a slider's value: bounded, and reachable in the steps the slider has.
-     *
-     * The rail has no text box for one any more, so a default the slider cannot land on is a
-     * value a webmaster could look at, not touch, and never get back after touching anything.
-     */
+    /** A measure is a slider's value: bounded, and reachable in the steps the slider has. */
     public function testEveryMeasureDefaultSitsOnItsSlider(): void
     {
         $sets = ['core' => $this->service()->coreDefaults()['light']];
-        // and every SHIPPED preset, which is the case that actually bites: `landes` asked
-        // for `0.219rem`, a value its slider could not land on, so opening it in the rail
-        // silently snapped it -- and saving without touching that field would have written
-        // the snapped value back over the one the theme shipped
+
         foreach ($this->service()->all() as $preset) {
             if (!$preset['custom']) {
                 $sets[$preset['name']] = $preset['values']['light'];
@@ -855,7 +677,9 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
-    /** @param array<string, string> $values */
+    /**
+     * @param array<string, string> $values
+     */
     private function assertMeasuresSitOnTheirSliders(array $values, string $where): void
     {
         foreach (PresetService::TOKENS as $token => $definition) {
@@ -912,10 +736,7 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertSame(['light' => [], 'dark' => []], $this->service()->valuesOf('.foo { color: red; }'));
     }
 
-    /**
-     * The name is concatenated into a path, so it is reduced to a plain name rather than
-     * escaped. A traversal must come out as an ordinary file in custom/css-presets/.
-     */
+    /** The name is concatenated into a path, so it is reduced to a plain name rather than escaped. */
     public function testATypedNameBecomesAPlainFileName(): void
     {
         $service = $this->service();
@@ -933,8 +754,7 @@ class PresetServiceTest extends YesWikiTestCase
     }
 
     /**
-     * `favorite_preset` names a file CoreAssets will link into the head of every page, so an
-     * id nobody offers is refused rather than written.
+     * `favorite_preset` names a file CoreAssets will link into the head of every page, so an id nobody offers is refused rather than written.
      */
     public function testSelectingAPresetThatDoesNotExistIsRefused(): void
     {

@@ -6,19 +6,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `yeswicli` runs where there is no wiki.
- *
- * It used to stop dead without a `yeswiki.config.php` -- "the command should be launched
- * from your YesWiki root directory" -- which is exactly backwards for the arrangement it
- * exists to serve: one source tree shared by every wiki on the server. That folder has no
- * config, because it is nobody's wiki, and the one thing anyone wants to do there is make
- * one.
- *
- * Run as a real subprocess rather than by including the script: the whole behaviour under
- * test is what the console decides from its working directory, which cannot be faked from
- * inside a test that is already running in this wiki.
- */
+/** `yeswicli` runs where there is no wiki. */
 class ConsoleWithoutAWikiTest extends YesWikiTestCase
 {
     /**
@@ -26,8 +14,6 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
      */
     private function console(string $workingDirectory, string $arguments = ''): array
     {
-        // the path constants are defined by src/bootstrap_paths.php, which the wiki's own
-        // boot runs -- this test never needs the wiki itself, only where it lives
         $this->getWiki();
 
         $command = sprintf(
@@ -44,7 +30,6 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
 
     public function testInAWikiItOffersEverything(): void
     {
-        // this repo is a wiki: it has a config, so the whole set is there
         $this->getWiki();
         [$output, $status] = $this->console(\YESWIKI_INSTANCE_DIR, 'list');
 
@@ -70,23 +55,15 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
                 $output,
                 'the one thing worth doing in a folder with no wiki'
             );
-            // ...and nothing that would reach for a wiki that is not there
+
             $this->assertStringNotContainsString('core:archive', $output);
             $this->assertStringNotContainsString('search:reindex', $output);
         } finally {
-            // bootstrap_paths.php provisions the data folders in whatever it is run from
             exec('rm -rf ' . escapeshellarg($folder));
         }
     }
 
-    /**
-     * A `yeswiki.config.php` that exists but configures nothing is not a wiki either.
-     *
-     * Reported from a real server: an install that never finished leaves the file behind,
-     * and `file_exists()` was the whole test -- so the console fabricated `$_SERVER` from
-     * a `base_url` that was not there (four warnings), booted anyway, and died connecting
-     * to a database with no credentials. All from a command asked only to list itself.
-     */
+    /** A `yeswiki.config.php` that exists but configures nothing is not a wiki either. */
     public function testAConfigThatConfiguresNothingIsNotAWiki(): void
     {
         $folder = sys_get_temp_dir() . '/yeswiki-console-halfwritten-' . getmypid();
@@ -109,8 +86,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
     }
 
     /**
-     * ...and what it offers there actually works: a wiki gets made, with a console of its
-     * own pointing back at this source.
+     * ...and what it offers there actually works: a wiki gets made, with a console of its own pointing back at this source.
      */
     public function testItCanMakeAnInstanceFromAFolderWithNoWiki(): void
     {
@@ -135,8 +111,6 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
                 $this->assertDirectoryExists($instance . '/' . $dataFolder);
             }
 
-            // the new wiki has no config either, so its own console says so rather than
-            // dying -- it is a wiki waiting to be installed, not a source tree
             [$itsOwn, $itsStatus] = $this->console($instance, 'list');
             $this->assertSame(0, $itsStatus, $itsOwn);
             $this->assertStringContainsString('not installed yet', $itsOwn);

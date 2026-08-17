@@ -13,7 +13,7 @@ class YesWikiTest extends YesWikiTestCase
     public function testInitWiki(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        // the container must know its own runtime
+
         $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
         return $wiki;

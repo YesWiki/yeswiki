@@ -28,6 +28,5 @@ export default {
     },
   },
   advancedAttributes: ['read_access', 'write_access', 'queries'],
-  // disabledAttributes: [],
   editorSetup: enumEditorSetup,
 }

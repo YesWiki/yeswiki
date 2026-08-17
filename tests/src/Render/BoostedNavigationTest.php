@@ -10,14 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 16: internal links load through htmx. A boosted navigation is a *fragment* -- the
- * server returns the squelette's `body` block and htmx swaps it into `<body>`.
- *
- * These cover the server half of the contract, which is the half a test can reach. The
- * browser half -- focus, the back button, the progress bar, the unsaved-edit guard -- is
- * verified by hand (decided 2026-07-31; the Playwright suite is not ready).
- */
+/** Ticket 16: internal links load through htmx. */
 class BoostedNavigationTest extends YesWikiTestCase
 {
     private function boosted(): BoostedNavigation
@@ -39,7 +32,9 @@ class BoostedNavigationTest extends YesWikiTestCase
         $this->getWiki()->services->get(CurrentRequest::class)->replace($request);
     }
 
-    /** @return array<string,string> */
+    /**
+     * @return array<string,string>
+     */
     private function boostHeaders(?string $fingerprint = null): array
     {
         return [
@@ -82,8 +77,6 @@ class BoostedNavigationTest extends YesWikiTestCase
         $themeManager = $this->getWiki()->services->get(ThemeManager::class);
         $identity = $themeManager->layoutIdentity();
 
-        // theme, squelette, style, preset, background image, lang -- a page's metadata can
-        // change any of them, and none of them lives inside the body block
         $this->assertCount(6, $identity);
         $this->assertNotSame('', $this->boosted()->fingerprint());
     }
@@ -101,8 +94,7 @@ class BoostedNavigationTest extends YesWikiTestCase
     }
 
     /**
-     * A boosted request that sends no fingerprint is a mismatch: a full load is always a
-     * correct answer, whereas swapping into an unknown skeleton is not.
+     * A boosted request that sends no fingerprint is a mismatch: a full load is always a correct answer, whereas swapping into an unknown skeleton is not.
      */
     public function testAMissingFingerprintIsRejected(): void
     {
@@ -125,17 +117,11 @@ class BoostedNavigationTest extends YesWikiTestCase
         $this->assertStringContainsString('/TestPage', (string)$this->boosted()->fullLoadResponse()->headers->get('HX-Redirect'));
     }
 
-    /**
-     * The config flag decides whether the skeleton emits hx-boost at all. With it off nothing
-     * is boosted, whatever headers arrive -- which is the escape hatch for a theme that does
-     * not meet the contract.
-     */
+    /** The config flag decides whether the skeleton emits hx-boost at all. */
     public function testTheFlagIsOnByDefault(): void
     {
         $this->assertTrue($this->boosted()->isEnabled());
     }
-
-    // ---------------------------------------------------------------- the fragment itself
 
     public function testAFullRenderIsAWholeDocument(): void
     {
@@ -149,9 +135,7 @@ class BoostedNavigationTest extends YesWikiTestCase
     }
 
     /**
-     * The fragment is the body block, a top-level <title>, and the declared assets as an
-     * out-of-band swap. It must contain no literal <head>: htmx strips `<head>...</head>` from
-     * a fragment response, which would silently take the assets with it.
+     * The fragment is the body block, a top-level <title>, and the declared assets as an out-of-band swap.
      */
     public function testABoostedRenderIsTheBodyBlockOnly(): void
     {

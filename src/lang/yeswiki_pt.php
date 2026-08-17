@@ -906,8 +906,6 @@ return [
     'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => 'Novo CL registrado com sucesso para o manipulador',
     'USER_GOTOADMIN' => 'Gestão do utilizador',
 
-    // relocated from tools/login/lang/login_pt.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Registrar',
     'LOGIN_LOGIN' => 'Entrar',
     'LOGIN_WIKINAME' => 'Email ou username.ice',
@@ -959,7 +957,6 @@ return [
     'LOGIN_PLEASE_REGISTER' => 'identifique por favor',
     'LINK_TO_CHANGE_PASSWORD' => 'Link para mudar a senha',
 
-    // relocated from tools/tags/lang/tags_pt.inc.php (ticket 10)
     'TAGS_ACTION_ADMINTAGS' => 'Ação {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'a ação é restrita ao grupo de administradores',
     'TAGS_NO_WRITE_ACCESS' => 'Você não tem acesso de gravação para esta página!',
@@ -1308,7 +1305,7 @@ return [
     'AB_templates_section_wrappedcontentexample' => '- Sim. Texto de sua seção a ser substituído',
     'AB_templates_tabs_titles_hint' => 'Separe cada título por uma vírgula',
     'AB_templates_tabs_bottom_nav_label' => 'Navegação na parte inferior das abas',
-    // relocated from tools/attach/lang/attach_pt.inc.php (ticket 17)
+
     'ATTACH_ACTION_ATTACH' => 'Ação {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parâmetro "desc" necessário para uma imagem',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'o parâmetro "height", em pixels, deve ser composto unicamente de números inteiros',
@@ -1404,7 +1401,6 @@ return [
     'ATTACH_DATE_OF_MODIFICATION' => 'Data alterada',
     'ATTACH_RESTORE' => 'Restaurar',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar este ficheiro',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1418,7 +1414,6 @@ return [
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_pt.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Ação {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'o parâmetro mail, obrigatório está faltando.',
     'CONTACT_ACTION_CONTACT' => 'Ação {{contact ...}}',
@@ -1518,7 +1513,6 @@ return [
     'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar e-mails',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Banco de dados',
 
-    // relocated from tools/autoupdate/lang/autoupdate_pt.inc.php (ticket 19)
     'AU_ACL' => 'Verificação dos direitos nos arquivos',
     'AU_REPO_ERROR' => 'Repositórios inacessíveis.',
     'AU_VERSION_WIKI' => 'Versão do Wiki',
@@ -1563,7 +1557,6 @@ return [
     'AU_INSTALLED_REVISION' => 'Versão instalada',
     'AU_AVAILABLE_REVISION' => 'Versão disponível',
 
-    // relocated from tools/syndication/lang/syndication_pt.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Ação {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'você deve necessariamente introduzir o parâmetro "url" para distribuir um feed RSS',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'o diretório "cache" não tem direitos de acesso em gravação',
@@ -1578,9 +1571,9 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'não existe, o arquivo template padrão é usado.',
     'SYNDICATION_SOURCE' => 'fonte',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acesso a todo o conteúdo',
-    // relocated from tools/bazar/lang/bazar_pt.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Formulário',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Escolha um ficheiro para substituir este.',
     'BAZ_SYSTEM_FORMS' => 'Conteúdos do wiki',
     'BAZ_USER_FORMS' => 'Formulários',
@@ -1962,7 +1955,6 @@ return [
     'DATATABLE_NO_RESULTS' => 'Nenhum resultado encontrado',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -1980,13 +1972,11 @@ return [
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'Um ou vários formulários selecionados não estão semanticamente definidos, o formato ActivityPub não pode ser usado',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Visible uniquement pour les administrateurs',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modification of',
     'RSS_HISTORY' => 'history',
     'RSS_HIDDEN_CONTENT' => 'Hidden content',
@@ -1997,11 +1987,9 @@ return [
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'O parâmetro de destino (idioma de destino), obrigatório, está faltando.',
     'LANG_FLAG_FILE_MISSING' => 'Falta bandeira para este país',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Adicionar um campo',
     'FORM_BUILDER_ADVANCED' => 'Configurações avançadas',
     'FORM_BUILDER_BACK' => 'Voltar',
@@ -2018,7 +2006,6 @@ return [
     'FORM_BUILDER_NO_PREVIEW' => 'Pré-visualização indisponível para este campo',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obrigatório',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Campo usado como título das fichas',
     'FORM_EDIT_CUSTOM_TITLE' => 'Título personalizado…',
     'FORM_EDIT_PERMISSIONS' => 'Permissões das fichas',

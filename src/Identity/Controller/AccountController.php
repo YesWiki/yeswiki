@@ -13,28 +13,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * `/user` -- your account, and the way in when you have none open.
- *
- * Signing in used to happen in a modal built into the navbar: the form was on every page of
- * the wiki whether or not anyone would ever use it, its markup sat inside `#yw-topnav` on
- * some renders and outside it on others, and everything you might do with an account
- * afterwards lived somewhere else again -- `ParametresUtilisateur`, `MesContenus`,
- * `MotDePassePerdu`, seeded wiki pages any install could rename or delete.
- *
- * This is the same move `/dashboard` made: routes instead of pages, one rail, one place.
- * The account section of that rail appears once you are signed in, so /user is both the
- * sign-in screen and everything behind it.
- *
- * ## Why every route here is `public`
- *
- * The ACL option gates the *route*; a route gated on `@registered` would answer an
- * anonymous visitor with a refusal, and a refusal is not what someone who simply has not
- * signed in yet needs to see. So the routes are open and each screen decides: signed in, it
- * renders itself; signed out, it renders the sign-in form in the same shell. Nothing behind
- * them leaks -- the actions they render (`usersettings`, `mypages`, `userreactions`) show a
- * signed-out visitor nothing of their own accord either.
- */
+/** `/user` -- your account, and the way in when you have none open. */
 class AccountController extends YesWikiController
 {
     use DashboardShell;
@@ -63,13 +42,7 @@ class AccountController extends YesWikiController
         return $this->page('@core/account/reactions.twig', 'user/reactions');
     }
 
-    /**
-     * Creating an account -- the other half of the sign-in screen.
-     *
-     * `{{usersettings}}` answers a signed-out visitor with the signup form and a signed-in
-     * one with their settings, which would make this route silently become /user for
-     * anyone who already has an account. It says so instead.
-     */
+    /** Creating an account -- the other half of the sign-in screen. */
     #[Route('/user/signup', options: ['acl' => ['public']])]
     public function signup(): Response
     {
@@ -90,12 +63,7 @@ class AccountController extends YesWikiController
         return $this->openPage('@core/account/lost-password.twig', 'user/lost-password');
     }
 
-    /**
-     * Signing out, as a route rather than as `?SomePage&action=logout&context=SomePage`.
-     *
-     * That query string had to name the page it was written on, so it could only ever be
-     * built by the action that rendered the link. A route is the same address everywhere.
-     */
+    /** Signing out, as a route rather than as `?SomePage&action=logout&context=SomePage`. */
     #[Route('/user/logout', options: ['acl' => ['public']])]
     public function logout(): RedirectResponse
     {
@@ -111,10 +79,7 @@ class AccountController extends YesWikiController
     }
 
     /**
-     * `getLoggedUser()`, NOT `getLoggedUserName()`: the latter answers with the client's IP
-     * address when nobody is signed in -- an anonymous editor's "name" is their IP, by a
-     * convention as old as the wiki -- so asking it whether there is a session gets "yes"
-     * from every visitor, and every one of them was shown the account screen.
+     * `getLoggedUser()`, NOT `getLoggedUserName()`: the latter answers with the client's IP address when nobody is signed in -- an anonymous editor's "name" is their IP, by a convention as old as the wiki -- so asking it whether there is a session gets "yes" from every visitor, and every one of them was shown the account screen.
      */
     private function isConnected(): bool
     {
@@ -133,8 +98,6 @@ class AccountController extends YesWikiController
      */
     private function page(string $template, string $current, array $data = []): Response
     {
-        // signed out, the rail has nothing of yours to point at, so no entry is current and
-        // the sign-in form is what the canvas holds
         return $this->isConnected()
             ? $this->openPage($template, $current, $data)
             : $this->openPage('@core/account/login.twig', 'user', $data);
@@ -143,17 +106,10 @@ class AccountController extends YesWikiController
     /**
      * A screen that renders for anyone -- signing in, signing up, recovering a password.
      *
-     * These three are the whole reason the routes are public, and they must NOT go through
-     * the gate above: replacing the signup form with the sign-in form for a visitor who has
-     * no account yet is a closed door where the door is the point.
-     *
      * @param array<string, mixed> $data
      */
     private function openPage(string $template, string $current, array $data = []): Response
     {
-        // the whole path, not just the first segment: the URL parser reads `?user/pages` as
-        // tag `user` + method `pages`, and an action that links to "this page" asks
-        // PageContext for the tag (see DashboardController::page())
         $this->getService(PageContext::class)->setTag($current);
 
         $templateEngine = $this->getService(TemplateEngine::class);

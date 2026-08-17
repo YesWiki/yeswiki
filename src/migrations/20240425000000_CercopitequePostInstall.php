@@ -15,8 +15,6 @@ class CercopitequePostInstall extends YesWikiMigration
             $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
             $config->load();
 
-            // check favorite_theme
-            // If default theme was used, install new yeswikicerco extension to keep same look and feel
             $favoriteThemefromFile = $config['favorite_theme'] ?? '';
             if (empty($favoriteThemefromFile) || $favoriteThemefromFile == 'yeswiki') {
                 $this->getService(AutoUpdateService::class)->upgrade('yeswikicerco');

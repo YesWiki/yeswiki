@@ -13,15 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The wiki's own stylesheet is a file now, not the `PageCss` page (ticket 30).
- *
- * Two things have to hold and neither is obvious from reading the code. It must be linked
- * **last**, because that is the cascade position the inlined page had and a webmaster's CSS
- * is written expecting to win. And it must be linked as a **file**, not inlined: `PageCss`
- * had to be inlined only because the `/raw` handler serves `text/plain`, and carrying that
- * workaround forward would have thrown away the point of the move.
- */
+/** The wiki's own stylesheet is a file now, not the `PageCss` page (ticket 30). */
 class CustomCssTest extends YesWikiTestCase
 {
     private ?string $saved = null;
@@ -37,7 +29,6 @@ class CustomCssTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        // this wiki's real stylesheet: put back exactly what was there
         $service = $this->service();
         if ($this->existed) {
             $service->write((string)$this->saved);
@@ -118,8 +109,7 @@ class CustomCssTest extends YesWikiTestCase
     }
 
     /**
-     * A fresh CoreAssets, for the reason CoreAssetsTest gives: "register once per request"
-     * is instance state and the container hands out a shared one.
+     * A fresh CoreAssets, for the reason CoreAssetsTest gives: "register once per request" is instance state and the container hands out a shared one.
      */
     private function renderedAssets(): string
     {

@@ -58,16 +58,15 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
                 return 0;
             }
 
-            return ($page1['time'] > $page2['time']) ? -1 : 1; // décroissant
+            return ($page1['time'] > $page2['time']) ? -1 : 1;
         });
 
         $pages = array_slice($pages, 0, $max);
 
-        // correctly format lang param for xml
         $lang = $this->getRequest()->query->get('lang');
         if (!empty($lang)) {
             $langParam = ['lang' => $lang];
-            unset($_GET['lang']); // prevent wiki->Href() from duplicating the lang param
+            unset($_GET['lang']);
         } else {
             $langParam = [];
         }

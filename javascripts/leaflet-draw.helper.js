@@ -39,11 +39,10 @@ export function drawGeometries(
         layer = circle
       } else {
         layer = L.geoJSON(feature, {
-          style: /* function (feature) {
-			    return */ {
+          style: {
             color: 'blue',
             className: `bazar-entry-geometry ${feature.properties.className || ''}`,
-          }, // ;
+          },
           pointToLayer(feature, latlng) {
             const customIcon = L.Icon.Default.extend({
               options: {

@@ -79,12 +79,8 @@ export default {
     'geometries',
     'max_geometries',
   ],
-  // disabledAttributes: [],
   editorHint: `<b>${_t('GEOLOCATER_GROUP_GEOLOCATIZATION')}</b> ${_t('GEOLOCATER_GROUP_GEOLOCATIZATION_HINT')}`,
   editorSetup(api) {
-    // `autocomplete_other` is the stored attribute packing
-    // geolocate|street|street1|street2|county|state; the visible inputs edit its
-    // parts, it stays hidden itself
     api.hide('autocomplete_others')
     const partNames = [
       'geolocate',

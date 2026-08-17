@@ -9,11 +9,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 11 (aceditor absorbed into core): the editor
- * wrapper/toolbar/link rail no longer depend on jQuery or Bootstrap's JS
- * components (bootstrap-tagsinput, data-toggle="dropdown", data-toggle="modal").
- * The Vue-based actions-builder subsystem is deliberately untouched/still
- * Bootstrap-styled -- out of scope for this ticket.
+ * Regression tests for ticket 11 (aceditor absorbed into core): the editor wrapper/toolbar/link rail no longer depend on jQuery or Bootstrap's JS components (bootstrap-tagsinput, data-toggle="dropdown", data-toggle="modal").
  */
 class AceditorWidgetTest extends YesWikiTestCase
 {
@@ -21,10 +17,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
-        // {{aceditor}}'s ActionsBuilderService::getData() calls bazar's
-        // formAndListIds(), which reads $GLOBALS['wiki'] -- normally
-        // populated by the production HTTP bootstrap, not the test harness
-        // (same workaround as FiltertagsActionTest)
+
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
         return $wiki->services->get(YesWikiRuntime::class);
@@ -44,8 +37,7 @@ class AceditorWidgetTest extends YesWikiTestCase
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
 
         $this->assertStringNotContainsString('bootstrap-tagsinput', $output);
-        // the toolbar's own dropdowns (Format/Actions menus) must be yw-dropdown,
-        // not Bootstrap's JS-driven data-toggle="dropdown"
+
         $this->assertStringNotContainsString('data-toggle="dropdown"', $output);
         $this->assertStringContainsString('yw-dropdown', $output);
         $this->assertStringContainsString('data-yw-dropdown-toggle', $output);
@@ -54,8 +46,6 @@ class AceditorWidgetTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testGlobalAssetsIncludeRebuiltWidget(YesWikiRuntime $wiki)
     {
-        // ticket 15: {{linkjavascript}} is gone -- assets are declared by whatever needs them
-        // and emitted once, in the skeleton's head block
         $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $js = $wiki->services->get(\YesWiki\Kernel\Service\AssetRegistry::class)->drain()->toHtml();
 

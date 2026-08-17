@@ -1,8 +1,5 @@
-// conditions-checking.js — conditional display of bazar form blocks driven by
-// data-conditionschecking expressions (ticket 16: vanilla JS; tag fields are
-// yw-tag-input widgets, tab panes use the yw-tabs__pane markup)
 const ConditionsChecking = {
-  checkDelay: 500, // delay between 2 wysiwig editor content condition checking
+  checkDelay: 500,
   conditionsCache: [],
   fieldNamesCache: {},
   triggersCache: {},
@@ -156,8 +153,6 @@ const ConditionsChecking = {
     if (!field) return ''
     let { value } = field
     if (field.classList.contains('vditor-html')) {
-      // strip all tags first: an editor-empty doc renders as an empty paragraph
-      // (exact markup shape isn't guaranteed, so check on text content, not a literal string)
       if (value.replace(/<[^>]+>/g, '').trim() === '') {
         return ''
       }
@@ -170,11 +165,9 @@ const ConditionsChecking = {
     if (!field) return ''
     let src = ''
     if (field.matches('output')) {
-      // image affichée
       const img = field.querySelector('img')
       src = this.getFilename(img ? img.getAttribute('src') : '')
     } else {
-      // formulaire affiché avec onglets Téléverser / URL
       const upload = field.querySelector(
         ':scope > #imagebf_image-upload.yw-tabs__pane.active',
       )
@@ -194,14 +187,11 @@ const ConditionsChecking = {
     if (!field) return ''
     let src = ''
     if (field.matches('a')) {
-      // lien du fichier affiché
       src = field.getAttribute('download')
       if (!src) {
-        // si fichier chargé depuis internet
         src = this.getFilename(field.getAttribute('href'))
       }
     } else {
-      // formulaire affiché avec onglets Téléverser / URL
       const upload = field.querySelector(
         ':scope > [id$="-upload"].yw-tabs__pane.active',
       )
@@ -482,8 +472,6 @@ const ConditionsChecking = {
     })
   },
   emptyRadio(element) {
-    // warning it unselect the radio button but this will not erase previous saved value
-    // it is needed to have a new value to erase it
     element.querySelectorAll('input[type=radio]').forEach((radioParam) => {
       const radio = radioParam
       radio.checked = false
@@ -517,8 +505,6 @@ const ConditionsChecking = {
         this.fireChange(input)
       })
   },
-  // yw-tag-input widgets: clearing removes the chips and empties the hidden value;
-  // restoring re-creates the chips captured at page load (see snapshotTagsDefaults)
   emptyByTags(element) {
     element.querySelectorAll('[data-yw-tag-input]').forEach((widget) => {
       widget
@@ -589,8 +575,6 @@ const ConditionsChecking = {
     this.emptyGeocode(element)
     this.emptyByTags(element)
     this.emptyOthersInputs(element)
-    // this.emptyImage(element);
-    // do not work for FileField also
   },
   setDefaultChildren(element) {
     this.setDefaultSelect(element)
@@ -654,20 +638,18 @@ const ConditionsChecking = {
       }
       let display = false
       try {
-        // the condition string is built above exclusively from renderConditionSecured
         // eslint-disable-next-line no-eval
         display = errorFound ? false : eval(stringToEval)
       } catch (error) {
         console.warn(error)
         display = false
       }
-      // extract no clean param
       const { node } = conditionData
       const clean = node.dataset.noclean !== 'true'
       if (display) {
         const previousStateVisible = this.isVisible(node)
         node.style.display = ''
-        window.dispatchEvent(new Event('resize')) // needed to refresh map for geolocalization
+        window.dispatchEvent(new Event('resize'))
         if (clean && !previousStateVisible) {
           if (cleanSubelements) {
             this.setDefaultChildren(node)
@@ -824,7 +806,6 @@ const ConditionsChecking = {
       result.isArray = false
       result.nodes = inputs
       inputs.forEach((textarea) => {
-        // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
         if (
           textarea.classList.contains('aceditor-textarea') ||
           textarea.classList.contains('vditor-html')
@@ -919,9 +900,7 @@ const ConditionsChecking = {
   },
   parseCondition(element) {
     const condition = element.dataset.conditionschecking
-    // index = internal id
     const id = this.conditionsCache.length
-    // save cache
     this.conditionsCache.push({
       condition,
       node: element,
@@ -935,11 +914,9 @@ const ConditionsChecking = {
     }
     while (parsingObject.restOfCondition.length > 0) {
       parsingObject = this.getFirstOperation(parsingObject)
-      // check condition
       const indexForStructuredCondition = Object.keys(
         this.conditionsCache[id].structuredConditions,
       ).length
-      // save in cache
       const newCondition = { operation: parsingObject.operation }
       this.conditionsCache[id].structuredConditions[
         indexForStructuredCondition
@@ -955,7 +932,6 @@ const ConditionsChecking = {
         structuredCondition.rightPart = ''
         structuredCondition.typeOfCondition = ''
       }
-      // activate trigger
       if (
         typeof structuredCondition.leftPart !== 'undefined' &&
         structuredCondition.leftPart.length > 0
@@ -977,7 +953,6 @@ const ConditionsChecking = {
       .forEach((element) => {
         this.parseCondition(element)
       })
-    // init conditions
     const elemsToClean = {}
     for (let index = 0; index < this.conditionsCache.length; index += 1) {
       this.resolveCondition(index, false, elemsToClean)

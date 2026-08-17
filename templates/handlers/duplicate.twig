@@ -17,7 +17,7 @@
       <span id="login-message" class="help-block"></span>
     </div>
     </form>
-    <form class="login-fields hide row duplication-login-form">{# hide the field while no valid yeswiki url given #}
+    <form class="login-fields hide row duplication-login-form">
       <div class="col-lg-4">
         <div class="yw-form-group">
           <label for="username" class="yw-form-label">{{ _t('LOGIN_WIKINAME') }}</label>
@@ -43,7 +43,7 @@
     <input type="hidden" id="form-id" value="{{form.id}}"/>
     <div id="form-message"><span class="help-block"></span></div>
     {% endif %}
-    <div class="duplication-fields hide">{# hide the field while not connected #}
+    <div class="duplication-fields hide">
     {% endif %}
   <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
     {% if pageTitle %}

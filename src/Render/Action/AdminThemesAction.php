@@ -2,11 +2,6 @@
 
 namespace YesWiki\Render\Action;
 
-/*
- * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
- * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
- */
-
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
@@ -50,7 +45,6 @@ class AdminThemesAction extends YesWikiAction implements RegisteredAction, Provi
             ]);
         }
 
-        // get services
         $this->pageManager = $this->getService(PageManager::class);
         $this->themeSelectorRenderer = $this->getService(ThemeSelectorRenderer::class);
         $this->themeManager = $this->getService(ThemeManager::class);
@@ -139,9 +133,7 @@ class AdminThemesAction extends YesWikiAction implements RegisteredAction, Provi
         }
     }
 
-    /**
-     * sanitize string from POST or return null.
-     */
+    /** sanitize string from POST or return null. */
     protected function sanitizePost(string $key): ?string
     {
         $val = $this->getRequest()->request->get($key);

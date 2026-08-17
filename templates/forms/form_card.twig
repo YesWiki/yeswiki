@@ -1,11 +1,4 @@
-{# One form. Shared by the system-content list and the webmaster's own, so the two never
-   drift apart -- what differs is only which actions are offered: a built-in Content type's
-   form cannot be cloned (there is exactly one per type), emptied or deleted (see
-   FormManager::refuseIfBuiltIn).
 
-   The card is ordered the way it is read: what this form is, what its data is worth
-   (entries, exports), what may be done to the form itself, and last -- set apart -- the
-   two actions that cannot be undone. #}
 <article class="form-card" data-yw-card-filter-item="{{ (form.title ~ ' ' ~ (form.description ?? '') ~ ' ' ~ key)|lower }}">
   <header class="form-card__header">
     <h3 class="form-card__title">
@@ -13,8 +6,7 @@
       <span class="form-card__id" title="{{ _t('BAZ_ID') }}">#{{ key }}</span>
     </h3>
     {% if form.description %}<p class="form-card__description">{{ form.description }}</p>{% endif %}
-    {# how much this form holds and when it last changed: the two facts that say whether a
-       form is alive, which the list could not answer before without opening each one #}
+
     <p class="form-card__stats">
       {% if form.stats.count is null %}
         <span class="form-card__count" title="{{ _t('BAZ_FORM_ENTRY_COUNT_UNKNOWN_HINT') }}">{{ _t('BAZ_FORM_ENTRY_COUNT_UNKNOWN') }}</span>
@@ -38,10 +30,7 @@
       <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
       {{ _t('BAZ_RECHERCHER') }}
     </a>
-    {# a built-in type's form creates Content like any other form (ticket 13): what it
-       creates is a page, an account or a file rather than an entry row, which is
-       ContentCreator's job. The File type is still missing its upload field, so it says
-       so rather than offering a button that would write a row pointing at nothing. #}
+
     {% if form.canCreateContent %}
       <a class="yw-btn yw-btn--sm" href="{{ url({ params: { view: 'saisir', action: 'saisir_fiche', id: key }}) }}">
         <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
@@ -52,8 +41,7 @@
 
   <div class="form-card__formats">
     <span class="form-card__formats-label">{{ _t('BAZ_DATA_FORMAT') }}</span>
-    {# named, not iconified: they sit beside one another, and the sprite has no glyph that
-       reads as "RSS" -- chart-bar certainly did not #}
+
     <a class="form-card__format" title="{{ _t('BAZ_RSS') }}" href="{{ url({ tag: 'api/entries/rss', params: { id: key }}) }}">RSS</a>
     <a class="form-card__format" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries/csv'}) }}">CSV</a>
     <a class="form-card__format" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api', handler: 'forms/' ~ key ~ '/entries'}) }}">JSON</a>
@@ -99,8 +87,7 @@
         </a>
       {% endif %}
       {% if form.bookmarklet %}
-        {# entry_bookmarklet configured: the install widget lives here now, not in
-           the entry form (ticket 27, ADR-0010) #}
+
         <a class="yw-btn yw-btn--sm" title="{{ _t('FORM_EDIT_BOOKMARKLET') }}" data-toggle="collapse" href="#bookmarklet-{{ key }}" data-placement="bottom">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#bookmark"/></svg>
         </a>
@@ -108,8 +95,7 @@
     </div>
 
     {% if not form.isSystem %}
-      {# emptying and deleting are the only irreversible actions here: apart from the rest,
-         and quiet until they are meant #}
+
       <div class="yw-table__actions form-card__destructive">
         {% if form.canDelete %}
           <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { view: 'formulaire', action: 'confirm_empty', formid: key, showmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">

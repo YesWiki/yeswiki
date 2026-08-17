@@ -18,10 +18,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Regression tests for GHSA (api public mode bypassing @group-restricted routes' ACL,
- * e.g. admin-only config mutation / archive management endpoints).
- */
+/** Regression tests for GHSA (api public mode bypassing @group-restricted routes' ACL, e.g. */
 #[CoversMethod(ApiService::class, 'isAuthorized')]
 class ApiServiceTest extends TestCase
 {
@@ -64,9 +61,6 @@ class ApiServiceTest extends TestCase
             fn ($key) => $key === 'api_allowed_keys' ? $apiAllowedKeys : null
         );
 
-        // Wiki declares a legacy Method() function, which collides case-insensitively with
-        // PHPUnit's own mock-builder method() and makes it undoublable ; build a real,
-        // constructor-free instance instead and set only the property ApiService reads.
         $wiki = (new \ReflectionClass(YesWikiRuntime::class))->newInstanceWithoutConstructor();
         $currentRequest = new CurrentRequest();
         $currentRequest->replace(empty($bearerToken)
@@ -78,32 +72,24 @@ class ApiServiceTest extends TestCase
 
     public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode()
     {
-        // GHSA: 'api_allowed_keys' => ['public' => true] must not grant access to a
-        // route restricted to a group (e.g. options={"acl":{"@admins"}}) for an
-        // anonymous caller with no token at all.
         $service = $this->buildService(true, false);
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testGroupRestrictedRouteIsGrantedWhenAclActuallySatisfied()
     {
-        // a genuinely connected admin (aclService->check() true) must still be granted access
         $service = $this->buildService(true, true);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testGroupRestrictedRouteIsNotGrantedToNonAdminBearerToken()
     {
-        // a *valid* api_allowed_keys bearer token for a non-admin user must not, on its
-        // own, satisfy a group-restricted route (aclService->check() correctly returns false)
         $service = $this->buildService(false, false, 'sometoken', 'someuser');
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
     public function testNonGroupRouteIsStillOpenedByPublicApiMode()
     {
-        // ordinary content routes (acl "+", "public", or none) must keep working as
-        // documented in docs/en/dev.md "Public API scenario"
         $service = $this->buildService(true, false);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['+'])));
     }

@@ -30,7 +30,7 @@
     </thead>
     <tbody>
       {% for file in files %}
-        <tr class="{{ (loop.index % 2) == 1 ?"tableFMCol1" : "tableFMCol2"}}"> {# manage color #}
+        <tr class="{{ (loop.index % 2) == 1 ?"tableFMCol1" : "tableFMCol2"}}"> 
           <td class="fmfilename">
             <a
               class="filenamelink"
@@ -51,7 +51,7 @@
           {% if trash %}<td class="fmfiletrashdate">{{ file.parsedTrashDate }}</td>{% endif %}
           <td class="fmfileactions">
             {% if trash %}
-              {# lien de restauration #}
+
               <a
                 class="yw-btn yw-btn--sm yw-btn--primary"
                 href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
@@ -60,7 +60,7 @@
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>&nbsp;{{ _t('ATTACH_RESTORE') }}
               </a>
             {% endif %}
-            {# lien de suppression #}
+
             <a
               class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
               href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"

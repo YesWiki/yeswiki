@@ -1,12 +1,4 @@
-{# The dynamic (Vue) entry list's search box.
 
-   Same component as everywhere else -- see @core/_searchbox.twig. What differs here is only
-   that the field is Vue-bound rather than submitted, so the binding travels as an ordinary
-   attribute and no button is offered: the list filters as you type, and a button that
-   pressed nothing would be a lie.
-
-   It used to assemble its own from the Bootstrap 3 markup ticket 16 removed the CSS for
-   (`input-group`, `add-on`, `input-prepend`, `input-lg`), so it rendered unstyled. #}
 <div class="bazar-search yw-form-group">
     {% include '@core/_searchbox.twig' with {
         name: 'search',
@@ -15,7 +7,6 @@
         attrs: {'v-model': 'search'}
     } only %}
 
-    {# Form selector, when no form is specified in the action (used in the admin section) #}
     {% if forms|length > 1 %}
         <div class="yw-searchbox-aside">
             <label class="sr-only" for="bazar-dynamic-search-form">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</label>

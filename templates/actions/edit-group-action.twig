@@ -1,4 +1,4 @@
-{# group edition or deletion #}
+
 
 {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
     {% block formcontent %}
@@ -23,7 +23,7 @@
 {% if selectedGroupName is not empty %}
     {% embed '@core/form.twig' with {formMethod: 'post'} %}
         {% block formcontent %}
-            
+
             {% embed '@core/inputs/checkbox_drag_and_drop.twig' %}
             {% block list_options %}
 			{% for item_id, item in options %}
@@ -51,14 +51,14 @@
 						</a>
 					</li>
 					{% endblock %}
-				{% endif %}{# if not item_id in selectedOptionsId #}
-			{% endfor %}{# for item_id, item in options #}
+				{% endif %}
+			{% endfor %}
 		{% endblock %}
 		{% block list_selected %}
 			  {% for item in selectedOptionsId %}
 				{% set selected = true %}
 				{{ block('li_item') }}
-			  {% endfor %}{# for item_id in selectedOptionsId #}
+			  {% endfor %}
 		{% endblock %}
         {% block submit %}
         <input type="hidden" name="groupname" value="{{ selectedGroupName }}"/> 
@@ -72,7 +72,6 @@
 {% endembed %}
 {% endif %}
 
-{# group creation #}
 {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
     {% block formcontent %}
         <label>{{ _t('CREATE_NEW_GROUP')}}</label>

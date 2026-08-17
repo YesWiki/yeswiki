@@ -9,7 +9,6 @@ use YesWiki\Render\Service\ActionRunner;
 #[\Field(['map', 'carte_google'])]
 class MapField extends BazarField
 {
-    // ticket 18: coordinates are filtered, never searched as text
     use ContributesNoSearchableText;
 
     protected $autocompleteFieldnames;
@@ -91,7 +90,7 @@ class MapField extends BazarField
         $this->has_geometries = !empty($geometriesWithoutMarker);
     }
 
-    public function getValueStructure() // See BazarField::getValueStructure
+    public function getValueStructure()
     {
         return [
             $this->propertyName => [
@@ -215,7 +214,6 @@ class MapField extends BazarField
     {
         $output = '';
 
-        // check the last used action containing the good form id
         $filteredActions =
             array_filter($this->getService(ActionRunner::class)->actionsLog(), function ($v) use ($entry) {
                 return !empty($v['action'])
@@ -227,18 +225,15 @@ class MapField extends BazarField
         $showMapInDynamicListView = ($this->getRequest()->query->get('showmapinlistview') === '1');
         $showMapInListView = false;
         if (
-            // classic list would perform action
             (!empty($lastAction['vars']['showmapinlistview'])
             && $lastAction['vars']['showmapinlistview'] === '1')
-            // dynamic list calls api and use get param showmapinlistview
+
             || $showMapInDynamicListView
         ) {
             $showMapInListView = true;
         }
         $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === $entry['tag']);
 
-        // the map is only showed on the fullpage entry view,
-        // or if action parameter showmapinlistview is set to '1'
         if (
             $this->showMapInEntryView === '1' && $currentUrlIsEntry
             || $showMapInListView
@@ -255,8 +250,6 @@ class MapField extends BazarField
         return $output;
     }
 
-    // GETTERS. Needed to use them in the Twig syntax
-
     public function getAutocomplete()
     {
         return $this->autocomplete;
@@ -272,7 +265,6 @@ class MapField extends BazarField
         return $this->autocompleteFieldnames;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

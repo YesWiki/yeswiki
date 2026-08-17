@@ -10,8 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The shared presentations (ticket 37): one list of Items, four shapes, and the same shape
- * whatever supplied the list.
+ * The shared presentations (ticket 37): one list of Items, four shapes, and the same shape whatever supplied the list.
  */
 class PresentationRendererTest extends YesWikiTestCase
 {
@@ -20,7 +19,9 @@ class PresentationRendererTest extends YesWikiTestCase
         return self::getWiki()->services->get(PresentationRenderer::class);
     }
 
-    /** @return list<Item> */
+    /**
+     * @return list<Item>
+     */
     private static function items(): array
     {
         return [
@@ -39,7 +40,9 @@ class PresentationRendererTest extends YesWikiTestCase
         ];
     }
 
-    /** @return list<array{string}> */
+    /**
+     * @return list<array{string}>
+     */
     public static function presentations(): array
     {
         return array_map(static fn (string $p) => [$p], PresentationRenderer::PRESENTATIONS);
@@ -56,8 +59,7 @@ class PresentationRendererTest extends YesWikiTestCase
     }
 
     /**
-     * An Item is mostly optional, and a Presentation must not fall over on the empty half of
-     * it: a page list has no images, a feed may have no categories, `listusers` has no dates.
+     * An Item is mostly optional, and a Presentation must not fall over on the empty half of it: a page list has no images, a feed may have no categories, `listusers` has no dates.
      */
     public function testASparseItemRendersWithoutEmptyMarkup(): void
     {
@@ -82,14 +84,7 @@ class PresentationRendererTest extends YesWikiTestCase
     }
 
     /**
-     * A date is written the way the reader's language writes dates, and drawn only when the
-     * Item carries one.
-     *
-     * `|date('d/m/Y')` printed `12/08/2026` to everybody, which an English reader takes for
-     * the 8th of a month with 13 of them -- and the presentations drew it whether or not
-     * anybody had asked for a date, because an entry's Item always carried its creation
-     * date. It is a mapped slot now (`displayfields="date=updated_at"`), so an Item without
-     * one draws nothing at all.
+     * A date is written the way the reader's language writes dates, and drawn only when the Item carries one.
      */
     #[DataProvider('presentations')]
     public function testADateIsLocalisedAndOnlyDrawnWhenThereIsOne(string $presentation): void
@@ -107,10 +102,9 @@ class PresentationRendererTest extends YesWikiTestCase
 
         $this->assertStringContainsString('12 août 2026', $french, "{$presentation} in French");
         $this->assertStringContainsString('August 12, 2026', $english, "{$presentation} in English");
-        // ...and the machine-readable form is the ISO one either way
+
         $this->assertStringContainsString('2026-08-12T09:00:00+00:00', $french);
 
-        // the second Item has no date, so it has no <time> of its own: one date, two items
         $this->assertSame(
             1,
             substr_count($french, '<time'),
@@ -119,8 +113,7 @@ class PresentationRendererTest extends YesWikiTestCase
     }
 
     /**
-     * The same presentation is written `card` in page content and `card.twig` in a config,
-     * and `tableau.tpl.html` in bodies old enough to predate the Twig move.
+     * The same presentation is written `card` in page content and `card.twig` in a config, and `tableau.tpl.html` in bodies old enough to predate the Twig move.
      */
     public function testATemplateIsKnownWhateverItIsWrittenAs(): void
     {

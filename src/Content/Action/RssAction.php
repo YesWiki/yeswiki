@@ -12,13 +12,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{rss}}` -- converted from the procedural actions/rss.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{rss}}` -- converted from the procedural actions/rss.php by ticket 06. */
 class RssAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -48,10 +42,6 @@ class RssAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -68,7 +58,7 @@ class RssAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             $class = '';
         }
 
-        if ($this->getService(PageContext::class)->getMethod() != 'rss' && $this->getService(PageContext::class)->getMethod() != 'xml' && $this->getService(PageContext::class)->getMethod() != 'tagrss') { // on affiche un lien dans la page si on n'est pas en xml
+        if ($this->getService(PageContext::class)->getMethod() != 'rss' && $this->getService(PageContext::class)->getMethod() != 'xml' && $this->getService(PageContext::class)->getMethod() != 'tagrss') {
             echo '<a class="' . $class . ' rss-icon" href="' . $this->getService(UrlFormatter::class)->href('tagrss', $this->getService(PageContext::class)->getTag(), 'tags=' . $tags) . '" title="' . _t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS') . ' : ' . $tags . '">
         		</a>' . "\n";
 

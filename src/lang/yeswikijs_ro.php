@@ -119,10 +119,8 @@ return [
 Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
 <pre>{files}</pre>',
 
-    // relocated from tools/tags/lang/tagsjs_ro.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Număr de pagini: {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_ro.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Copia',
     'ACTION_BUILDER_PREVIEW' => 'Previzualizare (nu se poate face clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentație online',
@@ -130,19 +128,15 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
     'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
     'ACTION_BUILDER_FORM_ID' => 'Formular',
-    // relocated from tools/attach/lang/attachjs_ro.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'Eșuat',
 
-    // relocated from tools/contact/lang/contactjs_ro.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Acest câmp este obligatoriu.',
     'CONTACT_EMAIL_NOT_VALID' => 'E-mailul introdus nu este valid.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Căutare...',
     'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afișează',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Aveți modificări nesalvate. Părăsiți această pagină?',
 ];

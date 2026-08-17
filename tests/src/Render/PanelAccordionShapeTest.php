@@ -7,19 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `{{panel}}` renders three different shapes, and each closes what it opened.
- *
- * A panel inside an {{accordion}} IS an accordion item and wears only the accordion's
- * clothes. Emitting both sets of classes -- which the first version did -- let the panel
- * chrome win: `.yw-panel__heading` is `display: block` with a grey background, so the chevron
- * and the title landed on separate lines over a grey bar, and the `<h4>` took the theme's h4
- * colour. That is what the dashboard looked like.
- *
- * The counting matters as much as the classes: each shape opens a different number of
- * elements, and closing the wrong count leaves the rest of the page nested inside a panel
- * that never ends.
- */
+/** `{{panel}}` renders three different shapes, and each closes what it opened. */
 class PanelAccordionShapeTest extends YesWikiTestCase
 {
     private function render(string $wikiSource): string
@@ -52,7 +40,6 @@ class PanelAccordionShapeTest extends YesWikiTestCase
     {
         $html = $this->render("{{panel title=\"Seul\" type=\"collapsible\"}}\ncorps\n{{end elem=\"panel\"}}");
 
-        // still a panel, and still openable without JavaScript
         $this->assertStringContainsString('yw-panel__heading', $html);
         $this->assertStringContainsString('<details', $html);
         $this->assertBalanced($html, 'standalone collapsible panel');

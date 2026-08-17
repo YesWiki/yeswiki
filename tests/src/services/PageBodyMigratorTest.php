@@ -9,20 +9,11 @@ use YesWiki\Content\Service\PageBodyMigrator;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 09's migration rewrites every revision of the central table on installs the
- * maintainer does not control, so its decision function is a pure static and gets tested
- * exhaustively here -- no wiki, no database, no fixtures to drift.
- *
- * The cases that matter are the ones where a wrong answer silently destroys data: markup
- * that looks like JSON, and JSON that must not be wrapped a second time.
+ * Ticket 09's migration rewrites every revision of the central table on installs the maintainer does not control, so its decision function is a pure static and gets tested exhaustively here -- no wiki, no database, no fixtures to drift.
  */
 class PageBodyMigratorTest extends TestCase
 {
-    /**
-     * The single most dangerous case. 83 pages in the reference wiki open with `{{`
-     * because an action call is the first thing on the page. Any "does it start with a
-     * brace" heuristic mangles all of them, which is why the type comes from the triple.
-     */
+    /** The single most dangerous case. */
     public function testMarkupOpeningWithAnActionCallIsTreatedAsMarkup(): void
     {
         $markup = '{{entrylist id="1" template="map"}}';
@@ -34,9 +25,7 @@ class PageBodyMigratorTest extends TestCase
     }
 
     /**
-     * A page whose entire text is a JSON object decodes cleanly, so "does it decode?"
-     * is not enough either: without the `content` check its markup would be swallowed
-     * and the page would render as whatever those keys happened to be.
+     * A page whose entire text is a JSON object decodes cleanly, so "does it decode?" is not enough either: without the `content` check its markup would be swallowed and the page would render as whatever those keys happened to be.
      */
     public function testAPageWhoseMarkupIsItselfValidJsonIsStillWrapped(): void
     {
@@ -66,11 +55,7 @@ class PageBodyMigratorTest extends TestCase
         $this->assertSame(['bf_titre' => 'Bordeaux', 'form_id' => '2', 'tag' => 'Bordeaux'], $result['body']);
     }
 
-    /**
-     * A structured body that will not decode is corrupt, not markup. Wrapping it as
-     * `content` at least keeps the bytes where a human can find them; silently dropping
-     * them would not.
-     */
+    /** A structured body that will not decode is corrupt, not markup. */
     public function testCorruptStructuredContentIsPreservedRatherThanDropped(): void
     {
         $result = PageBodyMigrator::classify('{"bf_titre":"unterminated', true);
@@ -91,7 +76,9 @@ class PageBodyMigratorTest extends TestCase
         }
     }
 
-    /** @return array<string, array{?string}> */
+    /**
+     * @return array<string, array{?string}>
+     */
     public static function emptyBodies(): array
     {
         return [
@@ -101,11 +88,7 @@ class PageBodyMigratorTest extends TestCase
         ];
     }
 
-    /**
-     * Running the migration twice must be a no-op. That is what makes it safe under a
-     * migration runner with no transaction that swallows exceptions: an interrupted run
-     * is finished by running again.
-     */
+    /** Running the migration twice must be a no-op. */
     public function testClassifyIsIdempotent(): void
     {
         foreach ([['# markup', false], ['{"bf_titre":"x"}', true], ['', false]] as [$stored, $structured]) {
@@ -127,7 +110,9 @@ class PageBodyMigratorTest extends TestCase
         $this->assertSame($markup, $result['body']['content'], $label);
     }
 
-    /** @return array<int, array{string, string}> */
+    /**
+     * @return array<int, array{string, string}>
+     */
     public static function trickyMarkup(): array
     {
         return [

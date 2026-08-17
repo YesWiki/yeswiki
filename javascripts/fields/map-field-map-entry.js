@@ -4,7 +4,6 @@ export function initEntryMap(newMap) {
   if (newMap.classList.contains('initialized')) return
 
   const mapData = JSON.parse(newMap.getAttribute('data-map-field'))
-  // Init leaflet entry map
   const map = new L.Map(newMap, {
     scrollWheelZoom: mapData.bazWheelZoom,
     zoomControl: mapData.bazShowNav,
@@ -48,15 +47,12 @@ export function initEntryMaps(entryDom) {
   })
 }
 
-// on first time seen, load the leaflet entry map
 function lazyloadMaps(maps) {
   maps.forEach((map) => {
-    // Lazyload leaflet map when intersecting
     if (map.isIntersecting) initEntryMap(map.target)
   })
 }
 
-// observe entry map and add an listId if necessary
 function addMapObserver() {
   const observer = new IntersectionObserver(lazyloadMaps, {
     root: document.body,
@@ -68,7 +64,6 @@ function addMapObserver() {
   })
 }
 
-// on load, init the map statically generated
 window.addEventListener('load', () => {
   addMapObserver()
 })

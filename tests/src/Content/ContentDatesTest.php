@@ -11,21 +11,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Every Content says when it was created and when it was last changed.
- *
- * `created_at` and `updated_at` read like fields of a form, and the settings rail offers
- * them beside a form's own (`Setting::extraFields`) -- but only an entry saved through
- * `EntryManager::create()` has ever carried them in its body. A page, an account and a file
- * do not, so **a list of files mapped onto either of them showed nothing at all**: no
- * subtitle, no badge, and no date on the card, since the Item's date comes from the same
- * place (reported on `{{entrylist id="7" template="card" displayfields="…,subtitle=updated_at"}}`).
- *
- * The row is where the answer lives for those: the revision being read is the current one,
- * and the oldest revision is the creation. The body still wins where it has a value -- it
- * is written in PHP's timezone and `time` in the database's, and swapping which one is
- * displayed would shift every entry's dates by that offset.
- */
+/** Every Content says when it was created and when it was last changed. */
 class ContentDatesTest extends YesWikiTestCase
 {
     private const TAG = 'ContentDatesTestPage';
@@ -62,7 +48,9 @@ class ContentDatesTest extends YesWikiTestCase
         );
     }
 
-    /** @return array<string, mixed>|null */
+    /**
+     * @return array<string, mixed>|null
+     */
     private function listed(): ?array
     {
         $form = $this->getWiki()->services->get(FormManager::class)->getByContentType(PageType::PAGE);
@@ -109,9 +97,7 @@ class ContentDatesTest extends YesWikiTestCase
     }
 
     /**
-     * An entry keeps its own, which is the half that already worked: what the body records
-     * is written in a different timezone from the row's `time`, so preferring the row here
-     * would move every entry's dates by that offset.
+     * An entry keeps its own, which is the half that already worked: what the body records is written in a different timezone from the row's `time`, so preferring the row here would move every entry's dates by that offset.
      */
     public function testAnEntrysOwnDatesAreLeftAlone(): void
     {

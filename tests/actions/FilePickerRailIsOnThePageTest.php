@@ -9,19 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A page that renders the file-picker *button* must also render the *panel* it opens.
- *
- * The two come from different places: the button is emitted by the field
- * (`@core/inputs/image.twig`), the panel by whichever template thought to include
- * `@core/aceditor-rails.twig`. Nothing connected them, so `{{usersettings}}` shipped the
- * button and not the panel -- and `FilePickerPanel`'s constructor guard
- * (`if (!this.panel) return`) turned every click on the profile picture's "choose a file"
- * button into silence: no rail, no error, nothing in the console.
- *
- * Asserted on the rendered markup rather than through a browser, because the failure is
- * entirely in what the page ships: the JavaScript was innocent.
- */
+/** A page that renders the file-picker *button* must also render the *panel* it opens. */
 class FilePickerRailIsOnThePageTest extends YesWikiTestCase
 {
     /** The element every FilePickerPanel instance looks itself up by. */
@@ -46,9 +34,7 @@ class FilePickerRailIsOnThePageTest extends YesWikiTestCase
     }
 
     /**
-     * The rule stated once, over the surfaces that render form fields: a page carrying the
-     * button carries the panel. A new field-rendering screen that forgets the rails fails
-     * here rather than in someone's hands.
+     * The rule stated once, over the surfaces that render form fields: a page carrying the button carries the panel.
      */
     public function testNoRenderedSurfaceOffersTheButtonWithoutThePanel(): void
     {

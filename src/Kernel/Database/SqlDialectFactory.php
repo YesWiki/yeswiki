@@ -5,8 +5,7 @@ namespace YesWiki\Kernel\Database;
 class SqlDialectFactory
 {
     /**
-     * Unknown drivers get MySQL, preserving the `default:` branch of the switch statements
-     * this replaced.
+     * Unknown drivers get MySQL, preserving the `default:` branch of the switch statements this replaced.
      */
     public static function forDriver(string $driver): SqlDialect
     {

@@ -7,9 +7,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
 /**
- * Per-module (action/handler) ACLs, stored under the `permissions` config key
- * (historic Wiki::GetModuleACL()/SetModuleACL()/CheckModuleACL()). "*" means
- * everybody; see EditActionsAclsAction/EditHandlersAclsAction for the admin UI.
+ * Per-module (action/handler) ACLs, stored under the `permissions` config key (historic Wiki::GetModuleACL()/SetModuleACL()/CheckModuleACL()).
  */
 class ModuleAclService
 {
@@ -17,7 +15,9 @@ class ModuleAclService
     protected ConfigurationService $configurationService;
     protected AclService $aclService;
 
-    /** @var array<string, string> memo cache, `type_module` => acl */
+    /**
+     * @var array<string, string> memo cache, `type_module` => acl
+     */
     protected $cache = [];
 
     public function __construct(
@@ -63,16 +63,13 @@ class ModuleAclService
         $moduleType = strtolower($moduleType);
         $moduleKey = $moduleType . '_' . $module;
 
-        // Check if value has changed
         $old = $this->getModuleAcl($module, $moduleType);
         if ($old === $acl) {
-            return 0; // nothing has changed
+            return 0;
         }
 
-        // Update the cache
         $this->cache[$moduleKey] = $acl;
 
-        // Write to the config file
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
 

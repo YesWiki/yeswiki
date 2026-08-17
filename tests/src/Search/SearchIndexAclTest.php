@@ -15,22 +15,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Access control over the search index (ticket 18 / ADR-0015).
- *
- * Two mechanisms, deliberately different, and both of them entirely in SQL -- which is the
- * whole reason the index lives in the wiki's own database rather than in a sidecar engine:
- *
- * - **Page-level** ACL is denormalised onto the index row and filtered with the same
- *   predicate `pages` is filtered with.
- * - **Field-level** ACL groups a Content's text into one row per distinct expression, and
- *   the query matches only the buckets the searcher passes.
- *
- * The load-bearing invariant is in testAnAclChangeCreatesARevision: `page_read_acl` is only
- * safe to denormalise because every ACL write forges a new `pages` revision, so `page.updated`
- * fires and the row is rewritten. A future write path that changed an ACL without
- * revisioning would leave the index authoritative and wrong, and nothing else would notice.
- */
+/** Access control over the search index (ticket 18 / ADR-0015). */
 class SearchIndexAclTest extends YesWikiTestCase
 {
     private const PUBLIC_TAG = 'SearchIndexAclPublicPage';
@@ -103,8 +88,7 @@ class SearchIndexAclTest extends YesWikiTestCase
     }
 
     /**
-     * A fresh query service per call: it caches the readable ACL set for one request, and
-     * these tests change who is logged in between calls.
+     * A fresh query service per call: it caches the readable ACL set for one request, and these tests change who is logged in between calls.
      *
      * @return array{results: list<array<string, string>>, total: int}
      */
@@ -127,11 +111,7 @@ class SearchIndexAclTest extends YesWikiTestCase
         $this->assertSame(1, $this->search('mache')['total']);
     }
 
-    /**
-     * The page's text IS in the index -- only the query hides it. That is the deliberate
-     * asymmetry of ADR-0015: private *pages* stay fully searchable by those entitled to
-     * them, unlike private *fields*, which never enter the index at all.
-     */
+    /** The page's text IS in the index -- only the query hides it. */
     public function testAPrivatePageIsHiddenFromAnAnonymousVisitorButIndexed(): void
     {
         $this->savePage(self::PRIVATE_TAG, 'un texte sur le cresson confidentiel', '@admins');
@@ -161,14 +141,7 @@ class SearchIndexAclTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * THE invariant `page_read_acl` rests on.
-     *
-     * Denormalising the read ACL onto the index is only correct because changing an ACL
-     * creates a `pages` revision, which fires `page.updated`, which rewrites the row. If a
-     * future write path ever mutates an ACL in place instead, this test is what says so --
-     * everything else would keep passing while search quietly served the old permissions.
-     */
+    /** THE invariant `page_read_acl` rests on. */
     public function testAnAclChangeCreatesARevision(): void
     {
         $wiki = $this->getWiki();
@@ -199,10 +172,6 @@ class SearchIndexAclTest extends YesWikiTestCase
     /** And the consequence: tightening an ACL takes the page out of anonymous results. */
     public function testTighteningAnAclRemovesThePageFromAnonymousResults(): void
     {
-        // the read ACL is set explicitly rather than left to the default: AclService caches
-        // per tag for the life of the request, and an earlier test in this class made this
-        // tag private -- deleting the page does not clear that cache, so a recreated page
-        // would silently inherit the restriction
         $this->savePage(self::PUBLIC_TAG, 'un texte sur le raifort', '*');
         $this->assertSame(1, $this->search('raifort')['total']);
 
@@ -218,8 +187,7 @@ class SearchIndexAclTest extends YesWikiTestCase
     }
 
     /**
-     * Field-level ACL: text guarded by an expression this visitor fails is in its own bucket
-     * row, and neither the results nor the excerpt may quote it back at them.
+     * Field-level ACL: text guarded by an expression this visitor fails is in its own bucket row, and neither the results nor the excerpt may quote it back at them.
      */
     public function testRestrictedFieldTextIsBucketedAndHiddenFromAnonymous(): void
     {
@@ -227,8 +195,6 @@ class SearchIndexAclTest extends YesWikiTestCase
         $db = $wiki->services->get(DbService::class);
         $schema = $wiki->services->get(SearchIndexSchema::class);
 
-        // written straight into the index: building a form with a restricted field would
-        // test FormManager, and what is under test here is the bucket filter
         $db->query(
             "INSERT INTO {$schema->table()}"
             . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'

@@ -33,9 +33,7 @@ class StringUtilService
     }
 
     /**
-     * Replace recursively all the indexed (list-like) arrays of $array1 with the
-     * corresponding indexed array of $array2, leaving associative keys merged
-     * (historic Wiki::replaceRecursivelyIndexedArrays()).
+     * Replace recursively all the indexed (list-like) arrays of $array1 with the corresponding indexed array of $array2, leaving associative keys merged (historic Wiki::replaceRecursivelyIndexedArrays()).
      *
      * @param array<mixed>|null $array1 untyped on purpose: recursing into a key absent
      *                                  from $array1 hands the next call a null reference
@@ -60,8 +58,7 @@ class StringUtilService
     }
 
     /**
-     * NOT array_is_list(): the historic implementation treats an empty array as
-     * associative, and replaceRecursivelyIndexedArrays() depends on that.
+     * NOT array_is_list(): the historic implementation treats an empty array as associative, and replaceRecursivelyIndexedArrays() depends on that.
      *
      * @param array<mixed> $arr
      */

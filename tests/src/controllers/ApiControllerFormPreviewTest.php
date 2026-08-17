@@ -13,13 +13,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The form designer's cards preview a field by rendering its real entry-form input, so the
- * answer must be the actual Twig markup.
- *
- * Ticket 14 changed the shape of that answer from JSON to markup: one htmx out-of-band swap
- * per field, addressed by the designer's own card id, plus one carrying the assets the input
- * templates declared while rendering. Addressing by id is what removed the old positional
- * coupling -- an unbuildable field used to shift every card after it.
+ * The form designer's cards preview a field by rendering its real entry-form input, so the answer must be the actual Twig markup.
  */
 #[CoversMethod(FormApiController::class, 'previewFormTemplate')]
 class ApiControllerFormPreviewTest extends YesWikiTestCase
@@ -73,8 +67,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
         ]]);
 
         $html = self::swapFor($answer, 'fbf0');
-        // the whole @core/inputs/text.twig output, not just a bare input: label,
-        // required marker and the attributes the field configures
+
         $this->assertStringContainsString('Titre de la fiche', $html);
         $this->assertStringContainsString('name="bf_titre"', $html);
         $this->assertStringContainsString('maxlength="42"', $html);
@@ -85,12 +78,11 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     public function testAnUnrenderableFieldCannotDisturbTheOthers(YesWikiRuntime $wiki): void
     {
         $answer = $this->preview($wiki, [
-            ['name' => 'bf_typeless'], // dropped by prepareData()
+            ['name' => 'bf_typeless'],
             ['type' => 'nosuchfieldtype', 'name' => 'bf_unknown'],
             ['type' => 'texte', 'name' => 'bf_last', 'label' => 'Last', 'sub_type' => 'text'],
         ]);
 
-        // every card is addressed, and the two that cannot render simply clear theirs
         $this->assertSame('', self::swapFor($answer, 'fbf0'));
         $this->assertSame('', self::swapFor($answer, 'fbf1'));
         $this->assertStringContainsString('name="bf_last"', self::swapFor($answer, 'fbf2'));
@@ -131,19 +123,12 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
             'label' => 'Un fichier',
         ]]);
 
-        // @core/inputs/file.twig declares its own stylesheet; the designer page only learns
-        // about it through this field
         $this->assertStringContainsString('styles/yw-entries.css', $answer);
-        // ...and it arrives as an out-of-band swap into <head>, so its lifetime is not the
-        // preview card's: deleting the card must not unstyle the other previews
+
         $this->assertStringContainsString('hx-swap-oob="beforeend:head"', $answer);
     }
 
-    /**
-     * The reason this ticket exists. A map input declares four scripts; before ticket 14
-     * they were appended to $GLOBALS['js'] and flushed by a page footer that an API response
-     * never renders, so the preview arrived as markup with no leaflet behind it.
-     */
+    /** The reason this ticket exists. */
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testAMapPreviewCarriesLeaflet(YesWikiRuntime $wiki): void
     {
@@ -160,11 +145,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     }
 
     /**
-     * Regression: routed controllers are instantiated by YesWikiControllerResolver with
-     * `new $class()`, so an endpoint declared on a constructor-injected controller dies
-     * with an ArgumentCountError at dispatch time -- which calling the method directly,
-     * as the tests above do, never shows. Exercise the whole api pipeline instead:
-     * querystring -> route match -> ACL -> kernel -> argument resolution.
+     * Regression: routed controllers are instantiated by YesWikiControllerResolver with `new $class()`, so an endpoint declared on a constructor-injected controller dies with an ArgumentCountError at dispatch time -- which calling the method directly, as the tests above do, never shows.
      */
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testTheRouteDispatchesThroughTheWholeApiPipeline(YesWikiRuntime $wiki): void
@@ -176,7 +157,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $previousRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $previousWikiParam = $_GET['wiki'] ?? null;
-        $previousMethod = $_SERVER['REQUEST_METHOD'] ?? null; // unset under CLI
+        $previousMethod = $_SERVER['REQUEST_METHOD'] ?? null;
         $runSpecialPages = new \ReflectionMethod($wiki, 'RunSpecialPages');
 
         try {

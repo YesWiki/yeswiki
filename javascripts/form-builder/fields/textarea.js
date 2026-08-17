@@ -18,7 +18,6 @@ export default {
       },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
-    // size: { label: _t('BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL'), value: '' },
     num_rows: {
       label: _t('BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL'),
       type: 'number',
@@ -35,5 +34,4 @@ export default {
     'syntax',
     'num_rows',
   ],
-  // disabledAttributes: [],
 }

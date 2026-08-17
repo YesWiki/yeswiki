@@ -8,19 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `SchemaManager`, extracted from DbService along with 216 lines of `switch ($this->driver)`.
- *
- * These ran against whichever driver the suite is pointed at and had **no tests at all** while
- * they lived on DbService -- which is how `columnExists()` and `getColumnInfo()` came to ask the
- * same question of the same three drivers in two separate places, free to drift.
- *
- * The MySQL lookups moved from `SHOW COLUMNS FROM t LIKE '<column>'` to `information_schema`,
- * because MySQL cannot bind in a SHOW statement (`SHOW COLUMNS FROM t LIKE ?` is a syntax error,
- * measured) and that forced the column name -- an identifier -- to be escape()d as if it were a
- * value. `COLUMN_TYPE` is byte-identical to SHOW COLUMNS' `Type`, so `type` reads the same;
- * testTheReportedTypeMatchesWhatWasDeclared is what holds that.
- */
+/** `SchemaManager`, extracted from DbService along with 216 lines of `switch ($this->driver)`. */
 class SchemaManagerTest extends YesWikiTestCase
 {
     private const TABLE = 'schemamanager_probe';
@@ -86,12 +74,7 @@ class SchemaManagerTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * The property the MySQL rewrite had to preserve: `type` still spells the declared type.
-     *
-     * PasswordHasherFactory compares it against the literal `varchar(256)` (or PostgreSQL's
-     * `character varying(256)`), so a change of shape here would silently change behaviour there.
-     */
+    /** The property the MySQL rewrite had to preserve: `type` still spells the declared type. */
     public function testTheReportedTypeMatchesWhatWasDeclared(): void
     {
         $info = self::schema()->getColumnInfo(self::TABLE, 'tag');
@@ -120,9 +103,7 @@ class SchemaManagerTest extends YesWikiTestCase
     }
 
     /**
-     * columnExists() and getColumnInfo() must agree, because they now share one lookup -- which
-     * is the reason to have extracted them: two copies of the same three-driver switch is two
-     * copies free to disagree.
+     * columnExists() and getColumnInfo() must agree, because they now share one lookup -- which is the reason to have extracted them: two copies of the same three-driver switch is two copies free to disagree.
      */
     public function testTheTwoLookupsAgree(): void
     {
@@ -152,17 +133,14 @@ class SchemaManagerTest extends YesWikiTestCase
         $schema->dropColumn(self::TABLE, 'counter');
         $this->assertFalse($schema->columnExists(self::TABLE, 'counter'));
 
-        // second time: a no-op rather than an error
         $schema->dropColumn(self::TABLE, 'counter');
         $this->assertFalse($schema->columnExists(self::TABLE, 'counter'));
 
-        // put it back for any test ordering that follows
         self::db()->query('ALTER TABLE ' . trim(self::db()->prefixTable(self::TABLE)) . ' ADD COLUMN counter INTEGER');
     }
 
     /**
-     * A column name is an identifier, and one of these branches has to interpolate it (PRAGMA
-     * takes no parameters). So it must not be able to end the statement it sits in.
+     * A column name is an identifier, and one of these branches has to interpolate it (PRAGMA takes no parameters).
      */
     public function testAHostileColumnNameCannotBreakTheQuery(): void
     {
@@ -175,19 +153,10 @@ class SchemaManagerTest extends YesWikiTestCase
             );
         }
 
-        // the table is still there and still answers, which is the real assertion
         $this->assertTrue($schema->columnExists(self::TABLE, 'tag'));
     }
 
-    /**
-     * **All three** drivers describe a table now.
-     *
-     * This used to assert that pgsql answered `null` -- "no SHOW CREATE TABLE equivalent" -- which
-     * was true until ticket 32 rebuilt the DDL from the system catalogs. The assertion outlived the
-     * behaviour it described, and could not be noticed locally: it is the only branch of this test
-     * that runs on PostgreSQL, and the local suite runs SQLite. The pgsql leg of the CI matrix is
-     * what caught it.
-     */
+    /** **All three** drivers describe a table now. */
     public function testEveryDriverDescribesATable(): void
     {
         $ddl = self::schema()->getTableSchema(trim(self::db()->prefixTable(self::TABLE)));

@@ -134,7 +134,6 @@ const appParams = {
           except: [],
         },
       )
-      // drop the anchor occurrence (#0): this picker only offers *future* candidate dates
       return occurrences.slice(1).map((occurrence) => occurrence.start)
     },
     /**
@@ -143,7 +142,6 @@ const appParams = {
      * @returns {string}
      */
     convertDateToString(date) {
-      // work in UTC because ISO string is splitted
       return new Date(
         Date.UTC(
           date.getFullYear(),
@@ -157,31 +155,22 @@ const appParams = {
         .toISOString()
         .slice(0, 10)
     },
-    /**
-     * @return {int} nbMax estimated from limitDate
-     *   if there is no limit date return defaultNbMax
-     */
+    /** @return {int} nbMax estimated from limitDate if there is no limit date return defaultNbMax. */
     estimateNBMaxFromLimitDate() {
       if (this.endDateLimitTime <= 0) {
         return defaultNbMax
       }
-      /**
-       * @var {Date} startDate
-       */
+      /** @var {Date} startDate. */
       const startDate = this.getCurrentInputDate('startDateInput')
       if (startDate === null) {
         return defaultNbMax
       }
-      /**
-       * @var {int} duration between start date end limit date
-       */
+      /** @var {int} duration between start date end limit date. */
       const duration = this.endDateLimitTime - startDate.getTime()
       if (duration < 0) {
         return 0
       }
-      /**
-       * @var {int} step step in days (very approximatively)
-       */
+      /** @var {int} step step in days (very approximatively). */
       let step = 1
       switch (this.repetition) {
         case 'y':
@@ -198,7 +187,7 @@ const appParams = {
           step = 1
           break
       }
-      return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20 // margin of 20 to be really sure to catch all repetitions
+      return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20
     },
     /**
      * get current date from input
@@ -206,16 +195,12 @@ const appParams = {
      * @returns {Date} date , null if not available
      */
     getCurrentInputDate(keyname) {
-      /**
-       * @var {String} dateStr current value of input
-       */
+      /** @var {String} dateStr current value of input. */
       const dateStr = this?.[keyname]?.value ?? ''
       if (dateStr === '') {
         return null
       }
-      /**
-       * @var {Date} date current Date object from value
-       */
+      /** @var {Date} date current Date object from value. */
       const date = new Date(dateStr)
       if (date.toString() === 'Invalid Date') {
         return null
@@ -283,13 +268,9 @@ const appParams = {
       }
     },
     updateAvailableExceptUpdatingNbMax() {
-      /**
-       * @var {int} nbmax calculated nbmax after update of limit date
-       */
+      /** @var {int} nbmax calculated nbmax after update of limit date. */
       const nbmax = this.estimateNBMaxFromLimitDate()
-      /**
-       * @var {String[]} availableExcept to update the real value of nbMax
-       */
+      /** @var {String[]} availableExcept to update the real value of nbMax. */
       const availableExcept = this.calculateAvailableExcept(
         Math.min(nbmax, defaultNbMax),
       )
@@ -304,21 +285,14 @@ const appParams = {
      * @param {array} availableExcept
      */
     updateEndDateLimitInputIfNotEmpty(availableExcept) {
-      /**
-       * @var {Date|null} endDateLimit
-       */
+      /** @var {Date|null} endDateLimit. */
       const endDateLimit = this.getCurrentInputDate('datePickerForLimit')
       if (endDateLimit !== null && availableExcept.length > 0) {
-        /**
-         * @var {string} endDateLimitStr
-         */
+        /** @var {string} endDateLimitStr. */
         const endDateLimitStr = this.convertDateToString(endDateLimit)
-        /**
-         * @var {string} lastAvailableExcept
-         */
+        /** @var {string} lastAvailableExcept. */
         const lastAvailableExcept = availableExcept[availableExcept.length - 1]
         if (lastAvailableExcept < endDateLimitStr) {
-          // native <input type="date"> now (was bootstrap-datepicker 'update')
           this.datePickerForLimit.value = lastAvailableExcept
           this.updateEndDateLimitTime(lastAvailableExcept)
           this.showEndDateMessage = true
@@ -421,7 +395,6 @@ const appParams = {
     },
     showEndDateMessage(newValue) {
       if (newValue) {
-        // set timout of 3 secondes
         setTimeout(() => {
           this.showEndDateMessage = false
         }, 3000)

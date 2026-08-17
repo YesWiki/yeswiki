@@ -14,16 +14,11 @@ use League\CommonMark\Parser\InlineParserContext;
 use League\CommonMark\Renderer\ChildNodeRendererInterface;
 use League\CommonMark\Renderer\NodeRendererInterface;
 
-/**
- * Adds support for [NN%] (0-100), rendered as a <progress> bar, e.g.
- * [50%] => <progress class="yw-progressbar" value="50" max="100">50%</progress>.
- */
+/** Adds support for [NN%] (0-100), rendered as a <progress> bar, e.g. */
 final class ProgressExtension implements ExtensionInterface
 {
     public function register(EnvironmentBuilderInterface $environment): void
     {
-        // higher than OpenBracketParser's 20, so [50%] is claimed whole before "[" is
-        // treated as the start of a link/image
         $environment->addInlineParser(new ProgressInlineParser(), 25);
         $environment->addRenderer(ProgressInline::class, new ProgressInlineRenderer());
     }

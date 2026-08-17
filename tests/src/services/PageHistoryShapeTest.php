@@ -10,17 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 09 rewrote `pages.body` for **every** revision, not just `latest`. That decision
- * is what these tests defend: the alternative -- converting current revisions and reading
- * old ones through a normalization branch -- was rejected, so every consumer of history
- * has to see the one shape, and a revision written before the change has to read back
- * exactly as it was written.
- *
- * The cases here are the ones where being wrong loses a user's data rather than just
- * rendering oddly: reverting to an old revision, diffing across revisions, and the
- * round-trip of text that JSON encoding is liable to mangle.
- */
+/** Ticket 09 rewrote `pages.body` for **every** revision, not just `latest`. */
 class PageHistoryShapeTest extends YesWikiTestCase
 {
     private const TAG = 'PageHistoryShapeRegressionPage';
@@ -34,10 +24,7 @@ class PageHistoryShapeTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    /**
-     * The core promise. Three revisions, each read back by its own timestamp, each
-     * byte-identical to what was saved.
-     */
+    /** The core promise. */
     public function testEveryRevisionReadsBackExactlyAsItWasSaved(): void
     {
         $pageManager = $this->getWiki()->services->get(PageManager::class);
@@ -45,14 +32,13 @@ class PageHistoryShapeTest extends YesWikiTestCase
 
         foreach ($bodies as $body) {
             $pageManager->save(self::TAG, [PageBody::CONTENT => $body], '', true);
-            // `time` has second granularity, so distinct revisions need distinct seconds
+
             sleep(1);
         }
 
         $revisions = $pageManager->getRevisions(self::TAG);
         $this->assertCount(3, $revisions, 'each save must produce its own revision');
 
-        // getRevisions() is newest-first
         foreach (array_reverse($revisions) as $index => $revision) {
             $stored = $pageManager->getById($revision['id'], true);
             $this->assertIsArray($stored);
@@ -103,8 +89,7 @@ class PageHistoryShapeTest extends YesWikiTestCase
     }
 
     /**
-     * Reverting reads an old revision and writes it forward as a new one -- the path
-     * where a shape mismatch would persist corruption rather than just display it.
+     * Reverting reads an old revision and writes it forward as a new one -- the path where a shape mismatch would persist corruption rather than just display it.
      */
     public function testRevertingRestoresTheOldContentVerbatim(): void
     {
@@ -124,8 +109,7 @@ class PageHistoryShapeTest extends YesWikiTestCase
     }
 
     /**
-     * A page's other body attributes are not prose, and a revert restores them too --
-     * they are part of what the user thinks of as "the page at that revision".
+     * A page's other body attributes are not prose, and a revert restores them too -- they are part of what the user thinks of as "the page at that revision".
      */
     public function testRevertingRestoresKeywordsAlongWithContent(): void
     {
@@ -148,11 +132,7 @@ class PageHistoryShapeTest extends YesWikiTestCase
         $this->assertSame(['alpha', 'beta'], TagsManager::keywordsOf($pageManager->getOne(self::TAG)));
     }
 
-    /**
-     * A no-op save must stay a no-op. The check used to be a string comparison; on JSON
-     * that would invent a revision every time a body was re-encoded with its keys in
-     * another order.
-     */
+    /** A no-op save must stay a no-op. */
     public function testSavingAnUnchangedBodyCreatesNoRevision(): void
     {
         $pageManager = $this->getWiki()->services->get(PageManager::class);
@@ -160,16 +140,12 @@ class PageHistoryShapeTest extends YesWikiTestCase
         $pageManager->save(self::TAG, [PageBody::CONTENT => 'stable', PageBody::KEYWORDS => ['a', 'b']], '', true);
         $before = $pageManager->countRevisions(self::TAG);
 
-        // same data, keys in a different order
         $pageManager->save(self::TAG, [PageBody::KEYWORDS => ['a', 'b'], PageBody::CONTENT => 'stable'], '', true);
 
         $this->assertSame($before, $pageManager->countRevisions(self::TAG), 'key order must not create a revision');
     }
 
-    /**
-     * The diff between two revisions is the visible half of history. It must show the
-     * prose that changed, not the JSON container it now travels in.
-     */
+    /** The diff between two revisions is the visible half of history. */
     public function testDiffBetweenRevisionsShowsTheProseNotTheJsonContainer(): void
     {
         $wiki = $this->getWiki();

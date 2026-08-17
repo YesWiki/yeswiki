@@ -11,13 +11,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 06: actions and handlers stop being found by scanning a directory and become real
- * services resolved by name.
- *
- * The name is the load-bearing part. `{{favicon}}` in a page body is user data, so the
- * mechanism may change but the name may not -- which is exactly what the directory scan
- * could not guarantee once classes gained namespaces, since it derived the name from the
- * filename and YesWikiAction derived it again from get_class().
+ * Ticket 06: actions and handlers stop being found by scanning a directory and become real services resolved by name.
  */
 class ActionRegistryTest extends YesWikiTestCase
 {
@@ -39,7 +33,6 @@ class ActionRegistryTest extends YesWikiTestCase
 
     public function testLookupIsCaseInsensitiveLikeTheWikiSyntax(): void
     {
-        // Performer lowercases the name before dispatch; the registry must agree
         $registry = $this->registry();
 
         $this->assertTrue($registry->has('action', 'FAVICON'));
@@ -64,8 +57,6 @@ class ActionRegistryTest extends YesWikiTestCase
 
     public function testHookFilesAreNotRegisteredAsActions(): void
     {
-        // `__x.php` / `x__.php` are Performer before/after callbacks, a different mechanism.
-        // Registering one as an action would run it twice: once as itself, once as a hook.
         foreach ($this->registry()->names('action') as $name) {
             $this->assertStringNotContainsString('__', $name, "'$name' looks like a hook, not an action");
         }
@@ -89,7 +80,6 @@ class ActionRegistryTest extends YesWikiTestCase
 
     public function testDeclaredNamesAreLowercase(): void
     {
-        // Performer lowercases on dispatch, so a capitalised declaration would be unreachable
         foreach ($this->registry()->names('action') as $name) {
             $this->assertSame(strtolower($name), $name, "action name '$name' must be lowercase");
         }

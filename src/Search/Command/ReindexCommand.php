@@ -10,24 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexSchema;
 
-/**
- * `./yeswicli search:reindex` -- the one way the search index is (re)built (ticket 18).
- *
- * It serves three jobs that are the same job:
- *
- *     ./yeswicli search:reindex --drain      # work off whatever is queued
- *     ./yeswicli search:reindex --all        # queue every Content, then work it off
- *     ./yeswicli search:reindex --rebuild    # drop the tables, recreate, queue everything
- *     ./yeswicli search:reindex --form=3     # queue one form's entries, then work them off
- *
- * `--drain` is what the subscriber spawns after a form change, and what an operator runs on
- * a host where that spawn cannot happen. `--rebuild` is the disaster recovery path: the
- * index is a cache of what Content says, so throwing it away is always safe.
- *
- * Only one of these runs at a time. The lock is a file rather than a table row so that a
- * process killed mid-run releases it -- a stale row would need a timeout, and a timeout
- * long enough to be safe is long enough to block the next legitimate run for hours.
- */
+/** `./yeswicli search:reindex` -- the one way the search index is (re)built (ticket 18). */
 class ReindexCommand extends Command
 {
     private const LOCK_FILE = 'cache/search-reindex.lock';
@@ -73,8 +56,6 @@ class ReindexCommand extends Command
 
         $lock = $this->acquireLock();
         if ($lock === self::LOCK_HELD_ELSEWHERE) {
-            // not a failure: this is the spawn-on-every-form-save case, where the second
-            // process has nothing to add because the first is already draining the queue
             $output->writeln('<comment>Another reindex is already running; leaving the queue to it.</comment>');
 
             return Command::SUCCESS;
@@ -127,9 +108,6 @@ class ReindexCommand extends Command
     {
         $handle = @fopen(self::LOCK_FILE, 'c');
         if ($handle === false) {
-            // An unwritable cache dir must not stop an operator reindexing by hand -- and it
-            // cannot be a race either, since a process that cannot create the file is not
-            // competing with one that did. Proceed unlocked and say so.
             return self::LOCK_UNAVAILABLE;
         }
         if (!flock($handle, LOCK_EX | LOCK_NB)) {
@@ -141,7 +119,9 @@ class ReindexCommand extends Command
         return $handle;
     }
 
-    /** @param resource|string $handle */
+    /**
+     * @param resource|string $handle
+     */
     private function releaseLock($handle): void
     {
         if (!is_resource($handle)) {

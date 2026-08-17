@@ -9,8 +9,8 @@ use YesWiki\Render\Service\TabsRenderer;
 #[\Field(['tabs'])]
 class TabsField extends LabelField
 {
-    private $formTitles; // Tabs titles for from separated by coma
-    private $viewTitles; // Tabs titles for view separated by coma
+    private $formTitles;
+    private $viewTitles;
     private $moveSubmitButtonToLastTab;
     private $tabsClass;
     private $btnClass;
@@ -33,7 +33,7 @@ class TabsField extends LabelField
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ['btn-primary', 'btn-secondary-1', 'btn-secondary-2'], true) ? $values[self::FIELD_BTN_COLOR] : 'btn-primary') .
           ($values[self::FIELD_BTN_SIZE] === 'btn-xs' ? ' btn-xs' : '');
         $this->tabsRenderer = $this->getService(TabsRenderer::class);
-        // does not call prepareText in constuct only in render (lazy loading)
+
         $this->formText = '';
         $this->viewText = '';
     }
@@ -90,7 +90,6 @@ class TabsField extends LabelField
         return $this->btnClass;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

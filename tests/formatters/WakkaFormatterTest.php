@@ -8,9 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for the markdown-image-compatibility XSS in the wakka formatter :
- * an unescaped/unvalidated src attribute allowed breaking out of the src="..." HTML
- * attribute (e.g. via a quote+tab) to inject an event-handler attribute.
+ * Regression tests for the markdown-image-compatibility XSS in the wakka formatter : an unescaped/unvalidated src attribute allowed breaking out of the src="..." HTML attribute (e.g.
  */
 class WakkaFormatterTest extends YesWikiTestCase
 {
@@ -20,8 +18,6 @@ class WakkaFormatterTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($markdown);
 
-        // no <img> tag should ever carry an event-handler attribute or a javascript:/data: src,
-        // regardless of how the rest of the markdown was (mis)parsed
         $this->assertDoesNotMatchRegularExpression(
             '/<img\b[^>]*\son[a-z]+\s*=/i',
             $html,
@@ -69,11 +65,7 @@ class WakkaFormatterTest extends YesWikiTestCase
     }
 
     /**
-     * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the
-     * wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at
-     * every `[` in the input, making a run of N `[` characters cost O(N^2).
-     * A vulnerable formatter takes multiple seconds on this payload; a fixed one
-     * (bounded quantifiers) completes in well under a second.
+     * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at every `[` in the input, making a run of N `[` characters cost O(N^2).
      */
     public function testMarkdownLinkBracketRunIsNotQuadratic()
     {

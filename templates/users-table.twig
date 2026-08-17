@@ -4,7 +4,6 @@
 
 {{ postActionMessages|raw }}
 
-{# order on signuptime desc #}
 <div id='users-table-action'>
   {% if isAdmin %}
     <form class="form-inline pull-left" method="post" action="#">
@@ -12,13 +11,13 @@
         <div class="yw-form-group">
           <label for="newUserName" class="sr-only">{{ _t('NAME') }}</label>
           <input id="newUserName" class="yw-input" name="name" size="10" value="" placeholder="{{ _t('NAME') }}"
-            pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/>{# pattern for not special characters #}
+            pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/>
         </div>
         <div class="yw-form-group">
           <label for="newUserEmail" class="sr-only">{{ _t('EMAIL') }}</label>
           <input id="newUserEmail" class="yw-input" name="email" size="15" value="" placeholder="{{ _t('EMAIL') }}"
             pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/>
-          {# pattern inspired from RFC 5322  #}
+
         </div>
         <div class="yw-form-group">
           <button class="yw-btn yw-btn--sm yw-btn--primary create-user" title="{{ _t('USERSTABLE_CREATE_USER_HINT') }}" data-toggle="tooltip" data-placement="bottom"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>&nbsp;{{ _t('USERSTABLE_CREATE_USER') }}</button>
@@ -56,7 +55,7 @@
           {% endif %}
           <td>{{ user.name }}</td>
           <td class="users-table-break-word">{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
-          {% if isAdmin %} {# Email only shown to admins #}
+          {% if isAdmin %} 
             <td>{{ user.email }}</td>
           {% endif %}
           <td>{{ user.signuptime }}</td>
@@ -67,7 +66,7 @@
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>
             {% elseif isAdmin %}
-              {# not the current user, then can be modified #} 
+
               <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
                 class="yw-btn yw-btn--sm btn-icon yw-btn--warning" role="button" title="{{ _t('MODIFY') }}">
                 <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
@@ -131,8 +130,8 @@
               </div>
             </div>
           </div>
-        </div>{# .yw-modal__content #}
-      </div>{# .yw-modal__dialog #}
+        </div>
+      </div>
     </div>
   {% endif %}
 </div>

@@ -9,10 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 14 (qrcode absorbed into core): QrCodeService replaces
- * yeswiki-extension-qrcode's wiki.php global $GLOBALS['qrcode'] singleton, a thin
- * Laravel-facade wrapper (f9webltd/simple-qrcode) -- now a real service depending
- * directly on endroid/qr-code, with none of the facade's transitive illuminate/* packages.
+ * Regression test for ticket 14 (qrcode absorbed into core): QrCodeService replaces yeswiki-extension-qrcode's wiki.php global $GLOBALS['qrcode'] singleton, a thin Laravel-facade wrapper (f9webltd/simple-qrcode) -- now a real service depending directly on endroid/qr-code, with none of the facade's transitive illuminate/* packages.
  */
 #[CoversMethod(QrCodeService::class, 'generateToFile')]
 class QrCodeServiceTest extends YesWikiTestCase

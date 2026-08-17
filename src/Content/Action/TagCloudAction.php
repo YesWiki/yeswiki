@@ -72,13 +72,9 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
         $tablePrefix = $this->getService(RuntimeConfig::class)['table_prefix'];
 
-        // `property="..."` was a DOUBLE-quoted literal, which MySQL reads as a string and
-        // PostgreSQL as an identifier -- so this action failed outright on one of the three
-        // supported drivers. Bound now, so no driver's quoting rules apply to it.
         $tagProperty = SqlFragment::of('property = ?', [self::TAG_PROPERTY]);
         $filter = SqlFragment::all(' ', $tagProperty, $selectiontags);
 
-        // on récupère le nb maximum et le nb minimum d'occurences
         $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' GROUP BY value';
         $min_max = $this->getService(DbService::class)->loadAll($sql, $filter->params);
         $min = 100000000;
@@ -90,13 +86,12 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
                 $min = $tab_min_max['nb'];
             }
         }
-        // permettra de fixer une classe pour la taille du tag
+
         $mult = $max / $this->arguments['classcount'];
         if ($mult < 1) {
             $mult = 1;
         }
 
-        // on récupère tous les tags existants
         $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' ORDER BY value ASC, resource ASC';
         $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql, $filter->params);
 
@@ -107,20 +102,16 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
             $liste_page = '';
             $tag_precedent = '';
             $tab_tag = [];
-            $tab_tous_les_tags['dummy']['value'] = 'fin'; // on ajoute un element au tableau pour boucler une derniere fois
+            $tab_tous_les_tags['dummy']['value'] = 'fin';
             $tab_tous_les_tags['dummy']['resource'] = 'fin';
             foreach ($tab_tous_les_tags as $tab_les_tags) {
                 $tagstripped = stripslashes($tab_les_tags['value']);
-                // both "resource" (a page tag) and "value" (a tag name) come from the triples
-                // table and must be escaped : they end up either as direct page HTML, or inside
-                // data-title/data-content attributes that Bootstrap's popover renders as HTML
-                // (tag.js initializes it with html:true), so an unescaped "<" there is also live.
+
                 $resourceEscaped = htmlspecialchars($tab_les_tags['resource']);
                 if ($tagstripped == $tag_precedent || $tag_precedent == '') {
                     $nb_pages++;
                     $liste_page .= '<li class="pagewiki-link"><a class="link_pagewiki" href="' . htmlspecialchars($this->getService(UrlFormatter::class)->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>';
                 } else {
-                    // on affiche les informations pour ce tag
                     if ($nb_pages > 1) {
                         $texte_page = $nb_pages . ' ' . _t('TAGS_PAGES');
                     } else {
@@ -131,7 +122,6 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
                     $texte_liste .= '</li>' . "\n";
                     $tab_tag[] = $texte_liste;
 
-                    // on reinitialise les variables
                     $nb_pages = 1;
                     $liste_page = '<li><a class="pagewiki-link" href="' . htmlspecialchars($this->getService(UrlFormatter::class)->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>' . "\n";
                     $i++;
@@ -142,7 +132,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
             if (count($tab_tag) > 0) {
                 $output .= '<div class="no-dblclick boite_nuage' . $this->arguments['class'] . '">
 			<ul class="nuage">' . "\n";
-                // on regarde s'il faut trier alphabetiquement
+
                 if ($this->arguments['sort'] === 'alpha') {
                 } else {
                     shuffle($tab_tag);
@@ -157,12 +147,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         return $output;
     }
 
-    /**
-     * The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens.
-     *
-     * A SqlFragment since ticket 31: the tags are webmaster-typed action arguments, and this
-     * clause is pasted into two different queries, so the values have to travel with it.
-     */
+    /** The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens. */
     private function buildSelectionTagsClause(array $tags): SqlFragment
     {
         if (empty($tags)) {

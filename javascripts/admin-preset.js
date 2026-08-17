@@ -1,33 +1,8 @@
-// javascripts/admin-preset.js -- the Personnalisation screen (ticket 30).
-//
-// Two things happen here, and keeping them apart is the point of the screen:
-//
-//  - **Trying a preset on.** Clicking a card restyles THIS page and nothing else. It swaps
-//    a stylesheet link in the head, so what you see is the whole preset -- its webfonts and
-//    any rule it carries beyond the token set -- and not an approximation of it.
-//    Nothing is written; reloading the page ends it.
-//  - **Editing one**, in the drawer: the same docked <aside> the actions builder and the
-//    file picker use. A colour is a picker beside a text field; a MEASURE is a slider and
-//    nothing else (ADR-0021), so the three functions below that deal with one --
-//    asSliderValue, measureOf, readoutTextFor -- are the whole of how a spacing step or a
-//    corner scale is chosen.
-//
-// The drawer holds both, on two screens: the list of presets, and the editor a card's pencil
-// opens. So there are two pieces of state here and they are deliberately different things --
-// `rail.hidden` is whether the drawer is on screen at all, and showScreen() is which of its
-// two faces you are looking at. Shutting the drawer from the editor and reopening it must
-// land you back on the list, which is why close() does both.
-//
-// Making a preset the wiki's is neither: it is a plain form posting to this route, so it
-// keeps working on a page whose JavaScript never arrived. So do deleting and duplicating.
-
 const rail = document.getElementById('yw-preset-rail')
 
 if (rail) {
   const form = rail.querySelector('form')
   const screens = [...rail.querySelectorAll('[data-yw-preset-screen]')]
-  // anything carrying `data-scheme`, not just the field blocks: the contrast badge sits on
-  // the label line now and is per scheme too, so it has to swap with them
   const schemeBlocks = [...rail.querySelectorAll('[data-scheme]')]
   const schemeNote = rail.querySelector('[data-yw-preset-scheme-note]')
   const title = rail.querySelector('[data-yw-preset-rail-title]')
@@ -35,19 +10,12 @@ if (rail) {
   const nameField = rail.querySelector('#yw-preset-name')
   const fields = [...rail.querySelectorAll('[data-yw-preset-field]')]
 
-  // The wiki's own preset, as linked by CoreAssets. Switched off while another one is being
-  // tried on -- an added link would otherwise have to out-specify it rather than replace it.
   const wikiPreset = document.getElementById('wikipreset')
 
   /** The one link this screen adds; there is only ever one preset being tried on. */
   let tryLink = null
 
-  /**
-   * Wear a preset on this page alone.
-   *
-   * `href` empty means the theme's own colours: the wiki's preset goes off and nothing
-   * replaces it, which is exactly what "no preset" is.
-   */
+  /** Wear a preset on this page alone. */
   function tryOn(href, id) {
     if (wikiPreset) wikiPreset.disabled = true
     tryLink?.remove()
@@ -77,18 +45,9 @@ if (rail) {
     })
   })
 
-  // What the document looked like before the rail touched it, so closing the rail puts it
-  // back. Only the tokens the rail writes are recorded: everything else on :root belongs
-  // to the stylesheets and must be left alone.
   const beforePreview = new Map()
 
-  /**
-   * Which Colour scheme this page is being read in.
-   *
-   * A field belongs to one scheme, and only one of the two can be on screen: painting the
-   * dark set onto a light document would preview a page nobody will ever see. So the rail
-   * previews the scheme the viewer is in and leaves the other pair of values to the file.
-   */
+  /** Which Colour scheme this page is being read in. */
   function currentScheme() {
     if (document.documentElement.dataset.theme) {
       return document.documentElement.dataset.theme
@@ -98,36 +57,18 @@ if (rail) {
       : 'light'
   }
 
-  /** `light.yw-primary` -> ['light', 'yw-primary'] */
+  /** `light.yw-primary` -> ['light', 'yw-primary']. */
   function partsOf(name) {
     const separator = name.indexOf('.')
     return [name.slice(0, separator), name.slice(separator + 1)]
   }
 
-  /**
-   * Is this token one value for both schemes -- a measure, a font, `--yw-text-on-dark`?
-   *
-   * Read off the rail rather than declared twice: a colour is the only kind rendered with a
-   * field per scheme, so a `light.x` with no `dark.x` beside it IS the scheme-independent
-   * set. That keeps this in step with PresetService::TOKENS by construction.
-   */
+  /** Is this token one value for both schemes -- a measure, a font, `--yw-text-on-dark`? */
   function isSchemeIndependent(token) {
     return !rail.querySelector(`[data-yw-preset-field="dark.${token}"]`)
   }
 
-  /**
-   * Paint one token onto the document, so the gallery below repaints with it.
-   *
-   * A colour is painted only when its scheme is the one on screen -- painting the dark set
-   * onto a light document would preview a page nobody will ever see. Everything else is
-   * painted always, because there is only one of it: the spacing steps, the corner scale and
-   * the type size live under `light.` for want of anywhere else to put them, and a webmaster
-   * reading the wiki in dark mode was watching a slider that appeared to do nothing.
-   *
-   * Painting the AUTHORED token is enough for the derived ones too: `--yw-radius-md` is
-   * `calc(0.25rem * var(--yw-radius-scale))` and resolves against whatever `:root` says now,
-   * so one inline property repaints every corner in the gallery.
-   */
+  /** Paint one token onto the document, so the gallery below repaints with it. */
   function preview(name, value) {
     const [scheme, token] = partsOf(name)
     if (scheme !== currentScheme() && !isSchemeIndependent(token)) return
@@ -170,19 +111,7 @@ if (rail) {
     return rail.querySelector(`[data-yw-preset-readout="${name}"]`)
   }
 
-  /**
-   * Where the slider sits for a value it may not be able to express.
-   *
-   * A measure has no text box beside it any more (ADR-0021), so this is the only place a
-   * hand-written `clamp()` or `1.05rem` can land -- it is snapped to the nearest position
-   * the slider has, and saving then writes that. Deliberate: the whole point of dropping
-   * the text box was that a measure is a multiple of the base size and nothing else, and a
-   * value the slider cannot reach is a value this screen cannot show you the effect of.
-   *
-   * A value it cannot read at all (a `var()`, an empty field on a brand new preset) lands on
-   * the slider's own default rather than its floor: `--yw-space-lg: 0` is a legal setting and
-   * a silently collapsed layout is a bad way to find that out.
-   */
+  /** Where the slider sits for a value it may not be able to express. */
   function asSliderValue(slider, value) {
     const min = Number(slider.min)
     const max = Number(slider.max)
@@ -191,8 +120,6 @@ if (rail) {
     if (!Number.isFinite(size))
       return slider.defaultValue || String((min + max) / 2)
     const snapped = Math.round((size - min) / step) * step + min
-    // toFixed, then trimmed: 0.05 steps accumulate float error, and a slider reporting
-    // `0.7500000000000001rem` would write that into the file
     return String(Number(Math.min(max, Math.max(min, snapped)).toFixed(4)))
   }
 
@@ -201,35 +128,16 @@ if (rail) {
     return `${slider.value}${slider.dataset.unit || ''}`
   }
 
-  /**
-   * What the readout says: the number as the thing it measures.
-   *
-   * `rem` IS the wiki's base type size here (core computes `html`'s font-size from
-   * `--yw-font-size-base`), so a spacing step reads as a multiple rather than as a length --
-   * which is what it is, and what makes it survive somebody changing the type size.
-   */
+  /** What the readout says: the number as the thing it measures. */
   function readoutTextFor(slider) {
     const unit = slider.dataset.unit || ''
     if (unit === 'px') return `${slider.value}px`
     return `${slider.value}\u00d7`
   }
 
-  /**
-   * Let a font select hold a value that is not one of the offered stacks.
-   *
-   * A preset naming a webfont, or a stack somebody wrote by hand, is a value this select has
-   * no option for -- and a select handed one of those keeps whatever was selected before,
-   * which would rewrite somebody's font the moment the rail opened on it. So the value is
-   * added as an option of its own, showing itself, drawn in itself.
-   *
-   * One at a time: the option is replaced on every open, or editing three presets in a row
-   * would leave the other two's fonts in the list.
-   */
+  /** Let a font select hold a value that is not one of the offered stacks. */
   function ensureOption(field, value) {
     if (field.tagName !== 'SELECT') return
-    // ...but never onto a fixed-keyword select: `text-transform` takes what CSS says it
-    // takes, and a preset holding something else is a rule the browser drops rather than a
-    // value worth preserving
     if (field.classList.contains('yw-preset-rail__choice')) return
     field.querySelector('[data-yw-preset-own]')?.remove()
     if (value === '' || [...field.options].some((o) => o.value === value))
@@ -243,13 +151,7 @@ if (rail) {
     field.insertBefore(option, field.firstChild)
   }
 
-  /**
-   * A font select shows its own choice, so the preview is there before the list is opened.
-   *
-   * Scoped to the FONT selects: the casing and alignment ones are selects too, and setting
-   * `font-family: uppercase` on them is a rule the browser drops, which is the quiet kind of
-   * wrong that survives a review.
-   */
+  /** A font select shows its own choice, so the preview is there before the list is opened. */
   function showChosenFont(field) {
     if (field.classList.contains('yw-preset-rail__font')) {
       field.style.fontFamily = field.value
@@ -262,18 +164,7 @@ if (rail) {
     if (readout) readout.textContent = readoutTextFor(slider)
   }
 
-  /**
-   * A `#rrggbb` the native picker will accept, for anything a colour can be written as.
-   *
-   * The picker reads what it does not understand as black and then reports black back as the
-   * value, which would turn a `var(--yw-primary)` or an `rgb()` into black the moment the
-   * rail opened on it -- so the picker is only ever *shown* a hex and the text field keeps
-   * the truth.
-   *
-   * It used to show black for all of those. Now the probe resolves them, so a field pointed
-   * at another colour shows THAT colour in its swatch -- which is the whole of how you can
-   * see what `var(--yw-primary)` means without reading it.
-   */
+  /** A `#rrggbb` the native picker will accept, for anything a colour can be written as. */
   function asHex(value) {
     const trimmed = String(value ?? '').trim()
     if (/^#[0-9a-f]{6}$/i.test(trimmed)) return trimmed
@@ -285,25 +176,9 @@ if (rail) {
     return `#${rgb.map((c) => Math.round(c).toString(16).padStart(2, '0')).join('')}`
   }
 
-  // ---- contrast --------------------------------------------------------------------
-  //
-  // What the badges beside each colour say. The pairing is the SERVER's -- a token declares
-  // what it has to be legible against (PresetService::TOKENS `contrast`) -- and the scoring
-  // is here, because it has to follow the fields as they are dragged.
-  //
-  // Per scheme, deliberately: ink that clears AA on a white page can fail on the near-black
-  // one, and that is the single most common way a hand-authored dark set goes wrong.
-
   const badges = [...rail.querySelectorAll('[data-yw-preset-contrast]')]
 
-  /**
-   * A colour as [r, g, b], whatever notation it was written in.
-   *
-   * Through a probe element rather than by parsing: a field can hold `rgb(0 0 0 / 50%)`,
-   * `hsl(...)`, `color-mix(...)` or a bare keyword, and the browser already knows how to
-   * read every one of them. It must be IN the document -- getComputedStyle on a detached
-   * element returns nothing.
-   */
+  /** A colour as [r, g, b], whatever notation it was written in. */
   const probe = document.createElement('span')
   probe.setAttribute('aria-hidden', 'true')
   probe.style.display = 'none'
@@ -337,12 +212,7 @@ if (rail) {
     return (light + 0.05) / (dark + 0.05)
   }
 
-  /**
-   * The grade a ratio earns, by WCAG 2.1:
-   *   AAA       7   -- body text, the standard to aim for
-   *   AA        4.5 -- body text, the one that is normally required
-   *   AA-large  3   -- headings and 24px+ only; body text at this ratio fails
-   */
+  /** The grade a ratio earns, by WCAG 2.1: AAA 7 -- body text, the. */
   function gradeOf(ratio) {
     if (ratio >= 7) return 'AAA'
     if (ratio >= 4.5) return 'AA'
@@ -355,17 +225,7 @@ if (rail) {
     return rail.querySelector(`[data-yw-preset-field="${name}"]`)?.value ?? ''
   }
 
-  /**
-   * Re-sync every colour swatch from its field.
-   *
-   * All of them, not just the one that changed: a field holding `var(--yw-primary)` shows the
-   * brand colour in its swatch, so moving the brand has to repaint every swatch pointed at
-   * it. Only the edited field used to be updated, which left a heading pointed at the brand
-   * rendering the new colour on the page while its own swatch still showed the old one.
-   *
-   * Always after `preview()`: the probe resolves `var()` against the document, so the inline
-   * values have to be on it before this can read them.
-   */
+  /** Re-sync every colour swatch from its field. */
   function showPickers() {
     for (const field of fields) {
       const picker = pickerFor(field.dataset.ywPresetField)
@@ -373,21 +233,9 @@ if (rail) {
     }
   }
 
-  // Which fills get an automatically-chosen ink, and where the choice is written. The same
-  // map as PresetService::INK_FOR -- rendered onto the rail rather than repeated here, so the
-  // two cannot drift.
   const inkFor = JSON.parse(rail.dataset.ywPresetInkFor || '{}')
 
-  /**
-   * Paint the ink each fill has earned, and keep it painted while the fields move.
-   *
-   * CSS cannot do this one: choosing between two AUTHORED colours needs the luminance of a
-   * third, and no CSS function hands you that as a number (`oklch(from …)` and
-   * `contrast-color()` both work here, and both only ever answer black or white). So the
-   * choice is made in PHP when the preset is saved -- and here, live, or the gallery would
-   * show yesterday's ink on today's button all the way through an edit.
-   */
-  /** what showInks() has painted, so closing the rail takes it off like every other preview */
+  /** what showInks() has painted, so closing the rail takes it off like every other. */
   const inkPainted = new Set()
 
   function showInks() {
@@ -414,12 +262,7 @@ if (rail) {
     inkPainted.clear()
   }
 
-  /**
-   * What a colour is scored against.
-   *
-   * `auto-ink` means "whatever ink this fill will actually get" -- a fill has no fixed
-   * partner, so naming one in the token table would score the pair that does not happen.
-   */
+  /** What a colour is scored against. */
   function groundFor(badge) {
     const [scheme] = partsOf(badge.dataset.ywPresetContrast)
     if (badge.dataset.against !== 'auto-ink')
@@ -453,15 +296,6 @@ if (rail) {
     }
   }
 
-  // ---- Google's catalogue, for the font picker ----------------------------------------
-  //
-  // 1951 family names. They fill the chip picker's option map, which it re-reads on every
-  // keystroke -- so handing them over late needs no re-initialisation, and the screen does
-  // not carry 29KB of JSON that most visits never look at.
-  //
-  // Fetched once, on first use of the box rather than on arrival: an instance that cannot
-  // reach its own assets should fail when somebody asks for a font, not while drawing a
-  // screen that is mostly about colours.
   const fontPicker = rail.querySelector('[data-yw-google-fonts]')
   let cataloguePromise = null
 
@@ -471,7 +305,6 @@ if (rail) {
     cataloguePromise = fetch(fontPicker.dataset.ywGoogleFonts)
       .then((response) => (response.ok ? response.json() : []))
       .then((families) => {
-        // the widget wants `{value: label}`; a family is its own label
         const options = {}
         for (const family of families) options[family] = family
         fontPicker.dataset.ywTagInputOptions = JSON.stringify(options)
@@ -482,22 +315,7 @@ if (rail) {
     return cataloguePromise
   }
 
-  /**
-   * Draw each suggested family in its own face.
-   *
-   * A list of names tells you nothing about a typeface, which is the one thing you are
-   * choosing. The widget caps what it shows, so the set on screen is small enough to fetch:
-   * one stylesheet request naming all of them, and each name then renders in itself.
-   *
-   * The request goes from the ADMIN's browser to Google -- the only place in YesWiki that
-   * happens, and it is a webmaster deliberately browsing Google's catalogue rather than a
-   * reader being handed to it. Nothing on a public page changes.
-   *
-   * It also fails soundlessly and must: on an instance that cannot reach Google, the
-   * stylesheet simply never arrives and the names stay in the wiki's own font. The picker,
-   * the chips and the download button all still work -- the catalogue is vendored, and the
-   * fetching is the server's job.
-   */
+  /** Draw each suggested family in its own face. */
   const previewed = new Set()
 
   /** Ask Google for these families, once each, so this document can draw them. */
@@ -520,11 +338,6 @@ if (rail) {
     for (const option of fontPicker.querySelectorAll(
       '[data-yw-tag-input-suggestion]',
     )) {
-      // Quoted, and with a REAL generic to fall back to. A family name can contain spaces
-      // and digits, so `Roboto Mono` unquoted is two families neither of which exists -- and
-      // `inherit` is not a font-family a list may end in: as a fallback it makes the whole
-      // declaration invalid, which drops it and leaves every name in the browser's default.
-      // That is what this looked like when it was silently doing nothing.
       option.style.fontFamily = `'${option.dataset.id.replace(/'/g, '')}', sans-serif`
     }
   }

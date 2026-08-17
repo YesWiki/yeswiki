@@ -445,14 +445,14 @@ return [
     'AB_templates_section_textcolor_auto' => 'Automatique',
     'NO_ANIMATION' => 'Pas d’animation',
     'ADD_COMPONENT' => 'Ajouter un composant',
-    // les blocs `:::info` ... `:::`, nommés sur leurs étiquettes dans l'éditeur WYSIWYG
+
     'ALERT' => 'Encadré',
     'ALERT_DANGER' => 'Alerte',
     'ALERT_INFO' => 'Information',
     'ALERT_SUCCESS' => 'Succès',
     'ALERT_WARNING' => 'Attention',
     'ARCHIVES' => 'Sauvegardes',
-    // les sections de la palette, dans l'ordre décidé par le cœur (ticket 36)
+
     'COMPONENT_CATEGORY_WRITING' => 'Rédaction',
     'COMPONENT_CATEGORY_MEDIA' => 'Médias',
     'COMPONENT_CATEGORY_LISTS' => 'Listes',
@@ -622,8 +622,7 @@ return [
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'impossible d\'afficher la liste des pages que vous avez modifiées',
     'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Liste des pages dont vous êtes le propriétaire',
     'YOU_DONT_OWN_ANY_PAGE' => 'Vous n\'êtes le propriétaire d\'aucune page',
-    // ticket 18 : l'index plein texte cherche par mots et par début de mot, les anciens
-    // jokers ?/* n'ont plus de sens -- « atelier » trouve déjà « ateliers »
+
     'NEWTEXTSEARCH_HINT' => 'La recherche se fait par début de mot : « atelier » trouve aussi « ateliers »',
     'SEARCH_DISPLAY' => 'Afficher les résultats en',
     'SEARCH_DISPLAY_LIST' => 'Liste',
@@ -835,8 +834,7 @@ return [
     'ADMIN_ACCOUNT_CREATION' => 'Création du compte Administrateur',
     'INSERTION_OF_PAGES' => 'Insertion des pages par défaut',
     'ALREADY_EXISTING' => 'Existe déjà',
-    // ticket 20 : « réservé » n'est pas « déjà pris » -- « %{tag} » est un nom auquel le wiki
-    // lui-même répond, aucune page, aucun formulaire, aucune fiche ni aucun compte ne peut le prendre
+
     'RESERVED_TAG_CANNOT_BE_USED' => '« %{tag} » est réservé par le wiki et ne peut pas être utilisé comme nom.',
     'RESERVED_TAG_TRY_INSTEAD' => 'Essayez plutôt « %{suggestion} ».',
     'UPDATING_FROM_WIKINI_0_1' => 'En cours de mise à jour de WikiNi 0.1',
@@ -1179,8 +1177,6 @@ return [
     'EDIT_CONFIG_HINT_SIGNUP_EMAIL_ACTIVATION' => 'Activer la vérification des e-mails (true ou false)',
     'EDIT_CONFIG_HINT_USER_ACTIVATION_KEY_LENGTH' => 'Longueur de la clé d\'activation des utilisateurs',
 
-    // relocated from tools/login/lang/login_fr.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'Se connecter',
     'LOGIN_WIKINAME' => 'Email ou nom d\'utilisateur.ice',
@@ -1240,7 +1236,6 @@ return [
         'Au moindre doute, ouvrez ce formulaire dans une page dédiée en cliquant sur ce lien {link}.',
     'USERSETTINGS_NAME_NOT_FOUND' => 'L\'identifiant "{currentName}" n\'existe pas !',
 
-    // relocated from tools/tags/lang/tags_fr.inc.php (ticket 10)
     'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'action est réservée au groupe des administrateurs',
@@ -1347,7 +1342,6 @@ return [
     'EDIT_CONFIG_GROUP_TAGS' => 'Mots-clés (tags)',
     'TAGS_REMOVE_TAG' => 'Retirer le mot clé',
 
-    // relocated from tools/aceditor/lang/aceditor_fr.inc.php (ticket 11)
     'ACTION_BUILDER_CHOOSE_FORM' => 'Choisissez un formulaire',
     'ACTION_BUILDER_CHOOSE_TEMPLATE' => 'Sous quelle forme voulez-vous afficher les données?',
     'ACTION_BUILDER_CHOOSE_ACTION' => 'Choisissez une action',
@@ -1541,7 +1535,7 @@ return [
     'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Supprime un fichier preset personnalisé',
     'AB_template_action_label_label' => 'Etiquette',
     'AB_template_action_label_example' => 'Texte de votre étiquette à changer par la suite',
-    // trois actions que le catalogue YAML ne listait pas, dotées d'un Component par le tri du ticket 36
+
     'AB_toc_label' => 'Sommaire',
     'AB_toc_description' => 'Liste les titres de cette page, chacun étant un lien vers celui-ci.',
     'AB_toc_title_label' => 'Titre',
@@ -1681,7 +1675,6 @@ Contenu de l'onglet \"{tabName}\"
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Empêcher les robots à indexer le wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web',
 
-    // formerly yeswiki-extension-qrcode's lang/qrcode_fr.inc.php (ticket 14)
     'QR_INTRO' => 'Passer une QRcarte dans la zone visuelle pour lancer une action.',
     'QR_CODE_ERROR_MISSING_PARAM' => 'ERREUR action qrcode : pas de texte saisi (parametre text="" manquant)',
     'QR_MISSING_PARAM_IDLINKS' => 'le paramêtre "idlinks", indiquant la base de donnees des liens, est manquant.',
@@ -1703,7 +1696,7 @@ Contenu de l'onglet \"{tabName}\"
     'EDIT_CONFIG_HINT_qrcode_config[visualisation_refresh_period]' => 'Durée en secondes entre chaque requête API de mise à jour',
     'QRSCAN_NOT_GOOD_FORM_ID' => 'Le qrcode scanné ne correspond pas au type de formulaire attendu',
     'EDIT_CONFIG_GROUP_QRCODE' => 'Qrcode',
-    // relocated from tools/attach/lang/attach_fr.inc.php (ticket 17)
+
     'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => 'Fournit l\'url du fichier de cache pour l\'image voulue
 Nécessite le passage du jeton anti-csrf !',
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fichier image inexistant',
@@ -1816,7 +1809,6 @@ Nécessite le passage du jeton anti-csrf !',
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Taille maximum des fichiers téléversés - octets (ex: Taille maximum des fichiers téléversés (ex: 2097152, 2048k, 2m)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 
-    // relocated from tools/contact/lang/contact_fr.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'le paramètre mail est obligatoire et doit contenir soit des emails valides, soit des groupes wikis commencant par @.',
     'CONTACT_ACTION_CONTACT' => 'Action {{contact ...}}',
@@ -1933,7 +1925,6 @@ A tres bientot ! ',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Désactiver l\'envoie d\'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)',
 
-    // relocated from tools/autoupdate/lang/autoupdate_fr.inc.php (ticket 19)
     'AU_ACL' => 'Vérification des droits sur les fichiers',
     'AU_REPO_ERROR' => 'Dépots inaccessibles.',
     'AU_NOT_DESIGNATED_UPDATE_INSTANCE' => 'Cette instance n\'est pas l\'installation source partagée -- les mises à jour ne peuvent être déclenchées que depuis celle-ci (voir la documentation sur les fermes de wikis).',
@@ -1999,7 +1990,6 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'AU_CANNOT_EXECUTE_BACKUP' => 'Le serveur n\'est pas en capacité d\'exécuter la sauvegarde automatique de manière asynchrone. Veuillez modifier le paramètre de configuration \'call_archive_async\' en le positionnant à \'false\'.',
     'AU_NOT_ENOUGHT_SPACE' => 'Il n\\y a pas assez de place sur le disque pour faire une sauvegarde. Libérez de la place ou désactivez l\'option de sauvegarde automatique \'preupdate_backup_activated\' en la positionnant à \'false\'.',
 
-    // relocated from tools/syndication/lang/syndication_fr.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'il faut entrer obligatoirement le paramètre "url" pour syndiquer un flux RSS',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'le répertoire "cache" n\'a pas les droits d\'accès en écriture',
@@ -2017,9 +2007,9 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, paramètre mapping : id obligatoire',
     'SYNDICATION_COPY_IN_WIKI' => 'Ajouter comme fiche dans mon YesWiki',
     'SYNDICATION_ENTRY_SAVED' => 'L\'article "%{title}" du flux RSS a bien été enregistré.',
-    // relocated from tools/bazar/lang/bazar_fr.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Formulaires',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Choisissez un fichier pour remplacer celui-ci.',
     'FORM_EDIT_FIELD_ROLES' => 'Rôles des champs',
     'FORM_EDIT_FIELD_ROLES_HINT' => 'Quel champ répond à quoi. Laissé sur « automatique », le rôle est déduit du type du champ : ne remplissez ceci que si votre formulaire est ambigu ou si vous voulez un autre champ.',
@@ -2442,7 +2432,6 @@ La fiche créée sera automatiquement liée à votre compte. Veuillez vous déco
 Il doit être de la forme fieldmapping="identifiant_1=identifiant_2" ou fieldmapping="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_FORM_EDIT_GEO_LABEL' => 'Géolocalisation de l\'adresse',
 
-    // relocated from tools/bazar/lang/bazarjs_fr.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculs',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Texte d\'affichage',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si besoin une unité après {value}, (ex: `{value} €`)',
@@ -2766,7 +2755,6 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'DATATABLE_NO_RESULTS' => 'Aucun résultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afficher',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Commentaires',
     'WEBHOOKS_POST_ERROR' => "Une action d'arrière-plan ne s'est pas déroulée comme prévue.\nVous pouvez prévenir les administrateurs pour les aider à maintenir ce site en leur donnant cette information :\n erreur exécutant '{function}' dans '{method}'.",
     'WEBHOOKS_CONFIG_TITLE' => 'Webhooks sortants',
@@ -2784,13 +2772,11 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'Un ou plusieurs formulaires sélectionnés n\'est pas défini sémantiquement, le format ActivityPub ne peut être utilisé',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Visible uniquement pour les administrateurs',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Accès interdit',
     'EDIT_CONFIG_GROUP_HERSE' => 'Herse / Mot de passe unique d\'entrée',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Identifiant pour la herse',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Mot de passe pour la herse',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modification de',
     'RSS_HISTORY' => 'historique',
     'RSS_HIDDEN_CONTENT' => 'Contenu masqué',
@@ -2801,11 +2787,9 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'RSS_DELETIONS' => 'Suppressions',
     'RSS_NO_DIFF' => 'Pas de différences',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Le paramètre destination (langue destination), obligatoire, est manquant.',
     'LANG_FLAG_FILE_MISSING' => 'Drapeau absent pour ce pays',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Ajouter un champ',
     'FORM_BUILDER_ADVANCED' => 'Paramètres avancés',
     'FORM_BUILDER_BACK' => 'Retour',
@@ -2824,7 +2808,6 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'FORM_BUILDER_NO_PREVIEW' => 'Aperçu indisponible pour ce champ',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoire',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Champ utilisé comme titre des fiches',
     'FORM_EDIT_CUSTOM_TITLE' => 'Titre personnalisé…',
     'FORM_EDIT_PERMISSIONS' => 'Permissions des fiches',
@@ -2833,7 +2816,6 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
     'FORM_BUILDER_FILTER' => 'Filtrer les champs…',
 
-    // Dashboard and admin routes (ticket: routes instead of admin pages)
     'DASHBOARD_TITLE' => 'Tableau de bord',
     'DASHBOARD_SECTION_ACCOUNT' => 'Mon compte',
     'ACCOUNT_TITLE' => 'Mon compte',
@@ -3104,7 +3086,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'ADMIN_PERMISSIONS_HANDLERS' => 'Droits des handlers',
 
     'EDIT_CONFIG_GROUP_IMPORT' => 'Import de données externes',
-    // Import of external data sources (`{{adminimporters}}`, `importer:sync`)
+
     'IMPORTER_ADMIN_TITLE' => 'Sources de données importées',
     'IMPORTER_IMAP' => 'Emails (imap)',
     'IMPORTER_RSS' => 'Flux RSS',

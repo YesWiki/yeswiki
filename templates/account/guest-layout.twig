@@ -1,10 +1,4 @@
-{# The shell for the screens you reach without an account: signing in, signing up,
-   recovering a password.
 
-   Deliberately NOT the dashboard rail. A rail is for moving between screens, and there is
-   nowhere to move: these three link to one another and to nothing else, so a sidebar there
-   is a list of places you cannot go yet, taking a third of the width from the one form the
-   page exists for. What replaces it is a card in the middle of the canvas. #}
 <div class="yw-account-guest">
   <div class="yw-account-guest__card">
     {% block dashboard_content %}{% endblock %}

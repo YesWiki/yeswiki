@@ -13,13 +13,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Social\Service\CommentService;
 
-/**
- * `{{recentcomments}}` -- converted from the procedural actions/recentcomments.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{recentcomments}}` -- converted from the procedural actions/recentcomments.php by ticket 06. */
 class RecentcommentsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -50,10 +44,6 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction, Pr
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -64,7 +54,6 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction, Pr
 
     private function emit(): void
     {
-        // Which is the max number of comments to be shown ?
         if ($max = $this->getService(PerformableArguments::class)->get('max')) {
             if ($max == 'last') {
                 $max = 50;
@@ -75,11 +64,9 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction, Pr
             $max = 50;
         }
 
-        // Show recent comments
         if ($comments = $this->getService(CommentService::class)->getRecentComments($max)) {
             $curday = '';
             foreach ($comments as $comment) {
-                // day header
                 list($day, $time) = explode(' ', $comment['time']);
                 if ($day != $curday) {
                     if ($curday) {
@@ -89,7 +76,6 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction, Pr
                     $curday = $day;
                 }
 
-                // echo entry
                 echo '&nbsp;&nbsp;&nbsp;(',$comment['time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $comment['parent'], 'show_comments=1'),'#',$comment['tag'],'">',$comment['parent'],'</a> . . . . ',$this->getService(MarkdownFormatterService::class)->format($comment['user']),"<br />\n";
             }
         } else {

@@ -10,14 +10,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The automatic import is wired to the wiki's housekeeping, and only to it.
- *
- * There is nothing to see when this breaks: no error, no log, just data sources that quietly
- * stop importing until somebody runs the command by hand. So the subscription itself is the
- * assertion -- if `maintenance.after` is ever renamed, or the subscriber loses its tag in
- * services.yaml, this fails instead of the feature silently going away.
- */
+/** The automatic import is wired to the wiki's housekeeping, and only to it. */
 class MaintenanceSyncWiringTest extends YesWikiTestCase
 {
     public function testWikiExisting(): YesWikiRuntime
@@ -43,8 +36,6 @@ class MaintenanceSyncWiringTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testHousekeepingImportsNothingWhenNoSourceAsksForIt(YesWikiRuntime $wiki): void
     {
-        // the default configuration declares no data source: a maintenance sweep on a wiki
-        // that imports nothing must be exactly as quiet as before this existed
         $errors = $wiki->services->get(EventDispatcher::class)->yesWikiDispatch('maintenance.after', [
             'startedAt' => time(),
             'interval' => 1800,

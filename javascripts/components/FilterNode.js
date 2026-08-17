@@ -6,8 +6,6 @@ const FilterNode = {
   components: { CollapseTransition },
   data: () => ({ expanded: false }),
   computed: {
-    // A parent node should be displayed if some of it's children has count > 0
-    // count is the number of entries in the list have this node value
     displayNode() {
       return [this.node, ...this.node.descendants].some(
         (node) => node.count > 0,
@@ -41,19 +39,6 @@ const FilterNode = {
   },
   methods: {
     onChecked() {
-      // uncheck all parents & descendants
-      // (this logic is not easy to understand, play with the UI to see how it works)
-
-      // Why unchecking parents?
-      // Given this tree France: [ Paris, Bordeaux], Spain: [ Madrid, Barcelone ]
-      // Given those entries entryCapitaleFR: Paris|France, entryLyon: France
-      // If France is checked, I want both entry to be display
-      // If Paris is checked, I want only entryCapitaleFR to be displayed.
-      // So when clicking Paris, I need to uncheck France (otherwise both will be displayed)
-
-      // Why unchecking descendants?
-      // If Paris is checked, and I check France. All entries from France will be displayed
-      // then no need to have Paris checked, it's misleading
       this.node.descendants.forEach((node) => {
         node.checked = false
       })
@@ -62,7 +47,6 @@ const FilterNode = {
       })
     },
     labelClicked(event) {
-      // if has childrne, then cliking expand them, and do not trigger the checkbox
       if (this.node.children.length > 0) event.preventDefault()
       this.expanded = !this.expanded
     },

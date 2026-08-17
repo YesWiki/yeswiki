@@ -30,10 +30,8 @@ class HttpSignatureService
         $digest = $this->getDigest($message);
 
         $date = gmdate("D, d M Y H:i:s \G\M\T");
-        $contentType = 'application/activity+json'; // TODO allow to pass custom headers. This only works for POST requests.
+        $contentType = 'application/activity+json';
 
-        // parse_url() is `array|false` and every key of the array is optional; an inbox URL
-        // without a host is not one we can sign for (ticket 40)
         $urlParts = parse_url($url);
         if (!is_array($urlParts) || !isset($urlParts['host'])) {
             throw new \Exception("cannot sign a request for '$url': it has no host");
@@ -111,7 +109,6 @@ class HttpSignatureService
             throw new \Exception('Malformed public key');
         }
 
-        // We cannot use getRequestUri() because it returns the real URI, eg. /?api/forms/2/actor
         $requestUri = $request->getScriptName();
 
         $sigParts = [];

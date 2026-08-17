@@ -13,14 +13,7 @@ use YesWiki\Import\Service\SyncScheduler;
 
 class ImportApiController extends YesWikiController
 {
-    /**
-     * Sync every configured data source, for a webhook or an external cron.
-     *
-     * Guarded by a shared secret rather than by the wiki's ACLs: the caller is a machine with
-     * no session, and the alternative -- an admin account whose password lives in a crontab --
-     * is a worse thing to leak. Empty `sync_secret` (the default) leaves the route refusing
-     * everything, so a wiki that never configured one is not exposed by having upgraded.
-     */
+    /** Sync every configured data source, for a webhook or an external cron. */
     #[Route('/api/import/sync', methods: ['GET'], options: ['acl' => ['public']])]
     public function sync(): ApiResponse
     {
@@ -41,7 +34,7 @@ class ImportApiController extends YesWikiController
         foreach ((is_array($dataSources) ? $dataSources : []) as $source => $sourceOptions) {
             ob_start();
             $results[$source] = $importerManager->syncSource((string)$source, $sourceOptions);
-            // the per-entry detail belongs in the source's log, not in this json answer
+
             $scheduler->recordRun((string)$source, trim(ob_get_clean() . "\n" . $results[$source]));
         }
 
@@ -49,10 +42,7 @@ class ImportApiController extends YesWikiController
     }
 
     /**
-     * Admin-only endpoint backing the live field-mapping table on `{{adminimporters}}`: given
-     * the in-progress add/edit form fields (posted with the same "{key}{importer}" convention
-     * the page saves with) and a local formId, returns the remote/local field lists needed to
-     * build the mapping table without a full page submit and reload.
+     * Admin-only endpoint backing the live field-mapping table on `{{adminimporters}}`: given the in-progress add/edit form fields (posted with the same "{key}{importer}" convention the page saves with) and a local formId, returns the remote/local field lists needed to build the mapping table without a full page submit and reload.
      */
     #[Route('/api/import/mapping-fields', methods: ['POST'], options: ['acl' => ['public']])]
     public function mappingFields(): ApiResponse

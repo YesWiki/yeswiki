@@ -1,11 +1,5 @@
-{# ticket 17: replaces @attach/file-upload-modal.twig (Bootstrap modal + qq.js AJAX
-   uploader + file-upload-modal.js). Files are now their own tagged Content entries
-   (FileManager), reusable across pages, so this modal has two panes: pick one of the
-   files the user can already read, or upload a new one -- both feed the same
-   configuration form (alignment/size/caption/...) before inserting
-   {{attach file="tag" ...}}. See javascripts/file-picker-panel.js. #}
-{# declared here, not by the ACeditor: the Vditor toolbar opens this same rail on a form
-   that renders no ACeditor, and inherited its stylesheet only by accident before #}
+
+
 {{ include_css('styles/yw-editor.css') }}
 <aside class="yw-designer__sidebar file-picker-panel" id="YesWikiFilePickerPanel" hidden>
   <div class="yw-rail__header">
@@ -13,18 +7,12 @@
     <button type="button" class="yw-close" data-yw-file-picker-close aria-label="close">&times;</button>
   </div>
   <div class="file-picker-panel__body">
-        {# One action, not a pair of tabs. The rail opens on the wiki's files, so a tab
-           reading "choose an existing file" only ever switched to the view already on
-           screen -- it cost a row of chrome to do nothing. Uploading is the one thing the
-           list is not, so it is the one button. #}
+
         <button type="button" class="yw-btn file-picker-upload-open" data-yw-file-picker-upload-open>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
           {{ _t('ATTACH_FILE_PICKER_UPLOAD_NEW') }}
         </button>
 
-        {# The way back from the two views that replace the list -- uploading, and
-           configuring the file that was chosen. Both take the whole rail rather than
-           appearing under a list the choice has already been made from. #}
         <button type="button" class="yw-btn file-picker-back" data-yw-file-picker-back hidden>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>
           {{ _t('GO_BACK') }}
@@ -37,13 +25,12 @@
               <input type="text" name="search" class="yw-input" autocomplete="off"
                 placeholder="{{ _t('ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER') }}">
             </div>
-            {# the extension list is built from the files themselves: offering ".docx" on a
-               wiki where nobody ever uploaded one is offering an empty result #}
+
             <select name="extension" class="yw-input file-picker-extensions" data-yw-file-picker-extensions>
               <option value="">{{ _t('ATTACH_FILE_PICKER_ALL_EXTENSIONS') }}</option>
             </select>
           </div>
-          {# families are rendered by the JS, which knows how many files each one holds #}
+
           <div class="file-picker-families" data-yw-file-picker-families></div>
           <ul class="file-picker-results" data-yw-file-picker-results></ul>
           <p class="file-picker-empty" data-yw-file-picker-empty hidden>{{ _t('ATTACH_FILE_PICKER_NO_RESULT') }}</p>
@@ -54,9 +41,7 @@
             <input type="file" name="upFile" class="yw-input">
           </div>
           <div class="file-picker-upload-error yw-text-danger" hidden></div>
-          {# not UPLOAD_A_FILE: that is the toolbar button's label ("Joindre / Insérer un
-             fichier"), and on the button that performs the upload it named the whole
-             feature rather than what pressing it does #}
+
           <button type="button" class="yw-btn yw-btn--primary yw-btn--block btn-do-upload">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
             {{ _t('ATTACH_FILE_PICKER_DO_UPLOAD') }}
@@ -73,10 +58,6 @@
             <input type="text" name="attach_link_text" value="" class="yw-input">
           </div>
 
-          {# data-yw-file-picker-wiki-only: these configure the {{attach}} action this modal
-             writes for the ACeditor. The Vditor toolbar uses the same picker but inserts
-             Markdown, which has nowhere to put an alignment or a PDF display mode -- an
-             option that would be silently dropped is not offered. #}
           <div class="yw-form-group pdf-option" data-yw-file-picker-wiki-only>
             <label>{{ _t('ATTACH_ACTION_DISPLAY_PDF_TEXT') }}</label>
             <div>
@@ -181,8 +162,7 @@
           </div>
         </form>
   </div>
-  {# no Cancel: the rail's own × closes it, and a second way out took half the footer from
-     the one button that does something #}
+
   <div class="yw-rail__footer">
     <button type="button" class="yw-btn yw-btn--primary yw-btn--block btn-insert-upload" disabled>{{ _t('INSERT') }}</button>
   </div>

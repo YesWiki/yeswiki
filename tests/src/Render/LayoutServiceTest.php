@@ -13,14 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
 
-/**
- * The wiki's chrome, read out of configuration (ticket 30).
- *
- * Reads only. `save()` rewrites the wiki's own configuration file, so it is exercised
- * through the browser rather than against the working tree -- what matters here is that
- * every read has a defined answer for a wiki that has never saved this screen, since that
- * is every wiki on the day it upgrades.
- */
+/** The wiki's chrome, read out of configuration (ticket 30). */
 class LayoutServiceTest extends YesWikiTestCase
 {
     /**
@@ -48,8 +41,6 @@ class LayoutServiceTest extends YesWikiTestCase
             LayoutService::ACCOUNT_BUTTON => null,
         ]);
 
-        // null rather than absent, because the ForcedParameterBag answers has() for every key
-        // it overrides -- what is asserted is that a garbage value reads as "nothing set"
         $this->assertSame('', $layout->ownTitle());
         $this->assertSame([], $layout->navbar());
         $this->assertSame([], $layout->quickMenu());
@@ -70,9 +61,7 @@ class LayoutServiceTest extends YesWikiTestCase
         $this->assertTrue($own->hasOwnTitle());
     }
 
-    /**
-     * A brand mode is never one the templates cannot draw, and never a logo that is not there.
-     */
+    /** A brand mode is never one the templates cannot draw, and never a logo that is not there. */
     public function testTheBrandModeIsAlwaysOneTheTemplatesDraw(): void
     {
         $this->assertSame('text', $this->service([LayoutService::BRAND => 'sideways'])->brandMode());
@@ -80,8 +69,7 @@ class LayoutServiceTest extends YesWikiTestCase
             'logo-text',
             $this->service([LayoutService::BRAND => 'logo-text', LayoutService::LOGO => 'files/logo.png'])->brandMode()
         );
-        // the trap this closes: picking "logo only" and then removing the image leaves a wiki
-        // with no brand at all rather than falling back to its name
+
         $this->assertSame(
             'text',
             $this->service([LayoutService::BRAND => 'logo', LayoutService::LOGO => ''])->brandMode()
@@ -113,8 +101,6 @@ class LayoutServiceTest extends YesWikiTestCase
             ['icon' => '', 'label' => '', 'link' => 'Nulle part'],
         ]])->quickMenu();
 
-        // an icon-only button is an ordinary thing to want; a button with neither is a row
-        // someone left empty
         $this->assertCount(2, $entries);
         $this->assertSame('search', $entries[0]['icon']);
         $this->assertSame('Nous écrire', $entries[1]['label']);
@@ -127,13 +113,7 @@ class LayoutServiceTest extends YesWikiTestCase
         $this->assertFalse($this->service([LayoutService::ACCOUNT_BUTTON => false])->hasAccountButton());
     }
 
-    /**
-     * The bar height is clamped, because it goes somewhere nothing can override it.
-     *
-     * The squelette writes it as an inline custom property on `<html>`, which beats every
-     * stylesheet — so a 0 out of a hand-edited config is a wiki with no navigation *and* no
-     * stylesheet able to give it any back.
-     */
+    /** The bar height is clamped, because it goes somewhere nothing can override it. */
     public function testTheNavbarHeightIsAlwaysUsable(): void
     {
         $this->assertSame(
@@ -157,13 +137,7 @@ class LayoutServiceTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A posted form and the configuration produce the same kind of thing.
-     *
-     * Which is the whole of the live preview: the squelette renders a LayoutChrome, and so
-     * does the preview endpoint — so what is previewed is produced by the code that will
-     * render it once saved, not by a second implementation that can drift.
-     */
+    /** A posted form and the configuration produce the same kind of thing. */
     public function testADraftReadsLikeTheConfigurationDoes(): void
     {
         $service = $this->service([
@@ -177,9 +151,8 @@ class LayoutServiceTest extends YesWikiTestCase
             [['icon' => 'search', 'label' => '', 'link' => 'search']]
         );
 
-        // an empty title box previews as the wiki's name, exactly as it will render saved
         $this->assertSame('Le wiki du collectif', $draft->title);
-        // ...and "logo only" with no logo falls back, in the draft as in the config
+
         $this->assertSame('text', $draft->brandMode);
         $this->assertSame(64, $draft->navbarHeight);
         $this->assertSame([['label' => 'Accueil', 'link' => 'PagePrincipale', 'children' => []]], $draft->navbar);
@@ -187,12 +160,7 @@ class LayoutServiceTest extends YesWikiTestCase
         $this->assertTrue($draft->accountButton);
     }
 
-    /**
-     * The per-page chrome override, which is the one thing here that reads the page.
-     *
-     * It only answers for the three roles that are still pages: naming another `PageTitre`
-     * has no meaning now that the title is a field, and asking gets the role back.
-     */
+    /** The per-page chrome override, which is the one thing here that reads the page. */
     public function testOnlyThePageBackedRolesCanBeOverridden(): void
     {
         $layout = $this->service();

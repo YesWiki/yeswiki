@@ -4,13 +4,7 @@ namespace YesWiki\Social\Service;
 
 use YesWiki\Content\Entity\AppendsToPageView;
 
-/**
- * The comment box, at the bottom of a page that has comments turned on.
- *
- * `ShowHandler` used to call `CommentService::renderCommentsForPage()` directly, which was the
- * last thing making the page view depend on the social features (ADR-0019). Whether a page has
- * comments at all is `CommentService`'s question and stays there.
- */
+/** The comment box, at the bottom of a page that has comments turned on. */
 class AppendsCommentsToPageView implements AppendsToPageView
 {
     public function __construct(private readonly CommentService $comments)

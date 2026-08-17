@@ -13,26 +13,15 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 35: posting a comment must work with JavaScript off.
- *
- * `templates/comment-form.twig` is a plain `<form method="POST">` aimed at `/api/comments`. With
- * JavaScript a click handler intercepts it and posts by fetch; without, the browser submits it
- * normally -- and the route answered JSON, so the reader's whole page became
- * `{"code":200,"success":"..."}`. The comment was saved; the reader was left staring at a JSON
- * document with no way back. That was true *before* the `addcomment` handler was deleted, so the
- * handler was not what made this work.
- *
- * The two paths are told apart by `X-Requested-With`, which `postForm()` in yeswiki-base.js sends.
- * There is nothing else to go on: fetch sets no header a form submission does not also send, and
- * `Accept` is `*​/*` either way.
- */
+/** Ticket 35: posting a comment must work with JavaScript off. */
 #[CoversMethod(CommentApiController::class, 'postComment')]
 class CommentWithoutJavascriptTest extends YesWikiTestCase
 {
     private const TAG = 'TestTicket35CommentTarget';
 
-    /** @return array{controller: CommentApiController, cleanup: callable} */
+    /**
+     * @return array{controller: CommentApiController, cleanup: callable}
+     */
     private function scenario(bool $withXhrHeader): array
     {
         $wiki = $this->getWiki();
@@ -40,9 +29,6 @@ class CommentWithoutJavascriptTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $pageManager = $wiki->services->get(PageManager::class);
 
-        // a page that accepts comments, and someone allowed to leave one. The comment ACL has to
-        // be set explicitly: a fresh page does not accept comments from just anyone, so without
-        // this the service answers 403 and the JSON branch never gets exercised.
         $pageManager->save(self::TAG, ['content' => 'a page to comment on'], '', true);
         $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->save(self::TAG, 'comment', '+');
         $name = 'CommentTester' . bin2hex(random_bytes(4));
@@ -59,7 +45,7 @@ class CommentWithoutJavascriptTest extends YesWikiTestCase
             [],
             $headers
         );
-        // replace(), not set(): CurrentRequest is the synthetic holder the kernel fills at boot
+
         $previous = $wiki->services->get(CurrentRequest::class)->get();
         $wiki->services->get(CurrentRequest::class)->replace($request);
 
@@ -83,16 +69,11 @@ class CommentWithoutJavascriptTest extends YesWikiTestCase
     {
         ['controller' => $controller, 'cleanup' => $cleanup] = $this->scenario(false);
 
-        // ExitException specifically, NOT \Throwable. Catching Throwable here swallows PHPUnit's
-        // own failure exception from fail(), so the test passes even when the redirect branch is
-        // removed -- which is exactly what happened the first time this was written, and what
-        // mutation-testing it caught.
         try {
             $redirected = false;
             try {
                 $controller->postComment();
             } catch (\YesWiki\Kernel\Exception\ExitException) {
-                // Redirector::redirect() ends the request by throwing; that is the success signal
                 $redirected = true;
             }
 
@@ -110,10 +91,6 @@ class CommentWithoutJavascriptTest extends YesWikiTestCase
         ['controller' => $controller, 'cleanup' => $cleanup] = $this->scenario(true);
 
         try {
-            // Asserted on the *shape*, not on a successful save. Whether this particular comment
-            // is accepted is CommentService's business -- hashcash, comment ACLs, an empty body --
-            // and it is covered where those rules live. What belongs here is the branch this test
-            // exists for: an XHR post is answered with a JSON document rather than redirected.
             $response = $controller->postComment();
 
             $payload = json_decode((string)$response->getContent(), true);

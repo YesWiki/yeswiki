@@ -9,10 +9,10 @@
         <div class="controls">
           <select class="yw-input" name="form_id" onchange="javascript:this.form.submit();">
             {% if not id or id == 0 %}
-              {# si l'on n'a pas deja choisit de entry, on demarre sur l'option CHOISIR, vide #}
+
               <option value="" selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
             {% endif %}
-            {# on dresse la liste des formulaires #}
+
             {% for form in forms %}
               <option value="{{ form.id }}"
                   {{ id == form.id ? ' selected="selected"' }}>
@@ -31,25 +31,24 @@
         <pre class="precsv">
           {{- csv|raw -}}
         </pre>
-        
-        {# on cree le lien vers ce fichier #}
+
         <a href="#" id="btnCSV" 
             class="yw-btn btn-neutral link-csv-file">
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg>
             {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
         </a>
       {% endif %}
-    {% endblock %}{# {% block appendToForm %} #}
-  {% endblock %}{# {% block formContent %} #}
+    {% endblock %}
+  {% endblock %}
 </form>
 
 <script type="module">
 	import { downloadCSV, removeCSVCrochet } from '/javascripts/bazar.js'
-	
+
 	window.addEventListener ("load", function ()
 	{
 		const cCSVBtn = document.getElementById('btnCSV');
-		
+
 		if (cCSVBtn !== null)
 		{
 			cCSVBtn.addEventListener('click', function ()

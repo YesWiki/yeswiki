@@ -1,41 +1,8 @@
-/* ---- top bar ---- */
-
-/* The bar's height is a setting (ticket 30, /admin/layout). `--yw-navbar-height` is declared
-   in styles/yw-core.css, because core stylesheets derive `--yw-sticky-toolbar-top` from it; the
-   squelette then writes it inline on <html>, which beats every stylesheet including this one.
-
-   `min-height` on the bar itself with `box-sizing: border-box`, so the number is the height you
-   can measure (plus the 1px bottom border, which it has always had: 48 renders 49). `min-` and
-   not a fixed height, because the bar must still grow when its contents wrap on a narrow screen.
-
-   **The contents are NOT flex-centred, and that is deliberate.** Both obvious ways to centre
-   them change how the bar lays out, so extra height falls below the contents instead:
-
-     - `display: flex` on `#yw-topnav` -- it is `position: sticky`, and its `.container` child
-       (auto margins, max-width, width 100%) then settles on fractional widths.
-     - `display: flex` on `#yw-topnav > .container` -- `.yw-topnav-fast-access` is placed with
-       `pull-right`, i.e. a float, and **floats are ignored on flex items**, so the whole
-       right-hand block of the bar moves.
-
-   Centring them means first giving the fast-access block a placement that does not depend on
-   floating; that is a separate change with its own before/after, not a line to slip in here. */
-/* The bar's colours are the PRESET's since ADR-0021 (`--yw-navbar-bg` / `--yw-navbar-text`),
-   not this file's. They used to be hard-coded to the raised surface here, and a second
-   stylesheet -- `colored-navbar.css`, a whole theme style whose entire content was repainting
-   the bar with the brand colour -- existed to say otherwise. That is a Preset's decision, so
-   there is one way to make the bar coloured now and it is a colour picker.
-
-   Its border and its hovered link are DERIVED from those two (core's derived block), which is
-   what the deleted stylesheet could not do: a hairline matched to the page background is
-   invisible once the bar is no longer the page background. */
 #yw-topnav {
   background: var(--yw-navbar-bg);
   color: var(--yw-navbar-text);
   border-bottom: var(--yw-border-width) solid var(--yw-navbar-border);
-  /* The bar's own shadow, in its own colour: a bar painted with the brand wants a shadow
-     tinted to match, not the page's neutral one. `0px` spread is the default and means no
-     shadow at all -- a bar with a hairline border does not need one, and the two together
-     read as a double edge. */
+
   box-shadow: 0 var(--yw-navbar-shadow-spread)
     calc(var(--yw-navbar-shadow-spread) * 2)
     calc(var(--yw-navbar-shadow-spread) / -4) var(--yw-navbar-shadow);
@@ -55,10 +22,6 @@
   white-space: nowrap;
 }
 
-/* The logo is sized from the bar, width auto: one number decides both, so a wordmark keeps
-   its proportions and cannot be stretched by a second setting disagreeing with the first.
-   The 12px is the bar's own padding, top and bottom -- without it the logo touches the edge
-   at every height. */
 #yw-topnav .yw-brand__logo {
   height: calc(var(--yw-navbar-height) - 12px);
   width: auto;
@@ -67,7 +30,6 @@
   display: block;
 }
 
-/* ...except stacked, where the logo shares the height with the name under it */
 #yw-topnav .yw-brand--logo-text-below {
   display: inline-flex;
   flex-direction: column;
@@ -84,9 +46,6 @@
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
-/* top-bar buttons sit flat on the bar (margot light.css look) -- except the chrome pencil,
-   which is deliberately the same raised button as the floating action cluster and the two
-   other pencils, and would otherwise be flattened by this far more specific rule */
 #yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit),
 #yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit) {
   background: transparent;
@@ -106,8 +65,6 @@
   display: none;
 }
 
-/* menu pages render plain lists: lay them out horizontally in the top bar
-   (dropdown menus inside the page keep their own layout) */
 #yw-topnav .topnavpage ul:not(.yw-dropdown__menu):not(.dropdown-menu) {
   display: flex;
   flex-wrap: wrap;
@@ -139,8 +96,6 @@
   color: var(--yw-navbar-active);
 }
 
-/* dropdown menus opened from the top bar sit on the page's own panel, not on the bar: keep
-   their links the page's ink rather than the bar's, whatever the bar was painted */
 #yw-topnav .yw-dropdown__menu a,
 #yw-topnav .dropdown-menu a {
   color: var(--yw-text);

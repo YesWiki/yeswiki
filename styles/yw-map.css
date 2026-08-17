@@ -1,23 +1,3 @@
-/* ============================================================
-   yw-map — leaflet views
-
-   The map an entry list draws, and the controls around it. Leaflet's own stylesheets are
-   vendor files and stay separate, declared beside this one by whoever asks for a map.
-
-   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
-   file: merging everything would have made ADR-0014's conditional declaration decorative and
-   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
-   it came from; add to the section a rule belongs to rather than to the end.
-
-   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
-   (declared by a section that carries an animation) and `styles/install.css` (the installer
-   renders before any of this exists).
-   ============================================================ */
-
-/* ============================================================
-   from styles/bazar/bazarcarto.css
-   ============================================================ */
-
 .leaflet-popup .BAZ_cadre_fiche,
 .BAZ_cadre_map {
   font-size: 12px;
@@ -126,11 +106,6 @@
   font-size: 16px;
 }
 
-/* ----------------- */
-
-/* Dynamic Bazar Map */
-
-/* ----------------- */
 .bazar-map-container {
   position: relative;
   overflow: hidden;
@@ -142,7 +117,6 @@
   flex-direction: row-reverse;
 }
 
-/* MARKER */
 .bazar-map-container .bazar-marker.xl .bazar-entry i {
   left: 9.5px;
 }
@@ -176,7 +150,6 @@
   text-decoration: none;
 }
 
-/* CLUSTERS */
 :root {
   --cluster-size: 32px;
 }
@@ -190,7 +163,6 @@
   font-weight: 600;
   color: var(--yw-text-inverse);
 
-  /* box-shadow: 4px -2px 5px 0px rgba(167, 167, 167, 0.56); */
   width: var(--cluster-size);
   height: var(--cluster-size);
   background-color: var(--yw-warning);
@@ -214,7 +186,6 @@
   background-color: var(--yw-warning);
 }
 
-/* ENTRY PANEL */
 .bazar-map-container .entry-container {
   position: relative;
   transition: all 0.3s;
@@ -280,11 +251,6 @@
   font-weight: 600;
 }
 
-/* ------------- */
-
-/* POPUP TEMPLATE */
-
-/* ------------- */
 .popupentry-container {
   display: none;
 }

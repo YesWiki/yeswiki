@@ -9,16 +9,7 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-/**
- * Pointing a list at a form.
- *
- * Which form a list shows is the first thing it has to be told, and for a while it could
- * not be told at all: the palette used to draw that select itself, for whatever group the
- * action belonged to (`needFormField` in `docs/actions/entrylist.yaml`), and components
- * declared in PHP have no group to inherit it from. It is a setting now -- one whose type
- * is `form-list` -- which is also what lets a Presentation ask for it only when a form is
- * what it lists, and not when the source is a feed.
- */
+/** Pointing a list at a form. */
 
 const PANEL = '#actions-builder-panel'
 const SETTINGS = `${PANEL} .action-parameters-container`
@@ -75,8 +66,6 @@ test("a list offers this wiki's forms, and writes the one picked", async ({
     })
     .toContain('{{entrylist id="2" template="card"}}')
 
-  // ...and a list can be pointed at several at once, which `id="2,1"` always meant and no
-  // single select could say: the hint under the box used to tell you to type it by hand
   await pickForm(page, 'Annuaire')
   await expect
     .poll(() => editorText(page), { message: 'both forms are written' })
@@ -90,11 +79,7 @@ test("a list offers this wiki's forms, and writes the one picked", async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/**
- * ...and the fields of that form are what every other setting is made of. A field select
- * with nothing in it is the same bug one step further on, and the only thing that fills
- * one is the form having been fetched -- which the form picker is what asks for.
- */
+/** ...and the fields of that form are what every other setting is made of. */
 test('reopening a list shows its form, and the fields to map', async ({
   page,
 }, testInfo) => {
@@ -118,9 +103,6 @@ test('reopening a list shows its form, and the fields to map', async ({
     })
     .toBeGreaterThan(1)
 
-  // the mapping read out of the tag survives a change to something else. Every slot of it
-  // is a field select, and one that mounts before its form has arrived reports itself
-  // empty -- which used to empty the mapping the tag had just been read for.
   await page
     .locator(`${PANEL} .yw-form-group.number input:visible`)
     .first()
@@ -133,10 +115,7 @@ test('reopening a list shows its form, and the fields to map', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/**
- * A Presentation writes whichever source it is pointed at, and only a form has a form to
- * pick: the picker belongs to the `entrylist` source rather than to the card.
- */
+/** A Presentation writes whichever source it is pointed at, and only a form has a form to pick: the picker belongs to the `entrylist` source rather than to the card. */
 test('picking a feed as the source takes the form picker away', async ({
   page,
 }, testInfo) => {
@@ -159,10 +138,6 @@ test('picking a feed as the source takes the form picker away', async ({
     })
     .toContain('{{syndication template="card"}}')
 
-  // ...and what it offers instead is the feed's own: a summary written for a feed reader
-  // is a sentence or a whole article, so a card has to be able to cut it. The action has
-  // truncated on a word boundary since long before the presentations; nothing offered the
-  // number, so the parameter could only be typed into the tag by hand.
   await page
     .locator(`${PANEL} .yw-form-group.number:visible input`)
     .last()
@@ -175,14 +150,7 @@ test('picking a feed as the source takes the form picker away', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/**
- * ...and everything else a list can be told, which is the Source's half of a Presentation.
- *
- * A card list shipped able to say which form and which fields, and nothing about WHICH
- * entries: no filter, no limit, no order. Those are `{{entrylist}}` parameters and the
- * palette never offered them, so the only way to a filtered card list was to write the tag
- * by hand.
- */
+/** ...and everything else a list can be told, which is the Source's half of a Presentation. */
 test('a card list can be filtered, limited and sorted', async ({
   page,
 }, testInfo) => {
@@ -192,14 +160,12 @@ test('a card list can be filtered, limited and sorted', async ({
   await components(page).first().click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  // how many
   await page
     .locator(`${PANEL} .yw-form-group.number:visible input`)
     .last()
     .fill('3')
   await expect.poll(() => editorText(page)).toContain('nb="3"')
 
-  // in what order -- on screen, not behind a checkbox: the rail hides nothing now
   await expect(page.locator(`${PANEL} .advanced-params`)).toHaveCount(0)
   await page
     .locator(`${PANEL} .yw-form-group.list:visible select`)
@@ -208,7 +174,6 @@ test('a card list can be filtered, limited and sorted', async ({
     .selectOption('desc')
   await expect.poll(() => editorText(page)).toContain('order="desc"')
 
-  // ...and which ones, as conditions rather than as a string nobody remembers the syntax of
   const query = page.locator(`${PANEL} .query`)
   await expect(query).toBeVisible()
   await query.locator('.btn-add-element').click()
@@ -223,14 +188,7 @@ test('a card list can be filtered, limited and sorted', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/**
- * A condition is a row, and it has to read as one.
- *
- * The controls of a composite input were a wrapping flex row, so each was sized by whatever
- * was left on its line: the same field came out a different width on every row, nothing
- * lined up, and the remove button ended up under the last control -- where it reads as
- * "remove the value" rather than "remove this condition".
- */
+/** A condition is a row, and it has to read as one. */
 test('the filter rows line up, with one remove button per row', async ({
   page,
 }) => {
@@ -281,19 +239,12 @@ test('the filter rows line up, with one remove button per row', async ({
     expect(row.remove.top).toBeLessThan(row.values.top)
   }
 
-  // ...and the rows themselves are the same shape as each other
   expect(Math.round(geometry[0].field.width)).toBe(
     Math.round(geometry[1].field.width),
   )
 })
 
-/**
- * The card's own settings, in the order they are read in: what the list is pointed at,
- * what each zone of a card shows, what the card looks like, then which entries to take.
- * Two to a row, and nothing folded away -- the "advanced parameters" box is gone, because
- * a rail that hides half of what a component can do behind a checkbox is one you have to
- * know the answer before you can search.
- */
+/** The card's own settings, in the order they are read in: what the list is pointed at, what each zone of a card shows, what the card looks like, then which entries to take. */
 test('the card settings are laid out in pairs, with nothing hidden', async ({
   page,
 }, testInfo) => {
@@ -303,7 +254,6 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
   await components(page).first().click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  // every visible control, grouped by the row it sits on
   const rows = await page.evaluate(() => {
     const byTop: Record<number, string[]> = {}
     document
@@ -329,7 +279,6 @@ test('the card settings are laid out in pairs, with nothing hidden', async ({
     'Zone de titre | Zone de sous titre',
     'Zone visuelle | Zone de texte',
     "Zone flottante | Bouton d'action",
-    // the seventh zone of a card, on a line of its own
     'Zone de date',
     "Colonnes | Cadrage de l'image",
     'Nombre de fiches par page | Limitation',
@@ -349,7 +298,6 @@ test('a card can carry a button to the entry', async ({ page }, testInfo) => {
   await components(page).first().click()
   await expect(page.locator(SETTINGS)).toBeVisible()
 
-  // by its caption, not by position: the mapping has gained slots twice already
   const cta = page
     .locator(`${PANEL} .multi-input-container.field-mapping .yw-form-group`)
     .filter({ hasText: "Bouton d'action" })

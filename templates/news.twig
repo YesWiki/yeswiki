@@ -4,8 +4,7 @@ To be relevant for news, like displaying news that have a date before today -->
 {% if entries|length > 0 %}
 {% set imgwidth = 450 %}
 {% set imgheight = 450 %}
-{# tri par ordre chronologique inverse (usort date_compare); timestamp() maps
-   missing/unparseable dates to 0, like the strtotime() the original used #}
+
 {% set entries = entries|sort((a, b) => timestamp(b.date|default('')) <=> timestamp(a.date|default(''))) %}
 
 <div class="agenda-container">

@@ -1,16 +1,13 @@
 <?php
 
-namespace YesWiki\Helloworld; // optionnal for action because loaded once
+namespace YesWiki\Helloworld;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\HelloWorld\Service\GreetingService;
 
 class GreetingAction extends YesWikiAction
 {
-    /**
-     * method to prepare args, optionnal
-     * see example in __GreetingAction.
-     */
+    /** method to prepare args, optionnal see example in __GreetingAction. */
     public function formatArguments($arg)
     {
         return [];

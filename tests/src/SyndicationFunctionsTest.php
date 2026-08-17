@@ -5,15 +5,11 @@ namespace YesWiki\Test\Core;
 require_once 'tests/YesWikiTestCase.php';
 require_once 'src/Content/syndication.functions.php';
 
-/**
- * Regression test for ticket 23 (syndication absorbed into core).
- */
+/** Regression test for ticket 23 (syndication absorbed into core). */
 class SyndicationFunctionsTest extends YesWikiTestCase
 {
     public static function setUpBeforeClass(): void
     {
-        // SyndicationAction is autoloaded now (ticket 06 moved it into the Content module),
-        // but booting the wiki still defines YESWIKI_SOURCE_DIR, which its include_once needs
         self::getWiki();
     }
 
@@ -31,12 +27,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
     }
 
     /**
-     * SyndicationAction::run() calls multiArraySearch() (to detect whether a feed item
-     * was already imported as a Bazar entry) without defining it itself -- it's defined
-     * in src/bazar.functions.php (relocated from tools/bazar/libs/bazar.fonct.php by
-     * ticket 24), required unconditionally from src/YesWiki.php. A real cross-tool
-     * dependency, unaffected by this ticket's relocation of SyndicationAction.php, and
-     * deliberately NOT redefined in src/syndication.functions.php.
+     * SyndicationAction::run() calls multiArraySearch() (to detect whether a feed item was already imported as a Bazar entry) without defining it itself -- it's defined in src/bazar.functions.php (relocated from tools/bazar/libs/bazar.fonct.php by ticket 24), required unconditionally from src/YesWiki.php.
      */
     public function testMultiArraySearchFromBazarIsReachableAfterWikiBoots()
     {
@@ -70,7 +61,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
         $this->assertSame('1400', $result['mapping']['id']);
         $this->assertSame('bf_titre', $result['mapping']['title']);
         $this->assertSame('bf_url', $result['mapping']['url']);
-        // defaults for keys not explicitly given in mapping=
+
         $this->assertSame('bf_chapeau', $result['mapping']['summary']);
         $this->assertSame('liste_description.twig', $result['template']);
     }

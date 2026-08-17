@@ -91,7 +91,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         $params = [
             'forceTheme' => isset($config->hide_action_template) && $config->hide_action_template === '1',
         ];
-        // load defaut params from config after LoadExtensions
+
         if (isset($config->favorite_theme)) {
             $params['favoriteTheme'] = $config->favorite_theme;
         }
@@ -163,9 +163,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         ];
     }
 
-    /**
-     * sanitize string from POST or return null.
-     */
+    /** sanitize string from POST or return null. */
     protected function sanitizePost(string $key): ?string
     {
         $raw = $this->getRequest()->request->get($key);

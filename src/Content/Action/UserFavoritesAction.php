@@ -39,7 +39,6 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        // get Services
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryManager = $this->getService(EntryManager::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
@@ -107,7 +106,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
     private function get_image_from_body($page)
     {
         $body = PageBody::content($page['body']);
-        // on cherche les actions attach avec image, puis les images bazar
+
         preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $body, $images);
         if (isset($images[0][0]) && $images[0][0] != '') {
             preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);

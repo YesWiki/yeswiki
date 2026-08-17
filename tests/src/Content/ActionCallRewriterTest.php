@@ -9,11 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 33's rewriter. The interesting tests are not "does it rename bazarliste" -- they are the
- * things a string replace would get wrong, because a string replace is the obvious wrong
- * implementation and it passes the obvious test.
- */
+/** Ticket 33's rewriter. */
 #[CoversMethod(ActionCallRewriter::class, 'rewriteText')]
 #[CoversMethod(ActionCallRewriter::class, 'rewriteBody')]
 class ActionCallRewriterTest extends YesWikiTestCase
@@ -23,7 +19,9 @@ class ActionCallRewriterTest extends YesWikiTestCase
         return $this->getWiki()->services->get(ActionCallRewriter::class);
     }
 
-    /** @return array<string, array{string, string}> */
+    /**
+     * @return array<string, array{string, string}>
+     */
     public static function rewriteProvider(): array
     {
         return [
@@ -39,9 +37,6 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 "{{entrylist\n  field=\"bf_titre\"\n}}",
             ],
 
-            // The load-bearing case. A str_replace of the action name over the body would rewrite
-            // the template FILENAME too, breaking the reference in the same edit that fixes the
-            // call -- and filenames were deliberately left alone by ticket 23.
             'a template value naming the old action survives' => [
                 '{{moteurrecherche template="moteurrecherche_button.twig"}}',
                 '{{searchform template="moteurrecherche_button.twig"}}',
@@ -51,7 +46,6 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 '{{entrylist template="bazarliste.twig" field="bazarliste"}}',
             ],
 
-            // Prose is not action position.
             'prose mentioning an action is untouched' => [
                 'To list entries, use the bazarliste action with champ="x".',
                 'To list entries, use the bazarliste action with champ="x".',
@@ -61,7 +55,6 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 'See https://example.org/doc?action=bazarliste for details.',
             ],
 
-            // {{bazar}} kept its name deliberately; its PARAMETERS still move.
             'bazar keeps its name but renames its parameters' => [
                 '{{bazar voirmenu="1" vue="consulter"}}',
                 '{{bazar showmenu="1" view="consulter"}}',
@@ -71,8 +64,6 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 '{{bazar view="consulter"}}',
             ],
 
-            // A parameter is only renamed for the action it belongs to. `champ` moves for
-            // bazarliste and valeur; nothing says it moves for an unrelated action.
             'a parameter is scoped to its own action' => [
                 '{{nav champ="bf_titre"}}',
                 '{{nav champ="bf_titre"}}',
@@ -82,15 +73,12 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 '{{value field="bf_x" text="lien" default="-"}}',
             ],
 
-            // `doubleclic` is BOTH an action name and a parameter of `include`. They must not be
-            // confused: the include call keeps its action and renames its parameter.
             'doubleclic as an action' => ['{{doubleclic}}', '{{doubleclick}}'],
             'doubleclic as a parameter of include' => [
                 '{{include page="X" doubleclic="0" actif="1"}}',
                 '{{include page="X" doubleclick="0" active="1"}}',
             ],
 
-            // Not action calls.
             'an end tag' => ['{{end elem="panel"}}', '{{end elem="panel"}}'],
             'an empty tag' => ['{{ }}', '{{ }}'],
             'a parameter never typed by a user is left alone' => [
@@ -111,10 +99,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
         $this->assertSame($expected, $this->rewriter()->rewriteText($before));
     }
 
-    /**
-     * Every rename in both maps, applied and checked. Written as one test over the maps rather
-     * than 56 hand-written cases so that adding a rename to a map cannot leave it untested.
-     */
+    /** Every rename in both maps, applied and checked. */
     public function testEveryRenameInTheMapsIsApplied(): void
     {
         $rewriter = $this->rewriter();
@@ -134,7 +119,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
                 continue;
             }
             $action = $rename['action'];
-            // the map keys actions by their OLD name, so the expected output carries the new one
+
             $expectedAction = $rewriter->actionRenames()[strtolower($action)] ?? $action;
             $this->assertSame(
                 '{{' . $expectedAction . ' ' . $rename['new'] . '="v"}}',
@@ -144,11 +129,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The ordering hazard, pinned. Both map files used to say "apply action names first"; doing
-     * that leaves the parameter map keyed by names that no longer exist. These nine actions are
-     * the ones where following that instruction would have silently done nothing.
-     */
+    /** The ordering hazard, pinned. */
     public function testParametersOfARenamedActionAreStillRewritten(): void
     {
         $rewriter = $this->rewriter();

@@ -11,14 +11,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 14 (qrcode absorbed into core): ApiController::getAllRelations()/
- * createRelation() replace yeswiki-extension-qrcode's own ApiController, storing paired
- * qrcode-scan relations as Bazar entries (unchanged EntryManager-backed storage).
- *
- * Also covers a real copy-paste bug found while relocating: getAllRelations()'s entry-cache
- * population populated $entryCache[bf_fiche1] by calling getOne(bf_fiche2) instead of
- * getOne(bf_fiche1) -- meaning 'entry1' in the API response silently duplicated 'entry2''s
- * data instead of showing the actual first linked entry.
+ * Regression test for ticket 14 (qrcode absorbed into core): ApiController::getAllRelations()/ createRelation() replace yeswiki-extension-qrcode's own ApiController, storing paired qrcode-scan relations as Bazar entries (unchanged EntryManager-backed storage).
  */
 #[CoversMethod(RelationApiController::class, 'getAllRelations')]
 #[CoversMethod(RelationApiController::class, 'createRelation')]
@@ -35,9 +28,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
         $controller = $wiki->services->get(RelationApiController::class);
-        // EntryManager::create() reaches src/bazar.functions.php helpers relying on $GLOBALS['wiki'],
-        // normally populated by the production HTTP bootstrap (same workaround as
-        // AceditorWidgetTest/FiltertagsActionTest).
+
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
         $formManager->create([
@@ -81,9 +72,6 @@ class ApiControllerRelationsTest extends YesWikiTestCase
             $response = $controller->createRelation();
             $this->assertSame(201, $response->getStatusCode());
 
-            // empty type: getAllRelations() skips the bf_relation query filter, relying only
-            // on the formsIds scoping -- avoids depending on Bazar's field-query internals,
-            // which aren't this test's concern
             $_GET = [];
             $listResponse = $controller->getAllRelations('');
             $relations = json_decode($listResponse->getContent(), true);

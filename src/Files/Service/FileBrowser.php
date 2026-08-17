@@ -7,16 +7,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * The file-manager screen: list, trash, restore and erase the files attached to the
- * current page (ticket 24, extracted from `Attach`'s `fm*` methods).
- *
- * Operates on the **legacy** attached files -- the ones addressed by an encoded filename
- * rather than by a Content row (see AttachedFilePaths). A file uploaded through the
- * current model is a page of its own and is deleted like any other Content.
- *
- * `render()` returns its HTML rather than echoing it, unlike the code it replaces: the
- * action and the handler that call it both already return a string, and the output
- * buffering they wrapped around it existed only to catch these echoes.
+ * The file-manager screen: list, trash, restore and erase the files attached to the current page (ticket 24, extracted from `Attach`'s `fm*` methods).
  */
 class FileBrowser
 {
@@ -40,11 +31,7 @@ class FileBrowser
         $this->inputFilter = $inputFilter;
     }
 
-    /**
-     * Apply the `?do=` operation, then render the resulting listing.
-     *
-     *                       -- they differ only in which template wraps the list
-     */
+    /** Apply the `?do=` operation, then render the resulting listing. */
     public function render(): string
     {
         $do = (string)($_GET['do'] ?? '');
@@ -65,7 +52,7 @@ class FileBrowser
                 return $this->renderListing(true);
             case 'emptytrash':
                 $this->emptyTrash();
-                // falls through: emptying the trash returns you to the listing
+
                 // no break
             default:
                 return $this->renderListing(false);
@@ -84,10 +71,6 @@ class FileBrowser
             ]);
         }, $files);
 
-        // One template. There used to be a second, wrapping this one in a heading and a
-        // "back to the page" footer, for the `/PageName/filemanager` handler -- deleted by
-        // ticket 35 because `{{filemanager}}` already renders the same browser, and a file
-        // manager is something you put on a page rather than a way of looking at one.
         return $this->templateEngine->renderSafely(
             '@core/attach-filemanager.twig',
             [
@@ -114,14 +97,7 @@ class FileBrowser
         return $this->paths->searchFiles('`' . $filePattern . '$`', $this->paths->uploadPath());
     }
 
-    /**
-     * Move a file to the trash, and delete every cached resize of it.
-     *
-     * The cache sweep is by glob rather than by lookup because a thumbnail's name encodes
-     * the dimensions it was made at, and nothing records which dimensions were ever
-     * requested. The patterns cover the current naming plus three older ones still
-     * present in caches upgraded from earlier versions.
-     */
+    /** Move a file to the trash, and delete every cached resize of it. */
     public function moveToTrash(string $rawFileName = ''): void
     {
         $path = $this->paths->uploadPath();
@@ -144,7 +120,9 @@ class FileBrowser
         }
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function cachedResizePatterns(string $filename): array
     {
         $cachePath = $this->paths->cachePath();
@@ -159,10 +137,10 @@ class FileBrowser
                 }
             }
         }
-        // the old Image field
+
         $patterns[] = $cachePath . '/vignette_' . $base;
         $patterns[] = $cachePath . '/image_' . $base;
-        // the old agenda/blog/news/photobox/trombinoscope templates
+
         foreach ($threeOrFour as $width) {
             foreach ($threeOrFour as $height) {
                 $patterns[] = $cachePath . '/image_' . $width . '[x_]' . $height . '_' . $base;
@@ -177,7 +155,7 @@ class FileBrowser
     public function erase(): void
     {
         $filename = $this->paths->uploadPath() . '/' . basename(realpath($_GET['file'] ?? '') ?: '');
-        // only ever deletes something already in the trash
+
         if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
             unlink($filename);
         }
@@ -255,7 +233,7 @@ class FileBrowser
             $value /= $sys['size'];
             $i++;
         }
-        // plain bytes get no decimals
+
         if ($sys['prefix'][$i] === '') {
             $retstring = '%01u %s';
         }

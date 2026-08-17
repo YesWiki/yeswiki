@@ -3,21 +3,16 @@ export default {
   emits: ['input'],
   data() {
     return {
-      // boolean internal value cause the real value could be a string when using checkedvalue and uncheckedvalue
       checked: undefined,
     }
   },
   methods: {
     setCheckedFromValue(value) {
       if (value === undefined) {
-        // if no value, we initialize to false, the the param will be correctly set
-        // i.e. myparam="false" or myparam="0" if uncheckvalue is defined
         const defaultValue = this.config.default || 'false'
         const checkedvalue = this.config.checkedvalue || 'true'
         this.checked = `${defaultValue}` === `${checkedvalue}`
       } else {
-        // Cast values to string before compare, because in yaml we might use boolean or number, but
-        // wikicode will always use strings
         const checkedvalue = this.config.checkedvalue || 'true'
         this.checked = `${value}` === `${checkedvalue}`
       }
@@ -37,13 +32,9 @@ export default {
       this.$emit('input', result)
     },
     value() {
-      // watch value because it can be affected after mounted
       this.setCheckedFromValue(this.value)
     },
   },
-  // `title` is the caption above the box; `label` is the sentence beside it. Every other
-  // input's label does both jobs, but a checkbox's is what you click and what says what
-  // ticking it does, so the word naming the setting has nowhere else to go.
   template: `
     <div class="yw-form-group input-group checkbox" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>

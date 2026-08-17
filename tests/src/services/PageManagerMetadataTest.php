@@ -9,9 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 02 (versioned metadata column on pages):
- * metadata is now a column on `pages`, versioned the same way `body` is, rather than
- * a standalone, non-versioned triple.
+ * Regression tests for ticket 02 (versioned metadata column on pages): metadata is now a column on `pages`, versioned the same way `body` is, rather than a standalone, non-versioned triple.
  */
 class PageManagerMetadataTest extends YesWikiTestCase
 {
@@ -26,7 +24,6 @@ class PageManagerMetadataTest extends YesWikiTestCase
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'first body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
 
-            // a plain content edit (no metadata change) must not wipe out metadata
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'second body'], '', true);
             $page = $pageManager->getOne(self::TAG);
 
@@ -43,10 +40,6 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            // time has only second-granularity; getOne($tag, $time) identifies a revision by
-            // that column, so revisions created within the same wall-clock second are
-            // ambiguous to look up individually -- force real gaps so every revision below
-            // gets a distinct time, same as real edits a moment apart would
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v1 body'], '', true);
             sleep(1);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
@@ -54,16 +47,10 @@ class PageManagerMetadataTest extends YesWikiTestCase
 
             sleep(1);
 
-            // metadata changes independently of content: a later revision changes theme,
-            // without touching body
             $pageManager->setMetadata(self::TAG, ['theme' => 'colibris']);
             $latest = $pageManager->getOne(self::TAG);
             $this->assertSame('colibris', $latest['metadatas']['theme'] ?? null);
 
-            // reading the *prior* revision by its own timestamp must see that revision's
-            // metadata (margot), not the current one (colibris) -- this is the actual bug
-            // ticket 02 exists to fix (getOne() used to always call getMetadata($tag), which
-            // ignored $time and always returned the latest, non-versioned triple)
             $reverted = $pageManager->getOne(self::TAG, $v1['time']);
             $this->assertSame('margot', $reverted['metadatas']['theme'] ?? null);
         } finally {
@@ -92,9 +79,6 @@ class PageManagerMetadataTest extends YesWikiTestCase
 
     public function testGetMetadataHasNoExtraKeysBeyondDefaultAclsWhenNoneExplicitlySet()
     {
-        // note: as of ticket 03, a freshly-saved page's metadata is no longer null -- ACLs
-        // (default or otherwise) are always present, since PageManager::save() bootstraps
-        // them into metadata immediately for a brand-new page (see AclService)
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
@@ -119,8 +103,6 @@ class PageManagerMetadataTest extends YesWikiTestCase
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $revisionsAfterFirstSet = count($pageManager->getRevisions(self::TAG));
 
-            // re-setting the exact same value must not create a spurious revision,
-            // matching save()'s "don't save if body didn't change" guard
             $result = $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
 
             $this->assertFalse($result);

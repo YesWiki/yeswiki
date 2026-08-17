@@ -35,9 +35,7 @@ class EntryDateService implements EventSubscriberInterface
     }
 
     /**
-     * check if `$data` is the marker left on a legacy physically-duplicated recurrence child entry
-     * (`bf_date_fin_evenement_data` used to be set to this literal string on every entry created by
-     * the old repetition mechanism, instead of a normal recurrence-config array).
+     * check if `$data` is the marker left on a legacy physically-duplicated recurrence child entry (`bf_date_fin_evenement_data` used to be set to this literal string on every entry created by the old repetition mechanism, instead of a normal recurrence-config array).
      */
     public static function isLegacyRecurrenceChild(mixed $data): bool
     {
@@ -51,9 +49,6 @@ class EntryDateService implements EventSubscriberInterface
     {
         $entry = $this->getEntry($event);
         if ($this->shouldFollowEntry($entry)) {
-            // no new repetitions are ever created here: repeated dates are now expanded
-            // virtually for display (calendar/ICS). Still clean up stale physical children
-            // left by the old repetition mechanism whenever the parent entry is re-saved.
             $this->deleteLinkedEntries($entry);
         }
     }
@@ -93,9 +88,7 @@ class EntryDateService implements EventSubscriberInterface
             && in_array($entry['tag'], $this->followedIds);
     }
 
-    /**
-     * remove linked entries.
-     */
+    /** remove linked entries. */
     protected function deleteLinkedEntries(array $entry)
     {
         $vSearchManager = $this->container->get(SearchManager::class);
@@ -112,7 +105,7 @@ class EntryDateService implements EventSubscriberInterface
                         'bf_date_fin_evenement_data' => ".*$entryId.*",
                     ],
                 ],
-                false, // filter on read Acl
+                false,
                 false
             );
             if (is_iterable($entriesToDelete)) {
@@ -125,21 +118,17 @@ class EntryDateService implements EventSubscriberInterface
                 );
                 foreach ($entriesToDelete as $entryToDelete) {
                     try {
-                        $this->entryManager->delete($entryToDelete['tag'], true); // $forceEvenIfNotOwner = true
+                        $this->entryManager->delete($entryToDelete['tag'], true);
                     } catch (\Throwable $th) {
-                        // do nothing
                     }
                 }
             }
         }
     }
 
-    /**
-     * check if associated form is restricted for only one entry by user.
-     */
+    /** check if associated form is restricted for only one entry by user. */
     public function canRegisterMultipleEntries(?array $entry): bool
     {
-        // default true
         $canRegisterMultipleEntries = true;
         if (!empty($entry['form_id']) && is_scalar($entry['form_id'])) {
             $form = $this->formManager->getOne(strval($entry['form_id']));

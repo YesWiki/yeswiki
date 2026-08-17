@@ -1,7 +1,4 @@
-// change-theme.js — dependent theme/squelette/style/preset selects
-// (ticket 16: vanilla JS)
 ;(function () {
-  // among the siblings of `baseElement`, the select named `type`
   const findSibling = (baseElement, type) => {
     let found = null
     Array.from(
@@ -41,7 +38,6 @@
     const element = findSibling(currentBase, `${type}_select`)
     if (!element) return
     const curVal = element.value
-    // empty list, keeping the placeholder empty option's label if there is one
     let emptyOption = ''
     Array.from(element.options).some((option) => {
       if (option.value.length === 0) {
@@ -145,7 +141,6 @@
       if (!currentBase) return
       const data = extractData(currentBase)
 
-      // On change le theme dynamiquement
       const val = select.value
       updateOptions(currentBase, 'squelette', val, data)
       updateOptions(currentBase, 'style', val, data)

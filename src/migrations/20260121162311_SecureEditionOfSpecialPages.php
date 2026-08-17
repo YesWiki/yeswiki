@@ -15,10 +15,6 @@ class SecureEditionOfSpecialPages extends YesWikiMigration
 
     public function run()
     {
-        // Ensure that every special page is only editable by admins. AclService::save() now
-        // requires the target page to already exist (ACLs live in that page's own metadata
-        // column since ticket 03) -- check for that specific, expected condition rather than
-        // swallowing every possible failure, so a genuine bug in save() itself still surfaces.
         $pageManager = $this->getService(PageManager::class);
         $aclService = $this->getService(AclService::class);
         foreach ($this::SPECIAL_PAGES as $page) {

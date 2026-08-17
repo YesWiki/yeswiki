@@ -1,7 +1,5 @@
 {% if elements|length > 0 %}
-{# the historical nb_accordion counter never actually incremented (post-increment
-   self-assignment), so the id was always accordion1 — kept as-is #}
-{# the wiki's one accordion -- see templates/_accordion-item.twig #}
+
 <div class="yw-accordion no-dblclick" id="accordion1">
 {% for tag, element in elements %}
   {% set body %}

@@ -54,10 +54,7 @@ export default {
     'options',
     'class',
   ],
-  // disabledAttributes: [],
   editorSetup(api) {
-    // `options` is the stored attribute: 'ratio|maxwidth|maxheight'; the three
-    // visible inputs edit its parts. It stays hidden, like the position class.
     api.hide('options')
     const parts = (api.getValue('options') || '').split('|')
     if (parts.length > 1) {

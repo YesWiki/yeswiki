@@ -13,11 +13,7 @@ use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\CoreAssets;
 
 /**
- * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters -
- * unchanged, see Wiki::Method()) go through the same HttpKernel/event pipeline as the
- * attribute-routed api/doc controllers (see Wiki::handleWithHttpKernel()), instead of the
- * echo-straight-to-stdout dispatch this used to be. Set as the _controller for every request that
- * isn't api/doc - see Wiki::Run().
+ * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters - unchanged, see Wiki::Method()) go through the same HttpKernel/event pipeline as the attribute-routed api/doc controllers (see Wiki::handleWithHttpKernel()), instead of the echo-straight-to-stdout dispatch this used to be.
  */
 class LegacyPageController extends YesWikiController
 {
@@ -30,17 +26,10 @@ class LegacyPageController extends YesWikiController
 
         $boosted = $this->getService(BoostedNavigation::class);
 
-        // Ticket 16: a page built from a different skeleton cannot be swapped into this one --
-        // the chrome, the stylesheets and <html lang> would all be wrong. Checked before the
-        // handler runs, so nothing is rendered only to be thrown away.
         if ($boosted->isBoosted() && !$boosted->fingerprintMatches()) {
             return $boosted->fullLoadResponse();
         }
 
-        // ticket 15: core, theme and custom/ assets are declared before the handler renders
-        // anything, so they lead the emitted set. The head is rendered last now, so a
-        // registration made from the layout -- or from here, after the handler -- would be
-        // too late to be ordered first.
         $this->getService(CoreAssets::class)->register();
 
         ob_start();
@@ -49,9 +38,6 @@ class LegacyPageController extends YesWikiController
         } catch (ExitException $th) {
             ob_end_clean();
 
-            // matches Wiki::Run()'s old behavior: under CLI (tests), $wiki->services->get(\YesWiki\Kernel\Service\Redirector::class)->terminate() only had to
-            // unwind the call stack without ending the process, so nothing was ever printed;
-            // otherwise the exit message was the entire response body.
             return $this->toResponse(\YesWiki\YesWikiKernel::isCli() ? '' : $th->getMessage(), $boosted);
         }
 
@@ -59,12 +45,7 @@ class LegacyPageController extends YesWikiController
     }
 
     /**
-     * Actions/handlers (Wiki::Redirect(), and many others) still redirect the old way: a raw
-     * header('Location: ...') call. PHP itself would treat that as an implicit 302, but
-     * Response::send() always writes its own status line afterwards, defaulting to 200 and
-     * silently turning the redirect into a blank page (the Location header is sent, but
-     * browsers only act on it for a 3xx status). Reflect any such already-sent header here so
-     * the response we hand back actually is the redirect that already (in part) happened.
+     * Actions/handlers (Wiki::Redirect(), and many others) still redirect the old way: a raw header('Location: ...') call.
      */
     private function toResponse(string $content, ?BoostedNavigation $boosted = null): Response
     {
@@ -72,9 +53,6 @@ class LegacyPageController extends YesWikiController
             if (stripos($header, 'Location:') === 0) {
                 $target = trim(substr($header, \strlen('Location:')));
 
-                // A boosted request would follow the redirect inside the XHR and swap the
-                // target's body while the address bar still showed the original URL. Hand the
-                // redirect to the browser instead (ticket 16).
                 if ($boosted?->isBoosted()) {
                     return $boosted->fullLoadResponse($target);
                 }
@@ -83,10 +61,6 @@ class LegacyPageController extends YesWikiController
             }
         }
 
-        // Ticket 16's one rule: only a response that went through renderPage() may be swapped.
-        // A /raw handler, an error page, a bare-document terminate() -- anything else -- gets a
-        // real navigation, so the address bar matches what is on screen and htmx never swaps
-        // text/plain into the body.
         if ($boosted?->isBoosted() && !$boosted->hasRenderedAPage()) {
             return $boosted->fullLoadResponse();
         }

@@ -937,8 +937,6 @@ return [
     'NO_VAR_GROUP' => 'ningún grupo especificado',
     'GROUP_NOT_STRING' => 'la variable no es una cadena de caracteres',
 
-    // relocated from tools/login/lang/login_es.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Inscribirse',
     'LOGIN_LOGIN' => 'Conectarse',
     'LOGIN_WIKINAME' => 'Correo electrónico o nombre de usuario.ice',
@@ -993,7 +991,6 @@ return [
     'RECOVERY_MESSAGE_SENT' => 'Se ha enviado un mensaje a {email} con instrucciones para restablecer la contraseña',
     'USERSETTINGS_NAME_NOT_FOUND' => 'El identificador "{currentName}" no existe!',
 
-    // relocated from tools/tags/lang/tags_es.inc.php (ticket 10)
     'TAGS_ACTION_ADMINTAGS' => 'Acción {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'la acción está reservada al grupo de administradores',
     'TAGS_NO_WRITE_ACCESS' => 'No tienes los derechos de acceso para escribir en esta página',
@@ -1342,7 +1339,7 @@ return [
     'AB_templates_tabs_selectedtab_label' => 'Uña seleccionada',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Impida que los robots indexen el wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
     'AB_templates_section_file_label' => 'Imagen de fondo',
-    // relocated from tools/attach/lang/attach_es.inc.php (ticket 17)
+
     'ATTACH_ACTION_ATTACH' => 'Acción {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parámetro "desc" obligatorio para una imagen',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'el parámetro "height", en píxeles, debe constar únicamente de números enteros',
@@ -1438,7 +1435,6 @@ return [
     'FILEMANAGER_ACTION_NEED_ACCESS' => 'Solo el propietario de esta página puede acceder al gestor de archivos adjuntos',
     'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'No se han enviado archivos.',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar este archivo',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1452,7 +1448,6 @@ return [
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_es.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Acción {{suscripción ...}}',
     'CONTACT_MAIL_REQUIRED' => 'el parámetro email es obligatorio.',
     'CONTACT_ACTION_CONTACT' => 'Acción {{contacto ...}}',
@@ -1552,7 +1547,6 @@ return [
     'AB_abonnement_class_label' => 'clase',
     'AB_contact_action_mail_label' => 'E-mail del destinatario',
 
-    // relocated from tools/autoupdate/lang/autoupdate_en.inc.php (ticket 19) -- English placeholder, autoupdate was never translated for this language
     'AU_ACL' => 'Checking file rights',
     'AU_REPO_ERROR' => 'Inaccessible depots.',
     'AU_NOT_DESIGNATED_UPDATE_INSTANCE' => 'This instance is not the shared source install -- updates can only be triggered from there (see the farm setup documentation).',
@@ -1598,7 +1592,6 @@ return [
     'AU_SEVERAL_TOOLS_UPDATE' => 'You have {nbMaj} extensions to update',
     'AU_ONE_TOOL_UPDATE' => 'You have 1 extension to update',
 
-    // relocated from tools/syndication/lang/syndication_es.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Acción {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'hay que entrar el parámetro "url" para sindicar un flujo RSS',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'el directorio "cache" no tiene permisos de escritura',
@@ -1613,9 +1606,9 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existe, se usa el patrón por defecto',
     'SYNDICATION_SOURCE' => 'fuente',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acceder a todo el contenido',
-    // relocated from tools/bazar/lang/bazar_es.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Formularios',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Elija un archivo para reemplazar este.',
     'BAZ_SYSTEM_FORMS' => 'Contenidos del wiki',
     'BAZ_USER_FORMS' => 'Formularios',
@@ -1993,7 +1986,6 @@ return [
     'BAZ_PREVIEW' => 'Avance',
     'BAZ_PAS_DE_FORM_AVEC_CET_ID' => 'La forma que usted está buscando no existe (puede ser a-t-il & eacute;t Neighboureacute; suprimirimaeacute;e entre temps?)',
 
-    // relocated from tools/bazar/lang/bazarjs_es.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Cálculos',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Texto para mostrar',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Añadir si es necesario una unidad después {value}, (ex: `{value} €`)',
@@ -2248,7 +2240,6 @@ return [
     'DATATABLE_NO_RESULTS' => 'Sin resultados',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -2266,13 +2257,11 @@ return [
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modificación de',
     'RSS_HISTORY' => 'histórico',
     'RSS_HIDDEN_CONTENT' => 'contenido oculto',
@@ -2283,11 +2272,9 @@ return [
     'RSS_DELETIONS' => 'supresiones',
     'RSS_NO_DIFF' => 'Ninguna diferencia',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Falta el parámetro destinación (idioma destinación) obligatorio.',
     'LANG_FLAG_FILE_MISSING' => 'Falta la bandera para este país',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Añadir un campo',
     'FORM_BUILDER_ADVANCED' => 'Parámetros avanzados',
     'FORM_BUILDER_BACK' => 'Volver',
@@ -2304,7 +2291,6 @@ return [
     'FORM_BUILDER_NO_PREVIEW' => 'Vista previa no disponible para este campo',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatorio',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Campo utilizado como título de las fichas',
     'FORM_EDIT_CUSTOM_TITLE' => 'Título personalizado…',
     'FORM_EDIT_PERMISSIONS' => 'Permisos de las fichas',

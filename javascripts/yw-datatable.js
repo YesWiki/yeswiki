@@ -1,22 +1,12 @@
-// yw-datatable.js — vanilla sort/search/paginate table component (ticket 16, replaces
-// jQuery DataTables). Auto-initializes any `<table data-yw-datatable>` already in the
-// document plus any added later (MutationObserver), matching DataTables' old
-// auto-init-any-qualifying-table convenience. No jQuery.
 ;(function () {
   const DEFAULT_PAGE_SIZE = 10
   const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
-  // _t() returns the key itself when it is missing from wiki.lang, so `_t(k) ?? fallback`
-  // never fires and the UI ends up displaying "DATATABLE_SEARCH_PLACEHOLDER" to a visitor.
-  // Degrade to English instead of shouting a constant name.
   function translate(key, fallback) {
     const translated = typeof _t === 'function' ? _t(key) : key
     return !translated || translated === key ? fallback : translated
   }
 
-  // "how many rows per page" choices: the table's own configured size plus the standard
-  // ladder, so a table asking for 25 offers 25/50/100 and never a size it was not built
-  // for. Override wholesale with data-yw-page-size-options="20,40".
   function pageSizeOptions(table, pageSize) {
     const declared = (table.getAttribute('data-yw-page-size-options') || '')
       .split(',')
@@ -120,8 +110,6 @@
     let sortDir = 'asc'
     let page = 1
 
-    // Optional initial sort, e.g. data-yw-datatable-sort="0,desc" (replaces
-    // DataTables' data-order attribute)
     const initialSort = (
       table.getAttribute('data-yw-datatable-sort') || ''
     ).split(',')
@@ -133,8 +121,6 @@
       }
     }
 
-    // the page-size picker is only worth showing when there is something to page
-    // through: offering "100 per page" for six rows is noise
     const sizes = pageSizeOptions(table, pageSize)
     const showPageSize = !noPaginate && allRows.length > sizes[0]
 
@@ -231,8 +217,6 @@
     })
 
     function render() {
-      // optional external row filter, registered per table id (e.g. the bazar
-      // tableau template's checkbox facet filters)
       const filters = window.ywDatatableRowFilters || {}
       const customFilter = table.id ? filters[table.id] : null
       let rows = allRows.filter(
@@ -279,7 +263,6 @@
       )
     }
 
-    // callers that change external filter state ask for a re-render this way
     table.addEventListener('yw-datatable-refresh', () => render())
 
     render()
@@ -293,7 +276,6 @@
       .forEach(initDataTable)
   }
 
-  // ticket 14: ywInit replaces the DOMContentLoaded + MutationObserver pair
   ywInit((root) => {
     if (
       root.matches &&

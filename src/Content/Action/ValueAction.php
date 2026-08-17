@@ -7,9 +7,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
-/**
- * valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
- */
+/** valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url. */
 class ValueAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{value}}` in page content -- stated, not inferred from the filename. */
@@ -52,7 +50,6 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         $image = $this->arguments['image'];
         $text = $this->arguments['text'];
 
-        // on garde en variable globale pour le cas ou l'action est appelée plusieurs fois
         if (!isset($GLOBALS['externalpage'][$url])) {
             $GLOBALS['externalpage'][$url] = @file_get_contents($url . '/html');
         }
@@ -62,16 +59,13 @@ class ValueAction extends YesWikiAction implements RegisteredAction
             return $this->renderError(_t('BAZAR_URL_ERROR') . ' : ' . htmlspecialchars($url) . '.');
         }
 
-        // le titre est un cas particulier
         if ($field == 'bf_titre') {
             $regexp = '/<h1 class="BAZ_fiche_titre">(.*)<\/h1>/Uis';
         } elseif ($field == 'tag') {
-            // l'id est un cas particulier
             $urlparsed = parse_url($url);
 
             return htmlspecialchars(preg_replace('/(.*?)wiki=(.*?)/Ui', '$2', $urlparsed['query'] ?? ''));
         } elseif (!empty($image) && in_array($image, ['lien', '1'], true)) {
-            // cas des images
             $regexp = '/<a data-id="' . $field . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
         } else {
             $regexp = '/<div.*data-id="' . $field . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
@@ -83,7 +77,6 @@ class ValueAction extends YesWikiAction implements RegisteredAction
             return $this->arguments['default'];
         }
 
-        // the remote page is not trusted: purify/escape whatever it returned before rendering it
         $htmlPurifierService = $this->getService(HtmlPurifierService::class);
 
         if (!empty($text) && $text != 'lien') {
@@ -112,8 +105,7 @@ class ValueAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * SSRF guard: only allow fetching http(s) URLs that resolve to public,
-     * non-loopback/private/link-local/reserved addresses (mirrors HttpSignatureService::validateKeyIdUrl).
+     * SSRF guard: only allow fetching http(s) URLs that resolve to public, non-loopback/private/link-local/reserved addresses (mirrors HttpSignatureService::validateKeyIdUrl).
      */
     private function isUrlSafeToFetch(string $url): bool
     {
@@ -125,10 +117,8 @@ class ValueAction extends YesWikiAction implements RegisteredAction
             return false;
         }
 
-        // Strip IPv6 brackets (e.g. [::1] → ::1)
         $host = trim($parts['host'], '[]');
 
-        // Collect all IPs the host resolves to so every address family is checked.
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             $ips = [$host];
         } else {
@@ -148,11 +138,10 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         }
 
         foreach ($ips as $ip) {
-            // Rejects 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
             if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
                 return false;
             }
-            // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
+
             if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
                 return false;
             }

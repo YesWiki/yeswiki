@@ -14,7 +14,9 @@ use YesWiki\Content\Service\ListManager;
 class RssImporter extends Importer
 {
     protected string $source;
-    /** @var list<array<string, mixed>> the form this importer installs when it has none */
+    /**
+     * @var list<array<string, mixed>> the form this importer installs when it has none
+     */
     protected array $databaseForms;
 
     public function __construct(
@@ -43,8 +45,7 @@ class RssImporter extends Importer
                 'description' => 'Imports de flux RSS',
                 'condition' => '',
                 ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
-                // the legacy `***` template syntax is still read (ADR-0009): FormManager
-                // re-encodes it to the stored JSON field objects on the way in
+
                 'template' => <<<EOT
 texte***bf_titre***Titre***255***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
 image***bf_image***Image***400***400***1000***1000***right***0*** *** *** * *** * *** *** *** ***
@@ -82,7 +83,6 @@ EOT,
         ];
     }
 
-    // bf_url is excluded on purpose: syncData() relies on it verbatim as the entry's dedup/identity key
     public static function getOwnFields(): array
     {
         return [
@@ -99,15 +99,11 @@ EOT,
      */
     public function getData(): array
     {
-        // ...through FeedLoader, and everything read off the feed inside its callback: the
-        // deprecation notices SimplePie raises on PHP 8.5 come from resolving an item's
-        // link, not from fetching the feed
         $data = $this->getService(FeedLoader::class)->read(
             (string)$this->config['url'],
             function (\SimplePie\SimplePie $feed): array {
                 $data = [];
                 if ($feed->error()) {
-                    // error() answers a string for one feed and a list when several were merged
                     $errors = $feed->error();
                     echo 'Erreur lors de la récupération du flux RSS "' . $this->config['url'] . '" : '
                         . (is_array($errors) ? implode(', ', $errors) : $errors) . "\n";
@@ -125,7 +121,6 @@ EOT,
                     );
                     $img = $matches[1][0] ?? '';
                     if (empty($img)) {
-                        // fallback to media:content/media:thumbnail/enclosure (e.g. Le Monde RSS feeds)
                         if ($enclosure = $item->get_enclosure()) {
                             $img = $enclosure->get_thumbnail() ?: $enclosure->get_link();
                         }
@@ -168,7 +163,7 @@ EOT,
     public function mapData(mixed $data): array
     {
         $preparedData = [];
-        $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+        $converter = new HtmlConverter(['strip_tags' => true]);
         foreach ($data as $i => $item) {
             $entry = [];
             $entry['bf_titre'] = $item['title'];
@@ -205,14 +200,12 @@ EOT,
 
     public function syncFormModel(): void
     {
-        // test if the form exists, if not, install it
         $form = $this->formManager->getOne($this->config['formId']);
         if (empty($form)) {
             $this->databaseForms[0]['id'] = $this->config['formId'];
             $this->formManager->create($this->databaseForms[0]);
         } else {
             echo 'La base bazar existe deja.' . "\n";
-            // test if compatible
         }
     }
 }

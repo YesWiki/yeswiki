@@ -141,10 +141,8 @@ return [
     'HIDE_PASSWORD' => 'Masquer le mot de passe',
     'ERROR_CONTACT_ADMIN' => 'Une erreur est survenue. Veuillez contacter l\'administrateur du site et lui communiquer le message suivant : ',
 
-    // relocated from tools/tags/lang/tagsjs_fr.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Nombre de pages : {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_fr.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Copier',
     'ACTION_BUILDER_PREVIEW' => 'Aperçu (non cliquable)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentation en ligne',
@@ -153,19 +151,15 @@ return [
     'ACTION_BUILDER_GENERATED_TITLE' => 'Titre généré',
     'ACTION_BUILDER_CREATION_DATE' => 'Date de création',
     'ACTION_BUILDER_FORM_ID' => 'Formulaire',
-    // relocated from tools/attach/lang/attachjs_fr.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'Échoué',
 
-    // relocated from tools/contact/lang/contactjs_fr.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'La saisie de ce champ est obligatoire.',
     'CONTACT_EMAIL_NOT_VALID' => 'L\'email saisi n\'est pas valide.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Rechercher...',
     'DATATABLE_NO_RESULTS' => 'Aucun résultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afficher',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Vous avez des modifications non enregistrées. Quitter cette page ?',
 ];

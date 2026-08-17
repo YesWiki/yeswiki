@@ -21,11 +21,7 @@ use YesWiki\Render\Formatter\AlertExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
 
-/**
- * Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments
- * ({# ... #}) and the YesWiki action syntax ({{actionname param="one" ...}}, see
- * Wiki::Action()).
- */
+/** Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments ({# ... */
 class MarkdownFormatterService
 {
     private ContentAssetScanner $assetScanner;
@@ -46,23 +42,12 @@ class MarkdownFormatterService
 
     public function format(string $text): string
     {
-        // a fresh MarkdownConverter (cheap: just a parser/renderer pair wrapping the shared,
-        // expensive-to-build Environment) per call, since actions rendered while parsing
-        // (e.g. recentchanges/listusers, which format() page excerpts themselves) can
-        // re-enter format() - the parser holds per-conversion state that a shared instance
-        // would corrupt, breaking the outer, still-in-progress parse
         $html = (string)(new MarkdownConverter($this->getEnvironment()))->convert($text);
 
-        // content can opt into a client-side library by class name; register what it needs.
-        // Replaces formatters/wakka__.php, which did this as a Performer after-callback.
         return $this->assetScanner->scan($html);
     }
 
-    /**
-     * Renders only the {{action ...}} tags found in $text, discarding everything else.
-     * Used where a snippet of text is known to be either an action or nothing at all
-     * (e.g. RSS/XML output), rather than full page markdown.
-     */
+    /** Renders only the {{action ...}} tags found in $text, discarding everything else. */
     public function renderActionsOnly(string $text): string
     {
         $actionRunner = $this->actionRunner;
@@ -83,11 +68,6 @@ class MarkdownFormatterService
     /**
      * The headings of $text with the exact ids the rendered HTML will carry.
      *
-     * Both the toc action and the renderer go through this one environment, so the links
-     * and the anchors cannot drift apart -- which is precisely what the old two-sided
-     * arrangement (a counter in the formatter hook, a matching counter in translate2toc)
-     * could not guarantee.
-     *
      * @return list<array{level: int, id: string, title: string}>
      */
     public function headings(string $text): array
@@ -99,9 +79,7 @@ class MarkdownFormatterService
             if (!$node instanceof Heading) {
                 continue;
             }
-            // With insert => INSERT_NONE the processor applies the id to the heading and
-            // inserts no HeadingPermalink node at all, so the id has to be read off the
-            // heading's own attributes rather than from a child inline.
+
             $id = $node->data->get('attributes')['id'] ?? null;
             if (!is_string($id) || $id === '') {
                 continue;
@@ -121,14 +99,7 @@ class MarkdownFormatterService
     }
 
     /**
-     * Parsing-only environment: same heading configuration as the renderer, but WITHOUT
-     * ActionExtension.
-     *
-     * The full environment executes {{action}} tags while parsing. A page containing
-     * {{toc}} would therefore run the toc action, which calls headings(), which parses the
-     * same body again -- unbounded recursion (the first attempt at this died at ~257k stack
-     * frames). The heading ids are unaffected: HeadingPermalink derives them from the
-     * heading text alone, and actions never contribute headings to the AST.
+     * Parsing-only environment: same heading configuration as the renderer, but WITHOUT ActionExtension.
      */
     private function getStructureEnvironment(): EnvironmentInterface
     {
@@ -158,20 +129,14 @@ class MarkdownFormatterService
             $environment = new Environment([
                 'html_input' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('allow_raw_html', true) ? 'allow' : 'escape',
                 'allow_unsafe_links' => false,
-                // GithubFlavoredMarkdownExtension pulls in DisallowedRawHtmlExtension, which by
-                // default escapes <iframe> along with <script>/<style>/etc.; YesWiki pages rely
-                // on embedding iframes (maps, videos...), so the default list (see
-                // yeswiki.config.php's 'disallowed_html_tags') excludes it while keeping the
-                // rest of that denylist. Wiki admins can override it in their own config.
+
                 'heading_permalink' => [
                     'apply_id_to_heading' => true,
                     'insert' => HeadingPermalinkProcessor::INSERT_NONE,
                     'id_prefix' => 'toc',
                     'fragment_prefix' => 'toc',
                 ],
-                // one page can render another (an {{include}}, a list of full entries), and
-                // two documents' footnotes then land in the same HTML: prefixing the ids per
-                // render keeps `fn:1` from meaning two different notes on one page
+
                 'footnote' => [
                     'container_add_hr' => true,
                     'ref_class' => 'yw-footnote-ref',
@@ -185,23 +150,16 @@ class MarkdownFormatterService
                 ],
             ]);
             $environment->addExtension(new CommonMarkCoreExtension());
-            // Assigns a stable id to every heading, on the AST rather than by regexing the
-            // rendered HTML afterwards. Replaces the hand-rolled `TOC_{level}_{n}` pass in
-            // formatters/wakka__.php (ticket 06), which counted every <hN> in the final
-            // output -- so a heading emitted by another action's own HTML shifted the
-            // numbering and silently desynced the toc's links. INSERT_NONE because we want
-            // the id only, not the clickable anchor CommonMark adds by default.
+
             $environment->addExtension(new HeadingPermalinkExtension());
             $environment->addExtension(new GithubFlavoredMarkdownExtension());
-            // supports [text](url "title"){.class #id key="value"} on links (and images)
+
             $environment->addExtension(new AttributesExtension());
             $environment->addExtension(new CommentExtension());
             $environment->addExtension(new ProgressExtension());
-            // `text[^1]` with `[^1]: the note` at the foot of the page. CommonMark's own, so
-            // the backlinks, the numbering and the id collisions between two pages rendered
-            // into one document are all somebody else's solved problem.
+
             $environment->addExtension(new FootnoteExtension());
-            // HedgeDoc's `:::info` ... `:::` callouts, rendered as the wiki's own alert boxes
+
             $environment->addExtension(new AlertExtension());
             $actionRunner = $this->actionRunner;
             $linkRenderer = $this->linkRenderer;

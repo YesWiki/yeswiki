@@ -1,7 +1,3 @@
-// favorites.js — star/unstar pages as favorites via the triples API
-// (ticket 16: vanilla JS, fetch instead of $.ajax; the Bootstrap tooltip
-// destroy/re-title dance is just a title-attribute update now, CSS tooltips
-// read it live)
 const FavoritesHelper = {
   propertyName: 'https://yeswiki.net/vocabulary/favorite',
   getJson(url, params) {
@@ -49,7 +45,6 @@ const FavoritesHelper = {
       if (withMessage) {
         toastMessage(_t('FAVORITES_REMOVED'), 3000, 'alert alert-warning')
       }
-      // remove linked favorite 1.5s after
       setTimeout(() => {
         elems.forEach((elem) => {
           if (!elem.classList.contains('user-favorite')) {

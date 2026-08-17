@@ -9,14 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Provision a new farm instance folder: an index.php pointing at this YesWiki source tree,
- * plus the instance data folders. Everything else (config, database) is created by the web
- * installer on first visit - see src/bootstrap_paths.php for the data folder layout.
- *
- * `RunsOutsideAnInstance`, and the reason is the whole point of the command: the folder you
- * run it in is the shared source, which is nobody's wiki and has no config. It touches no
- * service -- only the filesystem and YESWIKI_SOURCE_DIR -- so it needs no container, and
- * accepts a null one.
+ * Provision a new farm instance folder: an index.php pointing at this YesWiki source tree, plus the instance data folders.
  */
 class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 {
@@ -52,7 +45,7 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 
             return Command::INVALID;
         }
-        // resolve relative paths against the current (master) instance dir
+
         if (!preg_match('~^(/|[A-Za-z]:[\\\\/])~', $path)) {
             $path = YESWIKI_INSTANCE_DIR . '/' . $path;
         }
@@ -73,8 +66,7 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 
             return Command::FAILURE;
         }
-        // `../mywiki` printed back as `/srv/yeswiki/../mywiki` is a path nobody can check
-        // at a glance -- and every line below quotes it
+
         $path = realpath($path) ?: $path;
 
         $sourceDir = var_export(YESWIKI_SOURCE_DIR, true);
@@ -93,8 +85,6 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
             return Command::FAILURE;
         }
 
-        // pre-create the data folders (bootstrap_paths.php would do it on first request, but
-        // doing it now surfaces permission problems immediately and makes the layout visible)
         foreach (['cache', 'custom', 'files', 'private'] as $dataFolder) {
             if (!is_dir($path . '/' . $dataFolder)) {
                 @mkdir($path . '/' . $dataFolder, 0755, true);
@@ -117,13 +107,7 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
         return Command::SUCCESS;
     }
 
-    /**
-     * A `yeswicli` of its own in the new folder.
-     *
-     * The console decides which wiki it is talking to from the working directory, so the
-     * source tree's own `yeswicli` already serves any instance you `cd` into. This spares
-     * everyone remembering that: one wiki, one script, sitting next to the wiki it runs.
-     */
+    /** A `yeswicli` of its own in the new folder. */
     private function writeConsoleWrapper(string $path): void
     {
         $console = YESWIKI_SOURCE_DIR . '/src/commands/console';

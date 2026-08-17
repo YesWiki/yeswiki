@@ -1,16 +1,4 @@
-/**
- * Narrow a list of cards from a text box.
- *
- * A table gets search from `data-yw-datatable`, which knows how to read rows and cells. A
- * list of cards has neither, so this is the same affordance for the shape that replaced
- * it: each card carries the text it can be found by, and nothing has to be re-queried.
- *
- *   <section data-yw-card-filter-scope>
- *     <input data-yw-card-filter>
- *     <article data-yw-card-filter-item="name and description, lowercased">…</article>
- *     <p data-yw-card-filter-empty hidden>nothing matches</p>
- *   </section>
- */
+/** Narrow a list of cards from a text box. */
 ywInitEach('[data-yw-card-filter]', (input) => {
   const scope = input.closest('[data-yw-card-filter-scope]') ?? document
   const cards = () => scope.querySelectorAll('[data-yw-card-filter-item]')

@@ -19,7 +19,7 @@ class HelloCommandTest extends YesWikiTestCase
     public function testExecute(?string $username, bool $uppercase, int $statusCode, string $waitedOutput)
     {
         $wiki = $this->getWiki();
-        // create Application
+
         $application = new Application();
         $application->add(new HelloCommand($wiki->services));
 

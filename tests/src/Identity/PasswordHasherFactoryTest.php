@@ -12,22 +12,14 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The factory's configuration is the load-bearing part of "md5 is out", and it is the part
- * a reader cannot see by looking at behaviour: `md5` used to sit in `migrate_from`, and
- * Symfony's MigratingPasswordHasher tries every hasher in that chain on verify(). One line
- * put back and every md5 in the installed base becomes a live credential again, silently,
- * with no other test in the suite noticing -- AuthenticationService and PasswordField would
- * both go back to accepting them and their own tests would still pass, because those tests
- * go through this factory.
- *
- * So this asserts the chain is empty by asserting what an empty chain does. It was measured
- * both ways before being written: with `migrate_from => ['md5']` restored, verify() on an
- * md5 returns true, which is exactly what fails here.
+ * The factory's configuration is the load-bearing part of "md5 is out", and it is the part a reader cannot see by looking at behaviour: `md5` used to sit in `migrate_from`, and Symfony's MigratingPasswordHasher tries every hasher in that chain on verify().
  */
 #[CoversMethod(PasswordHasherFactory::class, '__construct')]
 class PasswordHasherFactoryTest extends YesWikiTestCase
 {
-    /** @return array<string, array{string}> */
+    /**
+     * @return array<string, array{string}>
+     */
     public static function hasherProvider(): array
     {
         return [
@@ -48,9 +40,7 @@ class PasswordHasherFactoryTest extends YesWikiTestCase
     }
 
     /**
-     * The other half of keeping the hash rather than blanking it: a stored md5 must still be
-     * reported as needing a rehash, so the first legitimate pass of a plain password (the
-     * reset flow) replaces it instead of leaving it lying there forever.
+     * The other half of keeping the hash rather than blanking it: a stored md5 must still be reported as needing a rehash, so the first legitimate pass of a plain password (the reset flow) replaces it instead of leaving it lying there forever.
      */
     #[DataProvider('hasherProvider')]
     public function testAnMd5IsStillReportedAsNeedingRehash(string $hasherName): void
@@ -72,15 +62,7 @@ class PasswordHasherFactoryTest extends YesWikiTestCase
         $this->assertTrue($hasher->verify($hashed, 'correct horse battery staple'));
     }
 
-    /**
-     * There is no md5 hasher left to configure, and nothing may reintroduce one.
-     *
-     * Asserted against the filesystem rather than with class_exists(): a deleted class is
-     * still in Composer's generated classmap until the autoloader is regenerated, so
-     * class_exists() answers by trying to include a file that is not there and emits two PHP
-     * warnings on the way to returning false. It gets the right answer for the wrong reason,
-     * and makes noise doing it.
-     */
+    /** There is no md5 hasher left to configure, and nothing may reintroduce one. */
     public function testTheMd5HasherClassIsGone(): void
     {
         $this->assertFileDoesNotExist(
@@ -89,7 +71,9 @@ class PasswordHasherFactoryTest extends YesWikiTestCase
         );
     }
 
-    /** @return array<string, array{string|null, bool}> */
+    /**
+     * @return array<string, array{string|null, bool}>
+     */
     public static function hashShapeProvider(): array
     {
         return [

@@ -27,7 +27,7 @@ class ReactionManager
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
     public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
     public const DEFAULT_LABELS_T = ['REACTION_LIKE', 'REACTION_DISLIKE', 'REACTION_ANGRY', 'REACTION_SURPRISED', 'REACTION_THINKING'];
-    // TODO make a migration script to move from old labels translation to english ones (like, dislike,angry,surprised,thinking)
+
     public const DEFAULT_IDS = ['japprouve', 'je-napprouve-pas', 'fachee', 'surprise', 'dubitatifve'];
     public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
     public const DEFAULT_MAX_REACTIONS = 1;
@@ -51,7 +51,7 @@ class ReactionManager
     public function getReactions($pageTag = '', $ids = [], $user = '', $singleEntry = false)
     {
         $res = [];
-        // get reactions in db
+
         $val = $this->tripleStore->getAll($pageTag, self::TYPE_URI, '', '');
         foreach ($val as $v) {
             $v['value'] = json_decode($v['value'], true);
@@ -71,8 +71,6 @@ class ReactionManager
                 $v['value']['date'] = _t('REACTION_DATE_UNKNOWN');
             }
             if (!isset($v['value']['idReaction']) || !isset($v['value']['date'])) {
-                // old format form lms extension
-                // @todo remove this for ectoplasme
                 $idReaction = 'reactionField';
                 $resKey = "$idReaction|{$v['value']['pageTag']}";
                 if (!isset($res[$resKey])) {
@@ -89,13 +87,13 @@ class ReactionManager
                 ], $v['value']);
             } else {
                 $key = $singleEntry ? $v['value']['idReaction'] : $v['value']['idReaction'] . '|' . $v['value']['pageTag'];
-                // get title and reaction labels for choosen reaction id in choosen page page
+
                 if (!isset($res[$key]['parameters'])) {
                     $params = $this->getActionParameters($v['value']['pageTag'], $v['value']['idReaction']);
                     $res[$key]['parameters'] = $params[$v['value']['idReaction']] ?? [];
                     $res[$key]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                // count reactions
+
                 if (!isset($res[$key]['nb_reactions'])) {
                     $res[$key]['nb_reactions'] = [];
                 }
@@ -204,7 +202,7 @@ class ReactionManager
                     $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
                     foreach ($labels as $lab) {
-                        $id = \URLify::slug($lab); // generate the id from the label
+                        $id = \URLify::slug($lab);
                         $labelsWithId[$id] = $lab;
                     }
                     $paramMatches[2][$k] = $labelsWithId;
@@ -229,7 +227,7 @@ class ReactionManager
                     }
                     $paramMatches[2][$k] = $htmlImages;
 
-                    $reactionId = \URLify::slug($title); // generate the id from the title
+                    $reactionId = \URLify::slug($title);
                     foreach ($paramMatches[0] as $idM => $paramMatch) {
                         $params[$reactionId][$paramMatches[1][$idM]] = $paramMatches[2][$idM];
                     }
@@ -238,9 +236,7 @@ class ReactionManager
         }
     }
 
-    /**
-     * to ensure backward compatibility with old reactions from lms extension.
-     */
+    /** to ensure backward compatibility with old reactions from lms extension. */
     protected function appendParametersFromField(array &$params, string $tag, ?ReactionsField $field = null)
     {
         $labels = [];
@@ -254,7 +250,6 @@ class ReactionManager
                         return $intField instanceof ReactionsField;
                     });
                     if (!empty($reactionsFields)) {
-                        // first with name equal to 'reactions'
                         foreach ($reactionsFields as $intField) {
                             if ($intField->getName() === 'reactions') {
                                 $field = $intField;
@@ -262,7 +257,6 @@ class ReactionManager
                             }
                         }
                         if (empty($field)) {
-                            // or first with empty name
                             foreach ($reactionsFields as $intField) {
                                 if (empty($intField->getName()) || trim($intField->getName()) === '') {
                                     $field = $intField;
@@ -271,7 +265,6 @@ class ReactionManager
                             }
                         }
                         if (empty($field)) {
-                            // or first
                             $field = $reactionsFields[array_key_first($reactionsFields)];
                         }
                     }
@@ -343,16 +336,9 @@ class ReactionManager
             throw new \Exception('Unauthorized');
         }
 
-        // TripleStore::delete()'s $extraSQL is a SqlFragment since ticket 31, so these values
-        // bind instead of being escaped into the clause on the way there.
-        //
-        // The column name was spelled with MySQL backticks, which PostgreSQL rejects outright
-        // as a syntax error -- so deleting a reaction was broken on one of the three supported
-        // drivers, silently, because nothing in the suite reaches this path on pgsql.
         $valueCol = $this->dbService->quoteIdentifier('value');
         $suffix = SqlParameters::LIKE_CLAUSE_SUFFIX;
-        // a reaction is stored as a JSON blob in the triple's value, so these are substring
-        // probes into it -- and the ids they look for are user data, hence likeContains()
+
         $holds = fn (string $json): SqlFragment => SqlFragment::of(
             "({$valueCol} LIKE ?{$suffix})",
             [SqlParameters::likeContains($json)]

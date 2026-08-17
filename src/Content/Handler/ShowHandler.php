@@ -25,9 +25,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * `/PageName/show` -- converted from the procedural handlers/page/show.php by ticket 06.
- */
+/** `/PageName/show` -- converted from the procedural handlers/page/show.php by ticket 06. */
 class ShowHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -42,8 +40,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $this->emitBefore();
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -52,15 +48,9 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         return $this->emitAfter((string)ob_get_clean());
     }
 
-    /**
-     * Ran as a before-callback until ticket 06 merged it in.
-     */
+    /** Ran as a before-callback until ticket 06 merged it in. */
     private function emitBefore(): void
     {
-        // merged from handlers/page/__show.php (ticket 06: core does not hook itself)
-        // relocated from tools/bazar/handlers/page/__show.php (ticket 24): if the page is a bazar
-        // entry and was requested with an Accept header asking for JSON/JSON-LD, respond with the
-        // entry's data directly instead of rendering the page as HTML.
         $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag()) && $this->getService(AclService::class)->hasAccess('read')) {
@@ -85,11 +75,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        // Verification de securite
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
 
-        // Page translation (formerly tools/lang's __show before-callback): keep only the
-        // {{lang="xx"}} section matching the visitor's language, if the page uses markers
         require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $pageContext = $this->getService(PageContext::class);
         $body = ($pageContext->getPage() ?? [])['body'] ?? [];
@@ -103,19 +90,11 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         }
     }
 
-    /**
-     * Ran as an after-callback until ticket 06 merged it in. Receives the rendered output
-     * as $plugin_output_new -- the name the hooks already used -- because several rewrite
-     * it rather than appending.
-     */
+    /** Ran as an after-callback until ticket 06 merged it in. */
     private function emitAfter(string $plugin_output_new): string
     {
         ob_start();
 
-        // merged from handlers/page/show__.php (ticket 06: core does not hook itself)
-        // relocated from tools/bazar/handlers/page/show__.php (ticket 24): if the page is a bazar
-        // entry, replace the hidden aceditor "body" field with the entry's own JSON data so edits
-        // go through the entry form instead of the raw wikitext editor.
         $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
@@ -134,15 +113,11 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             );
         }
 
-        // on efface des événements javascript issus de wikini
         $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);
 
-        // on efface aussi le message sur la non-modification d'une page, car contradictoire avec le changement de theme, et inéfficace pour l'expérience utilisateur
-        // TODO check if the following line is really usefull
         $plugin_output_new = str_replace('onload="alert(\'' . _t('EDIT_NO_CHANGE_MSG') . '\');"', '', $plugin_output_new);
 
         if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == 'theme-not-found') {
-            // on affiche le message d'erreur des templates inexistants
             $plugin_output_new = str_replace(
                 '<div class="page" >',
                 '<div class="page">' . "\n" . '<div class="yw-alert yw-alert--danger"><a href="#" data-yw-dismiss="alert" class="yw-close">&times;</a><strong>' . _t('TEMPLATE_NO_THEME_FILES') . ' :</strong><br />themes/' . $GLOBALS['template-error']['theme'] . '/squelettes/' . $GLOBALS['template-error']['squelette'] . '<br />themes/' . $GLOBALS['template-error']['theme'] . '/styles/' . $GLOBALS['template-error']['style'] . '<br><strong>' . _t('TEMPLATE_DEFAULT_THEME_USED') . '</strong>.</div>',
@@ -164,9 +139,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= '</div><!-- end .container -->' . "\n";
                 $output = $this->getService(TemplateEngine::class)->renderPage($output);
             } else {
-                // sinon on affiche le formulaire d'identification minimal
                 $output = str_replace(
-                    '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>', // to sync with /handlers/page/show.php
+                    '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>',
                     '<div class="alert alert-danger alert-error">' .
                         _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
                         '</div>' . "\n" .
@@ -177,16 +151,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $this->getService(Redirector::class)->terminate($output);
         }
 
-        // merged from handlers/ShowHandler__.php (ticket 06: core does not hook itself)
-        // get services
         $aclService = $this->getService(AclService::class);
         $entryManager = $this->getService(EntryManager::class);
         $tagsManager = $this->getService(TagsManager::class);
 
-        // display tags if needed
         $tag = $this->getService(PageContext::class)->getTag();
-        // not when a form renders this Content: its keywords are one of the form's own
-        // fields then, and appending them here would print them twice
+
         $renderedThroughAForm = !empty($tag)
             && $this->getService(ContentTypeResolver::class)->formFor($tag) !== null;
         if (!$this->params->get('hide_keywords') && (bool)$this->getService(PageContext::class)->getPage() && !empty($tag) && $aclService->hasAccess('read', $tag) && !$renderedThroughAForm) {
@@ -208,9 +178,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        // V?rification de s?curit?
-
-        // Generate page before displaying the header, so that it might interract with the header
         ob_start();
 
         echo '<div class="page"';
@@ -232,7 +199,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     _t('NOT_FOUND_PAGE')
                 );
             } else {
-                // comment header?
                 if ($this->getService(PageContext::class)->getPage()['parent']) {
                     echo '<div class="commentinfo">' . str_replace(
                         ['{tag}', '{user}', '{time}'],
@@ -244,7 +210,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 if ($this->getService(PageContext::class)->getPage()['latest'] == 'N') {
                     echo '<div class="alert alert-info">' . "\n";
                     echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->getService(UrlFormatter::class)->href()}\">{$this->getService(PageContext::class)->getTag()}</a>", $this->getService(PageContext::class)->getPage()['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
-                    // if this is an old revision, display some buttons
+
                     if ($this->getService(AclService::class)->hasAccess('write')) {
                         $latest = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()); ?>
                         <?php
@@ -259,40 +225,30 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     echo '</div>' . "\n";
                 }
 
-                // display page
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
-                // Anything a form describes renders through that form's fields, in the
-                // order the form declares them -- a bazar entry, and since ticket 10 a
-                // page, an account and an uploaded file too. A page's markup is one of
-                // those fields (`content`), so it still appears; what changes is that a
-                // field a webmaster added to the Pages form now appears as well, which it
-                // did not when this rendered `body.content` and nothing else.
+
                 if ($this->getService(ContentTypeResolver::class)->formFor($this->getService(PageContext::class)->getTag()) !== null) {
                     $entryController = $this->getService(EntryController::class);
                     echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {
-                    // a form, a list: Content no form describes, shown as its markup
                     echo $this->getService(MarkdownFormatterService::class)->format(PageBody::content($this->getService(PageContext::class)->getPage()['body']));
                 }
                 $this->getService(InclusionStack::class)->unregisterLast();
             }
         } else {
-            echo '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>'; // to sync with /handlers/page/show__.php
+            echo '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>';
         }
         ?>
         <hr class="hr_clear" />
         </div>
 
-
         <?php
-        // whatever other modules add to the bottom of a page -- the comment box is one, and
-        // it used to be called by name from here (ADR-0019)
+
         $pageTag = $this->getService(PageContext::class)->getTag();
         foreach ($this->getService(PageViewAppendices::class)->all() as $appendix) {
             echo $appendix->appendToPageView($pageTag);
         }
 
-        // get the content buffer and display the page
         $content = ob_get_clean();
         echo $this->getService(TemplateEngine::class)->renderPage((string)$content);
     }

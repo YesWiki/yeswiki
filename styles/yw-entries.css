@@ -1,30 +1,6 @@
-/* ============================================================
-   yw-entries — entry lists, cards, filters and entry forms
-
-   Whatever draws entries: the shared Presentations (card, list, table, timeline), the
-   older list templates that survive (agenda, news, calendar, trombinoscope), the filter
-   rail, and the field widgets an entry form is built from. A page with no {{entrylist}} and
-   no entry form on it asks for none of this.
-
-   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
-   file: merging everything would have made ADR-0014's conditional declaration decorative and
-   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
-   it came from; add to the section a rule belongs to rather than to the end.
-
-   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
-   (declared by a section that carries an animation) and `styles/install.css` (the installer
-   renders before any of this exists).
-   ============================================================ */
-
-/* ============================================================
-   from styles/bazar/card.css
-   ============================================================ */
-
 .bazar-cards-container {
   display: grid;
   gap: var(--yw-space-lg-y) var(--yw-space-lg-x);
-
-  /* grid-template-columns is set in Vue template */
 }
 
 @media (width <= 800px) {
@@ -175,7 +151,6 @@ a.bazar-card {
   display: none;
 }
 
-/* STYLE VERTICAL */
 .style-vertical .bazar-card {
   padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
   border-radius: var(--yw-radius-md);
@@ -219,7 +194,6 @@ a.bazar-card {
   flex-grow: 1;
 }
 
-/* STYLE HORIZONTAL */
 @media (width >= 900px) {
   .style-horizontal.bazar-cards-container {
     row-gap: var(--yw-space-lg-y);
@@ -234,7 +208,6 @@ a.bazar-card {
     height: 100%;
     width: 13.5rem;
 
-    /* margin-right: 1.5rem; */
     margin-bottom: 0;
     object-fit: cover;
   }
@@ -269,7 +242,6 @@ a.bazar-card {
   }
 }
 
-/* STYLE SQUARE */
 .style-square .bazar-card .visual-area {
   margin-bottom: 0;
   width: 100%;
@@ -312,23 +284,12 @@ a.bazar-card {
   top: -0.5rem;
 }
 
-/* tronquer texte sous-titre */
 .line-clamp .field-default {
   display: -webkit-box;
   -webkit-line-clamp: inherit;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-/* ============================================================
-   from styles/presentations.css
-   ============================================================ */
-
-/* The shared presentations (ticket 37): one list of Items, drawn four ways.
-
-   Deliberately independent of styles/bazar/*: those style a bazar entry list, and these
-   render Items -- which may have come from a feed or a page index and have no entry behind
-   them at all. Sharing the stylesheet would have meant sharing that assumption. */
 
 .yw-items__empty {
   margin: var(--yw-space-md-y) 0;
@@ -354,8 +315,6 @@ a.bazar-card {
   margin-top: var(--yw-space-sm-y);
 }
 
-/* the description arrives as HTML, so it can bring blocks of its own -- they must not open
-   the item with a gap or close it with one */
 .yw-item__description > :first-child {
   margin-top: 0;
 }
@@ -374,8 +333,6 @@ a.bazar-card {
   vertical-align: 0.1em;
 }
 
-/* ---------------------------------------------------------------- card */
-
 .yw-items--card {
   display: grid;
   grid-template-columns: repeat(var(--yw-item-columns, 3), minmax(0, 1fr));
@@ -386,10 +343,7 @@ a.bazar-card {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* A card is a thing lying ON the page, which is the whole reason it has a border and a
-     radius -- and a shadow is what says so. Its absence was why the preset screen's "shadow
-     strength" slider appeared to do nothing: the control worked, and not one element in the
-     gallery it repaints had a shadow to show for it. */
+
   box-shadow: 0 1px 3px var(--yw-shadow-color);
   border: var(--yw-border-width) solid var(--yw-border);
   border-radius: var(--yw-radius-md);
@@ -399,12 +353,10 @@ a.bazar-card {
 .yw-item--card .yw-item__image {
   width: 100%;
   aspect-ratio: 3 / 2;
-  /* `cover` crops to fill, `contain` shows the whole picture -- the card component's
-     `imagefit` setting, which writes the variable on the grid */
+
   object-fit: var(--yw-item-image-fit, cover);
 }
 
-/* ...and a button, when the list asked its items to carry one */
 .yw-item__cta {
   align-self: flex-start;
   margin-top: var(--yw-space-md-y);
@@ -414,14 +366,11 @@ a.bazar-card {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
-/* below this a three-column grid gives each card a few words a line */
 @media (max-width: 700px) {
   .yw-items--card {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
-/* ---------------------------------------------------------------- list */
 
 .yw-items--list {
   display: flex;
@@ -453,8 +402,6 @@ a.bazar-card {
   min-width: 0;
 }
 
-/* ---------------------------------------------------------------- table */
-
 .yw-items--table {
   overflow-x: auto;
 }
@@ -472,8 +419,6 @@ a.bazar-card {
   vertical-align: top;
 }
 
-/* ------------------------------------------------------------- timeline */
-
 .yw-items--timeline {
   position: relative;
   display: flex;
@@ -482,7 +427,6 @@ a.bazar-card {
   padding-left: var(--yw-space-lg-x);
 }
 
-/* the rule everything hangs off, drawn once behind the items rather than per item */
 .yw-items--timeline::before {
   content: '';
   position: absolute;
@@ -513,10 +457,6 @@ a.bazar-card {
   color: var(--yw-text);
 }
 
-/* ============================================================
-   from styles/bazar/entries/index-dynamic.css
-   ============================================================ */
-
 .entry-list-dynamic-container.mounted {
   opacity: 1 !important;
 }
@@ -524,10 +464,6 @@ a.bazar-card {
 .entry-list-dynamic-container .panel-group.ready {
   opacity: 1 !important;
 }
-
-/* ------------- */
-/*   PAGINATION  */
-/* ------------- */
 
 .entry-list-dynamic-container .results-col {
   display: flex;
@@ -565,9 +501,6 @@ a.bazar-card {
   opacity: 0.6;
 }
 
-/* ------------- */
-/*     ENTRY     */
-/* ------------- */
 .entry-container.modal-body {
   padding-top: var(--yw-space-md-y);
 }
@@ -595,11 +528,6 @@ a.bazar-card {
   font-size: 1.2em;
 }
 
-/* ------------- */
-/*  ENTRY FIELD  */
-/* ------------- */
-
-/* Helpers div to used only when needed */
 .field-date .day,
 .field-date .month {
   display: none;
@@ -611,14 +539,6 @@ a.bazar-card {
   margin-right: var(--yw-space-md-x);
 }
 
-/* ------------- */
-/* LIST TEMPLATE */
-/* ------------- */
-/* A list of entries is a block on a page, and the thing after it is not part of it. It had
-   no margin of its own at all, so a `{{entrylist}}` followed by a paragraph ran straight into
-   it -- the gap you saw was whatever the next element happened to bring.
-
-   `lg` is the "between components" step: this is one component ending, not a gap inside one. */
 .entry-list {
   margin-bottom: var(--yw-space-lg-y);
 }
@@ -693,10 +613,6 @@ a.bazar-card {
   margin-top: var(--yw-space-md-y);
 }
 
-/* ============================================================
-   from styles/bazar/list-form.css
-   ============================================================ */
-
 .list-form .nodes-container {
   margin-top: var(--yw-space-md-y);
 }
@@ -731,12 +647,6 @@ a.bazar-card {
   width: 2.5rem;
   justify-content: center;
 }
-
-/* ============================================================
-   from styles/bazar/news.css
-   ============================================================ */
-
-/* News template is a copy of agenda template, that's why we use agenda-entry selector */
 
 .agenda-entry fig-caption {
   max-height: 50%;
@@ -776,10 +686,6 @@ a.bazar-card {
   margin-bottom: var(--yw-space-md-y);
   font-weight: bold;
 }
-
-/* ============================================================
-   from styles/bazar/agenda.css
-   ============================================================ */
 
 .agenda-container {
   display: flex;
@@ -830,7 +736,6 @@ a.bazar-card {
   z-index: -1;
 }
 
-/* on the entry's own colour, which is the entry's to choose and not a token */
 .agenda-entry fig-caption h5 {
   color: var(--yw-ink-on-dark);
 }
@@ -895,10 +800,6 @@ a.bazar-card {
 .agenda-entry.hover img {
   transform: scale(1.1);
 }
-
-/* ============================================================
-   from styles/bazar/calendar.css
-   ============================================================ */
 
 a.ical-export-button {
   margin-top: var(--yw-space-sm-y);
@@ -1185,7 +1086,6 @@ a.ical-export-button {
   .col-md-9 .fc .fc-today-button.fc-button::before,
   .col-md-10 .fc .fc-today-button::before,
   .col-md-10 .fc .fc-today-button.fc-button::before {
-    /* far fa-calendar-alt */
     content: '\f073';
     font-family: 'Font Awesome 5 Free';
     font-weight: 400;
@@ -1209,7 +1109,6 @@ a.ical-export-button {
   }
 }
 
-/* ENTRY PANEL */
 .entry-list-dynamic-template-container .entry-container {
   position: relative;
   transition: all 0.3s;
@@ -1249,10 +1148,7 @@ a.ical-export-button {
   z-index: 1000;
 }
 
-/* === ENTRY PANEL === */
-
 :root {
-  /* use theming vars if existing */
   --fc-button-text-color: var(--yw-primary);
   --fc-button-bg-color: var(--yw-surface);
   --fc-button-border-color: var(--yw-surface);
@@ -1264,16 +1160,7 @@ a.ical-export-button {
   --fc-event-border-color: var(--yw-tertiary);
 }
 
-/* ============================================================
-   from styles/bazar/timeline.css
-   ============================================================ */
-
-/* The actual timeline (the vertical ruler) */
 .timeline {
-  /* How far the year badge is padded sideways, and therefore how far it has to be pulled
-     back to sit on the ruler: the three numbers below are one number, so they are declared
-     once here rather than guessed apart in three rules. Not a Design token -- nothing
-     outside this component means anything by it. */
   --yw-timeline-year-pad: 5em;
 
   position: relative;
@@ -1281,7 +1168,6 @@ a.ical-export-button {
   margin: 0;
 }
 
-/* The actual timeline (the vertical ruler) */
 .timeline::after {
   content: '';
   position: absolute;
@@ -1293,7 +1179,6 @@ a.ical-export-button {
   margin-left: calc(-1 * var(--yw-space-sm-x));
 }
 
-/* Container around content */
 .timeline-element {
   padding: var(--yw-space-md-y) var(--yw-space-lg-x);
   position: relative;
@@ -1309,7 +1194,6 @@ a.ical-export-button {
   left: 50%;
 }
 
-/* The circles on the timeline */
 .timeline-element .timeline-container::after {
   content: '';
   position: absolute;
@@ -1322,7 +1206,6 @@ a.ical-export-button {
   z-index: 1;
 }
 
-/* Add arrows to the left container (pointing right) */
 .timeline-element:nth-child(odd) .timeline-container::before {
   content: ' ';
   height: 0;
@@ -1336,7 +1219,6 @@ a.ical-export-button {
   border-color: transparent transparent transparent var(--yw-primary);
 }
 
-/* Add arrows to the right container (pointing left) */
 .timeline-element:nth-child(even) .timeline-container::before {
   content: ' ';
   height: 0;
@@ -1350,7 +1232,6 @@ a.ical-export-button {
   border-color: transparent var(--yw-primary) transparent transparent;
 }
 
-/* Fix the circle for containers on the right side */
 .timeline-element:nth-child(even) .timeline-container::after {
   left: -63px;
 }
@@ -1376,7 +1257,6 @@ a.ical-export-button {
   border-radius: var(--yw-radius-sm);
 }
 
-/* The actual content */
 .timeline-content {
   background-color: var(--yw-surface-raised);
   position: relative;
@@ -1388,21 +1268,17 @@ a.ical-export-button {
   position: relative;
 }
 
-/* Media queries - Responsive timeline on screens less than 600px wide */
 @media screen and (max-width: 768px) {
-  /* Place the timelime to the left */
   .timeline::after {
     left: 31px;
   }
 
-  /* Full-width containers */
   .timeline-element {
     width: 100%;
     padding-left: var(--yw-space-lg-x);
     padding-right: var(--yw-space-lg-x);
   }
 
-  /* Make sure that all arrows are pointing leftwards */
   .timeline-element:nth-child(odd) .timeline-container::before,
   .timeline-element:nth-child(even) .timeline-container::before {
     left: -10px;
@@ -1411,13 +1287,11 @@ a.ical-export-button {
     border-color: transparent var(--yw-primary) transparent transparent;
   }
 
-  /* Make sure all circles are at the same spot */
   .timeline-element:nth-child(odd) .timeline-container::after,
   .timeline-element:nth-child(even) .timeline-container::after {
     left: -53px;
   }
 
-  /* Make all right containers behave like the left ones */
   .timeline-element:nth-child(even) {
     left: 0%;
   }
@@ -1432,10 +1306,6 @@ a.ical-export-button {
     margin: var(--yw-space-lg-y) auto;
   }
 }
-
-/* ============================================================
-   from styles/bazar/trombinoscope.css
-   ============================================================ */
 
 .trombi-container {
   display: flex;
@@ -1677,10 +1547,6 @@ a.ical-export-button {
   }
 }
 
-/* ============================================================
-   from styles/bazar/tableau.css
-   ============================================================ */
-
 td.horizontal-admins-btn {
   display: flex;
   flex-direction: row;
@@ -1699,10 +1565,6 @@ div.tableau-thumbnail > img {
   object-fit: contain;
   object-position: 50% 50%;
 }
-
-/* ============================================================
-   from styles/actions/syndication.css
-   ============================================================ */
 
 .liste_rss {
   padding-left: var(--yw-space-md-x);
@@ -1754,10 +1616,6 @@ div.tableau-thumbnail > img {
   display: inline-block;
   padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
-
-/* ============================================================
-   from styles/actions/my-favorites.css
-   ============================================================ */
 
 .my-favorites .favorite-container {
   position: relative;
@@ -1948,7 +1806,6 @@ div.tableau-thumbnail > img {
   }
 }
 
-/* STYLE VERTICAL */
 .my-favorites .bazar-entry {
   padding: 0;
   width: 140px;
@@ -2004,10 +1861,6 @@ div.tableau-thumbnail > img {
   }
 }
 
-/* ============================================================
-   from styles/bazar/inputs/checkbox-tree.css
-   ============================================================ */
-
 .node-children {
   margin-left: var(--yw-space-lg-x);
   display: none;
@@ -2051,10 +1904,6 @@ div.tableau-thumbnail > img {
   font-style: normal;
   text-transform: uppercase;
 }
-
-/* ============================================================
-   from styles/bazar/inputs/checkbox-drag-and-drop.css
-   ============================================================ */
 
 .yeswiki-checkbox .yw-btn--success.checkbox-select-all {
   color: var(--yw-success);
@@ -2113,10 +1962,6 @@ div.tableau-thumbnail > img {
 .list-item-text {
   flex-grow: 3;
 }
-
-/* ============================================================
-   from styles/bazar/inputs/date.css
-   ============================================================ */
 
 .bazar-date,
 .bazar-date.yw-input {
@@ -2185,9 +2030,6 @@ input[type='date']::input-placeholder {
   margin-right: calc(-1 * var(--yw-space-sm-x));
 }
 
-/* -------------------------------------------------------------------------- */
-/*                               DATE RECURRENT                               */
-/* -------------------------------------------------------------------------- */
 div.yw-input.for-selector-is-recurrent {
   height: auto;
   max-width: 100%;
@@ -2255,10 +2097,6 @@ div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   max-width: 250px;
 }
 
-/* ============================================================
-   from styles/bazar/inputs/range.css
-   ============================================================ */
-
 .range-wrap {
   position: relative;
   width: 100%;
@@ -2298,7 +2136,6 @@ div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   padding-top: 0;
 }
 
-/* Input Thumb */
 .range-wrap input[type='range']::-webkit-slider-thumb {
   appearance: none;
   height: 38px;
@@ -2344,7 +2181,6 @@ div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   background: var(--yw-secondary);
 }
 
-/* Input Track */
 .range-wrap input[type='range']::-webkit-slider-runnable-track {
   appearance: none;
   border: none;
@@ -2363,7 +2199,6 @@ div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   background: transparent;
 }
 
-/* Display tabs when printing */
 @media print {
   div[role='tabpanel'] {
     display: block !important;
@@ -2374,17 +2209,9 @@ div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   }
 }
 
-/* ============================================================
-   from styles/bazar/inputs/file.css
-   ============================================================ */
-
 .yw-form-group.file .controls input.yw-input[type='file'] {
   padding-left: var(--yw-space-md-x);
 }
-
-/* ============================================================
-   from styles/bazar/opening_hours.css
-   ============================================================ */
 
 .opening-hours-interval {
   display: flex;
@@ -2454,10 +2281,6 @@ input {
   min-width: 6.5em;
 }
 
-/* ============================================================
-   from styles/bazar/entries/index.css
-   ============================================================ */
-
 .BAZ_menu .yw-nav,
 .bazar-search {
   margin-bottom: var(--yw-space-md-y);
@@ -2488,7 +2311,6 @@ input {
   margin-top: var(--yw-space-sm-y);
 }
 
-/* accordion pane */
 .accordion {
   background: transparent;
   width: 100%;
@@ -2502,7 +2324,6 @@ input {
   border-top: none;
 }
 
-/* accordion header */
 .titre_accordeon {
   margin: 0 0 var(--yw-space-sm-y);
   padding: var(--yw-space-sm-y) var(--yw-space-md-x);
@@ -2534,7 +2355,6 @@ input {
   padding: 0;
 }
 
-/* currently active header */
 .titre_accordeon.current {
   cursor: default;
   background-color: var(--yw-warning);
@@ -2575,7 +2395,6 @@ input.yw-input.error {
   font-size: 1.4em;
 }
 
-/*.valeur_formulaire .handle {left:20px;position:absolute;}*/
 .valeur_formulaire .formulaire_ligne {
   background: var(--yw-surface-sunken);
   border: var(--yw-border-width) solid var(--yw-border);
@@ -2624,14 +2443,6 @@ input.yw-input.error {
   margin: var(--yw-space-sm-y) 0 0 calc(-1 * var(--yw-space-md-x));
 }
 
-/* ============================================================
-   from styles/bazar/entries/index-filters.css
-   ============================================================ */
-
-/* The two columns, without the twelve-column grid core stopped shipping with Bootstrap: how
-   wide the facets are is `--yw-filters-width` (set from `filtercolsize`), and the list takes
-   what is left. `min-width: 0` on both, or a wide table refuses to shrink and pushes the
-   facets off the row. */
 .facette-container {
   display: flex;
   flex-direction: row;
@@ -2656,17 +2467,9 @@ input.yw-input.error {
   flex-direction: row-reverse;
 }
 
-/* -------------------------------------------- */
-/*            Horizontal (above) facets         */
-/* -------------------------------------------- */
-
-/* The boxes in a row above the list rather than in a column beside it: the layout a narrow
-   page and a full-width list both need. Only the container changes direction -- the boxes
-   themselves are the same panels, laid out as a wrapping row. */
 .facette-container[data-filter-align='top'] {
   flex-direction: column;
-  /* the row's `align-items: start` shrink-wraps a column's children: stacked, both of these
-     want the full width, and the list would come out as narrow as its widest card */
+
   align-items: stretch;
 }
 .facette-container[data-filter-align='top'] > .filters-col {
@@ -2677,19 +2480,16 @@ input.yw-input.error {
   display: flex;
   flex-wrap: wrap;
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
-  /* from the top: the pickers are different heights (a chip wraps, a label is two words)
-     and bottom-aligned they step up and down across the row */
+
   align-items: start;
 }
 .facette-container[data-filter-align='top'] .results-container > .filter-box {
-  /* sized by what it holds, not by the row: one box stretched across the page reads as a
-     banner rather than as a filter */
   flex: 0 1 auto;
   min-width: 12rem;
   max-width: 100%;
   margin-bottom: 0;
 }
-/* ...and where the box is a tag input, the row is made of those */
+
 .facette-container[data-filter-align='top'] .results-container {
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
@@ -2709,9 +2509,6 @@ input.yw-input.error {
   margin: 0;
 }
 
-/* How many entries the selection left belongs under it: read top to bottom, the row is what
-   you did and the count is what it did. Beside the list the count comes first instead --
-   there it heads the column rather than answering it. */
 .facette-container[data-filter-align='top'] .filters {
   display: flex;
   flex-direction: column;
@@ -2724,7 +2521,6 @@ input.yw-input.error {
   margin-top: var(--yw-space-md-y);
 }
 
-/* the values in a row too, since the height of this block is what the reader pays for it */
 .facette-container[data-filter-align='top'] .filter-box .panel-collapse.in {
   display: flex;
   flex-wrap: wrap;
@@ -2743,14 +2539,11 @@ input.yw-input.error {
   margin-left: auto;
 }
 
-/* -------------------------------------------- */
-/*               Filter Box Panels              */
-/* -------------------------------------------- */
 .facette-container .filter-box .panel-heading {
   cursor: pointer;
 }
 .filter-box .panel-body {
-  overflow-x: hidden; /* in case some labels are too long */
+  overflow-x: hidden;
 }
 @media (width <= 768px) {
   .facette-container,
@@ -2762,11 +2555,8 @@ input.yw-input.error {
     max-height: 11em;
     overflow-y: scroll;
 
-    /* for firefox custom scrollbar */
     scrollbar-color: var(--yw-surface-sunken) var(--yw-surface-raised);
     scrollbar-width: auto;
-
-    /* the scrollbar width is too thin, we may fix it by using a scrollbar JS library */
   }
 
   .filter-box .panel-body::-webkit-scrollbar {
@@ -2787,9 +2577,6 @@ input.yw-input.error {
   }
 }
 
-/* -------------------------------------------- */
-/*                    Search                    */
-/* -------------------------------------------- */
 @media (width <= 768px) {
   .facette-container:not([data-filter-align='left'])
     > .filters-col
@@ -2798,9 +2585,6 @@ input.yw-input.error {
   }
 }
 
-/* -------------------------------------------- */
-/*                     Sort                     */
-/* -------------------------------------------- */
 .sort-by {
   margin-bottom: var(--yw-space-md-y);
 }
@@ -2815,9 +2599,6 @@ input.yw-input.error {
   font-size: 0.9em;
 }
 
-/* -------------------------------------------- */
-/*    Filter Nodes (for Bazar List Dynamic)     */
-/* -------------------------------------------- */
 .filter-box .filter-nodes {
   padding: var(--yw-space-md-y) 0;
 }
@@ -2828,7 +2609,7 @@ input.yw-input.error {
 .filter-box .filter-node-container .children {
   padding-left: var(--yw-space-lg-x);
 }
-/* Node */
+
 .filter-box .filter-node {
   display: flex;
   margin: var(--yw-space-sm-y) var(--yw-space-md-x);
@@ -2850,7 +2631,7 @@ input.yw-input.error {
   align-items: center;
   width: 100%;
 }
-/* Label */
+
 .filter-box .filter-node .filter-node-label {
   display: inline;
   font-weight: normal;
@@ -2868,7 +2649,7 @@ input.yw-input.error {
 .filter-box .filter-node-label-wrapper:hover .filter-node-label {
   color: var(--yw-primary);
 }
-/* Chevron icon */
+
 .filter-box .filter-node .chevron-icon {
   font-size: 0.8em;
   margin-left: var(--yw-space-md-x);
@@ -2877,7 +2658,7 @@ input.yw-input.error {
 .filter-box .filter-node.expanded .chevron-icon {
   transform: rotate(180deg);
 }
-/* Count */
+
 .filter-box .filter-node .count {
   padding: 0 var(--yw-space-md-x) 0 var(--yw-space-md-x);
   background-color: var(--yw-surface-raised);
@@ -2897,10 +2678,6 @@ input.yw-input.error {
 label input.filter-checkbox:focus ~ span {
   outline: 5px auto;
 }
-
-/* ============================================================
-   from styles/bazar/entries/form.css
-   ============================================================ */
 
 #map img {
   max-width: none !important;
@@ -2961,7 +2738,6 @@ label input.filter-checkbox:focus ~ span {
   flex-shrink: 0;
 }
 
-/* submit button disabled */
 #formulaire .form-actions button[type='submit'].submit-disabled {
   cursor: progress;
 }
@@ -2973,7 +2749,6 @@ label input.filter-checkbox:focus ~ span {
   border-bottom-right-radius: 0;
 }
 
-/* File/URL input tabs */
 .file-url-tabs {
   width: 100%;
 }
@@ -3014,15 +2789,10 @@ label input.filter-checkbox:focus ~ span {
   max-width: 100%;
 }
 
-/* ============================================================
-   from styles/bazar/entries/view.css
-   ============================================================ */
-
 .BAZ_cadre_fiche .BAZ_rubrique {
   margin: 0 0 var(--yw-space-md-y);
 }
 
-/* ENTRY FOOTER */
 .BAZ_fiche_info {
   font-size: 0.9rem;
   display: flex;

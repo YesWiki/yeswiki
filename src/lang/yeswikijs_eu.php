@@ -119,10 +119,8 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'FORM_ID_NOT_AVAILABLE' => '{id} identifikatzailea duen formularioa ez dago erabilgarri adierazitako URLan; identifikatzailea aldatu behar da.',
     'FORM_ID_IS_COMPATIBLE' => 'Identifikatzaile bereko ({id}) formulario bat dago adierazitako URLan, eta badirudi gutxienez antzeko nahitaezko eremuak dituela. Bikoizketa egiteko erabiliko da.',
 
-    // relocated from tools/tags/lang/tagsjs_eu.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Orrialde-kopurua: {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_eu.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Kopiatu',
     'ACTION_BUILDER_PREVIEW' => 'Aurrebista (ezin da klikatu)',
     'ACTION_BUILDER_ONLINEDOC' => 'On line dokumentazioa',
@@ -130,19 +128,15 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Aldaketa-data',
     'ACTION_BUILDER_CREATION_DATE' => 'Sorrera-data',
     'ACTION_BUILDER_FORM_ID' => 'Inprimakia',
-    // relocated from tools/attach/lang/attachjs_eu.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'Huts egin du',
 
-    // relocated from tools/contact/lang/contactjs_eu.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Eremu hau nahitaez idatzi behar da.',
     'CONTACT_EMAIL_NOT_VALID' => 'Sartutako helbide elektronikoa ez da baliozkoa.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Bilatu...',
     'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Erakutsi',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Gorde gabeko aldaketak dituzu. Orri hau utzi nahi duzu?',
 ];

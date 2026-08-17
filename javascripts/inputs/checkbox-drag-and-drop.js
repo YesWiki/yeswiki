@@ -1,6 +1,3 @@
-// javascripts/vendor/sortablejs/sortable.js needed
-// ticket 14: per-element initialisers rather than one DOMContentLoaded sweep, so a checkbox
-// field rendered into a fragment is wired up, and a second pass cannot double-bind.
 function selectPageItem(element) {
   Array.from(element.parentNode.children).forEach((sibling) => {
     if (sibling === element) return
@@ -137,7 +134,7 @@ ywInitEach('.checkbox-select-all', (button) => {
       .closest('.export-table-container')
       .querySelectorAll('.list-entries-to-export .list-group-item')
     items.forEach((item) => {
-      if (item.offsetParent === null) return // matches jQuery's :hidden exclusion
+      if (item.offsetParent === null) return
       const selectItem = item.querySelector('.select-page-item')
       if (selectItem) selectItem.click()
     })
@@ -152,7 +149,7 @@ ywInitEach('.checkbox-remove-all', (button) => {
       .closest('.import-table-container')
       .querySelectorAll('ul.checkbox-selection-container .list-group-item')
     items.forEach((item) => {
-      if (item.offsetParent === null) return // matches jQuery's :hidden exclusion
+      if (item.offsetParent === null) return
       const removeItem = item.querySelector('.remove-page-item')
       if (removeItem) removeItem.click()
     })

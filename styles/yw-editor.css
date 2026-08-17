@@ -1,27 +1,3 @@
-/* ============================================================
-   yw-editor — the editors and the rails they open
-
-   ACeditor, Vditor, the actions builder and the file picker. Two editors rather than one
-   because a form can carry both, and the rails belong here rather than with the admin
-   screens: they open from an editor, on an ordinary page.
-
-   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
-   file: merging everything would have made ADR-0014's conditional declaration decorative and
-   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
-   it came from; add to the section a rule belongs to rather than to the end.
-
-   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
-   (declared by a section that carries an animation) and `styles/install.css` (the installer
-   renders before any of this exists).
-   ============================================================ */
-
-/* ============================================================
-   from styles/actions/aceditor.css
-   ============================================================ */
-
-/* The editor is one bordered box, like any other .yw-input: the toolbar is its header
-   and the ace surface its field. Nothing is drawn over the field's <label>, which stays
-   where every other label is -- above the control it names. */
 .aceditor-container {
   position: relative;
   background: var(--yw-surface-raised);
@@ -42,7 +18,6 @@
 }
 
 .ace-container {
-  /* no left padding: the ace scroller/gutter provides its own, see below */
   padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y) 0;
 }
 
@@ -66,15 +41,11 @@ textarea.aceditor-textarea {
 }
 
 .ace-body .ace_marker-layer .ace_active-line {
-  /* background: rgba(0, 0, 0, 0.03); */
   background: transparent;
   margin: 0 var(--yw-space-sm-x);
   border-radius: var(--yw-radius-sm);
 }
 
-/* What a rail is open on -- the component, or the link. Ace sizes and places marker-layer
-   children itself, so the rule only supplies the paint -- and the `position` they need
-   to accept the inline offsets. */
 .ace-body .ace_marker-layer .yw-active-group {
   position: absolute;
   z-index: 1;
@@ -137,7 +108,6 @@ textarea.aceditor-textarea {
   background-color: var(--yw-surface-sunken);
 }
 
-/* Page Edit */
 #ACEditor {
   position: relative;
   height: auto;
@@ -152,8 +122,7 @@ textarea.aceditor-textarea {
 .scroll-container-toolbar {
   transition: all ease-in 0.2s;
   position: sticky;
-  /* the offset (and its nav-up value) is declared once in yw-core.css: the Vditor
-     toolbar sticks to the same line, and a form can show both editors at once */
+
   top: var(--yw-sticky-toolbar-top);
   z-index: 6;
 }
@@ -162,9 +131,7 @@ textarea.aceditor-textarea {
   min-height: 500px;
 }
 
-/* Show line numbers only on page edit */
 form:not(#ACEditor) .ace-container .ace_gutter {
-  /* Keep it visible because it's just to get the active line height */
   width: 0 !important;
   overflow: hidden;
   padding: 0;
@@ -192,17 +159,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   background: none;
 }
 
-/* ---- ACE follows the Colour scheme (ADR-0020) -------------------------------
-   ACE ships its theme as a `<style>` element it injects at runtime, so its `.ace-tm` rules
-   (white ground, black text, grey gutter) arrive AFTER every stylesheet of ours and win every
-   tie. Nothing is vendored to replace them with -- `javascripts/vendor/ace/` holds the editor
-   and its modes and no theme at all -- so the surface is repainted here, at a specificity the
-   injected theme cannot match, from the same tokens as the rest of the wiki. That is also
-   what makes the editor dark when the reader is: a second ACE theme file would have to be
-   chosen, fetched and kept in step with two schemes.
-
-   The syntax colours are further up this file and were already tokens; this is the ground
-   they sit on. */
 .ace_editor.ace-tm,
 .ace_editor.ace-tm .ace_scroller,
 .ace_editor.ace-tm .ace_gutter {
@@ -210,8 +166,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   color: var(--yw-text);
 }
 
-/* what is selected, and the line the caret is on: a tint of the brand rather than ACE's own
-   pale blue, which is invisible on a dark ground */
 .ace_editor.ace-tm .ace_marker-layer .ace_selection {
   background: color-mix(in srgb, var(--yw-primary) 22%, transparent);
 }
@@ -220,7 +174,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   background: var(--yw-surface-hover);
 }
 
-/* the ruler ACE draws down the right-hand side, and the fold arrows in the gutter */
 .ace_editor.ace-tm .ace_print-margin {
   background: var(--yw-border-subtle);
 }
@@ -230,25 +183,10 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border-color: var(--yw-border-strong);
 }
 
-/* The caret, which the injected theme paints `black` -- invisible on a dark ground, and the
-   one thing an editor cannot do without. */
 .ace_editor.ace-tm .ace_cursor {
   color: var(--yw-text);
 }
 
-/* Syntax colours for the modes that have no rules of their own here: CSS and Twig, on the two
-   admin screens that edit a stylesheet and a template override. (The wiki-syntax mode is
-   coloured further up, under `.ace-body`.)
-
-   These have to exist, not just the ground above: repainting the surface dark while ACE keeps
-   its own `blue` keywords and `rgb(3, 106, 7)` strings leaves a stylesheet less readable in
-   dark mode than it was in light. The injected theme selects on `.ace-tm .ace_keyword`, so
-   everything here carries `.ace_editor` as well -- one class more, which is what wins a
-   cascade where our stylesheet comes first and theirs is appended at runtime.
-
-   Semantic tokens rather than a syntax palette of their own: both schemes are already defined
-   for them, so the editor follows the reader without a second set of colours to keep in
-   step. */
 .ace_editor.ace-tm .ace_keyword,
 .ace_editor.ace-tm .ace_storage,
 .ace_editor.ace-tm .ace_meta.ace_tag,
@@ -285,9 +223,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   color: var(--yw-text-muted);
 }
 
-/* A rule the browser cannot parse, and a regular expression: both are the editor telling you
-   something, so both stay loud. `invalid` keeps a ground of its own because the colour alone
-   is what every other token uses. */
 .ace_editor.ace-tm .ace_string.ace_regex {
   color: var(--yw-warning);
 }
@@ -297,10 +232,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   color: var(--yw-danger-text);
 }
 
-/* The markers ACE draws behind the text. Each is a fixed light-mode colour in the injected
-   theme -- a near-white ground for the other occurrences of the word under the caret, a black
-   wash for the current line, a grey bracket outline -- and each is invisible or blinding on a
-   dark surface. */
 .ace_editor.ace-tm .ace_marker-layer .ace_active-line {
   background: var(--yw-surface-hover);
 }
@@ -315,8 +246,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border-color: var(--yw-border-strong);
 }
 
-/* The indentation guides are a black PNG the theme repeats down the gutter side of each
-   level. There is no colour to change, so they are drawn here instead. */
 .ace_editor.ace-tm .ace_indent-guide {
   background: linear-gradient(to left, var(--yw-border) 1px, transparent 1px);
 }
@@ -329,8 +258,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   );
 }
 
-/* the find box is a panel, not part of the text: it is drawn on the raised surface with the
-   wiki's own field styling, since ACE's own is a white box with a blue focus ring */
 .ace_search {
   position: fixed;
   top: 70px;
@@ -398,31 +325,10 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding: var(--yw-space-md-y) 0;
 }
 
-/* PROTOTYPE: the button that leaves for the other editor sits at the far end of the bar,
-   away from everything that acts on the text. The toolbar is a block of inline-flex
-   groups, not a flex row, so this is a float rather than a margin -- and the button is
-   last in the template for the float to land on the right of the last line. */
 .aceditor-toolbar .aceditor-switch-editor {
   float: right;
 }
 
-/* ============================================================
-   from styles/vditor-wiki.css
-   ============================================================ */
-
-/* PROTOTYPE -- the component widget inside Vditor (javascripts/vditor-components.js).
-
-   At rest a component is only what it will look like on the page: no card, no chrome, no
-   name -- the editor shows the page. What says it is a component rather than prose appears
-   when you go near it: hovering, or selecting it, floats a small bar over its top-right
-   corner with its name and what can be done to it.
-
-   That is why the bar is an overlay rather than a header. A bar that took its own line
-   would move everything below it every time the pointer crossed a component. */
-
-/* Vditor's own reset gives every svg in the content area `width: auto`, which beats
-   .yw-icon on specificity and leaves a sprite icon at the 300x150 a replaced element
-   defaults to. Every icon in here needs that undone, in a selector that outranks it. */
 .vditor-reset .yw-component .yw-icon {
   width: 1.1em;
   height: 1.1em;
@@ -436,7 +342,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   transition: border-color 0.15s ease;
 }
 
-/* Near it, or on it: enough of an edge to say where the component stops. */
 .yw-component:hover,
 .yw-component:focus-within,
 .yw-component--selected {
@@ -465,8 +370,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   font-size: 0.8rem;
   line-height: 1.4;
   color: var(--yw-text);
-  /* the widget lives inside the <pre> Vditor renders a fenced block in, so `inherit` here
-     means monospace. The bar is a label, not code. */
+
   font-family:
     system-ui,
     -apple-system,
@@ -524,22 +428,12 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border: 0;
 }
 
-/* The preview is a picture of the component, not the component: a click on it is the
-   editor's, not the action's -- the same reason the actions builder covers its own
-   iframe. Without this you can type into a previewed contact form. */
 .yw-component__blocker {
   position: absolute;
   inset: 0;
   cursor: pointer;
 }
 
-/* A wrapper's halves have no preview of their own -- half a section is not a section -- so
-   for them the bar IS the widget: it stays in the flow and on screen, because it is the
-   only thing saying where the region starts and ends. What it wraps is painted behind the
-   content instead (paintWrappers in javascripts/vditor-components.js).
-
-   Faint at rest, so the page still reads as its content rather than as its structure, and
-   solid as soon as you go near it. */
 .yw-component--open > .yw-component__bar,
 .yw-component--close > .yw-component__bar {
   position: static;
@@ -562,9 +456,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border-color: var(--yw-border);
 }
 
-/* What a wrapper looks like, behind what it wraps: the element the action really renders
-   as, emptied, stretched from its opening chip to its closing one. It is in a layer of its
-   own outside the edited content, so nothing about it reaches the document. */
 .vditor-wysiwyg {
   position: relative;
 }
@@ -577,13 +468,9 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   pointer-events: none;
 }
 
-/* A region spans the column the text is written in -- except a `full-width` one, which is
-   written precisely to escape that column, and here escapes to the edge of the editor for
-   the same reason it escapes to the edge of the window on the page. */
 .yw-wrapper-layer > * {
   position: absolute;
-  /* ...and out again by whatever padding the box has, measured in paintWrappers: the text
-     is in the column, not in the box, so the box has to reach around it. */
+
   left: calc(var(--yw-editor-gutter, 0px) - var(--yw-paint-inset, 0px));
   right: calc(var(--yw-editor-gutter, 0px) - var(--yw-paint-inset, 0px));
   margin: 0;
@@ -594,14 +481,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   right: 0;
 }
 
-/* The paint fills its region and does nothing else.
-
-   Only a wrapper's *look* survives being lifted out of the page it was written for; its
-   geometry is the slot's. What an action renders can carry layout that means something
-   only in a real page -- `.full-width` breaks out of the centred column with `left: 50%`
-   and a negative viewport margin, which in here is just an element shoved half the
-   editor's width to the right and off its edge -- and it is emptied, so it has no content
-   to be as tall as either. !important because those rules use it too. */
 .yw-wrapper-layer > * > * {
   position: static !important;
   inset: auto !important;
@@ -609,28 +488,16 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   width: auto !important;
   min-width: 0 !important;
   max-width: none !important;
-  /* border-box, or the padding the theme gives a section (`section.full-width` has 2rem of
-     it) is added to the 100% and the paint runs past the end of its own region */
+
   box-sizing: border-box !important;
   height: 100%;
   margin: 0 !important;
 }
 
-/* The text and the widgets sit above the paint -- and the editor's own white background
-   moves off the text and onto the box around it, or it would be painted over the paint. */
 .vditor-wysiwyg {
   background: var(--textarea-background-color, var(--yw-surface-raised));
 }
 
-/* `pre.vditor-reset` rather than `.vditor-reset`: the editing surface is a <pre>, and the
-   rule painting it white is Vditor's `.vditor-wysiwyg pre.vditor-reset` -- which a
-   selector without the tag name does not outrank.
-
-   `:focus` for the same reason, and it is the case that matters: Vditor paints the surface
-   again in `.vditor-wysiwyg pre.vditor-reset:focus`, which outranks the child selector by
-   that pseudo-class alone. Without this, a wrapper's paint is there until the caret is put
-   in the document -- so it disappears the moment anyone edits what a `{{section}}` holds,
-   which is the only time they are looking at it. */
 .vditor-wysiwyg > pre.vditor-reset,
 .vditor-wysiwyg > pre.vditor-reset:focus {
   position: relative;
@@ -638,16 +505,11 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   background: transparent;
 }
 
-/* Vditor gives a fenced block the typography of code and a grey slab behind it; a widget
-   is neither. */
 .vditor-wysiwyg .vditor-wysiwyg__preview:has(.yw-component) {
   padding: 0;
   background: transparent;
 }
 
-/* The wiki code behind a widget, when it is asked for: it sits *above* the preview rather
-   than replacing it -- so it wants to read as the same object, not as a code block that
-   happens to be next to one. */
 .vditor-wysiwyg .vditor-wysiwyg__block:has(.yw-component) .vditor-wysiwyg__pre {
   margin: var(--yw-space-md-y) 0 calc(-1 * var(--yw-space-md-y));
   border: var(--yw-border-width) solid var(--yw-border);
@@ -659,31 +521,11 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   font-size: 0.85em;
 }
 
-/* PROTOTYPE: same idea on the other side, and the same mechanism -- Vditor's toolbar looks
-   like a flex row but is a block of inline-blocks, so `margin-left: auto` on the last item
-   pushed it nowhere. */
 .vditor-toolbar__item:has(> button[data-type='yw-switch-editor']) {
   float: right;
 }
 
-/* ---- The page editor runs edge to edge, and writes down the middle ----
-
-   A page is a full-bleed canvas with its text in a 1170px column, and `{{section
-   class="full-width"}}` exists to break out of that column. An editor boxed inside the
-   column can show no such thing: the widest a section could ever look is exactly as wide
-   as everything else.
-
-   So the editor is given the page's shape. `.vditor` breaks out with the same trick
-   `.full-width` uses (yw-core.css), and the toolbar and the text are pushed back into the
-   column with padding rather than a max-width -- padding leaves .vditor-wysiwyg full
-   width, which is what the paint layer measures itself against, so a full-width region can
-   still reach the edges.
-
-   Scoped to #ACEditor: this is the shape of a *page*. A wiki-syntax field on an entry form
-   is a field on a form, and stays one. */
 #ACEditor .vditor:not(.vditor--fullscreen) {
-  /* How far short of the window the editor stops. 0 is true full bleed; anything else
-     leaves the canvas looking like a sheet of paper on a desk. One place to change it. */
   --yw-editor-inset: 1em;
   --yw-editor-width: calc(
     var(--yw-viewport-width, 100vw) - 2 * var(--yw-editor-inset)
@@ -693,32 +535,22 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   position: relative;
   left: 50%;
   right: 50%;
-  /* !important: Vditor writes `width: 100%` inline on this element, from the `width`
-     option it is built with, and an inline declaration outranks any selector */
+
   width: var(--yw-editor-width) !important;
   margin-left: calc(var(--yw-editor-width) / -2);
   margin-right: calc(var(--yw-editor-width) / -2);
-  /* the top edge lives on the toolbar instead -- see below */
+
   border-top: 0;
 }
 
-/* The toolbar is sticky, so the editor's own top border scrolls out from under it and the
-   bar is left floating against the page with no edge at all. The line moves onto the
-   toolbar, where it stays put, and comes off .vditor so there is only ever one of it. */
 #ACEditor .vditor:not(.vditor--fullscreen) .vditor-toolbar {
   border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* ...and while the editor is the thing being used, that line is the editor's own edge --
-   the same colour its focus outline is, rather than a grey rule that could belong to
-   anything on the page behind it. */
 #ACEditor .vditor:not(.vditor--fullscreen):focus-within .vditor-toolbar {
   border-top-color: var(--yw-primary);
 }
 
-/* `!important` and this much specificity because both of these already carry an
-   `!important` padding from styles/bazar/inputs/textarea.css, which is what stops Vditor
-   recentring them on its own 800px reading column. */
 #ACEditor .vditor:not(.vditor--fullscreen) .vditor-toolbar {
   padding-right: var(--yw-editor-gutter) !important;
   padding-left: var(--yw-editor-gutter) !important;
@@ -729,13 +561,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding-left: var(--yw-editor-gutter) !important;
 }
 
-/* Vditor writes the block's type in the left margin -- `H1` beside a heading, `</>` beside
-   every fenced block -- with a -29px margin. In a boxed editor those sit in the padding and
-   are half clipped by its edge; with the editor running edge to edge they are stranded out
-   in the gutter, a column of glyphs beside a page that is trying to look like a page.
-
-   The `</>` goes everywhere: our component blocks are fences only in transit, and telling
-   the writer they are looking at code is simply wrong. */
 .vditor-wysiwyg div.vditor-wysiwyg__block:has(.yw-component)::before {
   content: none;
 }
@@ -749,11 +574,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   content: none;
 }
 
-/* The save button is the form's primary button, in the toolbar. `.yw-btn--primary` alone
-   cannot say so: styles/bazar/inputs/textarea.css has to paint every Vditor toolbar button
-   white to undo Vditor's own `.vditor-toolbar__item .vditor-tooltipped`, and that rule is
-   more specific than a bare class -- so the variant needs the same reach. Colours come
-   from .yw-btn--primary in yw-core.css; only the specificity is restated here. */
 .vditor-toolbar__item > button.yw-btn--primary {
   border-color: var(--yw-primary);
   background-color: var(--yw-primary);
@@ -766,26 +586,16 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   color: var(--yw-primary);
 }
 
-/* the icon and its word are one label */
 .vditor-toolbar__item > button.yw-btn--primary > span {
   margin-left: var(--yw-space-sm-x);
 }
 
-/* `{# ... #}` is a comment: it renders as nothing at all on the page, so in the editor it
-   has to say so on sight rather than read as prose someone forgot to finish. Marked by
-   markComments() in javascripts/vditor-components.js -- a class only, so nothing about it
-   reaches the document. */
 .vditor-wysiwyg > pre.vditor-reset > .yw-comment {
   color: var(--yw-text-muted);
   font-style: italic;
   opacity: 0.7;
 }
 
-/* A link's markdown-extra (`{.newtab}`, `{#anchor}`) is a property of the link, not a word
-   in the sentence it is written in -- so it is drawn as a mark on the link. The braces stay
-   in the document and in the DOM, they are merely not drawn, which is what keeps what the
-   editor reads back byte-for-byte what was written. Wrapped by markLinkExtras() in
-   javascripts/vditor-components.js. */
 .vditor-wysiwyg .yw-link-extra {
   display: inline-block;
   margin-left: var(--yw-space-sm-x);
@@ -804,11 +614,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   display: none;
 }
 
-/* A quote is one of the few blocks both stylesheets have an opinion about, and Vditor's is
-   the one that was winning: `.vditor-reset blockquote` outranks the bare `blockquote` in
-   styles/yw-core.css, so a quotation was written against a pale grey rule in the editor and
-   read against a dark one on the page. Same declarations as yw-core's, restated at a
-   specificity that reaches into the editing surface. */
 .vditor-wysiwyg .vditor-reset blockquote {
   margin: var(--yw-space-md-y) 0;
   padding: var(--yw-space-sm-y) 0 var(--yw-space-sm-y) var(--yw-space-md-x);
@@ -816,20 +621,10 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   color: var(--yw-text);
 }
 
-/* ============================================================
-   from styles/bazar/inputs/textarea.css
-   ============================================================ */
-
-/* field.syntax is 'html' for this mode -- note the corrected selector below: the
-   pre-existing ".yw-form-group.summernote" never matched anything, since groupClass
-   is always the field's syntax value, never the editor's own name. */
 .yw-form-group.html .vditor {
   margin-top: var(--yw-space-sm-y);
 }
 
-/* Vditor wears the same box as the ACeditor and as any .yw-input: one bordered field
-   with the toolbar as its header. Vditor exposes its own palette as custom properties
-   on .vditor, so repointing those is enough -- no rule of its stylesheet is overridden. */
 .vditor {
   --border-color: var(--yw-surface-sunken);
   --toolbar-background-color: var(--yw-surface-sunken);
@@ -848,10 +643,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   outline-offset: -1px;
 }
 
-/* Vditor centres its text in an 800px reading column and pads the toolbar to match,
-   writing both as inline styles it recomputes on every resize. A form field is not an
-   article: it wants its whole width, left-aligned, like the ACeditor beside it. !important
-   is what outranks an inline style, and it is the only thing that survives the recompute. */
 .vditor-toolbar {
   padding: var(--yw-space-sm-y) var(--yw-space-sm-x) !important;
   border-radius: var(--yw-radius-sm) var(--yw-radius-sm) 0 0;
@@ -861,37 +652,20 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding: var(--yw-space-md-y) var(--yw-space-md-x) !important;
 }
 
-/* Vditor's own `pin` parks the toolbar at the very top of the viewport, where the sticky
-   top bar already is; this puts it on the same line as the ACeditor's toolbar, with
-   yw-core.css owning the offset. Only `top` is overridden: Vditor stacks its per-block
-   popover (z-index 3) above this toolbar (1) on purpose, and the first block's popover
-   is drawn just above the editor, i.e. exactly where the toolbar is -- raising the
-   toolbar would bury the one control the first block has. */
 .vditor-toolbar--pin {
   top: var(--yw-sticky-toolbar-top);
   z-index: 9;
 }
 
-/* fullscreen has no top bar to clear: .vditor is fixed and already offset by the margin
-   below, so anything but 0 would park the toolbar inside its own box */
 .vditor--fullscreen .vditor-toolbar--pin {
   top: 0;
 }
 
-/* The per-block controls (move up, move down, remove) float over the block they act on.
-   Vditor separates them from it with 0.86 opacity and a faint shadow, which on a white
-   field reads as icons sitting in the middle of the text -- give them the border every
-   other floating control here has, so they read as a control. */
 .vditor-panel--none {
   opacity: 1;
   border: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* Vditor's toolbar buttons wear .yw-btn, added by vditor-textarea.js once Vditor has
-   built them -- so their radius, weight, hover and any theme override of the button come
-   from the one place every other button in the wiki gets them. What is left here is
-   undoing Vditor's own rules for those same buttons, which are more specific than a bare
-   class and would otherwise win: it paints them as flat 25px-wide transparent icons. */
 .vditor-toolbar__item > button.yw-btn {
   width: auto;
   height: auto;
@@ -899,9 +673,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border: var(--yw-border-width) solid var(--yw-border);
   background-color: var(--yw-surface-raised);
   color: var(--yw-text);
-  /* Vditor zeroes the font size (its buttons hold nothing but an icon), which collapses
-     the line box .yw-btn sizes itself by -- restoring it is what makes these exactly as
-     tall as the ACeditor's buttons rather than 5px shorter */
+
   font-size: 14px;
   line-height: 1.4;
 }
@@ -918,8 +690,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   opacity: 0.6;
 }
 
-/* Vditor's icons are solid glyphs it fills; the sprite icon on the file button is a
-   Tabler outline, which is invisible at stroke-width 0 */
 .vditor-toolbar__item > button .yw-icon {
   fill: none;
   stroke: currentColor;
@@ -928,9 +698,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   height: 15px;
 }
 
-/* Like the ACeditor's .btn-group runs: buttons touch, and the separator between two runs
-   is a gap rather than a rule. `:has()` is what names "the last button before a divider",
-   which has no previous-sibling equivalent. */
 .vditor-toolbar__divider {
   border-left: 0;
   margin: 0 var(--yw-space-sm-x);
@@ -963,11 +730,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin-right: var(--yw-space-sm-x);
 }
 
-/* ============================================================
-   from styles/actions/actions-builder.css
-   ============================================================ */
-
-/* CUSTOM FORM */
 #actions-builder-app .yw-form-group:first-child {
   margin: 0 0 var(--yw-space-md-y) 0 !important;
 }
@@ -989,27 +751,16 @@ input[type='range'] {
   box-shadow: none !important;
 }
 
-/* ACTION BUILDER APP */
-
-/* `clip`, not `hidden`: both keep a wide parameter (a preview iframe, a long select) from
-   spilling out sideways, but `hidden` makes this a scroll container of its own -- and the
-   rail's sticky header and footer then have nothing to stick to, because the box they
-   would stick inside is as tall as its own content. Nothing here ever scrolls on its own;
-   the rail around it does. */
 #actions-builder-app {
   overflow: clip !important;
 }
 
-/* The rail's layout and its header are shared with the link rail, in yw-core.css
-   (.yw-designer__sidebar, .yw-rail__*). What is left here is what only this rail has. */
 .actions-builder-panel__back {
   flex: 0 0 auto;
   padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
   line-height: 1;
 }
 
-/* The palette, same shape as the form designer's (styles/form-builder.css): a grid of
-   cards, each an icon over a name, under the heading of the group it belongs to. */
 .actions-builder-panel__palette-group {
   margin: var(--yw-space-md-y) 0 var(--yw-space-sm-y);
   font-size: 0.85rem !important;
@@ -1018,19 +769,12 @@ input[type='range'] {
   opacity: 0.7;
 }
 
-/* Three to a row, like the form designer's palette this was modelled on -- the rail is the
-   same ~314px of usable width in both, so a component and a field type should not be laid
-   out at two different densities. Three cards of ~100px show half again as many components
-   before you have to scroll, which is what a palette is for: seeing what there is. */
 .actions-builder-panel__palette {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-/* Card sizing follows from the width. At ~100px the 0.8rem label fit about two words a
-   line, so everything read as an ellipsis; the form designer's 0.72rem is what fits, and
-   a smaller icon leaves the room for it. */
 .actions-builder-panel__component {
   display: flex;
   flex-direction: column;
@@ -1060,15 +804,6 @@ input[type='range'] {
   opacity: 0.75;
 }
 
-/* A component name is a label, not prose: three lines, then an ellipsis, so a long one
-   cannot make its card twice the height of the card beside it. Three rather than two,
-   because these names are phrases ("Afficher des encadrés en accordéon") and a third of
-   the rail's width holds two or three words a line -- at two lines nearly every card in
-   the palette ended in an ellipsis, which tells you nothing about what is in it. The whole
-   name is on the card's `title` either way.
-
-   `overflow-wrap`, because a clamp only decides where to stop, not where to break: a name
-   with no space in it that is wider than the card overflows it instead of wrapping. */
 .actions-builder-panel__component-label {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1083,9 +818,6 @@ input[type='range'] {
   font-style: italic;
 }
 
-/* The insert button reads `input-group-addon btn btn-primary`, and .input-group-addon's
-   own background is declared after .btn-primary's in yw-core.css -- so it won white text
-   on a near-white bar, and the button has been invisible. Restore the primary fill. */
 #actions-builder-panel .input-group-addon.btn-primary {
   background: var(--yw-primary);
   border-color: var(--yw-primary);
@@ -1095,10 +827,6 @@ input[type='range'] {
   left: 0.9rem !important;
 }
 
-/* A checkbox's text is a caption like every other label in this panel, at the same size
-   as one. The `padding-left` made room for a box drawn as a pseudo-element in a styling
-   this panel no longer uses -- the input is a real checkbox sitting right there, so the
-   padding was a 1.5rem gap between the box and the words belonging to it. */
 #actions-builder-app .checkbox label {
   font-size: 0.78rem;
   font-weight: 600;
@@ -1110,23 +838,14 @@ input[type='range'] {
   padding-left: 0;
 }
 
-/* The caption sits beside the icon, the way it does for every other setting -- `100%` put
-   it on a line of its own and left the icon stranded on the line above. `auto`, so it takes
-   what is left of the row after the icon; the box and its sentence wrap to the next line
-   because that one asks for the full width. */
 #actions-builder-app .checkbox .checkbox__title {
   flex: 1 1 auto;
 }
 
-/* the same distance between an icon and its caption as every other setting has -- the grid
-   the others are laid out on gives them 0.4rem, and this row had none */
 #actions-builder-app .checkbox {
   column-gap: var(--yw-space-sm-x);
 }
 
-/* Plain inline flow, not flex: a box and the sentence naming it are text, and as flex items
-   the sentence became a flex item that shrank to its longest word -- three lines of it in a
-   half-width column that had room for one and a half. */
 #actions-builder-app .checkbox > label:not(.checkbox__title) {
   display: block;
   flex: 1 1 100%;
@@ -1170,15 +889,6 @@ input[type='range'] {
   margin-bottom: 0;
 }
 
-/* ...except that the builder is a narrow rail now (--yw-rail-width in yw-core.css), not a
-   wide modal: a label and its control no longer fit on one row, and side by side they get
-   a few characters each.
-   Declared right after the rules above because it ties with them on specificity, and
-   order is what decides a tie.
-
-   `:has(> .yw-form-label)` is what distinguishes a parameter (label + control, stacks)
-   from a composite control like the icon picker (input + its picker button, stays a
-   row). A checkbox stays a row too: there the label is the target you click. */
 #actions-builder-app
   :not(.multi-input-container)
   > *
@@ -1190,8 +900,6 @@ input[type='range'] {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-/* flex-grow follows the main axis, which is vertical once stacked: left alone, every
-   input would stretch to the height of the tallest thing in its group */
 #actions-builder-app
   :not(.multi-input-container)
   > *
@@ -1200,20 +908,6 @@ input[type='range'] {
   flex-grow: 0;
 }
 
-/* A setting's icon belongs to its label.
-
-   It was written as an input-group prefix -- a box to the left of the control, which is
-   what an `.input-group-addon` is -- and that worked while the builder was a wide modal
-   laying label and control out side by side. The rail stacks them into a column instead,
-   and a column put the addon on a row of its own: a bordered box above the label, holding
-   an `<i class="fa …">` that has drawn nothing since FontAwesome left core. That empty box
-   is the short horizontal rule that has been sitting above half the settings in this panel.
-   The icon draws again (AddonIcon renders the sprite), so the box has to go somewhere that
-   makes sense -- next to the words it illustrates.
-
-   The stacked group becomes a two-column grid for it: icon, then label, then the control
-   across both. With no icon the first column collapses to nothing and the label starts at
-   the edge, so a setting without one is laid out exactly as before. */
 #actions-builder-app
   :not(.multi-input-container)
   > *
@@ -1234,10 +928,6 @@ input[type='range'] {
   grid-column: 1 / -1;
 }
 
-/* At a third of the rail an icon and a caption are tight, so the caption wraps rather than
-   losing the icon -- two short lines read fine and every setting keeps the mark that makes
-   it recognisable. (The icons used to be hidden here instead, back when the caption was
-   body size and got cut off mid-word.) */
 .config-cell--third .yw-form-label {
   overflow-wrap: anywhere;
 }
@@ -1246,7 +936,7 @@ input[type='range'] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* no box: it is a mark on a label, not a control glued to an input */
+
   width: auto;
   padding: 0;
   border: 0;
@@ -1299,11 +989,6 @@ input[type='range'] {
   margin-bottom: var(--yw-space-lg-y);
 }
 
-/* CONFIG PARAMETERS
-   These were laid out for a wide modal: side-by-side columns whose widths the template
-   writes as inline styles (33% each, or 50% for a lone one). In a rail this narrow there is
-   room for exactly one column, so they stack -- and `!important` is what outranks an
-   inline style, the same reason the Vditor toolbar rules use it. */
 .panels-config-container {
   display: flex;
   flex-direction: column;
@@ -1319,15 +1004,6 @@ input[type='range'] {
   margin-bottom: var(--yw-space-lg-y);
 }
 
-/* The panel is a six-column grid, and each setting says how much of a row it takes: two
-   columns for a third, three for a half (the default), six for the whole row. Six because
-   it is the smallest number that divides evenly by both two and three, which are the two
-   densities these settings actually want.
-
-   Declared per setting rather than inferred from the input's markup. The version before
-   this laid out two per row and used `:has()` to guess which ones needed more -- and a
-   guess is what it stayed: it could see that an input was a checkbox, never that a colour
-   and an alignment belong side by side. */
 .config-panel-content {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1341,10 +1017,6 @@ input[type='range'] {
   min-width: 0;
 }
 
-/* A control must not be wider than the column it was given. `.yw-input` is laid out with
-   `width: auto` and a flex-grow by the rules above, which in a third of the rail is
-   wider than the third -- so the last column of a three-column row ran off the edge of the
-   panel, taking its label with it. */
 #actions-builder-app .config-cell .yw-input,
 #actions-builder-app
   .config-cell
@@ -1356,23 +1028,17 @@ input[type='range'] {
   min-width: 0;
 }
 
-/* ...but not a checkbox. It is a box, not a field: stretched to the width of the column it
-   pushed the words belonging to it onto the next line, which is why they read as a caption
-   floating under a tickbox rather than as one sentence you can click. */
 #actions-builder-app .config-cell input[type='checkbox'] {
   width: auto;
   flex: 0 0 auto;
 }
 
-/* below this a third of the rail is narrower than the words in it */
 @media (max-width: 560px) {
   .config-cell {
     grid-column: 1 / -1;
   }
 }
 
-/* A rail is a column of small controls, and its labels are captions rather than headings:
-   at body size they were the loudest thing in the panel and pushed every input apart. */
 #actions-builder-app .config-panel-content .yw-form-label {
   font-size: 0.78rem;
   font-weight: 600;
@@ -1380,8 +1046,6 @@ input[type='range'] {
   opacity: 0.85;
 }
 
-/* The picture setting: one button when it is empty, the picture itself when it is not.
-   No text field -- a filename is what gets stored, not what anyone needs to read. */
 .input-image {
   position: relative;
   display: flex;
@@ -1399,8 +1063,6 @@ input[type='range'] {
   border-radius: var(--yw-radius-sm);
 }
 
-/* the file is named by something the listing does not know: show the name rather than a
-   broken picture, so it can still be recognised and removed */
 .input-image__name {
   flex: 1 1 auto;
   min-width: 0;
@@ -1411,8 +1073,6 @@ input[type='range'] {
   opacity: 0.8;
 }
 
-/* over the corner of the picture rather than beside it: at a half-width column there is no
-   room for both, and it belongs to the thing it removes */
 .input-image__remove {
   position: absolute;
   top: 4px;
@@ -1448,11 +1108,6 @@ input[type='range'] {
   flex-grow: 1;
 }
 
-/* These indented a label past an addon that used to be laid over the start of the row. The
-   addon has a column of its own now, so the margin was counted twice and every setting with
-   an icon had its label pushed 2.5rem further in than one without -- which is the ragged
-   left edge down the middle of the panel. Zeroed where the grid is, kept elsewhere for
-   whatever still lays an addon over its label. */
 #actions-builder-panel .input-group-addon + label {
   margin-left: var(--yw-space-md-x) !important;
 }
@@ -1469,30 +1124,15 @@ input[type='range'] {
   margin-left: 0 !important;
 }
 
-/* The zones of a card, two to a row.
-   A field mapping takes the panel's whole width -- it is several controls, not one -- so
-   without this its slots stack in a single column while every ordinary setting beside them
-   pairs up, and the rail reads as two different layouts. The pairs are the declaration
-   order (EntryListAction::sourceSettings): the two lines of text, the picture and the
-   prose, then the two things drawn on top of a card rather than in it. */
 #actions-builder-panel .multi-input-container.field-mapping {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: var(--yw-space-md-x);
   row-gap: var(--yw-space-md-y);
-  /* both cells of a row start at the top of it: one slot is a line taller than its
-     neighbour whenever its hint wraps, and a stretched cell aligned its label to the
-     bottom, so the pair read as two rows that had slipped */
-  align-items: start;
 
-  /* No `@media (max-width: …)` fallback to one column: the rail is a fixed width
-     (--yw-rail-width), the same on a 900px window as on a 1600px one, so a viewport query
-     dropped the pairs on a narrow SCREEN while the panel they are in had not moved. */
+  align-items: start;
 }
 
-/* the row gap is the grid's now. Left to their own margins, the pair on the first row sat
-   at different heights: `.yw-form-group:first-child` has its top margin taken away (so
-   that a panel does not start with a gap), and its neighbour on the same row keeps one. */
 #actions-builder-panel .multi-input-container.field-mapping > .yw-form-group {
   margin-top: 0;
   margin-bottom: 0;
@@ -1521,12 +1161,6 @@ input[type='range'] {
   margin-top: var(--yw-space-lg-y);
 }
 
-/* One row of a composite input: a filter condition, a facet, a sort field.
-   Two columns and a button, because the rail is a third of the screen: three controls side
-   by side got a few pixels each (the query builder's came out ~30px wide with their
-   captions printed across them). A grid rather than a wrapping flex row -- flex sized each
-   control by what was left on its line, so the same field was a different width on every
-   row and nothing lined up; here every row has the same two columns. */
 .inline-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
@@ -1539,33 +1173,21 @@ input[type='range'] {
   min-width: 0;
 }
 
-/* an odd last control takes the whole line rather than leaving a hole beside it: the value
-   of a condition is the longest thing in one, and it is the one that wants the room */
 .inline-form > .yw-form-group:nth-last-child(2):nth-child(odd) {
   grid-column: 1 / 3;
 }
 
-/* The gaps are the grid's. Left to their own margins the pair on a line sat at different
-   heights: `#actions-builder-app .yw-form-group:first-child` takes the first control's top
-   margin away -- so a panel does not start with a gap -- and its neighbour keeps one, which
-   is a caption 15px lower than the caption beside it. `!important` because that rule is. */
 .inline-form .yw-form-group {
   padding: 0 !important;
   margin: 0 !important;
 }
 
-/* ...and the button is the row's, not the last control's. In its own column, beside every
-   line of the row rather than under the last of them -- which is where a wrapping row put
-   it, reading as "remove the value" rather than "remove this condition". */
 .inline-form > .btn-close-container {
   grid-column: 3;
   grid-row: 1 / -1;
   align-self: center;
 }
 
-/* ...and each control keeps its caption above it, as every other setting in the panel does.
-   The rule that stacks them skips composite inputs -- a mapping lays its own slots out --
-   but a ROW inside one is made of ordinary settings and wants the ordinary treatment. */
 #actions-builder-app .inline-form .input-group:has(> .yw-form-label) {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -1580,21 +1202,17 @@ input[type='range'] {
   grid-column: 1 / -1;
 }
 
-/* One condition is two lines tall now, so where one ends and the next begins has to be
-   said: without a rule between them, three filters read as six unrelated controls. */
 .multi-input-container .inline-form + .inline-form {
   margin-top: var(--yw-space-md-y);
   padding-top: var(--yw-space-md-y);
   border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* a hint under a control in a row is a footnote, not a paragraph */
 .inline-form .hint {
   font-size: 0.72rem;
   line-height: 1.25;
 }
 
-/* IFRAME PREVIEW */
 .widget-iframe-container {
   position: relative;
   padding: 0;
@@ -1624,21 +1242,6 @@ input[type='range'] {
   opacity: 0;
 }
 
-/* WIKI CODE */
-
-/* ============================================================
-   from styles/file-picker-panel.css
-   ============================================================ */
-
-/* The editor's file picker (ticket 17), docked as a rail beside what is being written
-   rather than shown as a modal over it -- the same slot as the actions builder and the
-   link editor, and only ever one of the three is open.
-   Its own stylesheet, declared by @core/file-picker-panel.twig rather than by the
-   ACeditor's: the rail is included by whatever page carries an editor, and the Vditor
-   toolbar opens the same one on a form that renders no ACeditor at all -- where these
-   rules used to be, they simply were not loaded and a thumbnail rendered at full size. */
-/* The two view-changing actions, each on its own line and each reading as one thing to
-   do: send a file, or go back to the list. */
 #YesWikiFilePickerPanel .file-picker-upload-open,
 #YesWikiFilePickerPanel .file-picker-back {
   display: flex;
@@ -1655,18 +1258,11 @@ input[type='range'] {
   justify-content: flex-start;
 }
 
-/* `.yw-btn` already declares a `display`, and **any** author rule beats the user agent's
-   `[hidden] { display: none }` whatever its specificity -- so a hidden button stays on
-   screen until an author rule says otherwise. The same trap .form-card[hidden] documents
-   in yw-core.css, and the reason the back button showed on the list view. */
 #YesWikiFilePickerPanel .file-picker-upload-open[hidden],
 #YesWikiFilePickerPanel .file-picker-back[hidden] {
   display: none;
 }
 
-/* One row, not two: the filter and the extension are the same question asked twice, and
-   stacking them pushed the list itself below the fold of the rail. The select takes
-   what it needs for ".jpeg" and the search takes the rest. */
 #YesWikiFilePickerPanel .file-picker-filters {
   display: flex;
   align-items: center;
@@ -1717,8 +1313,6 @@ input[type='range'] {
   font-size: 0.85em;
 }
 
-/* One column, not a wrapping grid of fixed-width cards: the rail is a column, and a
-   card sized for a wide modal would either overflow it or leave half of it empty. */
 #YesWikiFilePickerPanel .file-picker-results {
   list-style: none;
   margin: 0;
@@ -1763,8 +1357,6 @@ input[type='range'] {
   background: var(--yw-surface-sunken);
 }
 
-/* The chosen row has to be findable on the way back from the options, so it says so in
-   the panel's own colour rather than in a grey a hover also produces. */
 #YesWikiFilePickerPanel .file-picker__result--selected,
 #YesWikiFilePickerPanel .file-picker__result--selected:hover {
   background: var(--yw-surface-sunken);
@@ -1772,7 +1364,6 @@ input[type='range'] {
   font-weight: 600;
 }
 
-/* a fixed box so a list of mixed portrait/landscape thumbnails still reads as a list */
 #YesWikiFilePickerPanel .file-picker__thumb {
   flex: 0 0 auto;
   display: flex;
@@ -1823,7 +1414,6 @@ input[type='range'] {
   overflow-wrap: anywhere;
 }
 
-/* the footer holds one button now, and it is the one the rail exists to reach */
 #YesWikiFilePickerPanel .yw-rail__footer .btn-insert-upload {
   width: 100%;
   padding-top: var(--yw-space-md-y);
@@ -1836,14 +1426,10 @@ input[type='range'] {
   padding-top: var(--yw-space-md-y);
 }
 
-/* The rail's own chrome comes from .yw-designer__sidebar / .yw-rail__* in yw-core.css;
-   what is left is the body between them, which is what scrolls. */
 #YesWikiFilePickerPanel .file-picker-panel__body {
   min-width: 0;
 }
 
-/* the {{attach}} options are radio groups written for a wide modal: down the rail they
-   read as a list rather than as a row that wraps mid-label */
 #YesWikiFilePickerPanel .yw-radio-inline,
 #YesWikiFilePickerPanel .yw-checkbox-inline {
   display: block;

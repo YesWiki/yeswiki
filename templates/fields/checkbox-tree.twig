@@ -8,7 +8,6 @@
 
 {% macro renderNodes(nodes) %}
 
-{# Add some classes "leaf", "only-leafs", "one-child" to make customization with CSS easy #}
 {% set allChildrenEmpty = true %}
 {% for node in nodes %}
     {% if node.children is not empty %}
@@ -26,7 +25,4 @@
 	{% endfor %}
 </ul>
 {% endmacro %}
-
-
-
 

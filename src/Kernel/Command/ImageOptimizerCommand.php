@@ -38,7 +38,7 @@ class ImageOptimizerCommand extends Command
             echo "Image $image initial size: $beforeSize\n";
             if ($toWebp) {
                 $destImage = str_replace('.' . pathinfo($image, PATHINFO_EXTENSION), '.webp', $image);
-                // those extensions cannot be converted to webp
+
                 if (in_array(strtolower(pathinfo($image, PATHINFO_EXTENSION)), ['webp', 'gif', 'svg'])) {
                     $destImage = $image;
                     $optimizerChain->optimize($image);
@@ -59,10 +59,6 @@ class ImageOptimizerCommand extends Command
 
     public function humanFilesize($bytes, $decimals = 2)
     {
-        // `@$sz[$factor - 1]` silenced an undefined variable for anything under a kilobyte,
-        // where $sz was never assigned. Indexing the unit list directly says the same thing
-        // without the suppression -- and without relying on PHP's negative string offsets,
-        // where `'KMGT'[-1]` is 'T' rather than nothing (ticket 40).
         $units = ['', 'K', 'M', 'G', 'T'];
         $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);
 

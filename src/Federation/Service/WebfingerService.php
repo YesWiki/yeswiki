@@ -51,11 +51,9 @@ class WebfingerService
     {
         $matches = $this->splitHandle($handle);
 
-        // Unformat Mastodon handle @user@host => user@host
         $handle = strpos($handle, '@') === 0
             ? substr($handle, 1) : $handle;
 
-        // Build a WebFinger URL
         $webfingerUrl = sprintf(
             '%s://%s%s/.well-known/webfinger?resource=acct:%s',
             'https',

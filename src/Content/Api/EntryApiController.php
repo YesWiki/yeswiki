@@ -56,7 +56,7 @@ class EntryApiController extends YesWikiController
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
-        if ($output == 'csv') { // Search is done in the CSV Manager
+        if ($output == 'csv') {
             $csvManager = $this->getService(CSVManager::class);
             $csvManager->sendCsvOrZip($vFormID, [
                 'queries' => $vQuery,
@@ -88,8 +88,7 @@ class EntryApiController extends YesWikiController
             $acceptHeader = (string)$this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 return $this->getAllSemanticEntries($formId, $entries);
-            } // add entries in html format if asked
-            elseif ($output == 'html') {
+            } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
                     $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', false);
                 }
@@ -124,7 +123,6 @@ class EntryApiController extends YesWikiController
     #[Route('/api/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-        // fast access for one entry
         $get = $this->getRequest()->query;
         if ($this->getService(EntryFastAccessService::class)->isFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
@@ -149,7 +147,6 @@ class EntryApiController extends YesWikiController
 
     public function getAllSemanticEntries($formId, $entries)
     {
-        // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
         $resources = array_map(function ($entry) use ($form) {
@@ -193,16 +190,12 @@ class EntryApiController extends YesWikiController
         return new ApiResponse($resources);
     }
 
-    /**
-     * Create or update an entry.
-     */
+    /** Create or update an entry. */
     #[Route('/api/entries/{formId}', methods: ['POST'], options: ['acl' => ['+']])]
     public function createEntry($formId)
     {
         $request = $this->getRequest();
         if (strpos((string)$request->headers->get('content-type', ''), 'application/ld+json') !== false) {
-            // pre-split ApiController fell through here and created the entry twice,
-            // discarding the semantic response
             return $this->createSemanticEntry($formId);
         }
 
@@ -253,19 +246,11 @@ class EntryApiController extends YesWikiController
     {
         $vBazarListService = $this->getService(BazarListService::class);
 
-        /* ------------------------------------ */
-        /*             Format Params */
-        /* ------------------------------------ */
-
         $queryAll = $this->getRequest()->query->all();
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $queryAll);
 
-        // Read from all() rather than query->get(): every one of these arrives as an
-        // ARRAY from the dynamic templates (`idtypeannonce[]=1&searchfields[]=title`), and
-        // InputBag::get() throws a 400 "contains a non-scalar value" on those -- which is
-        // why every dynamic bazar view rendered a spinner and never resolved.
         $searchfields = $queryAll['searchfields'] ?? null;
         $searchfields = is_string($searchfields) ? explode(',', urldecode($searchfields)) : $searchfields;
         $searchfields = $searchfields === null ? [] : (array)$searchfields;
@@ -278,24 +263,13 @@ class EntryApiController extends YesWikiController
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['id'] = $queryAll['id'] ?? null;
 
-        /* ------------------------------------ */
-        /*               Get Data */
-        /* ------------------------------------ */
-        // All forms
         $refreshVal = $queryAll['refresh'] ?? null;
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
 
-        // Entries
         $entries = $vBazarListService->getEntries($formattedGet, $forms);
 
-        // Filters
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
-        /* ------------------------------------ */
-        /*            Transform Data */
-        /* ------------------------------------ */
-
-        // Associated Forms
         $formIds = array_unique(array_map(function ($entry) {
             return $entry['form_id'];
         }, $entries));
@@ -306,48 +280,41 @@ class EntryApiController extends YesWikiController
             return $f['prepared'];
         }, $usedForms);
 
-        // Basic fields: the computed title (ADR-0010) plus bf_titre for forms that have it
         $fieldList = ['tag', PageBody::TITLE, 'bf_titre', 'url', '-is-external-', 'external-data'];
-        // If no id, we need idtypeannonce (== formId) to filter
+
         if (!isset($queryAll['id'])) {
             $fieldList[] = 'form_id';
         }
-        // fields for color / icon
+
         $colorfield = $queryAll['colorfield'] ?? null;
         $fieldList = array_merge($fieldList, is_string($colorfield) && $colorfield !== '' ? [$colorfield] : []);
         $iconfield = $queryAll['iconfield'] ?? null;
         $fieldList = array_merge($fieldList, is_string($iconfield) && $iconfield !== '' ? [$iconfield] : []);
-        // Fields used to search
+
         $fieldList = array_merge($fieldList, $searchfields);
-        // Fields used to sort / by the template / required by the template
+
         foreach (['sortfields', 'displayfields', 'necessary_fields', 'necessaryfields'] as $key) {
             $fieldList = array_merge($fieldList, (array)($queryAll[$key] ?? []));
         }
-        // Fields for filters
+
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];
         }
 
-        // filter blank values, remove duplicates, array_values to have incremental keys
         $fieldList = array_values(array_unique(array_filter($fieldList)));
 
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
 
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['tag']);
             $result = [];
             foreach ($fieldList as $fieldName) {
-                // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['form_id']);
-                // `instanceof` rather than `getType() == 'textelong'`: getSyntax() lives only on
-                // TextareaField, and the string check proved that to a reader but not to the
-                // analyser, which is why the call sat baselined as method.notFound (ticket 40)
+
                 if ($field instanceof TextareaField && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->getService(MarkdownFormatterService::class)->format($entry[$fieldName]);
                 }
-                // handle specific fields like comments, reactions
+
                 if (!isset($entry[$fieldName]) || (is_string($entry[$fieldName]) && trim($entry[$fieldName]) == '')) {
                     $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }

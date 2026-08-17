@@ -5,18 +5,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Ticket 26: form templates (`bn_template` inside form pages' body) are now stored as a
- * native JSON array of named-attribute field objects instead of the historical positional
- * `***`-separated string. Converts the latest revision of every form page in place (no
- * new revision). Older revisions keep the legacy syntax and stay readable through
- * FormManager::parseTemplate()'s legacy branch, which is also how remote imports from
- * older wikis are converted on write.
- *
- * Also repairs a pre-existing SQLite seeding defect: the installation seeds escaped the
- * template's newlines MySQL-style (`\\r\\n`), which SQLite stored literally, leaving the
- * whole template on one line with literal `\r\n` text between fields (and the form
- * therefore broken). Those literal sequences are turned back into real newlines before
- * conversion.
+ * Ticket 26: form templates (`bn_template` inside form pages' body) are now stored as a native JSON array of named-attribute field objects instead of the historical positional `***`-separated string.
  */
 class ConvertFormTemplatesToJson extends YesWikiMigration
 {
@@ -33,11 +22,10 @@ class ConvertFormTemplatesToJson extends YesWikiMigration
         foreach ($rows as $row) {
             $body = json_decode($row['body'] ?? '', true);
             if (!is_array($body) || is_array($body['bn_template'] ?? null)) {
-                continue; // unreadable, or already a native JSON array
+                continue;
             }
             $template = trim((string)($body['bn_template'] ?? ''));
 
-            // SQLite-seeded instances: MySQL-style escaped newlines stored literally
             if (!str_contains($template, "\n") && str_contains($template, '\r\n')) {
                 $template = str_replace('\r\n', "\n", $template);
             }

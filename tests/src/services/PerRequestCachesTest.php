@@ -15,14 +15,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/CountingQueriesPdo.php';
 
 /**
- * The per-request caches that stopped a page render asking the same question three times --
- * and, more importantly, that they let go when the row underneath them changes.
- *
- * A render of PagePrincipale was reading `SELECT metadata … 'PagePrincipale'` three times,
- * `SELECT * … 'mrflos'` four times and the Page form's tag three times. Each has a cache
- * now. The risk a cache introduces is not a wrong count, it is a **stale answer**, which
- * fails silently -- exactly how `setOwner()` broke when the unredacted read stopped going
- * to the database every time. So every test here changes the row and asks again.
+ * The per-request caches that stopped a page render asking the same question three times -- and, more importantly, that they let go when the row underneath them changes.
  */
 class PerRequestCachesTest extends YesWikiTestCase
 {
@@ -48,31 +41,24 @@ class PerRequestCachesTest extends YesWikiTestCase
         $this->assertIsArray($first, 'the page under test must exist');
         $this->assertSame('first', PageBody::content($first['body']));
 
-        // cached: no second read of the same row
         $before = $this->countQueries($db);
         $pageManager->getOne(self::PAGE, null, true, true);
         $this->assertSame($before, $this->countQueries($db), 'the unredacted read must be cached within a request');
 
-        // ...and dropped when the row changes
         $pageManager->save(self::PAGE, [PageBody::CONTENT => 'second'], '', true);
         $after = $pageManager->getOne(self::PAGE, null, true, true);
         $this->assertIsArray($after);
         $this->assertSame('second', PageBody::content($after['body']), 'a save must invalidate the unredacted cache');
     }
 
-    /**
-     * `setOwner()` writes the row directly. It used to update only `ownersCache`, which was
-     * survivable while every unredacted read went to the database; it stopped being
-     * survivable the moment one did not. An account sets its own owner immediately after
-     * its row is created, so the stale copy was one line old.
-     */
+    /** `setOwner()` writes the row directly. */
     public function testSetOwnerIsVisibleToTheNextRead(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
         $pageManager->save(self::PAGE, [PageBody::CONTENT => 'owned'], '', true);
-        // warm both caches before the write, which is what made this a bug
+
         $pageManager->getOne(self::PAGE, null, true, true);
         $pageManager->getOne(self::PAGE);
 
@@ -83,11 +69,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         $this->assertSame($owner, $pageManager->getOne(self::PAGE)['owner'] ?? null);
     }
 
-    /**
-     * AclService caches the stored ACLs of a page. PageManager writes `pages` rows behind
-     * its back, so it has to say so -- otherwise an ACL read taken before a page existed
-     * answers for the rest of the request.
-     */
+    /** AclService caches the stored ACLs of a page. */
     public function testStoredAclsAreCachedButFollowTheWrite(): void
     {
         $wiki = $this->getWiki();
@@ -101,7 +83,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         $before = $this->countQueries($db);
         $aclService->load(self::PAGE, 'write');
         $aclService->load(self::PAGE, 'comment');
-        // the two modes used to evict each other, so this one re-read every time
+
         $aclService->load(self::PAGE, 'read', false);
         $this->assertSame(
             $before,
@@ -110,10 +92,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         );
 
         $aclService->save(self::PAGE, 'read', '@admins');
-        // asked with $useDefaults = false, which is the mode that rebuilds its answer from
-        // storage: load()'s own privilege cache is written directly by save(), so asking the
-        // ordinary way would be answered without ever consulting what was cached about the
-        // *stored* ACLs -- and a missing invalidation there would go unnoticed
+
         $this->assertSame(
             '@admins',
             $aclService->load(self::PAGE, 'read', false)['list'] ?? null,
@@ -141,14 +120,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * `GroupOperationsService::getMembers()` asks whether a group exists and then reads its
-     * members. Both questions are about the same resource's triples, but they used to go
-     * through different caches -- `getMatching()`'s, keyed by SQL text, and `getAll()`'s,
-     * keyed by resource -- so the identical
-     * `SELECT * FROM triples WHERE resource = 'ThisWikiGroup:admins'` ran twice. On every
-     * `isInGroup()`, which is every ACL check on every page.
-     */
+    /** `GroupOperationsService::getMembers()` asks whether a group exists and then reads its members. */
     public function testCheckingAGroupAndReadingItsMembersIsOneQuery(): void
     {
         $wiki = $this->getWiki();
@@ -156,7 +128,6 @@ class PerRequestCachesTest extends YesWikiTestCase
         $groups = $wiki->services->get(\YesWiki\Identity\Service\GroupOperationsService::class);
         $tripleStore = $wiki->services->get(\YesWiki\Kernel\Service\TripleStore::class);
 
-        // cold: nothing known about this resource yet
         (new \ReflectionProperty($tripleStore, 'cacheByResource'))->setValue($tripleStore, []);
         (new \ReflectionProperty($tripleStore, 'matchingCache'))->setValue($tripleStore, []);
 
@@ -171,24 +142,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A page that does not exist costs one query to find that out, not two.
-     *
-     * `getOne()` came back empty, `cacheOwner()` had nothing to remember -- it can only
-     * record a page that exists -- and then `checkEntriesACL()`, inside that same
-     * `getOne()`, asked `isEntry()` about the very tag just found to be missing. The
-     * unredacted cache already records the absence; `typeOf()` now reads it.
-     */
-    /**
-     * The measure itself: a parameterised query has to be counted.
-     *
-     * Every other test in this file asserts a query *count*, so all of them quietly stop
-     * meaning anything if the counter cannot see the queries. It could not: it hooked
-     * PDO::query() only, and a bound statement is prepared-then-executed, so converting
-     * PageManager to bindings took this file's counts to zero -- which asserted-as-1 caught by
-     * luck and asserted-as-0 would not have. Counted on execute(), so a statement reused in a
-     * loop counts once per iteration.
-     */
+    /** The measure itself: a parameterised query has to be counted. */
     public function testTheCounterSeesParameterisedQueries(): void
     {
         $db = $this->getWiki()->services->get(DbService::class);
@@ -223,11 +177,7 @@ class PerRequestCachesTest extends YesWikiTestCase
         $this->assertSame(1, $used, 'one query settles both "is there a row" and "what type is it"');
     }
 
-    /**
-     * `{{attach file="…"}}` resolves a FileManager tag. It used to ask whether the tag was a
-     * file and then load it -- but loading answers both, since FileManager::getOne() returns
-     * null for anything that is not one. Two queries per {{attach}} on the page.
-     */
+    /** `{{attach file="…"}}` resolves a FileManager tag. */
     public function testResolvingAFileTagReadsTheRowOnce(): void
     {
         $wiki = $this->getWiki();

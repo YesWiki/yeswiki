@@ -38,7 +38,7 @@
         lastOfMonth: 'EVENT_LAST_Y_OF_MONTH'
       } %}
     <span class="BAZ_texte">
-      {# create variables used to translate part of repetition text #}
+
       {% set repetitionTextNthOfMonthForYear = _t('EVENT_REPETITION_NTH_OF_MONTH',{
             nth: data.nth ?? '?',
             month: _t(monthT[data.month] ?? '???')|lower 
@@ -83,7 +83,7 @@
                 x:data.step ?? '?',
               })|lower
         %}
-      {# assembly all this variables according to type of repetition #}
+
       {% set repetitionText = data.repetition == 'y'
           ? repetitionTextForYear
           : (data.repetition == 'm'
@@ -93,7 +93,7 @@
               : repetitionTextForDays
             )
           ) %}
-      {# use the translation #}
+
       <small><i>{{ _t('EVENT_IS_RECURRENT',{
         repetition: repetitionText,
         nb: data.nbmax ?? '?'

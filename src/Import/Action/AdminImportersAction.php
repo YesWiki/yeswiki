@@ -12,12 +12,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{adminimporters}}`: declare where this wiki imports Content from, and sync it.
- *
- * The page writes data sources straight into the configuration file, so every importer --
- * core's and any an extension adds -- is configured from one place instead of by hand.
- */
+/** `{{adminimporters}}`: declare where this wiki imports Content from, and sync it. */
 class AdminImportersAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -45,14 +40,10 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
         $importerManager = $this->getService(ImporterManager::class);
         $importers = $importerManager->getAvailableImporters();
         $formManager = $this->getService(FormManager::class);
-        // each importer class (from this extension or any other) declares its own admin
-        // fields via Importer::getAdminFields()/needsBazarForm(), so this action stays
-        // extension-agnostic instead of hardcoding a field list per importer name
+
         $importerFields = [];
         $importersWithoutForm = [];
-        // an importer can offer field-mapping either from a fixed field list (getOwnFields(),
-        // e.g. Rss/Imap) or by fetching an arbitrary remote form's fields live via the
-        // mapping-fields AJAX endpoint (hasRemoteFieldMapping(), e.g. YesWikiToYesWiki)
+
         $importersWithFieldMapping = [];
         foreach ($importers as $shortName => $className) {
             $importerFields[$shortName] = $importerManager->getAdminFieldsFor($shortName);
@@ -70,7 +61,6 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
 
         $request = $this->getRequest();
 
-        // the admin no longer types a raw formId: "new" means "create a form, pick its id now"
         if ($request->request->get('formId', '') === 'new') {
             $request->request->set('formId', (string)$formManager->findNewId());
         }
@@ -85,22 +75,18 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
 
         if (!empty($delete) && isset($dataSources[$delete])) {
             unset($dataSources[$delete]);
-            // ArrayAccess rather than the magic property: ConfigurationFile declares neither,
-            // and only one of the two is a shape static analysis can follow
+
             $config['dataSources'] = $dataSources;
             $config->write();
             $message = _t('IMPORTER_SOURCE_DELETED');
         } elseif (!empty($syncSource) && isset($dataSources[$syncSource])) {
             $syncedSourceId = $syncSource;
-            // a sync can take a while (remote wikis, large forms/entries/lists); this is an
-            // admin-triggered, one-off action so the regular script execution time limit
-            // would otherwise cut it short
+
             set_time_limit(0);
             ob_start();
             $result = $importerManager->syncSource($syncedSourceId, $dataSources[$syncedSourceId]);
             $syncOutput = trim(ob_get_clean() . "\n" . $result);
-            // a hand-triggered sync counts as this source's last sync too, so the table below
-            // and the automatic scheduler agree on when it last ran
+
             $this->getService(SyncScheduler::class)->recordRun($syncedSourceId, $syncOutput);
         } elseif (!empty($importer)) {
             $sourceOptions = $importerManager->collectSourceOptionsFromInput($importer, $importerFields, $request->request->all());
@@ -115,8 +101,6 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             $message = _t('IMPORTER_SOURCE_SAVED');
         }
 
-        // both the sources table and the edit form show what was typed in, not how it ended up
-        // stored (an importer may split one typed value into several config keys)
         $editableDataSources = $this->editableDataSources($dataSources, $importers);
 
         return $this->render('@core/admin-importers.twig', [
@@ -135,11 +119,6 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
         ]);
     }
 
-    /**
-     * When each source last synced and what it did -- whether that was the automatic sync
-     * (config 'syncOnMaintenance'), the console command, or the button on this page. A sync
-     * nobody watched must not be invisible: an admin needs to see that it ran, and what of.
-     */
     /**
      * @param array<string, array<string, mixed>> $dataSources
      *
@@ -160,9 +139,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * Turn the stored sources back into what the admin form was filled with, so that editing
-     * then re-saving a source unchanged doesn't alter it (an importer may store its config
-     * differently from how it's typed in, see Importer::normalizeAdminOptions()).
+     * Turn the stored sources back into what the admin form was filled with, so that editing then re-saving a source unchanged doesn't alter it (an importer may store its config differently from how it's typed in, see Importer::normalizeAdminOptions()).
      *
      * @param array<string, array<string, mixed>> $dataSources
      * @param array<string, class-string>         $importers
@@ -181,10 +158,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * Derive a stable id from the source's type and url, so re-saving the same source
-     * (same importer + url) keeps producing the same id instead of a random one. Two sources
-     * can share a wiki's url while importing different things from it, hence the remote
-     * form/list they target being part of the id too.
+     * Derive a stable id from the source's type and url, so re-saving the same source (same importer + url) keeps producing the same id instead of a random one.
      *
      * @param array<string, mixed> $sourceOptions
      */

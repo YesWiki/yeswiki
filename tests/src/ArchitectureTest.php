@@ -4,17 +4,7 @@ namespace YesWiki\Test;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * Enforces the module boundaries ticket 05 created.
- *
- * Modules only help if something checks them. These rules are cheap, static, and catch the
- * failure modes this wave actually hit -- including the one that silently deleted every
- * /api/* route (see testEveryRouteLivesInAControllerDirectory).
- *
- * KNOWN_VIOLATIONS works like the PHPStan baseline: it records what was already wrong when
- * the boundaries were drawn, so *new* breaches fail immediately while the existing ones are
- * burned down by tickets 04, 06 and 08. Entries may be removed, never added.
- */
+/** Enforces the module boundaries ticket 05 created. */
 class ArchitectureTest extends TestCase
 {
     private const SRC = __DIR__ . '/../../src';
@@ -25,28 +15,24 @@ class ArchitectureTest extends TestCase
     private const MODULES = ['Kernel', 'Content', 'Identity', 'Render', 'Search', 'Admin', 'Import', 'Contact', 'Files', 'Federation', 'Social'];
 
     /**
-     * Pre-existing breaches, recorded when the rule was introduced. Every one is a real
-     * coupling ticket 04 identified before the modules existed to make it visible.
+     * Pre-existing breaches, recorded when the rule was introduced.
      *
      * @var list<string>
      */
     private const KNOWN_VIOLATIONS = [
-        // Mailer is the standout: it reaches into three feature modules, and ticket 04
-        // already flagged Mailer -> AuthenticationService as a cycle edge. It is arguably
-        // not Kernel code at all.
         'Kernel/Service/Mailer.php -> Content\Controller\EntryController',
         'Kernel/Service/Mailer.php -> Identity\Service\AuthenticationService',
         'Kernel/Service/Mailer.php -> Identity\Service\UserManager',
         'Kernel/Service/Mailer.php -> Render\Service\TemplateEngine',
-        // Performer renders action output; ticket 06 replaces this dispatcher entirely.
-        // Its MarkdownFormatterService edge is gone: ticket 06 removed the formatter object
-        // type, so Performer no longer registers the 'wakka' formatter closure.
+
         'Kernel/Service/Performer.php -> Render\Service\TemplateEngine',
-        // services reaching into a request handler -- ticket 04's remaining inversions
+
         'Render/Service/TemplateHelperService.php -> Content\Controller\EntryController',
     ];
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function phpFilesIn(string $dir): array
     {
         if (!is_dir($dir)) {
@@ -131,13 +117,7 @@ class ArchitectureTest extends TestCase
         );
     }
 
-    /**
-     * Route discovery is directory-driven (Wiki::buildRouteCollection scans
-     * src/<Module>/Controller). Moving ApiController into a module during ticket 05 silently
-     * removed all 67 /api/* routes: nothing errored, the endpoint just returned an empty
-     * body, and one unrelated test was the only thing that noticed. This asserts routes are
-     * declared somewhere the scanner actually looks.
-     */
+    /** Route discovery is directory-driven (Wiki::buildRouteCollection scans src/<Module>/Controller). */
     public function testEveryRouteLivesInAControllerDirectory(): void
     {
         $misplaced = [];
@@ -167,15 +147,12 @@ class ArchitectureTest extends TestCase
     }
 
     /**
-     * Ticket 08 split the monolithic ApiController into per-resource controllers: every
-     * /api/* route must be declared in src/<Module>/Api/<Resource>ApiController.php, so
-     * the resource an endpoint belongs to is readable from the file that declares it.
+     * Ticket 08 split the monolithic ApiController into per-resource controllers: every /api/* route must be declared in src/<Module>/Api/<Resource>ApiController.php, so the resource an endpoint belongs to is readable from the file that declares it.
      */
     public function testEveryApiRouteLivesInAResourceApiController(): void
     {
         $misplaced = [];
-        // root-level src files (the composition root, legacy procedural files) are scanned
-        // too: an /api route declared there would silently escape the module convention
+
         $rootFiles = glob(self::SRC . '/*.php') ?: [];
         foreach ($rootFiles as $file) {
             if (preg_match("/#\\[Route\\('\\/?api(?:\\/|')/", (string)file_get_contents($file))) {

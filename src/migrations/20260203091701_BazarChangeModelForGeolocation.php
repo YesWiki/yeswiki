@@ -116,7 +116,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vFormsToProcess[] = $vForm['bn_id_nature'];
 
-                    if (trim($vField[6]) != '') { // FIELD_AUTOCOMPLETE_OTHERS
+                    if (trim($vField[6]) != '') {
                         $vAutocompleteFieldnames =
                         is_string($vField[6])
                         ? $vField[6]
@@ -299,8 +299,5 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
         }
 
         $this->report($vUpdatedForms . ' updated forms , ' . $vUpdatedEntries . ' updated entries');
-
-        // print_r ($this->aReport);
-        // throw new Exception ("done");
     }
 }

@@ -4,7 +4,7 @@
     {% for entry in entries %}
        <a class="bazar-entry modalbox" data-size="modal-lg" {{ entry.html_data|raw }}
           href="{{ entry.url ~ (entry['external-data']  ? "/iframe" : "") }}"{{ entry['external-data']  ? " data-iframe=\"1\"" : ''  }}
-            {# add /iframe only for external YesWiki entries #}
+
           title="{{ entry.title|striptags }}"
           aria-label="{{ entry.title|striptags }}">
           <div class="image-container">
@@ -15,7 +15,7 @@
                         : resizedImage(entry.imagebf_image, 300, 300, 'crop', '_') }}"
                    {{ entry['external-data']
                     ? 'onerror=this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ "\'"
-                    : '' }} > {# TODO refactor resizeImage to use url and local cache ; idea  http://image.intervention.io/  ? #}
+                    : '' }} > 
             {% else %}
               <img loading="lazy" class="trombi-image img-placeholder"
                    src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">

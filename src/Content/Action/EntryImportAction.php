@@ -65,7 +65,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             return $this->getMessageWhenHibernated();
         }
 
-        // get services
         $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
         $this->entryController = $this->getService(EntryController::class);
@@ -76,14 +75,8 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
         $vRefresh = $this->arguments['refresh'] ?? $this->getRequest()->query->get('refresh', 'false');
         $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
-        // get Forms
-
-        // Always the local forms. A `server=` argument used to list another wiki's forms over
-        // HTTP so entries could be pulled from it on the spot; importing from another YesWiki is
-        // the Importer's job now (ticket 34), which holds its own sources and credentials.
         $vForms = $this->formManager->getAll();
 
-        // switch to right method
         switch ($this->arguments['mode']) {
             case 'submitfile':
                 $vID = $this->bazarListService->getTheID($this->arguments['id']);
@@ -100,7 +93,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                     $this->arguments['bazar-import-option-detect-columns-on-headers'],
                     $vForm
                 )) {
-                    // append displayData
                     $extracted = array_map(function ($extract) use ($vForm) {
                         $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
@@ -129,7 +121,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
                 if (!empty($vID)) {
                     $vForm = $vForms[$vID['key']];
 
-                    // get csv_template
                     $csv_template = $this->CSVManager->getCSVfromFormId($vID['id'], [], ['fakeMode' => true]);
                 }
                 break;

@@ -8,8 +8,8 @@ use YesWiki\Kernel\Service\AssetRegistry;
 
 abstract class RadioField extends EnumField
 {
-    protected $displayMethod; // empty, tags
-    protected $displayFilterLimit; // number of items without filter ; false if no limit
+    protected $displayMethod;
+    protected $displayFilterLimit;
 
     protected const FIELD_DISPLAY_METHOD = 7;
 
@@ -46,7 +46,6 @@ abstract class RadioField extends EnumField
 
     private function generateTagsData($entry)
     {
-        // list of choices available from options
         $existingTags = [];
         foreach ($this->getOptions() as $key => $label) {
             $existingTags[$key] = [

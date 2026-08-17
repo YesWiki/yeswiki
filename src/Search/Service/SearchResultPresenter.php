@@ -7,14 +7,7 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * Turns index rows into what a result list shows (ticket 26).
- *
- * Separate from SearchIndexQuery because the two answer different questions. The query
- * answers "which Contents match, and may this visitor see them" -- all in SQL, all exact.
- * This answers "what does a hit look like", which is where a Content's *type* starts to
- * matter: a comment is not a page with a funny name, and a form is not a document.
- */
+/** Turns index rows into what a result list shows (ticket 26). */
 class SearchResultPresenter
 {
     /** Characters of indexed text shown around the first matching word. */
@@ -67,18 +60,10 @@ class SearchResultPresenter
     /**
      * Where a result goes when clicked.
      *
-     * A **form** is the one type whose own page is not what a searcher wants: they were
-     * looking for the *entries*, and a form's page is a designer surface. So a form result
-     * links to its entry list. Everything else links to itself; a comment's own tag renders
-     * nothing on its own, but the parent page anchors to it.
-     *
      * @param array{tag: string, title: string, content_type: string, form_id: string, updated_at: string} $row
      */
     private function urlOf(array $row): string
     {
-        // htmlspchars: false -- href() would return `&amp;`, and Twig escapes the value again
-        // when it renders the href, producing `&amp;amp;` and a broken link. The template is
-        // the one place that should be escaping.
         if ($row['content_type'] === SearchableTextExtractor::TYPE_FORM && $row['form_id'] !== '') {
             return $this->urlFormatter->href('', 'BazaR', ['id' => $row['form_id']], false);
         }
@@ -87,9 +72,7 @@ class SearchResultPresenter
     }
 
     /**
-     * A comment goes by its parent, not by `comment1754...`, which is a timestamp and tells a
-     * reader nothing. Everything else already has a title (ContentTypeResolver fills one in
-     * from the tag when a Content has none).
+     * A comment goes by its parent, not by `comment1754...`, which is a timestamp and tells a reader nothing.
      *
      * @param array{tag: string, title: string, content_type: string, form_id: string, updated_at: string} $row
      */
@@ -106,12 +89,6 @@ class SearchResultPresenter
 
     /**
      * `parent` for the comments in this page of results, in one query.
-     *
-     * Deliberately not a column on the index: it is needed for a handful of rows on a page
-     * a visitor is looking at, and only for one content type. Denormalising it would cost a
-     * column on every row of a table sized in the millions to save a query that runs at most
-     * once per result page -- and it would need its own migration for the wikis that already
-     * built the index.
      *
      * @param list<array{tag: string, title: string, content_type: string, form_id: string, updated_at: string}> $rows
      *
@@ -143,19 +120,7 @@ class SearchResultPresenter
         return $parents;
     }
 
-    /**
-     * A window of the indexed text around the first matching word.
-     *
-     * Built from the **index**, not from the Content, for three reasons that all matter:
-     * the index already holds exactly the text this visitor may read (field ACLs applied),
-     * its markup and `{{action}}` calls are already stripped, and rendering the Content
-     * instead would mean running every action in it to show two lines of context -- which is
-     * what the old `{{newtextsearch}}` did, at one entry render per result.
-     *
-     * Enum values are stored as keys, so they are read back as labels here. That is the one
-     * place the key/label decision leaks into what a person sees, and it leaks in the
-     * harmless direction: a mislabelled excerpt, never a missed match.
-     */
+    /** A window of the indexed text around the first matching word. */
     public function excerpt(string $tag, string $phrase): string
     {
         $text = $this->labelled($this->query->textFor($tag));
@@ -209,9 +174,6 @@ class SearchResultPresenter
 
     /**
      * The content types a filter can offer, in the order they should appear.
-     *
-     * Untyped means page, which is why `page` leads: it is the majority of any wiki, and it
-     * is the type a visitor does not think of as a type.
      *
      * @return list<string>
      */

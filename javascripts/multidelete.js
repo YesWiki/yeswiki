@@ -1,18 +1,13 @@
-// multidelete.js — bulk deletion of pages/users/comments from admin tables
-// (ticket 16: vanilla JS, yw-modal events instead of Bootstrap modal events)
-
 // eslint-disable-next-line no-unused-vars
 function checkAllFirstCol(elem) {
   const newState = elem.checked
-  // DataTables-driven tables live in a .dataTables_wrapper; yw-datatable ones
-  // don't, the table element itself is the scope there
   const scope = elem.closest('.dataTables_wrapper') || elem.closest('table')
   if (!scope) return
   scope
     .querySelectorAll('tr > td:first-child input.selectline[type=checkbox]')
     .forEach((checkboxParam) => {
       const checkbox = checkboxParam
-      if (checkbox.offsetParent === null) return // hidden
+      if (checkbox.offsetParent === null) return
       checkbox.checked = newState
       checkbox.dispatchEvent(new Event('change', { bubbles: true }))
     })
@@ -115,7 +110,7 @@ const multiDeleteService = {
       wiki.url(`?api/${type}/${encodeURIComponent(itemId)}/delete`),
       {
         method: 'POST',
-        timeout: 30000, // 30 seconds,
+        timeout: 30000,
         data: { csrfToken },
       },
     )
@@ -131,7 +126,6 @@ const multiDeleteService = {
             .replace('{itemId}', itemId)
             .replace('{error}', error),
         )
-        // if error force reload
         this.refreshOnModalClosing[modal.id] = true
       })
       .finally(() => {
@@ -204,9 +198,7 @@ const multiDeleteService = {
           if (body && body.error) {
             errorDetail = `: ${body.error}`
           }
-        } catch {
-          /* ignore parse errors */
-        }
+        } catch {}
         throw new Error(
           `Response is not ok (code ${response.status})${errorDetail}`,
         )

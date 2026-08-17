@@ -12,7 +12,6 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
-use YesWiki\Content\Field\ImageField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -83,22 +82,6 @@ class EntryManager
     /**
      * Announce that an entry changed -- from here, so that **every** write path announces it.
      *
-     * `entry.created`, `entry.updated` and `entry.deleted` used to be dispatched by
-     * `EntryController`, which is the form-submission path and only that. An entry written by
-     * the API, by an importer, by a migration or by a field's own side effect fired none of
-     * them, so every subscriber was quietly partial: search reindexing survived only because
-     * `PageManager` dispatches `page.*` underneath, and ActivityPub survived only because it
-     * was called directly from here instead of subscribing.
-     *
-     * Moving the dispatch to the storage layer is what makes the event mean what its name says.
-     * The consequence is deliberate and worth stating: **webhooks now fire for imported and
-     * migrated entries too**, because a wiki that says "tell me when an entry is created" was
-     * never asking "…but only if a human used the form".
-     *
-     * The dispatcher is fetched rather than injected: `EntryDateService` subscribes to these
-     * events and takes `EntryManager` in its constructor, so constructor-injecting the
-     * dispatcher here closes a container cycle.
-     *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $entry
      */
@@ -107,16 +90,13 @@ class EntryManager
         $this->container->get(EventDispatcher::class)->yesWikiDispatch($event, [
             'id' => $entry['tag'] ?? '',
             'data' => $entry,
-            // added for federation, which has to know which form's followers to tell and
-            // must not re-publish an entry this wiki imported from somewhere else
+
             'form' => $form,
             'imported' => $imported,
         ]);
     }
 
-    /**
-     * Returns true if the provided page is a Bazar fiche.
-     */
+    /** Returns true if the provided page is a Bazar fiche. */
     public function isEntry($tag): bool
     {
         if (empty($tag)) {
@@ -126,9 +106,7 @@ class EntryManager
         return $this->pageManager->isType((string)$tag, PageType::ENTRY);
     }
 
-    /**
-     * return array with list of page's tag for all entries.
-     */
+    /** return array with list of page's tag for all entries. */
     public function getAllEntriesTags(): array
     {
         return $this->pageManager->tagsOfType(PageType::ENTRY);
@@ -150,13 +128,7 @@ class EntryManager
     public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
-        // the row states its own type (ticket 27), so loading it answers "is this an entry?"
-        // as well. Asking first cost a `SELECT type` before the `SELECT *` that followed --
-        // per entry, so a list of fifty paid fifty of them.
-        //
-        // Only when there is no row to read does this fall back to asking: the page may
-        // exist and be unreadable to this visitor, and that has always returned an empty
-        // entry rather than "no such entry", which is a distinction the caller acts on.
+
         $isEntry = $page === null ? $this->isEntry($tag) : (($page['type'] ?? null) === PageType::ENTRY);
         if (!$isEntry) {
             return null;
@@ -164,9 +136,7 @@ class EntryManager
 
         $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $data = $this->getDataFromPage($page, $semantic, $debug);
-        // ...and when it appeared, for the Contents whose body does not record it: the
-        // oldest revision is where that is written. One entry, one query -- a list asks
-        // for all of them at once instead (SearchManager::search).
+
         if ($data !== [] && empty($data['created_at'])) {
             $data['created_at'] = $this->pageManager->getCreateTime($tag);
         }
@@ -174,41 +144,10 @@ class EntryManager
         return $data;
     }
 
-    /*
-    * Remove unknown fields
-    *
-    *	Remove fields that are not part of the form definition and that are not used by YesWiki framework
-    *
-    */
-
     protected function removeUnknownFields($pFormID, $pData)
     {
-        /*
-        We remove this code because it removes fields that are unknown in the form definition
-        Recurrent event use extra fields...
-        We should refactor date fields so that all informations are contained in one field as an array
-
-                // Keep only the fields defined in the form definition
-
-                $form = $this->container->get(FormManager::class)->getOne($pFormID);
-
-                $vAuthorizedFields = [];
-
-                foreach ($form['prepared'] as $field) {
-                    if ($field instanceof BazarField) {
-                        $propName = $field->getPropertyName();
-                        // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                        if (!empty($propName)) {
-                            if (isset($pData[$propName])) {
-                                $vAuthorizedFields[$propName] = $pData[$propName];
-                            }
-                        }
-                    }
-                }
-        */
         $vAuthorizedFields = [...$pData ?? []];
 
-        // Add extra fields that doesn't belong to the form definition
         $extraFields = [
             'tag', 'form_id', 'created_at',
             'updated_at', 'status', 'url',
@@ -224,7 +163,9 @@ class EntryManager
         return $vAuthorizedFields;
     }
 
-    /** getDataFromPage.
+    /**
+     * getDataFromPage.
+     *
      * @param array  $page          , content of page from sql
      * @param bool   $debug,        to throw exception in case of error
      * @param string $fieldMapping, to pass fieldMapping parameter directly to appendDisplayData
@@ -237,37 +178,16 @@ class EntryManager
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
 
-            // if a wiki page is included in a bazar entry, this could be empty
             if (empty($data)) {
                 return [];
             }
 
             $data = $this->removeUnknownFields($data['form_id'], $data);
 
-            // Keep only the fields defined in the form definition
             $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
             $vRegisteredData = [...$data];
-            /* CORRECT BUG FOR RECURRENT EVENT
-            We remove this code because it removes fields that are unknown in the form definition
-            Recurrent event use extra fields...
-            We should refactor date fields so that all informations are contained in one field as an array
 
-                        foreach ($form['prepared'] as $field) {
-                            if ($field instanceof BazarField) {
-                                $propName = $field->getPropertyName();
-                                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                                // see BazarField->formatValuesBeforeSave() for details
-                                // so do not save the previous data even if existing
-                                if (!empty($propName)) {
-                                    if (isset($data[$propName])) {
-                                        $vRegisteredData[$propName] = $data[$propName];
-                                    }
-                                }
-                            }
-                        }
-            */
-            // Add extra fields that doesn't belong to the form definition
             $extraFields = [
                 'tag', 'form_id', 'created_at',
                 'updated_at', 'status', 'url',
@@ -291,12 +211,10 @@ class EntryManager
                 }
             }
 
-            // cas ou on ne trouve pas les valeurs tag
             if (!isset($data['tag'])) {
                 $data['tag'] = $page['tag'];
             }
 
-            // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $fieldMapping, $page);
         } elseif ($debug) {
             trigger_error('empty \'body\' in EntryManager::getDataFromPage for page \'' . ($page['tag'] ?? '!!empty tag!!') . '\'', E_USER_WARNING);
@@ -319,15 +237,12 @@ class EntryManager
         }
 
         if ($pFlags & self::VALIDATE_FLAG_TITLE) {
-            // `title` is always computed from the form's entry_title_template; before
-            // formatDataBeforeSave() ran, the raw source field may be all we have
             if (empty($data['title'] ?? null) && empty($data['bf_titre'] ?? null)) {
                 throw new EntryValidationException(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
 
         if ($pFlags & self::VALIDATE_FLAG_FORM_ID) {
-            // form metadata
             if (!isset($data['form_id'])) {
                 throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
             }
@@ -350,43 +265,30 @@ class EntryManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $data['form_id'] = "$formId"; // Must be a string
+        $data['form_id'] = "$formId";
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
-        // We need to check antispam before if it is removed from data
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
-        // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
-        // A built-in Content type's form does not describe entries: a page is created by
-        // editing a page, an account by signing up, a file by uploading it. Creating an
-        // "entry" here would produce a row typed `entry` carrying a Page form's id --
-        // which belongs to no list at all, since the Page form owns the rows typed `page`
-        // (ticket 10).
         if (ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
             throw new \Exception("Form '{$data['form_id']}' describes the built-in '" . $form[ContentTypeSchema::CONTENT_TYPE] . "' Content type: it has no entries to create");
         }
 
-        // replace the field values which are restricted at reading and writing with default values
         $data = $this->assignRestrictedFields($data, [], $form);
 
-        // Let's format the data
         $data = $this->formatDataBeforeSave($data);
 
-        // We need to check bf_titre and form_id once the data are formated
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
-        // on change provisoirement d'utilisateur
         if (isset($GLOBALS['created_user_name'])) {
             $olduser = $this->authenticationService->getLoggedUser();
             $this->authenticationService->logout();
 
-            // On s'identifie de facon a attribuer la propriete de la fiche a
-            // l'utilisateur qui vient d etre cree
             $user = $this->userManager->getOneByName($GLOBALS['created_user_name']);
             $this->authenticationService->login($user);
         }
@@ -396,23 +298,18 @@ class EntryManager
             $ignoreAcls = $this->params->get('bazarIgnoreAcls');
         }
 
-        // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
 
-        // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
         $saved = $this->pageManager->save(
             $data['tag'],
             $data,
             '',
-            $ignoreAcls, // Ignore les ACLs
+            $ignoreAcls,
             $data['updated_at'],
             PageType::ENTRY
         );
 
         if ($saved == 0) {
-            // Form properties needing the saved page: entry ACLs (+ the author's
-            // comments-toggle choice) and presentation metadata -- they write to the
-            // page's metadata, not into the entry body (ADR-0010)
             $formProperties = $this->container->get(FormPropertiesService::class);
             $formProperties->applyEntryAcls($form, $data, true);
             $formProperties->applyEntryMetadatas($form, $data);
@@ -428,7 +325,6 @@ class EntryManager
             );
         }
 
-        // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['created_user_name']) && !empty($olduser)) {
             $this->authenticationService->logout();
             $oldUserClass = $this->userManager->getOneByName($olduser['name']);
@@ -439,11 +335,9 @@ class EntryManager
 
         $this->pageManager->cacheType($data['tag'], PageType::ENTRY);
 
-        // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, true);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
-            // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, true);
         }
 
@@ -471,27 +365,21 @@ class EntryManager
             throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        // replace tag with $tag to prevent errors before getOne
         $data['tag'] = $tag;
-        // if there are some restricted fields, load the previous data by bypassing the rights
+
         $previousData = $this->getOne($data['tag'], false, null, false, true);
         if ($previousData === null) {
             throw new \Exception("cannot update entry '{$data['tag']}': it does not exist");
         }
         $data['form_id'] = $previousData['form_id'];
 
-        // We need to check antispam before data are modified
-
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
-        // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
-        // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
         if (!$replace) {
-            // merge the field values which match to the actual form and which are not in $data
             $data = $this->mergeFields($previousData, $data, $form);
         }
 
@@ -499,27 +387,21 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($data['form_id'], $data);
         }
 
-        // Let's get formatted values (it will format each values and take into account access right and defaut values)
         $data = $this->formatDataBeforeSave($data);
-
-        // Title can be automatic, we need to check it now. Check also form_id (necessary ?)
 
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
-        // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
-        // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
+
         $this->pageManager->save($data['tag'], $data, '');
 
         $formProperties = $this->container->get(FormPropertiesService::class);
         $formProperties->applyEntryAcls($form, $data);
         $formProperties->applyEntryMetadatas($form, $data);
 
-        // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, false, $previousData);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
-            // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, false);
         }
 
@@ -530,9 +412,7 @@ class EntryManager
     }
 
     /**
-     * Replace the field values which are restricted at reading and writing. These values must be loaded to save them
-     * without user modification.
-     * As the fields are rectricted at reading, the right must be bypassed to load them.
+     * Replace the field values which are restricted at reading and writing.
      *
      * @param array $data         the provided data to update
      * @param array $previousData the provided previousData to update
@@ -542,7 +422,6 @@ class EntryManager
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
-        // check if there are some restricted fields at writing
         $restrictedFields = [];
 
         $vDefaults = [];
@@ -550,9 +429,7 @@ class EntryManager
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $propName = $field->getPropertyName();
-                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                // see BazarField->formatValuesBeforeSave() for details
-                // so do not save the previous data even if existing
+
                 if (!empty($propName) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
 
@@ -562,7 +439,6 @@ class EntryManager
         }
 
         if (!empty($restrictedFields)) {
-            // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
                 if (isset($previousData[$propName])) {
                     $data[$propName] = $previousData[$propName];
@@ -633,14 +509,7 @@ class EntryManager
         $this->announce('entry.deleted', $form, $entryToDelete, $isExternalEntry);
     }
 
-    /*
-     * Convert body to JSON object
-     */
-    /**
-     * Legacy entry body keys => their plain-English replacements (ticket 27,
-     * ADR-0010). RenameEntryBodyKeys converts stored latest revisions; this map is
-     * the read-side insurance for anything older (old revisions, remote payloads).
-     */
+    /** Legacy entry body keys => their plain-English replacements (ticket 27, ADR-0010). */
     public const LEGACY_ENTRY_KEYS = [
         'id_fiche' => 'tag',
         'id_typeannonce' => 'form_id',
@@ -651,8 +520,7 @@ class EntryManager
     ];
 
     /**
-     * Normalizes an already-decoded entry body (ticket 09: `pages.body` is a JSON object
-     * for every Content type, and PageManager hands it back decoded).
+     * Normalizes an already-decoded entry body (ticket 09: `pages.body` is a JSON object for every Content type, and PageManager hands it back decoded).
      *
      * @param array<string, mixed>|null $body
      */
@@ -664,7 +532,7 @@ class EntryManager
                 if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
                     $data[$key] = $data[$legacyKey];
                 }
-                // bf_titre stays as ordinary field data; it only ALSO feeds `title`
+
                 if ($legacyKey !== 'bf_titre') {
                     unset($data[$legacyKey]);
                 }
@@ -675,8 +543,7 @@ class EntryManager
     }
 
     /**
-     * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
-     * de la valeur POST les valeurs inadequates et en formattant les champs.
+     * prepare la requete d'insertion ou de MAJ de la fiche en supprimant de la valeur POST les valeurs inadequates et en formattant les champs.
      *
      * @param $data current raw entry values
      *
@@ -686,22 +553,16 @@ class EntryManager
      */
     public function formatDataBeforeSave($data): array
     {
-        // Let's set the value of form_id
-
         $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('form_id');
 
-        // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
         if (empty($form)) {
             throw new \Exception('No form with id: ' . $data['form_id']);
         }
 
-        // We first need to ensure default values for uneditable fields are set
-        // so we can use it later to build the automatic title if necessary
-
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField
-                && !$bazarField->requiresTagBeforeFormatting() // Some fields like ImageField and File Field need the tag to be defined before to call formatValuesBeforeSave. So we will handle them later.
+                && !$bazarField->requiresTagBeforeFormatting()
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
@@ -721,8 +582,6 @@ class EntryManager
 
         $formProperties = $this->container->get(FormPropertiesService::class);
 
-        // Account creation (entry_creates_user): must run before title/tag generation
-        // so the created user's name is available (owner attribution, `user` ACLs)
         if ($formProperties->createsUser($form)) {
             $tab = $formProperties->applyUserCreation($form, $data);
             if (!empty($tab)) {
@@ -734,12 +593,8 @@ class EntryManager
             }
         }
 
-        // The entry title is always computed from the form's entry_title_template
-        // (ADR-0010); `title` is the canonical key, `bf_titre` is just a field a
-        // template may reference
         $data['title'] = $formProperties->computeTitle($form, $data);
 
-        // Let's generate the entry tag if necessary: a lowercase slug of the title
         if (!isset($data['tag'])) {
             if (empty($data['title'])) {
                 throw new EntryValidationException(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
@@ -748,8 +603,6 @@ class EntryManager
         } elseif (empty($data['tag'])) {
             throw new \Exception('$data[\'tag\'] is set but with empty value !');
         }
-
-        // We can now handle fields like ImageField and File Field that require tag in order to format their values
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField->requiresTagBeforeFormatting()) {
@@ -769,7 +622,6 @@ class EntryManager
             }
         }
 
-        // Get creation date if it exists, initialize it otherwise
         $result = $this->dbService->loadSingle(
             'SELECT MIN(' . $this->dbService->quoteIdentifier('time') . ') as firsttime FROM '
             . $this->dbService->prefixTable('pages') . 'WHERE tag = ?',
@@ -777,27 +629,22 @@ class EntryManager
         );
         $data['created_at'] = $data['created_at'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
-        // Entry status
         if ($this->aclService->isAdmin()) {
             $data['status'] = '1';
         } else {
             $data['status'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        // Let's ensure $data['form_id'] is not empty
         if (empty($data['form_id'])) {
             throw new \Exception('$data[\'form_id\'] is empty !');
         }
 
-        // Let's ensure $data['tag'] is not empty
         if (empty($data['tag'])) {
             throw new \Exception('$data[\'tag\'] is empty !');
         }
 
         $data['updated_at'] = $data['updated_at'] ?? date('Y-m-d H:i:s', time());
 
-        // on enleve les champs hidden ou non necessaires a la fiche
-        // (submission artifacts are stripped, never stored -- ADR-0010)
         unset($data['valider']);
         unset($data['MAX_FILE_SIZE']);
         unset($data['antispam']);
@@ -811,12 +658,10 @@ class EntryManager
         unset($data['-is-external-']);
         unset($data['external-data']);
 
-        // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
             unset($data['owner']);
         }
 
-        // on encode en utf-8 pour reussir a encoder en json TODO: still necessary ?
         if (YW_CHARSET != 'UTF-8') {
             $data = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
@@ -830,9 +675,6 @@ class EntryManager
                 $vPropertyName = $vBazarField->getPropertyName();
 
                 if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    // named by its label, and typed as the visitor's problem rather than
-                    // the site's: this used to surface as "an unexpected error occurred,
-                    // contact the administrator" quoting an internal field identifier
                     throw new EntryValidationException(_t('BAZ_CHAMPS_REQUIS') . ' : ' . ($vBazarField->getLabel() ?: $vPropertyName));
                 }
             }
@@ -863,7 +705,6 @@ class EntryManager
             $vFieldMappings = $pFieldMappings;
         }
 
-        // champs correspondants
         if (!empty($vFieldMappings)) {
             try {
                 foreach ($vFieldMappings as $vKey => $vData) {
@@ -884,8 +725,7 @@ class EntryManager
     }
 
     /**
-     * Append data needed for display
-     * TODO move this to a class dedicated to display.
+     * Append data needed for display TODO move this to a class dedicated to display.
      *
      * @param array  $pEntry
      * @param bool   $pSemantic
@@ -897,33 +737,21 @@ class EntryManager
      */
     public function appendDisplayData(&$pEntry, $pSemantic, $pFieldMappings, array $pPage)
     {
-        // user
         $pEntry['user'] = $pPage['user'] ?? null;
-        // owner
+
         $pEntry['owner'] = $pPage['owner'] ?? null;
-        // when it was last changed. Only an entry saved through create()/update() records
-        // that in its body; a page, an account and a file never have, so anything asking a
-        // list for it -- a card's date, a `displayfields` mapping onto it -- got nothing at
-        // all. The revision being read is the current one, so its `time` is the answer for
-        // those. The body still wins where it has one: it is written in PHP's timezone and
-        // `time` in the database's, and the two disagree by that offset (EditBarAction
-        // reads the pair the same way round for the same reason).
+
         $pEntry['updated_at'] = $pEntry['updated_at'] ?? $pPage['time'] ?? null;
 
         $pEntry = $this->applyFieldMappings($pEntry, $pFieldMappings, $pPage);
 
-        // HTML data
         $pEntry['html_data'] = $this->getHtmlDataAttributes($pEntry);
 
-        // pEntry URL
         if (!isset($pEntry['url'])) {
-            // could already be defined for entries from external json
             $pEntry['url'] = $this->urlFormatter->href('', $pEntry['tag']);
         }
 
-        // Données sémantiques
         if ($pSemantic) {
-            // not possible to init the formManager in the constructor because of circular reference problem
             $form = $this->container->get(FormManager::class)->getOne($pEntry['form_id']);
             $pEntry['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pEntry);
         }
@@ -939,14 +767,8 @@ class EntryManager
      */
     public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='): array
     {
-        // This function's aim is to fetch (key , value) couples stored in a multiple parameter
-        // $param is the parameter where we have to fecth the couples
-        // $firstseparator is the separator between the couples (usually ',')
-        // $secondseparator is the separator between key and value in each couple (usually '=')
-        // Returns the table of (key , value) couples
-        // If fails to explode the data, then throws ParsingMultipleException
         $tabparam = [];
-        // check if first and second separators are at least somewhere
+
         if (strpos($param, $secondseparator) === false) {
             throw new ParsingMultipleException("Not able to parse multiple parameters because '$secondseparator' is not included in furnished param.");
         }
@@ -1001,7 +823,7 @@ class EntryManager
      */
     private function getFormsFromIds($formsIds): array
     {
-        $formManager = $this->container->get(FormManager::class); // not load in contruct to prevent circular loading
+        $formManager = $this->container->get(FormManager::class);
         if (!empty($formsIds)) {
             if (is_scalar($formsIds)) {
                 $formsIds = [$formsIds];
@@ -1087,7 +909,6 @@ class EntryManager
             return [];
         }
 
-        /* sanitize params */
         if (empty($attributesNames)) {
             throw new \Exception('$attributesNames sould not be empty !');
         } elseif ($mode === 'rename') {
@@ -1120,7 +941,7 @@ class EntryManager
                 $attributesQueries[$attributeName] = '*';
             }
         }
-        // add search for attributes
+
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
         $requete = $this->searchManager->prepareSearchRequest($params, false, $applyOnAllRevisions);
 
@@ -1136,7 +957,6 @@ class EntryManager
 
         $entriesIds = [];
         foreach ($pages as $page) {
-            // raw SQL rows here, so the body is still stored text
             $entry = $this->decode(PageBody::decode($page['body']));
 
             foreach ($attributesNames as $attributeName) {
@@ -1160,8 +980,6 @@ class EntryManager
                 }
             }
 
-            // save
-            // on encode en utf-8 pour reussir a encoder en json
             if (YW_CHARSET != 'UTF-8') {
                 $entry = array_map(function ($value) {
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
@@ -1215,7 +1033,6 @@ class EntryManager
                 $attributeValue = $value;
             }
 
-            // Always HTML-escape the key and the attribute value
             $htmldata .= 'data-' . htmlspecialchars($key, ENT_QUOTES, 'UTF-8') . '="' .
                      htmlspecialchars($attributeValue, ENT_QUOTES, 'UTF-8') . '" ';
         }
@@ -1274,8 +1091,6 @@ class EntryManager
 
         return $htmldata;
     }
-
-    /* SEARCH : DEPRECATED use SearchManager->search instead */
 
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {

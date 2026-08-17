@@ -560,8 +560,6 @@ return [
     'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => 'New CL is succesvol geregistreerd voor de begeleider',
     'USER_GOTOADMIN' => 'User management',
 
-    // relocated from tools/login/lang/login_nl.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Inschrijven',
     'LOGIN_LOGIN' => 'Aanmelden',
     'LOGIN_WIKINAME' => 'E-mail of gebruikersnaam',
@@ -613,7 +611,6 @@ return [
     'LINK_TO_CHANGE_PASSWORD' => 'Verander het wachtwoord',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Er is geen kenteken van deze periode.',
 
-    // relocated from tools/tags/lang/tags_nl.inc.php (ticket 10)
     'TAGS_ACTION_ADMINTAGS' => 'Actie {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'de actie is voorbehouden aan de beheerdersgroep',
     'TAGS_NO_WRITE_ACCESS' => 'U hebt geen schrijftoelating op deze pagina!',
@@ -946,7 +943,7 @@ return [
     'AB_templates_section_textalign_center' => 'Centrum',
     'AB_templates_panel_label' => 'Box',
     'AB_templates_tabs_label' => 'Tabs met delen van de pagina',
-    // relocated from tools/attach/lang/attach_nl.inc.php (ticket 17)
+
     'ATTACH_ACTION_ATTACH' => 'Actie {{Attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parameter "desc" verplicht voor een afbeelding',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'de parameter "height", in pixels, mag enkel uit gehele cijfers bestaan',
@@ -1042,7 +1039,6 @@ return [
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Maximum grootte van uploadde bestanden - bytes - Maximum grootte van uploadde bestanden (ex) 2097152, 2048k, 2m',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Media Insertion (pictures, video\'s)',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Dit bestand versturen',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1056,7 +1052,6 @@ return [
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_nl.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Actie {{inschrijven...}}',
     'CONTACT_MAIL_REQUIRED' => 'de verplichte parameter e-mail ontbreekt.',
     'CONTACT_ACTION_CONTACT' => 'Actie {{contact ...}}',
@@ -1156,7 +1151,6 @@ return [
     'AB_contact_action_template_hint' => 'Vertaling:',
     'AB_mailperiod_action_label' => 'Vertaling:',
 
-    // relocated from tools/autoupdate/lang/autoupdate_en.inc.php (ticket 19) -- English placeholder, autoupdate was never translated for this language
     'AU_ACL' => 'Checking file rights',
     'AU_REPO_ERROR' => 'Inaccessible depots.',
     'AU_NOT_DESIGNATED_UPDATE_INSTANCE' => 'This instance is not the shared source install -- updates can only be triggered from there (see the farm setup documentation).',
@@ -1202,7 +1196,6 @@ return [
     'AU_SEVERAL_TOOLS_UPDATE' => 'You have {nbMaj} extensions to update',
     'AU_ONE_TOOL_UPDATE' => 'You have 1 extension to update',
 
-    // relocated from tools/syndication/lang/syndication_nl.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Actie {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'de parameter "URL" moet verplicht worden ingegeven voor de syndicatie van een RSS-feed',
     'SYNDICATION_ACTION_TWITTER' => 'Actie {{twitter ...}}',
@@ -1217,9 +1210,9 @@ return [
     'SYNDICATION_SOURCE' => 'bron',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Toegang tot alle inhoud',
     'SYNDICATION_READ_MORE' => 'Lees meer',
-    // relocated from tools/bazar/lang/bazar_nl.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Formulieren',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Kies een bestand om dit te vervangen.',
     'BAZ_SYSTEM_FORMS' => 'Wiki-inhoud',
     'BAZ_USER_FORMS' => 'Formulieren',
@@ -1601,7 +1594,6 @@ return [
     'DATATABLE_NO_RESULTS' => 'Geen resultaten',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Toon',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -1619,13 +1611,11 @@ return [
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modification of',
     'RSS_HISTORY' => 'history',
     'RSS_HIDDEN_CONTENT' => 'Hidden content',
@@ -1636,11 +1626,9 @@ return [
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Veld toevoegen',
     'FORM_BUILDER_ADVANCED' => 'Geavanceerde instellingen',
     'FORM_BUILDER_BACK' => 'Terug',
@@ -1656,7 +1644,6 @@ return [
     'FORM_BUILDER_NAME_LABEL' => 'Identificatie',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Verplicht',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Veld gebruikt als titel van de fiches',
     'FORM_EDIT_CUSTOM_TITLE' => 'Aangepaste titel…',
     'FORM_EDIT_PERMISSIONS' => 'Fiche-rechten',

@@ -33,20 +33,16 @@ class PasswordForEditingService
         return [$state, $message];
     }
 
-    /**
-     * check if PasswordForEditing mode is activated.
-     */
+    /** check if PasswordForEditing mode is activated. */
     private function isPasswordForEditingModeActivated(): bool
     {
         return $this->params->has('password_for_editing')
             && !empty($this->params->get('password_for_editing'))
-            // AuthenticationService not loaded in constructor to prevent circular references
+
             && !$this->container->get(AuthenticationService::class)->getLoggedUser();
     }
 
-    /**
-     * check if password for editing is correct.
-     */
+    /** check if password for editing is correct. */
     private function hasRightPasswordForExisting(): bool
     {
         $val = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('password_for_editing');
@@ -54,9 +50,7 @@ class PasswordForEditingService
         return isset($val) && $val == $this->params->get('password_for_editing');
     }
 
-    /**
-     * render form to ask right password for editing.
-     */
+    /** render form to ask right password for editing. */
     private function renderNotGrantedPasswordForEditing(): string
     {
         return $this->templateEngine->render(

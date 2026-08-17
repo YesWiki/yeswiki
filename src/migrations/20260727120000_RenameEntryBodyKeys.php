@@ -5,13 +5,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Ticket 27 (ADR-0010): entry system keys go plain-English -- id_fiche => tag,
- * id_typeannonce => form_id, date_creation_fiche => created_at, date_maj_fiche =>
- * updated_at, statut_fiche => status -- and every entry gains the computed `title`
- * (stamped from bf_titre for existing entries). Submission artifacts that
- * historically leaked into stored bodies (antispam, valider, MAX_FILE_SIZE) are
- * stripped. Converts latest revisions in place; older revisions keep the legacy keys
- * and stay readable through EntryManager::LEGACY_ENTRY_KEYS.
+ * Ticket 27 (ADR-0010): entry system keys go plain-English -- id_fiche => tag, id_typeannonce => form_id, date_creation_fiche => created_at, date_maj_fiche => updated_at, statut_fiche => status -- and every entry gains the computed `title` (stamped from bf_titre for existing entries).
  */
 class RenameEntryBodyKeys extends YesWikiMigration
 {
@@ -38,7 +32,7 @@ class RenameEntryBodyKeys extends YesWikiMigration
                     $changed = true;
                     continue;
                 }
-                // bf_titre stays as ordinary field data -- it is not renamed
+
                 $newKey = $key === 'bf_titre' ? $key : (EntryManager::LEGACY_ENTRY_KEYS[$key] ?? $key);
                 if ($newKey !== $key) {
                     $changed = true;

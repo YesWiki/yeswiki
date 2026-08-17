@@ -11,7 +11,6 @@ class RadioEntryField extends RadioField
     {
         parent::__construct($values, $services);
 
-        // ticket 34: a linked form is local, never a URL to another wiki
         $this->options = null;
     }
 
@@ -40,9 +39,7 @@ class RadioEntryField extends RadioField
         return $this->getEntriesOptions();
     }
 
-    /**
-     * check if the current class is EnumEntry.
-     */
+    /** check if the current class is EnumEntry. */
     public function isEnumEntryField(): bool
     {
         return true;

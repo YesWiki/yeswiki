@@ -26,24 +26,16 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         return 'section';
     }
 
-    /**
-     * The patterns `run()`'s switch draws, offered as the choice they are.
-     *
-     * Written out rather than derived from the pattern names: four of the nine keys do not
-     * follow from their value (`cross2` is `..._cross_not_aligned`, `point` is
-     * `..._points`, `diagonal` is `..._diag`), and a key built by string surgery fails
-     * silently -- it renders as itself. Every `_t()` in this repo is a literal for that
-     * reason, and so that a key can be found by searching for it.
-     */
+    /** The patterns `run()`'s switch draws, offered as the choice they are. */
     private const PATTERN_LABELS = [
         '' => 'AB_templates_section_pattern_solid',
-        // built from the one colour, shaded and tinted, so they take any colour
+
         'gradient-down' => 'AB_templates_section_pattern_gradient_down',
         'gradient-up' => 'AB_templates_section_pattern_gradient_up',
         'gradient-diagonal' => 'AB_templates_section_pattern_gradient_diagonal',
         'glow' => 'AB_templates_section_pattern_glow',
         'mesh' => 'AB_templates_section_pattern_mesh',
-        // marks, each with the swapped-colour variant that used to be a checkbox
+
         'point' => 'AB_templates_section_pattern_points',
         'point-reverse' => 'AB_templates_section_pattern_points_reverse',
         'point2' => 'AB_templates_section_pattern_points_not_aligned',
@@ -60,26 +52,15 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         'stripes-reverse' => 'AB_templates_section_pattern_stripes_reverse',
         'grid' => 'AB_templates_section_pattern_grid',
         'grid-reverse' => 'AB_templates_section_pattern_grid_reverse',
-        // a border has no marks to swap
+
         'border-solid' => 'AB_templates_section_pattern_border_solid',
         'border-dashed' => 'AB_templates_section_pattern_border_dashed',
         'border-dotted' => 'AB_templates_section_pattern_border_dotted',
     ];
 
     /**
-     * No advanced fold: the settings are in the order they matter instead.
-     *
-     * A section is what a banner is made of, and the questions come in a sequence -- what
-     * colour, what does the text do on it, what texture, what shape, what picture, how
-     * tall, who sees it. Half of that used to be behind "Paramètres avancés", which is a
-     * fold you have to know to open before the component will look like anything.
-     *
-     * Six of these write into `class` rather than into a parameter of their own
-     * (`writesTo`). They are choices in their own right and are laid out among the others;
-     * the rail joins them on the way out and takes them apart on the way in.
+     * What `repeat=`, `size=` and `position=` accept: a hand-typed value reaches an inline style, so only these do.
      */
-    /** What `repeat=`, `size=` and `position=` accept: a hand-typed value reaches an inline
-     *  style, so only these do. */
     private const REPEATS = ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'];
 
     private const SIZES = ['auto', 'cover', 'contain'];
@@ -101,7 +82,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 ->previewHeight('300px')
                 ->wraps(_t('AB_templates_section_wrappedcontentexample'))
                 ->settings(
-                    // what it looks like, and what the text does on it
                     Setting::color('bgcolor')
                         ->label(_t('AB_templates_section_bgcolor_full_label'))
                         ->withIcon('palette')
@@ -249,12 +229,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
     /**
      * The animations `{{section}}` can carry, as `wow <name>` class pairs.
      *
-     * Note what is NOT here any more: the image-behaviour classes (`cover`, `fixed`,
-     * `center`, `parallax`) and the fixed-height ones (`half-height` and friends). Four
-     * checkboxes that mean nothing until a picture is set, and a height list now answered
-     * by a slider. They still render, and a page that has them keeps them -- a class token
-     * no setting recognises is carried through untouched rather than dropped.
-     *
      * @var array<string, string>
      */
     private const ANIMATION_LABELS = [
@@ -274,15 +248,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
     ];
 
     /**
-     * The animation this section carries, as the class pair stored content already uses --
-     * and the stylesheet that makes it move, declared only when there is one to run.
-     *
-     * The parameter was being *written* by the settings rail and read by nobody, and
-     * `styles/animate.css` was registered by nobody either, so all twelve of the choices
-     * above had been doing nothing at all. Two halves of one dead feature (ADR-0020).
-     *
-     * Conditional on purpose: ADR-0014's whole point is that a page downloads what it turns
-     * out to need, and a page with no animated section needs none of this.
+     * The animation this section carries, as the class pair stored content already uses -- and the stylesheet that makes it move, declared only when there is one to run.
      */
     private function animationClass(): string
     {
@@ -296,13 +262,17 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         return ' ' . $animation;
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     private static function patternOptions(): array
     {
         return array_map(static fn (string $key) => _t($key), self::PATTERN_LABELS);
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     private static function animationOptions(): array
     {
         return array_map(static fn (string $key) => _t($key), self::ANIMATION_LABELS);
@@ -313,13 +283,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         $bgcolor = $this->arguments['bgcolor'] ?? '';
         $patternId = (string)($this->arguments['pattern'] ?? '');
 
-        // Swapping the two colours used to be a checkbox of its own, which meant a setting
-        // that did nothing for two thirds of the textures -- a border has no marks to
-        // invert, and a gradient has a direction instead. It is a variant of the textures
-        // it means something for now: `point` and `point-reverse` are two entries in one
-        // list, which is also how they are chosen -- you pick the one that looks right.
-        //
-        // `patternreverse="true"` is what pages already say, so it still reverses.
         $reversed = ($this->arguments['patternreverse'] ?? false) == 'true'
             || str_ends_with($patternId, '-reverse');
         $patternId = (string)preg_replace('/-reverse$/', '', $patternId);
@@ -328,13 +291,10 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         $patterncolor = $reversed ? $bgcolor : 'var(--yw-surface)';
         $patternborder = false;
 
-        // A gradient is built from the one colour it is given, shaded and tinted, so it
-        // needs no second colour picker and works with whatever colour is chosen.
         $base = $bgcolor !== '' ? $bgcolor : 'var(--yw-surface)';
         $shade = "color-mix(in srgb, $base 62%, #000)";
         $tint = "color-mix(in srgb, $base 74%, #fff)";
 
-        // image's background color
         switch ($patternId) {
             case 'border-solid':
             case 'border-dashed':
@@ -432,7 +392,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         }
 
         ob_start();
-        // image's filename
+
         $file = $this->arguments['file'] ?? '';
         $backgroundimg = true;
         if (empty($file) && empty($bgcolor)) {
@@ -440,27 +400,11 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             $backgroundimg = false;
         }
 
-        // Where the background picture is served from.
-        //
-        // Two file models meet here, exactly as they do in {{attach}}: `file=` is normally a
-        // **FileManager tag** (ticket 10) whose bytes live under private/ and are served
-        // through the ACL-checked download route (ADR-0006), and anything that is not a
-        // known tag falls back to the **legacy** encoded filename under files/. This action
-        // only ever did the legacy search, so a picture chosen from the file manager could
-        // not be found at all -- and the file manager is now the only way the settings rail
-        // offers to choose one.
-        //
-        // The download route also happens to be page-independent, which is what lets the
-        // WYSIWYG editor's preview show the picture: it renders through `?wiki/render`, with
-        // no page and no revision date, and the legacy path is built out of both.
         $imageUrl = null;
         if (!empty($file)) {
             $entry = $this->getService(FileManager::class)->getOne($file);
 
             if ($entry !== null) {
-                // `family` is derived, never stored -- FileApiController computes it the
-                // same way for the listing. Reading it off the row finds nothing, so every
-                // picture was rejected as "not an image".
                 $family = FileManager::familyOf(
                     (string)($entry['mime_type'] ?? ''),
                     (string)($entry['original_filename'] ?? '')
@@ -471,11 +415,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
                     return;
                 }
-                // Capped, not full size. A section's background is the biggest picture on
-                // most pages and the one nobody looks at closely -- serving the four-megapixel
-                // original of it made every page carrying one slow for no visible gain. The
-                // download route resizes on demand and caches the copy beside the bytes, under
-                // the same ACL check; the original is what a download still gives.
+
                 $config = $this->getService(RuntimeConfig::class);
                 $imageUrl = $this->getService(UrlFormatter::class)
                     ->href('', 'api/files/' . rawurlencode($file) . '/download', [
@@ -485,7 +425,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             } else {
                 $paths = $this->getService(AttachedFilePaths::class);
 
-                // test of image extension
                 if (!$paths->isPicture($file)) {
                     echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
                         . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
@@ -499,19 +438,15 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             $height = $this->arguments['height'] ?? '';
         }
 
-        // container class
         $class = $this->arguments['class'] ?? '';
 
-        // container id
         $id = $this->arguments['id'] ?? '';
 
-        // container data attributes
         $data = $this->getService(TemplateHelperService::class)->getDataParameter();
 
         $pagetag = $this->getService(PageContext::class)->getTag();
 
         if ($this->check_end_elem('section')) {
-            // specify the role to be checked ( *, +, %, @admins)
             $role = strval($this->arguments['visibility'] ?? '');
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
             $visible = !$role || $this->getService(AclService::class)->check($role, null, false);
@@ -523,19 +458,8 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 . (!empty($class) ? ' ' . $class : '')
                 . $this->animationClass();
 
-            // How tall it is at least, as a share of the window -- a banner is given room
-            // rather than capped. `height` is the older parameter and stays what it always
-            // was, a number of pixels written into pages that are already out there, so
-            // this is a second one rather than a change of unit under them.
             $minHeight = $this->arguments['minheight'] ?? '';
 
-            // The picture is a layer of its own rather than the section's own background,
-            // and everything about how it is drawn is a custom property that layer reads.
-            //
-            // That is what lets it be translucent. `opacity` on the section fades the words
-            // with it; and the section's own background-image cannot be faded without
-            // fading the background-colour underneath it -- which is the opposite of what a
-            // translucent picture is for, since the colour is what it blends INTO.
             $imageStyle = '';
             if ($imageUrl !== null) {
                 $opacity = $this->arguments['opacity'] ?? '';
@@ -543,11 +467,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 $size = (string)($this->arguments['size'] ?? '');
                 $position = (string)($this->arguments['position'] ?? '');
 
-                // `cover`, `center` and `fixed` are classes pages already carry, and they
-                // say the same things these parameters do. Resolved here rather than in the
-                // stylesheet so that one place decides which wins: a rule on the layer
-                // would beat the inline custom property a parameter writes, and setting
-                // `size="auto"` on a section classed `cover` would have done nothing.
                 $tokens = preg_split('/\s+/', (string)($this->arguments['class'] ?? '')) ?: [];
                 if ($size === '' && in_array('cover', $tokens, true)) {
                     $size = 'cover';
@@ -567,8 +486,6 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     . ($opacity !== '' ? '--yw-section-image-opacity:' . (float)$opacity . '; ' : '');
             }
 
-            // an author's `class="white"`/`"black"` still wins: it is said outright, and this
-            // is only ever an inference from a colour
             $sectionInk = (str_contains($class, 'white') || str_contains($class, 'black'))
                 ? ''
                 : $this->getService(PresetService::class)->inkForBackground((string)$bgcolor);
@@ -577,11 +494,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
     <section' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="' . $class
                 . ($imageUrl !== null ? ' with-bg-image' : '') . '" data-file="' . $file . '" style="'
                 . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
-                // ...and the ink that reads on it, where core can tell. A background somebody
-                // typed is the one ground a stylesheet cannot measure, so it used to be left
-                // to `class="white"`/`"black"` -- an author guessing, and guessing again every
-                // time the preset's colours moved. Where the value is a literal or one of the
-                // wiki's own fills, the answer is knowable, so it is answered.
+
                 . ($sectionInk !== '' ? 'color:' . $sectionInk . '; ' : '')
                 . (!empty($height) ? 'height:' . $height . 'px; ' : '')
                 . ($minHeight !== '' ? 'min-height:' . (float)$minHeight . 'vh; ' : '')
@@ -601,8 +514,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             } else {
                 echo '<div>';
             }
-            // Only the legacy path can be missing: a FileManager tag was resolved by
-            // loading its row, so the file it names exists by the time we are here.
+
             if (isset($fullFilename) && (!file_exists($fullFilename) || $fullFilename === '')) {
                 echo '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . ' (' . htmlspecialchars($file) . ')</div>';
             }

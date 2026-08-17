@@ -6,8 +6,6 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
 {
     public function run()
     {
-        // This migration fixes MySQL-specific schema issues (AUTO_INCREMENT, PRIMARY KEY)
-        // Skip for non-MySQL databases as they have different approaches
         if ($this->dbService->getDriver() !== 'mysql') {
             return;
         }

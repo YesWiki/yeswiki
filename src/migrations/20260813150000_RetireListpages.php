@@ -10,29 +10,7 @@ use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
-/**
- * `{{listpages}}` is retired: a page is an entry, so a page list is an entry list.
- *
- * Since ADR-0011 the Pages form describes pages the way any form describes its entries, which
- * left the wiki with two actions, two palette cards and two Presentation Sources answering one
- * question. This rewrites the stored calls onto `{{entrylist}}` over the Pages form and the
- * action goes with it.
- *
- * ## Every revision, not just the latest
- *
- * The same reasoning as ticket 33's rename: a page's history is diffed revision against
- * revision, and rewriting only the current one would make every historical diff show this
- * migration's edit as though the last author had made it -- and reverting to an older revision
- * would resurrect a call nothing answers.
- *
- * ## What it cannot carry over
- *
- * Three parameters have no equivalent (`ListpagesRewriter` documents the whole mapping):
- * `exclude`, `user`, and `sort="user"`. They are dropped rather than left in place -- a call
- * nothing answers renders an error where a list used to be -- and every page that had one is
- * named in the log, because a wider list than the author asked for is a thing they should be
- * told about rather than discover.
- */
+/** `{{listpages}}` is retired: a page is an entry, so a page list is an entry list. */
 class RetireListpages extends YesWikiMigration
 {
     public function run()
@@ -43,8 +21,6 @@ class RetireListpages extends YesWikiMigration
 
         $form = $this->getService(FormManager::class)->getByContentType(PageType::PAGE);
         if ($form === null || ($form['id'] ?? null) === null) {
-            // nothing to rewrite the calls ONTO. Silence would leave the wiki with calls to an
-            // action that no longer exists and no clue why.
             $log->log(
                 'migration',
                 'listpages could not be retired: this wiki has no Pages form to list the pages of. '
@@ -87,12 +63,8 @@ class RetireListpages extends YesWikiMigration
             return;
         }
 
-        // the rewritten text is what the index holds; queued rather than indexed inline, like
-        // every other write path (ticket 18)
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
-        // The action names are written without braces on purpose: the log is itself a wiki
-        // page, so a call in it would not be a record of a rewrite, it would BE a list.
         $log->log(
             'migration',
             'listpages is retired -- a page is an entry of the Pages form, so its list is an '

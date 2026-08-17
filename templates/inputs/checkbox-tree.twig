@@ -21,8 +21,7 @@
 			<label for="{{ name }}">
 				<input type="checkbox" id="{{ name }}" value="1" name="{{ name }}" 
 				       {% if checked %} checked {% endif %} />
-				{# Those two spans are needed, the first one contains both the label + the checkboxed drawn with css 
-					 with :after and :before pseudo element. We want the behaviour to differ depending on where the user clicks #}
+
 				<span>
 						<span class="checkbox-label">
 							{{ node.label|raw }}
@@ -53,8 +52,4 @@
 		</label>
 	</div>
 {% endmacro %}
-
-
-
-
 

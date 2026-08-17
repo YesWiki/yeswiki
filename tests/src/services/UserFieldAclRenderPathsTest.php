@@ -12,15 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * ADR-0003 puts the password hash in the versioned body and protects it with Field ACL
- * rather than by where it is stored, which makes one thing load-bearing: **every** path
- * that reads a users-type body has to go through the check. A path that skips it is a
- * credential leak, not a display bug -- and history is a path, so an old revision must
- * redact exactly like the current one.
- *
- * Ticket 10 widened the check from a hardcoded key list to the User form's own template,
- * so these cover both halves: the floor that no template can weaken, and the Field ACL a
- * webmaster sets on a field they added.
+ * ADR-0003 puts the password hash in the versioned body and protects it with Field ACL rather than by where it is stored, which makes one thing load-bearing: **every** path that reads a users-type body has to go through the check.
  */
 class UserFieldAclRenderPathsTest extends YesWikiTestCase
 {
@@ -49,8 +41,7 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
     }
 
     /**
-     * The current view, read by somebody who is neither the owner nor an admin -- the
-     * ordinary case, and the one every other path has to match.
+     * The current view, read by somebody who is neither the owner nor an admin -- the ordinary case, and the one every other path has to match.
      */
     public function testThePasswordHashIsNeverReadableThroughAnOrdinaryPageRead(): void
     {
@@ -76,13 +67,7 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
     }
 
     /**
-     * The same read through `PageManager::getAll()`, which hands the guard RAW `pages` rows
-     * -- body as JSON text, not decoded (ticket 09).
-     *
-     * checkUserAcls() bailed out on those (`if (!is_array($body)) return $page`), so every
-     * screen built on getAll() -- the admin content list, `{{mypages}}` -- got accounts with
-     * their password hash, activation key and e-mail intact. Its sibling checkAcls() did not
-     * bail: it indexed the string and fataled instead, which is how this was found.
+     * The same read through `PageManager::getAll()`, which hands the guard RAW `pages` rows -- body as JSON text, not decoded (ticket 09).
      */
     public function testTheHashIsRedactedOnRowsWhoseBodyIsStillRawJson(): void
     {
@@ -97,17 +82,13 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
         $this->assertSame('', $body['email'] ?? null, 'nor the address, for a reader who is neither owner nor admin');
     }
 
-    /**
-     * History is a render path. A hash left readable in an old revision is the same leak
-     * as one left readable in the current view -- ADR-0003 says so explicitly.
-     */
+    /** History is a render path. */
     public function testHistoricalRevisionsRedactTheSameWayAsTheCurrentOne(): void
     {
         $this->createAccount(self::NAME, 'ufarp-3@example.tld');
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
-        // a second revision, so there is a genuine history to read back through
         sleep(1);
         $userManager = $wiki->services->get(UserManager::class);
         $user = $userManager->getOneByName(self::NAME);
@@ -141,8 +122,7 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
     }
 
     /**
-     * Ticket 10's addition: a field the webmaster added to the User form, with a
-     * restrictive read ACL, is redacted by the same mechanism -- no new code per field.
+     * Ticket 10's addition: a field the webmaster added to the User form, with a restrictive read ACL, is redacted by the same mechanism -- no new code per field.
      */
     public function testAWebmasterAddedFieldWithARestrictiveAclIsRedacted(): void
     {
@@ -167,7 +147,6 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
                 ]]),
             ]);
 
-            // put a value in that field on the account
             $stored = $pageManager->getOne(self::NAME, null, false, true);
             $this->assertIsArray($stored);
             $body = $stored['body'];
@@ -191,9 +170,7 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
     }
 
     /**
-     * The floor: a webmaster who opens the password field's ACL right up still cannot
-     * make the hash readable. Protection-by-template would be protection a webmaster can
-     * switch off, which is what ADR-0003 rejected about protection-by-location.
+     * The floor: a webmaster who opens the password field's ACL right up still cannot make the hash readable.
      */
     public function testATemplateCannotOpenUpThePasswordField(): void
     {
@@ -240,7 +217,7 @@ class UserFieldAclRenderPathsTest extends YesWikiTestCase
 
         $redacted = $pageManager->getOne(self::NAME, null, false, false, self::OTHER);
         $this->assertIsArray($redacted);
-        // reading a redacted page must not write the blanks back
+
         $real = $pageManager->getOne(self::NAME, null, false, true);
         $this->assertIsArray($real);
 

@@ -7,21 +7,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * Ticket 09: page keywords move from `triples` into the page's own `body.keywords`.
- *
- * They were the last "fact about a page" living outside the page's row. After this the
- * body is the source of truth and the `TAG_PROPERTY` triples are a derived reverse index
- * (keyword -> pages), which is why this migration rebuilds rather than deletes them:
- * the tag cloud, multi-keyword AND filtering, the admin table's SQL aggregation and the
- * keyword vocabulary all genuinely want an index.
- *
- * Only the current revision of each page gets keywords. The triples were never versioned,
- * so there is no per-revision keyword history to migrate -- inventing one by stamping
- * today's keywords onto every past revision would be worse than leaving history alone.
- *
- * Idempotent: a page whose body already carries its keywords is skipped.
- */
+/** Ticket 09: page keywords move from `triples` into the page's own `body.keywords`. */
 class PageKeywordsIntoBody extends YesWikiMigration
 {
     public function run(): void
@@ -47,8 +33,7 @@ class PageKeywordsIntoBody extends YesWikiMigration
             if (empty($page)) {
                 continue;
             }
-            // a bazar entry's tags are an ordinary form field, already in its body under
-            // the name the webmaster chose -- not `keywords`, and not this migration's business
+
             if ($pageManager->typeOf($tag) !== PageType::PAGE) {
                 continue;
             }
@@ -69,7 +54,6 @@ class PageKeywordsIntoBody extends YesWikiMigration
             $pageManager->save($tag, $body, '', true);
         }
 
-        // the triples become the derived index, rebuilt from what the bodies now say
         $tagsManager->reindexAll();
     }
 }

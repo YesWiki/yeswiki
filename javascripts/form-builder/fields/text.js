@@ -11,7 +11,7 @@ export default {
     size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value: '' },
     max_chars: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH'), value: '' },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
-    separator: { label: '' }, // separate important attrs from others
+    separator: { label: '' },
     sub_type: {
       label: _t('BAZ_FORM_EDIT_TEXT_TYPE_LABEL'),
       options: {
@@ -33,7 +33,6 @@ export default {
     },
   },
   advancedAttributes: ['placeholder', 'read_access', 'write_access', 'pattern'],
-  // disabledAttributes: [],
   editorSetup(api) {
     const applySubtype = () => {
       const subtype = api.getValue('sub_type')

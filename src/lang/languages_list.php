@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @author Phil Teare
- * using wikipedia data
- */
 $GLOBALS['languages_list'] = [
     'ab' => [
         'name' => 'Abkhaz',

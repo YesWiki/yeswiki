@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Service;
 
-use Exception;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -42,17 +41,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private array $associatedEntryCache = [];
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
-    // stored triple value is "$hashedKey$KEY_VALUE_SEPARATOR$issuedAtTimestamp"
+
     public const KEY_VALUE_SEPARATOR = ':';
-    // password recovery links expire after 1 hour
+
     public const KEY_TTL = 3600;
 
-    // PageManager and AclService are deliberately NOT constructor-injected here: PageManager
-    // already depends on UserManager directly, and AclService depends on UserManager too
-    // (its '+' registered-users ACL case calls getOneByName()) -- constructor-injecting
-    // either back into UserManager would be a circular dependency. Fetched late via
-    // $this->container->get() instead (see pageManager()), the same workaround isInGroup()
-    // already uses for AclService below.
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
@@ -100,7 +93,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     public function getOneByName($name, $password = null): ?User
     {
-        // use !is_string($password) instead of !$password to allow $password == ""
         if (!$this->isUserTag($name)) {
             return null;
         }
@@ -138,10 +130,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
     {
-        // $dbFields was a partial-column-select optimization for the old flat `users`
-        // table; kept for signature compatibility but not honored -- every User object
-        // requires the full PROPS_LIST anyway (see User::__construct()), and decoding a
-        // JSON body doesn't offer a meaningful partial-fetch optimization to replace it with.
         $pageManager = $this->container->get(PageManager::class);
         $users = [];
         foreach ($this->getAllUserTags() as $tag) {
@@ -211,18 +199,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($wikiName)) {
             throw new \Exception("'Name' parameter of UserManager->create should not be empty!");
         }
-        // an EXISTING USER with this exact name -- normal "username taken" signup UX,
-        // unchanged. Distinct from a same-named FORM/PAGE/ENTRY, handled below via
-        // suggestFreeTag() instead of failing (ticket 04/05's collision-avoidance helper,
-        // now genuinely needed since users share the same tag namespace as everything else)
+
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
         }
-        // A RESERVED name is refused outright rather than suffixed (ticket 20). Registration
-        // is the one creation path that cannot quietly resolve a bad tag, because an
-        // account's name IS its tag -- buildBody() stores no second copy. Suffixing here
-        // would hand someone the account `api-2` after they typed `api`, which is exactly
-        // the silent rewrite the ticket forbids.
+
         if (ReservedTags::isReserved($wikiName)) {
             throw new UserNameReservedException(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $wikiName]));
         }
@@ -241,11 +222,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $hasher = $this->passwordHasherFactory->getPasswordHasher($this->arrayToDraftUser($userAsArray));
         $hashedPassword = $hasher->hash($plainPassword);
 
-        // buildBody() names the account fields core owns; a webmaster can add fields to the
-        // User form, and ticket 10 added a locked `profile_picture` in code. Those are the
-        // caller's to carry, and dropping them would make the User form a schema the User
-        // service does not honour (ticket 13). migrateLegacyUser() deliberately does not do
-        // this: a legacy `users` row's extra columns are not profile fields.
         $body = array_merge(
             $this->extraProfileFields($userAsArray),
             $this->buildBody(array_merge($userAsArray, [
@@ -262,10 +238,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Migrates one row from the legacy `users` table, preserving its password hash
-     * VERBATIM -- unlike create(), which always hashes a fresh plaintext password and so
-     * must never be reused for migrating an already-hashed existing account (that would
-     * silently invalidate every existing user's password).
+     * Migrates one row from the legacy `users` table, preserving its password hash VERBATIM -- unlike create(), which always hashes a fresh plaintext password and so must never be reused for migrating an already-hashed existing account (that would silently invalidate every existing user's password).
      */
     public function migrateLegacyUser(array $legacyRow): void
     {
@@ -283,25 +256,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private function persistNewUserPage(string $tag, array $body): bool
     {
         $pageManager = $this->container->get(PageManager::class);
-        // the row is written as a user in one statement (ticket 27) -- when the type was a
-        // separate triple, it had to be created BEFORE setOwner() below, because setOwner()
-        // verifies its target through getOneByName(), which only recognises a tag as a user
-        // once it is typed. That ordering hazard is gone: a row is never briefly untyped.
-        // PageManager's type cache still has to be told, because getOneByName()'s collision
-        // check ran before this tag existed and cached "no such row".
+
         $saved = $pageManager->save($tag, $body, '', true, null, PageType::USER);
         if ($saved !== 0) {
             return false;
         }
         $pageManager->cacheType($tag, PageType::USER);
 
-        // the account owns itself -- save()'s auto-owner logic would otherwise leave this
-        // empty for a self-registering, not-yet-logged-in user
         $pageManager->setOwner($tag, $tag);
 
-        // the wiki's default_write_acl is '*' (everyone) -- without this override, anyone
-        // could edit any other user's account page. Late-bound: see the constructor note
-        // on why AclService can't be injected directly.
         $this->container->get(AclService::class)->save($tag, 'write', "%\n@admins");
 
         return true;
@@ -312,10 +275,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return [
             'email' => $fields['email'] ?? '',
             'motto' => $this->valueOrDefault($fields, 'motto', ''),
-            // revisioncount/changescount are user-configurable display-count preferences, not
-            // derived counters -- a legitimate stored 0 must not be treated as "unset" and
-            // silently overwritten (empty(0) and empty('0') are both true in PHP, which
-            // empty()-based checks got wrong here)
+
             'revisioncount' => $this->valueOrDefault($fields, 'revisioncount', '20'),
             'changescount' => $this->valueOrDefault($fields, 'changescount', '50'),
             'doubleclickedit' => $this->valueOrDefault($fields, 'doubleclickedit', 'Y'),
@@ -326,8 +286,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Everything the caller supplied that buildBody() does not name -- minus the account's
-     * identity, which is its tag and must not be stored a second time where it can drift.
+     * Everything the caller supplied that buildBody() does not name -- minus the account's identity, which is its tag and must not be stored a second time where it can drift.
      *
      * @param array<string, mixed> $fields
      *
@@ -347,34 +306,27 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return (isset($fields[$key]) && $fields[$key] !== '') ? $fields[$key] : $default;
     }
 
-    /** Part of the Password recovery process: Handles the password recovery email process.
-     *
-     * Generates the password recovery key
-     * Stores the (name, vocabulary, key) triple in triples table
-     * Generates the recovery email
-     * Sends it
+    /**
+     * Part of the Password recovery process: Handles the password recovery email process.
      *
      * @return string The link sent to the user
      */
     public function sendPasswordRecoveryEmail(User $user)
     {
-        // Generate the password recovery key
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $plainKey = $user['name'] . '_' . $user['email'] . random_bytes(16) . date('Y-m-d H:i:s');
         $hashedKey = $passwordHasher->hash($plainKey);
-        // Erase the previous triples in the trible table
+
         $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
-        // Store the (name, vocabulary, key:issuedAt) triple in triples table
+
         $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $hashedKey . self::KEY_VALUE_SEPARATOR . time(), '', '');
 
-        // Generate the recovery link
         $link = $this->urlFormatter->href('', 'MotDePassePerdu', [
             'a' => 'recover',
             'email' => $hashedKey,
             'u' => base64_encode($user['name']),
         ], false);
 
-        // Send the email
         if (!boolval($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['contact_disable_email_for_password'])) {
             $pieces = parse_url($this->params->get('base_url'));
             $domain = isset($pieces['host']) ? $pieces['host'] : '';
@@ -388,8 +340,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
             $subject = _t('LOGIN_PASSWORD_LOST_FOR') . ' ' . $domain;
 
-            // fetched lazily, not constructor-injected: Mailer itself depends on
-            // UserManager, so a constructor dependency would be circular (ticket 18)
             $this->container->get(Mailer::class)->send(
                 $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
                 $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
@@ -404,7 +354,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     /**
      * Part of the Password recovery process: Deletes expired password recovery keys from the triples table.
-     * Called periodically from YesWiki::Maintenance().
      */
     public function purgeExpiredPasswordRecoveryKeys(): void
     {
@@ -418,8 +367,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * update user params
-     * for e-mail check is existing e-mail.
+     * update user params for e-mail check is existing e-mail.
      *
      * @param array $newValues (associative array)
      *
@@ -463,16 +411,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * The body keys update() will write -- core's own account preferences, plus whatever
-     * the User form says an account holds.
-     *
-     * The form half is what makes the profile picture (and any field a webmaster adds
-     * beside it) more than decoration: without it, the settings screen would offer inputs
-     * whose values this method silently dropped. It stays an allow-list all the same --
-     * this method takes a raw submission, and three keys must never be reachable through
-     * one: the tag the account is stored under, the password hash (AuthenticationService
-     * sets that, through the hasher) and the activation state that decides whether the
-     * account may sign in at all.
+     * The body keys update() will write -- core's own account preferences, plus whatever the User form says an account holds.
      *
      * @return list<string>
      */
@@ -503,8 +442,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * delete a user
-     * SHOULD NOT BE USE DIRECTLY => use UserOperationsService->delete().
+     * delete a user SHOULD NOT BE USE DIRECTLY => use UserOperationsService->delete().
      *
      * @throws DeleteUserException
      */
@@ -520,7 +458,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
     }
 
-    /** Lists the groups $this user is member of.
+    /**
+     * Lists the groups $this user is member of.
      *
      * @return string[] An array of group names
      */
@@ -536,7 +475,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $list;
     }
 
-    /** Tells if a user is member of the specified group.
+    /**
+     * Tells if a user is member of the specified group.
      *
      * @param string      $groupName    The name of the group for which we are testing membership
      * @param string|null $username     if null check current user
@@ -546,7 +486,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
-        // aclService could  not be loaded in __construct because AclService already loads UserManager
         try {
             $members = $this->container->get(GroupOperationsService::class)->getMembers($groupName);
         } catch (GroupNameDoesNotExistException $th) {
@@ -556,9 +495,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $this->container->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
     }
 
-    /**
-     * get the entry that is linked to the username.
-     */
+    /** get the entry that is linked to the username. */
     public function getAssociatedEntry($user = '')
     {
         if (empty($user)) {
@@ -574,7 +511,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $vFormManager = $this->container->get(FormManager::class);
         $vSearchManager = $this->container->get(SearchManager::class);
         $formsIds = array_keys($vFormManager->getAll());
-        // in case if a username is generated from a bazar entry, nomwiki should be the right id
+
         $entry = $vSearchManager->search([
             'queries' => [
                 [
@@ -597,13 +534,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $found;
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
-
     /**
      * Upgrades the hashed password of a user, typically for using a better hash algorithm.
-     * This method should persist the new password in the user storage and update the $user object accordingly.
-     * Because you don't want your users not being able to log in, this method should be opportunistic:
-     * it's fine if it does nothing or if it fails without throwing any exception.
      *
      * @throws UnsupportedUserException if the user is not supported
      * @throws \Exception               if wiki is in hibernation
@@ -613,9 +545,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // `instanceof` rather than `supportsClass(get_class($user))`: the two ask the same
-        // question -- supportsClass() is `is_a($class, User::class, true)` -- but only this one
-        // narrows the parameter, so the calls below stopped being method.notFound (ticket 40)
+
         if (!$user instanceof User) {
             throw new UnsupportedUserException();
         }
@@ -629,39 +559,26 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 $pageManager->save($user['name'], $body, '', true);
             }
         } catch (\Throwable $th) {
-            // only throw error in debug mode
             if ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug')) {
                 throw $th;
             }
         }
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ implements  UserProviderInterface ~~~~~~~~~~~~~~~~~~ */
-
     /**
      * Refreshes the user.
-     *
-     * It is up to the implementation to decide if the user data should be
-     * totally reloaded (e.g. from the database), or if the UserInterface
-     * object can just be merged into some internal array of users / identity
-     * map.
      *
      * @throws UnsupportedUserException if the user is not supported
      * @throws UserNotFoundException    if the user is not found
      */
     public function refreshUser(UserInterface $user): UserInterface
     {
-        // instanceof for the same reason as upgradePassword(): it narrows where
-        // supportsClass(get_class($user)) only asserts
         if (!$user instanceof User) {
             throw new UnsupportedUserException();
         }
 
-        // currently force refresh
         $refreshed = $this->getOneByName($user->getName());
-        // `getOneByName()` is `?User` and this is declared `UserInterface`: an account deleted
-        // between two requests returned null into Symfony's security layer, which is a
-        // TypeError rather than the UserNotFoundException the docblock promises (ticket 40)
+
         if ($refreshed === null) {
             throw new UserNotFoundException("no user named '{$user->getName()}' any more");
         }
@@ -669,37 +586,29 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $refreshed;
     }
 
-    /**
-     * Whether this provider supports the given user class.
-     */
+    /** Whether this provider supports the given user class. */
     public function supportsClass(string $class): bool
     {
         if (!class_exists($class)) {
-            // prevent calling autoloader via 'is_a'
             return false;
         }
 
         return is_a($class, User::class, true);
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ end of implements ~~~~~~~~~~~~~~~~~~ */
     /**
      * @throws UserNotFoundException
      */
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $user = $this->getOneByName($identifier);
-        // same as refreshUser(): the return type is not nullable and Symfony's contract is that
-        // an unknown identifier throws. Returning null made a login attempt with a username
-        // nobody has fail as a TypeError inside the security layer (ticket 40).
+
         if ($user === null) {
             throw new UserNotFoundException("no user named '$identifier'");
         }
 
         return $user;
     }
-
-    /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */
 
     /**
      * @deprecated Use AuthenticationService::getLoggedUser
@@ -738,8 +647,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($page) || !isset($page['tag'])) {
             return null;
         }
-        // PageManager hands the body back decoded; a page with no body at all is not an
-        // account (this used to be json_decode('') === null)
+
         $body = $page['body'] ?? [];
         if (!is_array($body) || empty($body)) {
             return null;
@@ -749,10 +657,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Builds a User from a flat, name-keyed array (as opposed to arrayToUser(), which
-     * decodes a `pages` row) -- used where a User object is needed before any page exists
-     * yet (picking a password hasher during create(), which needs a User instance but
-     * happens before suggestFreeTag() has even settled the final tag).
+     * Builds a User from a flat, name-keyed array (as opposed to arrayToUser(), which decodes a `pages` row) -- used where a User object is needed before any page exists yet (picking a password hasher during create(), which needs a User instance but happens before suggestFreeTag() has even settled the final tag).
      */
     private function arrayToDraftUser(array $userAsArray): User
     {
@@ -762,7 +667,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             }
         }
 
-        // be carefull the User::__construct is really strict about list of properties that should set
         return new User($userAsArray);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Files\Service\AttachedFilePaths;
@@ -36,18 +35,14 @@ class TextareaField extends BazarField
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         $this->placeholder = $values[self::FIELD_PLACEHOLDER];
-        // For this field, max chars are defined in the 6th column, instead of the already-used 4th
+
         $this->maxChars = $values[self::FIELD_MAX_CHARS];
 
-        // Retro-compatibility
         if ($this->syntax === 'wiki') {
             $this->syntax = self::SYNTAX_WIKI;
         }
     }
 
-    // Vditor only ships a handful of locales; languages this wiki supports but Vditor
-    // doesn't (ca/eu/nl/ro/ta as of ticket 16) fall back to its base English UI strings --
-    // this only affects the editor toolbar's own tooltip text, not page/entry content.
     private const VDITOR_LANG_MAP = [
         'en' => 'en_US',
         'es' => 'es_ES',
@@ -55,52 +50,28 @@ class TextareaField extends BazarField
         'pt' => 'pt_BR',
     ];
 
-    /**
-     * The prose, with markup and `{{action}}` calls taken out (ticket 18 / ADR-0015).
-     *
-     * This is the field a wiki page's `content` is, so it is also how a page gets indexed.
-     *
-     * The calls are **stripped, not run**. Rendering first would look more thorough and is
-     * wrong in three ways: it folds every entry an `{{entrylist}}` returns into the page's
-     * own document, so one edit to an entry would make a dozen pages stale; it makes what a
-     * page indexes depend on who rendered it, since actions honour ACLs; and it is arbitrary
-     * code execution on a background reindex -- a wiki-syntax textelong in a list really
-     * does run its actions.
-     */
+    /** The prose, with markup and `{{action}}` calls taken out (ticket 18 / ADR-0015). */
     public function searchableText($entry): string
     {
         return self::stripMarkupForIndex(parent::searchableText($entry));
     }
 
-    /**
-     * Wiki/HTML markup reduced to the words in it. Link labels and targets are both kept --
-     * a page name is often the most searchable thing in a sentence.
-     *
-     * Shared with the indexer, which needs the same treatment for a legacy body whose form
-     * has gone missing.
-     */
+    /** Wiki/HTML markup reduced to the words in it. */
     public static function stripMarkupForIndex(string $text): string
     {
         if (trim($text) === '') {
             return '';
         }
 
-        // action calls first: everything else here would otherwise chew on their arguments.
-        // `s` so a multi-line {{action ...}} goes in one bite, non-greedy so two calls on
-        // one line do not swallow the words between them
         $text = (string)preg_replace('/\{\{.*?\}\}/su', ' ', $text);
 
-        // wiki links `[[Tag label]]` and markdown `[label](url)`: keep the words, drop the
-        // punctuation and the URL
         $text = (string)preg_replace('/\[\[\s*([^\s\]]+)\s*([^\]]*)\]\]/u', ' $2 $1 ', $text);
         $text = (string)preg_replace('/\[([^\]]*)\]\([^)]*\)/u', ' $1 ', $text);
 
-        // `""..."" ` is the wiki's raw-HTML escape
         $text = str_replace('""', ' ', $text);
         $text = strip_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-        // emphasis, headings, rules, table pipes, leftover brackets
         $text = (string)preg_replace('/[*_#|=~\[\]{}`>]+/u', ' ', $text);
         $text = (string)preg_replace('/(^|\s)-{2,}(\s|$)/u', ' ', $text);
 
@@ -111,12 +82,11 @@ class TextareaField extends BazarField
     {
         $output = '';
         $vditorLang = null;
-        // If HTML syntax, load editor's JS and CSS
+
         if ($this->syntax === self::SYNTAX_HTML) {
             $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/vditor/index.css');
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/vditor/index.min.js');
-            // a module since it shares the ACeditor's file picker: yw-assets.js sequences
-            // it after vendor/vditor above, so the `Vditor` global it reads is still there
+
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/vditor-textarea.js', false, true);
 
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
@@ -162,7 +132,6 @@ class TextareaField extends BazarField
 
         switch ($this->syntax) {
             case self::SYNTAX_WIKI:
-                // Do the page change in any case (useful for attach or grid)
                 $pageContext = $this->getService(\YesWiki\Kernel\Service\PageContext::class);
                 $oldPage = $pageContext->getTag();
                 $oldPageArray = $pageContext->getPage();
@@ -170,18 +139,6 @@ class TextareaField extends BazarField
                 $pageContext->setPage($this->getService(\YesWiki\Content\Service\PageManager::class)->getOne($pageContext->getTag()));
                 $pageContext->setPageField('body', [PageBody::CONTENT => $value]);
 
-                // No `str_replace('""', "''")` here any more.
-                //
-                // It ran on the *formatted* output, i.e. on final HTML, on the theory that a
-                // `""` surviving that far came from an action and would be re-read by wakka as
-                // a raw-HTML delimiter. Nothing re-parses this string, and `""` in final HTML
-                // is overwhelmingly an empty attribute -- `value=""`, `alt=""`, `class=""` --
-                // or an empty JSON string. Rewriting those to `''` is invisible in markup and
-                // fatal inside a <script>: it turned
-                //     var blank = '<option value="">' + ...
-                // into two adjacent string literals and killed the whole block. Page bodies
-                // reach this field since ticket 10 made a page a form whose `content` is a
-                // textelong, so the damage was not limited to bazar entries.
                 $value = $this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
 
                 $pageContext->setTag($oldPage);
@@ -193,10 +150,6 @@ class TextareaField extends BazarField
                 break;
 
             case self::SYNTAX_HTML:
-                // Same reasoning as the wiki branch above: this value is emitted as-is into
-                // the template and never passed through the formatter, so there is nothing to
-                // re-interpret a `""` -- while rewriting it breaks any empty attribute or
-                // empty JS string the author wrote.
                 break;
         }
 
@@ -204,8 +157,6 @@ class TextareaField extends BazarField
             'value' => $value,
         ]);
     }
-
-    // GETTERS. Needed to use them in the Twig syntax
 
     public function getNumRows()
     {
@@ -269,10 +220,6 @@ class TextareaField extends BazarField
 
     private function sanitizeBase64Img(string $text, array $entry): string
     {
-        // Only three capturing groups, and the filename is not one of them: the trailing
-        // atomic group captures nothing, so $matches[4] never existed and every pasted image
-        // fell through to the random-hex fallback below. The data-filename attribute is read
-        // separately now, from the matched tag (ticket 40).
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
@@ -297,7 +244,6 @@ class TextareaField extends BazarField
 
                 $paths = $this->getService(AttachedFilePaths::class);
 
-                // fake page
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $entry['tag'],
@@ -309,7 +255,6 @@ class TextareaField extends BazarField
                 $newFilePath = $paths->fullFilename($fileName, true);
 
                 if (!empty($newFilePath)) {
-                    // save file
                     file_put_contents($newFilePath, $imageContent);
 
                     $newText = $matches[1][$index];
@@ -350,9 +295,7 @@ class TextareaField extends BazarField
         return removeAccents((string)preg_replace('/--+/u', '-', (string)preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 
-    /**
-     * sanitize html to prevent xss.
-     */
+    /** sanitize html to prevent xss. */
     private function sanitizeHTMLInWikiCode(string $value)
     {
         $preformattedDirtyHTML = str_replace(['@@', '""'], ['\\@\\@\\', '@@'], $value);
@@ -361,9 +304,7 @@ class TextareaField extends BazarField
         return str_replace(['""', '@@', '\\@\\@\\'], ['\'\'', '""', '@@'], $preformattedCleanHTML);
     }
 
-    /**
-     * sanitize html to prevent xss.
-     */
+    /** sanitize html to prevent xss. */
     private function sanitizeHTML(string $value)
     {
         return $this->getService(HtmlPurifierService::class)->cleanHTML($value);

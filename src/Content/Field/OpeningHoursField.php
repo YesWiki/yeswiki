@@ -2,12 +2,9 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
-
 #[\Field(['openinghours'])]
 class OpeningHoursField extends BazarField
 {
-    // ticket 18: structured hours, queried by a filter rather than read as prose
     use ContributesNoSearchableText;
 
     protected function renderInput($entry)
@@ -39,8 +36,6 @@ class OpeningHoursField extends BazarField
 
     protected function getValue($entry)
     {
-        // TODO see if it is necessary to look for $_REQUEST
-        // do not take default for this field
         return $entry[$this->propertyName] ?? null;
     }
 }

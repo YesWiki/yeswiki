@@ -7,21 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A line holding more than one `{{action}}` tag.
- *
- * `ActionBlockStartParser` recognises a line that is nothing *but* an action tag, so it
- * becomes its own block rather than being wrapped in a `<p>`. Its pattern was greedy:
- * `/^\{\{(.*)\}\}[ \t]*$/`, which on a line holding a pair matched from the first `{{` to
- * the **last** `}}` and read the lot as one tag. `{{label}}texte{{end elem="label"}}` was
- * run as the action `label`, and the text between the tags and the closing tag were
- * swallowed — an unclosed `<span>` with nothing in it.
- *
- * Which is how anyone writes a row of labels. Six of them left six nested unclosed spans
- * with the rest of the document inside; found by looking at the Personnalisation screen's
- * component gallery, not by any test, because every unit test asserted on the *opening*
- * tag being present.
- */
+/** A line holding more than one `{{action}}` tag. */
 class ActionTagsOnOneLineTest extends YesWikiTestCase
 {
     private function format(string $markdown): string
@@ -52,8 +38,7 @@ class ActionTagsOnOneLineTest extends YesWikiTestCase
     }
 
     /**
-     * The reason the block parser exists: one tag alone on a line is a block, so a
-     * component that emits a `<div>` is not put inside a `<p>` it would break out of.
+     * The reason the block parser exists: one tag alone on a line is a block, so a component that emits a `<div>` is not put inside a `<p>` it would break out of.
      */
     public function testASingleTagOnALineIsStillABlock(): void
     {

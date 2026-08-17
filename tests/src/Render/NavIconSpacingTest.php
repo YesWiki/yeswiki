@@ -7,18 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A `{{nav}}` icon is separated from its title.
- *
- * The line that adds the space read `if (!empty($icon) && !empty($text))`, copied from
- * `ButtondropdownAction` where `$text` is a local variable. There is no `$text` in `NavAction`,
- * so the condition was never true and every icon ran straight into its title.
- *
- * `empty()` on an undefined variable is legal PHP, which is why this surfaced as an
- * *always-false branch* rather than an undefined-variable notice — and both readings of it sat
- * in the PHPStan baseline, one as `booleanAnd.alwaysFalse` and one as `empty.variable`, saying
- * the same thing twice to nobody (ticket 40).
- */
+/** A `{{nav}}` icon is separated from its title. */
 class NavIconSpacingTest extends YesWikiTestCase
 {
     public function testAnIconIsSeparatedFromItsTitle(): void

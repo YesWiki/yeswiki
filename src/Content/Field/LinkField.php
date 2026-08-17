@@ -7,7 +7,6 @@ use Psr\Container\ContainerInterface;
 #[\Field(['lien_internet'])]
 class LinkField extends BazarField
 {
-    // ticket 18: a URL is mostly scheme and host, which every other link shares
     use ContributesNoSearchableText;
 
     protected const FIELD_DISPLAYVIDEO = 3;
@@ -71,7 +70,6 @@ class LinkField extends BazarField
         return is_scalar($this->class) ? strval($this->class) : '';
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

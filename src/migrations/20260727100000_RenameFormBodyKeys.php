@@ -5,10 +5,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Ticket 27 (ADR-0010): form body keys go plain-English -- bn_id_nature => id,
- * bn_label_nature => label, bn_template => template, etc. Converts the latest
- * revision of every form page in place (no new revision); older revisions keep the
- * legacy keys and stay readable through FormManager::LEGACY_BODY_KEYS.
+ * Ticket 27 (ADR-0010): form body keys go plain-English -- bn_id_nature => id, bn_label_nature => label, bn_template => template, etc.
  */
 class RenameFormBodyKeys extends YesWikiMigration
 {
@@ -33,7 +30,7 @@ class RenameFormBodyKeys extends YesWikiMigration
                 if ($newKey !== $key) {
                     $changed = true;
                 }
-                // the new key wins if a body somehow carries both spellings
+
                 if (!array_key_exists($newKey, $renamed)) {
                     $renamed[$newKey] = $value;
                 }

@@ -937,8 +937,6 @@ return [
     'USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN' => 'Puteți să vă îndepărtați din grupul de administrare',
     'CHECKING_THE_ADMIN_NAME' => 'Verificarea numelui administratorului',
 
-    // relocated from tools/login/lang/login_ro.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Se înscrie',
     'LOGIN_LOGIN' => 'Se conecteze',
     'LOGIN_WIKINAME' => 'Email sau.ice nume de utilizator',
@@ -993,7 +991,6 @@ return [
     'RECOVERY_MESSAGE_SENT' => 'Un mesaj a fost trimis la {email} cu instrucțiuni pentru resetarea parolei',
     'RECOVERY_LINK' => 'Link pentru resetarea parolei',
 
-    // relocated from tools/tags/lang/tags_ro.inc.php (ticket 10)
     'TAGS_TAGS' => 'Cuvinte cheie',
     'TAGS_ACTION_ADMINTAGS' => 'Acțiune {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'acțiunea este rezervată grupului de directori',
@@ -1363,7 +1360,7 @@ Conținutul filei "{tabName}"
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Descrierea site-ului într-o singură propoziție, pentru referire (Avertisment: nu puneți "." (punct))',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Emp le robots à indexer le wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Galises meta pour l\'indexation web',
-    // relocated from tools/attach/lang/attach_ro.inc.php (ticket 17)
+
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fișierul de imagine nu există',
     'ATTACH_ACTION_ATTACH' => 'Acțiune {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parametrul "desc" necesar pentru imagine',
@@ -1459,7 +1456,6 @@ Conținutul filei "{tabName}"
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Dimensiunea maximă a fișierelor încărcate - bytes (ex: Dimensiunea maximă a fișierelor încărcate (ex: 2097152, 2048k, 2m)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Inserare media (imagini, videouri)',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Trimite acest fișier',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1473,7 +1469,6 @@ Conținutul filei "{tabName}"
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_ro.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Acțiune {{subscripție ..}}',
     'CONTACT_MAIL_REQUIRED' => 'parametrul de mail, necesar, lipsește.',
     'CONTACT_ACTION_CONTACT' => 'Acțiune {{contact ..}}',
@@ -1573,7 +1568,6 @@ Conținutul filei "{tabName}"
     'EDIT_CONFIG_GROUP_BAZAR' => 'Baza de date',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Dezactivați trimiterea de e-mail pentru a reinițializa o parolă (ex: LDAP, SSO)',
 
-    // relocated from tools/autoupdate/lang/autoupdate_ro.inc.php (ticket 19)
     'AU_ACL' => 'Verificarea permisiunilor de fişier',
     'AU_REPO_ERROR' => 'Depozite inaccesibile.',
     'AU_VERSION_WIKI' => 'Versiunea wiki',
@@ -1618,7 +1612,6 @@ Conținutul filei "{tabName}"
     'AU_SEVERAL_TOOLS_UPDATE' => 'Aveți extensii {nbMaj} pentru a actualiza',
     'AU_ONE_TOOL_UPDATE' => 'Aveți 1 extensie pentru actualizare',
 
-    // relocated from tools/syndication/lang/syndication_ro.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Acțiune {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'Trebuie să introduceți parametrul "url" pentru a sindicaliza un flux RSS',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'directorul "cache" nu are drepturi de acces la scriere',
@@ -1633,7 +1626,7 @@ Conținutul filei "{tabName}"
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'nu există, se utilizează șablonul implicit',
     'SYNDICATION_SOURCE' => 'sursă',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acces la întregul conținut',
-    // relocated from tools/bazar/lang/bazar_ro.inc.php (ticket 24)
+
     'BAZ_LISTES' => 'Listele',
     'BAZ_NOM_LISTE' => 'Numele listei',
     'BAZ_VALEURS_LISTE' => 'Valorile listei',
@@ -2013,7 +2006,6 @@ Bifați caseta pentru a confirma înlocuirea acesteia cu "{proposedName}" sau sc
     'BAZ_FORM_NEED_TITLE' => 'Formularul trebuie să își poată numi fișele: șablonul de titlu trebuie să facă referire la un câmp pe care formularul îl are.',
     'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'Înregistrarea nu a putut fi salvată deoarece nu are un titlu.',
 
-    // relocated from tools/bazar/lang/bazarjs_ro.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculele',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Afișează textul',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Adăugați dacă este necesar o unitate după {value}, (ex: ‘{value} €’)',
@@ -2295,7 +2287,6 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afișează',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -2313,13 +2304,11 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modificare a',
     'RSS_HISTORY' => 'istoric',
     'RSS_HIDDEN_CONTENT' => 'Conținut ascuns',
@@ -2330,11 +2319,9 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'RSS_DELETIONS' => 'Eliminări',
     'RSS_NO_DIFF' => 'Nici o diferență',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Adaugă un câmp',
     'FORM_BUILDER_ADVANCED' => 'Setări avansate',
     'FORM_BUILDER_BACK' => 'Înapoi',
@@ -2350,7 +2337,6 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'FORM_BUILDER_NAME_LABEL' => 'Identificator',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoriu',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Câmp folosit ca titlu al fișelor',
     'FORM_EDIT_CUSTOM_TITLE' => 'Titlu personalizat…',
     'FORM_EDIT_PERMISSIONS' => 'Permisiunile fișelor',

@@ -1,4 +1,4 @@
-{# one entry's page (ADR-0020: the bundle entries trigger) #}
+
 {{ include_css('styles/yw-entries.css') }}
 <div class="BAZ_cadre_fiche id{{ form.id }}">
   {% if message and not entry['external-data'] %}
@@ -19,14 +19,7 @@
     </div>
   {% endif %}
   {{ renderedEntry|raw }}
-  {# `canShow` is "this Content is not the page you are on" -- it is true only when the
-     entry is being rendered inside something else (a modal, an iframe, a list that asks
-     for one full entry). That is exactly when this footer is the only way to act on it.
 
-     On its own page there is an edit bar for it, and since ticket 10 made pages render
-     through a form there is one for *pages* too -- so every page grew a second strip of
-     buttons above the first, saying nearly the same things. The edit bar wins there: it
-     knows the permissions, the comments and the history, which this never did. #}
   {% if showFooter and canShow %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info">    
@@ -37,9 +30,7 @@
           <span class="category"> ({{form.label ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.label:'') }})
           {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
           <br />
-          {# only dates the Content actually stores: `|date` on a null is Twig's word for
-             *now*, so Content that keeps no timestamps claimed to have been created and
-             updated the second you looked at it #}
+
           {% if entry.created_at is not empty %}
             <span class="date_creation">
               {{ _t('BAZ_DATE_CREATION')|capitalize }}
@@ -123,7 +114,7 @@
           {% endif %}
         {% endif %}
       </div>
-      
+
     </div>
   {% endif %}
 </div>

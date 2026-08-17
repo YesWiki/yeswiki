@@ -1,7 +1,4 @@
-{# Tickets 18/26: an upgraded wiki has an empty index until the drain finishes, and that state
-   must not look like "nothing matched" -- otherwise a webmaster goes hunting for content
-   that is present and simply not indexed yet. Falling back to the old `body LIKE` query
-   here was rejected outright: it would serve the wrong results this ticket exists to end. #}
+
 <div class="yw-alert yw-alert-info yw-search-building">
     {% if not exists %}
         {{ _t('SEARCH_INDEX_MISSING') }}

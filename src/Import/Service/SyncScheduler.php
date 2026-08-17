@@ -6,34 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\ConsoleService;
 
-/**
- * Syncs, without any external cron, the data sources flagged `syncOnMaintenance`.
- *
- * ## When
- *
- * On `maintenance.after`, so a source follows the wiki's own housekeeping cadence -- at most
- * once every `MAINTENANCE_INTERVAL`, on whichever page view crosses it. `syncIntervalInMin`
- * puts a floor under that per source, for one too heavy to import every half hour.
- *
- * A source is *claimed* (its state file stamped) at that moment, before anything is imported:
- * two page views that cross the interval together must not start the same import twice.
- *
- * ## Where the work actually happens
- *
- * Not in the listener. `YesWikiRuntime::maintenance()` asks its listeners to be quick because
- * it runs inside a page view, and an import talks to remote servers for as long as they take
- * -- so this spawns `importer:sync -s <source>`, the same way a form change spawns
- * `search:reindex`.
- *
- * Where that spawn cannot happen -- no `proc_open`, no findable PHP binary, which core says
- * plainly is common on shared hosting -- the import is not dropped: it runs in this process
- * from a shutdown function, after `fastcgi_finish_request()` has handed the visitor their
- * page. Slower and, without php-fpm, still holding a connection open; but a wiki that cannot
- * spawn a process is exactly the wiki with no cron to fall back on either.
- *
- * Either way the outcome lands in the source's state file, which is also what the admin page
- * reads to show when a source last synced and what it did.
- */
+/** Syncs, without any external cron, the data sources flagged `syncOnMaintenance`. */
 class SyncScheduler
 {
     /** Where the last sync of each source is recorded, under the cache directory. */
@@ -51,12 +24,7 @@ class SyncScheduler
         $this->services = $services;
     }
 
-    /**
-     * Claim whatever is due and get it imported off the visitor's clock. Called from the
-     * `maintenance.after` listener; never throws, for the same reason that dispatch swallows
-     * what a listener throws -- the page this was noticed from had nothing to do with any of
-     * this.
-     */
+    /** Claim whatever is due and get it imported off the visitor's clock. */
     public function onMaintenance(?int $maintenanceStartedAt = null): void
     {
         try {
@@ -82,9 +50,7 @@ class SyncScheduler
     }
 
     /**
-     * The sources due for an automatic sync right now, already claimed (their state file is
-     * stamped before returning, so a concurrent request sees them as just-synced instead of
-     * starting the same import in parallel).
+     * The sources due for an automatic sync right now, already claimed (their state file is stamped before returning, so a concurrent request sees them as just-synced instead of starting the same import in parallel).
      *
      * @param int|null $maintenanceStartedAt when the housekeeping run asking this began. A
      *                                       source that has synced since then has already been taken by this run --
@@ -106,13 +72,13 @@ class SyncScheduler
             if ($maintenanceStartedAt !== null && $lastRun >= $maintenanceStartedAt) {
                 continue;
             }
-            // optional per-source floor, for a source too heavy for every maintenance sweep
+
             $minIntervalInSec = max(0, (int)($options['syncIntervalInMin'] ?? 0)) * 60;
             if ($minIntervalInSec > 0 && (time() - $lastRun) < $minIntervalInSec) {
                 continue;
             }
             if (!$this->claim($id)) {
-                continue; // no writable state file: we could not tell this run from the next
+                continue;
             }
             $due[$id] = $options;
         }
@@ -121,10 +87,7 @@ class SyncScheduler
     }
 
     /**
-     * Sync the given sources in this process and record what happened. Never throws and never
-     * prints: it runs on somebody's page request, where an exception would be a fatal error
-     * in a page that was never about importing anything, and where a stray echo would land in
-     * the middle of that page's html.
+     * Sync the given sources in this process and record what happened.
      *
      * @param array<string, array<string, mixed>> $sources
      */
@@ -137,7 +100,6 @@ class SyncScheduler
         foreach ($sources as $id => $options) {
             ob_start();
             try {
-                // syncSource() returns the outcome and echoes the per-entry detail
                 $result = $importerManager->syncSource((string)$id, $options);
             } catch (\Throwable $ex) {
                 $result = 'Erreur : ' . $ex->getMessage();
@@ -147,9 +109,7 @@ class SyncScheduler
     }
 
     /**
-     * Record a source's sync outcome, whoever ran it -- the console command and the admin
-     * page report theirs too, so "when did this last sync" has one answer rather than one
-     * per trigger.
+     * Record a source's sync outcome, whoever ran it -- the console command and the admin page report theirs too, so "when did this last sync" has one answer rather than one per trigger.
      */
     public function recordRun(string $source, string $output): void
     {
@@ -181,8 +141,6 @@ class SyncScheduler
         ];
     }
 
-    // HELPERS
-
     /**
      * @return array<string, array<string, mixed>>
      */
@@ -193,10 +151,7 @@ class SyncScheduler
         return is_array($dataSources) ? $dataSources : [];
     }
 
-    /**
-     * Hand one source's import to a console process. False when this host cannot spawn one,
-     * which is the caller's cue to do the work itself.
-     */
+    /** Hand one source's import to a console process. */
     private function spawnSync(string $source): bool
     {
         try {
@@ -212,19 +167,15 @@ class SyncScheduler
      */
     private function runAfterResponse(array $dueSources): void
     {
-        // the visitor has their page: let go of their connection where php-fpm allows it, and
-        // keep going even when the browser hangs up, so an import isn't left half applied
         @ignore_user_abort(true);
         if (function_exists('fastcgi_finish_request')) {
             @fastcgi_finish_request();
         }
-        // importing several sources from remote wikis is exactly the kind of work the regular
-        // request time limit is meant to stop; this one is deliberate
+
         @set_time_limit(0);
         try {
             $this->run($dueSources);
         } catch (\Throwable $ex) {
-            // run() already swallows per-source errors; this is the last resort
         }
     }
 
@@ -237,9 +188,7 @@ class SyncScheduler
     }
 
     /**
-     * Take this source's slot by stamping its state file now, before the import itself (which
-     * happens elsewhere, and may take minutes): the point of the stamp is that no other
-     * request starts the same import meanwhile.
+     * Take this source's slot by stamping its state file now, before the import itself (which happens elsewhere, and may take minutes): the point of the stamp is that no other request starts the same import meanwhile.
      */
     private function claim(string $source): bool
     {
@@ -255,13 +204,10 @@ class SyncScheduler
     }
 
     /**
-     * Path of $source's state file, or null when the directory it belongs in cannot be
-     * created (a read-only cache directory just means no automatic sync on this wiki).
+     * Path of $source's state file, or null when the directory it belongs in cannot be created (a read-only cache directory just means no automatic sync on this wiki).
      */
     private function stateFile(string $source): ?string
     {
-        // source ids are generated by AdminImportersAction, but a hand-written config can use
-        // anything as a key, and it ends up in a file name here
         $name = preg_replace('/[^A-Za-z0-9._-]/', '_', $source);
         if ($name === '' || $name === null) {
             return null;

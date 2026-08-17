@@ -7,15 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A component that asks which FIELD also has to ask which FORM.
- *
- * The rail draws a `form-field` setting from the fields of the form the component is
- * pointed at, and it learns which form that is from the component's own `form-list`
- * setting. One without the other is a select with nothing in it -- which is what the
- * palette shipped when `needFormField`, a property of the whole `entrylist` YAML group,
- * was not carried over to the components that replaced the group.
- */
+/** A component that asks which FIELD also has to ask which FORM. */
 class FormPickerTest extends YesWikiTestCase
 {
     /** Setting types whose options are the fields of a form. */
@@ -54,7 +46,9 @@ class FormPickerTest extends YesWikiTestCase
         }
     }
 
-    /** @return array<string, array<string, mixed>> */
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     private static function components(): array
     {
         return self::getWiki()->services->get(ComponentRegistry::class)->byId();

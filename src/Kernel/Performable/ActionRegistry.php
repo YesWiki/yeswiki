@@ -5,20 +5,12 @@ namespace YesWiki\Kernel\Performable;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\YesWikiPerformable;
 
-/**
- * name => service id, for actions and handlers that have become real services.
- *
- * Populated at compile time by YesWikiPerformableCompilerPass from the `yeswiki.action`
- * and `yeswiki.handler` tags, so nothing is instantiated to build the map.
- *
- * Coexists with Performer's directory scan during ticket 06's migration: Performer asks
- * the registry first and falls back to scanning, so actions convert a few at a time rather
- * than in one 137-file step. When the last one has moved, the scan is deleted along with
- * runFileInBuffer().
- */
+/** name => service id, for actions and handlers that have become real services. */
 class ActionRegistry
 {
-    /** @var array<string, array<string, string>> type => [name => service id] */
+    /**
+     * @var array<string, array<string, string>> type => [name => service id]
+     */
     private array $map;
 
     private ContainerInterface $container;
@@ -46,12 +38,12 @@ class ActionRegistry
         }
         $service = $this->container->get($id);
 
-        // A tagged class that is not a performable cannot be run; treat it as absent rather
-        // than fataling on the first setWiki() call.
         return $service instanceof YesWikiPerformable ? $service : null;
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function names(string $type): array
     {
         return array_keys($this->map[$type] ?? []);

@@ -5,18 +5,15 @@ namespace YesWiki\Render\Service;
 use YesWiki\Kernel\Service\Performer;
 
 /**
- * Executes an "action" module from its page syntax — the string between `{{` and `}}`
- * (historic Wiki::Action()): parses the attribute string, keeps a log of every action
- * executed, and hands off to Performer.
- *
- * Lives in Render, not Kernel: its callers are the content formatter and the Twig
- * `action()` helper.
+ * Executes an "action" module from its page syntax — the string between `{{` and `}}` (historic Wiki::Action()): parses the attribute string, keeps a log of every action executed, and hands off to Performer.
  */
 class ActionRunner
 {
     protected Performer $performer;
 
-    /** @var list<array{action: string, vars: array<mixed>}> every action run so far (see actionsLog()) */
+    /**
+     * @var list<array{action: string, vars: array<mixed>}> every action run so far (see actionsLog())
+     */
     protected $actionsLog = [];
 
     public function __construct(Performer $performer)
@@ -36,20 +33,18 @@ class ActionRunner
     {
         $cmd = trim($action);
         $cmd = str_replace("\n", ' ', $cmd);
-        // extract $action and $vars_temp ("raw" attributes)
+
         if (!preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
         list(, $action, $vars_temp) = $matches;
 
-        // match all attributes (key and value)
         if (preg_match_all('/([a-zA-Z0-9_]*)="(.*)"/U', $vars_temp, $matches)) {
             for ($a = 0; $a < count($matches[1]); $a++) {
                 $vars[$matches[1][$a]] = $matches[2][$a];
             }
         }
 
-        // keep track of actions and their parameters
         $this->actionsLog[] = [
             'action' => $action,
             'vars' => $vars,

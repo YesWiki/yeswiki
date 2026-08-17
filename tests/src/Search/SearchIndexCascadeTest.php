@@ -12,20 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The form cascade (ticket 18 / ADR-0015).
- *
- * A form's template decides which fields exist, what each contributes to the index and which
- * Field ACL guards it -- so editing a form invalidates the indexed text of **every entry
- * under it**. That is unbounded work, and at the scale this rewrite targets it cannot happen
- * inside the request that saved the form.
- *
- * So the entries are queued and drained out of band. What these tests pin is the part that
- * has to be true for that to be safe: **the queue is the source of truth**, written
- * synchronously and independently of whether the async `search:reindex` spawn succeeded. On
- * a host with `proc_open` disabled the spawn simply does not happen, and nothing may be lost
- * because of it.
- */
+/** The form cascade (ticket 18 / ADR-0015). */
 class SearchIndexCascadeTest extends YesWikiTestCase
 {
     private const ENTRY_TAG_PREFIX = 'SearchIndexCascadeEntry';
@@ -46,22 +33,20 @@ class SearchIndexCascadeTest extends YesWikiTestCase
             try {
                 $this->getWiki()->services->get(FormManager::class)->delete($this->formId);
             } catch (\Throwable $ignored) {
-                // a form the test never managed to create is nothing to clean up
             }
             $this->formId = null;
         }
         parent::tearDown();
     }
 
-    /** A throwaway form with one indexable text field, plus one entry on it. */
-    /** @return array{0: string, 1: string} the form id and the entry's tag */
+    /**
+     * @return array{0: string, 1: string} the form id and the entry's tag
+     */
     private function makeFormWithAnEntry(string $word): array
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
 
-        // create() returns a save status rather than the form, and picks its own id when
-        // the requested one is taken -- so claim a free id first and keep hold of it
         $id = 9100;
         while ($formManager->getOne((string)$id) !== null) {
             $id++;
@@ -80,7 +65,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
 
         $entry = $wiki->services->get(EntryManager::class)->create($this->formId, [
             'form_id' => $this->formId,
-            // the create path runs the visitor-submission validations, antispam included
+
             'antispam' => 1,
             'bf_titre' => 'Une fiche de test',
             'bf_description' => $word,
@@ -107,8 +92,7 @@ class SearchIndexCascadeTest extends YesWikiTestCase
     }
 
     /**
-     * The cascade itself: saving the form must leave its entries queued, whatever happened
-     * to the spawn.
+     * The cascade itself: saving the form must leave its entries queued, whatever happened to the spawn.
      */
     public function testSavingAFormQueuesItsEntries(): void
     {
@@ -169,7 +153,9 @@ class SearchIndexCascadeTest extends YesWikiTestCase
         $this->assertSame(1, $this->indexer()->pending());
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function queuedTags(): array
     {
         $wiki = $this->getWiki();

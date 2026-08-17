@@ -1,6 +1,6 @@
 <form class="{{ class }}" id="{{ id }}">
     {% embed '@core/theme-selector.twig' %}
-    
+
         {% block firstoptionpreset %}
             {% if mode is same as 'edit' %}
                 <option value="" {% if presetsData.selectedPresetName is empty and presetsData.selectedCustomPresetName is empty %}selected="selected"{% endif %}>
@@ -8,12 +8,7 @@
                 </option>
             {% endif %}
         {% endblock %}
-        {# The preset chooser is the select the parent block renders, in every mode. The
-           swatch gallery that used to be here drew each preset from its nine variables --
-           a vocabulary retired in ADR-0020 -- and the sidebar beside it edited those nine
-           live. Editing a Preset is /admin/preset's job: a Preset is a complete token set
-           in two Colour schemes now, and two editors for it would be two answers to
-           "what is a preset". #}
+
     {% endembed %}
 
     {% if mode != 'edit' and showAdminActions %}
@@ -22,7 +17,6 @@
         </button>    
     {% endif %}
 
-    
     {{ bgselector|raw }}
 
     {% if mode == 'edit' %}
@@ -53,10 +47,7 @@
 
         <fieldset>
             <h4>{{ _t('CHOOSE_PAGE_FOR') }}: </h4>
-            {# The three chrome roles that are still pages (ticket 30). The title bar, the
-               horizontal menu and the quick-access buttons are no longer among them: they
-               are `layout_*` configuration now, and naming another page for them would be
-               naming a page that nothing reads. #}
+
             {% for tag,t in {
                 PageHeader: 'HEADER_PAGE',
                 PageFooter: 'FOOTER_PAGE',

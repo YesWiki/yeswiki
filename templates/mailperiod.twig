@@ -1,5 +1,5 @@
 <div class="mail-period">
-  {# Flash Message #}
+
   {% for messageType, message in messages %}
     <div class="yw-alert yw-alert--{{ messageType }}">{{ message }}</div>
   {% endfor %}
@@ -8,10 +8,8 @@
 
   <div class="btn-group btn-group-sm" role="group" style="margin-left: 1rem">
 
-    {# Subscribe choices #}
     {% for period, config in periods %}
-      {# signed out, the button leads to /user: subscribing needs an account, and the way to
-         one is a screen now rather than a modal this page would have to carry #}
+
       {% set url = user ? url({ params: { subscribe: period} }) : url({ tag: 'user' }) %}
       <a href="{{ url }}"
          class="btn btn-{{ config.subscribed ? 'primary' : 'default' }}">
@@ -19,7 +17,6 @@
       </a>
     {% endfor %}
 
-    {# Unsubscribe #}
     {% if periods|filter(config => config.subscribed)|length > 0 %}
       <a href="{{ url({ params: { unsubscribe: true} }) }}" class="btn btn-danger">
         {{  _t('CONTACT_UNSUBSCRIBE') }}

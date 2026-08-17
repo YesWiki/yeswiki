@@ -1,5 +1,4 @@
-{# shared entry-list entry decorations (ticket 07): the color pellet and icon
-   resolved from the entrylist color=/icon= params via customValueForEntry() #}
+
 {% macro pellet(params, entry) %}
 {%- set color = customValueForEntry(params.color|default(''), params.colorfield|default(''), entry, '') -%}
 {%- if color is not empty %}<span class="pellet" style="background-color:{{ color }};"></span> {% endif -%}

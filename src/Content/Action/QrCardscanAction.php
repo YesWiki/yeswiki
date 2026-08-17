@@ -2,16 +2,6 @@
 
 namespace YesWiki\Content\Action;
 
-/*
- * QrCardscan action for yeswiki, for scanning a qrcard and propose actions
- *
- * @category Wiki
- * @package  YesWikiQrcode
- * @author   2025 Florian Schmitt <mrflos@yeswiki.pro>
- * @license  GNU AFFERO GENERAL PUBLIC LICENSE version 3
- * @link     https://yeswiki.net
- */
-
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 

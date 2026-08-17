@@ -12,21 +12,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\TripleStore;
 
-/**
- * Page keywords.
- *
- * Since ticket 09 the keywords of a page live in that page's own row, under
- * `body.keywords` -- they were the last "fact about a page" stored outside the page,
- * which made a page's data non-atomic with the page and forced every reader to join
- * `triples`.
- *
- * The `TAG_PROPERTY` triples are still written, but they are now a **derived reverse
- * index** (keyword -> pages), rebuilt from the body on every write and never the source
- * of truth. They stay because four things genuinely need an index rather than a scan:
- * the tag cloud, `getPagesByTags()`'s AND-semantics across several keywords, the admin
- * content table's SQL-side aggregation, and the whole-wiki keyword vocabulary. If the
- * index and a body ever disagree, the body wins -- `reindexAll()` rebuilds the lot.
- */
+/** Page keywords. */
 class TagsManager
 {
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
@@ -52,8 +38,7 @@ class TagsManager
     }
 
     /**
-     * Split a user-typed, comma-separated keyword list into stored keywords: trimmed,
-     * blanks dropped, duplicates dropped, order preserved.
+     * Split a user-typed, comma-separated keyword list into stored keywords: trimmed, blanks dropped, duplicates dropped, order preserved.
      *
      * @return list<string>
      */
@@ -89,13 +74,12 @@ class TagsManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // the body goes away with the page; only the derived index needs clearing
+
         $this->tripleStore->delete($page, self::TAG_PROPERTY, null, '', '');
     }
 
     /**
-     * Replace a page's keywords. Writes the page's body -- the source of truth -- and
-     * then rebuilds that page's slice of the reverse index.
+     * Replace a page's keywords.
      *
      * @param string $liste_tags comma-separated, as typed in the edit form
      */
@@ -137,14 +121,7 @@ class TagsManager
     }
 
     /**
-     * Rebuild the reverse index for ordinary wiki pages from the current revision of
-     * each. The repair path when the index and the bodies disagree, and what the
-     * ticket-09 migration calls once keywords have moved into the bodies.
-     *
-     * Scoped to untyped Content on purpose. A bazar entry's tags are an ordinary form
-     * field whose name the webmaster chose, written to both the entry body and the index
-     * by TagsField -- this method cannot reconstruct them without introspecting every
-     * form, so it leaves their index rows alone rather than deleting what it can't rebuild.
+     * Rebuild the reverse index for ordinary wiki pages from the current revision of each.
      *
      * @return int the number of pages indexed
      */
@@ -197,14 +174,11 @@ class TagsManager
 
         $stored = $this->container->get(PageManager::class)->getOne($page, null, true, true);
 
-        // the row shape callers expect (they array_column(..., 'value') it)
         return array_map(fn (string $keyword) => ['value' => $keyword, 'resource' => $page], self::keywordsOf($stored));
     }
 
     /**
-     * Live-search: distinct keywords matching $search (substring, case-insensitive),
-     * paginated. Backs GET /api/tags -- unlike getAll(''), this never loads the whole
-     * vocabulary at once. Served from the reverse index, which is what an index is for.
+     * Live-search: distinct keywords matching $search (substring, case-insensitive), paginated.
      *
      * @return array{tags: string[], total: int}
      */
@@ -216,9 +190,6 @@ class TagsManager
         $where = 'property = ?';
         $params = [self::TAG_PROPERTY];
         if ($search !== '') {
-            // $search is what a visitor typed into the tag picker, so its wildcards are defused:
-            // searching `a_b` looks for that, not for `aXb`. The ESCAPE clause is what makes the
-            // defusing mean anything on SQLite, which has no default escape character.
             $where .= ' AND value LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX;
             $params[] = SqlParameters::likeContains($search);
         }
@@ -234,9 +205,7 @@ class TagsManager
     }
 
     /**
-     * Every (id, value, resource) index row, for the admin keyword-management page
-     * (AdminTagAction) -- unlike getAll()/search(), this exposes the row id, which is how
-     * that page targets individual page/keyword pairs for removeByIds().
+     * Every (id, value, resource) index row, for the admin keyword-management page (AdminTagAction) -- unlike getAll()/search(), this exposes the row id, which is how that page targets individual page/keyword pairs for removeByIds().
      */
     public function getAllTriples(): array
     {
@@ -247,12 +216,7 @@ class TagsManager
     }
 
     /**
-     * Remove the page/keyword pairs identified by these index-row ids (AdminTagAction's
-     * bulk "delete from all pages").
-     *
-     * Since ticket 09 this has to go through the pages themselves: deleting only the
-     * index rows would leave the keywords in the bodies, and the next reindex would
-     * bring them all back.
+     * Remove the page/keyword pairs identified by these index-row ids (AdminTagAction's bulk "delete from all pages").
      *
      * @param array<array-key, int|string> $ids
      */
@@ -295,21 +259,16 @@ class TagsManager
     {
         if (!empty($tags)) {
             $req = ' AND EXISTS (select resource FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource=tag';
-            // One placeholder per tag. What this replaces was `addslashes()` fed through
-            // escape() and then split on the comma -- two escaping passes over one value, which
-            // does not merely fail to be safe: it CORRUPTS a tag containing a quote, storing and
-            // then searching for a backslash that was never in the keyword. The split-after-
-            // escaping also meant the separator was decided after the values had been altered.
+
             $tab_tags = explode(',', trim($tags));
             $nbdetags = count($tab_tags);
             $req .= ' AND value IN (' . SqlParameters::placeholders($nbdetags) . ') ';
             $req .= ' AND property = ?';
             $req .= ' GROUP BY resource ';
             $req .= ' HAVING COUNT(resource) = ?) ';
-            // placeholders are positional, so this list follows the order they appear above
+
             $params = [...$tab_tags, self::TAG_PROPERTY, $nbdetags];
 
-            // gestion du tri de l'affichage (sort)
             if ($sort == 'alpha') {
                 $req .= ' ORDER BY tag ASC ';
             } elseif ($sort == 'date') {
@@ -320,7 +279,7 @@ class TagsManager
 
             return $this->dbService->loadAll($requete, $params);
         }
-        // recuperation des pages wikis
+
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
         $sql .= " WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 

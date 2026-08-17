@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Controller;
 
-use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
@@ -114,9 +113,6 @@ class EntryController extends YesWikiController
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
         if (is_array($entryId)) {
-            // If entry ID is the full entry with all the values. Split from the `elseif` below
-            // so that $entryId is a string from here on: it was `array|string` for the rest of
-            // the method, and the concatenations further down are string operations (ticket 40).
             if (empty($entryId) || !isset($entryId['tag'])) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
             }
@@ -124,9 +120,7 @@ class EntryController extends YesWikiController
             $entryId = (string)$entry['tag'];
         } elseif ($entryId) {
             $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering)
-                // a page, an account and a file are described by a form too (ticket 10), so
-                // they render here the same way, through the same fields in the same
-                // declared order -- EntryManager only answers for `entry` rows
+
                 ?? $this->builtInContentAsEntry((string)$entryId, $time === '' ? null : $time, $userNameForRendering);
             if (!$entry) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
@@ -145,40 +139,37 @@ class EntryController extends YesWikiController
             $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);
         }
 
-        // fake ->tag for the attached images
         $oldPageTag = $this->getService(PageContext::class)->getTag();
         $this->getService(PageContext::class)->setTag($entryId);
         $renderedEntry = null;
         $message = $this->getRequest()->query->get('message', '');
-        // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{entrylist}}
+
         unset($_GET['message']);
-        // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
+
         $isUpdatingEntry = ($this->getRequest()->query->get('view') === 'consulter');
         if ($isUpdatingEntry) {
             unset($_GET['view']);
         }
-        // unshift stack to check if this entry is included into a entrylist into a Field
+
         array_unshift($this->parentsEntries, $entryId);
         if (
             count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
                 return $value === $entryId;
-            })) < 3 // max 3 levels
+            })) < 3
         ) {
-            // use a custom template if exists (fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
-            // use a custom semantic template if exists
             if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
                 $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
                 if ($customTemplatePath) {
                     $renderedEntry = $this->render("@core/$customTemplatePath", $customTemplateValues);
                 }
             }
-            // if not found, use default template
+
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
                     $fieldsByPropertyName = [];
@@ -203,7 +194,7 @@ class EntryController extends YesWikiController
                             if (in_array(false, $conditionsStack, true)) {
                                 continue;
                             }
-                            // TODO handle html_outside_app mode for images
+
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                                 $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
                             }
@@ -221,12 +212,10 @@ class EntryController extends YesWikiController
             }
         }
 
-        // fake ->tag for the attached images
         $this->getService(PageContext::class)->setTag($oldPageTag);
-        // shift stack
+
         array_shift($this->parentsEntries);
 
-        // Format owner
         $owner = $this->getService(PageManager::class)->getOwner($entryId) ?? $this->getService(AuthenticationService::class)->getLoggedUserName();
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
         if ($isOwnerIpAddress || !$owner) {
@@ -236,7 +225,6 @@ class EntryController extends YesWikiController
             $owner = $this->getService(MarkdownFormatterService::class)->format('[[' . $this->getService(PageManager::class)->getOwner($entryId) . ' ' . $this->getService(PageManager::class)->getOwner($entryId) . ']]');
         }
 
-        // remake $_GET['message'] for BazarAction__ like in webhooks extension
         if (!empty($message)) {
             $_GET['message'] = $message;
         }
@@ -262,7 +250,7 @@ class EntryController extends YesWikiController
             'showFooter' => $showFooter,
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
-            'canShow' => $this->getService(PageContext::class)->getTag() != $entry['tag'], // hide if we are already in the show page
+            'canShow' => $this->getService(PageContext::class)->getTag() != $entry['tag'],
             'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
             'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->getService(AclService::class)->isAdmin($userNameForRendering) || $this->getService(AclService::class)->isOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->getService(AclService::class)->isAdmin($userNameForRendering) && !isset($entry['read-only']),
@@ -298,8 +286,7 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
-        // we need to store this globally so we can have the form id in the fields
-        // TODO: there must be a better way
+
         $_SESSION['current_form_id'] = $formId;
         $form = $this->formManager->getOne($formId);
         if (!$form) {
@@ -308,9 +295,7 @@ class EntryController extends YesWikiController
 
         $results = $this->checkIfOnlyOneEntry($form);
         $incomingUrl = $this->getIncomingUrl();
-        // read here rather than inside the branch below: the render at the end of the method
-        // asks it for `accept_condition` and `password_for_editing` whichever way we got there,
-        // and it was only assigned on one of the two paths (ticket 40)
+
         $post = $this->getRequest()->request;
         if (!empty($results['output'])) {
             return $results['output'];
@@ -318,10 +303,8 @@ class EntryController extends YesWikiController
             list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
             try {
                 if ($state && $post->has('valider')) {
-                    // `entry.created` is dispatched by EntryManager, so that the API, the
-                    // importers and migrations announce it too (ticket 39)
                     $entry = $this->getService(ContentCreator::class)->create($formId, $post->all());
-                    // get the GET parameter 'incomingurl' for the incoming url
+
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
                         : (
@@ -362,9 +345,7 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * Where a visitor lands after creating a Content. `voir_fiche` renders a bazar entry;
-     * a page and an account are their own URL, so a built-in type goes there instead of to
-     * a view that would have to pretend it was an entry (ticket 13).
+     * Where a visitor lands after creating a Content.
      *
      * @param array<string, mixed> $form
      */
@@ -400,11 +381,7 @@ class EntryController extends YesWikiController
         try {
             if ($state && $post->has('valider')) {
                 $entry = $this->entryManager->update($entryId, $post->all());
-                // `create()` takes a $redirectUrl parameter and honours it here; this method
-                // does not, and the branch checking it was copied over anyway -- reading the
-                // variable in the same statement that assigns it. It was therefore always
-                // false, and emitted an "Undefined variable" notice on every entry update
-                // (ticket 40).
+
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
                     : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
@@ -421,9 +398,7 @@ class EntryController extends YesWikiController
                 'type' => 'warning',
                 'message' => $e->getMessage(),
             ]);
-            // re-render with what was submitted, not with what is stored: a form that
-            // silently reverts to the saved values on a validation failure loses the edit
-            // the visitor came to make, and looks like nothing happened at all
+
             $entry = array_merge($entry ?? [], $post->all());
         }
 
@@ -454,7 +429,6 @@ class EntryController extends YesWikiController
                 $entry = $this->entryManager->getOne($entryId);
                 $this->entryManager->delete($entryId);
                 if (!$this->entryManager->isEntry($entryId)) {
-                    // `entry.deleted` is dispatched by EntryManager::delete() above (ticket 39)
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['view' => 'consulter'], false));
@@ -499,8 +473,6 @@ class EntryController extends YesWikiController
             }
         }
 
-        // form-property-driven inputs appended at the end of the entry form
-        // (ADR-0010): the account-creation block and the comments toggle
         $formProperties = $this->getService(FormPropertiesService::class);
         $renderedFields[] = $formProperties->renderUserCreationInputs($form, $entry);
         $renderedFields[] = $formProperties->renderCommentsToggle($form, $entry);
@@ -528,7 +500,6 @@ class EntryController extends YesWikiController
             return null;
         }
 
-        // Trouve le contexte principal
         if (is_array($semanticData['@context'])) {
             foreach ($semanticData['@context'] as $context) {
                 if (is_string($context)) {
@@ -539,9 +510,7 @@ class EntryController extends YesWikiController
             $context = $semanticData['@context'];
         }
 
-        // Si on a trouvé un contexte et qu'un mapping existe pour ce contexte
         if (isset($context) && $dir_name = $this->config['baz_semantic_types_mapping'][$context]) {
-            // Trouve le type principal
             if (is_array($semanticData['@type'])) {
                 foreach ($semanticData['@type'] as $type) {
                     if (is_string($type)) {
@@ -573,15 +542,14 @@ class EntryController extends YesWikiController
         if ($form === null) {
             return $html;
         }
-        // which field renders as the heading -- the one the form names its entries with,
-        // matching TextField::renderStatic() rather than assuming bf_titre (ticket 11)
+
         $titleFieldName = $this->getService(FormPropertiesService::class)->titleFieldName($form);
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
-                    // reset $matches before preg_match
+
                     $matches = [];
                     if ($titleFieldName !== null && $field->getName() === $titleFieldName) {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
@@ -600,14 +568,6 @@ class EntryController extends YesWikiController
             $html['semantic'] = $GLOBALS['yeswikiServices']->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
-        // ticket 21: the French alias `fiche` is gone. It had been shadowed by `entry` "for
-        // backward compatibility" since long before this, so every core template already had
-        // an English name to read; keeping both only meant two names for one value, and a
-        // custom template silently reading the one core no longer maintains.
-        //
-        // `html` stays: it is not French, and activitystreams/note.twig reads it. Whether it
-        // should collapse into its `renderedFields` twin is a separate question from this
-        // ticket's.
         $values = [];
         $values['html'] = $html;
         $values['entry'] = $entry;
@@ -628,8 +588,7 @@ class EntryController extends YesWikiController
      *
      * @param array|string|null $arg
      * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
-     *
-     * NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
+     *                               NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
      */
     public function formatQuery($arg, array $get): array
     {
@@ -637,8 +596,6 @@ class EntryController extends YesWikiController
 
         return $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get));
     }
-
-    /* PART TO FILTER ON DATE */
 
     /**
      * filter entries on date.
@@ -718,7 +675,6 @@ class EntryController extends YesWikiController
             $nbDaysLower = $matches[14][0];
             $dateMax = $this->extractDate($signLower, $nbYearsLower, $nbMonthLower, $nbDaysLower);
             if ($dateMin->diff($dateMax)->invert == 0) {
-                // $dateMax higher than $dateMin
                 $entries = array_filter($entries, function ($entry) use ($dateMin) {
                     return $this->filterEntriesOnDateTraversing($entry, '>', $dateMin);
                 });
@@ -733,17 +689,6 @@ class EntryController extends YesWikiController
 
     private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
     {
-        /*if ($pSign == "")
-        {echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
-            $vDate = new DateTime(
-                      (!empty($nbYears) ? $nbYears . 'Y' : '')
-                    . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')));
-        }
-        else*/
-
-        // the trailing `&& empty($nbDays)` was inside the false arm of `!empty($nbDays)`, so
-        // it could only ever be true -- a tautology PHPStan flagged and the baseline hid
         $vDateInterval = new \DateInterval(
             'P'
                     . (!empty($nbYears) ? $nbYears . 'Y' : '')
@@ -764,9 +709,6 @@ class EntryController extends YesWikiController
             return false;
         }
 
-        // core asks the entry's form which fields hold its dates rather than assuming the
-        // historic French names, so a calendar works whatever a webmaster called them
-        // (ticket 11)
         $form = empty($entry['form_id']) ? null : $this->getService(FormManager::class)->getOne($entry['form_id']);
         $resolver = $this->getService(FieldRoleResolver::class);
         $startValue = $resolver->value($form, $entry, FieldRole::START_DATE);
@@ -779,26 +721,22 @@ class EntryController extends YesWikiController
         if ($endValue !== null && trim((string)$endValue) !== '') {
             $entryEndDate = new \DateTime((string)$endValue);
             if ($entryEndDate && strpos((string)$endValue, 'T') === false) {
-                // all day (so = midnigth of next day)
                 $entryEndDate->add(new \DateInterval('P1D'));
             }
         }
         if (empty($entryEndDate)) {
-            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new \DateInterval('P1D')); // endDate to next day after start day if empty
+            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new \DateInterval('P1D'));
         }
         $nextDay = (clone $date)->add(new \DateInterval('P1D'));
         switch ($mode) {
             case '<':
-                // start before date and whatever finish
                 return $date->diff($entryStartDate)->invert == 1;
             case '>':
-                // start after date or (before date but and end should be after date, end is needed)
                 return
                     $date->diff($entryStartDate)->invert == 0
                     || !$this->dateIsStrictlyBefore($entryEndDate, $date);
             case '=':
             default:
-                // start before next day midnight and should end after date midnigth
                 return
                     $nextDay->diff($entryStartDate)->invert == 1
                     && !$this->dateIsStrictlyBefore($entryEndDate, $date);
@@ -818,8 +756,6 @@ class EntryController extends YesWikiController
             && $diff->f == 0
         );
     }
-
-    /* END OF PART TO FILTER ON DATE */
 
     public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
@@ -860,7 +796,6 @@ class EntryController extends YesWikiController
             $formHasUserField = $this->getService(FormPropertiesService::class)->createsUser($form);
             $loggerUser = $this->authenticationService->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
-                // forbidden : ask to connect
                 $results['output'] = $this->render('@core/alert-message.twig', [
                     'type' => 'warning',
                     'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),
@@ -903,7 +838,6 @@ class EntryController extends YesWikiController
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);
         }
 
-        // TODO check if redirect to outside website ?
         return empty($incomingUrl) ? '' : $incomingUrl;
     }
 }

@@ -36,11 +36,7 @@
                 value="{{ value }}"
             />
         {% else %}
-            {# Two ways to fill this field, and the first one is the rail the editors use:
-               it lists every file this wiki already holds and uploads a new one into the
-               same place, so a file attached here is a file Content like any other. What
-               it hands back is that file's own address, which lands in the URL box below
-               -- the same box, still there for a file that lives somewhere else. #}
+
             {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
             <div class="file-or-url">
                 <button type="button"

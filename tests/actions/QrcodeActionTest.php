@@ -7,9 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 14 (qrcode absorbed into core): {{qrcode}} renders an <img>
- * pointing at a generated SVG via the new QrCodeService, and its missing-param error path
- * uses the core yw-alert classes (Bootstrap's alert/alert-danger is gone).
+ * Regression test for ticket 14 (qrcode absorbed into core): {{qrcode}} renders an <img> pointing at a generated SVG via the new QrCodeService, and its missing-param error path uses the core yw-alert classes (Bootstrap's alert/alert-danger is gone).
  */
 class QrcodeActionTest extends YesWikiTestCase
 {

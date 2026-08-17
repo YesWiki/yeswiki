@@ -6,22 +6,17 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\ContributesEntryFields;
 use YesWiki\Kernel\Service\TripleStore;
 
-// Get more data about an entry
 class EntryExtraFieldsService
 {
-    /**
-     * The names this service answers for a template or an API response.
-     *
-     * `triples` and `linked_data` are answered here because they are Content's own. The rest
-     * are answered by whichever module contributes them -- `comments` and `reactions` come
-     * from `Social` (ADR-0019) -- and stay on this list because callers iterate it.
-     */
+    /** The names this service answers for a template or an API response. */
     public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples', 'linked_data'];
 
     protected ContainerInterface $container;
     protected $entryId;
 
-    /** @var iterable<ContributesEntryFields> tagged `yeswiki.entry_fields` */
+    /**
+     * @var iterable<ContributesEntryFields> tagged `yeswiki.entry_fields`
+     */
     private iterable $contributors;
 
     /**
@@ -38,7 +33,6 @@ class EntryExtraFieldsService
         $this->entryId = $entryId;
     }
 
-    // get('comments'), get('nb_comments')
     public function get($prop)
     {
         $methodName = 'get' . $this->snakeToPascal($prop);
@@ -46,8 +40,6 @@ class EntryExtraFieldsService
             return $this->$methodName();
         }
 
-        // ...and whatever another module says it can answer. Asked after this service's own
-        // methods so Content keeps the last word on the names it owns.
         foreach ($this->contributors as $contributor) {
             if (in_array($prop, $contributor->contributedFieldNames(), true)) {
                 return $contributor->contributedField($prop, (string)$this->entryId);

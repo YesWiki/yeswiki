@@ -1,16 +1,13 @@
-{# the entry list and its filter rail (ADR-0020: the bundle an entry list triggers) #}
+
 {{ include_css('styles/yw-entries.css') }}
 {% if params.search %}
   {{ include("@core/entries/index/_search_input.twig") }}
 {% endif %}
 
 {% if filters %}
-  {# How wide the column of facets is, as a fraction of the row rather than as a Bootstrap
-     class: `filtercolsize` is still counted in twelfths, which is what a webmaster has always
-     typed, but core stopped shipping a twelve-column grid with Bootstrap (ADR-0004). #}
+
   {% set beside = params.filterposition != 'top' and params.filtercolsize|number_format < 12 %}
-  {# the id is what a facet swaps: the boxes come back with their counts and checked state,
-     the entries with the pager, and both are inside it #}
+
   <div id="facette-container-{{ listId }}" class="facette-container {{ beside ? '' : 'facette-container-fullwidth' }}"
        data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}"
        {% if beside %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
@@ -28,8 +25,7 @@
   {{ include("@core/entries/index/_entries.twig") }}
 {% endif %}
 
-{# showexportbuttons #}
 {% if not params.isInIframe and params.showexportbuttons %}
 	{{ include("@core/entries/index/_export_buttons.twig") }}
 {% endif %}
-{# end for showexportbuttons #}
+

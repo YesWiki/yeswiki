@@ -17,25 +17,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * `entry.created`, `entry.updated` and `entry.deleted` are announced by **`EntryManager`**,
- * so every write path announces them.
- *
- * They used to come from `EntryController`, which is the form-submission path and only that.
- * An entry written by the API, an importer, a migration or a field's own side effect fired
- * none of them — so every subscriber was quietly partial, and the two mechanisms that looked
- * complete only were by accident: search reindexing survived because `PageManager` dispatches
- * `page.*` underneath, and ActivityPub survived because it was called directly rather than
- * subscribing.
- *
- * That is why this test drives `EntryManager` rather than the controller: the whole point of
- * ticket 39's consolidation is the path the controller is *not* on.
+ * `entry.created`, `entry.updated` and `entry.deleted` are announced by **`EntryManager`**, so every write path announces them.
  */
 class EntryEventsTest extends YesWikiTestCase
 {
     protected function setUp(): void
     {
-        // updating and deleting an entry are ACL-checked, and an anonymous visitor owns
-        // nothing -- so these tests would fail on permissions rather than on events
         $wiki = self::getWiki();
         $aclService = $wiki->services->get(AclService::class);
         $admin = current(array_filter(
@@ -51,13 +38,7 @@ class EntryEventsTest extends YesWikiTestCase
         self::getWiki()->services->get(AuthenticationService::class)->logout();
     }
 
-    /**
-     * Records every entry event it hears, in order.
-     *
-     * A named class rather than an anonymous one: phpstan can see neither
-     * `EventSubscriberInterface` nor `$heard` through `object`, and a spy whose recordings the
-     * analyser cannot check is a poor thing to assert on.
-     */
+    /** Records every entry event it hears, in order. */
     private static function spy(): EntryEventSpy
     {
         $spy = new EntryEventSpy();
@@ -68,13 +49,6 @@ class EntryEventsTest extends YesWikiTestCase
 
     /**
      * Create an entry carrying only a title, on whichever seeded form will accept one.
-     *
-     * Neither half of that is guessable. Which field is the title is a **role** the form
-     * assigns (ticket 11) -- the directory form's is `bf_nom`, not `bf_titre` -- and the first
-     * form with a title also demands an event start date, so a title-only entry is rejected on
-     * validation rather than on anything these tests are about. Asking each form in turn and
-     * keeping the one that accepts is shorter than reimplementing "which fields are required",
-     * and it does not go stale when the seed content changes.
      *
      * @return array{array<string, mixed>, string, string} the entry, its form id, its title field
      */
@@ -92,7 +66,7 @@ class EntryEventsTest extends YesWikiTestCase
             try {
                 $entry = $entryManager->create((string)$form['id'], [$titleField => $title, 'antispam' => 1]);
             } catch (\Throwable) {
-                continue; // this form wants more than a title; the next one may not
+                continue;
             }
             if (!empty($entry['tag'])) {
                 return [$entry, (string)$form['id'], $titleField];
@@ -109,7 +83,6 @@ class EntryEventsTest extends YesWikiTestCase
 
         $entryManager = $wiki->services->get(EntryManager::class);
 
-        // straight at the manager: no controller, no request, no form submission
         [$entry, , $titleField] = self::createTitleOnlyEntry('EntryEventsTest subject');
         $tag = (string)$entry['tag'];
 
@@ -125,9 +98,7 @@ class EntryEventsTest extends YesWikiTestCase
     }
 
     /**
-     * The two keys the consolidation added, and the reason they exist: a subscriber that
-     * publishes outward has to know whose followers to tell, and has to stay quiet about
-     * content this wiki imported rather than authored.
+     * The two keys the consolidation added, and the reason they exist: a subscriber that publishes outward has to know whose followers to tell, and has to stay quiet about content this wiki imported rather than authored.
      */
     public function testTheEventCarriesTheFormAndWhetherItWasImported(): void
     {
@@ -156,8 +127,6 @@ class EntryEventsTest extends YesWikiTestCase
             'federation must hear about entries the same way every other listener does'
         );
 
-        // the rule is about the dependency, not the vocabulary: a docblock may well explain
-        // why federation is not here, and asserting on the word alone failed on exactly that
         $entryManagerSource = (string)file_get_contents(dirname(__DIR__, 3) . '/src/Content/Service/EntryManager.php');
         $this->assertDoesNotMatchRegularExpression(
             '/\\bYesWiki\\\\Federation\\\\/',
@@ -187,13 +156,19 @@ class EntryEventsTest extends YesWikiTestCase
     }
 }
 
-/** @see EntryEventsTest */
+/**
+ * @see EntryEventsTest
+ */
 class EntryEventSpy implements EventSubscriberInterface
 {
-    /** @var list<array{string, array<string, mixed>}> */
+    /**
+     * @var list<array{string, array<string, mixed>}>
+     */
     public array $heard = [];
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     public static function getSubscribedEvents(): array
     {
         return [

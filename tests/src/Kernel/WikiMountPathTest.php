@@ -7,27 +7,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Where the wiki thinks it is reached, before it has a config to tell it.
- *
- * `computeBaseURL()` answers that, and it feeds two things that only ever run at install
- * time: the installer's own stylesheet and script links, and the `base_url` it pre-fills in
- * the form for the admin to accept.
- *
- * It read SCRIPT_NAME alone, which is right whenever the wiki lives at that path on disk --
- * a docroot root, a subdirectory -- and wrong when the prefix is only a *URL*: an nginx
- * `location`, an Apache `alias`, a proxy mounting the wiki at /ecto. There SCRIPT_NAME is a
- * plain `/index.php` and the prefix exists only in REQUEST_URI, so the install page linked
- * its CSS at `https://host/styles/...` -- outside the wiki's location entirely -- and
- * arrived unstyled. Reported from a real server: "the installer had not loaded the css, once
- * installed it was ok" (installed, base_url comes from the config instead).
- *
- * The request path is only trusted where it cannot be a page: ending in `/` or in
- * `index.php`. `/SomePage` at a docroot root is a page, and must stay one.
- */
+/** Where the wiki thinks it is reached, before it has a config to tell it. */
 class WikiMountPathTest extends YesWikiTestCase
 {
-    /** @var array<string, mixed> */
+    /**
+     * @var array<string, mixed>
+     */
     private array $server = [];
 
     protected function setUp(): void
@@ -64,7 +49,7 @@ class WikiMountPathTest extends YesWikiTestCase
             'subdirectory' => ['/mywiki/index.php', '/mywiki/?PagePrincipale', 'http://example.org/mywiki/'],
             'subdirectory, no trailing slash' => ['/mywiki/index.php', '/mywiki', 'http://example.org/mywiki/'],
             'subdirectory, page URL' => ['/mywiki/index.php', '/mywiki/SomePage', 'http://example.org/mywiki/'],
-            // the ones that were wrong: nothing on disk is called `ecto`
+
             'alias' => ['/index.php', '/ecto/', 'http://example.org/ecto/'],
             'alias, entry script' => ['/index.php', '/ecto/index.php', 'http://example.org/ecto/'],
             'alias, several segments deep' => ['/index.php', '/wikis/ecto/', 'http://example.org/wikis/ecto/'],
@@ -86,8 +71,7 @@ class WikiMountPathTest extends YesWikiTestCase
             'a page' => ['/index.php', '/SomePage'],
             'a handler' => ['/index.php', '/SomePage/edit'],
             'a page with a query' => ['/index.php', '/SomePage?foo=1'],
-            // the built-in server behind a router puts the requested path in SCRIPT_NAME:
-            // that is not where the wiki lives either
+
             'a router SAPI' => ['/SomePage/edit', '/SomePage/edit'],
         ];
     }

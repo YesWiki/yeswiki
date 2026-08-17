@@ -1,15 +1,3 @@
-// yw-tags-input.js -- live-search tag-picker widget (ticket 10, pilot for the
-// yw-*/htmx pattern). No jQuery, no bootstrap-tagsinput. The search <input>'s
-// hx-get drives the live query; this file only renders the JSON response and
-// manages the chip list + hidden `pagetags` value htmx doesn't know about.
-//
-// Ticket 16 adds a second, "closed" mode for replacing bootstrap-tagsinput call
-// sites that pick from a fixed local option list instead of a live server query:
-// a widget with [data-yw-tag-input-options='{"id":"label", ...}'] filters
-// suggestions from that local map (re-read on every keystroke, so a caller can
-// swap the map at runtime just by updating the attribute -- no re-init needed).
-// [data-yw-tag-input-closed] additionally restricts tags to that option list
-// (no free-typed tags). [data-yw-tag-input-max="1"] caps the number of tags.
 ;(function () {
   function widgetOf(el) {
     return el.closest('[data-yw-tag-input]')
@@ -23,8 +11,6 @@
   function syncValue(widget) {
     const hidden = widget.querySelector('[data-yw-tag-input-value]')
     if (hidden) hidden.value = currentTags(widget).join(',')
-    // ...and say so: setting `.value` from script fires nothing, so anything downstream of
-    // the widget -- an `hx-trigger`, in the facets' case -- has no other way to know
     widget.dispatchEvent(new CustomEvent('yw:tags-changed', { bubbles: true }))
   }
 
@@ -42,13 +28,7 @@
     return Array.from(list.querySelectorAll('[data-yw-tag-input-suggestion]'))
   }
 
-  /**
-   * The suggestion the arrows are on.
-   *
-   * Marked with an attribute rather than with focus: focus would leave the search box, and
-   * the reader is still typing into it. `aria-activedescendant` on the input says the same
-   * thing to a screen reader, which is what focus would have done for free.
-   */
+  /** The suggestion the arrows are on. */
   function activeSuggestion(widget) {
     return widget.querySelector('[data-yw-tag-input-suggestion][data-active]')
   }
@@ -58,7 +38,6 @@
     if (!suggestions.length) return
     const current = activeSuggestion(widget)
     const index = current ? suggestions.indexOf(current) : -1
-    // from nothing, Down takes the first and Up the last; from a suggestion it wraps
     const next =
       index === -1
         ? step > 0
@@ -145,11 +124,6 @@
       return !needle || String(label).toLowerCase().includes(needle)
     })
 
-    // What you typed, first. A substring match anywhere is what makes this list useful on a
-    // long vocabulary, and it is also what buries the obvious answer: typing `lora` into the
-    // 1951 Google families offered `Explora` above `Lora`, because both contain it and
-    // nothing said which was meant. Exact, then starts-with, then the rest -- each group
-    // alphabetically, so the order is stable rather than whatever the map was built in.
     if (needle) {
       const rank = (label) => {
         const value = String(label).toLowerCase()
@@ -162,10 +136,6 @@
       )
     }
 
-    // At most this many on screen. A vocabulary can be long -- Google's font catalogue is
-    // 1951 names, and an empty box matches every one of them -- so without a cap the widget
-    // builds two thousand elements on each keystroke, and offers a list nobody scrolls. The
-    // cap is also what makes a live preview affordable: whatever is shown can be fetched.
     const limit = Number(widget.dataset.ywTagInputLimit || 0)
     const shown = limit > 0 ? matches.slice(0, limit) : matches
 
@@ -185,9 +155,6 @@
       list.appendChild(item)
     })
     list.hidden = false
-    // ...and say which ones, so a caller can decorate them without re-implementing the
-    // filtering: the font picker draws each name in its own face, and only what is on
-    // screen is worth fetching for that.
     widget.dispatchEvent(
       new CustomEvent('yw:tags-suggested', {
         bubbles: true,
@@ -201,7 +168,7 @@
     if (!input || !e.detail.successful) return
 
     const widget = widgetOf(input)
-    if (staticOptions(widget)) return // this widget is in local/static mode, not htmx-driven
+    if (staticOptions(widget)) return
 
     const list = widget.querySelector('[data-yw-tag-input-suggestions]')
     if (!list) return
@@ -288,7 +255,6 @@
     const closed = widget.hasAttribute('data-yw-tag-input-closed')
 
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      // nothing showing yet: the first press is what opens the list
       if (!suggestionsOf(widget).length && options) {
         renderStaticSuggestions(widget, input)
       }
@@ -302,14 +268,11 @@
     if (e.key === 'Enter' || (!closed && (e.key === ',' || e.key === ';'))) {
       e.preventDefault()
       if (options && closed) {
-        // closed vocabulary: only a listed option may be added -- the one the arrows are on,
-        // or the first, which is what pressing Enter straight after typing means
         const chosen = activeSuggestion(widget) || suggestionsOf(widget)[0]
         if (chosen) {
           addTag(widget, chosen.dataset.id, chosen.textContent)
         }
       } else {
-        // open vocabulary (with or without suggestions): free-typed tags are fine
         addTag(widget, input.value.replace(/[,;]$/, ''))
       }
       input.value = ''

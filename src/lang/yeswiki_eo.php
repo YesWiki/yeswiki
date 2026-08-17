@@ -1,14 +1,5 @@
 <?php
 
-/**
- * eo: the actions-builder strings only.
- *
- * This wiki has no core catalog in eo -- these came from docs/actions/lang, which
- * had three languages core does not (ticket 36). Kept rather than thrown away: 400-odd
- * translated strings are worth more than the tidiness of deleting them, and this is
- * where a translator would add the rest.
- */
-
 return [
     'AB_LEFT' => '',
     'AB_RIGHT' => '',

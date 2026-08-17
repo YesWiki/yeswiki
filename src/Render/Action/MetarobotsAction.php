@@ -9,13 +9,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
-/**
- * `{{metarobots}}` -- converted from the procedural actions/metarobots.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{metarobots}}` -- converted from the procedural actions/metarobots.php by ticket 06. */
 class MetarobotsAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -29,10 +23,6 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -43,23 +33,17 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        /*
-         * Action to add usefull metas to html head
-         */
-
         if ($this->getService(PageContext::class)->getMethod() != 'show' || empty($this->getService(PageContext::class)->getPage())) {
-            // no index if not with 'show' hander or if page is not existing
             echo '<meta name="robots" content="noindex, nofollow">' . "\n";
         } else {
             if (isset($this->getService(RuntimeConfig::class)['meta']['robots'])) {
                 echo '<meta name="robots" content="'
                     . $this->getService(RuntimeConfig::class)['meta']['robots'] . '">' . "\n";
             }
-            // canonical url
+
             $url = $this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag());
             echo '<link rel="canonical" href="' . $url . '">' . "\n";
 
-            // opengraph
             echo "\n" . '  <!-- opengraph -->' . "\n";
             echo '  <meta property="og:site_name" content="'
                 . $this->getService(RuntimeConfig::class)['yeswiki_name'] . '" />' . "\n";
@@ -73,9 +57,8 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             echo '  <meta property="og:type" content="article" />' . "\n";
             echo '  <meta property="og:url" content="' . $url . '" />' . "\n";
 
-            // open graph image : recommended sizes for FB
-            $w = 1200; // image width
-            $h = 630; // image height
+            $w = 1200;
+            $h = 630;
             $img = $this->getService(TemplateHelperService::class)->getImageFromBody($this->getService(PageContext::class)->getPage(), strval($w), strval($h));
             if (!empty($img)) {
                 echo '  <meta property="og:image" content="' . $img . '" />' . "\n";

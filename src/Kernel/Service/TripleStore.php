@@ -49,10 +49,6 @@ class TripleStore
 
     /**
      * Retrieves all the triples that match some criteria.
-     * This allows to search triples by their approximate resource or property names.
-     * The allowed operators are the sql "LIKE" and the sql "=".
-     *
-     * Does not use the cache $this->cacheByResource.
      *
      * @param string $resource
      *                         The resource of the triples or null
@@ -74,7 +70,7 @@ class TripleStore
         static $operators = [
             '=',
             'LIKE',
-        ]; // we might want to add other operators later
+        ];
         $res_op = strtoupper($res_op);
         if (!in_array($res_op, $operators)) {
             $res_op = '=';
@@ -91,10 +87,7 @@ class TripleStore
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
         $params = [];
-        // The operators are whitelisted above and stay in the text -- an operator cannot be
-        // bound. The values bind, and `%` in one is deliberately left alone: a caller asking
-        // for LIKE wants pattern semantics, which is why nothing here defuses wildcards the
-        // way SearchIndexQuery does.
+
         if ($resource !== null) {
             $where[] = ' resource ' . $res_op . ' ?';
             $params[] = $resource;
@@ -111,16 +104,6 @@ class TripleStore
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        // Add a local in instance cache
-        // TODO This cache should be shared with "$this->cacheByResource[$res][$prop]"
-        //      - but $res in this cache can be with a $re_prefix
-        //      - but $prop in this cache can be with $prop_prefix
-        //      - $re_prefix and $prop_prefix are not parameters of the getMatching function
-        //
-        // Keyed on the statement AND its values. Before bindings the values were inside the
-        // statement, so the statement alone identified the query; now every lookup for a given
-        // shape produces the SAME text, and keying on it alone would serve the first
-        // resource's triples to every subsequent resource asking the same shape of question.
         $key = $sql . '|' . serialize($params);
         if (!array_key_exists($key, $this->matchingCache)) {
             $this->matchingCache[$key] = $this->dbService->loadAll($sql, $params);
@@ -153,12 +136,10 @@ class TripleStore
         $res = empty($resource) ? '' : $re_prefix . $resource;
         $prop = $prop_prefix . $property;
         if (isset($this->cacheByResource[$res])) {
-            // All resource's properties was previously loaded.
             if (isset($this->cacheByResource[$res][$prop])) {
                 return $this->cacheByResource[$res][$prop];
             }
 
-            // LoadAll($sql) return an empty array when no result, do the same.
             return [];
         }
         $this->loadResource($res);
@@ -169,16 +150,7 @@ class TripleStore
         return [];
     }
 
-    /**
-     * Whether this resource carries any triple at all, whatever the property.
-     *
-     * Answered from the same per-resource cache `getAll()` fills, which is the point:
-     * `GroupManager::groupExists()` asked it through `getMatching()` instead, whose cache is
-     * a different one keyed by SQL text. The two never shared, so checking a group existed
-     * and then reading its members ran the identical
-     * `SELECT * FROM triples WHERE resource = 'ThisWikiGroup:admins'` twice -- on every
-     * `isInGroup()`, which is every ACL check on every page.
-     */
+    /** Whether this resource carries any triple at all, whatever the property. */
     public function hasAnyProperty(?string $resource, string $re_prefix = THISWIKI_PREFIX): bool
     {
         $res = empty($resource) ? '' : $re_prefix . $resource;
@@ -187,11 +159,7 @@ class TripleStore
         return $this->cacheByResource[$res] !== [];
     }
 
-    /**
-     * Read every triple of one resource into the cache, once. One query per resource, not
-     * one per property: a resource has a handful of triples and the caller almost always
-     * goes on to ask about another of them.
-     */
+    /** Read every triple of one resource into the cache, once. */
     private function loadResource(string $res): void
     {
         if (isset($this->cacheByResource[$res])) {
@@ -201,7 +169,7 @@ class TripleStore
         $this->cacheByResource[$res] = [];
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE ';
         $params = [];
-        if (empty($res)) { // get everything if no resource given
+        if (empty($res)) {
             $sql .= '1';
         } else {
             $sql .= 'resource = ?';
@@ -256,14 +224,8 @@ class TripleStore
         }
         $res = $re_prefix . $resource;
 
-        // This line used to carry a warning: it had wrapped the value in DOUBLE quotes, and
-        // SQLite's PDO driver does not escape '"', so a resource containing one broke out of
-        // the literal -- found via UserManager::delete() on an account name containing '"'
-        // (ticket 06). Bound, the value is not in the statement at all and the quoting rules
-        // of no driver apply to it. That is the entire argument for bindings in one line.
         $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = ?';
 
-        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
@@ -299,7 +261,6 @@ class TripleStore
             return 3;
         }
 
-        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
@@ -346,7 +307,6 @@ class TripleStore
             return 3;
         }
 
-        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
@@ -383,7 +343,7 @@ class TripleStore
         $res = $re_prefix . $resource;
 
         $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = ? AND property = ? ';
-        // one list, reused by the verification SELECT below, which asks the same question
+
         $params = [$res, $prop_prefix . $property];
         if ($value !== null) {
             $valueQuery = 'AND value = ?';
@@ -392,17 +352,14 @@ class TripleStore
         } else {
             $valueQuery = '';
         }
-        // $extraSQL is a whole extra clause a caller supplies -- so it arrives as a SqlFragment
-        // (ticket 31) and brings its own values with it, rather than having had to escape them
-        // into the text on the way here. It goes in after the value clause, so its parameters go
-        // after that clause's too.
+
         $extraSQLQuery = '';
         if ($extraSQL !== null && !$extraSQL->isEmpty()) {
             $extraSQLQuery = 'AND (' . $extraSQL->sql . ')';
             $sql .= $extraSQLQuery;
             $params = [...$params, ...$extraSQL->params];
         }
-        // invalidate the caches
+
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }

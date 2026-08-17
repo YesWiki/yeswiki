@@ -7,9 +7,7 @@ use PHPUnit\Framework\TestCase;
 require_once 'src/Kernel/lang.functions.php';
 
 /**
- * Ticket 25 revision (tools/lang integrated into core, not deleted): the
- * {{lang="xx"}} body-section filter shared by the show/iframe handlers and
- * the {{include}} action.
+ * Ticket 25 revision (tools/lang integrated into core, not deleted): the {{lang="xx"}} body-section filter shared by the show/iframe handlers and the {{include}} action.
  */
 class LangFunctionsTest extends TestCase
 {

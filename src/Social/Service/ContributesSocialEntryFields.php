@@ -4,14 +4,7 @@ namespace YesWiki\Social\Service;
 
 use YesWiki\Content\Entity\ContributesEntryFields;
 
-/**
- * An entry's comments and reactions, for whatever is rendering it.
- *
- * These four values used to be four methods on `Content`'s `EntryExtraFieldsService`, each
- * reaching into `CommentService` or `ReactionManager`. That is how the entry model came to
- * depend on the social features layered over it; the view asks each module for its part now
- * (ADR-0019).
- */
+/** An entry's comments and reactions, for whatever is rendering it. */
 class ContributesSocialEntryFields implements ContributesEntryFields
 {
     public function __construct(
@@ -37,8 +30,7 @@ class ContributesSocialEntryFields implements ContributesEntryFields
     }
 
     /**
-     * `getReactions()`'s shape is awkward in a template, so it is flattened to
-     * `bf_my_reaction: { like: { label, image, count } }`.
+     * `getReactions()`'s shape is awkward in a template, so it is flattened to `bf_my_reaction: { like: { label, image, count } }`.
      *
      * @return array<string, array<string, array<string, mixed>>>
      */

@@ -33,26 +33,20 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
         $themeManager = $this->getService(ThemeManager::class);
         $hibernationService = $this->getService(HibernationService::class);
 
-        // Forms for the type filter dropdown
         $forms = [];
         try {
-            // the dropdown shows a name per form and nothing else
             $forms = $this->getService(\YesWiki\Content\Service\FormManager::class)->getAllLabels();
         } catch (\Throwable $e) {
-            // bazar not available
         }
 
-        // Distinct owners for the filter dropdown
         $ownersRows = $dbService->loadAll(
             "SELECT DISTINCT owner FROM {$dbService->prefixTable('pages')}"
             . " WHERE latest='Y' AND parent='' AND owner != '' ORDER BY owner ASC"
         );
         $owners = array_column($ownersRows ?? [], 'owner');
 
-        // Groups for ACL selectors
         $groups = $groupOperationsService->getAll();
 
-        // Templates for the theme bulk-action modal
         $templates = $themeManager->getTemplates();
 
         return $this->render('@core/admin-content-action.twig', [

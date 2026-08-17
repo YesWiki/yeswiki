@@ -57,7 +57,7 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction, 
         $res .= '</select> <input class="btn btn-default" type="submit" value="' . _t('SEE') . '" />' . $services->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
 
         $post = $this->getRequest()->request;
-        if ($post->count() > 0 && !empty($post->get('handlername'))) { // save ACL's
+        if ($post->count() > 0 && !empty($post->get('handlername'))) {
             $result = $this->getService(ModuleAclService::class)->setModuleAcl($name = strval($post->get('handlername')), 'handler', strval($post->get('acl')));
             if ($result) {
                 return $res . _t('ERROR_WHILE_SAVING_HANDLER_ACL') . ' ' . ucfirst($name) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')<br />';

@@ -8,9 +8,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
- * HTML link building for wiki content (historic Wiki::LinkTo()): wiki short links,
- * missing pages turned into edit links carrying the current theme, external URLs,
- * mailto, modalbox iframes, and link tracking.
+ * HTML link building for wiki content (historic Wiki::LinkTo()): wiki short links, missing pages turned into edit links carrying the current theme, external URLs, mailto, modalbox iframes, and link tracking.
  */
 class LinkRenderer
 {
@@ -34,11 +32,6 @@ class LinkRenderer
     /**
      * Create an HTML link.
      *
-     * linkTo("WikiPage")
-     * linkTo("WikiPage", "", ["method" => "xml"])
-     * linkTo("WikiPage/edit?params=2", "ma page")
-     * linkTo("https://test.fr", "mon lien", ["class" => "yeah"])
-     *
      * @param string       $link    URL, or wiki tag / short link
      * @param string       $text
      * @param array<mixed> $options HTML attributes, plus 'method', 'params' and 'html'
@@ -52,30 +45,25 @@ class LinkRenderer
             $text = $link;
         }
 
-        // when true, $text is already-safe HTML (e.g. rendered Markdown) and must not be escaped
         $textIsHtml = !empty($options['html']);
         unset($options['html']);
 
-        // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if ($wikiLink = $this->urlFormatter->extractLinkParts($link)) {
             $tag = $wikiLink['tag'];
             $method = $options['method'] ?? $wikiLink['method'];
             $params = $options['params'] ?? $wikiLink['params'];
 
-            // Handle missing Tag
             if ((empty($method) || $method == 'show') && !$this->pageManager->getOne((string)$tag)) {
                 $params = array_merge($params, $this->paramsForNewPageLink());
                 $method = 'edit';
                 $options['data-missing-tag'] = true;
             }
 
-            // Tag and Method to be kept as HTML attributes
             $options['data-tag'] = $tag;
             $options['data-method'] = $method ?? 'show';
             unset($options['method']);
             unset($options['params']);
 
-            // General URL
             $link = $this->urlFormatter->href($method, $tag, $params, false);
         } elseif ((!isset($options['data-iframe'])
                 || strval($options['data-iframe']) != '0')
@@ -83,20 +71,16 @@ class LinkRenderer
             && is_string($options['class'])
             && preg_match('/(^|\s)modalbox($|\s)/', $options['class'])
         ) {
-            // use iframe for external links in modalbox except if `data-iframe=0`
             $options['data-iframe'] = '1';
             if (!isset($options['title']) && !empty($text)) {
-                // set a title because it is beautiful
                 $options['title'] = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
             }
         }
 
-        // Email addresses
         if (preg_match("/^[\w.-]+\@[\w.-]+$/", $link)) {
             $link = 'mailto:' . $link;
         }
 
-        // Options to HTML attributes
         $stringAttrs = implode(
             ' ',
             array_map(
@@ -112,27 +96,21 @@ class LinkRenderer
             )
         );
 
-        // Block script schemes (see RFC 3986 about schemes)
         $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
         $text = $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 
-        // Generate HTML
         return <<<HTML
         <a href="$link" $stringAttrs>$text</a>
         HTML;
     }
 
-    /**
-     * Positional tag/method/text convenience over linkTo() (historic ComposeLinkToPage()).
-     */
+    /** Positional tag/method/text convenience over linkTo() (historic ComposeLinkToPage()). */
     public function linkToPage(mixed $tag, mixed $method = '', mixed $text = ''): string
     {
         return $this->linkTo((string)$tag, (string)$text, ['method' => $method]);
     }
 
-    /**
-     * Positional tag/method/params/text convenience over linkTo() (historic Link()).
-     */
+    /** Positional tag/method/params/text convenience over linkTo() (historic Link()). */
     public function link(mixed $tag, mixed $method = null, mixed $params = null, mixed $text = null, bool $forcedLink = false): string
     {
         return $this->linkTo((string)$tag, (string)$text, [
@@ -143,8 +121,7 @@ class LinkRenderer
     }
 
     /**
-     * Query parameters a "create this missing page" edit link must carry so the new
-     * page inherits the current theme/squelette/style (historic ParamsForNewPageLink()).
+     * Query parameters a "create this missing page" edit link must carry so the new page inherits the current theme/squelette/style (historic ParamsForNewPageLink()).
      *
      * @return array<mixed>
      */
@@ -152,7 +129,6 @@ class LinkRenderer
     {
         $result = ['newpage' => 1];
 
-        // Config from current page
         $fromConfig = [
             'theme' => 'favorite_theme',
             'squelette' => 'favorite_squelette',
@@ -166,7 +142,6 @@ class LinkRenderer
             }
         }
 
-        // Metadata from current page
         $currentPageTag = $this->pageContext->getTag();
         $pageMetadatas = empty($currentPageTag) ? [] : $this->pageManager->getMetadata($currentPageTag);
         foreach (ThemeManager::SPECIAL_METADATA as $metadata) {

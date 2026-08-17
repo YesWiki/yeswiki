@@ -12,21 +12,7 @@ use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Search\Service\TagsManager;
 
 /**
- * Creates a Content from a submitted form, whatever kind of Content the form describes
- * (ticket 13).
- *
- * Ticket 10 made Page, User and File forms; this is what lets you fill one in. The
- * *form* half is identical for every type -- run each field's formatValuesBeforeSave,
- * compute the title from `entry_title_template`, slug a free tag from it -- so it stays
- * where it already lived, in EntryManager::formatDataBeforeSave(). What differs is
- * persistence, and it differs enough that it cannot be a parameter: an entry gets a
- * entry is typed `entry` and keeps its `form_id`, a page is typed `page` and gets its
- * keywords reindexed, an account has to go through UserManager or it comes out without the
- * owner, ACL and uniqueness guarantees signup gives it.
- *
- * EntryManager::create() still refuses a built-in form, and must: that refusal is what
- * stops an `entry` row from being written carrying the Pages form's id, which is a
- * row belonging to no list at all. This service is the way past it, not a hole in it.
+ * Creates a Content from a submitted form, whatever kind of Content the form describes (ticket 13).
  */
 class ContentCreator
 {
@@ -85,8 +71,7 @@ class ContentCreator
     }
 
     /**
-     * A page is a row with no type triple, a body holding the form's fields, and its
-     * keywords mirrored into `triples` -- the derived index the page editor maintains.
+     * A page is a row with no type triple, a body holding the form's fields, and its keywords mirrored into `triples` -- the derived index the page editor maintains.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data already through the form pipeline: title computed, tag generated
@@ -98,8 +83,6 @@ class ContentCreator
         $tag = (string)$data['tag'];
         $body = $this->bodyFromFields($form, $data);
 
-        // the page editor stores keywords as a list; the tags field submits the comma
-        // string a bazar entry keeps (ADR-0009's shapes differ per Content type)
         if (isset($body[PageBody::KEYWORDS]) && !is_array($body[PageBody::KEYWORDS])) {
             $body[PageBody::KEYWORDS] = TagsManager::parseList((string)$body[PageBody::KEYWORDS]);
         }
@@ -117,12 +100,7 @@ class ContentCreator
     }
 
     /**
-     * An account is created by UserManager, because everything that makes a row an
-     * account rather than a page -- the `user` triple and its tag cache, owner = itself,
-     * the `%\n@admins` write ACL, name and email uniqueness -- lives there. What this
-     * adds is the rest of the form: the tag is settled first so a field needing it
-     * (a profile picture) formats against the account's real tag, and the fields
-     * UserManager's own body shape does not name are carried through.
+     * An account is created by UserManager, because everything that makes a row an account rather than a page -- the `user` triple and its tag cache, owner = itself, the `%\n@admins` write ACL, name and email uniqueness -- lives there.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data raw submission: the password must still be plaintext here
@@ -137,15 +115,13 @@ class ContentCreator
             throw new \Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $nameField);
         }
 
-        // PasswordField hashes on save and UserManager::create() hashes again: read the
-        // plaintext before the form pipeline runs, and let UserManager be the one to hash
         $plainPassword = (string)($data['password'] ?? '');
 
         $data['tag'] = $this->container->get(PageManager::class)->suggestFreeTag($username);
         $data = $this->container->get(EntryManager::class)->formatDataBeforeSave($data);
 
         $body = $this->bodyFromFields($form, $data);
-        // the account name is the tag; storing it again is a second copy that can drift
+
         unset($body[$nameField], $body['password']);
 
         $user = $this->container->get(UserManager::class)->create(
@@ -164,9 +140,7 @@ class ContentCreator
     }
 
     /**
-     * A file is its bytes: the upload has to arrive, and everything the File type stores
-     * about it -- the two filenames, the size, the mime type -- is derived from it rather
-     * than typed in. FileManager owns that, exactly as it does for the upload API route.
+     * A file is its bytes: the upload has to arrive, and everything the File type stores about it -- the two filenames, the size, the mime type -- is derived from it rather than typed in.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data raw submission; the upload is in $_FILES, not here
@@ -175,9 +149,6 @@ class ContentCreator
      */
     private function createFile(array $form, array $data): array
     {
-        // checked before the form pipeline runs, not after: with no upload there is no
-        // filename, so the pipeline would fail on the *title* it computes from one and
-        // report a missing title to someone who is missing a file
         if (!$this->hasUpload($form)) {
             throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
         }
@@ -203,10 +174,6 @@ class ContentCreator
     /**
      * The created Content in the shape everything downstream expects an entry in.
      *
-     * `form_id` above all: `entry.created` listeners read it -- the webhook dispatcher
-     * refuses a payload without one -- and a page, an account and a file do not store it,
-     * because which form describes them is their type triple (ticket 10).
-     *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $body
      *
@@ -221,8 +188,7 @@ class ContentCreator
     }
 
     /**
-     * Whether the submission actually carries bytes for one of the form's file-content
-     * fields. PHP puts uploads in $_FILES, so they are not in the posted data at all.
+     * Whether the submission actually carries bytes for one of the form's file-content fields.
      *
      * @param array<string, mixed> $form
      */
@@ -239,9 +205,7 @@ class ContentCreator
     }
 
     /**
-     * The submitted values a form actually declares, and nothing else: the entry
-     * bookkeeping formatDataBeforeSave() adds (form_id, status, created_at...) describes
-     * a bazar entry, not a page or an account.
+     * The submitted values a form actually declares, and nothing else: the entry bookkeeping formatDataBeforeSave() adds (form_id, status, created_at...) describes a bazar entry, not a page or an account.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data
@@ -265,8 +229,7 @@ class ContentCreator
     }
 
     /**
-     * The `entry_*` properties that are not entry-only still apply: a webmaster who set
-     * default ACLs or presentation metadata on the Pages form meant them for new pages.
+     * The `entry_*` properties that are not entry-only still apply: a webmaster who set default ACLs or presentation metadata on the Pages form meant them for new pages.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data

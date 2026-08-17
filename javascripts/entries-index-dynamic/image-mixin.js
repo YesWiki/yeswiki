@@ -7,9 +7,6 @@ export default {
     }
   },
   methods: {
-    // `event` is passed in by every caller: `$event` from the Vue `@error` handlers, and
-    // the inline handler's own `event` from the one native `onerror` attribute (table.twig).
-    // It used to read the implicit `window.event`, which is only set during native dispatch.
     urlImageResizedOnError(
       entry,
       fieldName,
@@ -24,7 +21,6 @@ export default {
       if (entry[fieldName]) {
         const fileName = entry[fieldName]
         if (!this.isExternalUrl(entry)) {
-          // currently not supporting api for external images (anti-csrf token not generated)
           if (this.tokenForImages === null) {
             this.tokenForImages = token
           }
@@ -79,14 +75,12 @@ export default {
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
       }
-      // maybe from other entry
       regExp = new RegExp(
         `^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`,
       )
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
-      // last possible format
       regExp = new RegExp('^(.*)\\.([^.]+)$')
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode === 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
@@ -127,15 +121,13 @@ export default {
                 if (next && next.matches('div.area.visual-area[style]')) {
                   const { backgroundImage } = next.style
                   if (backgroundImage && backgroundImage.length) {
-                    next.style.backgroundImage = '' // reset to force update
+                    next.style.backgroundImage = ''
                     next.style.backgroundImage = `url("${srcFileName}")`
                   }
                 }
               })
           })
-          .catch(() => {
-            /* image cache generation failed, keep the original src */
-          })
+          .catch(() => {})
           .finally(() => {
             this.processingImage = false
             this.processNextImage()

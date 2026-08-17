@@ -7,21 +7,12 @@ use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Render\Component\ComponentRegistry;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * What the editor's component palette is given.
- *
- * Until ticket 36 this class WAS the palette: it globbed `docs/actions/*.yaml` plus every
- * extension's `actions/documentation.yaml` plus the instance's `custom` one, sorted the
- * groups by a `position` integer, injected the custom bazar templates as extra entries of
- * the entrylist group, and finished by walking the whole structure to turn `_t(KEY)` marker
- * strings into translations. None of that is here any more. Components are declared in PHP
- * by the services that own them (`ProvidesComponents`), a provider calls `_t()` itself at
- * the moment it declares a label, and this is left holding the two things that are neither
- * a component nor a category: which forms exist, and which extra Vue inputs to load.
- */
+/** What the editor's component palette is given. */
 class ActionsBuilderService
 {
-    /** @var array<string, mixed>|null */
+    /**
+     * @var array<string, mixed>|null
+     */
     protected $data;
 
     protected TemplateEngine $renderer;
@@ -34,7 +25,9 @@ class ActionsBuilderService
         $this->container = $container;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         if ($this->data !== null) {
@@ -44,8 +37,7 @@ class ActionsBuilderService
         $registry = $this->container->get(ComponentRegistry::class);
 
         $data = formAndListIds();
-        // the palette, in category order; and every component by id, palette-visible or not,
-        // because the settings rail opens on components the palette does not offer
+
         $data['palette'] = $registry->palette();
         $data['components'] = $registry->byId();
 
@@ -58,8 +50,7 @@ class ActionsBuilderService
     }
 
     /**
-     * Vue inputs an extension or the instance ships, for a setting type core has never
-     * heard of. Unrelated to Components -- these are the widgets a setting is drawn with.
+     * Vue inputs an extension or the instance ships, for a setting type core has never heard of.
      *
      * @return array<string, string>
      */

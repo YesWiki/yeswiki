@@ -68,7 +68,6 @@ class ConditionsCheckingField extends LabelField
                 case 'not(':
                 case 'not (':
                     if ($current !== '') {
-                        // bad formatting: a value cannot precede an opening parenthesis
                         return null;
                     }
                     if ($operation !== '(') {
@@ -90,7 +89,6 @@ class ConditionsCheckingField extends LabelField
                     $tokens[] = ['type' => $operation === 'and' ? 'AND' : 'OR'];
                     break;
                 default:
-                    // last chunk, no operation following it
                     if ($current !== '') {
                         $tokens[] = ['type' => 'BOOL', 'value' => $this->evaluateLeaf($current, $entry, $fieldsByPropertyName)];
                     }
@@ -101,7 +99,6 @@ class ConditionsCheckingField extends LabelField
         return $tokens;
     }
 
-    // find the earliest occurring operator ('(', '!(', 'not(', 'not (', ')', 'and', 'or') in $condition
     private function getFirstOperation(string $condition): array
     {
         $best = null;
@@ -132,7 +129,6 @@ class ConditionsCheckingField extends LabelField
         ];
     }
 
-    // split a leaf condition (e.g. "bf_field == value") into left/type/right parts
     private function splitLeafCondition(string $condition): array
     {
         $condition = trim($condition);
@@ -188,7 +184,6 @@ class ConditionsCheckingField extends LabelField
         }
     }
 
-    // returns the values of a field as saved in the entry, normalized to an array
     private function getEntryFieldValues(string $fieldName, array $entry, array $fieldsByPropertyName): array
     {
         $raw = $entry[$fieldName] ?? '';
@@ -211,7 +206,6 @@ class ConditionsCheckingField extends LabelField
         }));
     }
 
-    // parse the right-hand side of a condition (e.g. "a,b" or "[a,b]") into an array of values
     private function extractConditionValues(string $values): array
     {
         $trimmed = trim($values);
@@ -275,7 +269,6 @@ class ConditionsCheckingField extends LabelField
         }
     }
 
-    // only matches values written as regex literals ("/pattern/flags"), like the JS implementation
     private function conditionMatch(string $fieldName, string $values, array $entry, array $fieldsByPropertyName): bool
     {
         $fieldValues = $this->getEntryFieldValues($fieldName, $entry, $fieldsByPropertyName);
@@ -367,7 +360,6 @@ class ConditionsCheckingField extends LabelField
         return false;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

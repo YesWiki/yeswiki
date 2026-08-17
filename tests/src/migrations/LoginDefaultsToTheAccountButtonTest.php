@@ -8,20 +8,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The migration behind the changed default: `{{login}}` renders the account button now,
- * and every `{{login}}` written before this release meant the form.
- *
- * Tested on the rewriting itself rather than through the database, because the rewriting
- * is the part with a decision in it -- three spellings of the same tag, each meaning
- * something different afterwards -- and because running the real thing here would edit
- * the developer's own pages as a side effect of `make test`.
+ * The migration behind the changed default: `{{login}}` renders the account button now, and every `{{login}}` written before this release meant the form.
  */
 class LoginDefaultsToTheAccountButtonTest extends YesWikiTestCase
 {
     public static function setUpBeforeClass(): void
     {
-        // YesWikiMigration is only autoloadable once getWiki() has registered
-        // src/autoload.inc.php's fallback autoloader
         self::getWiki();
         require_once 'src/migrations/20260804090000_LoginDefaultsToTheAccountButton.php';
     }
@@ -32,19 +24,17 @@ class LoginDefaultsToTheAccountButtonTest extends YesWikiTestCase
     public static function rewriteProvider(): array
     {
         return [
-            // what a page written before this release meant: the fields
             'a bare tag' => ['{{login}}', '{{login template="login-form.twig"}}'],
             'a tag with other parameters' => [
                 '{{login context="login-page" signupurl="0"}}',
                 '{{login template="login-form.twig" context="login-page" signupurl="0"}}',
             ],
-            // `default.twig` used to BE the form, and is a name nothing answers to now
+
             'the old default named explicitly' => [
                 '{{login template="default.twig"}}',
                 '{{login template="login-form.twig"}}',
             ],
-            // the navbar's button, renamed -- and kept named, so that running this a
-            // second time does not read it as a page that never chose
+
             'the account link' => [
                 '{{login template="account-link.twig"}}',
                 '{{login template="account-button.twig"}}',
@@ -53,12 +43,12 @@ class LoginDefaultsToTheAccountButtonTest extends YesWikiTestCase
                 '{{login template="account-link.twig" class="pull-right"}}',
                 '{{login template="account-button.twig" class="pull-right"}}',
             ],
-            // a template of the webmaster's own is none of this migration's business
+
             'a template of ones own' => [
                 '{{login template="mytheme-login.twig"}}',
                 '{{login template="mytheme-login.twig"}}',
             ],
-            // and nothing else in the page is touched
+
             'other actions' => ['{{lostpassword}} {{listusers}}', '{{lostpassword}} {{listusers}}'],
         ];
     }
@@ -83,7 +73,6 @@ class LoginDefaultsToTheAccountButtonTest extends YesWikiTestCase
 
         $rewritten = $rewriteBody->invoke($migration, ['content' => $content]);
 
-        // null is "nothing in it changed", which leaves the body as it was
         return $rewritten === null ? $content : (string)$rewritten['content'];
     }
 }

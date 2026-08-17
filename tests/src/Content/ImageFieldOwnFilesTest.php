@@ -14,20 +14,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A picture attached from the file rail is still the field's picture.
- *
- * The bazar image field stores a picked file as its own download address, which lands in
- * the URL branch the field has always had -- and that branch handed the image straight to
- * the browser at whatever size it was uploaded. A field configured to show 200x150
- * thumbnails would have served a 3 MB photograph in a 200px box, on every card of every
- * list, which is the whole reason the sizes exist.
- *
- * The resizing happens behind `/api/files/<tag>/download`, not in a public cache
- * directory: that route is the one place that asks whether this reader may have the file,
- * and a thumbnail sitting in `cache/` would be a readable copy of a file whose whole point
- * is that reading it is checked.
- */
+/** A picture attached from the file rail is still the field's picture. */
 class ImageFieldOwnFilesTest extends YesWikiTestCase
 {
     private const FILE_TAG = 'ImageFieldOwnFilesTestPicture';
@@ -35,8 +22,6 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
     /** An image field carrying the sizes a webmaster configured. */
     private function imageField(YesWikiRuntime $wiki, string $thumbWidth = '200', string $thumbHeight = '150'): BazarField
     {
-        // positional, as forms have always stored a field: type, name, label, then
-        // ImageField's own thumbnail height/width and full height/width
         $values = array_fill(0, 16, '');
         $values[0] = 'image';
         $values[1] = 'bf_image';
@@ -53,8 +38,6 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
     {
         $render = (new \ReflectionClass($field))->getMethod('renderStatic');
 
-        // an image field's stored key is its type + its name (`imagebf_image`), which is
-        // what the entry array is read by
         return (string)$render->invoke($field, [$field->getPropertyName() => $value, 'tag' => 'SomeEntry']);
     }
 
@@ -68,7 +51,6 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
         $this->assertStringContainsString('width=200', $rendered);
         $this->assertStringContainsString('height=150', $rendered);
 
-        // a field with no sizes configured asks for none: the picture as it was uploaded
         $plain = $this->renderStatic($this->imageField($wiki, '', ''), $url);
         $this->assertStringNotContainsString('width=', $plain);
     }
@@ -78,16 +60,12 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
-        // an address on another site -- resizing it would mean fetching it, and this wiki
-        // does not host it
         $rendered = $this->renderStatic($this->imageField($wiki), 'https://example.org/api/files/x/download');
         $this->assertStringContainsString('src="https://example.org/api/files/x/download"', $rendered);
         $this->assertStringNotContainsString('width=', $rendered);
     }
 
-    /**
-     * ...and the route really does resize, into a cache nobody can reach directly.
-     */
+    /** ...and the route really does resize, into a cache nobody can reach directly. */
     public function testTheDownloadRouteServesAResizedCopyFromAPrivateCache(): void
     {
         if (!function_exists('imagecreatetruecolor')) {
@@ -100,12 +78,7 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
 
         $stored = 'image-field-own-files-test.png';
         $path = FileManager::STORAGE_DIR . '/' . $stored;
-        // Created here rather than assumed: nothing in a fresh checkout makes `private/files`,
-        // and a wiki that has never taken an upload does not have it either. Where it was
-        // missing, `imagepng()` wrote nothing, `getPhysicalPath()` found no bytes and the
-        // route answered 404 -- a failure about the download route, three steps from the
-        // directory that was actually absent. It passes on any machine that has ever uploaded
-        // a file, which is every developer's and no CI runner's.
+
         if (!is_dir(FileManager::STORAGE_DIR) && !mkdir(FileManager::STORAGE_DIR, 0o755, true)) {
             $this->markTestSkipped('could not create ' . FileManager::STORAGE_DIR);
         }
@@ -126,9 +99,7 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
             $body = (string)ob_get_clean();
 
             $size = getimagesizefromstring($body);
-            // the body, not a bare "false is not false": when this fails the answer is some
-            // other response entirely -- an error page, an empty body -- and which one it is
-            // is the whole question. It cost a CI run that could only be guessed at.
+
             $this->assertNotFalse($size, sprintf(
                 'the route answered with an image, got %d bytes starting %s',
                 strlen($body),

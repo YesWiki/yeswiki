@@ -10,19 +10,7 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-/**
- * The facets, over htmx (ticket 37).
- *
- * Checking a box used to hide `.bazar-entry` elements in the browser, which is why these are
- * browser tests: what the server sends can be right while nothing happens on the page. Two
- * things phpunit cannot see -- that a click issues the request at all, and that the answer is
- * swapped in rather than navigated to -- plus the one that made this a bug report: a card list
- * draws no `.bazar-entry`, so the old mechanism filtered nothing there.
- *
- * `FacetteRessource` is a seeded page: `{{entrylist id="4" groups="bf_type"}}` over the four
- * seeded resources. `template` and `filterposition` are readable off the URL, so a spec can
- * ask for a shape without editing the page.
- */
+/** The facets, over htmx (ticket 37). */
 
 const CARD_LIST = '/?FacetteRessource&template=card'
 
@@ -34,7 +22,6 @@ test('checking a facet filters the list without leaving the page', async ({
   const before = await cards.count()
   expect(before).toBeGreaterThan(1)
 
-  // nothing reloads: the document that answers the click is the one we are on
   await page.evaluate(() => {
     ;(window as unknown as { __stillHere: boolean }).__stillHere = true
   })
@@ -48,7 +35,6 @@ test('checking a facet filters the list without leaving the page', async ({
     ),
   ).toBe(true)
 
-  // ...and the selection is in the URL, so the filtered list is a link one can send
   await expect(page).toHaveURL(/facet/)
   await expect(page.getByRole('checkbox').first()).toBeChecked()
 })
@@ -65,8 +51,6 @@ test('the filtered list survives a reload', async ({ page }) => {
 })
 
 test('the reset button drops the selection', async ({ page }) => {
-  // `resetfiltersbutton` is a parameter of the tag rather than of the URL, so this one needs
-  // a page of its own
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await setPageContent(
     page,
@@ -91,20 +75,10 @@ test('the counts stay whole, so a second value of the same box is offered', asyn
   expect(offered).toBeGreaterThan(1)
 
   await page.getByRole('checkbox').first().check()
-  // the boxes come back from the server: what they must not come back as is
-  // "only the values the current selection leaves", which would make the box a radio
   await expect(page.getByRole('checkbox')).toHaveCount(offered)
 })
 
-/**
- * ...and a webmaster can ask for them without knowing the parameter names.
- *
- * The facet settings were declared on the entrylist family only, so a presentation could not
- * be told about them at all -- and where they *were* declared they were invisible: each one
- * is shown "once there is a facet", written `showIf('facets')`, and `facets` is the name of
- * the input rather than of anything it writes (it writes `groups`). The rail's conditions can
- * see a composite input's parameters now, which is what makes that condition true.
- */
+/** ...and a webmaster can ask for them without knowing the parameter names. */
 test('the rail offers the facets, and what they can be told', async ({
   page,
 }) => {
@@ -163,11 +137,9 @@ test('facets can be laid out above the list rather than beside it', async ({
   const resultBox = await results.boundingBox()
   if (!filterBox || !resultBox) throw new Error('the list did not render')
 
-  // above, and full width -- beside would put them side by side
   expect(filterBox.y + filterBox.height).toBeLessThanOrEqual(resultBox.y + 1)
   expect(Math.abs(filterBox.width - resultBox.width)).toBeLessThan(2)
 
-  // laid out from the top: bottom-aligned, a picker holding a chip steps out of line
   const tops = await page
     .locator('.yw-facet-select')
     .evaluateAll((nodes) =>
@@ -175,12 +147,10 @@ test('facets can be laid out above the list rather than beside it', async ({
     )
   expect(new Set(tops).size, 'the facets do not share a top edge').toBe(1)
 
-  // and the columns are sized by the layout, not by a grid class core no longer ships
   await expect(
     page.locator('.facette-container [class*="col-sm-"]'),
   ).toHaveCount(0)
 
-  // ...and it costs one line of the page, not one per value: each facet is a tag input
   await expect(page.locator('.yw-facet-select .yw-tag-input')).not.toHaveCount(
     0,
   )
@@ -189,21 +159,15 @@ test('facets can be laid out above the list rather than beside it', async ({
     'the row of facets is a row, not a stack of every value there is',
   ).toBeLessThan(140)
 
-  // how many entries the selection left reads under it, not over it
   const row = await page.locator('.results-container').boundingBox()
   const count = await page.locator('.results-info').boundingBox()
   if (!row || !count) throw new Error('no facets')
   expect(count.y).toBeGreaterThan(row.y)
 
-  // and no framework came along for the ride: core's own chip picker, not a Vue component
   expect(await page.evaluate(() => typeof window['Vue'])).toBe('undefined')
 })
 
-/**
- * The tag input is a way of *saying* the same thing: it writes the same parameter into the
- * same form, and the server does the filtering either way. Nothing about it may become a
- * second filtering mechanism.
- */
+/** The tag input is a way of *saying* the same thing: it writes the same parameter into the same form, and the server does the filtering either way. */
 test('the facet chips filter, survive the swap, and come off again', async ({
   page,
 }) => {
@@ -229,7 +193,6 @@ test('the facet chips filter, survive the swap, and come off again', async ({
     1,
   )
 
-  // two values of one facet are alternatives here too, and they travel as one parameter
   await pick('Partenaire')
   await expect(cards).toHaveCount(2)
   await expect(chips).toHaveCount(2)
@@ -242,17 +205,13 @@ test('the facet chips filter, survive the swap, and come off again', async ({
   expect(errors, 'the browser reported errors').toEqual([])
 })
 
-/**
- * ...with the keyboard, which is the half of a picker that is easy to ship without: the mouse
- * path works from the first line of markup and nothing reports the arrows missing.
- */
+/** ...with the keyboard, which is the half of a picker that is easy to ship without: the mouse path works from the first line of markup and nothing reports the arrows missing. */
 test('the arrows walk the values and Enter takes one', async ({ page }) => {
   await page.goto(`${CARD_LIST}&filterposition=top`)
 
   const active = page.locator('[data-yw-tag-input-suggestion][data-active]')
   await page.locator('.yw-tag-input__search').first().click()
 
-  // the first press opens the list on its first value, and they wrap
   await page.keyboard.press('ArrowDown')
   await expect(active).toHaveText(/Site web/)
   await page.keyboard.press('ArrowDown')

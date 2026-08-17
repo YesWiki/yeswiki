@@ -6,12 +6,7 @@ use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Database\SqlStatementSplitter;
 
 /**
- * Ticket 17: archive restore stopped going through `mysqli_multi_query()`, so splitting a
- * dump into statements became our job.
- *
- * These are the cases where a naive `explode(';')` corrupts rather than fails: a semicolon
- * inside a wiki page's stored body is not hypothetical -- page content is full of prose,
- * HTML entities and `{{action}}` calls.
+ * Ticket 17: archive restore stopped going through `mysqli_multi_query()`, so splitting a dump into statements became our job.
  */
 class SqlStatementSplitterTest extends TestCase
 {
@@ -30,7 +25,6 @@ class SqlStatementSplitterTest extends TestCase
 
     public function testEmptyStatementsAreDropped(): void
     {
-        // old backups contain bare semicolons where a table had no rows
         $this->assertSame(['SELECT 1'], SqlStatementSplitter::split(";\n;\nSELECT 1;\n;\n"));
     }
 
@@ -78,8 +72,7 @@ class SqlStatementSplitterTest extends TestCase
     }
 
     /**
-     * MySQL's version-gated comments are executable statements in a MySQL dump, so they must
-     * survive rather than be treated as commentary.
+     * MySQL's version-gated comments are executable statements in a MySQL dump, so they must survive rather than be treated as commentary.
      */
     public function testMysqlExecutableCommentsSurvive(): void
     {
@@ -99,15 +92,7 @@ class SqlStatementSplitterTest extends TestCase
         $this->assertSame(['SELECT 1'], SqlStatementSplitter::split($sql));
     }
 
-    /** An unterminated literal must not swallow the splitter -- the statement fails on execution instead. */
-    /**
-     * A trigger body is a compound statement, and its inner semicolons are not boundaries.
-     *
-     * SQLite's search index (ADR-0015) is maintained by exactly these triggers, so before this a
-     * SQLite archive containing a search index could not be restored at all: the split cut the
-     * body in half and the replay died on "incomplete input". The failure was at restore time,
-     * not backup time -- the archive looked fine until the day it was needed.
-     */
+    /** A trigger body is a compound statement, and its inner semicolons are not boundaries. */
     public function testATriggerBodyIsOneStatement(): void
     {
         $trigger = 'CREATE TRIGGER "idx_ai" AFTER INSERT ON "idx" BEGIN'
@@ -130,7 +115,7 @@ class SqlStatementSplitterTest extends TestCase
         $this->assertSame([$trigger], SqlStatementSplitter::split($trigger . ';'));
     }
 
-    /** A CASE ... END inside the body must not close the block early. */
+    /** A CASE ... */
     public function testACaseExpressionInsideATriggerDoesNotEndTheBlock(): void
     {
         $trigger = 'CREATE TRIGGER "t" AFTER UPDATE ON "a" BEGIN'
@@ -140,11 +125,7 @@ class SqlStatementSplitterTest extends TestCase
         $this->assertSame([$trigger], SqlStatementSplitter::split($trigger . ';'));
     }
 
-    /**
-     * The narrowness of the trigger rule, pinned. PostgreSQL's dump preamble is a bare `BEGIN;`
-     * and its epilogue a bare `COMMIT;` -- if `BEGIN` opened a block unconditionally, an entire
-     * pgsql dump would come back as one unterminated statement and no restore would ever work.
-     */
+    /** The narrowness of the trigger rule, pinned. */
     public function testABareBeginIsItsOwnStatement(): void
     {
         $this->assertSame(

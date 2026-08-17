@@ -16,9 +16,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
 
 /**
- * Regression tests for ticket 15 (security-core-split): PasswordForEditingService is the
- * new, standalone home for the shared-editing-password gate previously bundled inside
- * SecurityController (renamed to InputFilter by wave-two ticket 03).
+ * Regression tests for ticket 15 (security-core-split): PasswordForEditingService is the new, standalone home for the shared-editing-password gate previously bundled inside SecurityController (renamed to InputFilter by wave-two ticket 03).
  */
 #[CoversMethod(PasswordForEditingService::class, 'isGrantedPasswordForEditing')]
 class PasswordForEditingServiceTest extends YesWikiTestCase

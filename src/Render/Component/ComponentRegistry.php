@@ -11,22 +11,12 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * Every Component this wiki offers, asked of the services that declare them.
- *
- * Replaces `ActionsBuilderService`'s three globs -- core's own `docs/actions` YAML, each
- * extension's `actions/documentation.yaml` and the instance's `custom` one -- and with them
- * the `array_walk_recursive` pass that turned `_t(KEY)` marker strings into translations
- * afterwards -- a provider calls `_t()` itself, at the moment it declares a label, in the
- * language of the request that asked.
- *
- * In `Render` rather than beside the model in `Kernel`: it asks `AclService` whether the
- * person is an administrator, and Kernel may depend on no feature module (ADR-0013). The
- * palette is an editing surface, and editing surfaces are Render's.
- */
+/** Every Component this wiki offers, asked of the services that declare them. */
 class ComponentRegistry
 {
-    /** @var list<Component>|null */
+    /**
+     * @var list<Component>|null
+     */
     private ?array $components = null;
 
     /**
@@ -55,12 +45,6 @@ class ComponentRegistry
 
         $components = [];
         foreach ($this->providers as $provider) {
-            // An action declares its own Components, and an action is prepared by setter
-            // injection rather than by its constructor -- `$this->getService()` throws on
-            // an unset property until something has called setServices(). Performer does
-            // this before running one; the same has to happen before asking one what it
-            // offers. Arguments and output are deliberately not set: declaring is not
-            // running, and a provider that reached for them would be doing the wrong thing.
             if ($provider instanceof YesWikiPerformable) {
                 $provider->setServices($this->container);
                 $provider->setParams($this->params);
@@ -89,12 +73,6 @@ class ComponentRegistry
     /**
      * Which Component wrote this tag.
      *
-     * Take every Component that lists the tag name; keep those whose pins all match what
-     * the tag actually says; the one with the most pins wins, and a Component with no pins
-     * is the fallback. So `{{entrylist template="card"}}` is a `Cards`, and
-     * `{{entrylist template="something-nobody-declared"}}` is a plain entry list rather
-     * than nothing at all.
-     *
      * @param array<string, string> $arguments the tag's parameters, as parsed
      */
     public function match(string $tag, array $arguments): ?Component
@@ -122,8 +100,7 @@ class ComponentRegistry
     }
 
     /**
-     * The palette, as the browser reads it: categories in core's order, each holding the
-     * Components that named it and are offered.
+     * The palette, as the browser reads it: categories in core's order, each holding the Components that named it and are offered.
      *
      * @return list<array<string, mixed>>
      */
@@ -154,8 +131,7 @@ class ComponentRegistry
     }
 
     /**
-     * Every Component by id, palette-visible or not -- what the settings rail looks one up
-     * in once recognition has named it.
+     * Every Component by id, palette-visible or not -- what the settings rail looks one up in once recognition has named it.
      *
      * @return array<string, array<string, mixed>>
      */

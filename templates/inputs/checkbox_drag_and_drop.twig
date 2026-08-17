@@ -48,8 +48,8 @@
 						</a>
 					</li>
 					{% endblock %}
-				{% endif %}{# if not item_id in selectedOptionsId #}
-			{% endfor %}{# for item_id, item in options #}
+				{% endif %}
+			{% endfor %}
 		{% endblock %}
 			<li class="list-group-item empty-list" style="display:none;">{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
 		</ul>
@@ -71,9 +71,9 @@
 				{% set item = attribute(options,item_id) %}
 				{% set selected = true %}
 				{{ block('li_item') }}
-			  {% endfor %}{# for item_id in selectedOptionsId #}
+			  {% endfor %}
 			{% endblock %}
-			{% endif %}{# if not (attribute(selectedOptionsId,0) is empty) #}
+			{% endif %}
 			<li class="list-group-item empty-list" {% if not (attribute(selectedOptionsId,0) is empty) %}style="display:none;"{% endif %}>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
 			</ul>
 		</div>

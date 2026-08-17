@@ -32,10 +32,6 @@ class AdminPagesApiController extends YesWikiController
         'ParametresUtilisateur', 'GererConfig', 'ActuYeswiki', 'LookWiki',
     ];
 
-    // -------------------------------------------------------------------------
-    // GET /api/admin/pages  –  returns an HTML fragment (table + pagination)
-    // -------------------------------------------------------------------------
-
     #[Route('/api/admin/pages', methods: ['GET'], options: ['acl' => ['@admins']])]
     public function getPages(Request $request): Response
     {
@@ -84,18 +80,14 @@ class AdminPagesApiController extends YesWikiController
             LIMIT ? OFFSET ?
         SQL;
 
-        // in the order the placeholders appear: WHERE, then HAVING, then the page window
         $rows = $dbService->loadAll($sql, [...$whereParams, ...$havingParams, $perpage, $offset]) ?? [];
 
-        // ACLs are part of p.metadata now (no separate acls table to join), so the count
-        // query no longer needs anything beyond the shared $whereClause (which itself
-        // queries p.metadata directly for aclFilter, via buildAclFilterCondition())
         $countSql = <<<SQL
             SELECT COUNT(DISTINCT p.tag) AS total
             FROM {$pT} p
             WHERE {$whereClause}
         SQL;
-        // $whereParams only: this query has no HAVING, so it has no placeholder for the tag filter
+
         $total = (int)($dbService->loadSingle($countSql, $whereParams)['total'] ?? 0);
 
         $totalPages = max(1, (int)ceil($total / $perpage));
@@ -157,16 +149,11 @@ class AdminPagesApiController extends YesWikiController
         return new Response($html, 200, ['Content-Type' => 'text/html; charset=utf-8']);
     }
 
-    // -------------------------------------------------------------------------
-    // POST /api/admin/pages/bulk  –  execute a bulk operation
-    // -------------------------------------------------------------------------
-
     #[Route('/api/admin/pages/bulk', methods: ['POST'], options: ['acl' => ['@admins']])]
     public function bulkAction(Request $request): Response
     {
         $this->denyAccessUnlessAdmin();
 
-        // CSRF check
         try {
             $this->getService(CsrfTokenChecker::class)
                 ->checkToken('main', 'POST', 'csrf-token', false);
@@ -210,16 +197,11 @@ class AdminPagesApiController extends YesWikiController
 
         $html = $this->render('@core/admin-content-bulk-result.twig', compact('action', 'success', 'errors'));
 
-        // Tell HTMX on the client to also refresh the table
         return new Response($html, 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'HX-Trigger' => 'refreshTable',
         ]);
     }
-
-    // -------------------------------------------------------------------------
-    // Bulk helpers
-    // -------------------------------------------------------------------------
 
     private function bulkDelete(array $pageTags, array &$success, array &$errors): void
     {
@@ -311,10 +293,6 @@ class AdminPagesApiController extends YesWikiController
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Query builders
-    // -------------------------------------------------------------------------
-
     private function extractListParams(Request $request): array
     {
         $page = max(1, (int)$request->query->get('page', 1));
@@ -338,10 +316,6 @@ class AdminPagesApiController extends YesWikiController
     /**
      * The WHERE and HAVING clauses of the page list, and the values they bind.
      *
-     * The two clauses carry their parameters separately because the count query below reuses
-     * the WHERE and drops the HAVING -- a single merged list would bind the tag filter's value
-     * to a statement that has no placeholder for it.
-     *
      * @return array{string, list<mixed>, string, list<mixed>} [where, whereParams, having, havingParams]
      */
     private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = '', string $themeFilter = ''): array
@@ -352,10 +326,6 @@ class AdminPagesApiController extends YesWikiController
         $havingParams = [];
 
         if ($search !== '') {
-            // what an administrator typed in the filter box, so its wildcards are defused: a
-            // search for `a_b` looks for that and not for `aXb`
-            // the body has no path to extract here -- the administrator is searching for
-            // whatever a page says, not for a field -- so it is read as text (ADR-0018)
             $conditions[] = '(p.tag LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX
                 . ' OR ' . $db->jsonAsText('p.body') . ' LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX . ')';
             $params[] = SqlParameters::likeContains($search);
@@ -380,7 +350,6 @@ class AdminPagesApiController extends YesWikiController
                 $params[] = PageType::ENTRY;
                 break;
             case 'comments':
-                // base condition already set to parent != ''
                 break;
             case 'lists':
                 $conditions[] = "{$typeCol} = ?";
@@ -394,11 +363,7 @@ class AdminPagesApiController extends YesWikiController
                 if (ctype_digit((string)$type) && (int)$type > 0) {
                     $conditions[] = "{$typeCol} = ?";
                     $params[] = PageType::ENTRY;
-                    // Asked of the field, not of the body's text. This was a
-                    // `LIKE '%"form_id":"3"%'` -- correct, but only because the pattern
-                    // included both quotes, and only for as long as the stored bytes keep that
-                    // exact spelling. A native JSON column stores a normalised document
-                    // (ADR-0018), so the question has to be asked of the value.
+
                     $conditions[] = $db->jsonExtract('p.body', '$.form_id') . ' = ?';
                     $params[] = (string)$type;
                 }
@@ -406,7 +371,6 @@ class AdminPagesApiController extends YesWikiController
         }
 
         if ($tagFilter !== '') {
-            // tag filter uses the already-joined tg alias, so use HAVING
             $having = "HAVING {$db->groupConcat('tg.value')} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX;
             $havingParams[] = SqlParameters::likeContains($tagFilter);
         }
@@ -419,15 +383,11 @@ class AdminPagesApiController extends YesWikiController
 
         if ($themeFilter !== '') {
             $themeManager = $this->getService(ThemeManager::class);
-            // Asked of `$.theme`, not of the stored bytes. `metadata` is a JSON column now
-            // (ADR-0018), which has no LIKE on PostgreSQL at all -- and the pattern this
-            // replaces could not see the difference between a page with no theme key and one
-            // storing `"theme":null`, which the bulk editor writes when a theme is cleared.
+
             $themeExpr = $db->jsonExtract('p.metadata', '$.theme');
             $explicitMatch = "{$themeExpr} = ?";
             $params[] = $themeFilter;
             if ($themeFilter === $themeManager->getFavoriteTheme()) {
-                // Also include pages that have no theme stored (they inherit the wiki default)
                 $noThemeStored = "(p.metadata IS NULL OR {$themeExpr} IS NULL)";
                 $conditions[] = "({$explicitMatch} OR {$noThemeStored})";
             } else {
@@ -437,10 +397,6 @@ class AdminPagesApiController extends YesWikiController
 
         return [implode(' AND ', $conditions), $params, $having, $havingParams];
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     /**
      * @return array{string|null, list<mixed>} the condition and the values it binds
@@ -458,16 +414,12 @@ class AdminPagesApiController extends YesWikiController
         if (!in_array($privilege, ['read', 'write', 'comment'], true)) {
             return [null, []];
         }
-        // ACLs live in p.metadata now, not a joined acls table
+
         $col = $db->jsonExtract('p.metadata', '$.acls.' . $privilege);
         $regexpOperator = $db->regexpOperator();
 
-        // The REGEXP metacharacters still have to be escaped by hand -- that is a property of
-        // the pattern language, which binding knows nothing about, exactly as with LIKE. What
-        // binding removes is the second pass that used to follow it (escape() for SQL).
         $pattern = '(^|\\n|\\r)' . preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value) . '(\\n|\\r|$)';
 
-        // Match value as a complete line within the ACL text
         return ["({$col} {$regexpOperator} ?)", [$pattern]];
     }
 
@@ -484,7 +436,6 @@ class AdminPagesApiController extends YesWikiController
     private function getForms(): array
     {
         try {
-            // id => label: the two templates fed from here read nothing else off a form
             return $this->getService(\YesWiki\Content\Service\FormManager::class)->getAllLabels();
         } catch (\Throwable $e) {
             return [];

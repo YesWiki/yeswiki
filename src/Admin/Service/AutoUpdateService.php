@@ -10,7 +10,7 @@ use YesWiki\Kernel\Entity\Messages;
 class AutoUpdateService
 {
     public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
-    public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de YesWiki
+    public const DEFAULT_VERS = 'Cercopitheque';
     public $repository;
 
     private ContainerInterface $container;
@@ -21,29 +21,12 @@ class AutoUpdateService
         $this->container = $container;
     }
 
-    /**
-     * Whether this is the instance allowed to trigger a farm-wide update (ADR-0007).
-     * A farm satellite instance's own index.php redefines YESWIKI_SOURCE_DIR to point at
-     * the shared source tree elsewhere (see src/commands/CreateInstanceCommand.php),
-     * while YESWIKI_INSTANCE_DIR always stays that instance's own directory -- so the two
-     * being equal means this IS the source tree being run directly (standalone install,
-     * or the shared source checkout itself in a farm), the only place package upgrades
-     * should ever be triggered from. No new config to set: this is structural, not
-     * admin-configured, so it can't be misconfigured into an unsafe state.
-     *
-     * $instanceDir/$sourceDir default to the real YESWIKI_INSTANCE_DIR/YESWIKI_SOURCE_DIR
-     * constants -- overridable so tests can exercise the "different" (simulated farm
-     * satellite) branch without needing an actual second instance on disk.
-     */
+    /** Whether this is the instance allowed to trigger a farm-wide update (ADR-0007). */
     public function isDesignatedUpdateInstance(?string $instanceDir = null, ?string $sourceDir = null): bool
     {
         return realpath($instanceDir ?? YESWIKI_INSTANCE_DIR) === realpath($sourceDir ?? YESWIKI_SOURCE_DIR);
     }
 
-    /*	Parameter $requestedVersion contains the name of the YesWiki version
-        requested by version parameter of {{update}} action
-        if empty, no specifc version is requested
-    */
     public function initRepository($requestedVersion = '')
     {
         $this->repository = new Repository($this->repositoryAddress($requestedVersion));
@@ -104,7 +87,6 @@ class AutoUpdateService
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
 
-        // Téléchargement de l'archive
         $file = $package ? $package->getFile() : false;
         if (false === $file) {
             $messages->add('AU_DOWNLOAD', 'AU_ERROR');
@@ -113,7 +95,6 @@ class AutoUpdateService
         }
         $messages->add('AU_DOWNLOAD', 'AU_OK');
 
-        // Vérification MD5
         if (!$package->checkIntegrity($file)) {
             $messages->add('AU_INTEGRITY', 'AU_ERROR');
             $package->cleanTempFiles();
@@ -122,7 +103,6 @@ class AutoUpdateService
         }
         $messages->add('AU_INTEGRITY', 'AU_OK');
 
-        // Extraction de l'archive
         $path = $package->extract();
         if (false === $path) {
             $messages->add('AU_EXTRACT', 'AU_ERROR');
@@ -131,8 +111,6 @@ class AutoUpdateService
             return $messages;
         }
         $messages->add('AU_EXTRACT', 'AU_OK');
-
-        // Vérification des droits sur le fichiers
 
         $vNotGoods = $package->checkACL();
 
@@ -148,7 +126,6 @@ class AutoUpdateService
         }
         $messages->add('AU_ACL', 'AU_OK');
 
-        // Mise à jour du paquet
         if (!$package->upgrade()) {
             $messages->add(
                 _t('AU_UPDATE_PACKAGE') . $packageName,
@@ -169,7 +146,6 @@ class AutoUpdateService
             }
             $messages->add('AU_UPDATE_THEME', 'AU_OK');
 
-            // Mise à jour des tools.
             if (!$package->upgradeTools()) {
                 $messages->add('AU_UPDATE_TOOL', 'AU_ERROR');
                 $package->cleanTempFiles();
@@ -179,7 +155,6 @@ class AutoUpdateService
             $messages->add('AU_UPDATE_TOOL', 'AU_OK');
         }
 
-        // Mise à jour de la configuration de YesWiki
         if (!$package->upgradeInfos()) {
             $messages->add('AU_UPDATE_INFOS', 'AU_ERROR');
             $package->cleanTempFiles();

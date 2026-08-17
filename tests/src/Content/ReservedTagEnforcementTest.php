@@ -14,15 +14,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 20: a tag the router owns is refused everywhere a tag is chosen.
- *
- * Two mechanisms, deliberately different. Where a tag is GENERATED (users, forms, entries,
- * files) suggestFreeTag() treats reserved like taken and suffixes away from it, so no caller
- * has to know the list. Where a human TYPES one, it is refused with a message that says
- * *reserved* rather than *taken* -- and PageManager::save() throws as the backstop, so a
- * caller that invents a tag without asking cannot write Content nothing can ever reach.
- */
+/** Ticket 20: a tag the router owns is refused everywhere a tag is chosen. */
 class ReservedTagEnforcementTest extends YesWikiTestCase
 {
     /** Something reserved, whatever the reserved list happens to be. */
@@ -40,7 +32,7 @@ class ReservedTagEnforcementTest extends YesWikiTestCase
 
         $this->assertNotSame($reserved, $suggested, 'a reserved tag must never be handed back as free');
         $this->assertFalse(ReservedTags::isReserved($suggested), 'the alternative must itself not be reserved');
-        // and there is no row there -- reserved is not the same as taken
+
         $this->assertFalse($pageManager->tagExists($reserved));
     }
 
@@ -84,12 +76,7 @@ class ReservedTagEnforcementTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The ticket's explicit rule: a username is never silently rewritten into an acceptable
-     * one. Registration is the only creation path that refuses instead of suggesting,
-     * because an account's name IS its tag (UserManager::buildBody() stores no second copy).
-     * Suffixing to `api-2` here would hand someone an account under a name they never typed.
-     */
+    /** The ticket's explicit rule: a username is never silently rewritten into an acceptable one. */
     public function testRegisteringUnderAReservedNameIsRefusedRatherThanSilentlyRenamed(): void
     {
         $wiki = $this->getWiki();
@@ -112,15 +99,13 @@ class ReservedTagEnforcementTest extends YesWikiTestCase
             $this->assertStringContainsString($reserved, $refused->getMessage());
         }
 
-        // and nothing was created under a suffixed name behind their back
         $this->assertNull($userManager->getOneByName($reserved));
         $this->assertFalse($pageManager->tagExists($reserved . '-2'));
         $this->assertFalse($pageManager->tagExists($reserved . '2'));
     }
 
     /**
-     * The message matters as much as the refusal: "someone already has this" sends a
-     * webmaster looking for a page that does not exist.
+     * The message matters as much as the refusal: "someone already has this" sends a webmaster looking for a page that does not exist.
      */
     public function testDuplicatingOntoAReservedTagSaysReservedRatherThanTaken(): void
     {
@@ -128,8 +113,6 @@ class ReservedTagEnforcementTest extends YesWikiTestCase
         $duplicationManager = $wiki->services->get(DuplicationManager::class);
         $reserved = $this->aReservedTag();
 
-        // the reserved check sits behind the admin check, so without a session this would
-        // skip and assert nothing -- which is the hole, not the test
         $this->loginAsAdmin();
         try {
             $duplicationManager->checkPostData([

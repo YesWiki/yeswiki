@@ -1,10 +1,4 @@
-{# One navbar entry. The tree is edited as a flat list of rows, each saying whether it is a
-   child of the one above -- which is how a nested list reads, and the only shape a form can
-   post. AdminController::saveLayout rebuilds the tree from that flag.
 
-   `index` is the row's position in the list and is part of every field name, so the whole
-   row arrives as one array server-side. admin-layout.js renumbers after any add, remove or
-   move; a page whose JavaScript never arrived still posts what was rendered. #}
 <li class="yw-layout__row{{ row.child ? ' yw-layout__row--child' : '' }}" data-yw-layout-row>
   <input type="hidden" name="navbar[{{ index }}][child]" value="{{ row.child ? 1 : 0 }}" data-yw-layout-child>
 
@@ -17,12 +11,7 @@
          placeholder="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}" aria-label="{{ _t('ADMIN_LAYOUT_ENTRY_LINK') }}">
 
   <div class="yw-layout__row-tools">
-    {# One button, and which way it points is which way this row can go: right to become a
-       submenu of the entry above, left to come back to the top level. There is only one
-       level, so a row is always in exactly one of those two states and the other action
-       never applies. Both titles are carried here rather than looked up in JavaScript --
-       admin-layout.js swaps between them, and a translated string that only exists in a
-       template cannot go missing from the browser catalogue. #}
+
     <button type="button" class="yw-btn yw-btn--sm" data-yw-layout-indent
             data-yw-layout-title-indent="{{ _t('ADMIN_LAYOUT_ENTRY_INDENT') }}"
             data-yw-layout-title-outdent="{{ _t('ADMIN_LAYOUT_ENTRY_OUTDENT') }}"

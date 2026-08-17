@@ -19,7 +19,6 @@ export default {
   components: { CollapseTransition },
   data() {
     return {
-      // value to work internally, name should not conflict with prop
       internalCollapsed: true,
     }
   },

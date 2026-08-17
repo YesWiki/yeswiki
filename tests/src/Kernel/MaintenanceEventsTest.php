@@ -10,21 +10,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `maintenance.before` / `maintenance.after`: where an extension hangs its own housekeeping.
- *
- * The wiki has no cron. Maintenance runs inside whichever page view happens to arrive once
- * the interval has elapsed, which is what makes the two guarantees here worth pinning: the
- * events bracket the work (so `after` really does mean "core is done"), and a listener that
- * throws is swallowed rather than turned into a broken page for the visitor who paid for
- * the request.
- *
- * Both tests run the real `maintenance()` -- the point is the bracket around the real work
- * -- with one thing switched off: `pages_purge_time`. That is the only step here that
- * destroys anything (revisions older than a year), and a test suite must not delete a
- * developer's history as a side effect of running. `0` is how core itself disables it, so
- * nothing is stubbed and the rest of the housekeeping really does run.
- */
+/** `maintenance.before` / `maintenance.after`: where an extension hangs its own housekeeping. */
 class MaintenanceEventsTest extends YesWikiTestCase
 {
     public function testTheEventsBracketTheHousekeeping(): void
@@ -54,7 +40,6 @@ class MaintenanceEventsTest extends YesWikiTestCase
 
         $this->assertSame(['before', 'after'], array_column($seen, 'phase'), 'one of each, in order');
 
-        // what a listener is handed: enough to decide whether this run is one of its own
         foreach ($seen as $event) {
             $this->assertArrayHasKey('startedAt', $event);
             $this->assertArrayHasKey('interval', $event);
@@ -65,13 +50,7 @@ class MaintenanceEventsTest extends YesWikiTestCase
         $this->assertGreaterThanOrEqual(0, $seen[1]['duration']);
     }
 
-    /**
-     * An extension having a bad afternoon is not the visitor's problem.
-     *
-     * Maintenance is best-effort housekeeping on a request that asked for none of it, so a
-     * listener that throws must not reach the page -- the same bargain the search-index
-     * drain already takes.
-     */
+    /** An extension having a bad afternoon is not the visitor's problem. */
     public function testAListenerThatThrowsDoesNotBreakTheRequest(): void
     {
         $wiki = $this->getWiki();

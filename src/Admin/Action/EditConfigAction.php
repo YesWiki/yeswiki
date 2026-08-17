@@ -36,32 +36,25 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     private const SAVE_NAME = 'save_config';
     private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
-    // formerly contributed via tools/security's config.yaml through the generic
-    // extension _editable_config_params mechanism (see getAuthorizedKeys())
+
     private const ARCHIVE_KEYS = ['privatePath', 'call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
-    // formerly contributed via tools/templates's config.yaml the same way
+
     private const META_KEYS = ['robots'];
-    // formerly contributed via yeswiki-extension-qrcode's config.yaml's qrcode_editable_config_params
-    // (default_user_form added here: it already had an EDIT_CONFIG_HINT_ lang key but was
-    // missing from both the old extension's editable-params list and its own config.yaml defaults)
+
     private const QRCODE_KEYS = [
         'relation_form_id', 'default_relation_type', 'default_entity_type',
         'default_entity_form', 'default_user_form', 'visualisation_refresh_period',
     ];
-    // formerly contributed via tools/attach's config.yaml's attach_editable_config_params
-    // (max_file_size moved under attach_config, matching where it's actually read from --
-    // the original bare top-level key never matched storage and so never worked)
+
     private const ATTACH_VIDEO_KEYS = ['default_video_service', 'default_peertube_instance'];
     private const ATTACH_CONFIG_KEYS = ['max_file_size'];
-    // formerly contributed via tools/contact's config.yaml's contact_editable_config_params
-    // (contact_from/mail_custom_message were already merged into AUTHORIZED_KEYS below,
-    // predating this ticket)
+
     private const CONTACT_KEYS = [
         'contact_use_long_wiki_urls_in_emails', 'contact_mail_func', 'contact_smtp_host',
         'contact_smtp_port', 'contact_smtp_user', 'contact_smtp_pass', 'contact_smtp_secure',
         'contact_debug', 'contact_disable_email_for_password',
     ];
-    // formerly contributed via tools/bazar's config.yaml's bazar_editable_config_params
+
     private const BAZAR_KEYS = [
         'baz_map_center_lat', 'baz_map_center_lon', 'baz_map_zoom', 'baz_map_height',
         'BAZ_ADRESSE_MAIL_ADMIN', 'BAZ_ENVOI_MAIL_ADMIN', 'bazarIgnoreAcls',
@@ -86,13 +79,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         'comments_handler' => 'access',
         'allow_doubleclic' => 'access',
 
-        // formerly contributed via yeswiki-extension-herse's config.yaml's
-        // herse_editable_config_params (ticket 21)
         'herse_id' => 'herse',
         'herse_password' => 'herse',
 
-        // formerly contributed via yeswiki-extension-importer's config.yaml's
-        // importer_editable_config_params
         'sync_secret' => 'import',
 
         'password_for_editing' => 'security',
@@ -107,7 +96,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         'use_hashcash' => 'security',
         'wiki_status' => 'security',
 
-        'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
+        'contact_from' => 'contact',
         'mail_custom_message' => 'contact',
 
         'hide_keywords' => 'tags',
@@ -147,7 +136,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             ]);
         }
 
-        // get services
         $this->configurationService = $this->getService(ConfigurationService::class);
 
         $output = '';
@@ -161,7 +149,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             ]);
         }
 
-        // display form
         list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
         $keysList = [];
         foreach ($data as $key => $value) {
@@ -178,8 +165,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             'placeholders' => $placeholders,
             'help' => $this->getHelp(),
             'languages' => $this->languageChoices(),
-            // read as themselves rather than off `$data`, which renders every value as the
-            // string a text box would hold -- `['en','es']` is a list here, not a literal
+
             'defaultLanguage' => $this->params->has('default_language') ? (string)$this->params->get('default_language') : '',
             'otherLanguages' => $this->params->has('other_languages') ? (array)$this->params->get('other_languages') : [],
         ]);
@@ -187,10 +173,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
 
     /**
      * The languages this wiki could offer: what YesWiki is translated into, here.
-     *
-     * The two language keys are a choice rather than free text -- `zz` in a text box has
-     * never meant anything, and `other_languages` is a list, which a text box can only
-     * express as PHP source somebody has to get right by hand.
      *
      * @return array<string, string> code => the language's own name for itself
      */
@@ -205,10 +187,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $choices;
     }
 
-    /**
-     * get AUTHORIZED_KEYS
-     * return array [$keys,$associatedExtensions].
-     */
+    /** get AUTHORIZED_KEYS return array [$keys,$associatedExtensions]. */
     private function getAuthorizedKeys(): array
     {
         if (is_null($this->keys)) {
@@ -239,13 +218,11 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 $associatedExtensions["attach_config[{$attachConfigKey}]"] = 'attach';
             }
 
-            // top-level keys, matching tools/contact's own (bare, not nested) config.yaml shape
             foreach (self::CONTACT_KEYS as $contactKey) {
                 $keys[] = $contactKey;
                 $associatedExtensions[$contactKey] = 'contact';
             }
 
-            // top-level keys, matching tools/bazar's own (bare, not nested) config.yaml shape
             foreach (self::BAZAR_KEYS as $bazarKey) {
                 $keys[] = $bazarKey;
                 $associatedExtensions[$bazarKey] = 'bazar';
@@ -273,7 +250,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                     }
                 }
             }
-            // remove duplicate
+
             $scannedKeysNames = [];
             $scannedKeys = [];
             foreach ($keys as $key) {
@@ -300,8 +277,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     }
 
     /**
-     * prepare array of $keyNames from $keys
-     * recursive.
+     * prepare array of $keyNames from $keys recursive.
      *
      * @param array|string $keys
      *
@@ -325,9 +301,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         }
     }
 
-    /**
-     * could be replace by array_is_list since php 8.1.
-     */
+    /** could be replace by array_is_list since php 8.1. */
     private function arrayIsList(array $array): bool
     {
         $keys = array_keys($array);
@@ -359,10 +333,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                     case 1:
                         $new_value = $this->arguments['post'][$firstLevelKey] ?? null;
                         if (is_array($new_value)) {
-                            // a checkbox list posts an array of its own -- `other_languages`,
-                            // today. Nothing ticked posts nothing at all, which falls to the
-                            // branch below and drops the key: its default is the empty list,
-                            // so "none of them" and "never said" are the same wiki.
                             $config->$firstLevelKey = array_values(array_filter($new_value, 'is_string'));
                         } elseif (is_null($new_value) || $new_value === '') {
                             unset($config->$firstLevelKey);
@@ -556,13 +526,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $convertedKeys;
     }
 
-    /**
-     * extract associated values from config second level.
-     */
-
-    /**
-     * array to string.
-     */
+    /** array to string. */
     private function array2Str($value): string
     {
         if (is_array($value)) {
@@ -596,9 +560,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $value;
     }
 
-    /**
-     * string to array if needed.
-     */
+    /** string to array if needed. */
     private function strtoarray(string $value)
     {
         $val = trim($value);
@@ -610,8 +572,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);
                 if (in_array(count($extract), [1, 2])) {
-                    // set and read under the same `count($extract) == 2`, which the analyser
-                    // cannot connect across the intervening statements (ticket 40)
                     $key = null;
                     if (count($extract) == 2) {
                         $key = trim($extract[0]);
@@ -643,9 +603,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $value;
     }
 
-    /**
-     * get help from translation.
-     */
+    /** get help from translation. */
     private function getHelp(): array
     {
         $help = [];

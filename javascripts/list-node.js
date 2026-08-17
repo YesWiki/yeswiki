@@ -10,7 +10,6 @@ export default {
   },
   methods: {
     addChildNode() {
-      // vueRef is used to give a unique and fixed ID to each node
       this.node.children.push({
         label: this.newNodeLabel,
         id: this.slugify(this.newNodeLabel),
@@ -29,9 +28,9 @@ export default {
       return val
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_') // "test !" => "test__"
-        .replace(/_+/g, '_') // "te__st" => "te_st"
-        .replace(/^_+|_+$/g, '') // "___test__" => "test"
+        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '')
         .toLowerCase()
     },
   },

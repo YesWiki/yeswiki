@@ -17,13 +17,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06. */
 class FiltertagsAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -37,10 +31,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -81,14 +71,11 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
             return;
         }
 
-        // requete avec toutes les pages contenants les mots cles
         $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $timeCol = $dbService->quoteIdentifier('time');
         $prefix = $this->getService(RuntimeConfig::class)['table_prefix'];
 
-        // The pages already being rendered, so an inclusion cannot recurse into itself. Bound
-        // like the tags: these are page tags, and an empty stack must not produce `NOT IN ()`.
         $included = $this->getService(InclusionStack::class)->getAll();
         $notIncluded = $included === []
             ? SqlFragment::empty()
@@ -127,10 +114,9 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
         $aclService = $this->getService(AclService::class);
         $element = [];
-        // affichage des resultats
+
         foreach ($pages as $page) {
             if ($aclService->hasAccess('read', $page['tag'])) {
-                // rows come straight from the query above, so the body is still encoded here
                 $page['body'] = PageBody::decode($page['body']);
                 $element[$page['tag']]['tagnames'] = '';
                 $element[$page['tag']]['tagbadges'] = '';
@@ -156,7 +142,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
             'elementoffset' => $elementoffset,
         ]);
 
-        // ajout du javascript gerant le filtrage
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/filtertags.js');
     }
 }

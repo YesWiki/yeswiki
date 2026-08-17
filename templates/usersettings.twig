@@ -5,9 +5,6 @@
   <div class="alert alert-danger">{{ errorUpdate }}</div>
 {% endif %}
 
-{# enctype/hx-boost: the User form may carry a file field -- the profile picture does --
-   and a boosted form posts through fetch(), which sends the fields and drops the files.
-   The upload then silently did nothing (ticket 25). #}
 <form
   action="{{ url({tag: ''}|merge((
     adminIsActing
@@ -31,21 +28,14 @@
             <input class="yw-input" name="email" value="{{ user.email }}" size="40" />
         </div>
     </div>
-  {# the User form's own fields -- the profile picture core declares, and anything a
-     webmaster added beside it. Rendered by the fields themselves, so they look and behave
-     exactly as they do everywhere else a form is filled in. #}
+
   {{ profileFields|raw }}
-  {# <div class="yw-form-group">
-    <label class="yw-form-label">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
-    <div class="controls">
-      <input class="yw-input" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
-    </div>
-  </div> #}
+
   <div class="yw-form-group">
         <div class="controls">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id: 'main', refresh: false}) }}">
             <input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
-      {% if userLoggedIn %}{# // The one who runs the session is acting #}
+      {% if userLoggedIn %}
         <input
           class="btn btn-warning"
           type="button"
@@ -56,14 +46,8 @@
     </div>
 </form>
 
-{# The editor rails, including the file picker the profile-picture field's button opens.
-   A form field needs the picker rail exactly as an editor does, and this form renders the
-   User form's fields without rendering an editor -- so the rails have to be asked for here
-   rather than inherited from an {{aceditor}} that is not on this page (the button was
-   rendered, the panel was not, and clicking it did nothing at all). #}
 {{ include('@core/aceditor-rails.twig') }}
 
-{# FORM DELETE #}
 {% if adminIsActing %}
   <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
@@ -77,7 +61,6 @@
   </form>
 {% endif %}
 
-{# FORM CHANGE PASSWORD #}
 {% if userLoggedIn %}
   <form action="{{ url({tag: ''}) }}" method="post" class="">
       <hr>

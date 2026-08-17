@@ -25,9 +25,6 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
         $formId = $this->arguments['id'];
         $form = $this->getService(FormManager::class)->getOne($formId);
         if (empty($form)) {
-            // `getOne()` answers null for a form that does not exist, and every use below
-            // subscripts it -- an `id=` naming no form fataled the whole page rather than
-            // rendering nothing (ticket 40)
             return '';
         }
 

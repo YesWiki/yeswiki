@@ -11,31 +11,14 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * `{{pageonlyindex}}` lists every page except the entries -- and for a while it listed
- * nothing at all.
- *
- * It separated the two by asking whether the body started with a brace (`body NOT LIKE
- * '{"%'`): an entry's body was JSON and a page's was wiki markup. Ticket 09 made every body
- * JSON, the predicate became universally false, and the action has emitted an empty index on
- * every wiki since. Nothing noticed, because an index with nothing in it looks exactly like a
- * wiki with nothing to index -- which is the whole reason this test asserts a page IS listed
- * rather than only that an entry is not.
- *
- * Found by ticket 38's sweep for text operators applied to `body`, since a native JSON column
- * has none.
+ * `{{pageonlyindex}}` lists every page except the entries -- and for a while it listed nothing at all.
  */
 class PageonlyindexActionTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'PageonlyindexRegressionPage';
     private const ENTRY_TAG = 'PageonlyindexRegressionEntry';
 
-    /**
-     * The fixtures go when the test does.
-     *
-     * They used to stay, and the suite runs against a real wiki -- the developer's own, on
-     * SQLite -- so both of them turned up in its page index, and the entry produced a debug
-     * warning on every list that touched it (see the `tag` in its body, below).
-     */
+    /** The fixtures go when the test does. */
     public static function tearDownAfterClass(): void
     {
         $pageManager = self::getWiki()->services->get(PageManager::class);
@@ -52,10 +35,6 @@ class PageonlyindexActionTest extends YesWikiTestCase
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'An ordinary page.'], '', true);
         $pageManager->save(
             self::ENTRY_TAG,
-            // `tag` in the body, like every entry EntryManager writes: reading one back
-            // without it warns and falls back to the page's own tag (EntryManager::
-            // getDataFromPage), which is a fixture that does not look like the thing it stands
-            // in for
             [PageBody::CONTENT => '', 'tag' => self::ENTRY_TAG, 'form_id' => '1', 'bf_titre' => 'An entry'],
             '',
             true,

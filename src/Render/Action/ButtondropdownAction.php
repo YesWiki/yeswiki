@@ -18,13 +18,10 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
     {
         ob_start();
 
-        // texte genere a l'interieur du bouton
         $text = $this->arguments['text'] ?? '';
 
-        // titre au survol du bouton et dans la boite modale associée
         $title = $this->arguments['title'] ?? '';
 
-        // mettre un petit triangle pour indiquer que c'est déroulant
         $caret = $this->arguments['caret'];
         if ($caret != '0') {
             $caret = '1';
@@ -35,10 +32,8 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
             $icon = $icon . ' ';
         }
 
-        // classe css supplémentaire l'ensemble du
         $class = $this->arguments['class'] ?? '';
 
-        // classe css supplémentaire pour changer le look des boutons (e.g. "yw-btn--primary")
         $btnclass = $this->arguments['btnclass'] ?? '';
         $btnclass = 'yw-btn ' . $btnclass;
 

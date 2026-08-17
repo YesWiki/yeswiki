@@ -13,12 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 10 (tags absorbed into core):
- * - TagsManager::getAll($page) used to silently ignore $page, always reading
- *   Wiki::GetPageTag() instead (only ever worked by coincidence at its one real
- *   call site) -- it now honors the argument.
- * - TagsManager::search() is the new live-search backing GET /api/tags, replacing
- *   the old "dump every tag" pattern.
+ * Regression tests for ticket 10 (tags absorbed into core): - TagsManager::getAll($page) used to silently ignore $page, always reading Wiki::GetPageTag() instead (only ever worked by coincidence at its one real call site) -- it now honors the argument.
  */
 class TagsManagerAndApiTest extends YesWikiTestCase
 {
@@ -31,8 +26,7 @@ class TagsManagerAndApiTest extends YesWikiTestCase
     {
         $wiki = self::getWiki();
         self::$tripleStore = $wiki->services->get(TripleStore::class);
-        // seed through TagsManager, not the triples: since ticket 09 the page's own body
-        // is the source of truth and the triples are the index it maintains
+
         $pageManager = $wiki->services->get(PageManager::class);
         $tagsManager = $wiki->services->get(TagsManager::class);
         $pageManager->save(self::TAG_A, [PageBody::CONTENT => 'page a'], '', true);
@@ -62,8 +56,6 @@ class TagsManagerAndApiTest extends YesWikiTestCase
 
     public function testGetAllWithNoPageStillDumpsEverything(): void
     {
-        // src/fields/TagsField.php (out of scope for this ticket) relies on this
-        // exact no-arg "everything" behavior for its own tag-autocomplete -- must survive
         $tagsManager = $this->getWiki()->services->get(TagsManager::class);
 
         $values = array_column($tagsManager->getAll(), 'value');

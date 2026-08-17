@@ -1,16 +1,3 @@
-// javascripts/file-picker-panel.js -- ticket 17: replaces
-// tools/attach/presentation/javascripts/file-upload-modal.js (jQuery + qq.js
-// FileUploader). Files are their own tagged Content entries now (FileManager), so this
-// rail has two panes: pick one of the files the requester can already read (GET
-// /api/files) or upload a new one (POST /api/files) -- both feed the same
-// configuration form before calling onComplete with a {{attach file="tag" ...}} string.
-// Mirrors link-panel.js's open()/onComplete shape.
-//
-// The whole readable list is fetched once per opening and narrowed here rather than
-// re-queried per keystroke: that is what lets each family button say how many files it
-// holds and the extension list name only extensions that exist. See
-// FileApiController::getFiles() for where that stops being the right trade.
-
 import prepareImageForUpload from './image-upload.js'
 import { legacyIconToSprite } from './yw-icon-map.js'
 import { claimRailSlot, registerRail } from './editor-rails.js'
@@ -24,12 +11,7 @@ const FAMILY_ICONS = {
   other: 'paperclip',
 }
 
-/**
- * The families FileManager::FAMILIES sorts files into, in the order they are offered.
- * The labels are spelled out as literal `_t()` calls rather than looked up from a map
- * of key names, because `src/build-js-lang-keys.php` finds the keys the browser catalog
- * has to carry by scanning the scripts for exactly that literal shape.
- */
+/** The families FileManager::FAMILIES sorts files into, in the order they are offered. */
 const FAMILIES = ['image', 'video', 'audio', 'document', 'other']
 
 const familyLabel = (family) =>
@@ -43,12 +25,7 @@ const familyLabel = (family) =>
     })[family] ?? (() => _t('ATTACH_FILE_PICKER_FAMILY_OTHER'))
   )()
 
-/**
- * What a rail pinned to one family accepts, in the two vocabularies a browser uses: the
- * `accept` attribute of the file dialog, and the MIME type of the file that comes back.
- * `document` and `other` have no wildcard that means them, so they pin the list without
- * narrowing the dialog -- the upload is still checked server-side by FileManager.
- */
+/** What a rail pinned to one family accepts, in the two vocabularies a browser uses: the `accept` attribute of the file dialog, and the MIME type of the file that comes back. */
 const FAMILY_MIME_PREFIX = {
   image: 'image/',
   video: 'video/',
@@ -138,8 +115,6 @@ export default class {
   isOpen = false
 
   constructor() {
-    // see the same guard in actions-builder.js: a page can render an editor without
-    // the rails, and a rail with no panel does nothing rather than throwing
     if (!this.panel) return
     registerRail(this)
     this.panel.querySelectorAll('[data-yw-file-picker-close]').forEach((btn) =>
@@ -148,11 +123,6 @@ export default class {
         this.close()
       }),
     )
-    // `isOpen` on every one of these, because the panel is ONE element and each editor
-    // and each form field builds its own instance around it -- so a click here reaches
-    // all of them. That was harmless while every instance behaved identically; it stopped
-    // being harmless when they gained settings of their own, and an upload into a rail
-    // pinned to images was performed by some other instance that was pinned to nothing.
     this.uploadOpenBtn.addEventListener(
       'click',
       () => this.isOpen && this.showView('upload'),
@@ -171,24 +141,7 @@ export default class {
       .addEventListener('click', () => this.isOpen && this.uploadNewFile())
   }
 
-  /**
-   * Two kinds of caller, and they want different things back.
-   *
-   * options.onComplete(insertedText) -- an editor: what it drops at its own cursor.
-   * options.format -- 'wiki' (default) writes a {{attach}} action for the ACeditor,
-   * 'markdown' writes `![alt](url)` / `[text](url)` for the Vditor toolbar, whose field
-   * stores HTML and never sees the wiki parser.
-   *
-   * options.onPick({tag, url, entry}) -- a *form field*: the file itself, not a way of
-   * writing it into prose. Everything below the choice (alt text, size, alignment, link,
-   * caption) configures an insertion into a page and means nothing to a field that stores
-   * one file, so in this mode the options form stays hidden.
-   *
-   * options.only -- one of FileManager's families ('image', 'video', …). The rail then
-   * shows that family and nothing else, and stops offering the family buttons: an image
-   * field asking for a picture should not have to explain that a PDF is not one, and a
-   * list it cannot choose from is a list it should not be shown.
-   */
+  /** Two kinds of caller, and they want different things back. */
   open(options) {
     if (!this.panel) return
     this.onComplete = options.onComplete
@@ -208,8 +161,6 @@ export default class {
     this.applyFilters()
     this.showView('browse')
     this.loadFiles()
-    // the same button ends two different sentences: an editor inserts the file into what
-    // it is writing, a form field simply uses it
     this.insertBtn.textContent = this.onPick
       ? _t('ATTACH_FILE_PICKER_USE_THIS_FILE')
       : _t('INSERT')
@@ -235,19 +186,10 @@ export default class {
     }
     this.insertBtn.addEventListener('click', this.insertHandler)
 
-    // The slot on the right holds one rail at a time -- see editor-rails.js -- but only
-    // for rails that are peers. In `onPick` mode this one was opened BY another rail, to
-    // answer a question that rail asked ("which picture?"), so claiming the slot would
-    // close the very panel waiting for the answer: choosing a background image for a
-    // {{section}} shut the settings rail, and the answer was then handed to a panel that
-    // had stopped listening -- the file was picked and silently went nowhere. Here it
-    // opens over the rail that asked, and closing it gives that rail back, still on what
-    // it was editing.
     if (!this.onPick) claimRailSlot(this)
     this.panel.classList.toggle('yw-rail--over', Boolean(this.onPick))
     this.panel.hidden = false
     this.isOpen = true
-    // a rail opened by pressing a button: the search box is what it opened for
     requestAnimationFrame(() => this.searchInput.focus())
   }
 
@@ -257,18 +199,7 @@ export default class {
     this.isOpen = false
   }
 
-  /**
-   * The rail is in exactly one of three states, and each one owns the whole panel.
-   *
-   * `browse`  the wiki's files, with the filters that narrow them
-   * `upload`  sending a new one -- the list is not a thing you also do here
-   * `chosen`  the file that was picked and how to insert it; the list is behind the
-   *           back button, which is also how the choice is undone
-   *
-   * It used to be two panes plus a "selected" box appended under a list still showing
-   * every other candidate, which is why a 340px rail needed to be scrolled to find out
-   * what it had been told.
-   */
+  /** The rail is in exactly one of three states, and each one owns the whole panel. */
   showView(view) {
     this.view = view
     this.paneExisting.hidden = view !== 'browse'
@@ -276,8 +207,6 @@ export default class {
     this.uploadOpenBtn.hidden = view !== 'browse'
     this.backBtn.hidden = view === 'browse'
     this.selectedBox.hidden = view !== 'chosen'
-    // a form field takes the file itself: alignment and caption configure an insertion
-    // into prose and mean nothing to it (see open())
     this.optionsForm.hidden = view !== 'chosen' || this.onPick !== null
   }
 
@@ -295,17 +224,12 @@ export default class {
     this.selectedTag = null
     this.selectedEntry = null
     this.insertBtn.disabled = true
-    // the options describe the file that was chosen, and several of them are defaults
-    // *derived* from it -- `attach_link_text` is filled from the filename, and only when
-    // empty, so without this a second choice kept the first file's name as its link text
     this.optionsForm.reset()
   }
 
   async loadFiles() {
     this.loadToken += 1
     const token = this.loadToken
-    // no leading slash: wiki.baseUrl already ends in `?`, and `/?/api/files` is a
-    // redirect to the home page, not the listing (which is why this list was empty)
     let entries = []
     try {
       const response = await fetch(wiki.url('api/files'))
@@ -329,14 +253,8 @@ export default class {
     )
   }
 
-  /**
-   * Each filter is offered from what the ones before it left, so no choice on screen
-   * can lead to an empty list: the families count within the search, the extensions
-   * exist within search + family.
-   */
+  /** Each filter is offered from what the ones before it left, so no choice on screen can lead to an empty list: the families count within the search, the extensions exist within search + family. */
   applyFilters() {
-    // `only` narrows before anything else, so every count, every extension and the
-    // upload pane's own result are about the one kind of file that was asked for
     const offered = this.only
       ? this.files.filter((entry) => entry.family === this.only)
       : this.files
@@ -358,7 +276,6 @@ export default class {
 
   /** One button per family that actually holds a file, each saying how many. */
   renderFamilies(withinSearch) {
-    // pinned to one family: the buttons would all say the same thing
     if (this.only) {
       this.families.innerHTML = ''
       return
@@ -369,9 +286,6 @@ export default class {
       const family = entry.family || 'other'
       counts[family] = (counts[family] || 0) + 1
     })
-    // a family the search left empty stops being offered, but the one currently picked
-    // stays -- a button that vanishes under the cursor that just pressed it is worse
-    // than one that says 0
     const offered = FAMILIES.filter(
       (family) => counts[family] || family === this.family,
     )
@@ -422,8 +336,6 @@ export default class {
       option.textContent = `.${extension}`
       this.extensionSelect.appendChild(option)
     })
-    // narrowing the family can retire the extension that was picked; falling back to
-    // "all extensions" is the only honest answer, since the old one now matches nothing
     this.extensionSelect.value = extensions.includes(previous) ? previous : ''
   }
 
@@ -453,8 +365,6 @@ export default class {
     thumbnail.className = 'file-picker__thumb'
     if (entry.family === 'image') {
       const image = document.createElement('img')
-      // the bytes live under private/, so the ACL-checked download route is the only way
-      // to see them; full-size, as {{attach}} itself serves a tagged file (AttachAction)
       image.src = wiki.url(
         `api/files/${encodeURIComponent(entry.tag)}/download`,
       )
@@ -493,10 +403,6 @@ export default class {
     this.uploadError.hidden = true
     if (!file) return
 
-    // A rail pinned to one family does not upload anything else. Checked here and not
-    // only through the file dialog's `accept`, which a person can override in the dialog
-    // and which says nothing about a drag-and-drop -- and checked BEFORE the POST, so a
-    // refused file is not first stored and then complained about.
     if (this.only && !this.matchesOnlyFamily(file)) {
       this.uploadError.textContent = _t('ATTACH_FILE_PICKER_WRONG_FAMILY')
       this.uploadError.hidden = false
@@ -504,10 +410,6 @@ export default class {
       return
     }
 
-    // Converted to WebP and capped in the browser, before a byte leaves the machine (see
-    // image-upload.js). Not a server-side step, because the upload itself is the slow part
-    // on the connections this matters most on -- and because the wiki keeps forever whatever
-    // it is handed. Hands back the original for anything it should not touch.
     const button = this.panel.querySelector('.btn-do-upload')
     button.disabled = true
     let toUpload
@@ -542,9 +444,6 @@ export default class {
 
     this.uploadInput.value = ''
     this.selectEntry(body)
-    // the new file has to reach this.files before it can be found in the list, and it is
-    // what the picker now points at: clear the filters that would hide it -- all but the
-    // one the caller pinned, which is not a filter the person chose and not theirs to lose
     this.searchInput.value = ''
     this.extensionSelect.value = ''
     this.family = this.only
@@ -557,22 +456,15 @@ export default class {
     this.selectedName.textContent = entry.original_filename
     this.insertBtn.disabled = false
     if (!this.onPick) this.configureOptionsFor(entry)
-    // re-rendered even though the list is now behind the back button: it is what shows,
-    // on the way back, which row the rail is pointing at
     this.applyFilters()
     this.showView('chosen')
   }
 
   configureOptionsFor(entry) {
-    // an upload the MIME sniffer could not name is still an image if it is called .png,
-    // and the alignment/size options are what makes the picker useful for one
     const isImage = entry.family === 'image'
     const isPdf =
       entry.extension === 'pdf' || entry.mime_type === 'application/pdf'
 
-    // one rule per option rather than one loop per class: an option can be both
-    // image-only and wiki-only, and two loops writing the same style property in
-    // sequence decide the answer by their order rather than by what the option is
     const hidden = (option) => {
       if (
         this.format === 'markdown' &&
@@ -605,8 +497,6 @@ export default class {
       const field = checked || form.querySelector(`[name="${name}"]`)
       return (field && field.value) || ''
     }
-    // a value containing a literal `"` would otherwise close the wikitext attribute
-    // early and corrupt the emitted {{attach ...}} action
     const esc = (s) => String(s).replace(/"/g, '&quot;')
 
     let desc =
@@ -651,17 +541,10 @@ export default class {
     return result
   }
 
-  /**
-   * The same file as Markdown, for an editor whose field stores HTML: an image is
-   * embedded, anything else becomes a download link. Both point at the ACL-checked
-   * download route, which is the only way to the bytes now that they live under
-   * private/ (ADR-0006).
-   */
   /** Whether a file the browser is offering is of the family this rail was pinned to. */
   matchesOnlyFamily(file) {
     const prefix = FAMILY_MIME_PREFIX[this.only]
 
-    // a family with no MIME prefix of its own (document, other) is not narrowed here
     return !prefix || String(file.type).startsWith(prefix)
   }
 
@@ -681,8 +564,6 @@ export default class {
       (isImage ? alt : linkText || alt) || this.selectedEntry.original_filename
     const url = this.downloadUrl()
 
-    // a `]` in the label would close the link text early; a `(` or `)` would break the
-    // destination that follows it
     const esc = (s) => String(s).replace(/([[\]()])/g, '\\$1')
 
     return `${isImage ? '!' : ''}[${esc(label)}](${url})`

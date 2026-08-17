@@ -1,4 +1,3 @@
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 const isPdfSupported = navigator.pdfViewerEnabled
 ywInitEach('.pdf-wrapper', (container) => {
   const pdfUrl = container.getAttribute('data-pdf')

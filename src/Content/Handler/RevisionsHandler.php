@@ -40,7 +40,7 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
         }
         $revisionsCount = $pageManager->countRevisions($this->getService(PageContext::class)->getTag());
-        // Limit to 30 revisions otherwise the UI is too crowded
+
         $revisions = $pageManager->getRevisions($this->getService(PageContext::class)->getTag(), $this->params->get('revisionscount'));
         $entryManager = $this->getService(EntryManager::class);
 

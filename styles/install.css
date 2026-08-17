@@ -1,14 +1,4 @@
-/* Styles for yeswiki's install
-  * Author: Francois Labastie <francois@outils-reseaux.org>
-  * under GNU General Public License
-  * 10/12/2013
-  */
-
 body {
-  /* The installer lays a form out as label-then-field on one line: every offset below is
-     that label column, so it is one number rather than five that have to be kept in step.
-     Component geometry -- install.css is loaded by the installer and nothing else -- so
-     it is not a Design token and no Preset declares it. */
   --yw-install-label-width: 230px;
 
   padding-top: var(--yw-space-lg);

@@ -9,10 +9,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'src/YesWikiRuntime.php';
 
 /**
- * Ticket 21 (herse absorbed into core): the site-wide Basic Auth gate's
- * decision logic, formerly the herse extension's wiki.php snippet. The
- * enforcing wrapper (headers + exit) is CLI-exempt and not unit-testable;
- * the decision itself is pure and pinned here.
+ * Ticket 21 (herse absorbed into core): the site-wide Basic Auth gate's decision logic, formerly the herse extension's wiki.php snippet.
  */
 #[CoversMethod(YesWikiRuntime::class, 'herseGateAllows')]
 class HerseGateTest extends TestCase

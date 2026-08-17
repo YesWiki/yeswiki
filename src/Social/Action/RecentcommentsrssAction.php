@@ -15,10 +15,6 @@ use YesWiki\Social\Service\CommentService;
 
 /**
  * `{{recentcommentsrss}}` -- converted from the procedural actions/recentcommentsrss.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
  */
 class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
 {
@@ -33,10 +29,6 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -84,9 +76,9 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
                 $output .= '<dc:creator>' . htmlspecialchars($comment['user'], ENT_COMPAT, YW_CHARSET) . "</dc:creator>\n";
                 $output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($comment['time'])) . "</pubDate>\n";
                 $output .= '<description>' . htmlspecialchars('<h3>Commentaire sur ' . $this->getService(LinkRenderer::class)->linkToPage($comment['parent'], ENT_COMPAT, YW_CHARSET) . '</h3>');
-                // getRecentComments() returns raw rows, so the body is still encoded here
+
                 $output .= '<pre>' . htmlspecialchars(PageBody::content(PageBody::decode($comment['body'])), ENT_COMPAT, YW_CHARSET) . "</pre> </description>\n";
-                // notice for later: before introducing Format()ed comments, think to spam and recursive calls to {{recentcommentsrss}} (RegisterInclusion() etc.)
+
                 $itemurl = $this->getService(UrlFormatter::class)->href('', $comment['parent'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment['tag']), ENT_COMPAT, YW_CHARSET);
                 $output .= '<link>' . $itemurl . "</link>\n";
                 $permalink = $this->getService(UrlFormatter::class)->href(false, $comment['tag'], 'time=' . htmlspecialchars(rawurlencode($comment['time']), ENT_COMPAT, YW_CHARSET));

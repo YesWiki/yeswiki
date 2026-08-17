@@ -1,6 +1,3 @@
-// Shared recurrence date-math for bazar "repeated dates" events.
-// Loaded as a plain classic script (not an ES module) so it can be consumed both by
-// recurrent-event.js (classic script) and BazarCalendar.js (ES module, via window.*).
 const DEFAULT_MAXIMUM_REPETITION = 600
 
 const daysToCodeAssoc = {
@@ -38,9 +35,6 @@ function pad(n) {
   return String(n).padStart(2, '0')
 }
 
-// date-only strings ('YYYY-MM-DD') must be parsed as local midnight, not UTC midnight
-// (the native `new Date('YYYY-MM-DD')` parses as UTC, which shifts the calendar day in
-// non-UTC browsers) — this mirrors the day itself, not the instant.
 function parseDateString(dateStr) {
   if (typeof dateStr !== 'string' || dateStr.length === 0) {
     return null
@@ -249,8 +243,6 @@ function generateOccurrences({
   let curStart = start
   let curEnd = end
 
-  // the anchor occurrence (the entry's own dates) is never subject to `except`,
-  // only occurrences computed further in the loop can be skipped
   occurrences.push({
     start: formatDateString(curStart, hasStartTime),
     end: formatDateString(curEnd, hasEndTime),
@@ -273,7 +265,6 @@ function generateOccurrences({
     const nextEnd = new Date(curEnd.getTime() + delta)
     curStart = nextStart
     curEnd = nextEnd
-    // limitdate is an exclusive upper bound: an occurrence starting or ending on/after it is dropped, and generation stops
     if (
       limitTime !== null &&
       (curStart.getTime() >= limitTime || curEnd.getTime() >= limitTime)

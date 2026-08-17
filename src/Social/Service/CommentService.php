@@ -29,7 +29,9 @@ class CommentService implements EventSubscriberInterface
     protected Mailer $mailer;
     protected PageManager $pageManager;
     protected ParameterBagInterface $params;
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     protected array $pagesWhereCommentWereRendered;
     protected UserManager $userManager;
     protected TemplateEngine $templateEngine;
@@ -97,13 +99,7 @@ class CommentService implements EventSubscriberInterface
             }
             if (empty($idComment)) {
                 $newComment = true;
-                // find number
-                // `+ 0` is the MySQL-ism `loadComments()` below already had to stop using:
-                // comments are tagged `comment<epoch>`, so the number after the prefix is what
-                // orders them, and MySQL coerces the text silently. PostgreSQL refuses --
-                // "operator does not exist: text + integer" -- and took posting a comment down
-                // with it. `castToInteger()` exists for exactly this and was applied to the
-                // sibling method only.
+
                 $numericTag = $this->dbService->dialect()->castToInteger('SUBSTRING(tag, 8)');
                 $sql = "SELECT MAX({$numericTag}) AS comment_id"
                     . ' FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
@@ -125,10 +121,9 @@ class CommentService implements EventSubscriberInterface
                     'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
                 ];
             }
-            // store new comment
+
             $this->pageManager->save($idComment, [PageBody::CONTENT => $body], $content['pagetag']);
             if ($newComment) {
-                // default ACLs for comments : visible for all, writable by owner, commentable like parent.
                 $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
                 $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
                 $parentCommentAcl = $parentCommentAcl['list'] ?? '';
@@ -147,7 +142,7 @@ class CommentService implements EventSubscriberInterface
             $com['tag'] = $comment['tag'];
             $com['commentOn'] = $comment['parent'];
             $com['rawbody'] = PageBody::content($comment['body']);
-            // Do the page change in any case (useful for attach or grid)
+
             $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
             $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
             $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
@@ -164,7 +159,6 @@ class CommentService implements EventSubscriberInterface
             if ($this->aclService->isOwner($comment['tag']) || $this->aclService->isAdmin()) {
                 $com['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
                 $com['linkdeletecomment'] = $this->urlFormatter->href("comments/{$comment['tag']}/delete", 'api');
-                // $this->urlFormatter->href('deletepage', $comment['tag']);
             }
             $com['reponses'] = $this->getCommentList($comment['tag'], false);
             $com['parentPage'] = $this->getParentPage($comment['tag']);
@@ -187,14 +181,10 @@ class CommentService implements EventSubscriberInterface
     }
 
     /**
-     * delete a comment.
-     */
-    /**
      * @return array<string, mixed>
      */
     public function delete(string $commentTag): array
     {
-        // delete children comments
         $comments = $this->loadComments($commentTag, true);
         foreach ($comments as $com) {
             $this->pageManager->deleteOrphaned($com['tag']);
@@ -256,12 +246,10 @@ class CommentService implements EventSubscriberInterface
             $params[] = $username;
             $params[] = $username;
         }
-        // remove current comment to prevent infinite loop
+
         $query .= 'AND tag != ? ';
         $params[] = $tag;
-        // comments are tagged `comment<epoch>`, so they sort by the number after the prefix.
-        // `+ 0` used to do the coercion, which is a MySQL-ism: PostgreSQL answers "operator
-        // does not exist: text + integer" and the page dies with it.
+
         $numericTag = $this->dbService->dialect()->castToInteger('substring(tag, 8)');
         $query .= "AND latest = 'Y' ORDER BY {$numericTag}";
         $comments = array_filter($this->dbService->loadAll($query, $params), function ($comment) {
@@ -274,7 +262,6 @@ class CommentService implements EventSubscriberInterface
         }
 
         if (!$bypassAcls) {
-            // filter on read acl on parent page
             $comments = array_filter($comments, function ($com) {
                 return !empty($com['parent']) && $this->aclService->hasAccess('read', $com['parent']);
             });
@@ -297,7 +284,7 @@ class CommentService implements EventSubscriberInterface
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
                 $com['comments'][$i]['commentOn'] = $comment['parent'];
-                // loadComments() reads the rows straight from SQL, so the body is still stored text
+
                 $com['comments'][$i]['rawbody'] = PageBody::content(PageBody::decode($comment['body']));
                 $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['comments'][$i]['rawbody']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
@@ -343,8 +330,7 @@ class CommentService implements EventSubscriberInterface
     }
 
     /**
-     * The most recently commented pages, each carrying comment_user/comment_time/comment_tag
-     * of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
+     * The most recently commented pages, each carrying comment_user/comment_time/comment_tag of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
      *
      * @return array<mixed>
      */
@@ -352,9 +338,7 @@ class CommentService implements EventSubscriberInterface
     {
         $pages = [];
 
-        // load ids of the first revisions of latest comments
         if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . " where parent != '' group by tag order by id desc")) {
-            // load complete comments
             $num = 0;
             $comments = [];
             foreach ($ids as $id) {
@@ -368,7 +352,6 @@ class CommentService implements EventSubscriberInterface
                 }
             }
 
-            // now using these ids, load the actual pages
             foreach ($comments as $comment) {
                 $page = $this->pageManager->getOne($comment['parent']);
                 if (empty($page)) {
@@ -442,7 +425,7 @@ class CommentService implements EventSubscriberInterface
             return '';
         }
         $output = '';
-        // if the comments were allready render in page, we don't show them again
+
         if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
             return '';
         }
@@ -470,19 +453,10 @@ class CommentService implements EventSubscriberInterface
             $output = $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-for-page.twig', $options);
         }
 
-        // indicate that those comments on page were already rendered once
         $this->pagesWhereCommentWereRendered[] = $tag;
 
         return $output;
     }
-
-    /*
-    * Outputs a color (#000000) based Text input thanks https://gist.github.com/mrkmg/1607621
-    *
-    * @param $text String of text
-    * @param $min_brightness Integer between 0 and 100
-    * @param $spec Integer between 2-10, determines how unique each color will be
-    */
 
     public function genColorCodeFromText(string $text, int $min_brightness = 100, int $spec = 10): string
     {
@@ -493,25 +467,25 @@ class CommentService implements EventSubscriberInterface
             throw new \Exception("$min_brightness is out of range");
         }
 
-        $hash = md5($text);  // Gen hash of text
+        $hash = md5($text);
         $colors = [];
         for ($i = 0; $i < 3; $i++) {
             $colors[$i] = max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
-        } // convert hash into 3 decimal values between 0 and 255
+        }
 
-        if ($min_brightness > 0) {  // only check brightness requirements if min_brightness is about 100
-            while (array_sum($colors) / 3 < $min_brightness) {  // loop until brightness is above or equal to min_brightness
+        if ($min_brightness > 0) {
+            while (array_sum($colors) / 3 < $min_brightness) {
                 for ($i = 0; $i < 3; $i++) {
                     $colors[$i] += 10;
                 }
             }
-        }    // increase each color by 10
+        }
 
         $output = '';
 
         for ($i = 0; $i < 3; $i++) {
             $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
-        }  // convert each color to hex and append to output
+        }
 
         return '#' . $output;
     }
@@ -608,7 +582,7 @@ class CommentService implements EventSubscriberInterface
             }
         } catch (\Throwable $th) {
         }
-        // filter
+
         $filteredUsers = [];
         foreach ($users as $user) {
             if (
@@ -634,8 +608,7 @@ class CommentService implements EventSubscriberInterface
     }
 
     /**
-     * retrieve parent page of the current tag
-     * RECURSIVE.
+     * retrieve parent page of the current tag RECURSIVE.
      *
      * @param list<string> $alreadyFoundTags
      *
@@ -649,7 +622,6 @@ class CommentService implements EventSubscriberInterface
         } elseif (empty($page['parent'])) {
             return $page;
         } elseif (in_array($page['parent'], $alreadyFoundTags)) {
-            // prevent infinite loop
             return null;
         }
         $foundTags = $alreadyFoundTags;

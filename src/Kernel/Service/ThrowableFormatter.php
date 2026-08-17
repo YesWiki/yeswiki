@@ -3,8 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * Render a throwable for display without leaking the server's filesystem layout
- * (historic Wiki::dumpThrowable()/hideServerPath()).
+ * Render a throwable for display without leaking the server's filesystem layout (historic Wiki::dumpThrowable()/hideServerPath()).
  */
 class ThrowableFormatter
 {

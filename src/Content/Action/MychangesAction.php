@@ -14,13 +14,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 
-/**
- * `{{mychanges}}` -- converted from the procedural actions/mychanges.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{mychanges}}` -- converted from the procedural actions/mychanges.php by ticket 06. */
 class MychangesAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -51,10 +45,6 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -88,7 +78,6 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
                     arsort($edited_pages);
 
                     foreach ($edited_pages as $page['tag'] => $page['time']) {
-                        // day header
                         list($day, $time) = explode(' ', $page['time']);
                         if ($day != $curday) {
                             if ($curday) {
@@ -98,7 +87,6 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
                             $curday = $day;
                         }
 
-                        // echo entry
                         echo "&nbsp;&nbsp;&nbsp;($time) (",$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history'),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
 
                         $my_edits_count++;
@@ -121,7 +109,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
                     foreach ($pages as $page) {
                         if ($last_tag != $page['tag']) {
                             $last_tag = $page['tag'];
-                            // XXX: strtoupper is locale dependent
+
                             $firstChar = strtoupper($page['tag'][0]);
                             if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {
                                 $firstChar = '#';
@@ -135,7 +123,6 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
                                 $curChar = $firstChar;
                             }
 
-                            // echo entry
                             echo '&nbsp;&nbsp;&nbsp;(',$page['time'],') (',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history'),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
 
                             $my_edits_count++;

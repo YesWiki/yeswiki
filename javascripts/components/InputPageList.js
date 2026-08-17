@@ -26,9 +26,7 @@ export default {
           },
         })
       })
-      .catch(() => {
-        /* no suggestions when the list cannot be fetched */
-      })
+      .catch(() => {})
   },
   watch: {
     value(newVal) {

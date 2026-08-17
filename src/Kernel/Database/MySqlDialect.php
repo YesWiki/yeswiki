@@ -2,10 +2,7 @@
 
 namespace YesWiki\Kernel\Database;
 
-/**
- * MySQL / MariaDB. Also the behaviour DbService's switch statements used as their
- * `default:` branch, so this is what an unrecognised driver historically got.
- */
+/** MySQL / MariaDB. */
 class MySqlDialect implements SqlDialect
 {
     public function driverName(): string
@@ -35,30 +32,17 @@ class MySqlDialect implements SqlDialect
 
     public function jsonAsText(string $column): string
     {
-        // MySQL coerces a JSON value to its text form for a string operator, so there is
-        // nothing to state -- the normalisation the storage applies is the caller's problem
-        // either way (see SqlDialect::jsonAsText()).
         return $column;
     }
 
     public function jsonExtract(string $column, string $path): string
     {
-        // JSON_UNQUOTE so strings come back unquoted. The path is escaped here rather than by
-        // the caller: it can carry a form field name, and the dialect is what knows the path
-        // ends up inside a single-quoted literal (see SqlDialect::jsonExtract()).
         $escaped = str_replace("'", "''", $path);
 
         return "JSON_UNQUOTE(JSON_EXTRACT($column, '$escaped'))";
     }
 
-    /**
-     * Identical SQL, and deliberately not delegated away.
-     *
-     * `JSON_EXTRACT` accepts a text column and parses it per row -- which is exactly the cost
-     * a native column removes, and exactly what still happens for `metadata`. The two methods
-     * generate the same string here and mean different things; collapsing them into one would
-     * make the day one of them has to change look like a refactor rather than a decision.
-     */
+    /** Identical SQL, and deliberately not delegated away. */
     public function jsonExtractText(string $column, string $path): string
     {
         $escaped = str_replace("'", "''", $path);
@@ -75,10 +59,6 @@ class MySqlDialect implements SqlDialect
 
     public function quoteIdentifier(string $identifier): string
     {
-        // A backtick inside the name is doubled, which is how MySQL spells an escaped one. It
-        // costs nothing for the reserved words this is actually called with (`time`, `type`,
-        // `user`) and stops the method from being a way to break out of the quoting it looks
-        // like it guarantees -- it used to wrap the name and inspect nothing.
         return '`' . str_replace('`', '``', $identifier) . '`';
     }
 
@@ -99,7 +79,6 @@ class MySqlDialect implements SqlDialect
 
     public function castToInteger(string $expression): string
     {
-        // `AS INTEGER` is not MySQL syntax; SIGNED is the equivalent
         return "CAST({$expression} AS SIGNED)";
     }
 
@@ -133,12 +112,7 @@ class MySqlDialect implements SqlDialect
         return true;
     }
 
-    /**
-     * InnoDB FULLTEXT. Two limits are inherited and cannot be worked around from here, both
-     * recorded in ADR-0015: `innodb_ft_min_token_size` (3 by default, a server variable
-     * needing a restart) drops one- and two-character words, and the built-in stopword list
-     * is English and cannot be disabled per session.
-     */
+    /** InnoDB FULLTEXT. */
     public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
@@ -166,10 +140,7 @@ class MySqlDialect implements SqlDialect
                 `queued_at` DATETIME NOT NULL,
                 PRIMARY KEY (`tag`)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
-            // One row per (Content, keyword): an inverted index, so `tags=` is an indexed
-            // equality lookup rather than a LIKE over a delimited column. ADR-0015 rejected
-            // LIKE-based search for the scale this is built for, and a tag filter is no
-            // different -- `%,cooking,%` cannot use an index at any size.
+
             "CREATE TABLE IF NOT EXISTS `{$keywordsTable}` (
                 `tag` VARCHAR(191) NOT NULL,
                 `keyword` VARCHAR(191) NOT NULL,
@@ -190,10 +161,6 @@ class MySqlDialect implements SqlDialect
 
     public function searchMatchExpression(string $table, array $termGroups): string
     {
-        // boolean mode: `+` makes a group required, `*` makes a term a prefix, and terms
-        // inside `( )` are alternatives. All three are safe to append because the caller has
-        // stripped everything but letters, digits and underscores -- see
-        // SqlDialect::searchMatchExpression().
         $groups = array_map(
             static fn (array $alternatives): string => '+(' . implode(' ', array_map(
                 static fn (string $term): string => $term . '*',

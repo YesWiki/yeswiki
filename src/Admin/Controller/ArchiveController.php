@@ -35,7 +35,7 @@ class ArchiveController extends YesWikiController
                     Response::HTTP_BAD_REQUEST
                 );
             }
-            // to prevent existing headers because of handlers /show or others
+
             $nbObLevels = ob_get_level();
             for ($i = 1; $i < $nbObLevels; $i++) {
                 ob_end_clean();
@@ -70,9 +70,7 @@ class ArchiveController extends YesWikiController
             switch ($action) {
                 case 'delete':
                     $post = $this->getRequest()->request;
-                    // `$post->all('filesnames')` THROWS a BadRequestException when the value is
-                    // not an array, so this guard never fired and the clean 400 below was
-                    // unreachable -- a bad request got a Symfony exception instead (ticket 40)
+
                     $rawFilenames = $post->all()['filesnames'] ?? null;
                     if (!empty($id)) {
                         $filenames = [$id];

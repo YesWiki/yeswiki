@@ -1,26 +1,8 @@
-/* The twelve animations `{{section animation="..."}}` offers, and nothing else.
- *
- * This was the whole of animate.css 3.5.2 -- 1,626 lines for the twelve
- * `SectionAction::ANIMATION_LABELS` names a webmaster can actually choose. Worse, the file
- * was registered by nobody, so all twelve settings had been doing nothing at all; and three
- * of the twelve (shakeX, shakeY, heartBeat) named animations 3.5.2 never had, so they would
- * have done nothing even then. Those three are written here, following animate.css 4.x.
- *
- * SectionAction registers this file when a section carries an animation, and only then.
- *
- * Portions from animate.css (c) 2017 Daniel Eden, MIT -- http://daneden.me/animate
- */
-
-/* The class pair a section wears is `wow <name>`: `wow` was WOW.js's "animate me when I
- * scroll into view" marker and the library is long gone, so the pair is simply what stored
- * content says and what this styles. The animation runs on arrival. */
 .wow {
   animation-duration: 1s;
   animation-fill-mode: both;
 }
 
-/* An animation nobody asked for is an accessibility problem before it is a decoration: a
- * reader who has asked their system for less motion gets the section, not the movement. */
 @media (prefers-reduced-motion: reduce) {
   .wow {
     animation: none !important;
@@ -318,7 +300,6 @@
   }
 }
 
-/* One rule per name: `wow bounce` runs `bounce`. */
 .wow.bounce {
   animation-name: bounce;
 }
@@ -367,8 +348,6 @@
   animation-name: heartBeat;
 }
 
-/* The two that are jerky rather than bouncy read better a little slower, which is what
- * animate.css itself does for them. */
 .wow.headShake,
 .wow.heartBeat {
   animation-duration: 1.3s;

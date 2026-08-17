@@ -37,10 +37,8 @@ class Aceditor {
   }
 
   initialize() {
-    // whatever the other editor was holding, if this is a switch rather than a page opened
     restoreStashedValue(this.textarea)
 
-    // Init Components
     this.editor = new AceWrapper(this.aceBody, {
       rows: this.textarea.getAttribute('rows'),
     })
@@ -48,11 +46,9 @@ class Aceditor {
     this.filePicker = new FilePickerPanel()
     this.actionsBuilder = new ActionsBuilder()
 
-    // Sync textarea and editor
     this.editor.setValue(this.textarea.value)
     this.editor.on('change', () => {
       this.textarea.value = this.editor.getValue()
-      // Enable alert popup when leaving the page
       if (typeof showPopup !== 'undefined') {
         showPopup = 1
       }
@@ -70,36 +66,28 @@ class Aceditor {
     this.toolbar.querySelectorAll('.aceditor-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         if (btn.dataset.remote) {
-          // Remote Modal Button
           e.preventDefault()
           openModal(btn.getAttribute('title'), btn.getAttribute('href'))
         } else if (btn.classList.contains('aceditor-btn-link')) {
-          // Link Button: the selection is what the link will replace, and it is captured
-          // now -- the rail is not a modal, so the selection is free to change under it
           this.openLinkPanel({
             action: 'newlink',
             text: this.editor.getSelectedText(),
             range: this.editor.selectionRange(),
           })
         } else if (btn.classList.contains('aceditor-btn-newpage')) {
-          // New Page Button
           this.openLinkPanel({
             action: 'newpage',
             range: this.editor.selectionRange(),
           })
         } else if (btn.classList.contains('aceditor-btn-file')) {
-          // File Picker Button (ticket 17: replaces the per-button qq.FileUploader init)
           this.filePicker.open({
             onComplete: (result) => {
               this.editor.replaceSelectionBy(result)
             },
           })
         } else if (btn.dataset.callout) {
-          // markup syntax, and the one that is not a plain pair of delimiters: it retypes
-          // a callout the cursor is already in rather than nesting another inside it
           this.editor.applyCallout(btn.dataset.callout)
         } else {
-          // Other Buttons
           this.editor.surroundSelectionWith(btn.dataset.lft, btn.dataset.rgt)
         }
       })
@@ -108,8 +96,6 @@ class Aceditor {
       .querySelectorAll('.open-actions-builder-btn')
       .forEach((btn) => {
         btn.addEventListener('click', () => {
-          // the toolbar button adds a component: it always opens the palette. Editing the
-          // one already written is the cursor's job -- see syncRailsWithCursor()
           this.editor.updateCursor()
           const insertAt = this.insertionPointFrom(this.editor.cursor)
           this.actionsBuilder.open(this.editor, { insertAt })
@@ -118,8 +104,6 @@ class Aceditor {
     this.toolbar
       .querySelectorAll('.aceditor-btn-switch-editor')
       .forEach((btn) => {
-        // the textarea is not what Ace has been writing into -- it is synced on change,
-        // and a switch has to carry what is on screen now
         btn.addEventListener('click', () => {
           this.textarea.value = this.editor.getValue()
           switchEditorTo('vditor', this.textarea)
@@ -134,17 +118,7 @@ class Aceditor {
     })
   }
 
-  /**
-   * Where a component chosen from the palette should be written: at the cursor, unless
-   * the cursor sits inside a component -- a `{{...}}` tag written inside another one's
-   * tag corrupts both -- in which case it goes on a line of its own just below.
-   *
-   * A tag the server reads as a block has to be alone on its line, so a cursor sitting in
-   * the middle of a sentence sends it to the end of that line and onto its own. This used
-   * to be rare enough to live with: you pressed Insert deliberately, usually having put the
-   * cursor where you wanted the thing. Picking from the palette now writes immediately, so
-   * a cursor left at the top of the page glued `{{button ...}}` onto the first paragraph.
-   */
+  /** Where a component chosen from the palette should be written: at the cursor, unless the cursor sits inside a component -- a `{{...}}` tag written inside another one's tag corrupts both -- in which case it goes on a line of its own just below. */
   insertionPointFrom(cursor) {
     if (!cursor) return null
     const row = cursor.row || 0
@@ -165,13 +139,7 @@ class Aceditor {
     return `${this.container.dataset.name}:${range.start.row}:${range.start.column}`
   }
 
-  /**
-   * The component this cursor is on -- its wikitext and where it is written -- when the
-   * builder can edit it.
-   *
-   * A closing `{{end elem="..."}}` counts as being on the component it closes: that tag is
-   * the other half of the same component, and its own parameter is only the name of it.
-   */
+  /** The component this cursor is on -- its wikitext and where it is written -- when the builder can edit it. */
   actionTargetFrom(cursor) {
     if (!cursor || cursor.groupType !== 'yw-action' || !cursor.groupData)
       return null
@@ -223,20 +191,9 @@ class Aceditor {
     }
   }
 
-  /**
-   * The rails follow the cursor: one opens on whatever the cursor moves into -- a
-   * component, a link -- swaps to the next one, and closes when the cursor leaves for
-   * ordinary text. There is no button to press first, and none to dismiss them with.
-   *
-   * Nothing is written back on the way out -- what a rail holds reaches the document only
-   * when the user asks for it -- so leaving IS how an unwanted change is abandoned.
-   */
+  /** The rails follow the cursor: one opens on whatever the cursor moves into -- a component, a link -- swaps to the next one, and closes when the cursor leaves for ordinary text. */
   syncRailsWithCursor(cursor) {
-    // opening a page whose first line is a component should not open a rail nobody asked
-    // for: the cursor only drives them once the editor has actually been used
     if (!this.cursorDrivesRails) return
-    // a rail placing something the document does not have yet was opened from the toolbar,
-    // not from the cursor, and owns itself until that thing is written
     if (
       this.actionsBuilder.isPlacingNewAction ||
       this.linkPanel.isPlacingNewLink ||
@@ -246,14 +203,10 @@ class Aceditor {
 
     const action = this.actionTargetFrom(cursor)
     if (action) {
-      // re-marked on every move inside it, so that typing in the component keeps the tint
-      // on all of it rather than on what it used to span
       this.editor.highlightRange(action.range)
       this.actionsBuilder.open(this.editor, {
         action: action.text,
         target: action.range,
-        // WHICH component this is. Same key, same panel: typing inside the one being
-        // edited must not tear down its settings and rebuild them under the user
         key: this.railKey(action.range),
         insertAt: this.insertionPointFrom(cursor),
       })
@@ -284,15 +237,11 @@ class Aceditor {
       this.cursorDrivesRails = true
     })
     this.editor.onCursorChange((cursor) => {
-      // Reset
       this.editor.disableAutocompletion()
       this.syncRailsWithCursor(cursor)
 
-      // wait for the full group to be written
       if (!cursor.groupType) return
 
-      // what is left here is autocompletion: editing is the rails' job, and they have
-      // already opened themselves on whatever the cursor is in
       switch (cursor.groupType) {
         case 'yw-action': {
           if (cursor.nodeType && cursor.nodeType.includes('action-name')) {
@@ -316,16 +265,10 @@ class Aceditor {
   }
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the container, not on <body>. A boosted navigation swaps the body's
-// *contents* -- <body> itself survives -- so a body-keyed initialiser runs once per session
-// and every later page gets an uninitialised editor.
 ywInitEach('.aceditor-container', (container) => {
   const { name } = container.dataset
   const aceditor = new Aceditor(container)
   window[`aceditor-${name}`] = aceditor
-  // ...and the same field under the handle every editor publishes, which is what the page
-  // around it reads and writes through -- see editor-handles.js
   registerEditor(name, {
     getValue: () => aceditor.editor.getValue(),
     setValue: (text) => aceditor.editor.setValue(text),

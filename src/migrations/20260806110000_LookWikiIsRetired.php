@@ -7,41 +7,15 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
-/**
- * Ticket 30: `LookWiki` is retired, and its links go to `admin/preset`.
- *
- * It was a seeded page holding `{{themeselector}}` and a gallery of components -- "the place
- * you go to change the colours", which you had to be told, because nothing about the name
- * says so. That is now the Personnalisation screen, which does the same job at an address
- * that names it and behind an admin gate rather than a page ACL.
- *
- * ## Deleted only if nobody ever touched it
- *
- * A page with **one revision** is a page that has sat exactly as the installer wrote it since
- * the day the wiki was created -- nobody's work is in it, and leaving it behind is leaving a
- * page whose theme selector now duplicates a screen. That one is deleted.
- *
- * A page with a history has somebody's content in it, and deleting that is not a migration's
- * call to make -- the same line `PageCssBecomesAFile` drew. It is kept, and named in the log
- * along with the reason, so a webmaster can decide.
- *
- * ## Links follow the decision
- *
- * Stored links to `LookWiki` are rewritten to `admin/preset` **only when the page is deleted**
- * -- the seeded `GererThemes` body carries one, and so does the seeded `PageMenu`. A wiki that
- * kept its `LookWiki` keeps working links to it, which is the whole point of keeping it.
- *
- * Idempotent: once the page is gone and no body mentions it, there is nothing to do.
- */
+/** Ticket 30: `LookWiki` is retired, and its links go to `admin/preset`. */
 class LookWikiIsRetired extends YesWikiMigration
 {
     private const TAG = 'LookWiki';
 
-    /** What a link to it becomes. Two spellings, because both are in the seed. */
+    /** What a link to it becomes. */
     private const REWRITES = [
-        // {{button ... link="LookWiki" ...}} and any other action taking a link=
         '/(\blink=")LookWiki(")/' => '${1}admin/preset${2}',
-        // a markdown link, with or without a tooltip
+
         '/\]\(\s*LookWiki(\s+"[^"]*")?\s*\)/' => '](admin/preset${1})',
     ];
 
@@ -87,10 +61,6 @@ class LookWikiIsRetired extends YesWikiMigration
     /**
      * Repoint every stored link, in every revision.
      *
-     * Every revision and not just the latest: restoring an older one must not bring back a
-     * link to a page that no longer exists. Bodies are JSON, so this goes through PageBody
-     * rather than a string replace on the column (ticket 25's defect 3).
-     *
      * @return list<string> the tags that changed
      */
     private function rewriteLinks(DbService $db, string $pages): array
@@ -123,8 +93,6 @@ class LookWikiIsRetired extends YesWikiMigration
             $changedTags[(string)$row['tag']] = true;
         }
 
-        // the rewritten prose is what the index holds, so those rows are re-indexed -- queued
-        // rather than indexed inline, like every other write path (ticket 18)
         $this->getService(SearchIndexer::class)->enqueue(array_keys($changedTags));
 
         return array_keys($changedTags);

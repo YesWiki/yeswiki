@@ -45,11 +45,9 @@ class TemplateHelperService
     {
         $image = '';
         if (isset($page['body'])) {
-            // the body is a decoded array (ticket 09): the wiki markup lives under
-            // `content`, an entry's image field is a key of its own
             $body = $page['body'];
             $content = PageBody::content($body);
-            // on cherche les actions attach avec image, puis les images bazar
+
             $images = [];
             preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $content, $images);
             if (!empty($images[1])) {
@@ -98,10 +96,9 @@ class TemplateHelperService
     {
         $resizer = $this->container->get(ImageResizer::class);
 
-        // current page
         $previousTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         $previousPage = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-        // fake page
+
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
         if ($extractFullFileName) {
@@ -131,7 +128,6 @@ class TemplateHelperService
             }
         }
 
-        // reset params
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
@@ -163,8 +159,7 @@ class TemplateHelperService
      *
      * @param      $directory : chemin relatif vers le dossier contenant les templates
      * @param bool $isCustom
-     *
-     * return array : tableau des themes trouves, ranges par ordre alphabetique
+     *                        return array : tableau des themes trouves, ranges par ordre alphabetique
      */
     public function searchTemplateFiles($directory, bool $isCustom = false)
     {
@@ -250,7 +245,6 @@ class TemplateHelperService
      */
     public function getDataParameter()
     {
-        // container data attributes
         $data = $this->performableArguments->get('data');
         if (!empty($data)) {
             $datas = [];
@@ -265,14 +259,11 @@ class TemplateHelperService
             }
         }
 
-        // declared `: array`, and returning null from it was a TypeError for any caller that
-        // reached this line -- no data is an empty list (ticket 40)
         return [];
     }
 
     /**
-     * wrap a trimmed icon parameter (from `button`, `buttondropdown`, `nav`) into its <i> markup ;
-     * a space in the value means it is a raw class list, not a bare bootstrap/fontawesome icon name.
+     * wrap a trimmed icon parameter (from `button`, `buttondropdown`, `nav`) into its <i> markup ; a space in the value means it is a raw class list, not a bare bootstrap/fontawesome icon name.
      */
     public function formatIconHtml(string $icon): string
     {
@@ -280,20 +271,17 @@ class TemplateHelperService
         if (empty($icon)) {
             return '';
         }
-        // Tabler sprite name, or a historic FontAwesome class string that maps onto it
+
         $sprite = $this->container->get(TemplateEngine::class)->legacyIconToSprite($icon);
         if ($sprite !== null) {
             return $sprite;
         }
 
-        // unmapped stored value: emit it as-is (renders only if the site still ships a
-        // matching icon css)
         return '<i class="' . $icon . '"></i>';
     }
 
     public function postFormat($output)
     {
-        // pour les buttondropdown, on ajoute les classes css aux listes
         $pattern = [
             '/(\<!-- start of buttondropdown -->.*)\<ul\>(.*\<!-- end of buttondropdown --\>)/Uis',
             '/<li>\s*<hr \/>\s*<\/li>/Uis',
@@ -358,13 +346,11 @@ class TemplateHelperService
 
         if ($entryManager->isEntry($page['tag'])) {
             $entry = $entryManager->getOne($page['tag']);
-            // the computed title (ADR-0010), not the field some forms happen to call
-            // bf_titre -- which is what CONTEXT.md's Entry title entry already says
+
             $title = (string)($entry['title'] ?? $entry['bf_titre'] ?? '');
         } else {
-            // the markup lives under `content` in the decoded body (ticket 09)
             $content = PageBody::content($page['body']);
-            // the first level-1 or level-2 heading names a page that has no stored title
+
             if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $content, $titles)) {
                 $title = $titles[1];
             } else {
@@ -412,12 +398,9 @@ class TemplateHelperService
                 $desc = $this->container->get(EntryController::class)->view($entry, '', 0);
             }
         }
-        // $desc = $this->container->get(MarkdownFormatterService::class)->format($page['body'], 'wakka', $page["tag"]);
 
-        // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
 
-        // no double space or new lines
         $desc = trim(
             preg_replace(
                 '!\s+!',
@@ -429,7 +412,7 @@ class TemplateHelperService
                 )
             )
         );
-        // strtok() returns false when there is nothing to tokenise, i.e. an empty description
+
         $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
 
         return $desc === false ? '' : $desc;

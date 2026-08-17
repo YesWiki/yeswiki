@@ -19,7 +19,6 @@ export default {
       value: '',
     },
     read_access: readConf,
-    // write: writeConf
   },
   disabledAttributes: ['required', 'default'],
   editorHint: _t('BAZ_FORM_CALC_HINT', { br: '<BR>' }),

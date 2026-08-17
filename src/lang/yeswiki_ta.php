@@ -905,8 +905,6 @@ return [
     'REACTION_NO_IMAGE' => 'படம் இல்லை',
     'USER_GOTOADMIN' => 'பயனர்களின் மேலாண்மை',
 
-    // relocated from tools/login/lang/login_ta.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'SE இணைப்பு',
     'LOGIN_WIKINAME' => 'மின்னஞ்சல் ou nom d\'utilisateur.ice',
@@ -956,7 +954,6 @@ return [
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'delifiand "{currentName}" இருப்பு déjà!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'L\'aigral "{email}" est déjà utilisé par un autre compte!',
 
-    // relocated from tools/tags/lang/tags_ta.inc.php (ticket 10)
     'TAGS_TAGS' => 'மோட்ச் க்ளெச்',
     'TAGS_ACTION_ADMINTAGS' => 'செயல் {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'action est r & eacute; serv & eacute; இ அயு groupe des நிர்வாகம்',
@@ -1304,7 +1301,7 @@ return [
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'விளக்கம் du site என் une சொற்றொடர், ஊற்ற லே referencement (கவனம்: ne pas mettre de "." (புள்ளி))',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'எம்பேசர் லெச் ரோபோக்கள் à குறியீட்டாளர் லு விக்கி (நொய்டெக்ச், நோஃபாலோ, மேக்ச்-இமேச்-முன்னுரிமை: எதுவுமில்லை, நொயார்கிவ், நொயிமாசின்டெக்ச்)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'பாலிசச் மேவு எல் இன் இன்டக்டேசன் வலையை ஊற்றவும்',
-    // relocated from tools/attach/lang/attach_ta.inc.php (ticket 17)
+
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'பட கோப்பு இல்லை',
     'ATTACH_ACTION_ATTACH' => 'செயல் {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'ஒரு படத்திற்கான அளவுரு "கட்டாய"',
@@ -1400,7 +1397,6 @@ return [
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு - பைட்டுகள் (எ.கா. சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு (எ.கா: 2097152, 2048 கே, 2 மீ)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'மீடியா செருகல் (படங்கள், வீடியோக்கள்)',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'இந்தக் கோப்பை அனுப்பு',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1414,7 +1410,6 @@ return [
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_ta.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே மெயில், டம்பிகடோயர், எச்ட் மேன்குவண்ட்.',
     'CONTACT_ACTION_CONTACT' => 'செயல் {{contact ...}}',
@@ -1514,7 +1509,6 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'தொடங்குவதற்கு வெர்போச் பயன்முறை (தகவல் பெற 2 வைக்கவும்)',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'கடவுச்சொல்லை மீட்டமைக்க மின்னஞ்சல் அனுப்பும் முடக்கு (எ.கா: எல்.டி.ஏ.பி, எச்.எச்.ஓ)',
 
-    // relocated from tools/autoupdate/lang/autoupdate_ta.inc.php (ticket 19)
     'AU_ACL' => 'கோப்புகளில் உரிமைகளின் சரிபார்ப்பு',
     'AU_REPO_ERROR' => 'அணுக முடியாத டிப்போக்கள்.',
     'AU_VERSION_WIKI' => 'பதிப்பு டு விக்கி',
@@ -1559,7 +1553,6 @@ return [
     'AU_SEVERAL_TOOLS_UPDATE' => 'புதுப்பிக்க உங்களிடம் {nbMaj} நீட்டிப்புகள் உள்ளன',
     'AU_ONE_TOOL_UPDATE' => 'புதுப்பிக்க உங்களிடம் 1 நீட்டிப்பு உள்ளது',
 
-    // relocated from tools/syndication/lang/syndication_ta.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'செயல் {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'il faut entrer willigatoirement le param & egrave; tre "முகவரி" ஊற்றப்பட்ட சிண்டிகர் அன் ஃப்ளக்ச் RSS',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'லு ஆர் & ஈகூட்;',
@@ -1574,7 +1567,7 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, le வார்ப்புருவைப் பயன்படுத்துங்கள் par டி & eacute; faut',
     'SYNDICATION_SOURCE' => 'மூலம்',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accéder à l\'integralité du contenu',
-    // relocated from tools/bazar/lang/bazar_ta.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'சூத்திரங்கள்',
     'BAZ_LISTES' => 'பட்டியல்கள்',
     'BAZ_NOUVELLE_LISTE' => 'க்ரீயர் une nouvelle liste',
@@ -1951,7 +1944,6 @@ return [
     'BAZ_CORRESPONDANCE_ERROR' => 'செயல் BAZAARLISTE: அளவுரு கடிதத் தொடர்பு நோய்வாய்ப்பட்டது -நிரப்பப்பட்டது: இது கடிதத் தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2" அல்லது கடிதத் தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2, அடையாளங்காட்டி_3 = அடையாளங்காட்டி_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => 'பசார்லிச்ட் நடவடிக்கை: கடித அளவுரு மோசமாக நிரப்பப்பட்டுள்ளது இது கடித வடிவத்தில் இருக்க வேண்டும் = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2" அல்லது கடித தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2, அடையாளங்காட்டி_3 = அடையாளங்காட்டி_4"',
 
-    // relocated from tools/bazar/lang/bazarjs_ta.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'கால்குலச்',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'டெக்ச்டே டி அஃபிசேச்',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si benoin une Unité aprres {value}, (ex: `{value} €`)',
@@ -2202,7 +2194,6 @@ return [
     'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
     'DATATABLE_PAGE_SIZE_LABEL' => 'காட்டு',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -2220,13 +2211,11 @@ return [
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'மாற்றியமைத்தல் டி',
     'RSS_HISTORY' => 'வரலாறு',
     'RSS_HIDDEN_CONTENT' => 'கான்டெனு மாச்குவே',
@@ -2237,11 +2226,9 @@ return [
     'RSS_DELETIONS' => 'அடக்குமுறைகள்',
     'RSS_NO_DIFF' => 'பாச் டி டிஃப் & ஈகூட்; ரெனன்ச்',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'ஒரு புலத்தைச் சேர்க்கவும்',
     'FORM_BUILDER_ADVANCED' => 'மேம்பட்ட அமைப்புகள்',
     'FORM_BUILDER_BACK' => 'பின்செல்',
@@ -2257,7 +2244,6 @@ return [
     'FORM_BUILDER_NAME_LABEL' => 'அடையாளங்காட்டி',
     'FORM_BUILDER_REQUIRED_LABEL' => 'கட்டாயம்',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'பதிவுகளின் தலைப்பாகப் பயன்படும் புலம்',
     'FORM_EDIT_CUSTOM_TITLE' => 'தனிப்பயன் தலைப்பு…',
     'FORM_EDIT_PERMISSIONS' => 'பதிவு அனுமதிகள்',

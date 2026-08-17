@@ -11,13 +11,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{linkrss}}` -- converted from the procedural actions/linkrss.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{linkrss}}` -- converted from the procedural actions/linkrss.php by ticket 06. */
 class LinkrssAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -31,10 +25,6 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -43,24 +33,14 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
         return $this->emitAfter((string)ob_get_clean());
     }
 
-    /**
-     * Ran as an after-callback until ticket 06 merged it in. Receives the rendered output
-     * as $plugin_output_new -- the name the hooks already used -- because several rewrite
-     * it rather than appending.
-     */
+    /** Ran as an after-callback until ticket 06 merged it in. */
     private function emitAfter(string $plugin_output_new): string
     {
         ob_start();
 
-        // merged from actions/linkrss__.php (ticket 06: core does not hook itself)
-        // relocated from tools/bazar/actions/linkrss__.php (ticket 24)
         $list = '';
 
         if ($this->getService(ModuleAclService::class)->checkModuleAcl('rss', 'handler')) {
-            // getAllLabels(), not getAll(): this runs in the document head of every single
-            // page, and all it needs is a name and an id per form. getAll() would load and
-            // fully prepare every form -- every field object, every list behind a `liste`
-            // field, every default image re-read off disk -- to print a title attribute.
             foreach ($this->getService(FormManager::class)->getAllLabels() as $formId => $label) {
                 $list .= '  <link rel="alternate" type="application/rss+xml" '
                     . 'title="' . htmlspecialchars($label) . '" '

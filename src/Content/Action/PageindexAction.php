@@ -11,13 +11,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 
-/**
- * `{{pageindex}}` -- converted from the procedural actions/pageindex.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{pageindex}}` -- converted from the procedural actions/pageindex.php by ticket 06. */
 class PageindexAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -42,10 +36,6 @@ class PageindexAction extends YesWikiAction implements RegisteredAction, Provide
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -58,7 +48,6 @@ class PageindexAction extends YesWikiAction implements RegisteredAction, Provide
     {
         if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages WHERE latest = \'Y\' AND parent=\'\' ORDER BY tag')) {
             foreach ($pages as $page) {
-                // XXX: strtoupper is locale dependent
                 $firstChar = strtoupper($page['tag'][0]);
                 if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {
                     $firstChar = '#';

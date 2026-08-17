@@ -1,11 +1,7 @@
-// users-table-addon.js — appends an email-activation status/action column to the
-// admin users table (ticket 16: vanilla JS on the yw-datatable markup, replacing
-// the DataTables destroy/re-init dance)
 const usersTableServiceAddOn = {
   users: {},
   tables: [],
   nameOf(row) {
-    // column 0 is the multidelete checkbox, column 1 the user name
     return row.cells[1] ? row.cells[1].textContent.trim() : ''
   },
   async getUsers() {
@@ -152,10 +148,6 @@ const usersTableServiceAddOn = {
   },
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
-// the body's *contents*, so a body-keyed initialiser runs once per session and every
-// later page is left uninitialised.
 ywInitEach('.users-table, #users-table', () => {
   if (typeof usersTableService !== 'undefined' && usersTableService) {
     usersTableServiceAddOn.init()

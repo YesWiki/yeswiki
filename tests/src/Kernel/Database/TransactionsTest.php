@@ -10,19 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `DbService::transactional()`, and the invisible-page failure it exists to prevent.
- *
- * Every write that revisions a `pages` row is two statements: demote the current revision to
- * `latest = 'N'`, then INSERT the new one. Between them the row has **no `latest = 'Y'` revision
- * at all**, and every read filters on that -- so a failure in between does not leave a damaged
- * page, it leaves an absent one, with the whole history still sitting in the table. That is a
- * worse failure than an exception, because nothing reports it.
- *
- * The rollback tests inject the failure by making the second statement fail for real (a column
- * that does not exist) rather than by mocking, so what is asserted is the database's behaviour
- * and not a stand-in for it.
- */
+/** `DbService::transactional()`, and the invisible-page failure it exists to prevent. */
 class TransactionsTest extends YesWikiTestCase
 {
     private const TAG = 'TransactionsRegressionPage';
@@ -73,11 +61,7 @@ class TransactionsTest extends YesWikiTestCase
         $this->assertSame(1, $this->latestCount(self::TAG), 'a committed insert must be visible');
     }
 
-    /**
-     * THE test: the demote-then-insert pair, with the insert failing.
-     *
-     * Without a transaction the demote survives and the page has zero `latest = 'Y'` rows.
-     */
+    /** THE test: the demote-then-insert pair, with the insert failing. */
     public function testAFailedSecondStatementLeavesThePageVisible(): void
     {
         $db = self::db();
@@ -89,12 +73,11 @@ class TransactionsTest extends YesWikiTestCase
         try {
             $db->transactional(function () use ($db, $pages): void {
                 $db->query("UPDATE {$pages} SET latest = 'N' WHERE tag = ?", [self::TAG]);
-                // a real failure, not a simulated one
+
                 $db->query("INSERT INTO {$pages} (no_such_column) VALUES (?)", ['boom']);
             });
             $this->fail('the failing statement should have propagated');
         } catch (\Throwable $expected) {
-            // the point of the test is what the table looks like now
         }
 
         $this->assertSame(
@@ -122,8 +105,6 @@ class TransactionsTest extends YesWikiTestCase
 
                 throw new \RuntimeException('interrupted');
             });
-            // no fail() here: the closure throws unconditionally, so reaching this line is not
-            // a possible outcome -- the assertion that matters is the message caught below
         } catch (\RuntimeException $expected) {
             $this->assertSame('interrupted', $expected->getMessage());
         }
@@ -137,9 +118,7 @@ class TransactionsTest extends YesWikiTestCase
     }
 
     /**
-     * Nesting has to work, because these writes really do nest: AclService::writeMetadataAcls()
-     * and PageManager::save() both revision a row and either is reachable from inside the other.
-     * PDO::beginTransaction() throws outright if a transaction is already active.
+     * Nesting has to work, because these writes really do nest: AclService::writeMetadataAcls() and PageManager::save() both revision a row and either is reachable from inside the other.
      */
     public function testScopesNestWithoutStartingASecondTransaction(): void
     {
@@ -178,13 +157,7 @@ class TransactionsTest extends YesWikiTestCase
         $this->assertFalse($db->inTransaction(), 'and no scope may be left open');
     }
 
-    /**
-     * The nastiest case: an inner scope fails and something *swallows* its exception.
-     *
-     * Counting scopes alone would let the outer scope commit work that half-failed, which is the
-     * one outcome a transaction exists to prevent -- and it would look like success. So the
-     * outermost commit refuses instead.
-     */
+    /** The nastiest case: an inner scope fails and something *swallows* its exception. */
     public function testASwallowedInnerFailurePreventsTheOuterCommit(): void
     {
         $db = self::db();
@@ -197,7 +170,6 @@ class TransactionsTest extends YesWikiTestCase
                         throw new \RuntimeException('inner failure nobody reported');
                     });
                 } catch (\RuntimeException) {
-                    // swallowed on purpose -- this is the shape being tested
                 }
             });
             $this->fail('the outer commit must refuse rather than keep half-failed work');
@@ -218,13 +190,7 @@ class TransactionsTest extends YesWikiTestCase
         $this->addToAssertionCount(1);
     }
 
-    /**
-     * The real ACL write path, interrupted.
-     *
-     * `AclService::writeMetadataAcls()` revisions the row the same way, so it has the same
-     * hazard -- and getting it wrong there means a page disappears when someone edits its
-     * permissions, which is exactly when nobody is looking at the page itself.
-     */
+    /** The real ACL write path, interrupted. */
     public function testAnInterruptedAclWriteLeavesThePageVisible(): void
     {
         $wiki = self::getWiki();
@@ -243,7 +209,6 @@ class TransactionsTest extends YesWikiTestCase
                 throw new \RuntimeException('interrupted mid-ACL-write');
             });
         } catch (\RuntimeException) {
-            // expected
         }
 
         $this->assertSame(1, $this->latestCount(self::TAG));

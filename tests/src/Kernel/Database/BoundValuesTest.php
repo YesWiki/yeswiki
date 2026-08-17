@@ -8,17 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * What binding actually does differently from DbService::escape(), against a live connection.
- *
- * These run on whichever driver the suite is pointed at -- SQLite locally, MySQL in CI -- which
- * is the point: every claim here is about behaviour that differs *between* drivers, and the
- * three of them (sqlite/mysql/pgsql) are exactly where "works on my machine" has been coming
- * from. A pure unit test cannot see any of it; SqlParametersTest covers what it can.
- *
- * The scratch table is created and dropped per test class and carries the wiki's own prefix, so
- * it can never collide with a real table and never survives the run.
- */
+/** What binding actually does differently from DbService::escape(), against a live connection. */
 class BoundValuesTest extends YesWikiTestCase
 {
     private static DbService $db;
@@ -30,8 +20,7 @@ class BoundValuesTest extends YesWikiTestCase
         self::$table = trim(self::$db->prefixTable('binding_probe'));
 
         self::$db->query('DROP TABLE IF EXISTS ' . self::$table);
-        // INTEGER and TEXT are spelled the same by all three drivers, so the fixture needs no
-        // dialect of its own
+
         self::$db->query('CREATE TABLE ' . self::$table . ' (id INTEGER, label TEXT)');
     }
 
@@ -45,12 +34,7 @@ class BoundValuesTest extends YesWikiTestCase
         self::$db->query('DELETE FROM ' . self::$table);
     }
 
-    /**
-     * The headline claim: a value that looks like SQL is data, not SQL.
-     *
-     * Written as a SELECT rather than a "did it drop the table" scare test, because this is the
-     * shape the bug would really take -- a WHERE that matches everything instead of one row.
-     */
+    /** The headline claim: a value that looks like SQL is data, not SQL. */
     public function testAValueThatLooksLikeSqlMatchesNothingInsteadOfEverything(): void
     {
         self::$db->query('INSERT INTO ' . self::$table . ' (id, label) VALUES (?, ?)', [1, 'ordinary']);
@@ -76,13 +60,7 @@ class BoundValuesTest extends YesWikiTestCase
         $this->assertSame($awkward, $row['label']);
     }
 
-    /**
-     * The difference escape() cannot express: null is NULL, not ''.
-     *
-     * escape() casts through (string), so a null filter reached the database as the empty
-     * string -- which is a value, matches `= ''`, and does not match `IS NULL`. MySQL and
-     * SQLite let that slide in most columns; a NOT NULL or a strict column does not.
-     */
+    /** The difference escape() cannot express: null is NULL, not ''. */
     public function testNullIsStoredAsNullAndNotAsAnEmptyString(): void
     {
         self::$db->query('INSERT INTO ' . self::$table . ' (id, label) VALUES (?, ?)', [1, null]);
@@ -99,13 +77,7 @@ class BoundValuesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * An int binds as an int, which is what makes `LIMIT ?` legal.
-     *
-     * PDO::ATTR_EMULATE_PREPARES is false (DbService::initSqlConnection), so placeholders are
-     * the server's, not PDO's string substitution. That is what makes the type matter: a
-     * string-bound LIMIT is a syntax error on MySQL rather than a silently coerced number.
-     */
+    /** An int binds as an int, which is what makes `LIMIT ?` legal. */
     public function testAnIntBindsAsAnIntSoLimitCanBeBound(): void
     {
         foreach ([1, 2, 3, 4, 5] as $id) {
@@ -149,12 +121,7 @@ class BoundValuesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * An IN list built from a count, with the values still bound.
-     *
-     * This is the one place a parameterised query still assembles SQL, so it is worth pinning
-     * that what it assembles is placeholders and not data.
-     */
+    /** An IN list built from a count, with the values still bound. */
     public function testAnInListBindsEveryValue(): void
     {
         foreach (range(1, 5) as $id) {
@@ -170,14 +137,7 @@ class BoundValuesTest extends YesWikiTestCase
         $this->assertSame([2, 4], array_map(static fn (array $r): int => (int)$r['id'], $rows));
     }
 
-    /**
-     * A defused LIKE matches the term literally, on this driver.
-     *
-     * The pure-function half is in SqlParametersTest; this is the half that cannot be unit
-     * tested, because whether `ESCAPE` is honoured is the database's business. SQLite has no
-     * default escape character, so an implementation that forgot the clause would pass on MySQL
-     * and quietly fail here -- which is why this assertion exists at all.
-     */
+    /** A defused LIKE matches the term literally, on this driver. */
     public function testADefusedLikeMatchesWildcardsLiterally(): void
     {
         self::$db->query('INSERT INTO ' . self::$table . ' (id, label) VALUES (?, ?)', [1, '100% cotton']);
@@ -192,7 +152,6 @@ class BoundValuesTest extends YesWikiTestCase
             "'100%' must match the row that literally contains '100%', not every row starting 100."
         );
 
-        // and the wildcard still works when it is the query's own, not the user's
         $wild = self::$db->loadAll($sql, ['100%']);
         $this->assertCount(2, $wild, 'an undefused % is still a wildcard -- the defusing is opt-in');
     }

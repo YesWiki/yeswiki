@@ -1,21 +1,9 @@
-// converter.js — storage JSON ↔ designer field objects (ticket 26)
-//
-// The stored template (`template`) is a JSON array of named-attribute field
-// objects: `[{"type": "texte", "name": "bf_titre", "label": "…"}]`. Attribute keys
-// are the FIELD_* constant names of the PHP class handling the type (see
-// FieldFactory::getAttributeIndexToKeyMap()); the designer edits those objects
-// directly, so conversion here is only about resolving the wiki type keyword to a
-// designer field config and back — there is no positional mapping anymore.
-
-// Mapping between yeswiki type keywords and the designer's internal field types.
-// Use window to make it available outside of module, so extensions can add
-// their own types (same contract as the old builder).
 window.yesWikiTypes = window.yesWikiTypes || {}
 Object.assign(window.yesWikiTypes, {
   lien_internet: { type: 'url' },
   lien_internet_bis: { type: 'text', subtype: 'url' },
   mot_de_passe: { type: 'text', subtype: 'password' },
-  texte: { type: 'text' }, // all other text sub_types (range, text, tel, …)
+  texte: { type: 'text' },
   textelong: { type: 'textarea' },
   listedatedeb: { type: 'date' },
   listedatefin: { type: 'date' },
@@ -33,10 +21,6 @@ Object.assign(window.yesWikiTypes, {
   listefiches: { type: 'listefichesliees' },
 })
 
-// stored JSON text -> list of { type: designerType, data: attributes } items.
-// `data` keeps the storage keys verbatim, plus transient resolution helpers
-// (`_wikiType`, `sub_type` for aliased keywords, `subtype2` for list-vs-form
-// enum variants) that serializeFields() strips or re-resolves.
 export function parseFields(text, registry) {
   let stored
   try {
@@ -68,7 +52,6 @@ export function parseFields(text, registry) {
     })
 }
 
-// designer type (+ sub_type / subtype2 in data) -> stored wiki type keyword
 function resolveWikiType(type, data) {
   const original = data._wikiType
   const compatible = (resolution) =>
@@ -79,8 +62,6 @@ function resolveWikiType(type, data) {
     (!data.subtype2 || data.subtype2 === resolution.subtype2)
   const entries = Object.entries(window.yesWikiTypes)
 
-  // a keyword dedicated to this exact sub_type wins (text+password -> mot_de_passe,
-  // text+url -> lien_internet_bis -> lien_internet)
   const specific = entries.find(
     ([, resolution]) =>
       compatible(resolution) &&
@@ -89,22 +70,15 @@ function resolveWikiType(type, data) {
   )
   if (specific) return specific[0].replace(/_bis$/, '')
 
-  // otherwise the field's original keyword is kept as long as it still fits the
-  // (possibly edited) designer type — several keywords alias one designer type
-  // (jour/listedatedeb/listedatefin, map/carte_google) and round-trips must not
-  // silently rewrite them
   const originalResolution = original ? window.yesWikiTypes[original] : null
   if (originalResolution && compatible(originalResolution)) return original
 
   const first = entries.find(([, resolution]) => compatible(resolution))
   if (first) return first[0].replace(/_bis$/, '')
 
-  // custom/unknown fields keep their original keyword; registry-named types
-  // (acls, tabs, labelhtml, …) store under their own name
   return original || type
 }
 
-// list of { type, data } items -> stored JSON text (pretty, like the PHP encoder)
 export function serializeFields(fields, registry) {
   const stored = fields.map(({ type, data }) => {
     const config = registry[type] || {}

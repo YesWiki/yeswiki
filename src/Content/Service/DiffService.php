@@ -71,7 +71,7 @@ class DiffService
             $regexpr .= "(?!$action)";
         }
         $regexpr .= ".*?\}\})/s";
-        // move all complex actions (entrylist etc...) into pre html so they are not fomatted
+
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', PageBody::content($page['body'] ?? []));
 
         return $this->container->get(MarkdownFormatterService::class)->format($code);
@@ -79,8 +79,6 @@ class DiffService
 
     public function formatJsonCodeIntoHtmlTable($page)
     {
-        // the body arrives already decoded (PageManager, or the empty-revision stand-in
-        // PageApiController builds for a page's very first revision)
         $result = $page['body'] ?? [];
         ksort($result);
         $html = "<table class='entry-code'><tbody>";

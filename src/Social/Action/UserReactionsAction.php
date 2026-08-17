@@ -2,9 +2,6 @@
 
 namespace YesWiki\Social\Action;
 
-/*
- * Show all user's reaction.
- */
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Component\Category;

@@ -1,17 +1,12 @@
 {% extends "@core/dashboard/layout.twig" %}
 
-{# What the wiki has been up to lately, for anyone who can read it. Built out of the
-   actions a webmaster would put on a page of their own -- there is no dashboard-only
-   rendering here, so what this route shows and what `{{recentchanges}}` shows cannot
-   drift apart. #}
 {% block dashboard_content %}
   <h1>{{ _t('DASHBOARD_ACTIVITY') }}</h1>
 
   <div class="yw-dashboard__grid">
     <section class="yw-dashboard__card">
       <h2>{{ _t('DASHBOARD_ACTIVITY_PAGES') }}</h2>
-      {# every Content type is a page now (ADR-0011), so one list covers entries,
-         users and files as well as pages #}
+
       {{ renderAction('recentchanges', { max: 15 })|raw }}
     </section>
 

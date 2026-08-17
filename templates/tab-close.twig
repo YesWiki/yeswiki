@@ -1,26 +1,26 @@
   {% if bottom_nav %}
     <div class="yeswiki-tab-btnnav">
-      {# previous tab button #}
+
       {% if counter > 1 %}
         <a 
           class="yw-btn {{ btnClass }} pull-left" 
           href="#{{ slugs[counter-2] }}" 
           role="tab" 
           data-toggle="tab"
-          onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+          onclick="window.dispatchEvent(new Event('resize'));" 
         >
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-left"/></svg>
           {% if counter_on_bottom_nav %}{{ counter -1 }}. {% endif %}{{ titles[counter - 2] }}
         </a>
       {% endif %}
-      {# next tab button #}
+
       {% if not isLast %}
         <a 
           class="yw-btn {{ btnClass }} pull-right" 
           href="#{{ slugs[counter] }}" 
           role="tab" 
           data-toggle="tab"
-          onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+          onclick="window.dispatchEvent(new Event('resize'));" 
         >
           {% if counter_on_bottom_nav %}{{ counter + 1 }}. {% endif %}{{ titles[counter] }}
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-right"/></svg>
@@ -32,6 +32,6 @@
     <br>
     <div class="anchor-for-for-actions pull-right"></div>
   {% endif %}
-  {# close tab #}
+
   <div class="clearfix"></div>
 </div><!-- close tab n°{{ counter }} -->

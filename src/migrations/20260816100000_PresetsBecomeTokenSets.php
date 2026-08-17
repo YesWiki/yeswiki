@@ -4,31 +4,7 @@ use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Render\Service\PresetService;
 
-/**
- * ADR-0020: a Preset's nine variables become `--yw-*` Design tokens.
- *
- * `--primary-color` and the other eight are retired rather than aliased, so a wiki with a
- * preset of its own would wake up wearing core's defaults and no trace of why. This carries
- * the nine values onto the nine tokens they correspond to.
- *
- * **The result is an incomplete Preset, and that is the point.** Nine of forty-nine tokens
- * are known; the other forty are not, and inventing them was the rejected option -- a hover
- * colour quietly taken from somebody else's brand is a thing nobody would ever notice was
- * wrong. So the file says what it knows, the Personnalisation screen flags it as incomplete
- * and names what is missing, and the pages keep rendering meanwhile because core's own
- * tokens are still underneath. The webmaster finishes it when they choose to.
- *
- * Both places an instance can own a preset are covered: `custom/css-presets/` (its own) and
- * `custom/themes/<theme>/presets/` (its overrides of the theme's). `themes/` itself is code
- * -- on a farm it is shared and replaced on upgrade -- and is not touched.
- *
- * Everything in the file that is not the `:root` block is kept verbatim: a preset can carry
- * `@font-face` rules (the old save appended them) and rules of its own, and a migration that
- * dropped them would be deleting a webmaster's work rather than renaming it.
- *
- * Idempotent per file: one that already declares `--yw-primary` is left alone, so running
- * the upgrade twice cannot fold a migrated preset a second time.
- */
+/** ADR-0020: a Preset's nine variables become `--yw-*` Design tokens. */
 class PresetsBecomeTokenSets extends YesWikiMigration
 {
     /** The nine variables, and the token each one's value means now. */
@@ -53,9 +29,6 @@ class PresetsBecomeTokenSets extends YesWikiMigration
         foreach ($this->files() as $path) {
             $css = @file_get_contents($path);
             if ($css === false) {
-                // a preset that cannot be read cannot be migrated, and a migration that
-                // returns marks itself done and never runs again -- so this throws, and the
-                // upgrade stops where somebody can still see which file it was
                 throw new RuntimeException("preset $path could not be read");
             }
             if (!$this->needsMigration($css)) {
@@ -79,7 +52,9 @@ class PresetsBecomeTokenSets extends YesWikiMigration
         }
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function files(): array
     {
         $paths = [];
@@ -92,13 +67,7 @@ class PresetsBecomeTokenSets extends YesWikiMigration
         return $paths;
     }
 
-    /**
-     * A file to rewrite is one that speaks the old vocabulary and not the new one.
-     *
-     * Both halves matter: a preset already written in tokens must not be touched, and a file
-     * under `custom/css-presets/` that is not a preset at all -- somebody's stylesheet parked
-     * there -- has nothing here to rename and is left as it is.
-     */
+    /** A file to rewrite is one that speaks the old vocabulary and not the new one. */
     private function needsMigration(string $css): bool
     {
         if (preg_match('/--yw-[a-z0-9-]+\s*:/i', $css)) {
@@ -113,15 +82,7 @@ class PresetsBecomeTokenSets extends YesWikiMigration
         return false;
     }
 
-    /**
-     * Rename the nine declarations in place, and say in the file itself what is missing.
-     *
-     * In place rather than rebuilt: the declarations keep their order, their formatting and
-     * their comments, and anything else the file holds is untouched by construction. A
-     * variable with no token -- one somebody added by hand -- is dropped from the `:root`
-     * block's meaning but kept in the text, because it may be feeding a rule of their own
-     * further down.
-     */
+    /** Rename the nine declarations in place, and say in the file itself what is missing. */
     private function rewrite(string $css): string
     {
         foreach (self::MAPPING as $variable => $token) {

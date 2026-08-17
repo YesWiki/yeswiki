@@ -13,7 +13,9 @@ use YesWiki\Content\Service\ListManager;
 class ImapImporter extends Importer
 {
     protected string $source;
-    /** @var list<array<string, mixed>> the form this importer installs when it has none */
+    /**
+     * @var list<array<string, mixed>> the form this importer installs when it has none
+     */
     protected array $databaseForms;
     protected mixed $mailBox = null;
 
@@ -43,8 +45,7 @@ class ImapImporter extends Importer
                 'description' => 'Imports de mails depuis imap',
                 'condition' => '',
                 ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
-                // the legacy `***` template syntax is still read (ADR-0009): FormManager
-                // re-encodes it to the stored JSON field objects on the way in
+
                 'template' => <<<EOT
 texte***bf_titre***Sujet***255***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
 date***bf_date***Date de réception*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
@@ -91,7 +92,6 @@ EOT,
         ];
     }
 
-    // message_id is excluded on purpose: syncData() relies on it verbatim as the entry's dedup/identity key
     public static function getOwnFields(): array
     {
         return [
@@ -105,26 +105,22 @@ EOT,
 
     public function authenticate(): void
     {
-        // php-imap is a suggested dependency, not a required one: it needs ext-imap, which
-        // PHP has been moving out of core, and a wiki that imports no mailbox should not
-        // have to install either. Say so plainly rather than fataling on a missing class.
         if (!class_exists(\PhpImap\Mailbox::class)) {
             throw new \Exception('L\'import de mails demande la librairie php-imap : "composer require php-imap/php-imap" (et l\'extension php "imap").');
         }
-        // Create PhpImap\Mailbox instance for all further actions
+
         $this->mailBox = new \PhpImap\Mailbox(
             $this->config['imap_server_and_folder'],
             $this->config['imap_user'],
             $this->config['imap_password'],
             $this->config['attachments_folder'],
-            'UTF-8', // Server encoding (optional)
-            true, // Trim leading/ending whitespaces of IMAP path (optional)
-            true // Attachment filename mode (optional; false = random filename; true = original filename)
+            'UTF-8',
+            true,
+            true
         );
-        // set some connection arguments (if appropriate)
+
         $this->mailBox->setConnectionArgs(
-            CL_EXPUNGE // expunge deleted mails upon mailbox close
-            //  | OP_SECURE // don't do non-secure authentication
+            CL_EXPUNGE
         );
     }
 
@@ -135,14 +131,11 @@ EOT,
     {
         $this->authenticate();
         try {
-            // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
             $mailsIds = $this->mailBox->searchMailbox($this->config['imap_query']);
         } catch (\PhpImap\Exceptions\ConnectionException $ex) {
-            // a sync can run from a page view now (maintenance) -- report, never die()
             throw new \Exception('IMAP connection failed: ' . implode(',', $ex->getErrors('all')));
         }
 
-        // If $mailsIds is empty, no emails could be found
         if (!$mailsIds) {
             echo 'No emails found.' . "\n";
 
@@ -163,7 +156,7 @@ EOT,
     public function mapData(mixed $data): array
     {
         $preparedData = [];
-        $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+        $converter = new HtmlConverter(['strip_tags' => true]);
         foreach ($data as $i => $email) {
             if ($email->textHtml) {
                 $message = $email->textHtml;
@@ -204,14 +197,12 @@ EOT,
 
     public function syncFormModel(): void
     {
-        // test if the form exists, if not, install it
         $form = $this->formManager->getOne($this->config['formId']);
         if (empty($form)) {
             $this->databaseForms[0]['id'] = $this->config['formId'];
             $this->formManager->create($this->databaseForms[0]);
         } else {
             echo 'Le formulaire existe déjà.' . "\n";
-            // test if compatible
         }
     }
 }

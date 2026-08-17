@@ -10,15 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 06 replaced formatters/wakka__.php -- the last file in formatters/ and the last
- * user of Performer's filename-hook convention -- with this service. The behaviour it
- * carries (page content opting into a client-side library by class name) had no test at
- * all while it lived in a hook file.
- *
- * Ticket 14: what the scanner registered used to be read back out of $GLOBALS['js']. It is
- * now read from a capture scope, which is both the real mechanism and a better assertion --
- * the set contains what *this* scan declared, rather than whatever the global had
- * accumulated by the time the test looked.
+ * Ticket 06 replaced formatters/wakka__.php -- the last file in formatters/ and the last user of Performer's filename-hook convention -- with this service.
  */
 class ContentAssetScannerTest extends YesWikiTestCase
 {
@@ -31,9 +23,7 @@ class ContentAssetScannerTest extends YesWikiTestCase
     }
 
     /**
-     * A fresh scanner per test on purpose: the "register once per request" guard is
-     * instance state, and the container hands out a shared instance, so tests sharing it
-     * would silently depend on each other's ordering.
+     * A fresh scanner per test on purpose: the "register once per request" guard is instance state, and the container hands out a shared instance, so tests sharing it would silently depend on each other's ordering.
      */
     private function scanner(): ContentAssetScanner
     {
@@ -76,10 +66,7 @@ class ContentAssetScannerTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * The rule matches a whole class name. Before this was a declarative table it was a
-     * loose `preg_match` over the raw output, which would fire on any substring.
-     */
+    /** The rule matches a whole class name. */
     public function testMarkerMustBeAWholeClassName(): void
     {
         $declared = $this->declaredBy(
@@ -108,9 +95,6 @@ class ContentAssetScannerTest extends YesWikiTestCase
 
     public function testKnownMarkersAreTheOnesTheOldHookHandled(): void
     {
-        // wow and markdown were dropped: both emitted $(document).ready(...) for a jQuery
-        // ticket 16 removed, and the markdown one client-side rendered markdown that core
-        // already renders server-side.
         $this->assertSame(['mermaid', 'c4-izmir'], ContentAssetScanner::markers());
     }
 }

@@ -1,4 +1,3 @@
-/* ---- typography ---- */
 body {
   font-family: var(--yw-font-body);
   font-size: var(--yw-font-size-base);
@@ -15,18 +14,6 @@ h6 {
   font-family: var(--yw-font-heading);
 }
 
-/* The heading ramp: a colour and a size per level, both the Preset's (ADR-0021).
-
-   There were no rules here at all before: headings took the browser's own `em`-based
-   defaults, so a wiki could choose the heading FONT and two heading COLOURS but not how big
-   any heading was -- and `em` compounds, so a heading inside a panel came out a different
-   size from the same heading in the page body.
-
-   Every value is a token now, one per level -- colour, size, casing and alignment.
-   `text-align` takes `start`/`end` rather than `left`/`right`: identical in every language
-   YesWiki ships today, and correct in one written right-to-left. Bare element selectors, so any component that
-   sizes or colours its own headings still wins on specificity, exactly as it did over the
-   browser's defaults. */
 h1 {
   font-size: var(--yw-heading-1-size);
   color: var(--yw-heading-1);

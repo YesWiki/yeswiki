@@ -44,7 +44,7 @@ class ConsoleService
         foreach ($process as $type => $data) {
             if ($process::OUT === $type) {
                 $stdout .= $data;
-            } else { // $process::ERR === $type
+            } else {
                 $stderr .= $data;
             }
         }
@@ -81,9 +81,9 @@ class ConsoleService
         }
         $process = new Process($params, $folder);
         if ($timeoutInSec > 0) {
-            $process->setTimeout($timeoutInSec); // default 60s
+            $process->setTimeout($timeoutInSec);
         }
-        // this option allows a subprocess to continue running after the main script exited
+
         if ($newConsole) {
             $process->setOptions(['create_new_console' => true]);
         }

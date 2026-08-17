@@ -33,9 +33,8 @@ class CommentsTableAction extends YesWikiAction implements RegisteredAction, Pro
 
     public function run()
     {
-        // get Services
         $this->commentsService = $this->getService(CommentService::class);
-        $coms = $this->commentsService->loadComments(''); // get all comments
+        $coms = $this->commentsService->loadComments('');
 
         return $this->render('@core/comment-table.twig', [
             'comments' => $coms,

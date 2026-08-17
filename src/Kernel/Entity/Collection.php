@@ -11,9 +11,6 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
         return $this->list;
     }
 
-    /***************************************************************************
-     * ArrayAccess
-     **************************************************************************/
     #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
@@ -43,9 +40,6 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
         return isset($this->list[$offset]) ? $this->list[$offset] : null;
     }
 
-    /***************************************************************************
-     * Iterator
-     **************************************************************************/
     #[\ReturnTypeWillChange]
     public function rewind()
     {
@@ -80,9 +74,6 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
         next($this->list);
     }
 
-    /*************************************************************************
-     * Countable
-     ************************************************************************/
     #[\ReturnTypeWillChange]
     public function count()
     {

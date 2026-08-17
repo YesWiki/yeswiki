@@ -10,7 +10,6 @@ function updateEmailForUser() {
     ) {
       const form = nomwikiInput.closest('form#formulaire')
       const emailInput = form ? form.querySelector(`input#${emailField}`) : null
-      // '0' is treated as empty too, matching the original jQuery `.val() == false` loose check
       if (
         emailInput &&
         (emailInput.value.length === 0 || emailInput.value === '0')

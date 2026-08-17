@@ -15,9 +15,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * `/PageName/acls` -- converted from the procedural handlers/page/acls.php by ticket 06.
- */
+/** `/PageName/acls` -- converted from the procedural handlers/page/acls.php by ticket 06. */
 class AclsHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -31,8 +29,6 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -49,28 +45,24 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
           <?php
           if ($this->getService(PageContext::class)->getPage() && ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin())) {
               if ($_POST) {
-                  // store lists
                   $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'read', $_POST['read_acl']);
                   $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'write', $_POST['write_acl']);
                   $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'comment', $this->getService(PageContext::class)->getPage()['parent'] ? '' : $_POST['comment_acl']);
                   $message = _t('YW_ACLS_UPDATED');
 
-                  // change owner?
                   if ($newowner = $_POST['newowner']) {
                       $this->getService(PageManager::class)->setOwner($this->getService(PageContext::class)->getTag(), $newowner);
                       $message .= _t('YW_NEW_OWNER') . $newowner;
                   }
 
-                  // redirect back to page
                   $this->getService(FlashMessageService::class)->setMessage($message . ' !');
                   $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
               } else {
-                  // load acls
                   $readACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'read');
                   $writeACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'write');
                   $commentACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'comment');
 
-                  // show form?>
+                  ?>
               <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getTag()); ?></h3><!-- Access Control Lists for-->
 
               <?php echo $this->getService(TemplateEngine::class)->formOpen('acls', '', 'post', 'form-horizontal'); ?>

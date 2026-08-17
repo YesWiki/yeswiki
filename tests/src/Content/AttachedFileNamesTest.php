@@ -10,27 +10,14 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A file name is not a pattern.
- *
- * `fullFilename()` finds an attached file by searching the upload directory for the encoded
- * name -- `name_<14 digits>_<14 digits>.ext` -- and it built that search by pasting the name
- * it was given straight into a regex. So a picture called `photo (1).jpg` searched for an
- * optional group, and a name carrying a backslash made PCRE refuse the pattern outright:
- *
- *     Warning: preg_match(): Compilation failed: PCRE2 does not support \F, \L, \l,
- *     \N{name}, \U, or \u at offset 49
- *
- * -- printed into the page being rendered, twice per card, which is how it was reported.
- *
- * The tests assert the symptom (nothing is printed, nothing is raised) and the thing that
- * quoting must not break: an ordinary name still finds its file.
- */
+/** A file name is not a pattern. */
 class AttachedFileNamesTest extends YesWikiTestCase
 {
     private const TAG = 'AttachedFileNamesTestPage';
 
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private array $written = [];
 
     private ?string $previousTag = null;
@@ -38,9 +25,7 @@ class AttachedFileNamesTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // an upload path and a filename prefix are both built from the page being served,
-        // and a test that ran earlier may have left another one there -- `admin/preset`,
-        // whose slash puts the file in a directory this would not search
+
         $context = $this->getWiki()->services->get(PageContext::class);
         $this->previousTag = $context->getTag();
         $context->setTag(self::TAG);
@@ -81,9 +66,6 @@ class AttachedFileNamesTest extends YesWikiTestCase
     #[WithoutErrorHandler]
     public function testAnAwkwardNameIsSearchedForRatherThanCompiled(string $file): void
     {
-        // only what this is about: booting a service lazily raises unrelated notices of its
-        // own (a missing private/.env, Symfony deprecations), and a test that failed on
-        // those would be a test about something else
         $raised = [];
         set_error_handler(static function (int $errno, string $message) use (&$raised): bool {
             if (stripos($message, 'preg_') !== false || stripos($message, 'PCRE') !== false) {

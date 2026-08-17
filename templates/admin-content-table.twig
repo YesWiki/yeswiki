@@ -1,11 +1,4 @@
-{# ============================================================
-   AdminContent – HTMX table partial
-   Returned by GET /api/admin/pages and swapped into
-   #admin-content-table-container.
-   Variables: pages, currentPage, totalPages, total,
-              perpage, sort, dir, search, type, ownerFilter,
-              tagFilter, apiUrl
-============================================================ #}
+
 {% macro aclText(list) %}
     {%- set map = {
         "*": "ACLS_EVERYBODY",
@@ -20,7 +13,7 @@
         {%- endif -%}
     {%- endfor -%}
 {% endmacro %}
-{# Helper macro: sortable column header link #}
+
 {% macro sortHeader(label, col, currentSort, currentDir, apiUrl) %}
     {%- set nextDir = (currentSort == col and currentDir == 'asc') ? 'desc' : 'asc' -%}
     {%- set isActive = (currentSort == col) -%}
@@ -39,9 +32,7 @@
     </span>
 </a>
 {% endmacro %}
-{# -----------------------------------------------------------------------
-   Summary bar
-   ----------------------------------------------------------------------- #}
+
 {% set offset = (currentPage - 1) * perpage %}
 {% set rangeEnd = (offset + perpage < total) ? (offset + perpage) : total %}
 <div class="admin-content-pager admin-content-pager-top">
@@ -53,13 +44,11 @@
         {% endif %}
     </small>
     <div>
-        {# Pagination top – compact #}
+
         {{ _self.pagerLinks(currentPage, totalPages) }}
     </div>
 </div>
-{# -----------------------------------------------------------------------
-   Table
-   ----------------------------------------------------------------------- #}
+
 <div class="admin-content-table-wrapper">
     <table class="yw-table yw-table--striped yw-table--condensed yw-table--hover admin-content-table">
         <thead>
@@ -177,9 +166,7 @@
         </tbody>
     </table>
 </div>
-{# -----------------------------------------------------------------------
-   Pagination bottom
-   ----------------------------------------------------------------------- #}
+
 {% if totalPages > 1 %}
     <div class="admin-content-pager">
         <small class="yw-text-muted">
@@ -188,20 +175,18 @@
         {{ _self.pagerLinks(currentPage, totalPages) }}
     </div>
 {% endif %}
-{# -----------------------------------------------------------------------
-   Pagination macro (reused top + bottom)
-   ----------------------------------------------------------------------- #}
+
 {% macro pagerLinks(currentPage, totalPages) %}
     {% if totalPages > 1 %}
         <ul class="yw-pagination">
-            {# Previous #}
+
             <li class="yw-pagination__item{{ currentPage <= 1 ? ' yw-pagination__item--disabled' : '' }}">
                 <a class="yw-pagination__link" href="#"
                    {% if currentPage > 1 %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage - 1 }})"{% else %}tabindex="-1"{% endif %}>
                     &laquo;
                 </a>
             </li>
-            {# Page numbers: show window around current page #}
+
             {% set windowSize = 4 %}
             {% set start = (currentPage - windowSize > 1) ? (currentPage - windowSize) : 1 %}
             {% set end = (currentPage + windowSize < totalPages) ? (currentPage + windowSize) : totalPages %}
@@ -234,7 +219,7 @@
                        onclick="event.preventDefault(); adminContent.goToPage({{ totalPages }})">{{ totalPages }}</a>
                 </li>
             {% endif %}
-            {# Next #}
+
             <li class="yw-pagination__item{{ currentPage >= totalPages ? ' yw-pagination__item--disabled' : '' }}">
                 <a class="yw-pagination__link" href="#"
                    {% if currentPage < totalPages %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage + 1 }})"{% else %}tabindex="-1"{% endif %}>

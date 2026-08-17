@@ -17,14 +17,7 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction, Provides
         return 'entrymap';
     }
 
-    /**
-     * `{{entrymap}}` itself, which the palette does not offer.
-     *
-     * What it offers is the `Cartographie` presentation, and that writes
-     * `{{entrylist template="map"}}` -- one action rendering every shape of list. But
-     * `{{entrymap}}` is a real action and pages hold it, so it needs a Component all the
-     * same or the settings rail would open on nothing when the cursor landed in one.
-     */
+    /** `{{entrymap}}` itself, which the palette does not offer. */
     public function components(): array
     {
         return [
@@ -39,7 +32,6 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction, Provides
 
     public function formatArguments($arg)
     {
-        // PROVIDERS
         $get = $this->getRequest()->query;
         $provider = $get->get('provider') ?? $arg['provider'] ?? $this->params->get('baz_provider');
         $providerId = $arg['providerid'] ?? null;
@@ -54,12 +46,9 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction, Provides
             $providerCredentials = '';
         }
 
-        // MARKERS
         $markerSize = $get->get('markersize') ?? $arg['markersize'] ?? null;
         $smallMarker = $get->get('smallmarker') ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
-        // backward compatibility for custom static map templates
-        // TO remove this part when dynamic is robust AND user of custom templates are really aware of this
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
         $navigation = (!$dynamic) ?
             ($get->get('navigation') ?? $arg['navigation'] ?? $this->params->get('baz_show_nav')) :
@@ -73,10 +62,7 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction, Provides
         $template = (!$dynamic) ?
             ($arg['template'] ?? 'map.twig') :
             ($arg['template'] ?? 'map');
-        // `gogomap` and `gogocarto` named the GoGoCartoJs map, whose library is no longer a
-        // dependency. Both still route here through BAZARCARTO_TEMPLATES, so a page body that
-        // asks for one keeps getting a map -- the maintained one -- rather than a missing
-        // template. Page bodies are user data: they are not rewritten, they are answered.
+
         if (strpos($template, 'gogomap') !== false || strpos($template, 'gogocarto') !== false) {
             $template = 'map';
         }
@@ -87,75 +73,52 @@ class EntryMapAction extends YesWikiAction implements RegisteredAction, Provides
             ($arg['cluster'] ?? 'false') :
             $this->formatBoolean($arg, false, 'cluster');
 
-        // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
-
         $vSearchManager = $this->getService(SearchManager::class);
 
         $query = $vSearchManager->aggregateQueries($arg, $get->all());
 
         return [
-            /*
-             * Le fond de carte utilisé pour la carte
-             * cf. https://github.com/leaflet-extras/leaflet-providers
-             */
             'provider' => $provider,
             'providerid' => $providerId,
             'providerpass' => $providerPass,
             'provider_credentials' => $providerCredentials,
-            /*
-             * Une liste de fonds de carte.
-             * Exemple: provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
-             * TODO: ajouter gestion "providers_credentials"
-             */
+
             'providers' => $this->formatArray($arg['providers'] ?? []),
-            /*
-             * Une liste de layers (couches).
-             * Exemple avec 1 layer tiles, 1 layer geojson:
-             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|?wiki=geojsonCUCS2014/raw"
-             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|color:'red';opacity:0.3|?wiki=geojsonCUCS2014/raw"
-             *
-             * format pour chaque layer : NOM|TYPE|URL ou NOM|TYPE|OPTIONS|URL
-             * - OPTIONS: facultatif ex: "color:red; opacity:0.3"
-             * nota bene: le séparateur d'options est le ';' et pas la ',' qui est déjà utilisée pour séparer les LAYERS.
-             * - TYPE: Tiles ou GeoJson
-             * - URL: Attention au Blocage d'une requête multi-origines (Cross-Origin Request).
-             *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
-             * TODO: ajouter gestion "layers_credentials"
-             */
+
             'layers' => $this->formatArray($arg['layers'] ?? []),
-            // Mettre des puces petites ? non par defaut
+
             'markersize' => $markerSize,
             'smallmarker' => $smallMarker === '1' ? '' : ' xl',
             'iconSize' => $smallMarker === '1' ? '[15, 20]' : '[35, 46]',
             'iconAnchor' => $smallMarker === '1' ? '[8, 19]' : '[18, 45]',
             'popupAnchor' => $smallMarker === '1' ? '[0, -19]' : '[0, -45]',
-            // Largeur de la carte à l'écran en pixels ou pourcentage
+
             'width' => $get->get('width') ?? $arg['width'] ?? $this->params->get('baz_map_width'),
-            // Hauteur de la carte à l'écran en pixels ou pourcentage
+
             'height' => $get->get('height') ?? $arg['height'] ?? $this->params->get('baz_map_height'),
-            // Latitude point central en degres WGS84 (exemple : 46.22763)
+
             'latitude' => $get->get('lat') ?? $arg['lat'] ?? $this->params->get('baz_map_center_lat'),
-            // Longitude point central en degres WGS84 (exemple : 3.42313)
+
             'longitude' => $get->get('lon') ?? $arg['lon'] ?? $this->params->get('baz_map_center_lon'),
-            // Niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
+
             'zoom' => $get->get('zoom') ?? $arg['zoom'] ?? $this->params->get('baz_map_zoom'),
-            // Affiche outil de navigation
+
             'navigation' => $navigation,
-            // Zoom sur molette
+
             'zoom_molette' => $zoom_molette,
-            // Affichage en eclate des points superposes : true or false
+
             'spider' => $spider,
-            // Affichage en cluster : true or false
+
             'cluster' => $cluster,
-            // Ajout bouton plein écran (https://github.com/brunob/leaflet.fullscreen)
+
             'fullscreen' => $fullscreen,
-            // Fournit une configuration JSON via un URL
+
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
-            // template - default value map
+
             'template' => $template,
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
-            'pagination' => -1, // disable pagination
+            'pagination' => -1,
             'query' => $query,
             'geolocationfield' => $get->get('geolocationfield') ?? $arg['geolocationfield'] ?? 'bf_geolocation',
         ];

@@ -21,14 +21,7 @@ class UserOperationsService extends YesWikiController
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
 
     /**
-     * Rules for user name :
-     * - do not start by "!", "#" and "@" ;
-     * - do not contains "<", ">", "\", "/" anywhere ;
-     * - strictly more than 2 chars.
-     *
-     * Be careful to update the regex in `src/controllers/InstallationController.php` (validateAdminAccount) if there is changes here.
-     *
-     * Be careful, the pattern need to be escaped for PHP ("\"). Real pattern is : "^[^!#@<>\\\/][^<>\\\/]{2,}$".
+     * Rules for user name : - do not start by "!", "#" and "@" ; - do not contains "<", ">", "\", "/" anywhere ; - strictly more than 2 chars.
      *
      * @var string
      */
@@ -66,7 +59,8 @@ class UserOperationsService extends YesWikiController
         $this->initLimitations();
     }
 
-    /** Initializes object limitation properties using values from the config file.
+    /**
+     * Initializes object limitation properties using values from the config file.
      *
      * @return void
      */
@@ -90,8 +84,7 @@ class UserOperationsService extends YesWikiController
     }
 
     /**
-     * create a user
-     * for e-mail check is existing e-mail.
+     * create a user for e-mail check is existing e-mail.
      *
      * @param array $newValues (associative array)
      *
@@ -108,10 +101,7 @@ class UserOperationsService extends YesWikiController
         if (!empty($this->userManager->getOneByEmail($newValues['email']))) {
             throw new \Exception(str_replace('{email}', $newValues['email'], _t('USERSETTINGS_EMAIL_ALREADY_USED')));
         }
-        // create() returns the actually-created User -- not necessarily under
-        // $newValues['name'] if that name collided with an existing form/page/entry tag
-        // (suggestFreeTag(), ticket 04/06) rather than another user (which the check above
-        // already caught and threw for)
+
         $user = $this->userManager->create($newValues);
         if (!empty($user)) {
             return $user;
@@ -120,8 +110,7 @@ class UserOperationsService extends YesWikiController
     }
 
     /**
-     * update user params
-     * for e-mail check is existing e-mail.
+     * update user params for e-mail check is existing e-mail.
      *
      * @param array $newValues (associative array)
      *
@@ -171,9 +160,6 @@ class UserOperationsService extends YesWikiController
             $newValues['doubleclickedit'] = $this->sanitizeBoolean($newValues['doubleclickedit'], 'doubleclickedit');
         }
         if (isset($newValues['motto'])) {
-            // was assigning to doubleclickedit -- setting a motto left the motto
-            // unsanitised and overwrote an unrelated preference, or threw when that
-            // preference was simply absent from the submission
             $newValues['motto'] = $this->sanitizeString($newValues['motto'], 'motto');
         }
 
@@ -235,9 +221,7 @@ class UserOperationsService extends YesWikiController
         return $admin;
     }
 
-    /**
-     * check if current user is the user to delete.
-     */
+    /** check if current user is the user to delete. */
     private function isRunner(User $user): bool
     {
         $loggedUser = $this->authenticationService->getLoggedUser();
@@ -247,7 +231,6 @@ class UserOperationsService extends YesWikiController
 
     /**
      * Delete groups where user is the sole member (unless it's the admins group).
-     * For the admins group, still throws to prevent accidental lockout.
      *
      * @throws DeleteUserException
      */
@@ -275,12 +258,6 @@ class UserOperationsService extends YesWikiController
      */
     private function deleteUserFromEveryGroup(User $user)
     {
-        // Delete user in every group.
-        //
-        // NOT pre-escaped: getMatching() binds its values, so escaping here would search for
-        // the escaped spelling of the name rather than the name. It escaped on both sides even
-        // before bindings, which made an account whose name contains a quote unfindable in any
-        // group -- so it never removed that account's memberships and delete() left them behind.
         $groups = $this->tripleStore->getMatching(
             GROUP_PREFIX . '%',
             'http://www.wikini.net/_vocabulary/acls',
@@ -291,16 +268,12 @@ class UserOperationsService extends YesWikiController
         );
         $error = false;
         if (is_array($groups)) {
-            // the raw name: this matches against the group's *stored* ACL text, which holds the
-            // name as typed. It used to reuse the SQL-escaped spelling, so for a name carrying a
-            // quote the regex matched nothing and the account stayed in the group after deletion.
             $pregQuoteSearchValue = preg_quote($user['name'], '/');
             $prefixLen = strlen(GROUP_PREFIX);
             foreach ($groups as $group) {
                 $newValue = $group['value'];
                 $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
                 if ($newValue != $group['value']) {
-                    // Check if the group is now empty after removing the user
                     $groupName = substr($group['resource'], $prefixLen);
                     $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
                     if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {

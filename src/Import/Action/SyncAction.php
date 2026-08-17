@@ -8,14 +8,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{sync}}`: a button that imports every configured data source, and shows what happened.
- *
- * The import runs in a console process rather than in this request. Not for speed -- this
- * page waits for it either way -- but because `importer:sync` is where an import is defined
- * to happen: the same entry point as the cron, the api and the automatic sync, so what an
- * admin reads here is what those do.
- */
+/** `{{sync}}`: a button that imports every configured data source, and shows what happened. */
 class SyncAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -36,9 +29,6 @@ class SyncAction extends YesWikiAction implements RegisteredAction
         $returnCode = null;
 
         if ($this->getRequest()->request->has('sync')) {
-            // syncing every source can take far longer than a page: remote wikis, whole
-            // forms, entries and lists. This is a one-off an admin asked for and is waiting
-            // on, so the regular request time limit is the wrong bound for it.
             set_time_limit(0);
             $result = $this->getService(ConsoleService::class)->startConsoleSync('importer:sync', [], '', 3600);
             $output = $result === null

@@ -1,16 +1,4 @@
-{# The component gallery the Preset screen renders (ticket 30).
 
-   Wiki source, not HTML: it goes through MarkdownFormatterService exactly as a page body
-   does, so what a preset is judged against is what the wiki will actually produce. Writing
-   the expected HTML by hand here would make the preview agree with itself rather than with
-   the renderer.
-
-   `{% verbatim %}`, because the whole point is the literal `{{action}}` syntax -- Twig would
-   otherwise read every component as one of its own expressions.
-
-   Each block is titled with the markup that produced it, in the wiki's own syntax. That is
-   deliberate: it is language-neutral, so the gallery needs no translation, and it makes the
-   preview double as a syntax reference -- you see the component and the line that draws it. #}
 {% verbatim %}
 # Titre de niveau 1
 ## Titre de niveau 2
@@ -137,11 +125,6 @@ Le texte doit rester lisible sur le fond choisi par le préréglage.
 ## Un formulaire
 {% endverbatim %}
 
-{# A form, because half of what a Preset decides is what an input looks like -- its border,
-   its corner, its focus ring, the gap between a label and its field -- and none of that is
-   visible anywhere else in this gallery. Markup rather than an `{{action}}`: every action
-   that renders a form needs a form definition and entries to point at, which a wiki being
-   set up for the first time has none of. #}
 <div class="yw-form-row">
   <div class="yw-form-group">
     <label class="yw-form-label" for="yw-preview-text">Un champ texte</label>
@@ -155,9 +138,7 @@ Le texte doit rester lisible sur le fond choisi par le préréglage.
     </select>
   </div>
 </div>
-{# No `<textarea>` here, deliberately: the formatter escapes one, as it must -- wiki content
-   that could inject a text area into a page is content that could rewrite the form around
-   it. It shares `.yw-input` with the fields above, so what it would show is already shown. #}
+
 <div class="yw-form-group">
   <label class="yw-form-label" for="yw-preview-disabled">Un champ désactivé</label>
   <input class="yw-input" id="yw-preview-disabled" type="text" value="Non modifiable" disabled>
@@ -171,19 +152,6 @@ Le texte doit rester lisible sur le fond choisi par le préréglage.
 <div class="yw-alert yw-alert--warning">Un avertissement.</div>
 <div class="yw-alert yw-alert--danger">Une erreur.</div>
 
-{# The three ways a list of entries is drawn, rendered through the SAME templates a page
-   uses -- `@core/presentations/*` -- rather than hand-written markup that would agree with
-   itself and with nothing else. The items are fabricated here on purpose: an entry list
-   needs a form and entries, and this screen is exactly where a wiki that has neither is
-   being set up. Six of them, so a card grid wraps onto a second row and the gap between
-   rows is visible, and only four carry an image -- a row mixing cards that have one with
-   cards that do not is where a card grid's alignment actually breaks.
-
-   The images are inline SVG data URIs rather than files: a flat rectangle is all that is
-   needed to see a card's shape, and nothing here should depend on an upload existing. Their
-   colours are literals on purpose -- they stand in for a photograph somebody uploaded, which
-   is precisely the thing a Preset does NOT get to recolour, and judging a preset against
-   images that obligingly match it would be judging it against nothing. #}
 {% set previewItems = [
   {
     title: 'Une première entrée',
@@ -247,12 +215,6 @@ Le texte doit rester lisible sur le fond choisi par le préréglage.
   }
 ] %}
 
-{# `flat`, and it is load-bearing: what this file produces is WIKI SOURCE, and Markdown
-   reads any line indented by four spaces as a code block. The presentation templates emit
-   indented markup, so including one raw put the second card onwards inside a `<pre><code>`
-   -- a gallery that rendered exactly one card and printed the other five as source, while
-   every class name a test could look for was still present. Trimming each line leaves the
-   markup intact and leaves Markdown nothing to mistake for code. #}
 {% macro flat(html) %}{{ html|split("\n")|map(line => line|trim)|join("\n")|raw }}{% endmacro %}
 {% import _self as source %}
 

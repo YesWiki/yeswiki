@@ -9,8 +9,6 @@
     <pre class="ace-body"></pre>
   </div>
 
-  {# No edit button of any kind: a rail opens on whatever the cursor moves into, be it a
-     component or a link -- see javascripts/aceditor.js #}
   <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" maxlength="{{ arguments.maxChars }}" rows="{{ arguments.rows }}" placeholder="{{ arguments.placeholder }}" {% if arguments.required is not empty %}required{% endif %}
             class="aceditor-textarea">
     {{- arguments.value|raw -}}

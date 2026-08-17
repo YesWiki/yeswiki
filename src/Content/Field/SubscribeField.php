@@ -15,8 +15,8 @@ class SubscribeField extends BazarField
     protected const FIELD_EMAIL_FIELD = 3;
     protected const FIELD_MAILER_TOOL = 4;
 
-    public const MAILER_EZMLM = 'ezmlm'; // OVH
-    public const MAILER_SYMPA = 'sympa'; // Framaliste
+    public const MAILER_EZMLM = 'ezmlm';
+    public const MAILER_SYMPA = 'sympa';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -28,7 +28,6 @@ class SubscribeField extends BazarField
 
         $this->propertyName = str_replace(['@', '.'], ['', ''], $this->mailerEmail);
 
-        // We have no default value
         $this->default = null;
     }
 
@@ -47,23 +46,19 @@ class SubscribeField extends BazarField
         $subscribeEmail = $this->getSubscribeEmail($entry);
         $unsubscribeEmail = $this->getUnsubscribeEmail($entry);
 
-        // TODO use the Mailer service
         if (!class_exists('Mail')) {
             include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
         }
 
-        // TODO improve import detection
         if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
             if ($value === $subscribeEmail) {
                 send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
                 return [$this->propertyName => $value];
             } elseif ($value === $unsubscribeEmail) {
-                // Don't send emails when mass unsubscribing
                 return [$this->propertyName => $value];
             }
         } else {
-            // TODO fix this, as $value is always equal to $subscribeEmail, even when user did not check the checkbox
             if (isset($value)) {
                 send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
@@ -82,11 +77,9 @@ class SubscribeField extends BazarField
 
     protected function getSubscribeEmail($entry)
     {
-        // list@provider.com -> list-subscribe@provider.com
         $subscribeEmail = str_replace('@', '-subscribe@', $this->mailerEmail);
-        // If the mailing list tool is ezmlm, reformat the email address
+
         if (isset($entry[$this->emailField]) && $this->mailerTool == self::MAILER_EZMLM) {
-            // list@provider.com -> list-subscribe-user=gmail.com@provider.com
             $subscribeEmail = str_replace('@', '-' . str_replace('@', '=', $entry[$this->emailField]) . '@', $subscribeEmail);
         }
 
@@ -95,11 +88,9 @@ class SubscribeField extends BazarField
 
     protected function getUnsubscribeEmail($entry)
     {
-        // list@provider.com -> list-unsubscribe@provider.com
         $unsubscribeEmail = str_replace('@', '-unsubscribe@', $this->mailerEmail);
-        // If the mailing list tool is ezmlm, reformat the email address
+
         if (isset($entry[$this->emailField]) && $this->mailerTool == self::MAILER_EZMLM) {
-            // list@provider.com -> list-unsubscribe-user=gmail.com@provider.com
             $unsubscribeEmail = str_replace('@', '-' . str_replace('@', '=', $entry[$this->emailField]) . '@', $unsubscribeEmail);
         }
 

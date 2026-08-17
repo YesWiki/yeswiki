@@ -18,7 +18,6 @@ class CaptchaApiController extends YesWikiController
     #[Route('/api/captcha/{hashb64}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getCaptcha($hashb64): StreamedResponse
     {
-        // clean headers and cache
         if (!headers_sent()) {
             header_remove();
         }
@@ -31,14 +30,13 @@ class CaptchaApiController extends YesWikiController
             'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
             'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
             'Access-Control-Allow-Methods' => 'GET',
-            'Cache-Control' => 'no-store, no-cache, must-revalidate', // HTTP/1.1
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
             'Content-Type' => 'Content-type: image/png',
         ];
         $hash = base64_decode($hashb64);
 
         return new StreamedResponse(
             function () use ($hash) {
-                // callable only call when sending
                 if (ob_get_level() > 1) {
                     ob_end_clean();
                 }

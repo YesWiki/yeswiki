@@ -8,17 +8,16 @@ abstract class Package extends Files
 {
     public const PREFIX_FILENAME = 'yeswiki_';
 
-    // URL vers le fichier dans le dépôt.
     protected $address;
-    // Chemin vers le dossier temporaire ou est décompressé le paquet
+
     protected $extractionPath;
-    // Chemin vers le paquet temporaire téléchargé localement
+
     protected $downloadedFile;
-    // md5 du paquet temporaire téléchargé localement
+
     protected $md5File;
-    // nom du tool
+
     public $name;
-    // Version du paquet
+
     public $release;
     public $localRelease;
     public $installed = false;
@@ -33,7 +32,6 @@ abstract class Package extends Files
     abstract public function upgradeInfos();
 
     abstract protected function localRelease();
-    // abstract protected function updateAvailable();
 
     protected $localPath;
 
@@ -152,13 +150,12 @@ abstract class Package extends Files
      */
     public function getNeededPHPversion(): string
     {
-        // check format of JSON package 99.99.99
         $matches = [];
         if (is_string($this->minimalPhpVersion) && preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
             return $this->minimalPhpVersion;
         }
 
-        return MINIMUM_PHP_VERSION_FOR_CORE; // just in case of error give a number
+        return MINIMUM_PHP_VERSION_FOR_CORE;
     }
 
     /**
@@ -176,8 +173,7 @@ abstract class Package extends Files
                 if (!empty($composerData['require']['php'])) {
                     $rawNeededPHPRevision = $composerData['require']['php'];
                     $matches = [];
-                    // accepted format '7','7.3','7.*','7.3.0','7.3.*
-                    // and these with '^', '>' or '>=' before
+
                     if (preg_match('/^(\^|>=|>)?([0-9]*)(?:\.([0-9\*]*))?(?:\.([0-9\*]*))?/', $rawNeededPHPRevision, $matches)) {
                         $major = $matches[2];
                         $minor = $matches[3] ?? 0;
@@ -210,9 +206,6 @@ abstract class Package extends Files
         );
     }
 
-    /****************************************************************************
-     * Méthodes privées
-     **************************************************************************/
     protected function name()
     {
         $namePlusDate = explode('-', basename($this->address, '.zip'), 2)[1];

@@ -7,7 +7,6 @@
  */
 
 export function parseCondition(pValue) {
-  // Extraire nom, opérateur et valeurs
   const regex = /\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/
   const matches = pValue.match(regex)
 
@@ -17,10 +16,8 @@ export function parseCondition(pValue) {
   let vOperator = matches[2].trim()
   const rawValues = matches[3].trim()
 
-  // Convertir l'opérateur "=" en "=="
   if (vOperator === '=') vOperator = '=='
 
-  // Transformer la liste en tableau avec valeurs uniques
   const vUniqueValues = Array.from(
     new Set(
       rawValues
@@ -29,8 +26,6 @@ export function parseCondition(pValue) {
         .filter((v) => v !== ''),
     ),
   )
-
-  // Retourner la structure
 
   const vResult = {
     name: vName,
@@ -62,10 +57,8 @@ export function parseCondition(pValue) {
  */
 
 export function parseKeywords(pKeywords) {
-  // Résultat par défaut
   const results = { CNF: [], excludeds: [] }
 
-  // Vérification de validité
   if (
     typeof pKeywords !== 'string' ||
     pKeywords.trim() === '' ||
@@ -74,11 +67,9 @@ export function parseKeywords(pKeywords) {
     return results
   }
 
-  // Séparation des clauses AND par "|"
   const andClauses = pKeywords.split('|').map((clause) => clause.trim())
 
   for (const andClause of andClauses) {
-    // Extraction des tokens via RegEx
     const regex = /(-)?("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\S+)/gu
     let match
     const ors = []
@@ -86,7 +77,7 @@ export function parseKeywords(pKeywords) {
     while ((match = regex.exec(andClause)) !== null) {
       const isExcluded = match[1] === '-'
       const rawToken = match[2]
-      const cleanedToken = rawToken.replace(/^["']|["']$/g, '') // Supprime les guillemets
+      const cleanedToken = rawToken.replace(/^["']|["']$/g, '')
 
       if (isExcluded) {
         results.excludeds.push(cleanedToken)
@@ -101,13 +92,7 @@ export function parseKeywords(pKeywords) {
   return results
 }
 
-/**
- * Test if a string represents a regexp
- * A string is considered as a regexp if it contains at least one ".*"
- * or if it begins and ends with "/"
- * @pString <string> : the string to test
- * @return <boolean> : true if the string represent a regexp, false otherwise
- */
+/** Test if a string represents a regexp A string is considered as a regexp. */
 
 export function isRegExp(str) {
   return (
@@ -136,10 +121,8 @@ export function removeDiacritics(str) {
 export function toLowerCaseWithoutAccent(str) {
   if (typeof str !== 'string') return ''
 
-  // 1. Lowercase unicode
   let out = str.toLowerCase()
 
-  // 2. Remplacer les ligatures
   const replacements = {
     œ: 'oe',
     æ: 'ae',
@@ -151,11 +134,7 @@ export function toLowerCaseWithoutAccent(str) {
 
   out = out.replace(/œ|æ|ß|ø|ð|þ/g, (match) => replacements[match])
 
-  // 3. Décomposition unicode (NFD) + suppression des diacritiques
   out = out.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-
-  // 4. Translitération ASCII (approximative via normalisation)
-  // Pas d'équivalent direct à `iconv`, mais `normalize` fait une bonne partie du travail
 
   return out
 }

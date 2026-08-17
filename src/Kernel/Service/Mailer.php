@@ -134,10 +134,7 @@ class Mailer
     }
 
     /**
-     * Generic send, the single seam every mail-sending caller in core should go
-     * through (ticket 18) instead of calling send_mail() directly -- a thin wrapper
-     * today (send_mail() itself, in src/email.inc.php, is unchanged), but the seam
-     * this ticket asked for so callers don't reach past the abstraction.
+     * Generic send, the single seam every mail-sending caller in core should go through (ticket 18) instead of calling send_mail() directly -- a thin wrapper today (send_mail() itself, in src/email.inc.php, is unchanged), but the seam this ticket asked for so callers don't reach past the abstraction.
      *
      * @param string|string[] $mailReceiver
      */
@@ -176,8 +173,6 @@ class Mailer
         } elseif (empty($currentUser)) {
             $userName = null;
         } else {
-            // in this case, we can used empty $userName otherwise the acl will be check for the current user not the email
-            // so we use a fake username
             do {
                 $randomString = md5(rand());
                 $existingUser = $this->userManager->getOneByName($randomString);
@@ -233,7 +228,6 @@ class Mailer
         );
     }
 
-    // TODO when PR #967 merged, refactor this part with YesWiki::getBaseUrl
     public function getBaseUrl(): string
     {
         return preg_replace('/(\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));

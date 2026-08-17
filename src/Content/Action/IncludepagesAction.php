@@ -11,13 +11,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * `{{includepages}}` -- converted from the procedural actions/includepages.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{includepages}}` -- converted from the procedural actions/includepages.php by ticket 06. */
 class IncludepagesAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -31,10 +25,6 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;

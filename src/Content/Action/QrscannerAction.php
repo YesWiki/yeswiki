@@ -2,16 +2,6 @@
 
 namespace YesWiki\Content\Action;
 
-/*
- * Qrscan action for yeswiki, for scanning a qrcode pair and save their relation in a bazar entry
- *
- * @category Wiki
- * @package  YesWikiQrcode
- * @author   2018-2021 Florian Schmitt <mrflos@lilo.org>
- * @license  GNU AFFERO GENERAL PUBLIC LICENSE version 3
- * @link     https://yeswiki.net
- */
-
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -26,7 +16,6 @@ class QrscannerAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        // Parameters init
         $speak = $this->getService(PerformableArguments::class)->get('speak');
         if ($speak == '0' or $speak == 'false' or $speak == 'no') {
             $speak = 'false';

@@ -30,8 +30,7 @@ class PageOperationsService extends YesWikiController
     }
 
     /**
-     * delete a page from tag
-     * but be carefull entry or page.
+     * delete a page from tag but be carefull entry or page.
      *
      * @return bool $done
      *

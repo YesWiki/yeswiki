@@ -17,19 +17,13 @@ class GroupManager
         $this->userManager = $userManager;
     }
 
-    /**
-     * Check if group already exists or name used by user.
-     */
+    /** Check if group already exists or name used by user. */
     public function groupExists(string $group_name): bool
     {
-        // hasAnyProperty(), not getMatching(): it shares the per-resource cache getMembers()
-        // fills a line later, so existence and members are one query rather than two
         return $this->tripleStore->hasAnyProperty($group_name, GROUP_PREFIX) || $this->userManager->userExist($group_name);
     }
 
-    /**
-     * create group with members.
-     */
+    /** create group with members. */
     public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
@@ -62,7 +56,7 @@ class GroupManager
     }
 
     /**
-     * get direct members of group. Do not list member of child groups.
+     * get direct members of group.
      *
      * @return string[]
      */

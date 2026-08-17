@@ -22,20 +22,7 @@ use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\PresetService;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * `/admin/*` -- the wiki's administration, as routes rather than as pages.
- *
- * Every screen here used to be a seeded wiki page (`GererSite`, `GererConfig`,
- * `GererUtilisateurs`, ...) whose only content was one action call plus a hand-written nav
- * bar repeated in each of them. Pages are editable, renameable and deletable content, so
- * administration lived somewhere a wiki could lose; the nav bars drifted; and access
- * rested on each action re-checking `isAdmin()` for itself.
- *
- * Here the address is code, the sidebar is declared once (dashboard/layout.twig), and the
- * gate is `acl: ['@admins']` on the route -- checked by ApiService before the controller
- * is reached. The actions are unchanged and still do their own checking: a webmaster who
- * puts `{{editconfig}}` on a page of their own gets what this route gets.
- */
+/** `/admin/*` -- the wiki's administration, as routes rather than as pages. */
 class AdminController extends YesWikiController
 {
     use DashboardShell;
@@ -66,17 +53,7 @@ class AdminController extends YesWikiController
         return $this->page('@core/admin/keywords.twig', 'admin/keywords');
     }
 
-    /**
-     * The wiki's chrome: its brand and its two menus (ticket 30).
-     *
-     * What this screen edits used to be three wiki pages -- `PageTitre`, `PageMenuHaut`,
-     * `PageRapideHaut` -- and the only way to edit a menu was to edit a markdown list in a
-     * text box. They are configuration now (LayoutService), so this is fields.
-     *
-     * The three chrome pages that are *still* pages are listed at the bottom with links to
-     * their editors: the banner, the side menu and the footer hold arbitrary wiki content,
-     * and this screen's job for them is being the place you remember they exist.
-     */
+    /** The wiki's chrome: its brand and its two menus (ticket 30). */
     #[Route('/admin/layout', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function layout(): Response
     {
@@ -86,8 +63,6 @@ class AdminController extends YesWikiController
         if ($request->isMethod('POST')) {
             $this->saveLayout($layout, $request);
 
-            // redirected rather than re-rendered: the chrome around this very page is what
-            // was just changed, and this response was built before it
             return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'admin/layout'));
         }
 
@@ -101,9 +76,6 @@ class AdminController extends YesWikiController
             ];
         }
 
-        // flattened here rather than in the template: the form posts a flat list of rows, so
-        // the screen edits the same shape it saves, and Twig is spared counting an index
-        // across a nested loop
         $navbarRows = [];
         foreach ($layout->navbar() as $entry) {
             $navbarRows[] = ['label' => $entry['label'], 'link' => $entry['link'], 'child' => false];
@@ -129,22 +101,7 @@ class AdminController extends YesWikiController
         ]);
     }
 
-    /**
-     * The top bar as the form being filled in describes it -- previewed, not saved.
-     *
-     * The screen renders *inside* the chrome it edits, so the honest preview is the real
-     * navbar at the top of this very page. htmx posts the form here on every change and swaps
-     * the answer into `#yw-layout-chrome`.
-     *
-     * Preview rather than live saving, and that is the decision: saving rewrites
-     * `yeswiki.config.php`, which invalidates the compiled container -- a rebuild paid by
-     * every visitor of the wiki, not by the person editing -- and it would put a half-typed
-     * menu entry on the public site with no undo. Same split the Preset screen already draws
-     * between trying a preset on this page and making it the wiki's.
-     *
-     * Nothing is written here, so the only thing this route can leak is what the person
-     * posting it just typed.
-     */
+    /** The top bar as the form being filled in describes it -- previewed, not saved. */
     #[Route('/admin/layout/preview', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
     public function layoutPreview(): Response
     {
@@ -158,15 +115,6 @@ class AdminController extends YesWikiController
 
     /**
      * The three structures the Layout form describes, without deciding what to do with them.
-     *
-     * Shared by the save and the preview so that what is previewed is what gets written --
-     * two readings of one form is two chances for them to disagree.
-     *
-     * The navbar arrives as a flat list of rows carrying a `child` flag rather than as a
-     * tree: a form posts a flat list, and "indent this row under the one above" is both how
-     * the screen edits it and how a nested list reads. A child row with nothing above it is
-     * kept as a top-level entry rather than dropped -- the row exists because someone typed
-     * in it.
      *
      * @return array{0: array<string, mixed>, 1: list<array{label: string, link: string, children: list<array{label: string, link: string}>}>, 2: list<array{icon: string, label: string, link: string}>}
      */
@@ -226,17 +174,7 @@ class AdminController extends YesWikiController
         }
     }
 
-    /**
-     * The wiki's colours and type: its presets (ticket 30).
-     *
-     * Presets only. The theme/squelette/style selector this screen briefly carried is going
-     * to the configuration file, and per-page themes are a property of the content, so both
-     * left -- what remains is one list, and a rail to edit what is in it.
-     *
-     * The component gallery below the list is the point of the screen: a preset is judged
-     * against real buttons, panels and headings, because a contrast that works on a
-     * paragraph can fail on a button.
-     */
+    /** The wiki's colours and type: its presets (ticket 30). */
     #[Route('/admin/preset', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function preset(): Response
     {
@@ -246,9 +184,6 @@ class AdminController extends YesWikiController
         if ($request->isMethod('POST')) {
             $this->applyPresetChange($presets, $request);
 
-            // Redirected rather than re-rendered: which preset is on is decided at the very
-            // start of a request, when the head is built, so this response would still be
-            // wearing the one that was just replaced.
             return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'admin/preset'));
         }
 
@@ -258,53 +193,37 @@ class AdminController extends YesWikiController
             'groups' => PresetService::GROUPS,
             'schemes' => PresetService::SCHEMES,
             'swatches' => PresetService::SWATCHES,
-            // the colours a field can be pointed AT rather than given a value of its own
+
             'palette' => PresetService::PALETTE,
-            // which fields share a line -- see PresetService::rowsByGroup()
+
             'rows' => PresetService::rowsByGroup(),
-            // fill => the property its automatically-chosen ink is written to
+
             'inkFor' => PresetService::INK_FOR,
-            // what the two font selects offer, each option drawn in the stack it names
+
             'fontStacks' => PresetService::FONT_STACKS,
-            // the families that have to be fetched, as against the stacks already on the
-            // reader's machine -- two groups, because the cost is different
+
             'webfonts' => $presets->webfonts(),
-            // Google's catalogue, fetched by the picker on first use. Base-absolute for the
-            // same reason the icon sprite is: a bare `src/assets/…` resolves against the
-            // current page path and 404s on a rewrite-shaped URL like /PageTag/edit.
+
             'googleFontsUrl' => rtrim(
                 (string)$this->getService(RuntimeConfig::class)->getValue('base_url'),
                 '?'
             ) . 'src/assets/google-fonts.json',
             'defaultPreset' => $presets->default(),
-            // "new" opens on what the wiki is wearing: a preset is almost always made by
-            // adjusting one that nearly works, not from black on white
+
             'defaultValues' => $presets->valuesFor($presets->default()),
             'configWritable' => $presets->isConfigWritable(),
             'presetsWritable' => $presets->arePresetsWritable(),
         ]);
     }
 
-    /**
-     * Select, save or delete a preset.
-     *
-     * One route for the three because they are three buttons on one screen; which one was
-     * pressed is `preset_action`. Every failure is a flash rather than an exception page:
-     * this is a colour scheme, and losing the screen over a bad name helps nobody.
-     */
+    /** Select, save or delete a preset. */
     private function applyPresetChange(PresetService $presets, SymfonyRequest $request): void
     {
         try {
             $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
 
             switch ($request->request->get('preset_action')) {
-                // "make this the wiki's" -- the only button here that changes what every
-                // other page wears. Trying a preset out is the card itself, and never
-                // leaves the browser.
                 case 'select':
-                    // The starred button of the preset in use posts an empty id: the star is a
-                    // toggle, so taking the wiki back to its theme's own colours is the same
-                    // button rather than a second one nobody would look for.
                     $selected = (string)$request->request->get('preset', '');
                     $presets->select($selected);
                     Flash::success($selected === ''
@@ -313,16 +232,11 @@ class AdminController extends YesWikiController
                     break;
 
                 case 'duplicate':
-                    // named after the copy, not the original: the copy is what appeared in the
-                    // list, and freeFileName() may have had to number it
                     $copy = $presets->duplicate((string)$request->request->get('preset', ''));
                     Flash::success(_t('ADMIN_PRESET_DUPLICATED', ['name' => $presets->nameOf($copy)]));
                     break;
 
                 case 'save':
-                    // One field per token per Colour scheme. Read by name rather than
-                    // taking the posted arrays whole: what a Preset may declare is a closed
-                    // list, and a form is not where that list is decided.
                     $values = ['light' => [], 'dark' => []];
                     $posted = [
                         'light' => (array)$request->request->all('light'),
@@ -334,27 +248,17 @@ class AdminController extends YesWikiController
                             $values['dark'][$token] = trim((string)($posted['dark'][$token] ?? ''));
                         }
                     }
-                    // the preset being edited, so a save replaces it -- renaming included.
-                    // Empty when the rail was opened by "create a preset".
+
                     $saved = $presets->save(
                         (string)$request->request->get('preset', ''),
                         (string)$request->request->get('preset_name', ''),
                         $values
                     );
-                    // the saved id's name rather than what was typed: a name is folded to a
-                    // file name, so this is the one the card below will be wearing
+
                     Flash::success(_t('ADMIN_PRESET_SAVED', ['name' => $presets->nameOf($saved)]));
                     break;
 
-                    // Fetch a webfont so it can be chosen. Its own action rather than part of a
-                    // save: installing a font is a network round trip that either works or does
-                    // not, and tying it to a save would mean a preset that fails to write
-                    // because a font server was slow.
                 case 'install_font':
-                    // Two sources, one button. With another wiki's address, we ask IT what
-                    // fonts its presets use and copy those -- every weight and both slopes,
-                    // because that wiki's presets say so. Without one, the family name goes
-                    // to Google.
                     $wiki = trim((string)$request->request->get('font_source', ''));
                     $family = trim((string)$request->request->get('font_family', ''));
                     if ($wiki !== '') {
@@ -364,8 +268,7 @@ class AdminController extends YesWikiController
                         ]));
                         break;
                     }
-                    // several at once: the picker is a chip list, because a body face and a
-                    // heading face are chosen together
+
                     $result = $presets->installFonts($family);
                     if ($result['failed'] !== []) {
                         Flash::warning(_t('ADMIN_PRESET_FONT_INSTALLED_SOME', [
@@ -394,13 +297,7 @@ class AdminController extends YesWikiController
         }
     }
 
-    /**
-     * The wiki's own stylesheet (ticket 30).
-     *
-     * A file under `custom/styles/`, not the `PageCss` page it replaces. GET and POST share
-     * the route because there is one thing on the screen: a box holding the whole file, and
-     * a button that writes it.
-     */
+    /** The wiki's own stylesheet (ticket 30). */
     #[Route('/admin/custom-css', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function customCss(): Response
     {
@@ -411,16 +308,13 @@ class AdminController extends YesWikiController
         if ($request->isMethod('POST')) {
             try {
                 $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
-                // the textarea is the file: what arrives is written verbatim, newlines
-                // normalised so a Windows browser does not rewrite every line on every save
+
                 $css = str_replace(["\r\n", "\r"], "\n", (string)$request->request->get('custom_css', ''));
                 $service->write($css);
                 Flash::success(_t('ADMIN_CUSTOM_CSS_SAVED'));
             } catch (TokenNotFoundException $invalidToken) {
                 Flash::error(_t('ADMIN_CUSTOM_CSS_NOT_SAVED') . ' ' . $invalidToken->getMessage());
             } catch (\Throwable $failed) {
-                // a stylesheet that silently did not save is the worst outcome here: the
-                // page looks the same either way
                 Flash::error(_t('ADMIN_CUSTOM_CSS_NOT_SAVED') . ' ' . $failed->getMessage());
             }
         }
@@ -432,23 +326,7 @@ class AdminController extends YesWikiController
         ]);
     }
 
-    /**
-     * The templates this instance overrides (ticket 30).
-     *
-     * A list of what is in `custom/templates/`, an editor for each, and a picker that starts
-     * a new override by copying the shipped template verbatim.
-     *
-     * **There is no sandbox, on purpose, and it was measured rather than assumed.** Twig's
-     * sandbox propagates into `{% extends %}`ed templates, so an override that extends a core
-     * template cannot be sandboxed without sandboxing the core template too -- which fails on
-     * its first method call. `custom/templates/` has always been on the main Twig loader, so
-     * an override has always been code; the boundary is this route's `@admins`, and an admin
-     * who wants to run PHP has shorter routes than a Twig file (`{{editconfig}}`, updates).
-     *
-     * The one safeguard that has to exist is that this screen keeps working when an override
-     * does not: it renders through `@shipped`, which `custom/templates/` is not on. A broken
-     * override that also broke the screen that fixes it would leave only FTP.
-     */
+    /** The templates this instance overrides (ticket 30). */
     #[Route('/admin/custom-templates', methods: ['GET', 'POST'], options: ['acl' => self::ADMIN_ACL])]
     public function customTemplates(): Response
     {
@@ -458,8 +336,6 @@ class AdminController extends YesWikiController
         if ($request->isMethod('POST')) {
             $editing = $this->applyCustomTemplateChange($service, $request);
 
-            // redirected rather than re-rendered: this screen edits the templates the wiki
-            // renders with, and this response was compiled before the change
             return new RedirectResponse($this->getService(UrlFormatter::class)->href(
                 '',
                 'admin/custom-templates' . ($editing === '' ? '' : '&file=' . rawurlencode($editing))
@@ -483,18 +359,12 @@ class AdminController extends YesWikiController
             'writable' => $service->isWritable(),
             'editing' => $editing,
             'contents' => $contents,
-            // shown beside the box so "what did I change" is answerable without a checkout
+
             'original' => $shipped,
         ]);
     }
 
-    /**
-     * Save, revert, or start an override -- three buttons on one form.
-     *
-     * Returns the override the screen should come back to, which is '' for a revert: the
-     * file it was editing no longer exists, and an editor open on a deleted file is a box
-     * whose Save would recreate it.
-     */
+    /** Save, revert, or start an override -- three buttons on one form. */
     private function applyCustomTemplateChange(CustomTemplateService $service, SymfonyRequest $request): string
     {
         $file = (string)$request->request->get('file', '');
@@ -516,15 +386,11 @@ class AdminController extends YesWikiController
                 return $file;
             }
 
-            // newlines normalised so a Windows browser does not rewrite every line of a
-            // template on every save, which would make every diff useless
             $service->write($file, str_replace(["\r\n", "\r"], "\n", (string)$request->request->get('contents', '')));
             Flash::success(_t('ADMIN_TEMPLATES_SAVED', ['name' => $file]));
         } catch (TokenNotFoundException $invalidToken) {
             Flash::error(_t('ADMIN_TEMPLATES_NOT_SAVED') . ' ' . $invalidToken->getMessage());
         } catch (\Throwable $failed) {
-            // where a template that does not compile is reported: it is refused before it
-            // is written, so the wiki is still rendering the last one that worked
             Flash::error(_t('ADMIN_TEMPLATES_NOT_SAVED') . ' ' . $failed->getMessage());
         }
 
@@ -580,10 +446,6 @@ class AdminController extends YesWikiController
      */
     private function page(string $template, string $current, array $data = []): Response
     {
-        // The URL parser splits `?dashboard/forms` into tag `dashboard` + method `forms`
-        // (YesWikiInit), and an action linking to "this page" asks PageContext for the tag
-        // -- so BazaR's own links came out as `?dashboard&view=saisir…`, dropping the half
-        // of the address that says which screen this is. The route knows its whole path.
         $this->getService(PageContext::class)->setTag($current);
 
         $templateEngine = $this->getService(TemplateEngine::class);

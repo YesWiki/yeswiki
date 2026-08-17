@@ -28,5 +28,4 @@ export default {
       value: 'false',
     },
   },
-  // disabledAttributes: [],
 }

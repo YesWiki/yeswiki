@@ -4,24 +4,12 @@ namespace YesWiki\Test\Render;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * Every `icon('…')` a template asks for is a symbol the sprite actually has.
- *
- * **This fails silently, which is the whole reason to test it.** `icon()` renders
- * `<use href="…icons.svg#name">`; a name the sprite does not carry renders *nothing* -- no
- * error, no console warning, no fallback glyph, just a button with no icon in it. Two of
- * these shipped in one afternoon (`layer-group` and `paint-brush`) and neither was visible
- * in any test, because every assertion about those buttons was about their `data-` attribute
- * or their label.
- *
- * The trap is a real one and will recur: `src/icon-map.json` maps the OLD FontAwesome names
- * onto Tabler's, so `layer-group` and `paint-brush` are perfectly good keys in that file --
- * they are simply not what the sprite is keyed by. `icon()` takes the sprite's id (Tabler's,
- * e.g. `stack-2`, `brush`); `iconFromLegacy()` is the one that takes the old name.
- */
+/** Every `icon('…')` a template asks for is a symbol the sprite actually has. */
 class IconNamesResolveTest extends TestCase
 {
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function spriteSymbols(): array
     {
         $sprite = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/assets/icons.svg');
@@ -30,7 +18,9 @@ class IconNamesResolveTest extends TestCase
         return $matches[1];
     }
 
-    /** @return list<array{0: string, 1: string}> file => icon name */
+    /**
+     * @return list<array{0: string, 1: string}> file => icon name
+     */
     private function iconCalls(): array
     {
         $calls = [];

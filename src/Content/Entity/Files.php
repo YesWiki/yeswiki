@@ -58,8 +58,6 @@ class Files
     protected function isWritable($path)
     {
         try {
-            // la destination n'existe pas et droits d'écriture sur le repertoire
-            // de destination
             if (!@file_exists($path) and @is_writable(dirname($path))) {
                 return true;
             }
@@ -76,7 +74,6 @@ class Files
                 return $this->isWritableFolder($path);
             }
 
-            // TODO Gérer les liens
             return [$path];
         } catch (\Throwable $pThrowable) {
             return [$path];

@@ -1,7 +1,6 @@
 const fps = 20
 const scannerSize = 200
 
-// This method will trigger user permissions
 const qrCodeFormats = {
   formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
 }
@@ -15,19 +14,13 @@ const qrCodeSuccessCallback = (decodedText) => {
     successHandler(decodedText)
   }
 }
-// we prefer back camera for scanning from mobile phone
 html5QrCode
-  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {
-    // parse error, ignore it.
-  })
+  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {})
   .catch((err) => {
-    // Start failed, handle it.
     console.error(err)
   })
 
-// do speech synthesis of the text inside the selector
 function speak(selector) {
-  // cut former speech
   window.speechSynthesis.cancel()
   const toSpeak = new SpeechSynthesisUtterance(
     document.querySelector(selector).textContent,
@@ -47,7 +40,6 @@ function isValidHttpUrl(string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// handler of the qrcode data when successfully read
 function successHandler(data) {
   const url = new URL(data)
   const isReadableString = typeof data === 'string' || data instanceof String
@@ -56,10 +48,9 @@ function successHandler(data) {
       .then((response) => response.json())
       .then((cardData) => {
         console.log(cardData)
-        // resource card with linked media file
         if (cardData.listeListeTypeCarte === '③' && cardData.fichierbf_file) {
           const song = `${url.origin}/files/${cardData.fichierbf_file}`
-          console.log(song) // TODO test if url exists
+          console.log(song)
           const player = document.getElementById('multimedia-player')
           const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
           const audio = `<audio id="audio-player" controls autoplay autobuffer src="${song}"></audio>`
@@ -86,10 +77,6 @@ function successHandler(data) {
   }
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
-// the body's *contents*, so a body-keyed initialiser runs once per session and every
-// later page is left uninitialised.
 ywInitEach('#qrinfos', () => {
   const qrinfos = document.getElementById('qrinfos')
   if (qrinfos.dataset.speak === 'true') {
@@ -107,12 +94,8 @@ ywInitEach('#qrinfos', () => {
     }
     observer.observe(target, observerConfig)
 
-    // first load
     speak('#qrinfos .yw-alert')
 
-    // clic on playlist item
-    // NB: pre-existing debug leftover carried over unchanged from the source extension --
-    // out of scope for a Bootstrap/jQuery-removal ticket to also fix.
     document
       .getElementById('multimedia-playlist')
       .addEventListener('click', (e) => {

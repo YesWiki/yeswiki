@@ -2,28 +2,12 @@
 
 namespace YesWiki\Kernel\Service;
 
-/**
- * Minimal pagination helper.
- *
- * Replaces `src/vendor/Pager` -- 1706 lines of vendored PEAR (PHP4-era, `&Pager::factory()`,
- * session support, form-POST paging, a dozen render modes) that existed for exactly one
- * caller using exactly two of its features: the current page's slice of items, and a strip
- * of page links. Wave-two ticket 02 rewrote it rather than taking a Composer dependency.
- *
- * Behaviour reproduced from PEAR's `Jumping` mode (the value of `BAZ_MODE_DIVISION`):
- * page numbers are shown in fixed blocks of `delta`, so pages 1..12 are listed together,
- * then 13..24, rather than sliding a window around the current page.
- *
- * Deliberately not reproduced: sessions, POST paging, `%d` filename placeholders, and the
- * `altNext`/`nextImg` distinction (PEAR emitted one as `alt`, the other as link text; with
- * both set to the same string, as the only caller does, they are indistinguishable).
- *
- * URL building is the caller's job on purpose -- see renderLinks(). Ticket 05 folds this
- * into the Content module.
- */
+/** Minimal pagination helper. */
 class Paginator
 {
-    /** @var list<mixed> */
+    /**
+     * @var list<mixed>
+     */
     private array $items;
     private int $perPage;
     private int $delta;
@@ -80,15 +64,7 @@ class Paginator
     }
 
     /**
-     * Render the `<li>` items for a `yw-pagination` list. Returns '' when there is
-     * nothing to page through, matching PEAR's empty `links` for a single page.
-     *
-     * The caller supplies `$url` and `$extraVars` and therefore owns every question about
-     * what a page link should point at. That is not indirection for its own sake: the one
-     * caller strips `wiki` from the query string before passing it here, which looks like
-     * it loses the page tag outside rewrite mode. That behaviour is preserved untouched
-     * by ticket 02 -- a dead-code purge is the wrong place to change URL semantics -- but
-     * it should not be baked into this class as though it were correct.
+     * Render the `<li>` items for a `yw-pagination` list.
      *
      * @param string                            $url       everything before the '?'
      * @param array<string, mixed>              $extraVars query parameters to carry across pages
@@ -132,7 +108,7 @@ class Paginator
      */
     private function hrefFor(string $url, array $extraVars, int $page): string
     {
-        $extraVars['pageID'] = $page; // PEAR's default urlVar; kept so existing links stay valid
+        $extraVars['pageID'] = $page;
 
         return $url . '?' . http_build_query($extraVars);
     }

@@ -24,9 +24,7 @@ abstract class YesWikiMigration
         $this->services = $services;
     }
 
-    /**
-     * Setter for the parameters.
-     */
+    /** Setter for the parameters. */
     public function setParams(ParameterBagInterface $params): void
     {
         $this->params = $params;
@@ -37,9 +35,7 @@ abstract class YesWikiMigration
         $this->dbService = $dbService;
     }
 
-    /**
-     * give service from name.
-     */
+    /** give service from name. */
     protected function getService(string $className)
     {
         return $this->services->get($className);

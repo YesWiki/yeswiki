@@ -3,23 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * Publishes static assets (css/js/fonts/images...) from the YesWiki source tree into the
- * instance's own cache/assets/{version}/ folder, so that an instance whose docroot only
- * contains index.php + its data folders (yeswiki.config.php, files/, custom/, cache/, private/)
- * needs no symlinks or webserver aliases to the shared YesWiki sources.
- *
- * Two cooperating mechanisms:
- *  - AssetRegistry emits versioned URLs (cache/assets/{version}/{original path}) for every
- *    registered css/js file when running as a farm instance, eagerly copying the file on
- *    first emission (see publishedUrl()).
- *  - interceptAssetRequest() runs from index.php BEFORE the wiki boots (no DB, no session):
- *    the standard rewrite fallback (Apache rewrite mode / nginx try_files) sends any missing
- *    static file through index.php, and this materializes it from the source tree and streams
- *    it. Because published paths preserve the original directory layout, relative references
- *    inside CSS (@import, url(...) fonts/images) and companion files loaded relative to a
- *    script's URL resolve to sibling published paths and get materialized the same way on
- *    first request. Hardcoded template references to source paths (extensions/x/presentation/...)
- *    are covered by the direct-path branch.
+ * Publishes static assets (css/js/fonts/images...) from the YesWiki source tree into the instance's own cache/assets/{version}/ folder, so that an instance whose docroot only contains index.php + its data folders (yeswiki.config.php, files/, custom/, cache/, private/) needs no symlinks or webserver aliases to the shared YesWiki sources.
  */
 class AssetPublisher
 {
@@ -58,20 +42,13 @@ class AssetPublisher
         'eot' => 'application/vnd.ms-fontobject',
     ];
 
-    /**
-     * Root of the shared YesWiki sources. Distinct from the instance dir (getcwd()) when
-     * running as a farm instance; identical in a classic standalone install.
-     */
+    /** Root of the shared YesWiki sources. */
     public static function sourceDir(): string
     {
-        return defined('YESWIKI_SOURCE_DIR') ? constant('YESWIKI_SOURCE_DIR') : \dirname(__DIR__, 3); // src/<Module>/Service -> source root
+        return defined('YESWIKI_SOURCE_DIR') ? constant('YESWIKI_SOURCE_DIR') : \dirname(__DIR__, 3);
     }
 
-    /**
-     * Called from index.php before anything else boots. Serves the request and exits if it
-     * targets a publishable asset; returns silently otherwise so the wiki boots normally.
-     * Kept dependency-free on purpose: no config, no DB, no session.
-     */
+    /** Called from index.php before anything else boots. */
     public static function interceptAssetRequest(): void
     {
         if (\PHP_SAPI === 'cli' || !in_array($_SERVER['REQUEST_METHOD'] ?? '', ['GET', 'HEAD'], true)) {
@@ -79,35 +56,17 @@ class AssetPublisher
         }
 
         $uriPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '');
-        // strip the instance base path (subdirectory installs) - only inferable when
-        // SCRIPT_NAME really points at the entry script (some SAPIs, e.g. the built-in
-        // server with a router, put the requested path in SCRIPT_NAME instead)
+
         if (preg_match('~^(.+)/index\.php$~', $_SERVER['SCRIPT_NAME'] ?? '', $m)
             && str_starts_with($uriPath, $m[1] . '/')) {
             $uriPath = substr($uriPath, strlen($m[1]));
         }
         $uriPath = ltrim($uriPath, '/');
-        // nginx "try_files $uri /index.php$uri" fallback form
+
         if (str_starts_with($uriPath, 'index.php/')) {
             $uriPath = substr($uriPath, strlen('index.php/'));
         }
 
-        // ...and YesWiki's own historical rewrite, `RewriteRule ^(.*)$ index.php?$1`, which
-        // puts the requested path in the QUERY STRING. Where the vhost passes the rewritten
-        // request through (rather than Apache's original REQUEST_URI), everything above sees
-        // nothing but the entry script: no asset path to match, so this returned silently,
-        // the wiki booted, and a stylesheet came back as an HTML page saying it had no
-        // handler by that name. Which is what a farm instance served this way did with every
-        // asset except the icon sprite -- that one is a real file in the docroot
-        // (src/bootstrap_paths.php), so the webserver answered it without ever reaching here.
-        //
-        // A page request leaves `?PageName` or `?a=b` in there too, so only a value that goes
-        // on to resolve to a real asset is used; anything else falls through untouched and the
-        // wiki handles it exactly as before.
-        // `basename`, not an exact match: where the vhost's SCRIPT_NAME is the shared root's
-        // `/index.php` while the request went to `/instance/index.php`, the strip above has
-        // nothing to match and the instance prefix survives -- so the path is
-        // `ecto/index.php`, not `index.php`, and an exact test misses it.
         if ($uriPath === '' || basename($uriPath) === 'index.php') {
             $fromQuery = ltrim(rawurldecode(explode('&', (string)($_SERVER['QUERY_STRING'] ?? ''), 2)[0]), '/');
             if ($fromQuery !== '' && !str_contains($fromQuery, '=')) {
@@ -115,10 +74,6 @@ class AssetPublisher
             }
         }
 
-        // farm fallback: a docroot-wide rewrite (e.g. Caddy's php_server, Apache fallback in
-        // the farm root) sends a missing /instance/asset to this shared index.php instead of
-        // the instance's own one. Walk into the deepest instance dir the path traverses so
-        // the asset is materialized into and served from that instance's cache/assets.
         $instanceDir = null;
         while (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
             $slashPos = strpos($uriPath, '/');
@@ -138,25 +93,12 @@ class AssetPublisher
         }
         if ($instanceDir !== null) {
             if (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
-                // instance page URL (not an asset): nothing to serve statically here
                 return;
             }
-            // serve on the instance's behalf: materialize() targets and custom/ overrides
-            // resolve through getcwd()
+
             chdir($instanceDir);
         }
 
-        // A wiki reached under a URL prefix that is not a directory here -- an `alias`, an
-        // nginx `location`, a reverse proxy mounting it at /ecto -- leaves that prefix in the
-        // path with nothing to match it against: SCRIPT_NAME says `/index.php`, and the walk
-        // above finds no `ecto/index.php` because there is no such folder. The asset request
-        // then fell through to the wiki, which answered a stylesheet with an HTML page
-        // saying it had no handler by that name.
-        //
-        // So: drop leading segments until what is left is an asset these sources really
-        // have. Nothing new becomes reachable -- the very same files already answer at the
-        // unprefixed path -- and a path that resolves to no file is left alone, because the
-        // wiki may well have a page by that name.
         if (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
             $rest = $uriPath;
             while (($slash = strpos($rest, '/')) !== false) {
@@ -173,12 +115,9 @@ class AssetPublisher
         }
 
         if (str_starts_with($uriPath, self::PUBLISHED_PREFIX)) {
-            // cache/assets/{version}/{relPath} : materialize from sources, serve immutable
             $rest = substr($uriPath, strlen(self::PUBLISHED_PREFIX));
             $parts = explode('/', $rest, 2);
             if (count($parts) !== 2 || !self::isValidVersion($parts[0]) || !self::isServablePath($parts[1])) {
-                // nothing under cache/assets/ is ever a wiki page, and booting the shared
-                // root wiki with a changed cwd would be worse still
                 self::notFound('not a publishable asset path: ' . $rest);
             }
             $target = self::materialize($parts[0], $parts[1]);
@@ -193,9 +132,6 @@ class AssetPublisher
         }
 
         if (self::isServablePath($uriPath)) {
-            // direct source path (hardcoded template references): the webserver only falls
-            // back here when the file does not exist in the instance docroot, so stream it
-            // from the sources with a moderate cache lifetime (no version in the URL)
             $sourceFile = self::resolveSourceFile($uriPath);
             if ($sourceFile !== null) {
                 self::serveFile($sourceFile, false);
@@ -203,12 +139,6 @@ class AssetPublisher
             self::notFound('no such file in the sources: ' . $uriPath);
         }
 
-        // A request still naming a published asset is one this could not place, whatever the
-        // reason -- an unforeseen mount, a prefix that survived every strip above. A page is
-        // the one answer that must not be given to it: the browser refuses `text/html` for a
-        // stylesheet or a module and reports a MIME error, which says nothing about what
-        // actually went wrong ("bloquée en raison d'un type MIME text/html incorrect", from a
-        // farm whose sources predated the prefix handling). A 404 says it plainly.
         $requested = rawurldecode((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH));
         if (str_contains($requested, '/' . self::PUBLISHED_PREFIX)) {
             self::notFound('asset path not placed: ' . $requested);
@@ -216,9 +146,7 @@ class AssetPublisher
     }
 
     /**
-     * Publish $relPath (eagerly copied if needed) and return its instance-relative URL path,
-     * or null when the file exists nowhere. Used by AssetRegistry when it resolves a URL so first
-     * page views don't pay one PHP fallback round-trip per registered asset.
+     * Publish $relPath (eagerly copied if needed) and return its instance-relative URL path, or null when the file exists nowhere.
      */
     public static function publishedUrl(string $relPath, string $version): ?string
     {
@@ -231,23 +159,7 @@ class AssetPublisher
         return $target === null ? null : self::PUBLISHED_PREFIX . $version . '/' . $relPath;
     }
 
-    /**
-     * The stamp appended to the published version: how old the published set is, as a plain
-     * mtime. '' only while nothing has been published at all.
-     *
-     * Derived from what is on disk, never from having caught the moment of an update. A first
-     * attempt bumped it when a file was found stale, which is a transition -- and a transition
-     * can be missed: an instance whose copies were refreshed by an earlier YesWiki has nothing
-     * stale left to notice, so the stamp never appeared, the URL never moved, and every
-     * browser went on serving the modules it had cached under the old one. For good, since
-     * there was no second transition coming.
-     *
-     * So when there is no stamp, read it off the tree: published copies carry their source's
-     * mtime, so the newest of them IS the age of the set. One walk, once, then the file.
-     *
-     * Read from the cache rather than held anywhere: this is also reachable before the
-     * container exists, and the file is the only thing both sides share.
-     */
+    /** The stamp appended to the published version: how old the published set is, as a plain mtime. */
     public static function publishedStamp(): string
     {
         $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
@@ -265,10 +177,7 @@ class AssetPublisher
         return (string)$newest;
     }
 
-    /**
-     * mtime of the most recently published file, across every version folder present. 0 when
-     * nothing has been published yet.
-     */
+    /** mtime of the most recently published file, across every version folder present. */
     private static function newestPublishedFile(string $assetsDir): int
     {
         if (!is_dir($assetsDir)) {
@@ -291,11 +200,7 @@ class AssetPublisher
         return $newest;
     }
 
-    /**
-     * Record how new the published set is. Takes effect on the next request, never this one:
-     * the version is settled once per request, and URLs within one page must agree -- an
-     * import resolves against the URL of the module that made it.
-     */
+    /** Record how new the published set is. */
     private static function bumpStamp(string $assetsDir, int $sourceMtime): void
     {
         $file = $assetsDir . '/' . self::STAMP_FILE;
@@ -322,8 +227,7 @@ class AssetPublisher
     }
 
     /**
-     * Only ever serve regular files with a whitelisted prefix and extension, no dot segments
-     * ('..' traversal, hidden files) anywhere in the path.
+     * Only ever serve regular files with a whitelisted prefix and extension, no dot segments ('..' traversal, hidden files) anywhere in the path.
      */
     private static function isServablePath(string $relPath): bool
     {
@@ -349,8 +253,7 @@ class AssetPublisher
     }
 
     /**
-     * Locate $relPath in the source tree, or in the instance dir as fallback (per-instance
-     * custom/ assets). Containment double-checked with realpath.
+     * Locate $relPath in the source tree, or in the instance dir as fallback (per-instance custom/ assets).
      */
     private static function resolveSourceFile(string $relPath): ?string
     {
@@ -374,29 +277,20 @@ class AssetPublisher
     }
 
     /**
-     * Ensure cache/assets/{version}/{relPath} exists in the instance dir and is up to date,
-     * copying from the sources when needed. Returns the absolute target path, or null when
-     * the asset exists nowhere. For the 'dev' version (no yeswiki_release set) freshness is
-     * mtime-checked so source edits show up without clearing the cache.
+     * Ensure cache/assets/{version}/{relPath} exists in the instance dir and is up to date, copying from the sources when needed.
      */
     private static function materialize(string $version, string $relPath): ?string
     {
         $assetsDir = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/');
         $target = $assetsDir . '/' . $version . '/' . $relPath;
 
-        // an instance published before publishReferences() existed has the sheets but not
-        // what they import: sweep it once, then never again for this version
         self::publishMissingReferences($version, $assetsDir . '/' . $version);
 
         $sourceFile = self::resolveSourceFile($relPath);
         if ($sourceFile === null) {
             return is_file($target) ? $target : null;
         }
-        // freshness by mtime, whatever the version. Keying it on the release instead assumes
-        // sources only change at a release, which is false for every instance following a
-        // branch: their published copy would stay as it was until the release string moved,
-        // and an updated wiki would go on serving the JS it shipped with. The stat is free --
-        // the is_file() above just filled PHP's cache for this path.
+
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
             return $target;
         }
@@ -408,7 +302,7 @@ class AssetPublisher
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
             return null;
         }
-        // copy to a temp name then rename, so concurrent requests never read a partial file
+
         $tmp = $targetDir . '/.' . uniqid('publish', true) . '.tmp';
         if (!@copy($sourceFile, $tmp)) {
             return null;
@@ -420,8 +314,6 @@ class AssetPublisher
             return is_file($target) ? $target : null;
         }
 
-        // every copy, not only one replacing a stale file: the stamp is the age of the
-        // published set, and missing an update is how a browser ends up stuck on old code
         self::bumpStamp($assetsDir, (int)filemtime($sourceFile));
         self::publishReferences($version, $relPath, $sourceFile);
 
@@ -429,20 +321,7 @@ class AssetPublisher
     }
 
     /**
-     * Publish what a freshly published stylesheet or script points at: `@import`ed sheets,
-     * `url()` fonts and images, statically imported modules.
-     *
-     * These are the assets nobody registers and nothing emits a URL for -- the browser
-     * derives them from inside the file it was given, relative to the published path. They
-     * were left to the request interception, which only sees them if the webserver sends
-     * missing files through index.php. A farm instance whose vhost has no such fallback --
-     * a plain subdirectory on a shared host, say -- then serves its page, serves every
-     * registered asset from disk, and 404s exactly the sheets `bazar.css` imports. The
-     * browser reports that as a MIME error, naming a stylesheet that looks perfectly fine.
-     *
-     * So publish the closure instead of hoping to be asked for it. It costs one scan per
-     * file per version -- these run only on the copy, not on the requests that follow -- and
-     * makes farm mode independent of the vhost's rewrite rules.
+     * Publish what a freshly published stylesheet or script points at: `@import`ed sheets, `url()` fonts and images, statically imported modules.
      *
      * @param array<string, true> $seen guards cycles (a.css imports b.css imports a.css)
      */
@@ -477,8 +356,7 @@ class AssetPublisher
     }
 
     /**
-     * The relative references a stylesheet or script makes to files beside it. Absolute URLs,
-     * data: URIs and site-root paths are somebody else's business.
+     * The relative references a stylesheet or script makes to files beside it.
      *
      * @return list<string>
      */
@@ -490,8 +368,6 @@ class AssetPublisher
                 '~url\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)~i',
             ]
             : [
-                // static import/export forms only: whatever a bundler or a dynamic import
-                // computes at runtime cannot be read off the source
                 '~(?:^|[\s;])(?:import|export)\s[^;\'"]*?from\s*[\'"]([^\'"]+)[\'"]~m',
                 '~(?:^|[\s;])import\s*[\'"]([^\'"]+)[\'"]~m',
             ];
@@ -502,7 +378,7 @@ class AssetPublisher
                 foreach ($matches[1] as $reference) {
                     $reference = trim($reference);
                     if ($reference === '' || !str_starts_with($reference, '.')) {
-                        continue; // absolute, protocol-relative, data:, or a bare package name
+                        continue;
                     }
                     $found[] = $reference;
                 }
@@ -513,9 +389,7 @@ class AssetPublisher
     }
 
     /**
-     * Resolve `../fonts/x.woff2` against the directory of the file that referenced it, into a
-     * source-relative path. Null when it climbs out of the source tree or carries a query or
-     * fragment we cannot publish under.
+     * Resolve `../fonts/x.woff2` against the directory of the file that referenced it, into a source-relative path.
      */
     private static function resolveRelative(string $base, string $reference): ?string
     {
@@ -543,15 +417,12 @@ class AssetPublisher
         return $segments === [] ? null : implode('/', $segments);
     }
 
-    /**
-     * Copy one already-located source file into the published tree. Same body as
-     * materialize()'s tail, without the lookup or the recursion -- the caller has both.
-     */
+    /** Copy one already-located source file into the published tree. */
     private static function materializeOne(string $version, string $relPath, string $sourceFile): bool
     {
         $target = getcwd() . '/' . rtrim(self::PUBLISHED_PREFIX, '/') . '/' . $version . '/' . $relPath;
         if (is_file($target) && filemtime($target) >= filemtime($sourceFile)) {
-            return false; // already there and current: its references came with it
+            return false;
         }
 
         $targetDir = \dirname($target);
@@ -574,12 +445,7 @@ class AssetPublisher
     }
 
     /**
-     * One sweep per published version: every stylesheet and script already sitting there gets
-     * its references published too.
-     *
-     * Only for trees published by an older YesWiki, which copied each registered file and
-     * nothing it points at. Marked with a dot-file (never servable: isServablePath() refuses
-     * dot segments), written before the sweep so a concurrent request does not repeat it.
+     * One sweep per published version: every stylesheet and script already sitting there gets its references published too.
      */
     private static function publishMissingReferences(string $version, string $versionDir): void
     {
@@ -588,7 +454,7 @@ class AssetPublisher
             return;
         }
         if (@file_put_contents($marker, '') === false) {
-            return; // unwritable cache: the request interception is the only route left
+            return;
         }
 
         $seen = [];
@@ -609,8 +475,7 @@ class AssetPublisher
     }
 
     /**
-     * A new version dir means the core was updated: drop the previous versions' trees
-     * (published URLs embed the version, nothing references the old ones anymore).
+     * A new version dir means the core was updated: drop the previous versions' trees (published URLs embed the version, nothing references the old ones anymore).
      */
     private static function removeStaleVersions(string $assetsDir, string $currentVersion): void
     {
@@ -657,14 +522,7 @@ class AssetPublisher
         exit;
     }
 
-    /**
-     * 404 as text, never as a page, and saying which of the ways this can fail happened.
-     *
-     * The reason costs one line and answers, from the browser alone, the question that
-     * otherwise needs a shell on the server: are the sources missing the file, is the
-     * instance's cache unwritable, or did the request never get recognised as an asset at
-     * all. It names only the path the requester already asked for.
-     */
+    /** 404 as text, never as a page, and saying which of the ways this can fail happened. */
     private static function notFound(string $reason = ''): void
     {
         http_response_code(404);

@@ -56,7 +56,8 @@ class AuthenticationService extends YesWikiController
         $this->initLimitations();
     }
 
-    /** Initializes object limitation properties using values from the config file.
+    /**
+     * Initializes object limitation properties using values from the config file.
      *
      * @return void
      */
@@ -73,28 +74,20 @@ class AuthenticationService extends YesWikiController
     }
 
     /**
-     * Whether this account's stored password is an md5 written by an older YesWiki, and so
-     * cannot be used to sign in until its owner resets it.
-     *
-     * The hash is left in the row on purpose -- it is what makes the account recoverable
-     * through LostPasswordAction, and it is the only thing distinguishing "predates the
-     * change" from "never had a password". See LegacyPasswordHash.
+     * Whether this account's stored password is an md5 written by an older YesWiki, and so cannot be used to sign in until its owner resets it.
      */
     public function requiresPasswordReset(User $user): bool
     {
         return LegacyPasswordHash::isMd5($user->getPassword());
     }
 
-    /** checks if the given string is the user's password.
+    /**
+     * checks if the given string is the user's password.
      *
      * @return bool True if OK or false if any problems
      */
     public function checkPassword(string $plainTextPassword, User $user)
     {
-        // md5 is not a credential. Redundant with the hasher as configured today -- `auto` with
-        // an empty migrate_from refuses a 32-hex string anyway -- but not redundant in the case
-        // that matters: putting `migrate_from => ['md5']` back makes the hasher accept them
-        // again, and this line is what still says no. Measured, by doing exactly that.
         if ($this->requiresPasswordReset($user)) {
             return false;
         }
@@ -139,28 +132,23 @@ class AuthenticationService extends YesWikiController
         return true;
     }
 
-    /**
-     * connect a user from SESSION or COOKIES.
-     */
+    /** connect a user from SESSION or COOKIES. */
     public function connectUser()
     {
         $this->cleanOldFormatCookie();
         try {
             try {
-                // faster to connect from session
                 $data = $this->connectUserFromSession();
                 if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
                     throw new BadUserConnectException('Not connected via session');
                 }
             } catch (BadUserConnectException $th) {
-                // otherwise use cookies
                 $data = $this->connectUserFromCookies();
                 if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
                     $this->logout();
                 }
             }
 
-            // connect in SESSION
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
             if (
@@ -169,37 +157,20 @@ class AuthenticationService extends YesWikiController
                 || $data['user']['name'] != $_SESSION['user']['name']
                 || !$this->container->get(AclService::class)->isAdmin($data['user']['name'])
             ) {
-                // do not disconnect admin during update
                 $this->logout();
             }
         } catch (BadLoginException $th) {
-            // login()'s activation gate rejected this session/cookie's own user (e.g. an
-            // admin inactivated the account after it was already logged in) -- this is
-            // connectUser()'s routine per-request re-hydration, not a login form
-            // submission, so there's no request context to surface the message to beyond
-            // a flash on the next render
             Flash::error($th->getMessage());
             $this->logout();
         }
     }
 
-    // methods imported from UserManager
-
     public function getLoggedUser()
     {
-        // If the user isn't logged
         if (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) {
             return '';
         }
 
-        // Else, if user is logged, store the user in a cache.
-        //
-        // Re-read unless the cache already *is* this session's user. It used to re-read
-        // only when the cache was null or an array naming someone else -- so once the
-        // else-branch below had cached `''` (the session named an account that no longer
-        // exists, which is what deleting a logged-in account does), neither test held and
-        // the '' was returned for the rest of the request. A different user logging in
-        // afterwards stayed anonymous.
         if (!is_array($this->loggedUserCache) || $this->loggedUserCache['name'] !== $_SESSION['user']['name']) {
             $user = $this->userManager->getOneByName($_SESSION['user']['name']);
             if (!empty($user)) {
@@ -225,7 +196,6 @@ class AuthenticationService extends YesWikiController
 
     public function getExpirationTimeStamp(\DateTime $startTime, bool $remember): int
     {
-        // 90 days if remember otherwise 1 hour
         return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
     }
 
@@ -239,9 +209,7 @@ class AuthenticationService extends YesWikiController
         $userName = empty($user['name']) ? null : $user['name'];
         if (
             $userName !== null
-            // cheapest, most-likely-to-short-circuit check first: skip every other check
-            // (including $this->container->get(AclService::class)->isAdmin(), which needs a fully-bootstrapped Wiki)
-            // entirely when the feature is off, its default
+
             && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
             && !$this->hasLoginExtensions()
             && !$this->container->get(AclService::class)->isAdmin($userName)
@@ -272,10 +240,6 @@ class AuthenticationService extends YesWikiController
             ];
 
         if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->isCli()) {
-            // regenerate the session ID whenever the authenticated identity actually changes
-            // (anonymous -> user, or user A -> user B) to prevent session fixation;
-            // this deliberately excludes connectUser()'s routine per-request re-hydration of
-            // an already logged-in user, which calls login() again with the same name each time
             session_regenerate_id(true);
         }
 
@@ -287,7 +251,7 @@ class AuthenticationService extends YesWikiController
                     throw new \Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
                 }
             }
-            // prevent setting cookies in CLI (could be errors)
+
             $rawData = $this->prepareRawData($currentDateTime, $remember, $user->getPassword());
 
             $passwordHasher = $this->passwordHasherFactory->getPasswordHasher('cookie');
@@ -296,9 +260,6 @@ class AuthenticationService extends YesWikiController
             $expires = $this->getExpirationTimeStamp($currentDateTime, $remember);
             $this->setPersistentCookie('name', $user['name'], $expires);
             $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0') . $encryptedData, $expires);
-
-            // TODO : find a more secure way to autologin
-            // (see https://www.php.net/manual/en/features.session.security.management.php#features.session.security.management.session-and-autologin)
         }
     }
 
@@ -307,9 +268,6 @@ class AuthenticationService extends YesWikiController
         $this->cleanSensitiveDataFromSession();
         $this->cleanOldFormatCookie();
         if (!$this->isCli()) {
-            // prevent setting cookies in CLI (could be errors)
-
-            // delete cookies
             if (!empty($this->getRequest()->cookies->get('name'))) {
                 $this->setPersistentCookie('name', '', time() - 3600);
                 unset($_COOKIE['name']);
@@ -322,8 +280,7 @@ class AuthenticationService extends YesWikiController
     }
 
     /**
-     * connect the firstAdmin and return if
-     * SHOULD NOT BE USED but, waiting an alternative, this hack exists.
+     * connect the firstAdmin and return if SHOULD NOT BE USED but, waiting an alternative, this hack exists.
      *
      * @return User|null $firtAdmin
      */
@@ -343,8 +300,7 @@ class AuthenticationService extends YesWikiController
     }
 
     /**
-     * External auth extensions (CAS/LDAP/SSO) handle their own identity verification --
-     * the email-activation gate in login() doesn't apply to accounts they authenticate.
+     * External auth extensions (CAS/LDAP/SSO) handle their own identity verification -- the email-activation gate in login() doesn't apply to accounts they authenticate.
      */
     private function hasLoginExtensions(): bool
     {
@@ -398,19 +354,12 @@ class AuthenticationService extends YesWikiController
     {
         $data = $this->extractDataFromCookie();
 
-        // check if user ever existing
         $user = $this->userManager->getOneByName($data->getUserName());
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
         }
 
-        // An md5 account must reset before it gets back in, and this path would otherwise let it
-        // skip that indefinitely: the cookie is validated against the *stored hash*, which is
-        // deliberately left in place, so a remember-me cookie issued before the upgrade keeps
-        // verifying for its full lifetime -- weeks -- without checkPassword() ever being called.
-        // Failing here just means no auto-login: connectUser() treats the visitor as anonymous,
-        // they reach the sign-in form, and it tells them to reset.
         if ($this->requiresPasswordReset($user)) {
             throw new BadUserConnectException('Password predates this version, must be reset');
         }
@@ -447,24 +396,16 @@ class AuthenticationService extends YesWikiController
             throw new BadUserConnectException('No use in session');
         }
 
-        // check if user ever existing
         $user = $this->userManager->getOneByName($userFromSession['name']);
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
         }
-        // same rule as the cookie path: an md5 account resets before it is trusted again. A PHP
-        // session outlives a deployment, so without this a user already signed in when the
-        // upgrade landed would stay signed in and never be asked.
+
         if ($this->requiresPasswordReset($user)) {
             throw new BadUserConnectException('Password predates this version, must be reset');
         }
-        // `lastConnection` is session state, not an account property. It was read off
-        // $userFromSession -- which is getLoggedUser(), i.e. the account as *stored*
-        // (User::getArrayCopy()) -- and no user record has ever carried it. So this threw 'No
-        // last connection date' on every single request and the "faster to connect from session"
-        // path above never once ran: every request re-hydrated through the cookie instead,
-        // hashing a bcrypt on the way. login() writes it here, so this is where to read it.
+
         $lastConnection = $_SESSION['user']['lastConnection'] ?? null;
         if (empty($lastConnection)) {
             throw new BadUserConnectException('No last connection date');
@@ -478,7 +419,7 @@ class AuthenticationService extends YesWikiController
 
         return [
             'user' => $user,
-            'remember' => false, // force usage of cookies if more than 1 hour
+            'remember' => false,
             'lastConnectionDate' => $lastConnectionDate,
         ];
     }
@@ -518,21 +459,16 @@ class AuthenticationService extends YesWikiController
         return new CookieData($userName, $lastConnectionDate, $remember, $encryptedData);
     }
 
-    /**
-     * prepare raw data from $lastConnectionDate, $remember, $hashedPassword.
-     */
+    /** prepare raw data from $lastConnectionDate, $remember, $hashedPassword. */
     protected function prepareRawData(\DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
     {
         return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0');
     }
 
-    /**
-     * clean sensitive data from session.
-     */
+    /** clean sensitive data from session. */
     protected function cleanSensitiveDataFromSession()
     {
         if (!empty($_SESSION['user']['name'])) {
-            // clean '_csrf' only if a user was connected before
             if (isset($_SESSION['_csrf'])) {
                 unset($_SESSION['_csrf']);
             }
@@ -543,9 +479,7 @@ class AuthenticationService extends YesWikiController
         $this->loggedUserCache = null;
     }
 
-    /**
-     * clean auth cookie for old format.
-     */
+    /** clean auth cookie for old format. */
     protected function cleanOldFormatCookie()
     {
         if (!$this->isCli()) {
@@ -555,7 +489,7 @@ class AuthenticationService extends YesWikiController
             if (!empty($this->getRequest()->cookies->get('remember'))) {
                 $this->deleteOldCookie('remember');
             }
-            // update session cookies to be only for session
+
             $this->updateSessionCookieExpires(0);
         }
     }

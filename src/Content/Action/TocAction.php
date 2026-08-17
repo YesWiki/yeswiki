@@ -13,13 +13,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 
-/**
- * `{{toc}}` -- converted from the procedural actions/toc.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{toc}}` -- converted from the procedural actions/toc.php by ticket 06. */
 class TocAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -28,9 +22,7 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
     }
 
     /**
-     * `{{toc}}` had no YAML palette entry -- it was one of the fifty-one actions the palette
-     * never listed, so the only way to put a table of contents on a page was to know the tag
-     * and type it. It is a navigation Component like any other.
+     * `{{toc}}` had no YAML palette entry -- it was one of the fifty-one actions the palette never listed, so the only way to put a table of contents on a page was to know the tag and type it.
      */
     public function components(): array
     {
@@ -65,10 +57,6 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -102,11 +90,6 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         </div><!-- /.yw-toc__title -->\n
         <div id=\"$collapseId\" class=\"yw-toc__menu yw-collapse" . ($closed == 1 ? '' : ' yw-collapse--open') . "\">\n";
 
-        // Heading ids come from the same CommonMark environment that renders the page, so the
-        // links here and the anchors in the output cannot drift apart. Ticket 06 removed the
-        // previous arrangement -- a counter in formatters/wakka__.php regexing the rendered HTML,
-        // mirrored by a second counter in a translate2toc() defined here -- which desynced as soon
-        // as any action emitted its own <hN>.
         $tocList = '';
         foreach ($this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->headings($toc_body) as $heading) {
             $tocList .= '<li class="toc' . $heading['level'] . '"><a href="#' . htmlspecialchars($heading['id'], ENT_COMPAT, YW_CHARSET) . '">'
@@ -116,8 +99,6 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             echo "<ul class=\"yw-list-unstyled\">\n" . $tocList . "</ul>\n";
         }
 
-        // on ferme les divs ouvertes par l'action toc ; the box's scroll-follow behavior is pure
-        // CSS now (see .yw-toc's position: sticky rule in yw-core.css), no JS needed.
         echo "</div><!-- /#$collapseId -->\n
             </div><!-- /#toc" . $tag . " -->\n";
     }

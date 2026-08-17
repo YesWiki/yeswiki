@@ -7,14 +7,9 @@
     {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
     {% endif %}
 {% endblock %}
-  
+
 {{ include_javascript('javascripts/entries-index-dynamic.js', false, true) }}
 {{ include_css('styles/yw-entries.css') }}
-
-{# Extra Fields to retrieve from API call. customizable inside templates #}
-{# Adds them to params to it's available in vueJs #}
-
-{# Merge necessary fields and remove duplicates #}
 
 {% set params = params|merge({necessary_fields: (necessary_fields|default([])|reduce((carry, v) => carry|merge({ (v): v }), {})|keys)}) %}
 
@@ -29,8 +24,6 @@
     {{ include("@core/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
 
-  {# the same two columns as the server-rendered list, sized the same way: `filtercolsize` in
-     twelfths turned into a width, rather than a Bootstrap grid class core no longer ships #}
   <div class="facette-container dynamic {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}"
        data-filter-align="{{ showFiltersSidebar ? params.filterposition : '' }}"
        {% if resultsColSize != 12 %}style="--yw-filters-width: {{ (params.filtercolsize|number_format / 12 * 100)|round(2) }}%"{% endif %}>
@@ -48,10 +41,10 @@
     </div>
 
   </div>
-{# showexportbuttons #}
+
 {% if not params.isInIframe and params.showexportbuttons %}
 	{{ include("@core/entries/index/_export_buttons.twig") }}
 {% endif %}
-{# end for showexportbuttons #}
+
   <modal-entry ref="modal"></modal-entry>
 </div>

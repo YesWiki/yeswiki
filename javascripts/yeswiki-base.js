@@ -1,7 +1,3 @@
-// yeswiki-base.js — core page behavior (ticket 16: vanilla JS, no jQuery/Bootstrap).
-// Modal/dropdown/collapse/tab/tooltip primitives live in yw-core.js and yw-core.css;
-// this file keeps the page-level glue: comments, reactions, search widget, misc UI.
-
 function toastMessage(
   message,
   duration = 3000,
@@ -33,7 +29,6 @@ function toastMessage(
   toastEl.classList.add('visible')
 }
 
-// function to check all checkbox in page (called from template onclick attributes).
 // eslint-disable-next-line no-unused-vars
 function checkAll(state) {
   const checkboxes = document.querySelectorAll('input.selectpage')
@@ -47,7 +42,6 @@ function checkAll(state) {
 }
 
 ;(function () {
-  // Every ancestor of `el` (closest first) matching `selector`, like jQuery .parents()
   function ancestorsOf(el, selector) {
     const found = []
     let current = el.parentElement ? el.parentElement.closest(selector) : null
@@ -64,18 +58,11 @@ function checkAll(state) {
     return payload && payload.error ? payload.error : _t('ERROR')
   }
 
-  // POSTs a form (or a plain key/value object) urlencoded, resolving with the
-  // parsed JSON body and rejecting with the parsed JSON error body — the same
-  // contract the previous jQuery $.ajax(dataType: 'json') calls relied on
   function postForm(url, data) {
     const body =
       data instanceof HTMLFormElement
         ? new URLSearchParams(new FormData(data))
         : new URLSearchParams(data)
-    // X-Requested-With is what lets the server tell this apart from a plain form
-    // submission of the same form to the same url: routes that have to serve both answer
-    // JSON here and redirect-with-a-flash there (ticket 35). fetch sends no such header
-    // of its own, and `Accept` is `*/*` either way, so it has to be explicit.
     return fetch(url, {
       method: 'POST',
       body,
@@ -87,7 +74,6 @@ function checkAll(state) {
     )
   }
 
-  // ---- password fields: show/hide toggle ----
   document.querySelectorAll('input[type=password]').forEach((field) => {
     const eye = document.createElement('div')
     eye.className = 'far fa-eye'
@@ -109,7 +95,6 @@ function checkAll(state) {
     field.insertAdjacentElement('afterend', eye)
   })
 
-  // ---- active classes for menus ----
   document.querySelectorAll('a.active-link').forEach((link) => {
     if (link.parentElement) link.parentElement.classList.add('active-list')
     ancestorsOf(link, 'ul').forEach((list) => {
@@ -122,10 +107,6 @@ function checkAll(state) {
     })
   })
 
-  // Modal-opening ("a.modalbox"/"a.modal"/".modalbox a") links are now handled by
-  // javascripts/yw-core.js's openRemoteModal, matching this exact same markup contract
-  // (href/data-size/data-iframe/data-header/title) so no template needed to change.
-
   document.addEventListener('click', (e) => {
     const newTabLink = e.target.closest('a.newtab')
     if (newTabLink) {
@@ -134,7 +115,6 @@ function checkAll(state) {
     }
   })
 
-  // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   document.addEventListener(
     'dblclick',
     (e) => {
@@ -150,20 +130,14 @@ function checkAll(state) {
     true,
   )
 
-  // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
   document.querySelectorAll('.modal, .yw-modal').forEach((modal) => {
     document.body.appendChild(modal)
   })
 
-  // Remove hidden div by ACL
   document
     .querySelectorAll('.remove-this-div-on-page-load')
     .forEach((el) => el.remove())
 
-  // Tooltips ([data-toggle="tooltip"]/[data-tooltip="tooltip"] + title) are pure
-  // CSS now (yw-core.css) — no init call needed.
-
-  // ---- moteur de recherche utilisé dans un template ----
   document.querySelectorAll('a[href="#search"]').forEach((trigger) => {
     trigger.addEventListener('click', (e) => {
       e.preventDefault()
@@ -191,10 +165,6 @@ function checkAll(state) {
     searchWidget.addEventListener('keyup', closeSearchIfAsked)
   }
 
-  // Tab switching + history (formerly jQuery historyTabs + the next/previous
-  // buttons hack) is handled by yw-core.js's tabs primitive.
-
-  // ---- double clic on the navbar: modal listing its editable pages ----
   document.querySelectorAll('.navbar, .yw-topnav').forEach((navbar) => {
     navbar.addEventListener('dblclick', (e) => {
       e.preventDefault()
@@ -246,7 +216,6 @@ function checkAll(state) {
 
       document.body.appendChild(modal)
       modal.classList.add('yw-modal--open')
-      // single-use modal: remove it from the DOM as soon as it gets closed
       const cleanup = new MutationObserver(() => {
         if (!modal.classList.contains('yw-modal--open')) {
           cleanup.disconnect()
@@ -257,9 +226,6 @@ function checkAll(state) {
     })
   })
 
-  // ---- AUTO RESIZE IFRAME ----
-  // the vendored iframe-resizer build exposes a plain window.iFrameResize()
-  // (its jQuery plugin registration is optional) — load it on demand
   if (document.querySelector('iframe.auto-resize')) {
     const script = document.createElement('script')
     script.src = 'javascripts/vendor/iframe-resizer/iframeResizer.min.js'
@@ -274,7 +240,6 @@ function checkAll(state) {
     document.body.appendChild(script)
   }
 
-  // ouvrir les liens dans une nouvelle fenetre
   const openInNewWindow = () => {
     document.querySelectorAll('.new-window:not([target])').forEach((link) => {
       link.setAttribute('target', '_blank')
@@ -283,7 +248,6 @@ function checkAll(state) {
   openInNewWindow()
   document.addEventListener('yw-modal-open', openInNewWindow)
 
-  // ---- acl switch ----
   const aclSwitch = document.getElementById('acl-switch-mode')
   if (aclSwitch) {
     const clearValue = (el) => {
@@ -295,7 +259,6 @@ function checkAll(state) {
     }
     const applyAclMode = () => {
       if (aclSwitch.checked) {
-        // show advanced
         document.querySelectorAll('.acl-simple').forEach((el) => {
           el.style.display = 'none'
           clearValue(el)
@@ -325,11 +288,6 @@ function checkAll(state) {
     applyAclMode()
   }
 
-  // Tables: sort/search/pagination is yw-datatable.js's job now, self-initialized
-  // on any table[data-yw-datatable] — no per-page init call needed here.
-
-  /** comments */
-
   /** The comment box, whichever editor is drawing it. */
   function commentEditor() {
     return window.ywEditors?.body
@@ -357,9 +315,6 @@ function checkAll(state) {
       .forEach((btn) => btn.remove())
     const postButton = form.querySelector('.btn-post-comment')
     if (postButton) postButton.textContent = _t('SAVE')
-    // through the handle every editor publishes, not the ACeditor's own instance: the
-    // comment box is `{{aceditor name="body"}}`, and which editor that renders is the
-    // reader's choice (editor-handles.js)
     commentEditor()?.setValue('')
   }
 
@@ -370,7 +325,6 @@ function checkAll(state) {
     form.appendChild(cancel)
   }
 
-  // ajax post comment
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-post-comment')
     if (
@@ -391,8 +345,6 @@ function checkAll(state) {
             links.classList.remove('hide')
           })
         })
-        // we place the new comment in different places if its an answer,
-        // a modification or a new comment
         if (form.classList.contains('comment-modify')) {
           const holder = document.createElement('div')
           holder.innerHTML = payload.html
@@ -413,7 +365,6 @@ function checkAll(state) {
       })
   })
 
-  // when a comment-form is already opened somewhere, close it and restore that comment
   function closeOpenedCommentForm() {
     const opened = document.querySelector('.temporary-form')
     if (!opened) return
@@ -426,7 +377,6 @@ function checkAll(state) {
     resetCommentForm(opened)
   }
 
-  // ajax answer comment
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-answer-comment')
     if (!button) return
@@ -434,7 +384,6 @@ function checkAll(state) {
     const com = button.parentElement.parentElement
     closeOpenedCommentForm()
 
-    // move the comment form here and change some options
     const formAnswer = com.querySelector('.comment-reponses')
     if (!formAnswer) return
     const postComment = document.getElementById('post-comment')
@@ -456,14 +405,12 @@ function checkAll(state) {
       .forEach((label) => label.classList.add('hide'))
   })
 
-  // ajax edit comment
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-edit-comment')
     if (!button) return
     e.preventDefault()
     const com = button.parentElement.parentElement
 
-    // hide comment and comment links while editor is open
     const commentHtml = com.querySelector('.comment-html')
     if (commentHtml) commentHtml.classList.add('hide')
     const commentLinks = com.querySelector('.comment-links')
@@ -471,7 +418,6 @@ function checkAll(state) {
 
     closeOpenedCommentForm()
 
-    // move the comment form here and change some options
     const formcom = com.querySelector('.form-comment')
     if (!formcom) return
     const postComment = document.getElementById('post-comment')
@@ -504,13 +450,11 @@ function checkAll(state) {
     })
   })
 
-  // cancel comment edit
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-cancel-comment')
     if (!button) return
     e.preventDefault()
     const com = button.parentElement.parentElement.parentElement
-    // restore html comment and links
     const commentHtml = com.querySelector('.comment-html')
     if (commentHtml) commentHtml.classList.remove('hide')
     const commentLinks = com.querySelector('.comment-links')
@@ -523,7 +467,6 @@ function checkAll(state) {
     resetCommentForm(document.getElementById(`form-comment-${com.dataset.tag}`))
   })
 
-  // ajax delete comment
   document.addEventListener('click', (e) => {
     const link = e.target.closest('.btn-delete-comment')
     if (!link) return
@@ -545,9 +488,6 @@ function checkAll(state) {
       })
   })
 
-  /** reactions */
-
-  // init user reaction count
   document.querySelectorAll('.reactions-container').forEach((container) => {
     const userReaction = container.querySelectorAll('.user-reaction').length
     const maxReaction = container.querySelector('.max-reaction')
@@ -556,7 +496,6 @@ function checkAll(state) {
     }
   })
 
-  // Reaction Management Helper
   const reactionManagementHelper = {
     renderAjaxError(translation, payload) {
       const details = payload && payload.error ? payload.error : ''
@@ -642,7 +581,6 @@ function checkAll(state) {
       })
   }
 
-  // handler reaction click
   document.addEventListener('click', (e) => {
     const link = e.target.closest('.link-reaction')
     if (!link) return
@@ -652,19 +590,15 @@ function checkAll(state) {
     if (url === '#') return
 
     if (link.classList.contains('user-reaction')) {
-      // on supprime la reaction
       if (typeof blockReactionRemove !== 'undefined' && blockReactionRemove) {
         if (blockReactionRemoveMessage) {
           toastMessage(blockReactionRemoveMessage, 3000, 'alert alert-warning')
         }
         return
       }
-      deleteUserReaction(url, data, nb, nbInit, link).catch(() => {
-        /* do nothing */
-      })
+      deleteUserReaction(url, data, nb, nbInit, link).catch(() => {})
       return
     }
-    // on ajoute la reaction si le max n'est pas dépassé
     const maxReaction = maxReactionOf(link)
     const nbReactionLeft = maxReaction ? parseFloat(maxReaction.textContent) : 0
     if (
@@ -692,9 +626,7 @@ function checkAll(state) {
             .then(() => {
               link.click()
             })
-            .catch(() => {
-              /* do nothing */
-            })
+            .catch(() => {})
           return
         }
       }
@@ -735,7 +667,6 @@ function checkAll(state) {
     }
   })
 
-  // ---- comments table: multi-delete modal ----
   const commentsDeleteModal = document.getElementById(
     'commentsTableDeleteModal',
   )
@@ -753,7 +684,7 @@ function checkAll(state) {
       )
       if (!deleteButton) return
       deleteButton.removeAttribute('disabled')
-      const opener = event.detail.relatedTarget // Button that triggered the modal
+      const opener = event.detail.relatedTarget
       const name = opener ? opener.dataset.name : ''
       const nameHolder = modal.querySelector('#commentToDelete')
       if (nameHolder) nameHolder.textContent = name
@@ -804,7 +735,6 @@ function checkAll(state) {
     })
   }
 
-  // a11y
   const jumpToContent = document.getElementById('yw-a11y-jump-content')
   if (jumpToContent) {
     jumpToContent.addEventListener('click', () => {

@@ -58,7 +58,6 @@ const app = createApp({
               )
           },
           (pError) => {
-            // on error
             this.message = _t(
               `ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() !== '' ? ` : ${pError}` : ''}`,
             )
@@ -349,7 +348,6 @@ const app = createApp({
             }
           },
           (pError) => {
-            // if error
             this.endStartingUpdateError(pError)
           },
         )
@@ -384,7 +382,6 @@ const app = createApp({
       if (!this.callAsync) {
         const controller = new AbortController()
         options.signal = controller.signal
-        // timeout 10 minutes if sync
         setTimeout(() => {
           controller.abort()
         }, 6000000)
@@ -462,7 +459,6 @@ const app = createApp({
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         },
         () => {
-          // if error
           this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR')
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
           this.updating = false

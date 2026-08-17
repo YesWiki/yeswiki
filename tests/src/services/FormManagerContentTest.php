@@ -12,10 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression/acceptance tests for ticket 05 (forms become Content): forms are now `pages`
- * rows typed via a TYPE_URI='form' triple instead of standalone `nature` rows, keep a
- * stable numeric id (id, embedded in `body`) distinct from their renameable
- * `tag`, and get ACLs via `metadata.acls` (ticket 03's mechanism).
+ * Regression/acceptance tests for ticket 05 (forms become Content): forms are now `pages` rows typed via a TYPE_URI='form' triple instead of standalone `nature` rows, keep a stable numeric id (id, embedded in `body`) distinct from their renameable `tag`, and get ACLs via `metadata.acls` (ticket 03's mechanism).
  */
 class FormManagerContentTest extends YesWikiTestCase
 {
@@ -52,11 +49,9 @@ class FormManagerContentTest extends YesWikiTestCase
             $this->assertIsArray($form);
             $tag = $form['tag'];
 
-            // it's a genuine `pages` row ...
             $page = $pageManager->getOne($tag, null, true, true);
             $this->assertIsArray($page);
 
-            // ... whose own `type` column says what kind of Content it is (ticket 27)
             $this->assertSame(PageType::FORM, $page['type']);
             $this->assertSame(PageType::FORM, $pageManager->typeOf($tag));
         } finally {
@@ -112,7 +107,6 @@ class FormManagerContentTest extends YesWikiTestCase
             $first = $formManager->getOne(self::FORM_ID);
             $second = $formManager->getOne(self::OTHER_FORM_ID);
 
-            // new form tags are lowercase slugs, collisions suffixed -2 (ADR-0010)
             $this->assertNotSame($first['tag'], $second['tag']);
             $this->assertSame('samelabel', $first['tag']);
             $this->assertSame('samelabel-2', $second['tag']);
@@ -172,16 +166,13 @@ class FormManagerContentTest extends YesWikiTestCase
             $newTag = $formManager->renameTag(self::FORM_ID, 'RenamedTag');
             $this->assertSame('RenamedTag', $newTag);
 
-            // stable numeric id resolves to the new tag
             $byId = $formManager->getOne(self::FORM_ID);
             $this->assertSame($newTag, $byId['tag']);
 
-            // the OLD tag still resolves (via the former-tag alias triple)
             $byOldTag = $formManager->getOne($oldTag);
             $this->assertIsArray($byOldTag);
             $this->assertSame($newTag, $byOldTag['tag']);
 
-            // the entry (keyed off the stable numeric id, not the tag) is unaffected
             $this->assertTrue($entryManager->isEntry(self::ENTRY_TAG));
             $fetchedEntry = $entryManager->getOne(self::ENTRY_TAG);
             $this->assertSame(self::FORM_ID, $fetchedEntry['form_id']);
@@ -206,8 +197,6 @@ class FormManagerContentTest extends YesWikiTestCase
                 'sem_type' => 'Event',
             ]);
 
-            // simulate the admin edit form's submission, which doesn't carry
-            // sem_context/sem_type (they aren't exposed in that UI)
             $formManager->update([
                 'id' => self::FORM_ID,
                 'label' => 'Updated label',
@@ -248,10 +237,8 @@ class FormManagerContentTest extends YesWikiTestCase
             $this->assertNotEmpty($form['activitypub_private_key']);
             $this->assertNotEmpty($form['activitypub_public_key']);
 
-            // actor URIs are keyed off the stable numeric id -- unaffected by any future rename
             $this->assertStringEndsWith('/actors/' . self::FORM_ID, $activityPubService->getFormActorUri($form));
 
-            // editing the form again (without touching activitypub fields) keeps the same keypair
             $formManager->update([
                 'id' => self::FORM_ID,
                 'label' => 'FormManagerContentTest activitypub form updated',
@@ -269,13 +256,6 @@ class FormManagerContentTest extends YesWikiTestCase
 
     public function testSetActivitypubKeypairRestoresAPreviouslyPublishedKeyAfterCreate()
     {
-        // regression test for MigrateNatureToPages: create() has no way to distinguish "a
-        // brand-new form" from "an existing, already-federating form being migrated" and
-        // always generates a fresh keypair when ActivityPub is enabled -- the migration
-        // must stash the real keypair and restore it via setActivitypubKeypair() afterwards,
-        // or an upgrading install silently breaks federation for that form (the actor URL
-        // still resolves, but the key behind it changes, so existing followers can no
-        // longer verify signed activity).
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
@@ -297,7 +277,7 @@ class FormManagerContentTest extends YesWikiTestCase
             $form = $formManager->getOne(self::FORM_ID);
             $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['activitypub_private_key']);
             $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['activitypub_public_key']);
-            // enabled/username, set by create() and untouched by setActivitypubKeypair(), survive
+
             $this->assertSame('1', $form['activitypub_enable']);
             $this->assertSame('preexisting', $form['activitypub_username']);
         } finally {
@@ -307,18 +287,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
     public function testBazForFormsAndListsIdsNoLongerQueriesTheDroppedNatureTable()
     {
-        // regression test: formAndListIds() (src/bazar.functions.php, relocated
-        // from tools/bazar/libs/bazar.fonct.php by ticket 24; used by FormController and
-        // aceditor's ActionsBuilderService) used to run raw SQL
-        // against the `nature` table directly, bypassing FormManager -- now dropped, that
-        // would throw. It must go through FormManager::getAll() like everything else.
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
 
-        // formAndListIds() reads $GLOBALS['wiki'], only populated by the
-        // production HTTP bootstrap outside a real request -- see EntryManagerTest's
-        // docblock for the same pre-existing characteristic elsewhere in this tool
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {

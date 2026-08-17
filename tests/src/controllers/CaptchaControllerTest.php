@@ -14,9 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
 
 /**
- * Regression tests for ticket 15 (security-core-split): checkCaptchaBeforeSave() was merged
- * into CaptchaController from the former InputFilter, alongside the pre-existing
- * captcha image/hash logic it already owned.
+ * Regression tests for ticket 15 (security-core-split): checkCaptchaBeforeSave() was merged into CaptchaController from the former InputFilter, alongside the pre-existing captcha image/hash logic it already owned.
  */
 #[CoversMethod(CaptchaController::class, 'checkCaptchaBeforeSave')]
 class CaptchaControllerTest extends YesWikiTestCase

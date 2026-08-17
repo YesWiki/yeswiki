@@ -15,13 +15,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * `{{listpagestag}}` -- converted from the procedural actions/listpagestag.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{listpagestag}}` -- converted from the procedural actions/listpagestag.php by ticket 06. */
 class ListpagestagAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -74,10 +68,6 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -94,7 +84,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
         $nbcartrunc = 200;
         $tags = $this->getService(PerformableArguments::class)->get('tags');
         $type = $this->getService(PerformableArguments::class)->get('type');
-        // recuperation de tous les parametres
+
         $lienedit = '';
         $class = $this->getService(PerformableArguments::class)->get('class');
         $nb = $this->getService(PerformableArguments::class)->get('nb');
@@ -106,18 +96,14 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
 
         $output = '';
 
-        // affiche le resultat de la recherche
         $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $sort);
         if ($resultat) {
             $nb_total = count($resultat);
-            // a result set holding only the current page skips every iteration below, and the
-            // render after the loop reads this either way (ticket 40)
+
             $element = [];
-            // affichage des resultats
+
             foreach ($resultat as $page) {
-                // on inclue pas la page en elle meme, sinon boucle infinie
                 if ($page['tag'] != $this->getService(PageContext::class)->getTag()) {
-                    // rows come straight from SQL, so the body is still encoded here
                     $page['body'] = PageBody::decode($page['body']);
                     $element[$page['tag']]['tagnames'] = '';
                     $element[$page['tag']]['tagbadges'] = '';

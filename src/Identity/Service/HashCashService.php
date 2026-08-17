@@ -20,23 +20,9 @@ class HashCashService
         $this->container = $container;
     }
 
-    /**
-     * Absorbed from src/wp-hashcash.lib by wave-two ticket 05 (CP3). That file declared
-     * eight global constants and three global functions; only two constants and two
-     * functions were ever used, all of them from this class, and every method here opened
-     * with a `require_once` of it. Five constants and hashcash_verbage() were dead.
-     */
+    /** Absorbed from src/wp-hashcash.lib by wave-two ticket 05 (CP3). */
     private function secretFile(): string
     {
-        // The INSTANCE's cache, not the source's. `cache/` is instance data -- provisioned
-        // per wiki by src/bootstrap_paths.php -- and this was the one place in the codebase
-        // writing into the shared source tree instead. On a farm that tree is one folder
-        // behind every wiki on the server and is routinely not writable by the web user, so
-        // the fopen() below returned false and fclose(false) took the whole page down with
-        // "Argument #1 ($stream) must be of type resource".
-        //
-        // It is also the secret two wikis must not share: it is the answer to the puzzle
-        // their visitors are being asked, and one of them rewrites it every four hours.
         return YESWIKI_INSTANCE_DIR . '/cache/hashcash.key';
     }
 
@@ -64,19 +50,10 @@ class HashCashService
     /** The current secret key, or '' when there is none to be had. */
     private function secretValue(): string
     {
-        // the original guarded this with function_exists('file_get_contents') and a
-        // fopen/fread fallback -- that function has been unconditionally available for
-        // the entire life of PHP 5+, let alone the ^8.3 this requires. `@` because a
-        // missing key is a state this class handles, not a warning to print into a page.
         return (string)@file_get_contents($this->secretFile());
     }
 
-    /**
-     * Write a fresh secret, and say whether it could be written at all.
-     *
-     * Everything here hangs on this file: no file, no puzzle to pose and no answer to
-     * check. Rather than let each caller discover that through a warning, they ask.
-     */
+    /** Write a fresh secret, and say whether it could be written at all. */
     private function refreshSecret(): bool
     {
         return @file_put_contents($this->secretFile(), (string)rand(21474836, 2126008810)) !== false;
@@ -95,19 +72,14 @@ class HashCashService
     }
 
     /**
-     * Verifies the submitted hashcash_value POST field against the current server-side
-     * puzzle answer (see getKeyScript()). Returns true when hashcash is disabled (nothing
-     * to check) or the value matches; false when enabled and the value is missing/wrong.
-     * Consolidates a check previously duplicated between the edit and add-comment flows.
+     * Verifies the submitted hashcash_value POST field against the current server-side puzzle answer (see getKeyScript()).
      */
     public function checkHashcash(): bool
     {
         if (empty($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
             return true;
         }
-        // a wiki that cannot keep the secret was never able to pose the puzzle either
-        // (getJavascriptCode() renders nothing), so there is nothing to check -- and
-        // refusing every save because a cache folder is read-only helps nobody
+
         if (!$this->hasSecret()) {
             return true;
         }
@@ -118,8 +90,6 @@ class HashCashService
 
     public function getJavascriptCode($formId = 'ACEditor')
     {
-        // No secret, no puzzle: say nothing rather than pose a question nobody can mark.
-        // checkHashcash() reads the same state and lets the save through.
         if (!$this->hasSecret()) {
             return '';
         }
@@ -130,10 +100,7 @@ class HashCashService
     }
 
     /**
-     * The bootstrap script served at GET ?api/hashcash: inserts the hidden "hashcash_value"
-     * field into the given form, then fetches the actual puzzle from getKeyScript() below.
-     * Equivalent of the old tools/security/wp-hashcash-js.php, served directly by URL - which
-     * doesn't exist as a physical file on farm instances (see src/bootstrap_paths.php).
+     * The bootstrap script served at GET ?api/hashcash: inserts the hidden "hashcash_value" field into the given form, then fetches the actual puzzle from getKeyScript() below.
      */
     public function getEnableScript(string $formId): string
     {
@@ -208,10 +175,7 @@ class HashCashService
     }
 
     /**
-     * The actual proof-of-work puzzle served at GET ?api/hashcash/key: obfuscated JS that
-     * evaluates to the current secret (see secretValue() above), so a
-     * real browser (but not a naive spam bot) ends up posting the right hashcash_value.
-     * Equivalent of the old tools/security/wp-hashcash-getkey.php, served directly by URL.
+     * The actual proof-of-work puzzle served at GET ?api/hashcash/key: obfuscated JS that evaluates to the current secret (see secretValue() above), so a real browser (but not a naive spam bot) ends up posting the right hashcash_value.
      */
     public function getKeyScript(): string
     {
@@ -224,18 +188,12 @@ class HashCashService
 
         $type = rand(0, 3) * 0;
         switch ($type) {
-            /* Addition of n times of field value / n, + modulus:
-            Time guarantee:  100 iterations or less */
             case 0:
                 $eax = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $eax;
 
                 $val = intval($this->secretValue());
-                // A secret that is missing, empty or not a number at all intval()s to 0,
-                // and the increment drawn from it is then 0 too -- so this divided by zero
-                // and the route answered with an HTML fatal-error page, which the browser
-                // eval()s ("Unexpected token '<'"). The puzzle is degenerate when the
-                // secret is, but it must not be fatal.
+
                 $inc = $val > 1 ? max(1, rand(intval($val / 100), $val - 1)) : 1;
                 $n = floor($val / $inc);
                 $r = $val % $inc;
@@ -249,8 +207,6 @@ class HashCashService
                 $js .= "return $eax; ";
                 break;
 
-                /* Conversion from binary:
-                Time guarantee:  log(n) iterations or less */
             case 1:
                 $eax = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $eax;
@@ -276,8 +232,6 @@ class HashCashService
 
                 break;
 
-                /* Multiplication of square roots:
-                Time guarantee:  constant time */
             case 2:
                 $val = intval($this->secretValue());
                 $sqrt = floor(sqrt($val));
@@ -285,8 +239,6 @@ class HashCashService
                 $js .= "return $sqrt * $sqrt + $r; ";
                 break;
 
-                /* Sum of random numbers to the final value:
-                Time guarantee:  log(n) expected value */
             case 3:
                 $val = intval($this->secretValue());
                 $js .= 'return ';
@@ -308,7 +260,6 @@ class HashCashService
 
         $js .= "} $functionName ();";
 
-        // xor all the bytes with a random key
         $key = rand(21474836, 2126008810);
         $js = self::strToLongs($js);
 
@@ -316,13 +267,11 @@ class HashCashService
             $js[$i] = $js[$i] ^ $key;
         }
 
-        // libs function encapsulation
         $libsName = $this->randomString(rand(6, 18), $expired);
         $expired[] = $libsName;
 
         $libs = "function $libsName(){";
 
-        // write bytes to javascript, xor with key
         $dataName = $this->randomString(rand(6, 18), $expired);
         $expired[] = $dataName;
 
@@ -331,25 +280,21 @@ class HashCashService
             $libs .= $dataName . '[' . $i . '] = ' . $js[$i] . ' ^ ' . $key . '; ';
         }
 
-        // convert bytes back to string
         $libs .= " var a = new Array($dataName.length); ";
         $libs .= 'for (var i=0; i<' . $dataName . '.length; i++) { ';
         $libs .= 'a[i] = String.fromCharCode(' . $dataName . '[i] & 0xFF, ' . $dataName . '[i]>>>8 & 0xFF, ';
         $libs .= $dataName . '[i]>>>16 & 0xFF, ' . $dataName . '[i]>>>24 & 0xFF); } ';
         $libs .= "return eval(a.join('')); ";
 
-        // call libs function
         $libs .= "} $libsName();";
 
         return $libs;
     }
 
-    // pack bytes
     private static function strToLongs($s)
     {
         $l = [];
 
-        // pad $s to some multiple of 4
         $s = preg_split('//', $s, -1, PREG_SPLIT_NO_EMPTY);
 
         while (count($s) % 4 != 0) {

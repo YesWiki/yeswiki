@@ -1,5 +1,5 @@
 {% if field.propertyname == 'bf_date_fin_evenement' and canRegisterMultipleEntries %}
-    {# reuse layout #}
+
     {% embed "@core/layouts/input.twig" with {
         field: {
             name: field.name,
@@ -37,7 +37,7 @@
                 </select>
                 <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
             </div>
-            {# force !important for hiding because datePicker force display #}
+
             <div class="event-container-for-datepicker" :style="{display:isRecurrent ? null : 'none !important'}">
                 <div class="input-prepend input-group specific-for-recurrence">
                     <span class="add-on input-group-addon">
@@ -173,7 +173,7 @@
                         :name="`{{ field.propertyName }}_data[days][${idx}]`"
                         :value="day"
                         />
-                    
+
                     <div class="input-prepend input-group">  
                         <span class="add-on input-group-addon">{{ _t('EVENT_EXCEPT_LABEL') }}</span>
                         <select v-model="newExcept">
@@ -181,7 +181,7 @@
                             <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
                         </select>
                     </div>
-                    
+
                     <template v-for="(exceptDate,idx) in except">
                         <div>
                             {{ "{{exceptDate}}" }}

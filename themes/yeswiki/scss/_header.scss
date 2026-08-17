@@ -1,11 +1,10 @@
-/* ---- header ---- */
 #yw-header {
-  background: var(--yw-surface-raised);
+  background: var(--yw-surface);
   color: var(--yw-text);
 }
 
 #yw-header .navbar-header {
-  display: none; /* brand is already in the top bar */
+  display: none;
 }
 
 #yw-header .yw-headerpage {
@@ -19,11 +18,6 @@
   color: var(--yw-heading-1);
 }
 
-/* Nothing to show when PageHeader is empty -- unless an admin's "edit the banner" pencil is
-   in there (ticket 30), which is exactly the case where the banner most needs offering: it is
-   empty, and that emptiness is the thing you would want to fix. Then the header collapses to
-   a slim strip carrying the pencil alone, which needs a height of its own because the pencil
-   is absolutely positioned and would otherwise have nothing to sit in. */
 #yw-header:not(:has(.yw-headerpage *)):not(:has(.yw-chrome-edit)) {
   display: none;
 }

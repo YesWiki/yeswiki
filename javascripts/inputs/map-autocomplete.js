@@ -1,11 +1,5 @@
-// map-autocomplete.js — postal-code/town suggestions for the map field's address
-// inputs (ticket 16: vanilla, on yw-autocomplete instead of bootstrap3-typeahead)
 ;(function () {
-  // Ticket 14: keyed on the map field itself rather than on a page-global
-  // `autocompleteFieldnames`, and driven by ywInitEach so a map arriving in a fragment gets
   // its autocomplete too. The global could only ever describe one map -- a second map field
-  // on the same form silently overwrote the first one's field names -- while
-  // `data-field-names` is already rendered per field by templates/inputs/map.twig.
   ywInitEach('.geocode-input[data-field-names]', (mapField) => {
     let fieldNames
     try {
@@ -36,7 +30,6 @@
       return result
     }
 
-    // a hint row carries no `ville`: picking it must not overwrite the inputs
     function applySelection(item) {
       if (!item.ville) return
       inputCp.value = item.id

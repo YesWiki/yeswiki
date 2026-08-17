@@ -16,7 +16,9 @@ abstract class Importer
     protected ImporterManager $importerManager;
     protected FormManager $formManager;
     protected ListManager $listManager;
-    /** @var array<string, mixed> this importer's own data source options */
+    /**
+     * @var array<string, mixed> this importer's own data source options
+     */
     protected array $config = [];
 
     public function __construct(
@@ -53,19 +55,13 @@ abstract class Importer
     {
     }
 
-    /**
-     * Everything this source has to offer, in whatever shape it comes in.
-     */
+    /** Everything this source has to offer, in whatever shape it comes in. */
     public function getData(): mixed
     {
         return null;
     }
 
-    /**
-     * Turn what getData() fetched into what syncData() writes. Declared here because
-     * ImporterManager drives every importer through getData() -> mapData() -> syncData();
-     * an importer with nothing to map returns $data unchanged.
-     */
+    /** Turn what getData() fetched into what syncData() writes. */
     public function mapData(mixed $data): mixed
     {
         return $data;
@@ -83,14 +79,7 @@ abstract class Importer
     }
 
     /**
-     * Declare the config fields this importer needs, so AdminImportersAction (from this
-     * extension) can render/save them for the admin, even when the importer itself lives
-     * in another extension.
-     * Each entry: 'key' => ['type' => 'text'|'url'|'password'|'checkbox'|'select'|'number',
-     * 'required' => bool, 'options' => [value => labelKey] (select only),
-     * 'label' => labelKey (optional, defaults to "IMPORTER_FIELD_{KEY}"),
-     * 'help' => labelKey (optional hint displayed under the field)]
-     * A key prefixed "auth_" is stored nested as config['auth'][...] (e.g. "auth_user" -> auth.user).
+     * Declare the config fields this importer needs, so AdminImportersAction (from this extension) can render/save them for the admin, even when the importer itself lives in another extension.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -99,23 +88,14 @@ abstract class Importer
         return [];
     }
 
-    /**
-     * Whether this importer creates/updates Bazar entries and therefore needs a target Bazar formId.
-     */
+    /** Whether this importer creates/updates Bazar entries and therefore needs a target Bazar formId. */
     public static function needsBazarForm(): bool
     {
         return true;
     }
 
     /**
-     * Declare the fixed set of fields this importer writes into an entry, so
-     * AdminImportersAction can offer a field-mapping table when the admin points it at an
-     * already-existing Bazar form instead of letting it create its own. Only list fields safe
-     * to rename: an importer must not include here any key it also relies on programmatically
-     * after mapData() (e.g. a dedup/identity key), since applyFieldsMapping() would rename it
-     * away. Return [] (the default) if this importer has no fixed field list to offer (e.g. it
-     * fetches an arbitrary remote form's fields instead, like YesWikiToYesWikiImporter).
-     * Each entry: ['key' => propertyName, 'label' => humanLabel].
+     * Declare the fixed set of fields this importer writes into an entry, so AdminImportersAction can offer a field-mapping table when the admin points it at an already-existing Bazar form instead of letting it create its own.
      *
      * @return list<array{key: string, label: string}>
      */
@@ -125,30 +105,21 @@ abstract class Importer
     }
 
     /**
-     * Whether this importer can offer a field-mapping table built from a remote form fetched
-     * live (ImporterManager::getFieldMapping()), rather than from a fixed getOwnFields() list.
+     * Whether this importer can offer a field-mapping table built from a remote form fetched live (ImporterManager::getFieldMapping()), rather than from a fixed getOwnFields() list.
      */
     public static function hasRemoteFieldMapping(): bool
     {
         return false;
     }
 
-    /**
-     * Normalize a raw admin-posted field value before it's stored in config, e.g. to recover
-     * from a common paste mistake (a full API url pasted where only the wiki's base url is
-     * expected). Default: no-op. Override for fields whose expected shape can be sanitized.
-     */
+    /** Normalize a raw admin-posted field value before it's stored in config, e.g. */
     public static function normalizeAdminFieldValue(string $key, mixed $value): mixed
     {
         return $value;
     }
 
     /**
-     * Normalize the whole set of admin-posted options before it's stored in config, for
-     * importers whose config keys can't be derived one field at a time (e.g. a single pasted
-     * url that carries several config values at once). Applied by
-     * ImporterManager::collectSourceOptionsFromInput(), so both the admin page and the
-     * field-mapping AJAX endpoint see the same normalized options. Default: no-op.
+     * Normalize the whole set of admin-posted options before it's stored in config, for importers whose config keys can't be derived one field at a time (e.g.
      *
      * @param array<string, mixed> $options
      *
@@ -160,9 +131,7 @@ abstract class Importer
     }
 
     /**
-     * Reverse of normalizeAdminOptions(): rebuild, from the stored config, the values to
-     * prefill the admin form with when editing a source, so that re-saving an unmodified
-     * source is a no-op. Default: no-op.
+     * Reverse of normalizeAdminOptions(): rebuild, from the stored config, the values to prefill the admin form with when editing a source, so that re-saving an unmodified source is a no-op.
      *
      * @param array<string, mixed> $options
      *
@@ -172,8 +141,6 @@ abstract class Importer
     {
         return $options;
     }
-
-    // HELPERS
 
     /**
      * @template T
@@ -188,9 +155,7 @@ abstract class Importer
     }
 
     /**
-     * Rename this importer's own field keys to the local form's field keys, per
-     * config['fieldsMapping'] (built from the admin's field-mapping table, itself populated
-     * from getOwnFields()). A no-op when no mapping was configured (own form, field-for-field).
+     * Rename this importer's own field keys to the local form's field keys, per config['fieldsMapping'] (built from the admin's field-mapping table, itself populated from getOwnFields()).
      *
      * @param array<string, mixed> $entry
      *

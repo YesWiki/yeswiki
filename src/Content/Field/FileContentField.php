@@ -2,43 +2,31 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * The bytes of a file Content (`contenu_fichier`, ticket 13).
- *
- * Every other locked field of the File type -- `original_filename`, `stored_filename`,
- * `size`, `mime_type` -- is *derived* from an upload, not typed in, so a File form made
- * only of text inputs could describe a file but never produce one. This field is the
- * upload itself: it renders a file input, hands the bytes to FileManager, and returns the
- * attributes the others hold.
- *
- * It is deliberately NOT the existing `fichier` FileField, which stores under
- * `$type . $name` (so `fichiercontenu`, not the names FileManager reads) and writes
- * through bazar's attachment path into the web-servable `files/` directory -- the very
- * directory ticket 17 moved file bytes out of, and one FileManager cannot read.
- */
+/** The bytes of a file Content (`contenu_fichier`, ticket 13). */
 #[\Field(['contenu_fichier'])]
 class FileContentField extends BazarField
 {
-    // ticket 18: the bytes of an upload -- extracting text from them is its own ticket
     use ContributesNoSearchableText;
 
-    /** @param array<int|string, mixed> $values */
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->type = 'file';
-        // the upload is not stored under this field's own name: it becomes the file
-        // attributes, which is what formatValuesBeforeSave() returns
+
         $this->propertyName = $this->name;
     }
 
-    /** @param array<string, mixed> $entry */
+    /**
+     * @param array<string, mixed> $entry
+     */
     protected function renderInput($entry): string
     {
         $storedFilename = $entry['stored_filename'] ?? '';
@@ -56,11 +44,7 @@ class FileContentField extends BazarField
     }
 
     /**
-     * The upload is read straight from the request rather than from $entry: a file has no
-     * text value to carry around, and PHP puts uploads in $_FILES, not in the posted body.
-     *
-     * Nothing is returned when no file was sent, so editing a File without re-uploading
-     * leaves the existing bytes exactly where they are.
+     * The upload is read straight from the request rather than from $entry: a file has no text value to carry around, and PHP puts uploads in $_FILES, not in the posted body.
      *
      * @param array<string, mixed> $entry
      *
@@ -77,7 +61,9 @@ class FileContentField extends BazarField
         return $this->getService(FileManager::class)->storeUpload($uploadedFile);
     }
 
-    /** @param array<string, mixed> $entry */
+    /**
+     * @param array<string, mixed> $entry
+     */
     protected function renderStatic($entry): string
     {
         $tag = $entry['tag'] ?? '';

@@ -40,10 +40,9 @@ const BazarMapComponent = {
         zoomControl: this.params.navigation,
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
-          title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
-          titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
-          // content: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#maximize"/></svg>', // change the content of the button, can be HTML, default null
-          forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
+          title: _t('BAZ_FULLSCREEN'),
+          titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'),
+          forceSeparateButton: true,
         },
         maxZoom: 18,
       }
@@ -153,7 +152,6 @@ const BazarMapComponent = {
         }
       }
 
-      // Add layer control only if multiple layers are there
       if (
         Object.keys(baseLayers).length > 1 ||
         Object.keys(this.layers).length > 0
@@ -221,10 +219,6 @@ const BazarMapComponent = {
             entry.marker.on('click', (ev) => {
               ev.originalEvent?.preventDefault()
               window.open(entry.url)
-              // NOTE: this handler was a `function ()`, so `this` was Leaflet's marker and the
-              // `this.selectedEntry = entry` that stood here wrote a stray property on it
-              // rather than selecting anything. Dropped rather than made live by the arrow,
-              // to keep this sweep behaviour-preserving.
             })
           } else if (!isLink) {
             entry.marker.on('click', () => {
@@ -259,7 +253,6 @@ const BazarMapComponent = {
       if (entry.marker == null) {
         return false
       }
-      // Vue 3: use $slots instead of $scopedSlots
       const slots = this.$slots
       if (slots.popupentrywithhtmlrender != null) {
         if (entry.html_render == null) {
@@ -306,15 +299,12 @@ const BazarMapComponent = {
             })
           }
           this.$root.setEntryFromUrl(entry, url).then(() => {
-            // Triggers when the component is ready
             this.$nextTick(() => this.definePopupContent(entry))
           })
         } else {
-          // Triggers when the component is ready
           this.$nextTick(() => this.definePopupContent(entry))
         }
       } else if (slots.popupentry != null) {
-        // Triggers when the component is ready
         this.$nextTick(() => this.definePopupContent(entry))
       }
     },
@@ -348,7 +338,6 @@ const BazarMapComponent = {
 
       const newIds = newEntries.map((e) => e.tag)
 
-      // Remove geometries for entries no longer displayed
       if (oldEntries) {
         oldEntries.forEach((entry) => {
           if (!newIds.includes(entry.tag)) {
@@ -365,7 +354,6 @@ const BazarMapComponent = {
       newEntries.forEach((entry) => {
         this.createMarker(entry)
 
-        // Handle geometries - always added to map directly, not to cluster
         const lGeolocation = entry[this.params.geolocationfield]
         if (lGeolocation && lGeolocation.geometries && !entry.geometryGroup) {
           try {
@@ -391,12 +379,10 @@ const BazarMapComponent = {
         }
       })
 
-      // Handle markers - cluster mode uses clearLayers/addLayers, non-cluster adds to map
       if (this.params.cluster && this.$refs.cluster) {
         this.$refs.cluster.clearLayers()
         this.$refs.cluster.addLayers(currentMarkers)
       } else {
-        // For non-cluster mode, remove old markers not in new list
         if (oldEntries) {
           oldEntries.forEach((entry) => {
             if (!newIds.includes(entry.tag) && entry.marker) {
@@ -414,7 +400,6 @@ const BazarMapComponent = {
     onMapReady() {
       this.updateBounds()
       this.createTileLayers()
-      // Load initial entries now that map is ready
       this.$nextTick(() => {
         this.loadMapEntries(this.entries, null)
       })
@@ -452,7 +437,6 @@ const BazarMapComponent = {
       const newIds = newVal.map((e) => e.tag)
       const oldIds = oldVal ? oldVal.map((e) => e.tag) : []
 
-      // Only update if arrays differ
       if (!this.arraysEqual(newIds, oldIds)) {
         this.$nextTick(() => {
           this.loadMapEntries(newVal, oldVal)
@@ -472,13 +456,11 @@ const BazarMapComponent = {
         <l-marker-cluster ref="cluster" ></l-marker-cluster>
       </l-map>
 
-
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>` +
-    // popup content
     `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
         <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry}"></slot>
       </div>
@@ -491,6 +473,4 @@ const BazarMapComponent = {
   `,
 }
 
-// Register component globally for Vue 3 compatibility
-// This will be done by the app that imports it
 export default BazarMapComponent

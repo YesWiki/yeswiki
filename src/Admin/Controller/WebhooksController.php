@@ -20,16 +20,7 @@ use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
- * Outgoing webhooks on comment and bazar-entry events (ticket 20, formerly the
- * yeswiki-extension-webhooks repo). Absorbed as-is: fires on comment/entry
- * create/update/delete via the yeswiki.event_subscriber tag, subscriptions are
- * stored as JSON in the triple store. Scope unchanged — no form/user events.
- *
- * Two adaptations from the extension version, both disclosed in the ticket doc:
- * the interface_exists() compatibility split (WebhooksControllerCommons) is
- * collapsed into one class since core always ships symfony/event-dispatcher,
- * and the HTTP layer uses symfony/http-client (already a core dependency)
- * instead of Guzzle.
+ * Outgoing webhooks on comment and bazar-entry events (ticket 20, formerly the yeswiki-extension-webhooks repo).
  */
 class WebhooksController extends YesWikiController implements EventSubscriberInterface
 {
@@ -40,7 +31,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     public const WEBHOOKS_ACTION_MODIFIED_ENTRY = 'entry.updated';
     public const WEBHOOKS_ACTION_DELETED_ENTRY = 'entry.deleted';
 
-    // formerly tools/webhooks/wiki.php defines
     public const ACTION_ADD = 'add';
     public const ACTION_EDIT = 'edit';
     public const ACTION_DELETE = 'delete';
@@ -159,8 +149,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
      */
     public function securedExecution($function, $param1 = null, $param2 = null, $param3 = null)
     {
-        // outside the try, because the catch reads it: assigned as the first statement inside
-        // it could not actually be missed, but saying so is cheaper than proving it (ticket 40)
         $isMethod = (is_array($function) && count($function) == 2);
         try {
             if (!$isMethod) {
@@ -188,7 +176,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 nl2br(_t('WEBHOOKS_POST_ERROR'))
             );
 
-            // TODO find a way not to change config
             $this->getService(RuntimeConfig::class)['toast_class'] = 'alert alert-warning';
             $this->getService(RuntimeConfig::class)['toast_duration'] = 10000;
         }
@@ -203,8 +190,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         return $this->render('@core/webhooks/webhooks_form.twig', [
             'url' => getAbsoluteUrl(),
             'webhooks' => $this->get_all_webhooks(),
-            // the picker below is a list of names; the semantic check further down is what
-            // still needs whole forms
+
             'forms' => $this->formManager->getAllLabels(),
             'formats' => $this->params->get('webhooks_formats'),
             'showComment' => $this->showComments(),
@@ -213,30 +199,26 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
     protected function registerWebhooks()
     {
-        // First delete all existing triples for this resource
         $this->tripleStore->delete($this->getService(PageContext::class)->getTag(), self::VOCABULARY_WEBHOOK, null, '', '');
 
         $numFields = count($_POST['url']);
 
         for ($i = 0; $i < $numFields; $i++) {
             if ($_POST['url'][$i]) {
-                // Check that URL is valid
                 if (!$this->is_valid_url(trim($_POST['url'][$i]))) {
                     $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_INVALID_URL'));
                 }
 
                 $formId = ($_POST['form'][$i] !== 'comments') ? intval($_POST['form'][$i]) : 'comments';
-                // If ActivityPub is selected, check that the selected form(s) are semantic
+
                 if ($_POST['format'][$i] === self::FORMAT_ACTIVITYPUB) {
                     if ($formId === 0) {
-                        // Check that all forms are semantic
                         foreach ($this->formManager->getAll() as $form) {
                             if (!$form['sem_type']) {
                                 $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                             }
                         }
                     } elseif ($formId !== 'comments') {
-                        // Check that the selected form is semantic
                         $form = $this->formManager->getOne($formId);
                         if (!$form['sem_type']) {
                             $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
@@ -244,7 +226,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                     }
                 }
 
-                // All good, save webhook
                 $this->tripleStore->create(
                     $this->getService(PageContext::class)->getTag(),
                     self::VOCABULARY_WEBHOOK,
@@ -259,13 +240,11 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             }
         }
 
-        // Redirect so that we don't resubmit form on reload
         header('Location:' . $_SERVER['REQUEST_URI']);
     }
 
     public function get_all_webhooks($form_id = 0)
     {
-        // Select all webhooks
         $all_webhooks = array_map(function ($webhook) {
             return json_decode($webhook['value'], true);
         }, $this->tripleStore->getAll('BazaR', self::VOCABULARY_WEBHOOK, '', ''));
@@ -274,7 +253,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             return $all_webhooks;
         }
 
-        // Return only webhooks which must be called for this form_id
         return array_filter($all_webhooks, function ($webhook) use ($form_id) {
             return !isset($webhook['form']) || ($form_id != 'comments' && $webhook['form'] === 0) || $webhook['form'] === $form_id;
         });
@@ -342,17 +320,14 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     {
         if ($this->params->has('webhooks_activitypub_default_actor')
             && !empty($this->params->get('webhooks_activitypub_default_actor'))) {
-            // If a default global-wide actor is defined, use it
-            // (the extension version returned ->has() here — a pre-existing bug
-            // sending boolean true as the actor URI — fixed on absorption)
             return $this->params->get('webhooks_activitypub_default_actor');
         }
-        // If no field is marked as an actor, take the current logged-in user
+
         if (!$actor) {
             $user = $this->userManager->getLoggedUser();
             $actor = $this->getService(UrlFormatter::class)->href('', !empty($user['name']) ? $user['name'] : _t('WEBHOOKS_ANONYMOUS_USER'));
         }
-        // If a base URL is defined in the configs, replace the yeswiki base URL with it
+
         if ($this->params->has('webhooks_activitypub_actors_base_url')
             && !empty($this->params->get('webhooks_activitypub_actors_base_url'))) {
             $actor = str_replace($this->params->get('base_url'), '', $actor);
@@ -391,19 +366,17 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 } else {
                     $object = array_merge(
                         [
-                            // In ActivityPub, IDs and types are defined without the @ prefix (go figure ?)
                             'id' => $semanticData['@id'],
                             'type' => $semanticData['@type'],
                             'attributedTo' => $actorUri,
                             'to' => $to,
-                            // If published or updated are defined as a semantic field, this will be overwritten
+
                             'published' => $this->format_date_xsd($data['data']['created_at']),
                             'updated' => $this->format_date_xsd($data['data']['updated_at']),
                         ],
                         $data['data']['semantic']
                     );
 
-                    // Remove unused keys
                     unset($object['@context']);
                     unset($object['@type']);
                     unset($object['@id']);
@@ -429,7 +402,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 return ['text' => $data['text']];
 
             case self::FORMAT_YESWIKI:
-                // remove not used fields
                 foreach ($data['data'] as $key => $value) {
                     if (!in_array($key, ['tag', 'title', 'bf_titre', 'form_id', 'url', 'updated_at'], true)) {
                         unset($data['data'][$key]);
@@ -451,8 +423,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     protected function extract_url_options($webhook, $data)
     {
         $options = [];
-        // default (the extension version left $url undefined when a yeswiki-format
-        // webhook had no query string — fixed on absorption)
+
         $url = $webhook['url'];
         switch ($webhook['format']) {
             case self::FORMAT_YESWIKI:
@@ -460,7 +431,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 if (!empty($query)) {
                     parse_str($query, $queries);
 
-                    // get bearer
                     if (isset($queries['bearer'])) {
                         if (!empty($queries['bearer'])) {
                             $options['headers'] = ['Authorization' => 'Bearer ' . $queries['bearer']];
@@ -468,7 +438,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                         unset($queries['bearer']);
                     }
 
-                    // refresh url
                     array_walk($queries, function (&$item, $key) {
                         $item = empty($item)
                             ? $key
@@ -510,10 +479,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         $webhooks = $this->get_all_webhooks($form_id);
 
         if (count($webhooks) > 0) {
-            // Add the semantic data if they don't already exist
-
             if (!isset($data['semantic'])) {
-                // If one of the webhook is using ActivityPub
                 $activityPubWebhooks = array_filter($webhooks, function ($webhook) {
                     return $webhook['format'] === self::FORMAT_ACTIVITYPUB;
                 });
@@ -522,8 +488,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                     $data['semantic'] = $this->semanticTransformer->convertToSemanticData($data['form_id'], $data);
                 }
             }
-
-            // Prepare data to send
 
             $logged_user = $this->userManager->getLoggedUser();
             $logged_user_name = empty($logged_user) ? _t('WEBHOOKS_ANONYMOUS_USER') : $logged_user['name'];
@@ -537,14 +501,9 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 'data' => $data,
             ];
 
-            // Send data to all webhooks, concurrently (symfony/http-client requests
-            // are lazy: they all fire when the first response is consumed), with the
-            // same short timeout and ignore-errors behavior as the Guzzle version
             $client = HttpClient::create([
                 'headers' => ['Connection' => 'Close'],
-                // to prevent 504 error if a webhook is not reachable; unlike
-                // Guzzle's total-duration `timeout`, Symfony's `timeout` is an
-                // idle timeout — max_duration is what caps the whole request
+
                 'timeout' => 4,
                 'max_duration' => 4,
             ]);
@@ -559,17 +518,13 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                         $options + ['json' => $this->format_json_data($webhook['format'], $data_to_send)]
                     );
                 } catch (\Throwable $th) {
-                    // invalid URL etc. — skip this webhook, keep the others
                 }
             }
 
-            // Wait for the requests to complete, otherwise the code may end before
-            // the request is sent; errors (unreachable host, 5xx) are ignored
             foreach ($responses as $response) {
                 try {
                     $response->getStatusCode();
                 } catch (\Throwable $th) {
-                    // Do nothing on errors...
                 }
             }
         }

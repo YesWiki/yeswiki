@@ -1,138 +1,30 @@
-/* ============================================================
-   yw-core — every page
-
-   Core's own styling: the design tokens, the layout zones, the yw-* design system and
-   the legacy vocabulary that shares its rules. CoreAssets declares it on every render, so
-   nothing in here may be specific to a screen -- what a page only sometimes needs belongs
-   to one of the five conditional bundles beside it.
-
-   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
-   file: merging everything would have made ADR-0014's conditional declaration decorative and
-   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
-   it came from; add to the section a rule belongs to rather than to the end.
-
-   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
-   (declared by a section that carries an animation) and `styles/install.css` (the installer
-   renders before any of this exists).
-   ============================================================ */
-
-/* ============================================================
-   from styles/yw-core.css
-   ============================================================ */
-
-/* ============================================================
-   yw-core.css — all of core's own CSS in one file.
-
-   Part 1: base application styles (:root tokens, layout zones,
-   legacy feature styling — formerly yeswiki-base.css, merged here
-   and pruned to selectors actually emitted by core, the actions
-   catalog, or wiki content).
-   Part 2: the yw-*-namespaced design system (ADR-0004) plus the
-   legacy Bootstrap vocabulary shim for old templates and stored
-   wiki content. Load order of the two former files is preserved:
-   part 1 rules come first, so ties resolve exactly as before.
-   ============================================================ */
-
-/* ============================================================
-   DESIGN TOKENS (ADR-0020, simplified by ADR-0021)
-
-   Every value core's rules consume resolves through one of these `--yw-*` custom
-   properties. What is declared here is core's *default* Preset; a Preset file
-   (themes/<theme>/presets/*.css, custom/css-presets/*.css) restates the authored set and
-   is linked after this file, so it wins.
-
-   Four rules govern the set, and all four are load-bearing:
-
-   1. **Rules consume roles, never raw values.** `--yw-surface`, `--yw-text-muted`,
-      `--yw-border` say what a colour is *for*; that is what makes a Colour scheme a swap
-      rather than a rewrite. The measures (`--yw-space-*`, `--yw-radius-*`) are the one
-      palette tier that rules address directly, because a step on a scale already is its
-      own role.
-   2. **AUTHORED and DERIVED are different tiers.** A Preset declares the authored tier and
-      nothing else; PresetService::TOKENS is that list, and an incomplete Preset is an error
-      (Personnalisation names the missing ones) rather than a file core fills the gaps in.
-      The derived tier below is computed from it and a Preset may not declare it -- see the
-      block header there for why each one is derived rather than asked for.
-   3. **A measure is a multiple, not a length.** Spacing is three steps expressed in `rem`,
-      and `rem` here IS the wiki's base type size (`html { font-size: --yw-font-size-base }`),
-      so `--yw-space-md: 0.75rem` reads as "three quarters of the base size" and a preset
-      that asks for bigger type gets proportionally bigger gaps for free. Radius, border
-      width and shadow strength are unitless multipliers for the same reason. Nothing in a
-      Preset is a hard-coded pixel except the base size itself.
-   4. **A Layout setting is not a token.** `--yw-navbar-height` looks identical and is
-      governed by the opposite rule: an admin screen writes it inline on <html>, which
-      beats every stylesheet. A Preset may neither declare it nor be validated against it,
-      because such a declaration could never take effect. If an admin screen writes it,
-      it is not a token.
-
-   The Colour scheme (light/dark) is the viewer's, the Preset is the page's, and the two
-   are orthogonal: this block is the light set, the two below are the same dark set
-   applied by OS preference and by explicit choice. Anything that is not a colour --
-   spacing, corner radius, type -- is declared once, here, and never restated in a
-   scheme block.
-   ============================================================ */
-
-/* ---- AUTHORED: the tier a Preset declares ---------------------------------- */
 :root {
-  /* -- brand ------------------------------------------------------------------ */
   --yw-primary: #0c5d6a;
   --yw-secondary: #d0442d;
   --yw-tertiary: #d78958;
 
-  /* -- the two inks -----------------------------------------------------------
-     A wiki's main colours include the two it writes in, which is why these sit with the
-     brand rather than in a group of their own -- there is nothing else left in one.
-
-     THE ONLY text colours a Preset sets. Scheme-independent on purpose: "the
-     ink for a light ground" means the same thing at midnight as at noon, because a light
-     ground is light in both schemes.
-
-     Everything else about text falls out of them, just below: `--yw-text` is whichever suits
-     the scheme in force and `--yw-text-inverse` is the other, core picks between them again
-     per fill, and again for a ground a page author chose. Asked once, answered everywhere. */
   --yw-ink-on-light: #14171a;
   --yw-ink-on-dark: #ffffff;
 
-  /* -- surfaces --------------------------------------------------------------- */
   --yw-surface: #ffffff;
   --yw-surface-raised: #ffffff;
   --yw-surface-sunken: #f2f2f2;
 
-  /* -- lines ------------------------------------------------------------------ */
   --yw-border: #d8d9dc;
 
-  /* -- status ------------------------------------------------------------------
-     One colour each. The panel behind a message and the ink on it are DERIVED from it
-     below, against the page's own surface and text -- so a status colour is chosen once
-     and reads correctly in both schemes. */
   --yw-success: #1f8a7d;
   --yw-danger: #c0392b;
   --yw-warning: #d99100;
   --yw-info: #1989a0;
 
-  /* -- chrome ------------------------------------------------------------------
-     The top bar and the footer. These were a theme's business until ADR-0021: the theme
-     hard-coded the bar to `--yw-surface-raised` and shipped a second stylesheet
-     (`colored-navbar.css`) whose whole content was painting it `--yw-primary` instead.
-     That is a Preset's decision, so it is a token and the second stylesheet is gone. */
   --yw-navbar-bg: #ffffff;
   --yw-navbar-text: #4e5056;
-  /* the bar's own shadow: what lifts it off the page it is sticky over. Separate from
-     `--yw-shadow-color` because a coloured bar wants a shadow tinted to match, and 0
-     spread is a legitimate setting -- a bar with a hairline border wants no shadow. */
+
   --yw-navbar-shadow: rgb(0 0 0 / 12%);
   --yw-navbar-shadow-spread: 0px;
   --yw-footer-bg: #ffffff;
   --yw-footer-text: #4e5056;
 
-  /* -- headings ----------------------------------------------------------------
-     A colour AND a size for each of the six levels. Two colours and one scale over a ramp
-     core wrote could say "bigger titles" but not "my h2 sits too close to my h1", and could
-     not give a level a colour of its own at all.
-
-     The sizes are `rem`, like every other measure: multiples of the base type size, and not
-     `em`, which compounds -- that is what used to make the same heading come out one size in
-     a page and another inside a panel. The defaults are the ramp as it was. */
   --yw-heading-1: #0c5d6a;
   --yw-heading-2: #0c5d6a;
   --yw-heading-3: #0c5d6a;
@@ -166,7 +58,6 @@
   --yw-heading-6-transform: none;
   --yw-heading-6-align: start;
 
-  /* -- type (scheme-independent) ---------------------------------------------- */
   --yw-font-body:
     Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
     sans-serif;
@@ -176,30 +67,9 @@
   --yw-font-mono:
     ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
     'DejaVu Sans Mono', monospace;
-  /* the one hard-coded length in the whole set, and the unit everything else is a
-     multiple of: `html` computes its font-size from it, which is what makes `rem`
-     mean "multiple of the wiki's base size" three lines down */
+
   --yw-font-size-base: 15px;
 
-  /* -- spacing (scheme-independent) -------------------------------------------
-     THREE steps, not eleven. The eleven-step ramp ADR-0020 introduced asked a webmaster
-     to type eleven lengths in a rail before they could see any of them, and the middle
-     six differed by amounts nobody could name. Three is what a rule actually chooses
-     between: inside a control, inside a component, between components.
-
-       sm -- gaps within one control: an icon from its label, a chip's padding
-       md -- gaps within one component: a panel's padding, one form field to the next
-       lg -- gaps between components: section to section, the page's own margins
-
-     ...and each on TWO AXES. A step is not one number, because text is wider than it is
-     tall: the blank that reads as comfortable beside a word is not the blank that reads
-     as comfortable above a line of them, and every design system that ships one number
-     per step ends up with buttons that look squashed or paragraphs that look loose.
-     Every rule in core is axis-explicit -- there were 890 uses and all 890 were a margin,
-     a padding or a gap, so there is no third case that needed a neutral value and none is
-     offered.
-
-     In `rem`, so they are multiples of the wiki's base size rather than fixed pixels. */
   --yw-space-sm-y: 0.25rem;
   --yw-space-sm-x: 0.35rem;
   --yw-space-md-y: 0.75rem;
@@ -207,67 +77,20 @@
   --yw-space-lg-y: 2rem;
   --yw-space-lg-x: 1.5rem;
 
-  /* -- shape (scheme-independent) ---------------------------------------------
-     Multipliers rather than lengths, because "how round" and "how heavy" are one decision
-     each and a rail can offer them as one slider each. 0 is a legitimate setting for all
-     three: square corners, borderless, flat. */
   --yw-radius-scale: 1;
   --yw-border-width: 1px;
   --yw-shadow-strength: 1;
 
-  /* the base opacity a shadow has before `--yw-shadow-strength` scales it. Not a token:
-     it is the scheme's, not the Preset's -- a shadow on a dark ground has to be deeper to
-     be seen at all, which is a fact about the ground rather than about anybody's brand. */
   --yw-shadow-alpha: 15%;
 
-  /* ---- NOT tokens ---------------------------------------------------------- */
-
-  /* How wide a docked rail is, in one place: the actions builder, the link editor and the
-     file picker all dock in the same slot and have to agree. On `:root` rather than on
-     `.yw-designer__sidebar`, where it used to be, because a screen whose rail is open by
-     default (Personnalisation) has to push its own canvas clear of it -- and the canvas is
-     the rail's SIBLING, so it could not read a value declared on the rail. */
   --yw-rail-width: 380px;
 
-  /* How tall the top bar is. A Layout setting since ticket 30 (/admin/layout): the
-     squelette writes this same property inline on <html>, which beats this declaration
-     and every other one. Declared here in core rather than in a theme, because core
-     stylesheets derive from it -- and it is declared here rather than in a Preset
-     because a Preset's copy could never take effect. */
   --yw-navbar-height: 48px;
 
-  /* How far down a sticky editor toolbar parks: clear of the sticky top bar. Shared,
-     because a form can carry both an ACeditor and a Vditor and the two have to agree.
-
-     DERIVED from the setting above, not a second setting and not a token. This was
-     `46px` -- a hard-coded guess at the bar's height, which was right only while the bar
-     had one fixed height. Once the height became a slider, every sticky thing on the page
-     (the dashboard rail, the editor toolbars, the docs nav) kept parking at 46px and the
-     taller bar covered them. The fallback is for a theme that declares no bar height. */
   --yw-sticky-toolbar-top: var(--yw-navbar-height, 48px);
 }
 
-/* ---- DERIVED: computed from the authored tier, never declared by a Preset ----
-
-   ADR-0020 rejected derivation outright -- "presets author every value explicitly" -- and
-   ADR-0021 reverses that for the values below and only those. The test each one passes is
-   the same: **is there a preset anybody would plausibly write where this is not a function
-   of the value above it?** A hover colour is always the primary nudged toward the text; a
-   muted text is always the text faded into the surface; the panel behind a success message
-   is always that green washed into the page. Asking for all three doubled the rail without
-   ever changing the answer, and a webmaster who typed one of them by hand got a wiki whose
-   dark mode was subtly wrong, because they had matched it to the light surface.
-
-   Custom properties substitute lazily, which is what makes this work: every one of these
-   is written once here and re-resolves against whatever the scheme blocks below (or a
-   Preset) last said. That is why the dark set has to restate only what it authors.
-
-   `color-mix(in oklab, ...)` throughout: oklab mixes perceptually, so "70% of the way to
-   the text colour" darkens a yellow and a blue by the same apparent amount. Baseline in
-   every browser this release supports. */
 :root {
-  /* a hover is the brand nudged toward the ink -- which in a dark scheme means nudged
-     toward white, and therefore lighter, with no second value to keep in step */
   --yw-primary-hover: color-mix(
     in oklab,
     var(--yw-primary) 82%,
@@ -281,14 +104,6 @@
   );
   --yw-overlay: rgb(0 0 0 / 50%);
 
-  /* The page's own ink is one of the two, chosen by the scheme rather than authored a second
-     time: the light-ground ink on a light page, the dark-ground ink on a dark one. The dark
-     blocks below swap them, which is the whole of what a Colour scheme does to text.
-
-     `--yw-text-inverse` is simply the other one -- what reads on a patch filled with the
-     page's own ink, a tooltip or a filled chip. It used to be authored, and authored
-     separately per scheme, which is three chances to disagree with a value that is not
-     actually a choice. */
   --yw-text: var(--yw-ink-on-light);
   --yw-text-inverse: var(--yw-ink-on-dark);
 
@@ -301,9 +116,6 @@
     var(--yw-surface)
   );
 
-  /* the panel a status message sits in, and the ink on it. Against the PAGE's surface and
-     text, so the same four authored colours give a pale wash on white and a deep one on
-     near-black without anybody authoring the second set. */
   --yw-success-surface: color-mix(
     in oklab,
     var(--yw-success) 12%,
@@ -325,9 +137,6 @@
   --yw-info-surface: color-mix(in oklab, var(--yw-info) 12%, var(--yw-surface));
   --yw-info-text: color-mix(in oklab, var(--yw-info) 70%, var(--yw-text));
 
-  /* the bar's own hairline and its hovered/active link, both from the two colours the bar
-     was actually given -- so a bar painted with the brand gets a border that reads on the
-     brand, rather than one matched to a page background it is no longer sitting on */
   --yw-navbar-border: color-mix(
     in oklab,
     var(--yw-navbar-bg) 88%,
@@ -339,20 +148,6 @@
     var(--yw-navbar-bg)
   );
 
-  /* THE INK ON EACH FILL. Resolved rather than derived, and it is the one computed value in
-     the whole set that a stylesheet cannot keep up to date by itself: choosing between two
-     authored colours needs the luminance of a third, which CSS will not give you as a number.
-     `oklch(from …)` and `contrast-color()` both work in the browsers this release supports,
-     and both only ever answer black or white -- not what somebody who set an off-white ink
-     asked for. So PresetService::resolve() picks, save() writes the answer into the preset,
-     and the rail recomputes it live while you drag.
-
-     What these are stated here for is core's own colours, which are the ones a wiki wears
-     with no preset on. A Preset restates all seven.
-
-     This is also what stopped white landing on a yellow warning button: the status fills used
-     `--yw-text-inverse`, which flips with the SCHEME rather than with the colour underneath,
-     so in light mode it was white on `#d99100`. */
   --yw-on-primary: #ffffff;
   --yw-on-secondary: #ffffff;
   --yw-on-tertiary: #14171a;
@@ -361,15 +156,8 @@
   --yw-on-warning: #14171a;
   --yw-on-info: #ffffff;
 
-  /* a focus ring is the brand: two colours to keep legible against every surface was one
-     more than anybody kept in step, and a ring in some other hue reads as an error state */
   --yw-focus-ring: var(--yw-primary);
 
-  /* Every shadow in the wiki -- 60 declarations, including the inset ones, the glows and
-     the text-shadows -- resolves its colour through these two, so one slider makes the
-     whole wiki flat (0), ordinary (1) or dramatic (2+). The blur radii stay where each
-     rule put them: opacity is what reads as "how much shadow", and scaling 60 hand-tuned
-     geometries by one number would only break the ones that are doing a job. */
   --yw-shadow-color: rgb(
     0 0 0 / calc(var(--yw-shadow-alpha) * var(--yw-shadow-strength))
   );
@@ -377,27 +165,12 @@
     0 0 0 / calc(var(--yw-shadow-alpha) * 2.2 * var(--yw-shadow-strength))
   );
 
-  /* `3px`, `4px`, `5px` and `6px` were 102 declarations of the same intention; now they
-     are one slider. A circle (`50%`) is a shape rather than a step on this scale, and
-     `--yw-radius-full` is a pill rather than a step, so neither scales. */
   --yw-radius-sm: calc(0.25rem * var(--yw-radius-scale));
   --yw-radius-md: calc(0.5rem * var(--yw-radius-scale));
   --yw-radius-lg: calc(1rem * var(--yw-radius-scale));
   --yw-radius-full: 999px;
 }
 
-/* The dark set, twice: once for a viewer whose system asks for it and who has not said
-   otherwise, once for a viewer who has asked for it explicitly. The two blocks carry the
-   same values -- the toggle has to be able to win in both directions, so neither can be
-   expressed in terms of the other.
-
-   Only the AUTHORED colours are restated. Everything in the derived block above
-   re-resolves through these by itself, which is most of what ADR-0021 bought: the dark
-   scheme used to restate 31 colours and now restates 17.
-
-   `:not([data-theme='light'])` is what makes the toggle's third state work: forced light
-   on a dark desktop is an attribute that switches the media query off, not a second copy
-   of the light set. yw-scheme.js sets the attribute before first paint. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --yw-primary: #4bb8c9;
@@ -408,8 +181,6 @@
     --yw-surface-raised: #1d2125;
     --yw-surface-sunken: #101315;
 
-    /* the scheme is what swaps them: the dark-ground ink is the page's now, and the
-       light-ground one is what reads on a patch filled with it */
     --yw-text: var(--yw-ink-on-dark);
     --yw-text-inverse: var(--yw-ink-on-light);
 
@@ -420,7 +191,7 @@
     --yw-warning: #e0a53c;
     --yw-info: #4bb8c9;
 
-    --yw-navbar-bg: #1d2125;
+    --yw-navbar-bg: #14171a;
     --yw-navbar-text: #e3e5e8;
     --yw-navbar-shadow: rgb(0 0 0 / 45%);
     --yw-footer-bg: #14171a;
@@ -463,8 +234,6 @@
   --yw-surface-raised: #1d2125;
   --yw-surface-sunken: #101315;
 
-  /* the scheme is what swaps them: the dark-ground ink is the page's now, and the
-     light-ground one is what reads on a patch filled with it */
   --yw-text: var(--yw-ink-on-dark);
   --yw-text-inverse: var(--yw-ink-on-light);
 
@@ -475,7 +244,7 @@
   --yw-warning: #e0a53c;
   --yw-info: #4bb8c9;
 
-  --yw-navbar-bg: #1d2125;
+  --yw-navbar-bg: #14171a;
   --yw-navbar-text: #e3e5e8;
   --yw-navbar-shadow: rgb(0 0 0 / 45%);
   --yw-footer-bg: #14171a;
@@ -500,10 +269,6 @@
   --yw-shadow-alpha: 45%;
 }
 
-/* The scheme is the page's ground: without this, a dark set repaints every box the wiki
-   draws and leaves the canvas behind them white. `color-scheme` is what tells the browser
-   to draw its OWN furniture -- scrollbars, form controls, the space past the end of the
-   document -- to match, which no stylesheet of ours can reach. */
 html {
   background-color: var(--yw-surface);
   color: var(--yw-text);
@@ -520,43 +285,16 @@ html[data-theme='dark'] {
   color-scheme: dark;
 }
 
-/* once the top bar has taken itself away, the toolbar takes its place. This is why the two
-   are not one variable: "how tall the bar is" and "how far down to park" differ exactly here,
-   when the bar has scrolled off and there is nothing to clear. */
 body.nav-up {
   --yw-sticky-toolbar-top: 0px;
 }
 
 html {
-  font-size: var(
-    --yw-font-size-base
-  ) !important; /* the base the whole UI computes rem units from */
+  font-size: var(--yw-font-size-base) !important;
 
-  /* Where a fragment link lands. The top bar is `position: sticky`, so it covers whatever the
-     browser scrolls to -- a footnote backlink dropped you at the line the reference is on and
-     the bar sat on top of it. `scroll-padding-top` on the scrolling element fixes every
-     fragment at once: footnote references and backlinks, heading permalinks, the table of
-     contents, and any `#anchor` a page author writes by hand.
-
-     From the bar's own height, so it follows the Layout screen's slider (ticket 30) rather
-     than being a number that is right at exactly one setting. Not `--yw-sticky-toolbar-top`:
-     that one drops to 0 when the bar hides itself on scroll, and the bar is back in place by
-     the time you have landed.
-
-     `max(..., 4rem)` because that variable is a **min-height**: below roughly 55px the bar
-     renders taller than its setting (its own contents decide), so reading the setting alone
-     under-shoots and the target lands behind the bar again -- measured at the slider's 32px
-     end, where it was 8px short. The floor is in `rem` so it tracks the wiki's base font
-     size, which is also what makes the bar taller in the first place. */
   scroll-padding-top: calc(max(var(--yw-navbar-height), 4rem) + 1em);
 }
 
-/* Body text shrinks with the window. A RULE on `html`, not a smaller
-   `--yw-font-size-base` in a media query: the theme used to do the latter, and a media
-   query adds no specificity, so a Preset's own `:root` declaration -- later in the cascade
-   -- simply won. The shrink had therefore stopped happening on every wiki wearing a Preset.
-   A ratio rather than a fixed 15px/13px, so a Preset that asks for large type still gets
-   large type on a phone, only less of it. */
 @media (max-width: 1200px) {
   html {
     font-size: calc(var(--yw-font-size-base) * 0.88) !important;
@@ -569,7 +307,6 @@ html {
   }
 }
 
-/* Mise en forme */
 .indent {
   margin-left: var(--yw-space-lg-x);
 }
@@ -599,7 +336,6 @@ html {
   color: var(--yw-secondary);
 }
 
-/* Adds edit icon after link tag */
 a[data-missing-tag]::after {
   content: '';
   display: inline-block;
@@ -611,14 +347,12 @@ a[data-missing-tag]::after {
     no-repeat center / contain;
 }
 
-/* Page absentes */
 span.missingpage,
 .list-inline,
 .list-inline li {
   display: inline;
 }
 
-/* previsualisation page */
 .page_preview {
   background-color: var(--yw-warning-surface);
   padding-bottom: var(--yw-space-lg-y);
@@ -630,7 +364,6 @@ span.missingpage,
   margin-top: calc(-1 * var(--yw-space-lg-y));
 }
 
-/* Divers mise en forme */
 .code {
   margin: var(--yw-space-sm-y) 0;
   display: flex;
@@ -653,9 +386,6 @@ span.missingpage,
   margin: 0 auto;
 }
 
-/* The query log at the foot of a page in debug mode (Kernel\Service\DebugReport). A busy
-   page runs a hundred queries or more, so the list scrolls in its own box rather than
-   pushing the whole document down and burying what it is reporting on. */
 .yw-debug-report__queries {
   max-height: 20em;
   overflow-y: auto;
@@ -671,9 +401,6 @@ span.missingpage,
   word-break: break-word;
 }
 
-/* Fin divers mise en forme */
-
-/* Les 3 colonnes potentielles de la page centrale */
 .page {
   position: relative;
   margin: 0;
@@ -700,25 +427,6 @@ span.missingpage,
   text-align: left;
 }
 
-/* ---- the page's own actions, and what the page says about itself ------------
-   `{{editbar}}` renders both (templates/barreredaction_basic.twig): a cluster of verbs
-   that floats in the corner, and a quiet line of facts at the bottom. */
-
-/* The cluster follows the reader down the page -- fixed rather than sticky, because the
-   edit bar renders after the main content and a sticky box only sticks inside its own
-   parent, which by then is a strip at the very bottom. Under the navbar's z-index, so
-   scrolling tucks it behind the bar rather than over it.
-
-   Which is exactly why `top` has to be derived rather than a number. It was `4.5rem` -- about
-   67px, chosen to clear a bar that was always ~48px tall. Once the bar's height became a
-   setting (ticket 30), a taller bar simply covered the cluster: it is *meant* to sit under
-   the bar, so there was nothing to see and no clue why.
-
-   From `--yw-navbar-height` and NOT from `--yw-sticky-toolbar-top`, which is the other
-   variable and looks interchangeable here. It is not: `--yw-sticky-toolbar-top` drops to 0 on
-   `body.nav-up`, when the bar has scrolled away, and a *fixed* box reading it would jump
-   upward into the bar's own strip every time the bar hid itself. Sticky boxes want the
-   parking offset; this one wants the bar's height. */
 .yw-page-actions {
   position: fixed;
   top: calc(var(--yw-navbar-height) + 1.25rem);
@@ -726,40 +434,22 @@ span.missingpage,
   z-index: 90;
   display: flex;
   flex-direction: column;
-  /* every button as wide as the widest label, so the revealed stack has one edge rather
-     than a ragged one; the cluster itself still shrink-wraps to that width */
+
   align-items: stretch;
   text-align: left;
 }
 
-/* One lane down the right-hand edge, in order: the top bar's pencil, the banner's pencil,
-   the floating cluster, then any docked rail. Everything below the banner's pencil steps down
-   to clear it -- the pencil is pinned to the top of the banner, so it always ends at the same
-   height whatever the banner holds.
-
-   **The rail has to move with the cluster, and its height has to move with it.** Shifting the
-   cluster alone put it over `.yw-designer__sidebar` and swallowed the rail's close button;
-   shifting the rail without touching `max-height: 85vh` pushed its bottom past the fold and
-   made the items inside it unreachable. Both were caught by the browser suite, both after the
-   change looked right. Anything that moves in this corner moves what is under it.
-
-   Only for someone who gets a pencil: a reader has none, so nothing moves for them. */
 body:has(#yw-header .yw-chrome-edit) .yw-page-actions {
   top: calc(var(--yw-navbar-height) + 3.5rem);
 }
 
 body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   top: calc(var(--yw-sticky-toolbar-top) + 64px + 2.25rem);
-  /* bottom-anchored instead of a viewport-height cap, so the rail ends on screen wherever it
-     starts and scrolls inside itself rather than off the page */
+
   max-height: none;
   bottom: 1rem;
 }
 
-/* Light, whatever the theme's primary colour is. A floating control sits on top of the
-   page's own text, so it has to read against it rather than compete with it -- and the
-   primary fill inverts to a pale background on hover, which is exactly when this thing is
-   being looked at. */
 .yw-page-actions .yw-btn,
 .yw-chrome-edit {
   background: var(--yw-surface-raised);
@@ -779,8 +469,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   filter: none;
 }
 
-/* Deleting says so in its colour, not in a block of it -- the same shape the form
-   designer's destructive buttons already use. */
 .yw-page-actions .yw-btn--danger {
   color: var(--yw-danger);
 }
@@ -792,9 +480,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   color: var(--yw-on-danger);
 }
 
-/* No gap between the button and what it reveals: a gap is a dead zone the pointer falls
-   through on its way down, closing the thing it was reaching for. The spacing is padding
-   inside the revealed panel instead. */
 .yw-page-actions__more {
   display: flex;
   flex-direction: column;
@@ -807,20 +492,11 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   text-align: left;
 }
 
-/* Collapsed to the edit button, and only where there is a pointer to expand it with.
-   A touch screen has no hover: rather than hiding actions behind a gesture that does not
-   exist there, the cluster stops floating and shows everything, at the foot of the page
-   where the bar already was. */
 @media (hover: hover) and (min-width: 768px) {
   .yw-page-actions__more {
     display: none;
   }
 
-  /* Collapsed, the cluster is the pencil and nothing else -- a single small mark in the
-     corner rather than a labelled button parked over the page's own text. The word arrives
-     with the rest of the verbs, on hover, when you have shown you are reaching for them.
-     The label is still in the accessible name (`title` and `aria-label` on the link), so
-     hiding it costs a screen reader nothing. */
   .yw-page-actions__edit span {
     display: none;
   }
@@ -861,20 +537,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   }
 }
 
-/* The one red thing in the facts line. `.yw-btn--danger` would make it a button, which is
-   what this line deliberately is not -- so only the colour carries the warning, and only on
-   the action that cannot be undone. */
 .yw-page-info__danger,
 .yw-page-info__danger:hover,
 .yw-page-info__danger:focus {
   color: var(--yw-danger);
 }
 
-/* The facts, at the bottom: small, muted, left-aligned prose rather than a row of
-   buttons. Each link sits with the fact it is about -- permissions with the owner, the
-   history with the dates. No rule above it: it is a footnote to the page, not a section
-   of it, and it lines up with the content rather than with the window (the squelette
-   renders the edit bar inside #yw-main for that). */
 .yw-page-info {
   display: flex;
   flex-wrap: wrap;
@@ -892,8 +560,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   margin: 0;
 }
 
-/* the links in here are prose, not buttons: no padding of their own beyond what keeps
-   them apart, and underlined on hover like any other link in a sentence */
 .yw-page-info a {
   color: inherit;
   padding: 0;
@@ -931,7 +597,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   margin-right: 0;
 }
 
-/* Ajustements mode édition */
 #ACEditor .form-actions {
   margin: var(--yw-space-md-y) 0;
 }
@@ -942,7 +607,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   height: auto;
 }
 
-/* Sélecteur de fond d'écran */
 #graphical_options {
   display: none;
 }
@@ -971,12 +635,10 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   margin: 0 var(--yw-space-lg-x);
 }
 
-/* lanceur d'accordéon */
 .panel-heading[data-toggle='collapse'] {
   cursor: pointer;
 }
 
-/* table des matieres */
 .toc {
   position: absolute;
   right: 0;
@@ -995,12 +657,10 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   padding-left: 0;
 }
 
-/* barres de progression */
 .progressbar {
   margin: calc(-1 * var(--yw-space-sm-y)) var(--yw-space-sm-x) 0 0;
 }
 
-/* page wiki en format boite modale */
 #YesWikiModal .page {
   min-height: auto;
 }
@@ -1052,18 +712,10 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   width: max-content;
 }
 
-/* except the chrome pencil, which is the same raised button as the floating cluster and the
-   other two pencils -- it is not one of the bar's own flat controls */
 #yw-topnav > .container > .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit) {
   border: none;
 }
 
-/* ---- the viewer's own controls, at the very end of the bar (ADR-0020) --------
-   The Colour scheme and the language belong to whoever is READING, and everything else in
-   the bar belongs to whoever configured it. So they sit apart, behind a divider: what is to
-   its left is this wiki's, what is to its right is YesWiki's. An admin cannot take them off
-   the bar, because a page whose colours or language a visitor cannot change is a page some
-   visitors cannot read. */
 #yw-topnav > .container > .yw-topnav-tools {
   position: relative;
   display: flex;
@@ -1075,27 +727,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   border-left: var(--yw-border-width) solid var(--yw-border-subtle);
 }
 
-/* Flush with the container's edge, one gutter out -- the same -1em the header on the other
-   side uses, moved here from `.yw-topnav-fast-access` when these became the last thing in
-   the row (two blocks each pulling themselves a gutter right would put the second one past
-   the window).
-
-   The wide bar only: below 768px the container wraps and this line is in flow rather than
-   overlaying, so the same pull would end past the window -- a horizontal scrollbar on every
-   page, which is what `.yw-topnav-fast-access` has been caught by twice (tests/e2e/layout). */
 @media (min-width: 768px) {
   #yw-topnav > .container > .yw-topnav-tools {
     margin-right: calc(-1 * var(--yw-space-md-x));
   }
 }
 
-/* Narrow: there is no pointer to reveal anything with, so the line is simply part of the bar
-   -- the same fallback the floating action cluster uses. It is pushed to the end of whatever
-   row it lands on and wraps to one of its own only if it has to, which is the difference
-   between a wiki in one language (three small marks, which fit beside the account button) and
-   a wiki in seven (a row of its own). The container's `flex-wrap` decides, not a width here:
-   a cluster that always claimed the full width would cost every phone a band of navbar on
-   every page for controls most readers touch once. */
 @media (max-width: 767px) {
   #yw-topnav > .container > .yw-topnav-tools {
     margin-left: auto;
@@ -1103,12 +740,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   }
 }
 
-/* What is on, without asking: the scheme's own glyph and the language's code. Quieter than
-   the bar's buttons -- it is a readout rather than a control, and the controls are one
-   movement away. */
-/* Each menu is its own dropdown: its own mark, its own column, opened on its own. They used
-   to be one panel with a rule down the middle -- which is the work a second menu does, done
-   worse, and it showed a reader who wanted the language a list of colour schemes too. */
 .yw-topnav-tools__menu {
   position: relative;
   display: flex;
@@ -1129,23 +760,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   opacity: 1;
 }
 
-/* Narrow: the readout goes. It says what the marks beside it already show, and here they are
-   all on screen at once. After the rule it overrides rather than before it -- same
-   specificity, so the later one is the one that wins. */
 @media (max-width: 767px) {
   .yw-topnav-tools__current {
     display: none;
   }
 }
 
-/* The options, on ONE line. Below, where there is no pointer to reveal anything with, that
-   line is simply part of the bar. */
-/* IN FLOW -- which is what a phone gets, there being no pointer to open a panel with. One
-   line, as it has always been: the cluster is part of the bar there, and a column of six
-   controls would turn the navbar into a 120px band on every page.
-
-   The dropdown further down turns this into a column; that is where the stacking belongs,
-   because that is where there is somewhere to stack into. */
 .yw-topnav-tools__panel {
   display: flex;
   flex-wrap: nowrap;
@@ -1181,8 +801,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   background: var(--yw-surface-hover);
 }
 
-/* the one in force is filled rather than merely darker: this is a row of small marks, and
-   "which of these am I in" has to be answerable at a glance */
 .yw-switcher__option[aria-pressed='true'],
 .yw-switcher__option--on {
   opacity: 1;
@@ -1197,9 +815,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   text-transform: uppercase;
 }
 
-/* Every option is named for a screen reader and drawn as a mark for everyone else: a line of
-   six words in the navbar is a second menu, which is exactly what this is not. The `title`
-   carries the same name for a pointer. */
 .yw-switcher__label {
   position: absolute;
   width: 1px;
@@ -1211,44 +826,40 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   border: 0;
 }
 
-/* Where there IS a pointer, the line is not in the bar at all until it is reached for: six
-   controls sitting there permanently would be the loudest thing on a navbar whose own links
-   are the point. It overlays rather than expanding in flow -- growing the row would shove the
-   account button sideways on every hover -- which is what the panel's own ground, border and
-   shadow are for. The same treatment, and the same reasoning, as the chrome pencils.
-
-   Hidden by opacity rather than by `display`, so the options stay in the tab order: reaching
-   one with a keyboard is what `:focus-within` then reveals the line for. */
 @media (hover: hover) and (min-width: 768px) {
   .yw-topnav-tools__panel {
     position: absolute;
-    /* Below the cluster and aligned to its right edge -- a dropdown, which is what a column
-       of choices is. It used to open leftward and centred on the bar (`right: 100%`, `top:
-       50%`), which suited one short line; a column hung there would run off the top of the
-       navbar and be cut off by it. */
+
     top: calc(100% + var(--yw-space-sm-y));
     right: 0;
     z-index: 2;
-    /* As wide as its widest row, rather than shrink-to-fit against whatever space happens to
-       be left of it. */
+
     width: max-content;
     min-width: 100%;
     padding: var(--yw-space-md-y) var(--yw-space-sm-x);
     background: var(--yw-surface-raised);
     border: var(--yw-border-width) solid var(--yw-border);
-    /* not the pill it was: a pill around a column pinches its first and last row */
+
     border-radius: var(--yw-radius-md);
     box-shadow: 0 2px 8px var(--yw-shadow-color);
-    /* A COLUMN, and the two groups in it kept apart. They were one nowrap line, which read
-       as a single run of six or seven marks -- "is this third one the last scheme or the
-       first language?" is a question the panel was asking rather than answering. Stacked,
-       each group is a list read down, and the rule between them says where one ends. */
+
     flex-direction: column;
     align-items: stretch;
     gap: var(--yw-space-sm-y) 0;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.15s ease;
+    transition:
+      opacity 0.15s ease 0.4s,
+      pointer-events 0s linear 0.4s;
+  }
+
+  .yw-topnav-tools__panel::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: calc(var(--yw-space-sm-y) + 2px);
   }
 
   .yw-topnav-tools__panel .yw-switcher {
@@ -1257,8 +868,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
     gap: var(--yw-space-sm-y) 0;
   }
 
-  /* a row in a list rather than a mark in a line: it gets the width of the widest one, and
-     room either side of its glyph */
   .yw-topnav-tools__panel .yw-switcher__option {
     display: flex;
     padding-left: var(--yw-space-md-x);
@@ -1269,6 +878,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   .yw-topnav-tools__menu:focus-within > .yw-topnav-tools__panel {
     opacity: 1;
     pointer-events: auto;
+    transition-delay: 0s;
   }
 }
 
@@ -1278,17 +888,11 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   }
 }
 
-/* menu du haut fixe */
 #yw-topnav.fixable {
   position: sticky;
   top: 0;
 }
 
-/* ---- a URL box says so ------------------------------------------------------
-   Every `input[type="url"]` in the wiki carries the link glyph inside it, so the box is
-   recognisable without a label of its own repeating the word "URL". The sprite cannot be
-   used here -- `<use>` needs an element, and this is a background -- so the same Tabler
-   path is inlined; keep the two in step if the icon ever changes. */
 input[type='url'] {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 15l6 -6'/><path d='M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464'/><path d='M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463'/></svg>");
   background-repeat: no-repeat;
@@ -1297,9 +901,6 @@ input[type='url'] {
   padding-left: var(--yw-space-lg-x);
 }
 
-/* The two ways to fill a file or image field, on one line: the rail that finds or uploads
-   one, and the address of a file that lives somewhere else. They wrap on a narrow screen
-   rather than squeezing the URL box to nothing. */
 .file-or-url {
   display: flex;
   flex-wrap: wrap;
@@ -1317,7 +918,6 @@ input[type='url'] {
   white-space: nowrap;
 }
 
-/* the picked file's name, between the button and the URL box */
 .file-or-url [data-yw-file-picker-chosen] {
   flex: 0 1 auto;
   overflow: hidden;
@@ -1326,7 +926,6 @@ input[type='url'] {
   max-width: 14rem;
 }
 
-/* the preview the URL box fills goes under the line, not in it */
 .file-or-url .image-url-preview {
   flex-basis: 100%;
 }
@@ -1336,12 +935,6 @@ input[type='url'] {
   width: auto;
 }
 
-/* ---- an account's face, and the navbar button that wears it ----------------
-   Here rather than in dashboard.css, which is loaded by the dashboard and account
-   layouts only: the account button is in the navigation bar of every page, so its
-   styling has to travel with every page too. The size is a custom property because the
-   navbar wants one size and the account screen another, and the only thing that must
-   never differ between them is the shape. */
 .yw-avatar {
   --yw-avatar-size: 2rem;
   display: inline-flex;
@@ -1355,7 +948,7 @@ input[type='url'] {
   vertical-align: middle;
   background: var(--yw-avatar-bg, var(--yw-surface-sunken));
   color: var(--yw-avatar-fg, inherit);
-  /* the initials fill the disc without touching it, whatever the disc's size */
+
   font-size: calc(var(--yw-avatar-size) * 0.42);
   font-weight: 700;
   line-height: 1;
@@ -1363,7 +956,6 @@ input[type='url'] {
   user-select: none;
 }
 
-/* a portrait is rarely square: cover the disc rather than letterbox it */
 .yw-avatar__image {
   display: block;
   width: 100%;
@@ -1373,19 +965,13 @@ input[type='url'] {
 }
 
 .yw-avatar__initials {
-  /* nudge off the descender line: two capitals read low in a circle otherwise */
   transform: translateY(0.03em);
 }
 
-/* The account button holds one round thing and nothing else, so it is as tight around it
-   as the navbar's other buttons are around their icons. */
 .account-link {
   line-height: 1;
 }
 
-/* Your face and your name at the top of your own settings. Here rather than in
-   dashboard.css because `{{usersettings}}` renders on ordinary wiki pages too, and a
-   screen where you upload a picture has to show you the picture you uploaded. */
 .yw-account-face {
   display: flex;
   align-items: center;
@@ -1402,7 +988,6 @@ input[type='url'] {
   font-size: 1.1em;
 }
 
-/* retour à la ligne pour les éléments flottants */
 .clear,
 .hr_clear {
   clear: both;
@@ -1459,7 +1044,6 @@ input[type='url'] {
   margin-right: var(--yw-space-md-x);
 }
 
-/* on /iframe page, we use white background, can be overwritten in the theme */
 .yeswiki-page-widget {
   padding: 0;
   background: var(--yw-surface-raised);
@@ -1468,27 +1052,17 @@ input[type='url'] {
 }
 
 .cols2 {
-  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 2;
 }
 
 .cols3 {
-  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 3;
 }
 
 .cols4 {
-  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 4;
 }
 
-/* Break out of #yw-main's max-width and run edge to edge.
-   --yw-viewport-width, not 100vw: `vw` counts the vertical scrollbar's gutter, so on any page
-   long enough to scroll -- which is every page this class is used on -- a 100vw block is about
-   15px wider than what is actually visible, and the document gets a horizontal scrollbar it
-   never asked for. yw-core.js keeps the variable equal to documentElement.clientWidth, which
-   is the same measurement minus the gutter; 100vw is the no-JS fallback, i.e. today's
-   behaviour. */
 .full-width {
   width: var(--yw-viewport-width, 100vw) !important;
   position: relative;
@@ -1504,23 +1078,19 @@ body {
 }
 
 .popover .page {
-  /* gestion des popup au survol modalbox-hover */
   min-height: auto;
 }
 
 .popover .BAZ_label {
   display: none;
-} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
+}
 
 .btn-glossaire {
-  /* enlève le padding trop grand qui s'applique sur les boutons en général */
   padding: 0 !important;
   font-size: inherit !important;
   vertical-align: inherit !important;
 }
 
-/* Field hint marker: a sprite icon carrying its text in data-yw-tooltip (see the
-   Tooltip section below), so it needs no <img> asset and no JS. */
 .tooltip_aide {
   display: inline-block;
   margin-right: var(--yw-space-sm-x);
@@ -1555,8 +1125,6 @@ body {
   font-weight: normal;
 }
 
-/* Materialize Switch
-   ========================================================================== */
 .switch,
 .switch * {
   -webkit-tap-highlight-color: transparent;
@@ -1746,7 +1314,6 @@ body {
   display: none !important;
 }
 
-/* VUE SELECT */
 .v-select {
   border: 2px solid var(--yw-primary);
   border-radius: var(--yw-radius-sm) !important;
@@ -1825,17 +1392,7 @@ section > div {
   width: 100%;
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
-/* The background PICTURE of a section, on a layer of its own between the colour and the
-   words.
 
-   Three things want it there. `opacity` on the section fades the text with it. The
-   section's own `background-image` cannot be faded at all without fading the
-   `background-color` under it -- and that colour is exactly what a translucent picture is
-   meant to blend into. And `background-repeat` / `background-size` on the section would
-   fight the pattern, which is drawn with the same properties.
-
-   Everything about how it is drawn is a custom property SectionAction writes inline, so the
-   stylesheet holds the arrangement and the action holds the values. */
 section.with-bg-image {
   position: relative;
 }
@@ -1854,8 +1411,6 @@ section.with-bg-image::before {
   pointer-events: none;
 }
 
-/* the words sit above it -- a positioned pseudo-element paints over in-flow children
-   whatever order they are written in */
 section.with-bg-image > * {
   position: relative;
   z-index: 1;
@@ -1911,13 +1466,6 @@ section.with-bg-image > * {
   margin: var(--yw-space-md-y) 0;
 }
 
-/* === trick to manage lists'translation ===
-   A `lang` attribute inside a page means "this bit is the X version of it", so everything
-   that is not the language being read is hidden. It is about CONTENT, and the language
-   switcher is not content: its options are marked with the language they *lead to*, which
-   this rule read as "hide all of them but the one you are already in" -- a switcher with one
-   option, and the one you cannot use. */
-
 html[lang='ca'] [lang]:not([lang='ca']):not(.yw-switcher__option),
 html[lang='en'] [lang]:not([lang='en']):not(.yw-switcher__option),
 html[lang='es'] [lang]:not([lang='es']):not(.yw-switcher__option),
@@ -1927,7 +1475,6 @@ html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
   display: none;
 }
 
-/* comment-table */
 #comments-table-action .comments-table-break-word-column {
   overflow-wrap: break-word;
   max-width: 170px;
@@ -1939,9 +1486,6 @@ html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
   }
 }
 
-/* === === */
-
-/* reactions */
 .reactions-container {
   margin: var(--yw-space-lg-y) 0;
 }
@@ -2034,7 +1578,6 @@ html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
   text-decoration: none;
 }
 
-/* favorites */
 .favorites {
   transition: all 200ms ease-in;
   box-shadow: none;
@@ -2050,7 +1593,6 @@ html[lang='pt'] [lang]:not([lang='pt']):not(.yw-switcher__option) {
   margin-right: 0 !important;
 }
 
-/* users-table.twig */
 @media (width <= 1200px) {
   #users-table-action {
     overflow-x: auto;
@@ -2066,7 +1608,6 @@ td.users-table-break-word {
   margin-top: var(--yw-space-md-y);
 }
 
-/* hide login text on navbar, but show it in dropdown menu */
 .login-text {
   display: none;
 }
@@ -2081,10 +1622,6 @@ td.users-table-break-word {
   border: none;
 }
 
-/* ============================================================
-   yw-* design system (ADR-0004)
-   ============================================================ */
-/* ---- Buttons ------------------------------------------------ */
 .yw-btn,
 .btn {
   display: inline-block;
@@ -2120,9 +1657,7 @@ td.users-table-break-word {
   padding: var(--yw-space-sm-y) var(--yw-space-md-x);
   font-size: 12px;
 }
-/* box-sizing, because a <button> gets it from the browser's form-control defaults and an
-   <a> does not: a block link came out 26px (padding + border) wider than the block button
-   below it, which is what made a stack of buttons look ragged. */
+
 .yw-btn--block,
 .btn-block {
   display: block;
@@ -2166,14 +1701,6 @@ td.users-table-break-word {
   color: var(--yw-on-success);
 }
 
-/* ---- Search box ------------------------------------------------
-   ONE search box for the whole wiki: {{search}}, the entry lists, the admin
-   content screen. It is a component rather than a set of per-surface rules
-   because they had drifted into three different boxes -- {{search}} shipped
-   with a `yw-input-group` class that was never styled at all (the icon stacked
-   above the field), while the entry list still wore Bootstrap 3 leftovers
-   (`input-group`, `add-on`, `input-prepend`) that ticket 16 removed the CSS for.
-   Markup lives in templates/_searchbox.twig; change it there, once.          */
 .yw-searchbox {
   position: relative;
   display: flex;
@@ -2181,7 +1708,7 @@ td.users-table-break-word {
   gap: 0;
   width: 100%;
   max-width: 42rem;
-  /* centred: this is the primary control on a search page, not a form row */
+
   margin: 0 auto var(--yw-space-md-y);
   background: var(--yw-surface-raised);
   border: var(--yw-border-width) solid var(--yw-border);
@@ -2194,8 +1721,7 @@ td.users-table-break-word {
   border-color: var(--yw-primary);
   box-shadow: 0 0 0 3px var(--yw-shadow-color);
 }
-/* the icon sits INSIDE the field: absolutely positioned and click-through, so
-   the whole width stays a text target */
+
 .yw-searchbox__icon {
   position: absolute;
   left: 1rem;
@@ -2212,8 +1738,7 @@ td.users-table-break-word {
 .yw-searchbox__input {
   flex: 1 1 auto;
   min-width: 0;
-  /* .yw-input caps every field at 350px, which is right for a form row and
-     wrong for the one control a search page is about */
+
   max-width: none;
   margin: 0;
   padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
@@ -2228,7 +1753,7 @@ td.users-table-break-word {
 .yw-searchbox__input:focus {
   outline: none;
 }
-/* the browser's own clear affordance duplicates the one in the box */
+
 .yw-searchbox__input::-webkit-search-cancel-button {
   cursor: pointer;
 }
@@ -2256,7 +1781,6 @@ td.users-table-break-word {
   vertical-align: -0.2em;
 }
 @media (max-width: 30rem) {
-  /* the label is the first thing to go; the icon still says what the box is */
   .yw-searchbox__button-label {
     display: none;
   }
@@ -2265,10 +1789,6 @@ td.users-table-break-word {
   }
 }
 
-/* A search box that is one control among several in a filter bar, rather than
-   the thing a page is about: same component, not centred, not oversized. The
-   alternative -- a hero pill inside a row of six filters -- would be uniform in
-   the letter and wrong in the eye. */
 .yw-searchbox--inline {
   max-width: 24rem;
   margin: 0;
@@ -2291,7 +1811,6 @@ td.users-table-break-word {
   font-size: 0.85rem;
 }
 
-/* the entry list keeps a form chooser beside its box */
 .yw-searchbox-aside {
   display: flex;
   justify-content: center;
@@ -2303,15 +1822,6 @@ td.users-table-break-word {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
-/* ---- Result display switcher and layouts -----------------------
-   Three ways to read the same results: a list (dense, scannable), an accordion
-   (titles only until asked), and cards (roomy, for browsing). Radios like the
-   facets, so the choice is form state that survives a swap on its own. */
-/* Box and switcher on one row: the switcher says how to read the results, so it belongs
-   with the control that produces them rather than with the results themselves.
-   The row carries the max-width the box used to carry and the box grows into whatever the
-   switcher leaves -- otherwise the two together overflow and the switcher wraps onto its own
-   line, aligned left, which is neither where it was nor where it was asked to be. */
 .yw-search-form {
   display: flex;
   flex-wrap: nowrap;
@@ -2330,7 +1840,6 @@ td.users-table-break-word {
   flex: 0 0 auto;
 }
 @media (max-width: 34rem) {
-  /* below this the two stop fitting side by side; the switcher goes under, centred */
   .yw-search-form {
     flex-wrap: wrap;
     justify-content: center;
@@ -2377,11 +1886,6 @@ td.users-table-break-word {
   outline-offset: 2px;
 }
 
-/* ---- Accordion --------------------------------------------------
-   One accordion for the whole wiki: <details>/<summary>, rendered by
-   templates/_accordion-item.twig. Used by the {{accordion}}/{{panel}} pair, the
-   bazar entry list, the syndication list, the pages accordion and search.
-   <details> does the work, so all that is left here is the affordance. */
 .yw-accordion__item {
   border-bottom: var(--yw-border-width) solid var(--yw-border);
 }
@@ -2395,7 +1899,7 @@ td.users-table-break-word {
   padding: var(--yw-space-md-y) 0;
   font-weight: 600;
   cursor: pointer;
-  /* the default triangle is replaced by the chevron below, which can be animated */
+
   list-style: none;
 }
 .yw-accordion__summary::-webkit-details-marker {
@@ -2409,14 +1913,11 @@ td.users-table-break-word {
 .yw-accordion__item[open] > .yw-accordion__summary::before {
   transform: rotate(90deg);
 }
-/* A <summary> that also carries panel classes -- a standalone collapsible {{panel}} -- must
-   still lay out as a row: `.yw-panel__heading` is `display: block`, which dropped the title
-   onto the line below the chevron. `summary.yw-accordion__summary` outranks it. */
+
 summary.yw-accordion__summary {
   display: flex;
 }
-/* headings keep their level (a panel title is an <h4>) but not their looks: inside a summary
-   they are the summary's text, and the theme's h4 colour made them orange */
+
 .yw-accordion__summary > * {
   margin: 0;
   font: inherit;
@@ -2425,7 +1926,7 @@ summary.yw-accordion__summary {
 .yw-accordion__body {
   padding: 0 0 var(--yw-space-md-y) var(--yw-space-lg-x);
 }
-/* the summary is the control, so it takes the focus ring rather than the whole panel */
+
 .yw-accordion__item:focus-within {
   outline: none;
 }
@@ -2434,10 +1935,6 @@ summary.yw-accordion__summary {
   outline-offset: -2px;
 }
 
-/* Cards reuse styles/bazar/card.css (.bazar-cards-container / .bazar-card / .area), so a
-   search result card and an entry card are the same object. Two things that stylesheet
-   leaves to its caller: the column count, which the entry list sets inline from Vue, and a
-   card outline, which an entry card gets from its image. */
 .yw-search-results--cards {
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
@@ -2454,11 +1951,6 @@ summary.yw-accordion__summary {
   margin-bottom: var(--yw-space-md-y);
 }
 
-/* ---- Facets ----------------------------------------------------
-   The content-type filter, shown only ONCE A SEARCH HAS RESULTS: before that
-   there is nothing to narrow, and a dropdown of six types next to an empty box
-   is a question nobody has asked yet. Radios rather than buttons so the state
-   is the form's and travels with hx-include -- no JS holds it.            */
 .yw-facets {
   display: flex;
   flex-wrap: wrap;
@@ -2511,11 +2003,6 @@ summary.yw-accordion__summary {
   opacity: 0.75;
 }
 
-/* ---- Search results --------------------------------------------
-   The classic list keeps its numbers: the order is meaningful (it is a ranking,
-   and `start` continues the count across pages), and "the third result" is how
-   people refer to one. The accordion and card layouts are not <ol> -- a number
-   beside a disclosure triangle or inside a card would be noise. */
 ol.yw-search-results {
   margin: 0;
   padding-left: var(--yw-space-lg-x);
@@ -2530,10 +2017,7 @@ div.yw-search-results {
   padding: 0;
   list-style: none;
 }
-/* Row spacing belongs to the LIST layout, not to a result as such. The accordion and card
-   layouts bring their own -- .yw-accordion__item has its own separator and .bazar-card its
-   own padding -- so applying this to every result gave accordion rows a double border and a
-   visible gap between them. */
+
 ol.yw-search-results > .yw-search-result {
   padding: var(--yw-space-md-y) 0;
   border-bottom: var(--yw-border-width) solid var(--yw-border);
@@ -2546,15 +2030,10 @@ ol.yw-search-results > .yw-search-result:last-child {
   margin: 0 0 var(--yw-space-sm-y);
   font-size: 1.05rem;
   line-height: 1.3;
-  /* A page's title is very often its tag, and a tag is one unbroken word -- so
-     `LogDesActionsAdministratives20260802` has nowhere to wrap and simply ran out of its
-     card and over the one beside it. `anywhere` rather than `break-word` because it also
-     lowers the element's min-content width, which is what stops one long tag widening the
-     whole grid column. */
+
   overflow-wrap: anywhere;
 }
-/* the type follows the title: the title is what a visitor scans for, and a badge in front
-   of it makes every row start with the same handful of words */
+
 .yw-search-result-type {
   display: inline-block;
   margin-left: var(--yw-space-md-x);
@@ -2590,10 +2069,7 @@ ol.yw-search-results > .yw-search-result:last-child {
 .yw-search-body {
   min-height: 2.5rem;
 }
-/* The indicator lives inside the search button, overlaying its label. The button is the one
-   part of the box whose size never changes, so a request cannot move anything below it --
-   an indicator in normal flow pushed every result down when a request started and pulled
-   them back when it ended, so the list jittered on every keystroke. */
+
 .yw-searchbox__spinner {
   position: absolute;
   top: 0;
@@ -2608,15 +2084,14 @@ ol.yw-search-results > .yw-search-result:last-child {
 .yw-searchbox__spinner .yw-icon {
   width: 1.1rem;
   height: 1.1rem;
-  /* the same keyframes the yw-icon--spin utility uses, not a second copy of them */
+
   animation: yw-icon-spin 0.8s linear infinite;
 }
-/* the label dims for the spinner rather than being removed, so the button keeps its width */
+
 .yw-searchbox__spinner.htmx-request ~ .yw-searchbox__button-label {
   opacity: 0;
 }
 
-/* ---- Form controls -------------------------------------------- */
 .yw-input,
 select.yw-input,
 textarea.yw-input,
@@ -2656,9 +2131,6 @@ textarea.yw-input,
   margin-right: var(--yw-space-md-x);
 }
 
-/* `display: inline-block` above beats the UA's `[hidden] { display: none }`, so one of these
-   that something hid would stay on screen -- and a hidden checkbox still posts. The same trap
-   the dashboard rail and the forms list have each been caught by. */
 .yw-radio-inline[hidden],
 .yw-checkbox-inline[hidden] {
   display: none;
@@ -2682,7 +2154,6 @@ textarea.yw-input,
   border-radius: var(--yw-radius-sm);
 }
 
-/* ---- Alerts --------------------------------------------------- */
 .yw-alert,
 .alert {
   position: relative;
@@ -2714,15 +2185,6 @@ textarea.yw-input,
   border-color: var(--yw-danger);
 }
 
-/* ---- alerts and quotes as PROSE ---------------------------------------------
-   `.yw-alert` was written for a flash message: one line, in the accent colour, with room on
-   the right for a close button. Since `:::info` (ticket 30) the same box also holds paragraphs,
-   lists and links, and a paragraph set in the accent colour on a tinted ground is hard work to
-   read. So the tint and the border keep carrying the meaning and the text goes back to the
-   page's own colour -- which is an improvement for the admin screens that use these too.
-
-   The left border is thicker than the rest: it is what makes a callout read as an aside at a
-   glance, and it is the one thing a quote and an alert have in common. */
 .yw-alert--info,
 .yw-alert--success,
 .yw-alert--warning,
@@ -2736,8 +2198,6 @@ textarea.yw-input,
   border-left-width: 4px;
 }
 
-/* A box of prose should not open with a gap or end with one: the padding is the box's job,
-   the margins belong to the paragraphs *between*. */
 .yw-alert > :first-child,
 .alert > :first-child,
 blockquote > :first-child {
@@ -2750,10 +2210,6 @@ blockquote > :last-child {
   margin-bottom: 0;
 }
 
-/* Quotes had no styling of their own at all -- a `>` line came out as the browser's bare
-   `<blockquote>`, which is nothing but an indent, so a quotation was indistinguishable from
-   an indented paragraph. A rule down the left and quieter text is the least that says
-   "someone else said this". */
 blockquote {
   margin: var(--yw-space-md-y) 0;
   padding: var(--yw-space-sm-y) 0 var(--yw-space-sm-y) var(--yw-space-md-x);
@@ -2761,13 +2217,10 @@ blockquote {
   color: var(--yw-text);
 }
 
-/* A quote inside a quote is a reply: it steps in again rather than doubling the rule. */
 blockquote blockquote {
   margin: var(--yw-space-md-y) 0;
 }
 
-/* `> — someone`, the conventional attribution line: last child, so it needs no markup of its
-   own to be recognised, and it reads as the source rather than as more of the quotation. */
 blockquote > p:last-child > em:only-child,
 blockquote > footer,
 blockquote > cite {
@@ -2799,14 +2252,6 @@ blockquote > cite {
   position: static;
 }
 
-/* ---- Designer layout --------------------------------------------
-   What you edit on the left, what configures it on the right: the shape the form
-   designer established (styles/form-builder.css's .yw-fb, "Elementor-style") and the
-   actions builder now shares. The rail is `order: 2` rather than second in the source
-   so that the thing being edited comes first for a screen reader and on a narrow
-   screen, where the rail stops being a column at all (see the media query below).
-   Hiding the rail is `hidden` on the element itself -- a flex container ignores it and
-   the canvas takes the whole width, with no state class to keep in sync. */
 .yw-designer {
   display: flex;
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
@@ -2819,11 +2264,6 @@ blockquote > cite {
 }
 
 .yw-designer__sidebar {
-  /* One property, read twice: the rail starts this far down the window and may be as tall
-     as the rest of it. Computed apart -- `top` from the toolbar, a flat `max-height: 85vh`
-     -- they disagreed, and a rail starting 20vh down and running 85vh tall ends 5vh past
-     the bottom of the window. What fell off the end was the sticky footer, which is to say
-     the button the whole rail exists to offer. */
   --yw-rail-top: calc(var(--yw-sticky-toolbar-top) + 64px);
   position: fixed;
   top: var(--yw-rail-top);
@@ -2833,8 +2273,7 @@ blockquote > cite {
   box-sizing: border-box;
   width: var(--yw-rail-width);
   max-width: 100vw;
-  /* dvh, not vh: on a phone the browser's own chrome is the difference between the two,
-     and it is exactly the height the footer would be hidden behind */
+
   max-height: calc(100dvh - var(--yw-rail-top) - 1rem);
   overflow-y: auto;
   border: var(--yw-border-width) solid var(--yw-border);
@@ -2846,10 +2285,6 @@ blockquote > cite {
     visibility 0s;
 }
 
-/* `hidden` is still the whole state -- there is no open/closed class to keep in sync --
-   but a rail that comes and goes on its own as the cursor moves has to say where it went.
-   Overriding the UA's display:none is what leaves something to animate; `visibility`
-   flips only once it has finished sliding out, so it is properly gone afterwards. */
 .yw-designer__sidebar[hidden] {
   display: block;
   visibility: hidden;
@@ -2867,18 +2302,12 @@ blockquote > cite {
   }
 }
 
-/* A rail opened BY another rail, to answer a question it asked -- the file picker, when a
-   setting is asking which picture. It does not take the slot (that would close the panel
-   waiting for the answer), so it has to sit over the one that asked instead of beside it.
-   Opaque, because what is behind it is another rail and not the page. */
 .yw-designer__sidebar.yw-rail--over {
   z-index: 20;
   background: var(--yw-surface-sunken);
   box-shadow: -4px 0 16px var(--yw-shadow-color);
 }
 
-/* The chrome a rail shares with the next one: a header that stays put while what is under
-   it scrolls, and a footer for whatever writes the change into the document. */
 .yw-rail__header {
   display: flex;
   align-items: center;
@@ -2904,9 +2333,6 @@ blockquote > cite {
   position: static;
 }
 
-/* Parked at the bottom of the rail, on top of whatever is scrolling past behind it: what
-   a rail is FOR is writing the change into the document, and hunting for that button at
-   the end of a long list of parameters is hunting for the point of the panel. */
 .yw-rail__footer {
   display: flex;
   justify-content: flex-end;
@@ -2921,8 +2347,6 @@ blockquote > cite {
   border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* below this there is no room for two columns: the rail becomes an overlay on the side
-   it already occupied, rather than a full-width block pushing the editor off-screen */
 @media (max-width: 800px) {
   .yw-designer__sidebar {
     position: fixed;
@@ -2936,10 +2360,6 @@ blockquote > cite {
   }
 }
 
-/* ---- Modal ------------------------------------------------------
-   Bootstrap's modal toggled visibility with JS-added inline styles
-   and a separate backdrop element; here a single `.yw-modal--open`
-   class (added/removed by yw-core.js) does both via CSS. */
 .yw-modal {
   display: none;
   position: fixed;
@@ -2954,10 +2374,7 @@ blockquote > cite {
   align-items: flex-start;
   justify-content: center;
 }
-/* A closed modal must stay hidden no matter where its markup sits: templates can
-   render modals inside layout containers whose descendant rules (e.g. the topnav
-   fast-access column) would otherwise out-specify .yw-modal's display: none.
-   yeswiki-base.js moves modals to <body>, but hiding must not depend on JS. */
+
 .yw-modal:not(.yw-modal--open) {
   display: none !important;
 }
@@ -2998,8 +2415,7 @@ blockquote > cite {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
   border-top: var(--yw-border-width) solid var(--yw-border-subtle);
 }
-/* Remote-load modal (ticket 16): loading indicator shown while the fetch is in flight,
-   and the iframe variant used for [data-yw-modal-iframe] openers. */
+
 .yw-modal__loading {
   display: block;
   width: 56px;
@@ -3048,7 +2464,6 @@ blockquote > cite {
   border: 0;
 }
 
-/* ---- Table -------------------------------------------------- */
 .yw-table,
 .table {
   width: 100%;
@@ -3076,10 +2491,6 @@ blockquote > cite {
   background: var(--yw-surface-hover);
 }
 
-/* A table that fits its container instead of scrolling sideways: no cell may set a
-   min-content floor wider than its share, so long labels wrap and button groups reflow.
-   Widths are proportional, not pixel-fixed — a fixed px column always overflows at some
-   viewport width, which is what .table-responsive's scrollbar was papering over. */
 .yw-table--fluid {
   table-layout: fixed;
   width: 100%;
@@ -3088,8 +2499,7 @@ blockquote > cite {
 .yw-table--fluid td {
   overflow-wrap: anywhere;
 }
-/* a sortable header is nowrap by default, which puts a min-content floor back under the
-   column and reintroduces the sideways scroll this class exists to remove */
+
 .yw-table--fluid th[data-yw-sort] {
   white-space: normal;
 }
@@ -3099,12 +2509,6 @@ blockquote > cite {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-/* The forms admin: core's own Content types listed apart from a webmaster's (ticket 10).
-
-   Cards rather than a table: nothing on this screen is a value you compare down a column,
-   and the description -- the one thing that says what a form is for -- had the narrowest
-   cell of five. A card gives each form the width of a paragraph and lets its actions read
-   as belonging to it. */
 .forms-list__section + .forms-list__section {
   margin-top: var(--yw-space-lg-y);
 }
@@ -3163,8 +2567,6 @@ blockquote > cite {
   background: var(--yw-surface-sunken);
 }
 
-/* `display: flex` above beats the UA's `[hidden] { display: none }`, so a card the filter
-   hid would stay on screen -- the same trap the dashboard rail hits with its own `hidden` */
 .form-card[hidden] {
   display: none;
 }
@@ -3178,7 +2580,6 @@ blockquote > cite {
   font-size: 1.05rem !important;
 }
 
-/* the id, beside the name it identifies rather than in a column of its own */
 .form-card__id {
   margin-left: var(--yw-space-sm-x);
   color: var(--yw-text);
@@ -3194,7 +2595,6 @@ blockquote > cite {
   line-height: 1.35;
 }
 
-/* the two facts that say whether a form is alive, right under what it is */
 .form-card__stats {
   display: flex;
   flex-wrap: wrap;
@@ -3208,8 +2608,6 @@ blockquote > cite {
   font-weight: 600;
 }
 
-/* an empty form is a fact, not an emphasis: it reads as ordinary text so the eye lands on
-   the forms that hold something */
 .form-card__count--empty {
   font-weight: 400;
   font-style: italic;
@@ -3221,8 +2619,6 @@ blockquote > cite {
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
 }
 
-/* Exports are one-word links, not buttons: there can be six of them on a card, and six
-   buttons would read as the most important thing on it. */
 .form-card__formats {
   display: flex;
   flex-wrap: wrap;
@@ -3263,7 +2659,6 @@ blockquote > cite {
   border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* emptying and deleting a form are the only irreversible actions here: quiet until meant */
 .form-card__destructive .yw-btn--danger {
   background: transparent;
   border: var(--yw-border-width) solid var(--yw-border);
@@ -3276,7 +2671,6 @@ blockquote > cite {
   color: var(--yw-on-danger);
 }
 
-/* ---- Datatable (ticket 16: replaces jQuery DataTables — vanilla sort/search/paginate) ---- */
 .yw-datatable__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -3331,7 +2725,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   justify-content: center;
 }
 
-/* ---- Pagination ----------------------------------------------- */
 .yw-pagination {
   display: flex;
   gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
@@ -3359,7 +2752,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   pointer-events: none;
 }
 
-/* ---- Tag input (live-search, ticket 10 pilot for the yw-* + htmx pattern) ---- */
 .yw-tag-input {
   position: relative;
   display: flex;
@@ -3403,9 +2795,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-tag-input__search:focus {
   outline: none;
 }
-/* Reusable suggestions dropdown: the tag-input widget's live-search results
-   (ticket 10) and the aceditor link-modal's local page-name autocomplete
-   (ticket 11) both use this same shape */
+
 .yw-suggestions {
   position: absolute;
   top: 100%;
@@ -3436,14 +2826,12 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-suggestions button[data-active] {
   background: var(--yw-surface-hover);
 }
-/* the arrows move a marker rather than the focus -- the reader is still typing in the box --
-   so the highlight has to read as "this is the one Enter takes", not just as a hover */
+
 .yw-suggestions button[data-active] {
   box-shadow: inset 3px 0 0 var(--yw-primary);
   font-weight: 600;
 }
 
-/* ---- Dropdown (ticket 11 pilot: replaces Bootstrap's data-toggle="dropdown") ---- */
 .yw-dropdown,
 .dropdown,
 .dropup {
@@ -3466,8 +2854,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-radius: var(--yw-radius-sm);
   box-shadow: 0 2px 8px var(--yw-shadow-color);
 }
-/* a closed dropdown menu must stay hidden regardless of surrounding layout
-   rules (same rationale as the .yw-modal guard above) */
+
 .yw-dropdown:not(.yw-dropdown--open) > .yw-dropdown__menu {
   display: none !important;
 }
@@ -3517,9 +2904,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-left: 4px solid transparent;
 }
 
-/* ---- Collapse/accordion (ticket 12: replaces Bootstrap's data-toggle="collapse") ---- */
-/* closed panels stay hidden regardless of surrounding layout rules,
-   same rationale as the .yw-modal/.yw-dropdown guards */
 .yw-collapse:not(.yw-collapse--open) {
   display: none !important;
 }
@@ -3539,14 +2923,10 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   transform: rotate(180deg);
 }
 
-/* ---- Panel/accordion (ticket 12: replaces Bootstrap's .panel/.panel-group) ---- */
 .yw-panel,
 .panel {
   margin-bottom: var(--yw-space-md-y);
-  /* A panel lies ON the page, which is what its border and radius already say -- a shadow is
-     what makes it look it. Its absence is why the preset screen's shadow-strength slider
-     appeared to do nothing: the control worked, and not one element in the gallery it
-     repaints had a shadow to show for it. */
+
   box-shadow: 0 1px 3px var(--yw-shadow-color);
   border: var(--yw-border-width) solid var(--yw-border);
   border-radius: var(--yw-radius-sm);
@@ -3615,7 +2995,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
-/* ---- List group (ticket 14: replaces Bootstrap's .list-group/.list-group-item) ---- */
 .yw-list-group,
 .list-group {
   list-style: none;
@@ -3641,19 +3020,13 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   background: var(--yw-primary);
 }
 
-/* ---- Container (ticket 12: replaces Bootstrap's .container) ---- */
 .yw-container {
-  /* the gutters are part of the width, not added to it: without this the box is its
-     parent's content width PLUS 30px, so a container inside anything already as wide as
-     the window pushes the document 15px sideways and every page gets a horizontal
-     scrollbar (tests/e2e/layout). Same bug the Bootstrap `.container` it replaced had. */
   box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--yw-space-md-x);
 }
 
-/* ---- Grid/columns (ticket 12: replaces Bootstrap's .row/.col-md-*) ---- */
 .yw-row,
 .row {
   display: flex;
@@ -3666,7 +3039,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   padding: 0 var(--yw-space-md-x);
 }
 
-/* ---- Label (ticket 12: replaces Bootstrap's .label) ---- */
 .yw-label,
 .label,
 .label-default {
@@ -3700,7 +3072,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   background: var(--yw-tertiary);
 }
 
-/* ---- Nav (ticket 12: replaces Bootstrap's .nav/.nav-tabs) ---- */
 .yw-nav,
 ul.nav,
 ul.nav-tabs {
@@ -3722,9 +3093,7 @@ ul.nav-tabs li a {
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
   text-decoration: none;
   color: var(--yw-text);
-  /* transparent, not absent: the active state below adds a 2px bottom border, and without
-     a placeholder here the active link is 2px taller than its neighbours -- which makes the
-     whole navbar change height depending on which page you are on */
+
   border-bottom: 2px solid transparent;
 }
 .yw-nav li.active a,
@@ -3734,10 +3103,6 @@ ul.nav-tabs li.active a {
   border-bottom: 2px solid var(--yw-primary);
 }
 
-/* ---- Tabs (ticket 16: replaces Bootstrap's tab plugin panes) ----
-   Tab strips reuse .yw-nav (li.active marks the current tab); panes live in a
-   .yw-tabs__content container and only the .active pane is shown. Switching is
-   handled by yw-core.js on a[data-toggle="tab"] / a[data-yw-tab] clicks. */
 .yw-tabs__content > .yw-tabs__pane:not(.active) {
   display: none !important;
 }
@@ -3748,7 +3113,6 @@ ul.nav-tabs li.active a {
   display: block;
 }
 
-/* ---- Progress bar (ticket 12: replaces Bootstrap's .progress) ---- */
 .yw-progressbar,
 .progress {
   height: 16px;
@@ -3763,11 +3127,6 @@ ul.nav-tabs li.active a {
   transition: width 0.3s ease;
 }
 
-/* The `[35%]` wiki syntax writes a real <progress> (ProgressExtension), which is the same
-   bar drawn by the browser rather than by two nested divs -- so it is the one every page
-   author gets, and {{progressbar}} was retired in its favour (ticket 30). A progress
-   element ignores the class above until `appearance: none`, and its filled part is a
-   pseudo-element rather than a child, which is what these three rules are for. */
 progress.yw-progressbar {
   appearance: none;
   border: 0;
@@ -3784,7 +3143,6 @@ progress.yw-progressbar::-moz-progress-bar {
   background: var(--yw-primary);
 }
 
-/* ---- Breadcrumb (ticket 12: replaces Bootstrap's .breadcrumb) ---- */
 .yw-breadcrumb {
   display: flex;
   flex-wrap: wrap;
@@ -3804,10 +3162,6 @@ progress.yw-progressbar::-moz-progress-bar {
   color: var(--yw-text-muted);
 }
 
-/* ---- Tooltip (ticket 16: replaces Bootstrap's data-toggle="tooltip", pure CSS, no JS) ----
-   Also matches the legacy `[data-toggle='tooltip']`/`[data-tooltip='tooltip']` markup
-   (Bootstrap's own convention, title attribute holds the text) so none of the ~24 existing
-   templates using it need to change -- only its content source attribute differs. */
 [data-yw-tooltip],
 [data-toggle='tooltip'][title],
 [data-tooltip='tooltip'][title] {
@@ -3819,15 +3173,6 @@ progress.yw-progressbar::-moz-progress-bar {
 [data-toggle='tooltip'][title]::before,
 [data-tooltip='tooltip'][title]::after,
 [data-tooltip='tooltip'][title]::before {
-  /* `display: none`, not `visibility: hidden` alone: a hidden-but-laid-out box still counts
-     towards the document's scrollable overflow, and this one is `width: max-content` hanging
-     off the middle of its button. The rightmost button in the top bar is a 39px icon carrying
-     a "Se connecter" tooltip, so every page in the wiki was ~13px wider than its window and
-     had a horizontal scrollbar nobody could see the cause of. A tooltip nobody is pointing at
-     should take no space at all.
-
-     It costs the fade-in -- a transition cannot run from `display: none` without
-     @starting-style -- which is a fair trade for a scrollbar on every page. */
   display: none;
   opacity: 0;
   visibility: hidden;
@@ -3866,7 +3211,7 @@ progress.yw-progressbar::-moz-progress-bar {
   content: '';
   margin-bottom: var(--yw-space-sm-y);
   border: 5px solid transparent;
-  /* the little arrow under the strip, so it is the strip's colour and not a line's */
+
   border-top-color: var(--yw-text);
 }
 [data-yw-tooltip]:hover::after,
@@ -3885,7 +3230,7 @@ progress.yw-progressbar::-moz-progress-bar {
   opacity: 1;
   visibility: visible;
 }
-/* [data-yw-tooltip-placement="bottom"]: flip below the element instead of above */
+
 [data-yw-tooltip-placement='bottom']::after,
 [data-yw-tooltip-placement='bottom']::before {
   top: 100%;
@@ -3903,11 +3248,9 @@ progress.yw-progressbar::-moz-progress-bar {
   border-bottom-color: var(--yw-border);
 }
 
-/* ---- TOC (ticket 13: replaces tools/toc's jQuery scrollspy/animate follow-scroll script) ---- */
 .yw-toc {
   position: sticky;
-  /* derived, like everything else that parks below the bar: `50px` was a guess at the bar's
-     height, right only while the bar had one (ticket 30) */
+
   top: calc(var(--yw-sticky-toolbar-top) + 2px);
   z-index: 5;
 }
@@ -3916,7 +3259,6 @@ progress.yw-progressbar::-moz-progress-bar {
   overflow: auto;
 }
 
-/* ---- Utilities -------------------------------------------------- */
 .yw-list-unstyled {
   list-style: none;
   padding-left: 0;
@@ -3927,9 +3269,7 @@ progress.yw-progressbar::-moz-progress-bar {
 .yw-text-center {
   text-align: center;
 }
-/* A status as WORDS takes the status's dark ink, not its accent: an accent is sized to be
-   seen as a fill or a rule, and a sentence of it on the page's own ground is thin at both
-   schemes' contrast. */
+
 .yw-text-danger,
 .text-danger {
   color: var(--yw-danger-text);
@@ -3948,7 +3288,7 @@ progress.yw-progressbar::-moz-progress-bar {
 .yw-hide {
   display: none;
 }
-/* legacy Bootstrap utility names, still used across templates (ticket 16) */
+
 .hide,
 .hidden {
   display: none !important;
@@ -3990,21 +3330,6 @@ progress.yw-progressbar::-moz-progress-bar {
   text-align: center;
 }
 
-/* ============================================================
-   Legacy Bootstrap vocabulary (ticket 16, dissolved in ADR-0020)
-
-   Bootstrap itself is fully removed. Templates and wiki content accumulated over the
-   years still carry its class names, so those names keep rendering -- but they are no
-   longer styled by rules of their own. Every legacy name that has a yw-* counterpart
-   now shares that counterpart's rule (`.yw-btn, .btn { ... }`), which is what stops the
-   two drifting apart: there were 747 lines here restating the design system in the old
-   vocabulary, and the two copies had already diverged on padding, radius and colour.
-
-   What is left below is the names with no yw-* counterpart at all. They are still not an
-   API: new code uses the yw-* classes, and nothing but old markup should reach these.
-   ============================================================ */
-
-/* a button that only looks like a link */
 .yw-btn--link,
 .btn-link {
   background: none;
@@ -4032,7 +3357,6 @@ progress.yw-progressbar::-moz-progress-bar {
   border-bottom-right-radius: 0;
 }
 
-/* a count on a control -- a pill rather than the label's rectangle */
 .badge {
   display: inline-block;
   min-width: 10px;
@@ -4109,7 +3433,6 @@ progress.yw-progressbar::-moz-progress-bar {
   overflow-x: auto;
 }
 
-/* legacy dropdown markup: yw-core.js toggles .open on .dropdown-menu's parent */
 *:not(.open) > .dropdown-menu {
   display: none !important;
 }
@@ -4117,7 +3440,6 @@ progress.yw-progressbar::-moz-progress-bar {
   display: block;
 }
 
-/* legacy collapse markup: yw-core.js toggles .in on .collapse targets */
 .collapse:not(.in) {
   display: none !important;
 }
@@ -4128,8 +3450,6 @@ progress.yw-progressbar::-moz-progress-bar {
   border-top: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* legacy grid: the column widths. The row and the columns themselves are .yw-row/.yw-col's
-   rule; only the twelfths have no yw-* counterpart. */
 @media (min-width: 768px) {
   .row > .col-sm-1,
   .row > .col-md-1,
@@ -4193,7 +3513,6 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* /PageName/share: the social share icon row (ShareHandler) */
 .yw-share-buttons {
   display: flex;
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
@@ -4209,7 +3528,6 @@ progress.yw-progressbar::-moz-progress-bar {
   opacity: 1;
 }
 
-/* Tabler SVG sprite icons (src/assets/icons.svg, generated by src/build-icon-sprite.mjs) */
 .yw-icon {
   display: inline-block;
   width: 1.1em;
@@ -4237,16 +3555,6 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* ------------------------------------------------------------------ htmx indicators
-   htmx ships no CSS: `.htmx-indicator` is a class it *toggles*, and styling it is the
-   application's job. Nothing here did, so every indicator in the wiki was permanently
-   visible AND permanently occupying a row -- which is what made the search spinner look
-   like a loading bar shoving the results down.
-
-   Hidden by visibility rather than by `display: none`, so an indicator that reserves its
-   own space (a fixed bar, an inline dot) keeps it and does not reflow on every request.
-   Indicators that must not affect layout at all are positioned out of flow instead -- see
-   .yw-search-spinner. */
 .htmx-indicator {
   opacity: 0;
   visibility: hidden;
@@ -4258,13 +3566,6 @@ progress.yw-progressbar::-moz-progress-bar {
   visibility: visible;
 }
 
-/* ------------------------------------------------------------------ boosted navigation
-   Ticket 16: internal links load through htmx, so the browser shows no progress of its own.
-   Without feedback a slow navigation is indistinguishable from a dead click.
-
-   The delay is the point: htmx adds .htmx-request as soon as the request starts, but the bar
-   only becomes visible after 300ms, so a fast navigation shows nothing at all rather than a
-   flicker. */
 .yw-progress {
   position: fixed;
   top: 0;
@@ -4301,9 +3602,6 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* Focus moves to the new page's heading after a swap so keyboard users resume from the
-   content rather than the top of the document. That focus is programmatic, so it must not
-   draw a ring for mouse users -- :focus-visible keeps it for keyboard ones. */
 #yw-main:focus:not(:focus-visible),
 #yw-main h1:focus:not(:focus-visible) {
   outline: none;
@@ -4314,18 +3612,6 @@ progress.yw-progressbar::-moz-progress-bar {
   align-items: center;
 }
 
-/* ---- "edit this bit of the chrome" (ticket 30) -------------------------------
-   A pencil on the navbar, the banner and the footer, for whoever may follow it. The point
-   is discoverability: which page or screen is behind each of these is the thing people had
-   to be told, and being told is what a screen (or a pencil) is for.
-
-   They carry `yw-btn` too, so the shape and weight come from the button styles and only the
-   icon-and-label spacing is set here. All four edit affordances on a page -- these three and
-   the floating action cluster -- are one control in four places, so they are one button; the
-   quiet-until-reached-for treatment they share is declared once, below.
-
-   A size down from the page's body text: it names a piece of furniture rather than saying
-   anything about the page, so it should read as an aside to whatever it is sitting on. */
 .yw-chrome-edit {
   display: inline-flex;
   align-items: center;
@@ -4336,8 +3622,6 @@ progress.yw-progressbar::-moz-progress-bar {
   line-height: 1.2;
 }
 
-/* Faint until reached for, solid once you are on it -- the floating cluster, which is anchored
-   to the viewport and therefore has no region of its own to be revealed by. */
 @media (hover: hover) and (min-width: 768px) {
   .yw-page-actions {
     opacity: 0.55;
@@ -4349,24 +3633,6 @@ progress.yw-progressbar::-moz-progress-bar {
     opacity: 1;
   }
 
-  /* The chrome pencils go further: not there at all until the pointer is somewhere in the
-     part of the chrome they edit. They carry their label now, and a labelled button parked
-     permanently on the navbar and the banner of every page would read as part of the site --
-     three commands the wiki's own authors did not write, offered to nobody who can use them
-     but the admin looking at them. Hovering the thing you are wondering about is how you ask
-     about it, and the answer arrives named.
-
-     `opacity`, not `display`/`visibility`: the fade is what makes this read as a control
-     surfacing rather than the page changing under the pointer. `pointer-events` goes with it
-     so the hidden button cannot swallow a click meant for the navbar underneath.
-
-     `:focus-within` on the region, so tabbing to the pencil reveals it -- and it is on the
-     region rather than the button because the button is inside the region, so one selector
-     covers both the pencil's own focus and any neighbour's.
-
-     Only where there is a pointer to hover with. On a touch screen there is no hover to
-     reveal anything, so the pencils stay put and visible -- the same place the floating
-     cluster stops floating and shows everything. */
   .yw-chrome-edit {
     opacity: 0;
     pointer-events: none;
@@ -4382,49 +3648,15 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* The navbar's pencil leaves the centred container. `.container` is `position: static`, so
-   this resolves against `#yw-topnav` -- which is `position: sticky`, and therefore a
-   containing block -- and the pencil is placed against the window rather than against the
-   centred column, like the other two.
-
-   Nothing is reserved for it on the bar. There used to be: the pencil was on screen at all
-   times, so below 1250px -- where the centred container fills the window and leaves no gutter
-   to sit in -- the block holding the account button was padded 5rem to keep the two apart.
-   Now the pencil is only there while the navbar is hovered, and a permanent gap in the bar,
-   on every page, for a control that is not in it, costs more than the overlap it avoided. So
-   it overlays instead, which is what its background, border and shadow were always for.
-
-   A labelled button is ~215px wide, and there is no 215px of the bar that holds nothing --
-   even at 1250px the gutter is ~40px. So it cannot sit ON the bar at all without covering
-   something: see the media query below. */
 #yw-topnav .yw-chrome-edit {
   position: absolute;
   right: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  /* above the sticky bar's own stacking, so it is not the bar that receives the click */
+
   z-index: 1;
 }
 
-/* On a bar that is one row, it hangs UNDER it rather than lying across its right end.
-   Measured, not guessed: centred on the bar the button spans 1050-1265px on a 1280px window,
-   and what lives there is the account button (1097-1149) and the viewer's scheme and language
-   controls (1168-1225). Both were covered completely -- `elementFromPoint` on either returned
-   `.yw-chrome-edit__label` -- so an admin could neither open their own account menu nor switch
-   the wiki to dark, because reaching for them is what made the pencil appear on top of them.
-
-   And under the LEFT end, not the right: the right end of the strip below the bar is where the
-   banner's own pencil lives (measured: 1089-1265px, within a few pixels of the same line), so
-   right-aligning would trade covering two controls for landing on another pencil -- two
-   labelled buttons in one place, each revealed by hovering a region the other sits in. The
-   left is empty, and it is where the menu this button edits actually is.
-
-   Hovering it still counts as hovering the navbar -- `:hover` matches ancestors in the
-   document tree, not in the box tree -- so moving the pointer down onto it does not make it
-   fade away first.
-
-   Only where the bar is one row. Below 768px the container wraps, the viewer's controls take a
-   line of their own, and the pencil already sits between the rows covering neither. */
 @media (min-width: 768px) {
   #yw-topnav .yw-chrome-edit {
     top: 100%;
@@ -4434,21 +3666,10 @@ progress.yw-progressbar::-moz-progress-bar {
   }
 }
 
-/* On the banner and the footer it floats in the corner of the region rather than sitting in
-   the flow: those hold arbitrary wiki content, and a pencil pushed into that content would
-   move the page's own layout around. */
 .yw-chrome-editable {
   position: relative;
 }
 
-/* `right: 1rem` is not a guess: it is `.yw-page-actions`' own right offset, so the banner
-   and footer pencils sit on the same vertical line as the floating action cluster. Both
-   regions are full-bleed (the pencil hangs off `#yw-header` / `#yw-footer`, never off the
-   centred `.container` inside them), which is what makes that line hold at any window width. */
-/* Above `.yw-page-actions` (z-index 90), because on a page whose banner is short the two
-   land within a few pixels of each other in the same corner -- and there the pencil has to
-   win: it is the only way to reach the banner, while the floating cluster's own actions are
-   reachable from anywhere on the page. */
 .yw-chrome-editable > .yw-chrome-edit {
   position: absolute;
   top: 4px;
@@ -4456,18 +3677,12 @@ progress.yw-progressbar::-moz-progress-bar {
   z-index: 91;
 }
 
-/* nothing in the chrome is worth printing, and least of all its edit affordances */
 @media print {
   .yw-chrome-edit {
     display: none;
   }
 }
 
-/* ============================================================
-   from styles/actions/tags-nuage.css
-   ============================================================ */
-
-/********* Ebook *********/
 #ebook-selection-container .list-group-item:hover {
   cursor: pointer;
 }
@@ -4476,7 +3691,6 @@ progress.yw-progressbar::-moz-progress-bar {
   margin-right: var(--yw-space-md-x);
 }
 
-/***********************************  Nuage de mot clés  ************************************/
 .nuage {
   margin: 0;
   padding: 0;
@@ -4548,9 +3762,6 @@ a.size4:hover {
   cursor: pointer;
 }
 
-/***********************************  FIN Nuage de mot clés  ************************************/
-
-/******************************** icone rss *********************************/
 .rss-icon {
   position: relative;
   background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jZ3Ty0tUYRjH8fcfcD3/QS3aRdOmsEVBlCiIiEq4bGFNFy3KQE0NSZls8FYKmgw2YlqUpOY4GTaOpWimRHb1wiiFMjnnzDmeOTf4tgimRiciX/gt3geez/s8i1cIIUTs7inklnzk5jzkplzkxhzkhmxkTxbS7Uyk+gwk93GkumNItUeJ1hwhWpOOEEKIWGsh9loIe3UcKxzECo9hrYxiLQewloYxF4cwvzzF/PwE89NDzA+9mAvdmO99RG8cQsgt+dir4xjzHah9Nag9Vai+MpSuUrShSjR/BfpENfHxcuIvrxF/cRnt+UWMd51EKw8i5OY8rHAQ420b248++Rgt0I7acx5tsCTRrI24MOY72Kw4gJCbcrHCYxizd7A35rHX57DXZ5MgYy6ANnKLrf6zaCMutGen0d808ePKHoTcmIO1Moox04g+7UGfcqO/vok+UY39ber3NDODqI+uovadRPWlEw+WEXE5EHJDNtZyAH3ag9J5iVj7BWKtRagPitnqL0bzFyUQzd+GVLcXxev8A/BkYS0No0+5k/efGUC5V4Lk3ofidSbqat+5ZEC6nYm5OIQ+WYv9fRp7LZQEqb4zKF4n5sdeAJSu0m1AfQbm1wHioetsDRSi3D+c9KLmb0PxOpNqO4GFbtTeE2wUpLFRkJayQfE60V95dwKb5fvRQ1X/bPgrEHE5iAfLUgKJvVPcUwL/kx3AbhJxOX79yIjLwW4ihBA/AUnxGQfZBYPZAAAAAElFTkSuQmCC');
@@ -4558,19 +3769,6 @@ a.size4:hover {
   height: 16px;
   display: block;
 }
-
-/* bootstrap-tagsinput styling removed (ticket 10): the tag-input widget is now
-   yw-core.css's .yw-tag-input, no bootstrap-tagsinput dependency left to style */
-
-/* ============================================================
-   from styles/actions/attach.css
-   ============================================================ */
-
-/*
- * Les classes effets graphiques pour les images
- */
-
-/* Style the figures */
 
 .attached_file {
   text-decoration: none;
@@ -4583,8 +3781,6 @@ a.size4:hover {
 .attached_file img {
   vertical-align: top;
 }
-
-/* Style the figure captions, hiding them by default */
 
 figcaption {
   position: absolute;
@@ -4602,13 +3798,9 @@ figcaption {
   padding: var(--yw-space-sm-y) 0;
 }
 
-/* Display the captions on hover */
-
 figure:hover figcaption {
   opacity: 1;
 }
-
-/* Add padding and margin to the caption contents */
 
 figcaption * {
   padding: 0 var(--yw-space-md-x);
@@ -4623,7 +3815,6 @@ figcaption *:last-child {
   padding-bottom: var(--yw-space-sm-y);
 }
 
-/* fichiers attaches */
 .attached_file.attach_left,
 .attached_file.left {
   float: left;
@@ -4666,7 +3857,6 @@ figcaption *:last-child {
   box-shadow: 2px 2px 15px 0 var(--yw-shadow-color);
 }
 
-/* pointimage */
 .pointimage-container {
   position: relative;
   display: inline-block;
@@ -4707,7 +3897,6 @@ figcaption *:last-child {
   display: block;
 }
 
-/* vanilla-JS popover for pointimage markers (replaces Bootstrap's .popover) */
 .yw-popover--pointimage {
   display: none;
   position: absolute;
@@ -4747,7 +3936,6 @@ figcaption *:last-child {
   height: 260px !important;
 }
 
-/* background image */
 .background-image {
   background-clip: border-box;
   background-origin: padding-box;
@@ -4810,9 +3998,6 @@ figcaption *:last-child {
   padding: var(--yw-space-lg-y) var(--yw-space-lg-x);
 }
 
-/* The two an author writes on a section whose background they chose themselves. They mean
-   the words: a page saying `class="white"` over its own dark photograph wants white, not
-   whatever happens to read on the current Colour scheme. So both are the fixed inks. */
 .white,
 .white h1,
 .white h2,
@@ -4837,7 +4022,6 @@ figcaption *:last-child {
   color: var(--yw-text) !important;
 }
 
-/* embedded pdf or videos */
 .embed-responsive {
   margin-top: var(--yw-space-md-y);
   margin-bottom: var(--yw-space-md-y);
@@ -4849,8 +4033,6 @@ figcaption *:last-child {
 
 .embed-responsive.pdf-landscape {
   padding-bottom: 75%;
-
-  /* 1/138% */
 }
 
 .embed-responsive.pdf-square {
@@ -4863,10 +4045,6 @@ figcaption *:last-child {
   top: 30vh;
   left: 48%;
 }
-
-/* ============================================================
-   from styles/bazar/bazar.css
-   ============================================================ */
 
 .throbber {
   width: 56px;

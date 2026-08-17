@@ -1,10 +1,5 @@
 {% extends "@core/dashboard/layout.twig" %}
 
-{# The API route list, read off the live RouteCollection by DocumentationApiController --
-   so it cannot describe an endpoint the wiki does not have.
-
-   One row per route: what it answers to, where it is, what it wants, and who may call it.
-   The method is a badge because it is the one thing a reader scans for. #}
 {% block dashboard_content %}
   <h1>{{ _t('API_DOC_TITLE') }}</h1>
   <p class="yw-dashboard__intro">{{ _t('API_DOC_INTRO') }}</p>
@@ -48,7 +43,6 @@
     </section>
   {% endfor %}
 
-  {# whatever the installed extensions add to this page, as they build it themselves #}
   {% if extensionDocs is not empty %}
     <section class="yw-dashboard__card yw-dashboard__card--wide">{{ extensionDocs|raw }}</section>
   {% endif %}

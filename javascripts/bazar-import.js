@@ -42,9 +42,7 @@ async function processEntry(entryCheckbox, counters) {
       try {
         const errorData = await response.json()
         errorMessage = errorData.message || JSON.stringify(errorData)
-      } catch {
-        /* Ignore */
-      }
+      } catch {}
       throw new Error(errorMessage)
     }
 

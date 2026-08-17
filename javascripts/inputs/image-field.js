@@ -1,9 +1,3 @@
-// The image field has no file input of its own any more: it attaches a picture through
-// the file-picker rail (javascripts/inputs/file-picker-field.js), which shows the chosen
-// file and writes its address into the URL box below. What is left here is the preview of
-// that box -- which is what the picker fills, so it previews a picked file too.
-
-// Handle image URL preview
 function handleImageUrlInput(evt) {
   const target = evt.target || evt.srcElement
   const url = target.value.trim()

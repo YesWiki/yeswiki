@@ -19,25 +19,11 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `{{editbar}}`: the actions in the corner, the facts at the bottom.
- *
- * Three things here are only visible on a rendered page, which is why they went unnoticed.
- * Ticket 10 made pages render through the Page form, so every page grew the bazar entry
- * footer *on top of* its edit bar -- two strips of buttons saying overlapping things. That
- * footer prints `entry.created_at|date(…)`, and Twig's date filter on a key the Content
- * does not have is **now**, so every page claimed to have been created and updated the
- * second you looked at it. And the cluster is an offer to edit: showing it to someone who
- * cannot is an offer that fails on the click.
- */
+/** `{{editbar}}`: the actions in the corner, the facts at the bottom. */
 class EditBarTest extends YesWikiTestCase
 {
     /**
-     * One page per test, rather than one for the class: `AclService` remembers its answer
-     * for a tag, so a page one test closes to `@admins` is still closed for the next one
-     * that saves a fresh page under the same name -- which renders no bar at all, and an
-     * assertion that something is *absent* from an empty string passes for the wrong
-     * reason. (It did: the dates below were being checked against nothing.).
+     * One page per test, rather than one for the class: `AclService` remembers its answer for a tag, so a page one test closes to `@admins` is still closed for the next one that saves a fresh page under the same name -- which renders no bar at all, and an assertion that something is *absent* from an empty string passes for the wrong reason.
      */
     private const CLUSTER_PAGE = 'EditBarClusterPage';
     private const READER_PAGE = 'EditBarReaderPage';
@@ -62,20 +48,17 @@ class EditBarTest extends YesWikiTestCase
         $authentication = $wiki->services->get(AuthenticationService::class);
 
         $pageManager->save(self::CLUSTER_PAGE, [PageBody::CONTENT => 'contenu'], '', true);
-        // spelled out rather than left to the wiki's default_write_acl, which a test
-        // should not have to guess at
+
         $wiki->services->get(AclService::class)->save(self::CLUSTER_PAGE, 'write', '*');
 
         try {
             $writable = $this->renderBar($wiki, self::CLUSTER_PAGE);
             $this->assertStringContainsString('yw-page-actions', $writable, 'an editor gets the cluster');
             $this->assertStringContainsString('yw-page-info', $writable, 'and the facts at the bottom');
-            // sharing and the star are verbs, so they are in the cluster with the others --
-            // not left behind in the line of facts
+
             $this->assertStringContainsString('yw-page-actions__more', $writable);
             $this->assertStringNotContainsString('yw-page-info__actions', $writable);
 
-            // the same page, closed to everyone but the admins
             $wiki->services->get(AclService::class)->save(self::CLUSTER_PAGE, 'write', '@admins');
             $authentication->logout();
 
@@ -91,12 +74,7 @@ class EditBarTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * ...but a signed-in reader still gets the two things a reader wants.
-     *
-     * They have no cluster to put them in, so sharing and the star stay in the line at the
-     * bottom for them -- the one case where that line carries a verb.
-     */
+    /** ...but a signed-in reader still gets the two things a reader wants. */
     #[Depends('testWikiExisting')]
     public function testASignedInReaderKeepsSharingAndTheStar(YesWikiRuntime $wiki): void
     {
@@ -131,13 +109,7 @@ class EditBarTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * Neither bar says what the Content does not store.
-     *
-     * A page keeps no `created_at`. The honest answer is to say nothing about when it was
-     * created -- not to print today, which is what `null|date(…)` renders to and what a
-     * page five years old was therefore claiming about itself.
-     */
+    /** Neither bar says what the Content does not store. */
     #[Depends('testWikiExisting')]
     public function testNeitherBarInventsDatesTheContentDoesNotKeep(YesWikiRuntime $wiki): void
     {
@@ -156,8 +128,6 @@ class EditBarTest extends YesWikiTestCase
             $rendered = $this->renderBar($wiki, self::DATES_PAGE);
             $this->assertNotSame('', $rendered, 'the premise: this visitor gets a bar at all');
 
-            // a page still has a creation date -- the date of its first revision, which the
-            // `pages` table has always held. Derived, not invented.
             $createdAt = $pageManager->getCreateTime(self::DATES_PAGE);
             $this->assertNotNull($createdAt);
             $expected = Carbon::parse($createdAt);
@@ -168,8 +138,6 @@ class EditBarTest extends YesWikiTestCase
                 "a page's creation date is the date of its first revision, written in the reader's language"
             );
 
-            // and the entry footer, which is where the dates were being made up, for the
-            // one case that still renders it
             $pageContext->setTag('SomeOtherPage');
             $embedded = (string)$wiki->services->get(EntryController::class)->view(self::DATES_PAGE);
             $this->assertStringContainsString('BAZ_fiche_info', $embedded, 'the premise: this footer renders here');
@@ -182,8 +150,7 @@ class EditBarTest extends YesWikiTestCase
     }
 
     /**
-     * On an edit screen the corner belongs to the editor: save, preview when this wiki
-     * asks for one, delete. Not "edit this page", which is where you already are.
+     * On an edit screen the corner belongs to the editor: save, preview when this wiki asks for one, delete.
      */
     #[Depends('testWikiExisting')]
     public function testTheEditorOwnsTheCornerWhileYouAreEditing(YesWikiRuntime $wiki): void
@@ -221,8 +188,7 @@ class EditBarTest extends YesWikiTestCase
     {
         $engine = $wiki->services->get(TemplateEngine::class);
         $config = $wiki->services->get(RuntimeConfig::class);
-        // the setting itself, not a stand-in: render() re-reads RuntimeConfig on every
-        // call and overwrites any `config` a caller passes, so this is the only way in
+
         $before = $config['preview_before_save'] ?? false;
 
         $editor = fn () => (string)$engine->render('@core/handlers/edit.twig', [
@@ -248,24 +214,15 @@ class EditBarTest extends YesWikiTestCase
             $withoutPreview = $editor();
             $this->assertStringNotContainsString('name="submit" value="preview"', $withoutPreview);
 
-            // leaving is in the cluster too, and as a real link: it was an <a> with no
-            // href driving `document.location` from an onclick, which the keyboard cannot
-            // reach -- and the way out of an editor has to be reachable
             $this->assertMatchesRegularExpression(
                 '/<a href="[^"]+"[^>]*class="[^"]*link-cancel/',
                 $withoutPreview
             );
 
-            // ...and the ordinary actions are said twice: floating in the corner, and again
-            // at the foot of the form where a form's buttons have always been. One macro
-            // renders both, so a button that appears once has lost one of its two homes.
             foreach (['value="Sauver"', 'link-cancel'] as $action) {
                 $this->assertSame(2, substr_count($withoutPreview, $action), "{$action} belongs in both places");
             }
 
-            // Delete is the exception, and only in the corner. A red button beside Save, at
-            // the exact spot the eye lands after filling a form in, is an accident waiting to
-            // happen -- and destroying a page is not part of editing one.
             $this->assertSame(
                 1,
                 substr_count($withoutPreview, 'link-deletepage'),
@@ -277,17 +234,7 @@ class EditBarTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The line of facts holds a dropdown, so it cannot be a paragraph.
-     *
-     * A `<ul>` inside a `<p>` is not a thing an HTML parser will build: it closes the
-     * paragraph first, which put the comments menu outside the `.dropup` its toggle looks
-     * in -- clicking "open the comments" did nothing -- and left a stray empty `<p>`
-     * behind. Nothing in PHP notices: the template's own output is well formed, and
-     * libxml's parser (unlike a browser's) keeps the `<ul>` where it was written. So this
-     * pins the markup rule, and tests/e2e/tests/editbar.spec.ts pins the behaviour in a
-     * browser that really does reparent it.
-     */
+    /** The line of facts holds a dropdown, so it cannot be a paragraph. */
     #[Depends('testWikiExisting')]
     public function testTheLineOfFactsIsNotAParagraph(YesWikiRuntime $wiki): void
     {
@@ -302,7 +249,7 @@ class EditBarTest extends YesWikiTestCase
                 'userIsAdminOrOwner' => true,
                 'author' => 'someone',
                 'contentLabel' => 'Pages',
-                // the dropdown this is all about
+
                 'linkopencomments' => '/?SomePage/claim&action=opencomments',
                 'wikigroups' => ['admins'],
             ]
@@ -316,10 +263,7 @@ class EditBarTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * One bar per page. The entry footer keeps its buttons for the case it is the only
-     * thing there -- an entry rendered inside some *other* page.
-     */
+    /** One bar per page. */
     #[Depends('testWikiExisting')]
     public function testContentOnItsOwnPageHasOneActionBarNotTwo(YesWikiRuntime $wiki): void
     {

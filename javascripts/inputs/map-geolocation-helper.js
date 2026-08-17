@@ -1,13 +1,9 @@
 // This is the file's public surface: a global other scripts call, declared in
-// eslint.config.mjs. ESLint sees each file alone, so the definition reads as unused.
 // eslint-disable-next-line no-unused-vars
 const geolocationHelper = (function () {
-  // private objects
   const eventDispatcher = {
-    // data
     eventsListeners: {},
     loadingCache: {},
-    // methods
     addEvent(eventName, listener, once = false) {
       if (typeof eventName == 'string') {
         if (!(eventName in this.eventsListeners)) {
@@ -106,7 +102,6 @@ const geolocationHelper = (function () {
           fromPostalCode: {},
           fromTown: {},
         },
-        // World's countries with country code, name and bounding box
         countries: [
           { id: 'AF', name: 'Afghanistan', box: [60.53, 29.32, 75.16, 38.49] },
           { id: 'AO', name: 'Angola', box: [11.64, -17.93, 24.08, -4.44] },
@@ -389,14 +384,10 @@ const geolocationHelper = (function () {
       }
     },
     methods: {
-      // calculate geodesic distance
       calculateGeodesicDistance({
         point1 = { latitude: '', longitude: '' },
         point2 = { latitude: '', longitude: '' },
       }) {
-        // sanitize. `Object.entries({ point1, point2 })` rather than `eval(name)`: the eval
-        // was only ever reaching a local by its name, which an object does directly -- and it
-        // handed the one string in this file that a bundler cannot see through to a compiler.
         Object.entries({ point1, point2 }).forEach(([name, val]) => {
           if (typeof val !== 'object' || val === null) {
             throw new Error(`${name} should be an object`)
@@ -410,17 +401,13 @@ const geolocationHelper = (function () {
             }
           })
         })
-        // Radius in Km
         const radiusEarthKm = 6371.07103
 
-        // Convert degrees to radians
         const radiusLatFrom = Number(point1.latitude) * (Math.PI / 180)
         const radiusLatTo = Number(point2.latitude) * (Math.PI / 180)
 
-        // Radian difference (latitudes)
         const latDiff = radiusLatTo - radiusLatFrom
 
-        // Radian difference (longitudes)
         const lngDiff =
           (Number(point2.longitude) - Number(point1.longitude)) *
           (Math.PI / 180)
@@ -484,6 +471,12 @@ const geolocationHelper = (function () {
               typeof Number(infos[infos.length - 2]) === 'number'
                 ? { postalCodes: [infos[infos.length - 2]] }
                 : {}
+            const countryOnly = () =>
+              this.toGeolocationData({
+                country: infos[infos.length - 1],
+                latitude,
+                longitude,
+              })
             switch (entry.type) {
               case 'administrative':
                 return this.toGeolocationData({
@@ -569,14 +562,9 @@ const geolocationHelper = (function () {
                       : {}),
                   })
                 }
-              /* falls through -- an `unclassified` entry that is not a highway is
-                 handled by the generic branch below, which is why this does not break */
+                return countryOnly()
               default:
-                return this.toGeolocationData({
-                  country: infos[infos.length - 1],
-                  latitude,
-                  longitude,
-                })
+                return countryOnly()
             }
           })
       },
@@ -622,7 +610,6 @@ const geolocationHelper = (function () {
                 .join('&')}&format=json`
             }
           } else {
-            // throw new Error('address shoud be an object with at least one key from \'street\',\'postalCode\',\'town\',\'county\',\'state\'')
             return ''
           }
         }
@@ -676,7 +663,6 @@ const geolocationHelper = (function () {
       getCountryCode(country) {
         return this.getCountryData(country).id
       },
-      // Return the country giving its name
       getCountryData(country) {
         const normalizedCountry = this.normalizeNFDDiacritic(country)
 
@@ -701,7 +687,6 @@ const geolocationHelper = (function () {
         try {
           countryCode = this.getCountryCode(country)
         } catch {
-          // unknown country
           return []
         }
         if (country.toLowerCase() === 'france') {
@@ -829,7 +814,6 @@ const geolocationHelper = (function () {
       init() {
         this.isDebugMode = wiki.isDebugEnabled
         this.isInit = true
-        // do nothing
         this.eventDispatcher.dispatchEvent('init.init.ready')
       },
       normalizeNFDDiacritic(text) {
@@ -888,25 +872,20 @@ const geolocationHelper = (function () {
     },
     initData() {
       this.methods.parent = this
-      // init data -- not needed with VueJs
       const data = this.data()
       for (const key in data) {
         this.methods[key] = data[key]
       }
     },
     mounted() {
-      this.methods.init() // replace by this.init() in VueJs
+      this.methods.init()
     },
   }
-  // initData
-  geolocationHelperInternal.initData() // not needed with VueJs
+  geolocationHelperInternal.initData()
 
-  // When document is ready
   window.addEventListener('load', () => geolocationHelperInternal.mounted())
 
-  // public methods
   return {
-    // calculate geodesic distance
     calculateGeodesicDistance({
       point1 = { latitude: '', longitude: '' },
       point2 = { latitude: '', longitude: '' },
@@ -916,15 +895,12 @@ const geolocationHelper = (function () {
         point2,
       })
     },
-    // Return the country name giving its country code
     getCountry(code) {
       return geolocationHelperInternal.methods.getCountry(code)
     },
-    // Return the country's bounding box giving its name
     getCountryBox(country) {
       return geolocationHelperInternal.methods.getCountryBox(country)
     },
-    // Return the country code giving its name
     getCountryCode(country) {
       return geolocationHelperInternal.methods.getCountryCode(country)
     },

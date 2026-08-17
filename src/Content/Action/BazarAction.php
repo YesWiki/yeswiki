@@ -36,8 +36,6 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 ->description(_t('AB_bazar_action_description'))
                 ->previewHeight('450px')
                 ->settings(
-                    // the form an entry is created in -- the same setting a list is
-                    // pointed at a form with, since it is the same question
                     EntryListAction::formSetting(),
                     Setting::page('redirecturl')
                         ->label(_t('AB_bazar_action_redirecturl_label')),
@@ -48,9 +46,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     public const URL_VIEW_PARAM = 'view';
     public const URL_ACTION_PARAM = 'action';
 
-    // Premier niveau d'action : pour toutes les fiches
-    public const VIEW_DEFAULT = 'formulaire'; // Recherche
-    public const VIEW_SEARCH = 'consulter'; // Recherche
+    public const VIEW_DEFAULT = 'formulaire';
+    public const VIEW_SEARCH = 'consulter';
     public const VIEW_CREATE = 'saisir';
     public const VIEW_FORMS = 'formulaire';
     public const VIEW_LISTS = 'listes';
@@ -58,14 +55,12 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     public const VIEW_EXPORT = 'exporter';
     public const VIEW_SUBSCRIPTIONS = 'abonnements';
 
-    // Entries
     public const ACTION_SEARCH = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
     public const ACTION_ENTRY_DELETE = 'supprimer';
 
-    // Forms
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
@@ -75,19 +70,17 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     public const ACTION_FORM_CLONE = 'clone';
     public const ACTION_CHOOSE_FORM = 'choisir_type_fiche';
 
-    // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
-    // Abonnements
     public const ACTION_SUBSCRIPTION_LIST = 'list';
     public const ACTION_SUBSCRIPTION_ADD = 'add';
     public const ACTION_SUBSCRIPTION_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
 
-    public const ACTION_PUBLIER = 'publier'; // Valider la fiche
-    public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
+    public const ACTION_PUBLIER = 'publier';
+    public const ACTION_PAS_PUBLIER = 'pas_publier';
 
     public function formatArguments($arg)
     {
@@ -95,10 +88,9 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             return $arg['redirecturl'] ?? '';
         });
 
-        // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)) {
             $wikiLink = $this->getService(UrlFormatter::class)->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
-            if ($wikiLink) {// General URL
+            if ($wikiLink) {
                 $tag = $wikiLink['tag'];
                 $method = $wikiLink['method'];
                 $params = $wikiLink['params'];
@@ -130,13 +122,13 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             self::URL_VIEW_PARAM => $this->sanitizedGet(self::URL_VIEW_PARAM, function () use ($arg) {
                 return $arg[self::URL_VIEW_PARAM] ?? self::VIEW_DEFAULT;
             }),
-            // afficher le menu de vues bazar ?
+
             'showmenu' => $this->sanitizedGet('showmenu', function () use ($arg) {
                 return $arg['showmenu'] ?? $this->params->get('baz_menu');
             }),
-            // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
+
             'id' => $vIDs,
-            // Permet de rediriger vers une url après saisie de fiche
+
             'redirecturl' => $redirecturl,
         ];
     }
@@ -150,9 +142,6 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     {
         $val = $this->getRequest()->query->get($key);
 
-        // `is_scalar($val)` and `is_callable($callback)` were both already guaranteed -- the
-        // query bag yields scalars or null, and the callback is declared `callable` now rather
-        // than tested for at every call (ticket 40)
         return isset($val) ? $val : $callback();
     }
 
@@ -163,16 +152,11 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $formController = $this->getService(FormController::class);
         $entryController = $this->getService(EntryController::class);
 
-        // TODO put in all bazar templates
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
         $view = $this->arguments[self::URL_VIEW_PARAM];
         $action = $this->arguments[self::URL_ACTION_PARAM];
 
-        // Prepended to whatever the view returns, rather than printed: an action that
-        // prints lands wherever the output buffer happens to be rather than where it was
-        // called from, which is how bazar's own menu came out above the title of the page
-        // that called it.
         $menu = $this->arguments['showmenu'] === '0' ? '' : $this->render('@core/menu.twig', [
             'menuItems' => array_map('trim', explode(',', $this->arguments['showmenu'])),
             'view' => $view,
@@ -181,9 +165,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         return $menu . $this->runView($view, $action, $req, $listController, $formController, $entryController);
     }
 
-    /**
-     * The body of the action: what the requested view returns, without the menu.
-     */
+    /** The body of the action: what the requested view returns, without the menu. */
     private function runView(mixed $view, mixed $action, Request $req, ListController $listController, FormController $formController, EntryController $entryController): string
     {
         switch ($view) {
@@ -197,7 +179,6 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($req->get('tag'));
                     case self::ACTION_ENTRY_DELETE:
-                        // delete() answers a bool; the view has nothing of its own to show
                         return (string)$entryController->delete($req->get('tag'), true);
                     case self::ACTION_PUBLIER:
                         return $entryController->publish($req->get('tag'), true);
@@ -216,6 +197,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
 
                         return $entryController->selectForm();
                 }
+
                 // no break
             case self::VIEW_FORMS:
                 switch ($action) {
@@ -261,6 +243,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }
+
                 // no break
             case self::VIEW_SUBSCRIPTIONS:
                 switch ($action) {
@@ -270,6 +253,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                         if ($req->query->get('type') === 'following') {
                             return $formController->addFollowing($req->query->get('formid'), $req->query->get('actor'));
                         }
+
                         // no break
                     case self::ACTION_SUBSCRIPTION_REMOVE:
                         if ($req->query->get('type') === 'followers') {
@@ -283,6 +267,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     default:
                         return $formController->displayAll($req->query->get('msg'));
                 }
+
                 // no break
             case self::VIEW_LISTS:
                 switch ($action) {
@@ -307,6 +292,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     default:
                         return $listController->displayAll();
                 }
+
                 // no break
             case self::VIEW_IMPORT:
                 return $this->callAction('entryimport', $this->arguments);

@@ -6,30 +6,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Ticket 17: uploaded files become their own Content type (a `pages` row per file,
- * own ACL, see FileManager). This migration:
- *  1) scans the legacy upload folder (`attach_config[upload_path]`, historically
- *     `files/`) for existing physical uploads, both the flat safe_mode naming
- *     (`{pageTag}_{name}_{pageDate}_{uploadDate}.{ext}[_]`) and the no_safe_mode
- *     subdirectory naming (`{pageTag}/{name}_{pageDate}_{uploadDate}.{ext}[_]`),
- *     moves each into FileManager::STORAGE_DIR and registers it as a file entry
- *     (ACL seeded from the owning page's *current* read ACL);
- *  2) rewrites each owning page's own body, replacing `file="originalFilename"`
- *     (across {{attach}} and its sibling actions) with `file="newTag"`.
- *
- * Files whose name doesn't match the known legacy convention are left in place --
- * some seed/demo assets (e.g. files/yeswiki-logo.png) were never real {{attach}}
- * uploads and aren't referenced via file="..." at all, so there's nothing to migrate.
- *
- * The rewrite in step 2 is deliberately scoped to each file's own owning page, not a
- * single global filename => tag map applied to every page site-wide: `file="..."` in
- * a page body was never a globally unique identifier -- the pre-migration upload flow
- * (qq.lib.php's handleUpload()) never enforced uniqueness of the short "simplefilename"
- * across different pages, and GetFullFilename()'s search resolves a bare `file="name.ext"`
- * relative to the *current* page's tag. Two different pages that each uploaded a
- * same-named file (both "report.pdf", say) would collide into one entry in a global
- * map and silently mis-rewrite one page's reference to the other's file/ACL. Scoping
- * the replacement to each file's own owning page's body avoids that entirely.
+ * Ticket 17: uploaded files become their own Content type (a `pages` row per file, own ACL, see FileManager).
  */
 class MigrateAttachmentsToPages extends YesWikiMigration
 {
@@ -72,7 +49,6 @@ class MigrateAttachmentsToPages extends YesWikiMigration
             $entryPath = $uploadPath . '/' . $entry;
 
             if (is_dir($entryPath)) {
-                // no_safe_mode subdirectory case: the directory name IS the owner page tag
                 if (!$pageManager->tagExists($entry)) {
                     continue;
                 }
@@ -85,7 +61,6 @@ class MigrateAttachmentsToPages extends YesWikiMigration
                 continue;
             }
 
-            // flat safe_mode case: recover the owner page tag from the filename prefix
             $ownerPageTag = $fileManager->guessOwnerPageTagFromLegacyFilename($entry);
             if (is_null($ownerPageTag)) {
                 continue;
@@ -120,17 +95,11 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         $entry = $fileManager->create($originalFilename, $storedFilename, $ownerPageTag, (int)$size, $mimeType);
         unlink($physicalPath);
 
-        // page bodies reference the short original filename (`file="report.pdf"`), never
-        // the raw on-disk name with its page-tag prefix and timestamp suffix -- that's
-        // what rewritePageBodies() needs to search for
         $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = $entry['tag'];
     }
 
     /**
-     * Strip the trailing `_{pageDate}_{uploadDate}.{ext}[_]` suffix (and, for the flat
-     * safe_mode case, the leading `{pageTag}_` prefix) to recover the name the user
-     * originally uploaded. Returns null if the filename doesn't match the legacy
-     * convention at all (not a real {{attach}} upload -- left untouched).
+     * Strip the trailing `_{pageDate}_{uploadDate}.{ext}[_]` suffix (and, for the flat safe_mode case, the leading `{pageTag}_` prefix) to recover the name the user originally uploaded.
      */
     public static function recoverOriginalFilename(string $rawFilename, ?string $stripPrefix): ?string
     {
@@ -163,8 +132,6 @@ class MigrateAttachmentsToPages extends YesWikiMigration
                 continue;
             }
 
-            // longest-filename-first, so e.g. "photo.jpg" doesn't get rewritten inside
-            // a reference to "photo.jpg_" or a longer sibling name
             uksort($renameMap, function ($a, $b) {
                 return strlen($b) <=> strlen($a);
             });

@@ -9,15 +9,11 @@ test('Access should no be granted to anonymous', async ({ page }) => {
 
 test('Admins should modify config', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
-  // `wakka_name` became `yeswiki_name` in this rewrite; this endpoint writes whatever
-  // key it is given verbatim, so the old name wrote a key nothing reads
   const res = await page.request.post(TARGET, {
     data: { yeswiki_name: 'New site name' },
   })
   expect(res.status()).toBe(200)
   await page.goto('/')
-  // the site name shows in the document title, and since ticket 30 in the navbar brand
-  // too: `layout_title` is empty on a seeded wiki, and an empty title falls back to this
   await expect(page).toHaveTitle(/New site name/)
   await expect(page.locator('.navbar-brand').first()).toContainText(
     'New site name',

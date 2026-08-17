@@ -41,15 +41,11 @@ class ImageField extends FileField
         $this->imageClass = $values[self::FIELD_IMAGE_CLASS];
         $this->imageDefault = $values[self::FIELD_IMAGE_DEFAULT];
 
-        // We can have no default for images
         $this->default = null;
     }
 
     protected function getDefaultImageName($entry)
     {
-        // a Content that is not a bazar entry carries no form_id of its own -- the row's
-        // Content type decides which form describes it (ticket 10), and the caller may or
-        // may not have stamped it in
         $id = $entry['form_id'] ?? $_SESSION['current_form_id'] ?? 'no_id';
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
         if (file_exists($this->getBasePath() . $default_image_filename)) {
@@ -64,14 +60,11 @@ class ImageField extends FileField
         $output = '';
         $value = $this->getValue($entry);
         $isUrl = $this->isUrl($value);
-        // javascript pour gerer la previsualisation
-        // si une taille maximale est indiquée, on teste
+
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
-        // Handle URL value
         if ($isUrl) {
-            // Handle URL deletion
             if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
@@ -80,7 +73,6 @@ class ImageField extends FileField
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
 
-                    // Return empty input after deletion
                     return $output . $this->render('@core/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
                 }
                 $output = $this->render('@core/alert-message.twig', [
@@ -160,10 +152,6 @@ class ImageField extends FileField
         return ($alertMessage ?? '') . $this->render('@core/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
     }
 
-    /*
-    *	indicates if tag must be set before to format the value
-    */
-
     public function requiresTagBeforeFormatting()
     {
         return true;
@@ -174,7 +162,6 @@ class ImageField extends FileField
         $params = $this->getService(ParameterBagInterface::class);
         $value = $this->getValue($entry);
 
-        // Check if a URL was submitted
         $urlPropertyName = $this->propertyName . '_url';
         $urlValue = $entry[$urlPropertyName] ?? null;
         if (!empty($urlValue) && $this->isUrl($urlValue)) {
@@ -184,7 +171,6 @@ class ImageField extends FileField
             ];
         }
 
-        // Check if the current value is a URL (keep it if no new file uploaded)
         if ($this->isUrl($value) && empty($_FILES[$this->propertyName]['name'])) {
             return [
                 $this->propertyName => $value,
@@ -209,12 +195,10 @@ class ImageField extends FileField
                     chmod($filePath, 0755);
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
-                        // delete previous files only if authorized (owner) and not a URL
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
 
-                    // Generate thumbnails to speedup loading of bazar templates
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
                         $resizer = $this->getService(ImageResizer::class);
                         $filePathResized = $resizer->resizedFilename($filePath, (string)$this->thumbnailWidth, (string)$this->thumbnailHeight);
@@ -222,7 +206,7 @@ class ImageField extends FileField
                             $resizer->resize($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
                         }
                     }
-                    // Adapt image dimensions
+
                     if (!empty($this->imageWidth) && !empty($this->imageHeight)) {
                         $resizer = $this->getService(ImageResizer::class);
                         $filePathResized = $resizer->resizedFilename($filePath, (string)$this->imageWidth, (string)$this->imageHeight);
@@ -263,11 +247,6 @@ class ImageField extends FileField
         }
 
         if ($this->isUrl($value)) {
-            // ...unless the URL is one of ours. A file picked from the rail is stored as
-            // its own download address, and the bytes behind it are on this disk, so the
-            // thumbnail sizes this field was configured with apply to it exactly as they
-            // do to a file uploaded into the entry's own directory. Only a picture really
-            // hosted somewhere else goes out at whatever size its host sends.
             $sized = $this->ownFileAtFieldSize($value);
 
             return '<img src="' . htmlspecialchars($sized) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
@@ -290,20 +269,7 @@ class ImageField extends FileField
         return '';
     }
 
-    /**
-     * A file of this wiki's own, asked for at this field's configured size.
-     *
-     * A picture picked from the file rail is stored as its own download address, and the
-     * bytes behind it are on this disk -- so the sizes this field was configured with
-     * apply to it exactly as they do to a file uploaded into the entry's own directory.
-     * The resizing happens behind `/api/files/<tag>/download`, which is the one place
-     * that checks whether this reader may have the file at all: a thumbnail written into
-     * the public `cache/` directory would be a readable copy of a file whose whole point
-     * is that reading it is checked.
-     *
-     * Anything else -- a picture really hosted elsewhere, a URL that merely looks like
-     * ours -- comes back unchanged and goes out at whatever size its host sends.
-     */
+    /** A file of this wiki's own, asked for at this field's configured size. */
     private function ownFileAtFieldSize(string $url): string
     {
         $width = $this->imageWidth ?: $this->thumbnailWidth;
@@ -336,7 +302,6 @@ class ImageField extends FileField
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                 $this->getService(FileBrowser::class)->moveToTrash($filename);
             }
-            // do not delete file if not same entry name (only remove from this entry)
 
             return true;
         }
@@ -344,7 +309,6 @@ class ImageField extends FileField
         return false;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

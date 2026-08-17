@@ -13,13 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 17's MigrateAttachmentsToPages: converts pre-existing
- * physical uploads (legacy `{pageTag}_{name}_{pageDate}_{uploadDate}.{ext}` naming)
- * into FileManager file-entries and rewrites page bodies' `file="..."` references to
- * the new tag. Exercises the private migrateFiles()/rewritePageBodies() steps
- * directly against a throwaway fixture directory (via Reflection) rather than
- * run()'s real configured upload_path, so this never touches the dev instance's
- * actual files/ directory.
+ * Regression test for ticket 17's MigrateAttachmentsToPages: converts pre-existing physical uploads (legacy `{pageTag}_{name}_{pageDate}_{uploadDate}.{ext}` naming) into FileManager file-entries and rewrites page bodies' `file="..."` references to the new tag.
  */
 class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 {
@@ -27,17 +21,12 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
     public static function setUpBeforeClass(): void
     {
-        // YesWikiMigration (extended by the migration file below) is only autoloadable
-        // once getWiki() has registered src/autoload.inc.php's fallback autoloader
         self::getWiki();
         require_once 'src/migrations/20260726000000_MigrateAttachmentsToPages.php';
     }
 
     public function testRecoverOriginalFilenameFlatSafeMode()
     {
-        // spaces were already irreversibly turned into underscores at upload time
-        // (Attach::GetFullFilename()'s str_replace(' ', '_', ...)), so the recovered
-        // name keeps them as underscores too -- this is lossy by design, not a bug
         $this->assertSame(
             'my_document.txt',
             \MigrateAttachmentsToPages::recoverOriginalFilename(
@@ -49,8 +38,6 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
     public function testRecoverOriginalFilenameSubdirMode()
     {
-        // no_safe_mode case: no page-tag prefix to strip, and non-media extensions get
-        // a trailing underscore (see Attach::GetFullFilename())
         $this->assertSame(
             'report.pdf',
             \MigrateAttachmentsToPages::recoverOriginalFilename(
@@ -73,9 +60,6 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         $aclService = $wiki->services->get(AclService::class);
         $fileManager = $wiki->services->get(FileManager::class);
 
-        // page bodies reference the short original filename the uploader saw
-        // (qq.lib.php's "simplefilename"), never the raw on-disk name with its
-        // page-tag prefix and timestamp suffix -- see recoverOriginalFilename()'s doc
         $body = '{{attach file="my_report.txt" desc="report"}}';
         $pageManager->save(self::OWNER_PAGE_TAG, [PageBody::CONTENT => $body], '', true);
         $aclService->save(self::OWNER_PAGE_TAG, 'read', '@admins');
@@ -130,10 +114,6 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
     public function testRewritePageBodiesDoesNotCollideAcrossPagesWithSameOriginalFilename()
     {
-        // two different pages independently uploaded a same-named file -- file="..." was
-        // never a globally unique identifier pre-migration (qq.lib.php never enforced
-        // cross-page uniqueness), so each page's own reference must resolve to ITS OWN
-        // upload's tag, not whichever one happens to share the short filename
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
         $otherPageTag = self::OWNER_PAGE_TAG . 'Other';

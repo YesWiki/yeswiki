@@ -1,4 +1,3 @@
-// ext/Number/Color/slider
 export default {
   props: ['value', 'config', 'values'],
   emits: ['input'],

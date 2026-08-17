@@ -1,8 +1,3 @@
-// tableau.js — bazar "tableau" list template glue (ticket 16: vanilla JS on
-// yw-datatable, replacing jQuery DataTables + its custom search plugin).
-// External facet filters (.filter-checkbox in the filters sidebar) plug into
-// yw-datatable via window.ywDatatableRowFilters + the yw-datatable-refresh event;
-// footer sums and the results counter recompute on every yw-datatable-drawn.
 const TableHelper = {
   tables: [],
   checkedFilters: {},
@@ -107,8 +102,6 @@ const TableHelper = {
   },
 }
 
-// ticket 14: TableHelper.init() re-scans the document, and marking each table keeps a
-// second call from double-initialising one
 ywInitEach('.yeswiki-tableau, table.tableau', () => {
   TableHelper.init()
 })

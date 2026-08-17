@@ -1,23 +1,14 @@
-{# ============================================================
-   AdminContent action – main shell template
-   Loaded once; the inner table is swapped by HTMX.
-============================================================ #}
+
 {{ include_css("styles/yw-admin.css") }}
 <div class="no-dblclick admin-content-wrapper" id="admin-content-wrapper">
-    {# --------------------------------------------------------
-       Flash / bulk-action result area
-       -------------------------------------------------------- #}
+
     <div id="admin-bulk-result" aria-live="polite"></div>
-    {# --------------------------------------------------------
-       Filter bar  (values are included in every HTMX request)
-       -------------------------------------------------------- #}
+
     <div class="admin-content-filter-bar">
         <form id="admin-content-filter-form" autocomplete="off">
             <div class="yw-form-group">
                 <label for="acf-search">{{ _t("TEMPLATE_SEARCH") }}</label>
-                {# the shared box in its inline form: same component as {{search}} and the
-                   entry lists, sized for a filter bar rather than for a page that is about
-                   searching. No button -- this bar filters as you type. #}
+
                 {% include '@core/_searchbox.twig' with {
                 name: 'search',
                 id: 'acf-search',
@@ -31,7 +22,7 @@
                     <option value="all">— {{ _t("GROUP_SELECTION") }} —</option>
                     <option value="pages">{{ _t("ADMIN_CONTENT_TYPE_PAGES") }}</option>
                     <option value="bazar">{{ _t("ADMIN_CONTENT_TYPE_ALL_FORMS") }}</option>
-                    {# `forms` is id => label (FormManager::getAllLabels()) #}
+
                     {% for id, label in forms %}
                         <option value="{{ id }}">{{ _t("ADMIN_CONTENT_TYPE_FORM") |replace({'{name}': label}) }}</option>
                     {% endfor %}
@@ -105,7 +96,7 @@
                     <option value="500">500</option>
                 </select>
             </div>
-            {# Hidden state fields (updated by JS) #}
+
             <input type="hidden" id="acf-sort" name="sort" value="tag">
             <input type="hidden" id="acf-dir"  name="dir"  value="asc">
             <input type="hidden" id="acf-page" name="page" value="1">
@@ -119,10 +110,7 @@
             </div>
         </form>
     </div>
-    {# /.admin-content-filter-bar #}
-    {# --------------------------------------------------------
-       Table container – HTMX target
-       -------------------------------------------------------- #}
+
     <div class="admin-content-table-wrap">
         <div id="table-spinner" class="htmx-indicator admin-content-spinner">
             <svg class="yw-icon yw-icon--spin yw-icon--2x yw-text-muted"
@@ -137,10 +125,7 @@
              hx-indicator="#table-spinner"
              hx-swap="innerHTML"></div>
     </div>
-    {# /.admin-content-table-wrap #}
-    {# --------------------------------------------------------
-       Bulk action sticky panel
-       -------------------------------------------------------- #}
+
     <div class="admin-bulk-panel" id="admin-bulk-panel" aria-live="polite">
         <span class="bulk-count" id="bulk-count-label">0 {{ _t("PAGES") }}</span>
         {% if not isHibernated %}
@@ -184,10 +169,7 @@
             {{ _t("YW_CANCEL") }}
         </button>
     </div>
-    {# ============================================================
-       MODALS
-============================================================ #}
-    {# ---- DELETE modal ---- #}
+
     <div class="yw-modal" id="modal-delete" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog" role="document">
             <div class="yw-modal__content">
@@ -235,7 +217,7 @@
             </div>
         </div>
     </div>
-    {# ---- ACLs modal ---- #}
+
     <div class="yw-modal" id="modal-acls" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog yw-modal__dialog--lg" role="document">
             <div class="yw-modal__content">
@@ -324,7 +306,7 @@
             </div>
         </div>
     </div>
-    {# ---- Theme modal ---- #}
+
     <div class="yw-modal" id="modal-theme" tabindex="-1" role="dialog">
         <div class="yw-modal__dialog yw-modal__dialog--lg" role="document">
             <div class="yw-modal__content">
@@ -400,7 +382,7 @@
         </div>
     </div>
 </div>
-{# /.admin-content-wrapper #}
+
 <script>
 (function () {
     'use strict';

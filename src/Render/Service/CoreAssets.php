@@ -10,15 +10,6 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 /**
  * Declares the assets every page needs: core, theme, and the instance's own custom/ files.
  *
- * Ticket 15 moved this out of `{{linkstyle}}` and `{{linkjavascript}}`. Those actions each did
- * two jobs -- register, then flush -- and the flush died with them once the skeleton grew a
- * single emission point. The registration could not stay in the layout either: the head is now
- * rendered *last*, so anything the layout registers would arrive after the assets were emitted.
- *
- * Running it from the render pipeline instead makes "core assets come first" a property of the
- * pipeline rather than a convention every squelette has to uphold -- and a theme can no longer
- * break a page by omitting a call it did not know was load-bearing.
- *
  * @see docs/adr/0014-assets-are-declared-by-a-render-not-accumulated-by-a-request.md
  */
 class CoreAssets
@@ -35,10 +26,7 @@ class CoreAssets
     ) {
     }
 
-    /**
-     * Declared in the order they must load. Idempotent: several surfaces render a page in one
-     * request (a handler inside a handler), and the second call must not re-declare anything.
-     */
+    /** Declared in the order they must load. */
     public function register(): void
     {
         if ($this->registered) {
@@ -46,15 +34,6 @@ class CoreAssets
         }
         $this->registered = true;
 
-        // Touch the CSRF token here, before anything renders, and throw the value away.
-        //
-        // Not superstition: fetching it starts the PHP session as a side effect, and
-        // `session_start()` *replaces* $_SESSION with the stored data. Ticket 16 moved the
-        // `wiki` props script (which carries the token) from a head asset into the body block,
-        // which meant the session began starting mid-render -- after Flash had put its own key
-        // into the in-memory $_SESSION, which session_start() then discarded, leaving
-        // Flash::display() reading a null. Keeping the session's start where it always was
-        // keeps that ordering intact.
         $this->csrfTokenManager->getToken('main');
 
         $this->registerColourScheme();
@@ -62,23 +41,7 @@ class CoreAssets
         $this->registerScripts();
     }
 
-    /**
-     * The viewer's Colour scheme, applied before anything is painted (ADR-0020).
-     *
-     * Inline and declared FIRST, so it is the first thing in the head and runs while the
-     * document is still being parsed: a stored preference has to reach `<html>` before the
-     * browser paints, or a visitor who chose dark gets a white flash on every navigation --
-     * which is worse than having no dark mode at all.
-     *
-     * Delivered here rather than written into a squelette for a reason that is not tidiness:
-     * a theme's squelette can simply not have it, and the failure -- a flash, on slow
-     * connections, for people who chose dark -- is one nobody would report. Declared assets
-     * end up in the head of every page whatever the theme does with them.
-     *
-     * The three states are *stored* as two: "follow my system" is the absence of a stored
-     * choice, so a visitor who never touched the toggle keeps following their machine even
-     * if this wiki's idea of the default changes.
-     */
+    /** The viewer's Colour scheme, applied before anything is painted (ADR-0020). */
     private function registerColourScheme(): void
     {
         $this->assets->addJs(<<<'JS'
@@ -122,11 +85,6 @@ class CoreAssets
 
     private function registerStyles(): void
     {
-        // ticket 16: Bootstrap CSS is not loaded anymore. ADR-0020: one always-loaded
-        // bundle, `yw-core`, which is the design tokens, the base styles, the yw-* design
-        // system (ADR-0004) and the three sheets that used to be registered separately here
-        // -- the tag cloud, attached files and bazar's own. The other five bundles are
-        // declared by whatever turns out to need them, which is the whole of ADR-0014.
         $this->assets->addCssFile('styles/yw-core.css');
 
         $theme = $this->themeManager->getFavoriteTheme();
@@ -144,7 +102,6 @@ class CoreAssets
                 : 'themes/' . $theme . '/presets/' . $favoritePreset;
         }
 
-        // custom/ belongs to the instance and shadows the source tree
         $styleFile = 'themes/' . $theme . '/styles/' . $favoriteStyle;
         if (file_exists('custom/' . $styleFile)) {
             $styleFile = 'custom/' . $styleFile;
@@ -157,15 +114,9 @@ class CoreAssets
             $this->assets->addCssFile($styleFile, '', '', 'id="mainstyle"');
         }
         if ($favoriteStyle !== 'none' && $presetsActivated && str_ends_with($favoritePreset, '.css')) {
-            // named, like the main style above, so that the Personnalisation screen can
-            // switch it off while previewing another preset over the page
             $this->assets->addCssFile($presetFile, '', '', 'id="wikipreset"');
         }
 
-        // css files in the instance's custom styles directory. The wiki's own stylesheet is
-        // excluded here and added last, below: it used to be the `PageCss` page, inlined
-        // after every other stylesheet, and that is the cascade position it has to keep --
-        // scandir() would otherwise file it alphabetically among a webmaster's own files.
         $customCss = $this->customCss->path();
         foreach ($this->filesIn(CustomCssService::DIRECTORY, '.css') as $file) {
             if ($file !== $customCss) {
@@ -175,10 +126,6 @@ class CoreAssets
 
         $this->registerBackgroundImage();
 
-        // The wiki's own stylesheet, last so it still wins (ticket 30). It was the `PageCss`
-        // page until this release, and had to be *inlined* because the /raw handler serves
-        // text/plain and browsers reject a stylesheet link that is not text/css. A file is
-        // an ordinary cacheable <link>.
         if ($this->customCss->exists()) {
             $this->assets->addCssFile($customCss);
         }
@@ -219,14 +166,9 @@ class CoreAssets
 
     private function registerScripts(): void
     {
-        // ticket 14: the one initialisation convention, and the browser half of declared
-        // assets. Both are `first` -- emitted before every deferred script and every module,
-        // because ~25 initialisers call ywInit()/ywInitEach() at their top level and inline
-        // page markup calls _t()/wiki.url() at parse time.
         $this->assets->addJsFile('javascripts/yw-init.js', true);
         $this->assets->addJsFile('javascripts/yeswiki-base-no-defer.js', true);
 
-        // the theme's own scripts, alphabetically, as the directory scan always did
         $themeJsDir = 'themes/' . $this->themeManager->getFavoriteTheme() . '/javascripts';
         if (!$this->themeManager->getUseFallbackTheme() && is_dir('custom/' . $themeJsDir)) {
             $themeJsDir = 'custom/' . $themeJsDir;
@@ -244,12 +186,10 @@ class CoreAssets
             $this->assets->addJsFile('javascripts/yeswiki-base.js');
         }
 
-        // htmx + yw-* core design system (ADR-0004/0005): loaded on every page so core
-        // interactions can rely on them without each surface opting in itself
         $this->assets->addJsFile('javascripts/vendor/htmx/htmx.min.js');
         $this->assets->addJsFile('javascripts/yw-assets.js');
         $this->assets->addJsFile('javascripts/yw-core.js');
-        // ticket 16: focus, announcement, anchors and flash after a boosted navigation
+
         $this->assets->addJsFile('javascripts/yw-navigation.js');
         $this->assets->addJsFile('javascripts/yw-datatable.js');
         $this->assets->addJsFile('javascripts/yw-autocomplete.js');
@@ -260,16 +200,7 @@ class CoreAssets
     }
 
     /**
-     * The `wiki` global every script reads, rendered at the top of the skeleton's body block
-     * rather than declared as a head asset.
-     *
-     * Ticket 16: a boosted navigation swaps the body, so a script inside it re-runs on every
-     * navigation and `pageTag` is always the page on screen. As a head asset it was written
-     * once, on first load -- and `template-edit.js` builds `api/pages/{wiki.pageTag}/metadatas`
-     * from it, so a stale value edits the *previous* page's metadata.
-     *
-     * `antiCsrfToken` needs no such care: Symfony's `getToken('main')` is session-scoped and
-     * identical on every page.
+     * The `wiki` global every script reads, rendered at the top of the skeleton's body block rather than declared as a head asset.
      */
     public function pageStateScript(): string
     {
@@ -280,8 +211,7 @@ class CoreAssets
             'pageTag' => $this->pageContext->getTag(),
             'isDebugEnabled' => ($this->config->getValue('debug') ? 'true' : 'false'),
             'antiCsrfToken' => $this->csrfTokenManager->getToken('main')->getValue(),
-            // what the browser does to an image before uploading it -- read by
-            // javascripts/image-upload.js, which every upload path goes through
+
             'imageUpload' => [
                 'format' => (string)($this->config['image-upload-format'] ?? 'image/webp'),
                 'maxWidth' => (int)($this->config['image-upload-max-width'] ?? 3840),
@@ -305,7 +235,9 @@ class CoreAssets
             . '};';
     }
 
-    /** @return list<string> paths of $extension files directly in $dir, or [] when it is absent */
+    /**
+     * @return list<string> paths of $extension files directly in $dir, or [] when it is absent
+     */
     private function filesIn(string $dir, string $extension): array
     {
         if (!is_dir($dir)) {

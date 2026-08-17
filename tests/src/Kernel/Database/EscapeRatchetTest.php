@@ -4,40 +4,7 @@ namespace YesWiki\Test\Kernel\Database;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * A ratchet on `DbService::escape()`: the count may fall, never rise.
- *
- * `escape()` is the pre-bindings way of getting a value into a query -- PDO::quote() with its
- * outer quotes chopped off, spliced into SQL text by the caller. It is not broken, and every
- * call site here was checked to be correctly quoted. What it cannot do is enforce anything:
- * the safety of a call depends on the caller remembering the quotes, no test can see an
- * omission, and PHPStan cannot either. `query($sql, $params)` moves that from a habit to a
- * property of the API.
- *
- * So this file is a burn-down list, in the spirit of ArchitectureTest's KNOWN_VIOLATIONS: it
- * records what was there when bindings landed, fails if any of it grows, and fails if a file
- * that had none acquires some. Numbers may be lowered -- and must be, when you convert a call
- * site, because TOTAL is asserted exactly. That is deliberate: a ceiling nobody has to update
- * stops describing the code within a month.
- *
- * Converting a call site means replacing the interpolation with a placeholder and passing the
- * value: see SearchIndexer for the whole file done, and BoundValuesTest for what it buys.
- *
- * Two things bindings cannot do, both now handled elsewhere rather than open questions:
- *  - **identifiers** (a column or table name) cannot be bound at all. Field names are user
- *    data and reach SearchManager's generated SQL in five positions, so they are constrained
- *    once at their chokepoint instead -- `SearchManager::asSafeIdentifier()`, pinned by
- *    FieldNameIsNotSqlTest.
- *  - **LIKE metacharacters**: `%` and `_` are pattern syntax, so neither escape() nor a bound
- *    parameter touches them, correctly. Defusing is deliberate and opt-in --
- *    `SqlParameters::likeContains()` plus `LIKE_CLAUSE_SUFFIX`, which is mandatory because
- *    SQLite has no default escape character.
- *
- * What keeps a count on this list is therefore one of: it is a genuine value escape not yet
- * converted; it is inside a SQL *fragment* builder whose callers concatenate the result, so the
- * value never reaches the call that executes the statement (AclService's read-ACL predicate,
- * SearchManager's WHERE assembly); or it is in a one-shot migration against known data.
- */
+/** A ratchet on `DbService::escape()`: the count may fall, never rise. */
 class EscapeRatchetTest extends TestCase
 {
     private const SRC = __DIR__ . '/../../../../src';
@@ -48,8 +15,6 @@ class EscapeRatchetTest extends TestCase
      * @var array<string, int>
      */
     private const CEILING = [
-        // the last one in live code, and it is correct: escaping row VALUES into the TEXT of a
-        // SQL dump file. A dump is written, not executed, so there is no statement to bind to.
         'Kernel/Database/SqlDumper.php' => 1,
         'migrations/00000000000002_PageTypeAndParentColumns.php' => 6,
         'migrations/20240425000000_CalcFieldToString.php' => 2,
@@ -69,10 +34,12 @@ class EscapeRatchetTest extends TestCase
         'migrations/20260806110000_LookWikiIsRetired.php' => 1,
     ];
 
-    /** Lower this when you convert a call site. It is asserted exactly, on purpose. */
+    /** Lower this when you convert a call site. */
     private const TOTAL = 60;
 
-    /** @return array<string, int> relative path => number of ->escape( calls */
+    /**
+     * @return array<string, int> relative path => number of ->escape( calls
+     */
     private function currentCounts(): array
     {
         $counts = [];
@@ -116,13 +83,7 @@ class EscapeRatchetTest extends TestCase
             . 'Use query($sql, $params) / prepare($sql) -- both take values separately.');
     }
 
-    /**
-     * The total, asserted exactly so that lowering it is part of converting a call site.
-     *
-     * A "less than or equal" assertion here would let the recorded number drift upward of the
-     * truth as the code improved, and a burn-down list that overstates what is left is one
-     * nobody trusts enough to finish.
-     */
+    /** The total, asserted exactly so that lowering it is part of converting a call site. */
     public function testTheTotalMatchesWhatIsRecorded(): void
     {
         $total = array_sum($this->currentCounts());

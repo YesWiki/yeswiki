@@ -34,7 +34,7 @@ class PageApiController extends YesWikiController
         $dbService = $this->getService(DbService::class);
         $aclService = $this->getService(AclService::class);
         $pageType = PageType::PAGE;
-        // recuperation des pages wikis
+
         $sql = <<<SQL
             SELECT * FROM {$dbService->prefixTable('pages')}
             WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%'
@@ -110,9 +110,7 @@ class PageApiController extends YesWikiController
     }
 
     /**
-     * Relocated from tools/templates's savemetadatas AJAX handler (ticket 12) - saves
-     * per-page theme/style/squelette/background-image overrides. loadmetadatas had zero
-     * callers and was simply deleted, not relocated.
+     * Relocated from tools/templates's savemetadatas AJAX handler (ticket 12) - saves per-page theme/style/squelette/background-image overrides.
      */
     #[Route('/api/pages/{tag}/metadatas', methods: ['POST'], options: ['acl' => ['+']])]
     public function savePageMetadatas(Request $request, $tag)
@@ -144,7 +142,6 @@ class PageApiController extends YesWikiController
         return new ApiResponse($request->request->all(), Response::HTTP_OK);
     }
 
-    // no route: reachable through the canonical POST /api/pages/{tag}/delete below
     public function deletePage($tag)
     {
         $pageManager = $this->getService(PageManager::class);
@@ -222,14 +219,7 @@ class PageApiController extends YesWikiController
             : new ApiResponse($result, $code);
     }
 
-    /**
-     * Take ownership of a page that has none (ticket 35, was `/PageName/claim`).
-     *
-     * Only an unowned page, and only for someone signed in: this grants the caller write access to
-     * a page they did not have it on, so the "no current owner" test is the whole security model.
-     * An owned page answers 409 rather than silently doing nothing, because "I clicked claim and
-     * nothing happened" is indistinguishable from a bug.
-     */
+    /** Take ownership of a page that has none (ticket 35, was `/PageName/claim`). */
     #[Route('/api/pages/{tag}/claim', methods: ['POST'], options: ['acl' => ['+']])]
     public function claimPage(string $tag): ApiResponse
     {
@@ -254,12 +244,7 @@ class PageApiController extends YesWikiController
         ]);
     }
 
-    /**
-     * Open or close comments on a page (ticket 35, was `/PageName/claim&action=opencomments`).
-     *
-     * `access` is a group name, `+` for any signed-in user, or `closed`. Owner or admin only --
-     * comment access is a permission, so handing it out is itself a privileged act.
-     */
+    /** Open or close comments on a page (ticket 35, was `/PageName/claim&action=opencomments`). */
     #[Route('/api/pages/{tag}/comments-access', methods: ['POST'], options: ['acl' => ['+']])]
     public function setCommentsAccess(string $tag, Request $request): ApiResponse
     {
@@ -278,8 +263,6 @@ class PageApiController extends YesWikiController
             return new ApiResponse(['success' => _t('YW_COMMENTS_ARE_NOW_CLOSED')]);
         }
 
-        // A group that does not exist would be saved verbatim and match nobody -- comments would
-        // read as open and be closed in practice. `+` is every signed-in user.
         $groups = $this->getService(GroupOperationsService::class)->getAll();
         if ($access !== '+' && !in_array($access, $groups, true)) {
             return new ApiResponse(['error' => _t('YW_PROBLEM_WITH_ACLS_LIST')], Response::HTTP_BAD_REQUEST);
@@ -290,13 +273,7 @@ class PageApiController extends YesWikiController
         return new ApiResponse(['success' => _t('YW_COMMENTS_ARE_NOW_OPEN')]);
     }
 
-    /**
-     * A page's body as XML, with its `{{action}}` calls rendered (ticket 35, was `/PageName/xml`).
-     *
-     * Only the body, not the page's other properties -- that was true of the handler too, and
-     * changing it would change what existing consumers receive. `GET /api/pages/{tag}` is the route
-     * that answers with everything.
-     */
+    /** A page's body as XML, with its `{{action}}` calls rendered (ticket 35, was `/PageName/xml`). */
     #[Route('/api/pages/{tag}/xml', methods: ['GET'], options: ['acl' => ['public']])]
     public function getPageAsXml(string $tag): Response
     {
@@ -304,9 +281,7 @@ class PageApiController extends YesWikiController
         $headers = ['Content-Type' => 'text/xml; charset=' . YW_CHARSET];
 
         $page = $this->getService(PageManager::class)->getOne($tag);
-        // An unreadable or absent page answers an empty document rather than 403/404: this replaces
-        // a handler that did exactly that, and a feed-shaped consumer handles an empty document
-        // better than it handles an error status it was never written to expect.
+
         if (empty($page) || !$this->getService(AclService::class)->hasAccess('read', $tag)) {
             return new Response($declaration, Response::HTTP_OK, $headers);
         }

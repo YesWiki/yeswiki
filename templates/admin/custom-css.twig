@@ -1,14 +1,5 @@
 {% extends "@core/dashboard/layout.twig" %}
 
-{# The wiki's own stylesheet (ticket 30). What `PageCss` carried, as a file under
-   custom/styles/ that CoreAssets links last -- so it still wins over every other
-   stylesheet, which is the position the inlined page had.
-
-   The textarea below is the real field -- it is what the form posts. ACE is layered over it
-   by admin-custom-css.js in `ace/mode/css`, and writes back into it; if that module never
-   loads, the box is still a working editor rather than a stylesheet nobody can reach.
-   Not the ACeditor proper: that one writes wiki markup and carries a wiki toolbar, which
-   over a CSS file would be an offer of the wrong thing. #}
 {% block dashboard_content %}
   <h1>{{ _t('ADMIN_CUSTOM_CSS') }}</h1>
 
@@ -18,8 +9,7 @@
   </p>
 
   {% if not writable %}
-    {# said before the box rather than discovered on save: an instance whose custom/ is
-       read-only can still be told why its stylesheet will not stick #}
+
     <div class="alert alert-danger">
       {{ _t('ADMIN_CUSTOM_CSS_NOT_WRITABLE')|replace({'{path}': path}) }}
     </div>
@@ -39,10 +29,7 @@
   </form>
 
   {{ include_css('styles/yw-admin.css') }}
-  {# a screen that builds an ACE editor declares the editor bundle: ACE's surface -- its
-     background, its gutter, its selection -- is painted from the wiki's tokens there, and
-     without it ACE keeps its own built-in white and this screen alone stayed light on a dark
-     page (ADR-0020). #}
+
   {{ include_css('styles/yw-editor.css') }}
   {{ include_javascript('javascripts/admin-custom-css.js', false, true) }}
 {% endblock %}

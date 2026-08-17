@@ -35,7 +35,6 @@ class UserCommentsAction extends YesWikiAction implements RegisteredAction, Prov
 
     public function run()
     {
-        // get Services
         $this->userManager = $this->getService(UserManager::class);
 
         $user = $this->userManager->getLoggedUser();
@@ -47,7 +46,7 @@ class UserCommentsAction extends YesWikiAction implements RegisteredAction, Prov
         }
 
         $this->commentsService = $this->getService(CommentService::class);
-        $coms = $this->commentsService->loadComments('', false, $user['name']); // get all comments
+        $coms = $this->commentsService->loadComments('', false, $user['name']);
 
         return $this->render('@core/comment-table.twig', [
             'comments' => $coms,

@@ -2,24 +2,7 @@
 
 namespace YesWiki\Content\Entity;
 
-/**
- * One thing in a list, in the shape a Presentation renders.
- *
- * Derived at render time and **never stored**: an Item is a view of Content -- or of a feed
- * entry, or of a page -- not a row. Nothing reads one back, nothing indexes one, and no
- * migration will ever be needed for one.
- *
- * It exists so that `template="card"` means the same thing whatever supplied the list. A
- * card asks for a picture, a heading, a line under it, a badge and some prose; a bazar entry
- * answers with fields a webmaster named, and an RSS item answers with the fields RSS has.
- * Neither of those shapes is renderable on its own, and the presentations used to be written
- * against one of them each -- which is why there were two unrelated template families
- * sharing a parameter name (ticket 37).
- *
- * The slots are the ones the presentations already draw. `badge` is `displayfields`'
- * `floating`, renamed: a card floats a short marker over its corner, and "floating" names
- * where it is drawn rather than what it is for.
- */
+/** One thing in a list, in the shape a Presentation renders. */
 final class Item
 {
     /**
@@ -58,11 +41,6 @@ final class Item
 
     /**
      * What a Twig template sees.
-     *
-     * An array rather than the object: the presentations are Twig, `item.image` reads the
-     * same either way, and a template that asked for a slot this did not have would fail
-     * loudly on an object and quietly on an array. Quietly is right here -- a Source that
-     * has no date is not an error, it is a Source without dates.
      *
      * @return array<string, mixed>
      */

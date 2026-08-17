@@ -12,9 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 02 (versioned metadata column on pages): the admin
- * content list's theme filter used to query the non-versioned METADATA_PROPERTY
- * triple; it now queries pages.metadata directly.
+ * Regression test for ticket 02 (versioned metadata column on pages): the admin content list's theme filter used to query the non-versioned METADATA_PROPERTY triple; it now queries pages.metadata directly.
  */
 class AdminContentControllerThemeFilterTest extends YesWikiTestCase
 {
@@ -41,8 +39,7 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
         $controller = $wiki->services->get(AdminPagesApiController::class);
 
         $favoriteTheme = $wiki->services->get(ThemeManager::class)->getFavoriteTheme();
-        // pick a filter value that isn't the wiki's default theme, so the "pages with no
-        // theme stored inherit the default" branch doesn't also match the untagged page
+
         $filterTheme = $favoriteTheme === 'colibris' ? 'margot' : 'colibris';
 
         try {
@@ -50,8 +47,6 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
             $pageManager->setMetadata(self::THEMED_TAG, ['theme' => $filterTheme]);
             $pageManager->save(self::UNTHEMED_TAG, [PageBody::CONTENT => 'untheme page'], '', true);
 
-            // the clause carries placeholders now, so its values have to come with it -- running
-            // the fragment alone leaves an unbound `?` and quietly matches nothing
             [$whereClause, $whereParams] = $this->buildWhere($controller, $dbService, $filterTheme);
 
             $pT = $dbService->prefixTable('pages');

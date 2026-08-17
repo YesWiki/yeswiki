@@ -12,5 +12,4 @@ export default {
     read_access: readConf,
     write_access: writeConf,
   },
-  // disabledAttributes: [],
 }

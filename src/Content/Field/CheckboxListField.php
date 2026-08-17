@@ -31,14 +31,12 @@ class CheckboxListField extends CheckboxField
             return '';
         }
 
-        // List with multi levels
         if ($this->optionsTree) {
             return $this->render('@core/fields/checkbox-tree.twig', [
                 'treeValues' => $this->filterTree($this->optionsTree, $keys),
             ]);
         }
 
-        // List with one level
         foreach ($this->getOptions() as $key => $label) {
             if (in_array($key, $keys)) {
                 $values[$key] = $label;
@@ -50,7 +48,6 @@ class CheckboxListField extends CheckboxField
         ]);
     }
 
-    // Filter the tree to keep only branches where a nodeID is checked
     private function filterTree($tree, $checkedValues)
     {
         $filteredTree = [];

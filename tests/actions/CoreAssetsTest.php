@@ -9,11 +9,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 09 (yw-* core CSS/JS foundation, ADR-0004/0005): the yw-core
- * design system and htmx must be declared on every page.
- *
- * Ticket 15 replaced `{{linkstyle}}`/`{{linkjavascript}}` with CoreAssets, which the render
- * pipeline runs before the handler, and one emission point in the squelette's head block.
+ * Regression tests for ticket 09 (yw-* core CSS/JS foundation, ADR-0004/0005): the yw-core design system and htmx must be declared on every page.
  */
 class CoreAssetsTest extends YesWikiTestCase
 {
@@ -25,14 +21,7 @@ class CoreAssetsTest extends YesWikiTestCase
         return $wiki->services->get(YesWikiRuntime::class);
     }
 
-    /**
-     * Everything CoreAssets declares, as the head block would emit it.
-     *
-     * A fresh CoreAssets per call on purpose: "register once per request" is instance state,
-     * and the container hands out a shared instance, so tests sharing it would silently
-     * depend on their order -- the first one to run would drain the registry and leave the
-     * rest asserting against nothing.
-     */
+    /** Everything CoreAssets declares, as the head block would emit it. */
     private function coreAssets(YesWikiRuntime $wiki): string
     {
         $registry = $wiki->services->get(\YesWiki\Kernel\Service\AssetRegistry::class);
@@ -70,17 +59,7 @@ class CoreAssetsTest extends YesWikiTestCase
         $this->assertStringNotContainsString('bootstrap', $output, 'ticket 16: Bootstrap JS must not load anymore.');
     }
 
-    /**
-     * Ticket 14 regression. ~25 initialisers call ywInit()/ywInitEach() at their top level, and
-     * `templates/aceditor.twig` loads one of them as a module. If the file defining those
-     * helpers is emitted after any of them -- or carries `defer`, which would put it in the
-     * same queue -- every one of them dies with a ReferenceError before the page is usable.
-     *
-     * The original failure was subtler than ordering and is the reason this lives in its own
-     * file: the helpers were added to `yeswiki-base-no-defer.js`, whose URL is cache-busted
-     * with `?v={yeswiki_release}` and therefore does not change when the file's contents do.
-     * Browsers holding the previous copy kept serving a version with no ywInit in it.
-     */
+    /** Ticket 14 regression. */
     #[Depends('testWikiExisting')]
     public function testTheInitialiserHelpersLoadBeforeEverythingThatCallsThem(YesWikiRuntime $wiki): void
     {
@@ -111,13 +90,7 @@ class CoreAssetsTest extends YesWikiTestCase
         $this->assertNotNull($initPosition);
     }
 
-    /**
-     * The point of ticket 15. An asset declared while the *page body* renders has to end up in
-     * <head>, which is only possible because the skeleton's `head` block is rendered after its
-     * `body` block. Before this, `{{linkstyle}}` ran in <head> before the page had rendered
-     * anything, so page stylesheets were flushed at </body> instead -- painted content first,
-     * then its styles.
-     */
+    /** The point of ticket 15. */
     #[Depends('testWikiExisting')]
     public function testAnAssetDeclaredByThePageBodyEndsUpInTheHead(YesWikiRuntime $wiki): void
     {

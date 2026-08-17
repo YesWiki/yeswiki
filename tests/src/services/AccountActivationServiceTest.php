@@ -12,10 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression/acceptance tests for ticket 07 (accountactivationbyemail absorbed into core):
- * activation status/key are fields on the user's Content body (not standalone triples),
- * hidden from every generic read path via Guard::checkUserAcls() -- the same "always
- * hidden, even from owner/admin" treatment as the password hash.
+ * Regression/acceptance tests for ticket 07 (accountactivationbyemail absorbed into core): activation status/key are fields on the user's Content body (not standalone triples), hidden from every generic read path via Guard::checkUserAcls() -- the same "always hidden, even from owner/admin" treatment as the password hash.
  */
 class AccountActivationServiceTest extends YesWikiTestCase
 {
@@ -30,9 +27,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
     }
 
     /**
-     * Plants a known activation key directly via PageManager (bypassing
-     * sendActivationLink(), which would send a real email) so the key/issuedAt is
-     * controllable for expiry tests.
+     * Plants a known activation key directly via PageManager (bypassing sendActivationLink(), which would send a real email) so the key/issuedAt is controllable for expiry tests.
      */
     private function plantActivationKey(PageManager $pageManager, string $name, string $key, int $issuedAt): void
     {
@@ -114,7 +109,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
 
         try {
             $userManager->create($name, 'aast-expiredkey@example.tld', 'Aa1!aaaaRegression');
-            // issued further in the past than UserManager::KEY_TTL (1 hour)
+
             $this->plantActivationKey($pageManager, $name, 'REALKEY123', time() - UserManager::KEY_TTL - 60);
 
             $this->expectException(BadActivationKeyException::class);
@@ -190,15 +185,12 @@ class AccountActivationServiceTest extends YesWikiTestCase
             $this->plantActivationKey($pageManager, $name, 'REALKEY123', time());
             $accountActivationService->activate($name, '', true);
 
-            // internal fetch (the service's own read) sees the true value
             $this->assertTrue($accountActivationService->isActivated($name));
 
-            // generic page-read path, viewed as the owner: still hidden
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner[AccountActivationService::BODY_KEY_STATUS]);
 
-            // as an unrelated third party: also hidden
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
             $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther[AccountActivationService::BODY_KEY_STATUS]);

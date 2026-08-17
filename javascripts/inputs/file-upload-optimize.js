@@ -1,17 +1,3 @@
-// javascripts/inputs/file-upload-optimize.js -- a plain `<input type="file">` gets the same
-// treatment the file-picker's upload pane does: an image is converted to WebP and capped
-// before it is sent (javascripts/image-upload.js).
-//
-// The picker can do this inside its own `fetch`; a form field cannot, because the browser
-// sends whatever the input holds at submit time. So the chosen file is REPLACED in the input
-// with the optimised one, through a DataTransfer -- the only way to write a FileList.
-//
-// Two things make that safe to do asynchronously. The input is marked while the work runs
-// and the form's submit buttons are disabled, so the original cannot be posted from under
-// it; and a `submit` fired anyway (Enter in a text field, a script) is held until the
-// replacement is in place. Without the second guard, a fast typist submits the 12-megapixel
-// original and nothing anywhere says so.
-
 import prepareImageForUpload from '../image-upload.js'
 
 /** Forms with an optimisation still running, and the submit each is waiting to redo. */
@@ -43,7 +29,6 @@ async function optimise(input) {
   } finally {
     delete input.dataset.ywOptimising
     setBusy(form, false)
-    // a submit that arrived while this was running was stopped, not lost
     const held = pending.get(form)
     if (held) {
       pending.delete(form)

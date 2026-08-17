@@ -8,18 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * `./yeswicli contact:send-digest --period=week` -- the periodic mailing-list digest.
- *
- * This was `/PageName/sendmail`, a page handler authenticated by `?key=<contact_passphrase>` in
- * the query string. Cron runs commands, not URLs, and a secret in a query string is written to the
- * web server's access log, to any proxy in front of it, to `Referer` headers and to browser
- * history -- and that secret was the wiki's *site-wide* contact passphrase. Moving the job to the
- * CLI removes the secret rather than relocating it: a shell already has to be trusted to run this.
- *
- * A wiki with no cron at all is served by ContactDigestScheduler, which spawns this from the
- * wiki's own housekeeping pass.
- */
+/** `./yeswicli contact:send-digest --period=week` -- the periodic mailing-list digest. */
 class ContactDigestCommand extends Command
 {
     public const PERIODS = ['day', 'week', 'month'];
@@ -27,11 +16,7 @@ class ContactDigestCommand extends Command
     private ContainerInterface $services;
 
     /**
-     * The container argument is not optional, even where a command does not obviously need it:
-     * `src/commands/console` registers every command as `new $className($services)`,
-     * unconditionally. A command without a matching constructor inherits Symfony's
-     * `Command::__construct(?string $name)` and the container is passed as the *name* -- a
-     * TypeError that takes down the whole console, `list` included, not just this command.
+     * The container argument is not optional, even where a command does not obviously need it: `src/commands/console` registers every command as `new $className($services)`, unconditionally.
      */
     public function __construct(ContainerInterface $services)
     {
@@ -63,16 +48,11 @@ class ContactDigestCommand extends Command
     {
         $period = (string)$input->getOption('period');
         if (!in_array($period, self::PERIODS, true)) {
-            // Named explicitly rather than defaulted: sending the wrong period mails the wrong
-            // people, and there is no undo on an email.
             $output->writeln('<error>--period must be one of: ' . implode(', ', self::PERIODS) . '</error>');
 
             return Command::INVALID;
         }
 
-        // A hibernated wiki is one being backed up or upgraded; mailing its subscribers from
-        // under a maintenance window is the same mistake as writing to its database, which every
-        // other write path already refuses.
         if ($this->services->get(\YesWiki\Kernel\Service\HibernationService::class)->isWikiHibernated()) {
             $output->writeln('<error>' . _t('WIKI_IN_HIBERNATION') . '</error>');
 

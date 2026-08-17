@@ -1,19 +1,10 @@
-/**
- *
- * javascript for bazar (ticket 16: vanilla JS — no jQuery, no Bootstrap plugins)
- *
- * */
+/** javascript for bazar (ticket 16: vanilla JS — no jQuery, no Bootstrap plugins). */
 
 function isVisible(el) {
   return !!el && el.offsetParent !== null
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: the outer block runs once per document -- <body> survives a boosted navigation --
-// and registers the per-element initialisers below. Those keep firing on every htmx:load, so
-// a bazar list arriving in a swapped page is wired up like one that arrived with a full load.
 ywInitEach('body', () => {
-  // accordeon pour entrylist
   ywInitEach('.titre_accordeon', (title) => {
     title.addEventListener('click', () => {
       const pane = title.nextElementSibling
@@ -28,17 +19,11 @@ ywInitEach('body', () => {
     })
   })
 
-  // antispam javascript
   ywInitEach('input[name=antispam]', (inputParam) => {
     const input = inputParam
     input.value = '1'
   })
 
-  // The old Google-Maps carto block (#markers/arrMarkers/initialize) was dead
-  // code — nothing renders that markup anymore — and has been removed.
-  // .tooltip_aide helper icons are sprite <svg>s carrying data-yw-tooltip: pure CSS, no JS.
-
-  // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
   ywInitEach('#formulaire, #map, #calendar, .accordion', (el) => {
     el.addEventListener('dblclick', (e) => {
       e.preventDefault()
@@ -46,11 +31,6 @@ ywInitEach('body', () => {
     })
   })
 
-  // The legacy inline conditional-display system (handleConditionnalListChoice &
-  // friends) is gone: ConditionsChecking (javascripts/inputs/conditions-checking.js)
-  // is the only system now, as the old code's own TODO planned.
-
-  // choix de l'heure pour une date
   ywInitEach('.select-allday', (select) => {
     select.addEventListener('change', () => {
       const timeBlock = select.parentElement
@@ -65,7 +45,6 @@ ywInitEach('body', () => {
     })
   })
 
-  //= ===========longueur maximale d'un champ textarea
   function remainingCounterFor(textarea) {
     const group = textarea.closest('.yw-form-group')
     return group ? group.querySelector('.charsRemaining') : null
@@ -105,7 +84,6 @@ ywInitEach('body', () => {
     }
   })
 
-  // éviter la validation du formulaire en pressant la touche Entrée
   const enterTrapSelector =
     'form#formulaire .yw-form-group' + ' input.yw-input[type=text]'
   document.querySelectorAll(enterTrapSelector).forEach((item) => {
@@ -121,26 +99,18 @@ ywInitEach('body', () => {
     )
   })
 
-  //= ===========validation formulaire============================
-
-  // validation formulaire de saisie
   const requirementHelper = {
     requiredInputs: [],
     textInputsWithPattern: [],
-    error: -1, // error contain the index of the first error (-1 = no error)
+    error: -1,
     errorMessage: '',
     errorPattern: -1,
     errorMessagePattern: '',
-    // an input hidden only because it sits in a non-active tab pane still counts
     filterVisibleInputs(key = 'requiredInputs') {
       this[key] = this[key].filter((input) => {
         let checked = input
         if (
           (input.tagName === 'TEXTAREA' &&
-            // every editor hides the field it writes into and shows a surface of its own,
-            // so whether the field is on screen is a question about that surface. Missing
-            // one of them here does not make the check strict, it makes it absent: the
-            // hidden textarea is dropped from the list and never validated at all
             (input.classList.contains('aceditor-textarea') ||
               input.classList.contains('vditor-wiki') ||
               input.classList.contains('vditor-html'))) ||
@@ -195,8 +165,6 @@ ywInitEach('body', () => {
         if (input.classList.contains('aceditor-textarea')) {
           return 'wikitextarea'
         }
-        // vditor-html fields are validated like plain textareas: the underlying
-        // <textarea>'s value is kept in sync (javascripts/vditor-textarea.js)
         return 'textarea'
       }
       return 'default'
@@ -230,7 +198,7 @@ ywInitEach('body', () => {
          free to move this regex onto a line of its own, and a next-line directive then
          lands on the assignment instead of on the pattern it was written for. */
       const reg =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       /* eslint-enable no-useless-escape */
       if (input.required && !this.defaultChecking(input)) {
         return false
@@ -368,7 +336,6 @@ ywInitEach('body', () => {
       if (error > -1) {
         let input = this.requiredInputs[error]
         if (!isVisible(input)) {
-          // the input may live in a non-active tab: activate that tab first
           let panel = input.parentElement
           while (
             panel &&
@@ -499,17 +466,6 @@ ywInitEach('body', () => {
       formulaire.classList.add('submitted')
       try {
         if (requirementHelper.run(formulaire)) {
-          // formulaire validé : on laisse partir la soumission, et on désactive le
-          // bouton juste après pour éviter les validations multiples.
-          //
-          // Deferred deliberately. A disabled control is not submitted -- including the
-          // submit button that was just activated. Disabling it synchronously here, inside
-          // the submit event, dropped its own name/value (`valider`) from the payload, and
-          // the server reads a submission without `valider` as "nothing was submitted": it
-          // re-rendered the edit form from the stored entry, losing everything that had
-          // been typed, with no error to explain it. The payload is built after this
-          // handler returns, so a task-boundary later is soon enough to stop a double
-          // submit and late enough to keep the field.
           setTimeout(() => {
             formulaire
               .querySelectorAll('.form-actions button[type=submit]')
@@ -518,8 +474,6 @@ ywInitEach('body', () => {
                 button.classList.add('submit-disabled')
                 button.setAttribute('title', _t('BAZ_SAVING'))
                 setTimeout(() => {
-                  // on réactive le bouton au bout de 10s juste pour permettre de
-                  // forcer une nouvelle validation si jamais ça a planté
                   button.removeAttribute('disabled')
                 }, 10000)
               })
@@ -532,12 +486,9 @@ ywInitEach('body', () => {
       e.preventDefault()
     })
 
-    // bidouille PEAR form
     formulaire.removeAttribute('onsubmit')
   }
 
-  // dates : les <input type="date"> sont natifs maintenant (plus de datepicker) ;
-  // on garde la contrainte début/fin via les attributs min/max natifs
   const startDate = document.querySelector(
     '#formulaire #bf_date_debut_evenement',
   )
@@ -574,7 +525,6 @@ ywInitEach('body', () => {
     const getEndMinutes = () =>
       parseInt(endHour.value, 10) * 60 + parseInt(endMin.value, 10)
 
-    // sélectionne 5 minutes après l'heure de début
     const adjustEndTime = () => {
       let total = getStartMinutes() + 5
       if (total >= 1440) total = 1435
@@ -584,7 +534,6 @@ ywInitEach('body', () => {
       endMin.value = String(m).padStart(2, '0')
     }
 
-    // sélectionne 5 minutes avant l'heure de fin
     const adjustStartTime = () => {
       let total = getEndMinutes() - 5
       if (total < 0) total = 0
@@ -629,8 +578,6 @@ ywInitEach('body', () => {
     })
   }
 
-  // Onglets
-  // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
   document.querySelectorAll('.bazar-entry').forEach((entry, i) => {
     entry.querySelectorAll('[data-toggle="tab"]').forEach((link) => {
       link.setAttribute('href', `${link.getAttribute('href')}-${i}`)
@@ -641,7 +588,6 @@ ywInitEach('body', () => {
     })
   })
 
-  // cocher / decocher tous
   ywInitEach('.selectall', (selectAll) => {
     selectAll.addEventListener('click', () => {
       let targets
@@ -666,20 +612,12 @@ ywInitEach('body', () => {
     })
   })
 
-  // The facets no longer filter anything here: checking a box submits the facet form and
-  // the server answers with the list it leaves (`templates/entries/index/_filters.twig`).
-  // Hiding `.bazar-entry` elements only ever worked for the templates that draw one, and it
-  // filtered the page rather than the list.
-
   function show(el) {
     el.style.display = ''
   }
   function hideEl(el) {
     el.style.display = 'none'
   }
-
-  // The bootstrap-tagsinput/typeahead glue that used to live here is gone: tag
-  // fields are yw-tags-input.js widgets that manage their own input and value.
 
   const bazarList = []
   ywInitEach('.facette-container:not(.dynamic) .filter-bazar', (filter) => {
@@ -716,25 +654,15 @@ ywInitEach('body', () => {
       })
     })
   })
-
-  // the reset button is a link to the same page without the facets, so there is nothing to
-  // uncheck here: the server answers with every box unchecked
 })
 
 export function downloadCSV(csv, filename) {
-  // CSV file
   const csvFile = new Blob([csv], { type: 'text/csv' })
-  // Download link
   const downloadLink = document.createElement('a')
-  // File name
   downloadLink.download = filename
-  // Create a link to the file
   downloadLink.href = window.URL.createObjectURL(csvFile)
-  // Hide download link
   downloadLink.style.display = 'none'
-  // Add the link to DOM
   document.body.appendChild(downloadLink)
-  // Click download link
   downloadLink.click()
 }
 
@@ -744,8 +672,6 @@ export function removeCSVCrochet(str) {
   return res
 }
 
-// range input
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 ywInitEach('.range-wrap', (wrap) => {
   const rangeInputs = wrap.querySelectorAll('input[type="range"]')
   function handleInputChange(e) {

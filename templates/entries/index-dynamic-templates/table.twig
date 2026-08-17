@@ -53,7 +53,7 @@
       {{ multidelete.insertSelectAll('targetId','selectAllType') }}
     </template>
     <template #deleteallselectedbutton="{BazarTable,uuid}">
-      {# generate template reative for vuejs #}
+
       {{ multidelete.insertButton('targetId','pages')|replace({
         "onclick=\"multiDeleteService.updateNbSelected('MultiDeleteModaltargetId')\"": '@click="BazarTable.deleteAllSelected"',
         'href="#MultiDeleteModaltargetId"': ':href="`#MultiDeleteModal${uuid}`"',
@@ -106,14 +106,14 @@
     <template #urltranslate>{{ _t('URL') }}</template>
     <template #sumtranslate>{{ _t('SUM') }}</template>
     <template #rendercell="{anchorData,fieldtype,fieldName,addLink,entryId,url,color='',icon=''}">
-      {# be careful, here a twig template create a VueJs template that is used to create a Datatable template #}
+
       <template v-if="color.length > 0">
         <span class="pellet" :style="{backgroundColor:`${color}`}"></span>
       </template>
       <template v-if="icon.length > 0">
         <i :class="{[icon]:true}"></i>
       </template>
-      {#- supported fieldtype empty,link,email,image -#}
+
       <template v-if="addLink">
         <a :href="`${url}/iframe`" v-html="anchorData" class="modalbox" data-header="false" data-size="modal-lg" data-iframe="1" :title="anchorData"></a>
       </template>

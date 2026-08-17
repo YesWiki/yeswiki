@@ -18,5 +18,4 @@ export default {
     write_access: writeConf,
   },
   advancedAttributes: ['read_access', 'write_access', 'default'],
-  // disabledAttributes: [],
 }

@@ -90,7 +90,6 @@ const createOpeningHoursComponent = (openingHoursData) => ({
 const elements = document.getElementsByTagName('opening-hours')
 const arr = Array.prototype.slice.call(elements)
 arr.forEach((el) => {
-  // Capture dataset before mounting (Vue 3 replaces the mount element)
   const openingHoursData = el.dataset.openinghours || ''
   const app = createApp(createOpeningHoursComponent(openingHoursData))
   app.mount(el)

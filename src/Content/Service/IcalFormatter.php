@@ -1,9 +1,5 @@
 <?php
 
-// specification to follow : https://icalendar.org/RFC-Specifications/iCalendar-RFC-5545/
-// and : https://icalendar.org/RFC-Specifications/iCalendar-RFC-7986/
-// https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html
-
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -51,12 +47,9 @@ class IcalFormatter extends YesWikiController
         $this->markdownFormatter = $markdownFormatter;
     }
 
-    /**
-     * format api response.
-     */
+    /** format api response. */
     public function apiResponse(array $entries, $formId = null, ?array $get = null, string $filename = ''): Response
     {
-        // start ob for trigger_error messages
         ob_start();
 
         if (!empty($formId) && is_array($formId)) {
@@ -72,7 +65,7 @@ class IcalFormatter extends YesWikiController
             $entries = $this->entryController->filterEntriesOnDate($entries, $get['datefilter']);
         }
         $fileData = $this->formatToICAL($entries, $formId);
-        // stop ob
+
         $obContent = ob_get_contents();
         ob_end_clean();
 
@@ -115,14 +108,10 @@ class IcalFormatter extends YesWikiController
      */
     public function formatToICAL(array $entries, $formId = null): string
     {
-        // legacy entries physically created by the old repetition mechanism: the parent
-        // now expands its own occurrences via RRULE, so these must not appear as their own VEVENT
         $entries = array_filter($entries, function ($entry) {
             return !EntryDateService::isLegacyRecurrenceChild($entry['bf_date_fin_evenement_data'] ?? null);
         });
 
-        // core asks the form which fields hold the dates instead of reading the historic
-        // French names out of user data (ticket 11)
         $form = empty($formId) ? null : $this->formManager->getOne($formId);
         $startField = $this->fieldRoleResolver->propertyName($form, FieldRole::START_DATE);
         $endField = $this->fieldRoleResolver->propertyName($form, FieldRole::END_DATE);
@@ -175,12 +164,11 @@ class IcalFormatter extends YesWikiController
             if (is_null($endDate)) {
                 return [];
             }
-            // 24 h for end date if all day
+
             if ($this->isAllDay(strval($entry[$endField]))) {
                 $endDate = $endDate->add(new \DateInterval('P1D'));
             }
             if ($startDate->diff($endDate)->invert > 0) {
-                // end date before start date not possible in ical : use start time + 1 hour
                 $endDate = $startDate->add(new \DateInterval('PT1H'));
             }
 
@@ -193,9 +181,7 @@ class IcalFormatter extends YesWikiController
         return [];
     }
 
-    /**
-     * check if is all day date.
-     */
+    /** check if is all day date. */
     protected function isAllDay(string $date): bool
     {
         return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/', $date) === 1;
@@ -236,7 +222,7 @@ class IcalFormatter extends YesWikiController
     private function formatEvent(array $entry, array $icalData, array &$cache, ?array $form = null): string
     {
         $output = "BEGIN:VEVENT\r\n";
-        // TODO use real UID with random hex followed by @base URL
+
         $output .= $this->chunck_split_except_last('UID:' . $entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", ' ');
         $output .= $this->chunck_split_except_last('URL:' . $entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", ' ');
         $output .= 'DTSTAMP' . $this->formatDate('') . "\r\n";
@@ -245,8 +231,7 @@ class IcalFormatter extends YesWikiController
         $output .= $this->formatRecurrenceLines($entry, $icalData);
         $output .= 'CREATED' . $this->formatDate($entry['created_at']) . "\r\n";
         $output .= 'DATE-MOD' . $this->formatDate($entry['updated_at']) . "\r\n";
-        // the entry's computed title (ADR-0010), not a field a webmaster had to name
-        // `bf_titre` for the export to say anything
+
         $title = (string)($entry['title'] ?? '');
         $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SUMMARY:' . $title . "\r\n");
         $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'NAME:' . $title . "\r\n");
@@ -270,9 +255,9 @@ class IcalFormatter extends YesWikiController
             $baseUrl = $this->getBaseURL();
             $url = $baseUrl . 'files/' . $entry['imagebf_image'];
             $output .= $this->chunck_split_except_last('IMAGE;VALUE=URI;DISPLAY=BADGE:' . $url, self::MAX_CHARS_BY_LINE, "\r\n", ' ');
-            $output .= $this->chunck_split_except_last('ATTACH:' . $url, self::MAX_CHARS_BY_LINE, "\r\n", ' '); // duplicate on attach to be compatible with more calendar client
+            $output .= $this->chunck_split_except_last('ATTACH:' . $url, self::MAX_CHARS_BY_LINE, "\r\n", ' ');
         }
-        // image https://icalendar.org/New-Properties-for-iCalendar-RFC-7986/5-10-image-property.html
+
         $output .= "END:VEVENT\r\n";
 
         return $output;
@@ -288,10 +273,7 @@ class IcalFormatter extends YesWikiController
         return ':' . $this->formatDateValue($date);
     }
 
-    /**
-     * format date value only (no leading ':'), for use inside a property value
-     * (e.g. RRULE's UNTIL, or EXDATE) instead of as a standalone property.
-     */
+    /** format date value only (no leading ':'), for use inside a property value (e.g. */
     private function formatDateValue(string $date): string
     {
         $dateObject = empty($date) ? new \DateTimeImmutable() : new \DateTimeImmutable($date);
@@ -362,14 +344,12 @@ class IcalFormatter extends YesWikiController
         if (!empty($data['limitdate']) && is_string($data['limitdate'])) {
             $parts[] = 'UNTIL=' . $this->formatDateValue($data['limitdate'] . ' 00:00:00');
         } elseif (!empty($data['nbmax']) && is_scalar($data['nbmax'])) {
-            // +1 to include the anchor occurrence itself, matching RRULE's COUNT (total instances)
             $parts[] = 'COUNT=' . (min(intval($data['nbmax']), 600) + 1);
         }
 
         $output = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'RRULE:' . implode(';', $parts) . "\r\n");
 
         if (!empty($data['except']) && is_array($data['except'])) {
-            // EXDATE must match DTSTART's value type/time-of-day exactly, or clients silently ignore it
             $timeOfDay = substr($icalData['startDate'], 10);
             $exdates = array_values(array_filter(array_map(function ($exceptDate) use ($timeOfDay) {
                 return is_string($exceptDate) ? $this->formatDateValue($exceptDate . $timeOfDay) : null;
@@ -389,14 +369,12 @@ class IcalFormatter extends YesWikiController
      */
     private function splitAtnthChar(int $length, string $input): string
     {
-        // cut lines at nth char whithout breaking words (except long words)
         $output = wordwrap($input, $length, " \r\n ", false);
-        // split now long words
+
         $output = wordwrap($output, $length, "\r\n ", true);
-        // prevent errors when cutting between \r\n
-        // replace "\r\n \r\n" to prevent empty lines
+
         $output = (string)preg_replace('/(?:\\r ?\\r\\n \\n|\\r\\n \\r\\n )/', "\r\n ", $output);
-        // remove last " \r\n" to prevent empty lines
+
         $output = (string)preg_replace('/\\r\\n (?:\\r\\n)?$/', "\r\n", $output);
 
         return $output;
@@ -430,17 +408,15 @@ class IcalFormatter extends YesWikiController
      */
     private function renderAndStripTags(string $input): string
     {
-        // render description
         $renderedInput = $this->markdownFormatter->format($input);
         $cleanedRendered = strip_tags($renderedInput, '<a>');
-        // extract links
+
         $output = (string)preg_replace('/<a.*href=(?:"|\')([^"\']*)(?:"|\').*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
 
         return $output;
     }
 
-    /** test if form is ICAL.
-     */
+    /** test if form is ICAL. */
     public function isICALForm(?array $form = null): bool
     {
         if (empty($form['prepared'] ?? null)) {
@@ -452,14 +428,11 @@ class IcalFormatter extends YesWikiController
             return $field instanceof DateField;
         })));
 
-        // an agenda form is one that can answer both date roles -- whatever its fields
-        // happen to be called (ticket 11)
         return !empty($filteredFields)
             && $this->fieldRoleResolver->hasRoles($form, FieldRole::START_DATE, FieldRole::END_DATE);
     }
 
-    /** get base Url.
-     */
+    /** get base Url. */
     private function getBaseURL(): string
     {
         $baseUrl = $this->params->get('base_url');

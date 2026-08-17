@@ -11,18 +11,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The form properties (ADR-0010) of a built-in Content type.
- *
- * Two things went wrong once the Page, User and File forms existed. They inherited the
- * bazar default title template `{{bf_titre}}`, a field none of them has, so every page
- * listed with an empty title. And they carried `entry_creates_user`/`entry_bookmarklet`,
- * which describe visitor submissions to a webmaster's form and mean nothing for a page,
- * an account or an uploaded file.
- */
+/** The form properties (ADR-0010) of a built-in Content type. */
 class ContentTypeFormPropertiesTest extends YesWikiTestCase
 {
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private static array $createdFormIds = [];
 
     public static function tearDownAfterClass(): void
@@ -32,13 +26,14 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
             try {
                 $formManager->delete($id);
             } catch (\Throwable $e) {
-                // best effort: the suite shares the developer's database
             }
         }
         self::$createdFormIds = [];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function builtInForm(string $contentType): array
     {
         $form = $this->getWiki()->services->get(FormManager::class)->getByContentType($contentType);
@@ -57,7 +52,9 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
         return (string)$id;
     }
 
-    /** @return array<string, list<string>> */
+    /**
+     * @return array<string, list<string>>
+     */
     public static function builtInTitleTemplates(): array
     {
         return [
@@ -79,9 +76,6 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
             'bf_titre is a bazar convention: no built-in Content type has such a field'
         );
 
-        // the template must name something the Content actually carries, or every title is
-        // empty. Not necessarily a *field*: a file's original_filename is derived from its
-        // upload rather than typed in, so it is a body key with no input behind it.
         $key = trim($expected, '{}');
         $this->assertSame(
             'un titre calculé',
@@ -118,8 +112,7 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
     }
 
     /**
-     * Both halves of the guarantee, on the pure function: a built-in type drops them
-     * however they arrived, an ordinary form keeps them.
+     * Both halves of the guarantee, on the pure function: a built-in type drops them however they arrived, an ordinary form keeps them.
      */
     public function testEntryOnlyPropertiesAreStrippedForBuiltInTypesOnly(): void
     {
@@ -148,16 +141,7 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * The three destructive routes into a built-in form are closed.
-     *
-     * Deleting the Page form does not remove a data structure someone designed -- it
-     * removes the schema every page in the wiki is edited and listed through, with no
-     * route back except re-running the migration. Emptying it would mean deleting every
-     * page. And creating an "entry" on it would make a fiche_bazar row carrying the Page
-     * form's id, which belongs to no list at all, since the Page form owns the *untyped*
-     * rows.
-     */
+    /** The three destructive routes into a built-in form are closed. */
     #[DataProvider('builtInTitleTemplates')]
     public function testABuiltInFormCannotBeDeletedEmptiedOrFilledWithEntries(string $contentType, string $unusedTitleTemplate): void
     {
@@ -205,12 +189,7 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
         $this->assertSame($form['entry_title_template'], $stored['entry_title_template']);
     }
 
-    /**
-     * The title *role* (ticket 11): which field carries an entry's name. Core used to
-     * assume `bf_titre`, so a table's entry link landed on no column at all for a form
-     * that names its entries some other way, and duplicating such an entry wrote the new
-     * name into a field the form does not have.
-     */
+    /** The title *role* (ticket 11): which field carries an entry's name. */
     public function testTheTitleFieldIsTheOneTheTitleTemplateNames(): void
     {
         $properties = $this->getWiki()->services->get(FormPropertiesService::class);

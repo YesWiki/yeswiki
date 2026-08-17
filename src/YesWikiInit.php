@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Yeswiki initialization class file.
- */
+/** Yeswiki initialization class file. */
 
 namespace YesWiki;
 
@@ -21,9 +19,7 @@ class AttributeRouteControllerLoader extends AttributeClassLoader
     }
 }
 
-/**
- * Yeswiki initialization class.
- */
+/** Yeswiki initialization class. */
 class Init
 {
     public $page = '';
@@ -46,7 +42,6 @@ class Init
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
 
-        /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
             $this->doInstall();
             exit;
@@ -71,59 +66,40 @@ class Init
         $uri = explode('?', $uri[0]);
         $args = explode('/', rawurldecode($uri[0]));
         if (!empty($args[0]) or !empty($_GET['wiki'])) {
-            // if old school wiki url
             if ($args[0] == 'index.php' or !empty($_GET['wiki'])) {
-                // remove leading slash
                 $wiki = empty($_GET['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_GET['wiki']));
             } else {
                 $a = explode('=', $args[0]);
                 $wiki = urldecode($a[0]);
             }
             if (empty($wiki)) {
-                // this will be redirected to install or to homepage later
             } elseif (ReservedTags::isReserved(explode('/', $wiki)[0])) {
-                // A routed name (`api`, `doc`, ...) takes the whole rest of the path as its
-                // method, because an API route has more segments than WN_TAG_HANDLER_CAPTURE's
-                // single Tag/handler split can carry.
-                //
-                // Matching the FIRST SEGMENT is the point. This used to be `preg_match('^api')`
-                // -- a bare prefix match, so a page tagged `apiculture` was parsed as the API
-                // with method `culture` and was unreachable. Any tag merely starting with a
-                // reserved name is an ordinary tag and falls through to the branches below.
                 $this->page = ReservedTags::canonical(explode('/', $wiki)[0]);
                 if (strpos($wiki, '/') !== false) {
-                    // $wiki already contains the full path (e.g. 'api/ferme/wikis/upgrade' from $_REQUEST['wiki'])
                     $wikiParts = explode('/', $wiki);
-                    array_shift($wikiParts); // remove the reserved name
+                    array_shift($wikiParts);
                     $this->method = rtrim(implode('/', $wikiParts), '=');
                 } else {
-                    // $wiki is just the reserved name, extract method from URL path segments
-                    array_shift($args); // remove the reserved name from the args
+                    array_shift($args);
                     $this->method = rtrim(implode('/', $args), '=');
                 }
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
-                // split into page/method, checking wiki name & method name (XSS proof)
                 list(, $this->page, $this->method) = $matches;
             } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
-                // WikiPageName without method
                 $this->page = $wiki;
                 if (isset($args[1]) and !empty($args[1])) {
-                    // Security (quick hack) : Check method syntax
                     if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
                         $this->method = $args[1];
                     }
                 }
             } else {
-                // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
                 exit;
             }
 
-            // TODO refactor this
             if (!$this->method) {
                 $requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
-                // We must manually parse the body data for the PUT or PATCH methods
-                // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+
                 if (empty($_POST) && ($requestMethod == 'POST' || $requestMethod == 'PUT' || $requestMethod == 'PATCH')) {
                     $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
                 }
@@ -139,17 +115,7 @@ class Init
         }
     }
 
-    /**
-     * set headers for iframes.
-     */
-    /**
-     * Default mail domain derived from the wiki's host ("www.foo.example.org" =>
-     * "example.org"). The last-two-labels heuristic only makes sense for DNS names:
-     * IP literals (a bare-IP dev/CI wiki would otherwise yield garbage like "0.1"
-     * from 127.0.0.1) are kept whole. Was the global getMailDomain() in
-     * src/email.inc.php until the PSR-4 refactor removed it (this is its only
-     * caller).
-     */
+    /** Default mail domain derived from the wiki's host ("www.foo.example.org" => "example.org"). */
     private function deriveMailDomain(string $host): string
     {
         if (filter_var($host, FILTER_VALIDATE_IP) !== false
@@ -165,18 +131,15 @@ class Init
 
     private function setIframeHeaders()
     {
-        // set header for Content-Security-Policy
         $allowedMethods = $this->config['allowed_methods_in_iframe'] ?? 'all';
 
         if ($this->page === 'doc' || $allowedMethods === 'all' || (
             is_array($allowedMethods) && in_array($this->method, $allowedMethods, true)
         )) {
-            // allow local ('self') and everyone (*)
             header("Content-Security-Policy: frame-ancestors 'self' *;");
         } else {
-            // for old browsers
             header('X-frame-Options: deny');
-            // disallow (CSP takes advantage on x-frame-options)
+
             header("Content-Security-Policy: frame-ancestors 'none';");
         }
     }
@@ -216,11 +179,7 @@ class Init
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
             'debug' => false,
-            // ticket 16: internal links load through htmx. Not a second code path -- the
-            // non-boosted path is plain HTTP, which still answers every request without
-            // HX-Request (search engines, curl, JS disabled). Turning it off only stops the
-            // skeleton emitting hx-boost, which is the way out for a theme that does not meet
-            // the contract.
+
             'htmx_navigation' => true,
             'db_driver' => 'mysql',
             'db_host' => 'localhost',
@@ -237,39 +196,31 @@ class Init
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
-            // default false, unlike the pre-absorption accountactivationbyemail extension's
-            // own default of true (ticket 07): that default only ever affected wikis that
-            // explicitly installed the extension -- defaulting to true here would silently
-            // gate new signups on every wiki upgrading to this version, whether or not it
-            // ever used this feature before
+
             'signup_email_activation' => false,
             'user_activation_key_length' => 20,
             'comments_activated' => true,
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,
-            // PROTOTYPE: edit wiki syntax in Vditor, components rendered in place, instead
-            // of in the ACeditor (javascripts/vditor-components.js)
+
             'vditor_wiki_editor' => true,
             'allow_raw_html' => true,
             'disallowed_html_tags' => ['title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext'],
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],
             'revisionscount' => 30,
-            'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini
-            'root_page' => 'PagePrincipale', // backup root_page if deleted from yeswiki.config.php
-            // Which languages this wiki offers besides `default_language` -- the list its
-            // language switcher holds. Empty is the ordinary case and means a wiki in one
-            // language, which shows no switcher at all. Chosen at install time and on
-            // /admin/config; see LanguageService::offeredLanguages().
+            'timezone' => 'Europe/Paris',
+            'root_page' => 'PagePrincipale',
+
             'other_languages' => [],
-            'yeswiki_name' => '', // backup yeswiki_name if deleted from yeswiki.config.php
+            'yeswiki_name' => '',
             'htmlPurifierActivated' => true,
-            'htmlPurifierSafeIframeRegexp' => '~^https://.*~', // regex for domains allowed as <iframe> src ; very permissive by default, restrict for public wikis
+            'htmlPurifierSafeIframeRegexp' => '~^https://.*~',
             'favorites_activated' => true,
             'hide_keywords' => false,
-            'use_alerte' => true, // alerte pour quitter le mode édition
-            'use_hashcash' => true, // hashcash pour le mode edition
-            'use_captcha' => false, // recaptcha
-            'wiki_status' => 'running', // status of the wiki ('running','maintenance','hibernation')
+            'use_alerte' => true,
+            'use_hashcash' => true,
+            'use_captcha' => false,
+            'wiki_status' => 'running',
             'favorite_theme' => THEME_PAR_DEFAUT,
             'favorite_style' => CSS_PAR_DEFAUT,
             'favorite_squelette' => SQUELETTE_PAR_DEFAUT,
@@ -283,37 +234,24 @@ class Init
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
                 'max_nb_files' => 10,
             ],
-            // qrcode generic config (ticket 14, formerly yeswiki-extension-qrcode's config.yaml)
+
             'qrcode_config' => [
-                'relation_form_id' => 1300, // official reserved bazar form id for relations
+                'relation_form_id' => 1300,
                 'default_relation_type' => 'contact',
                 'default_entity_type' => 'personne',
                 'default_entity_form' => '1',
                 'default_user_form' => '1',
                 'visualisation_refresh_period' => '30000',
             ],
-            // {{attach}} generic config (ticket 17, formerly tools/attach's config.yaml).
-            // attach_jplayer_skin dropped: jPlayer was replaced by native <audio controls>.
-            // ext_freemind dropped: the FreeMind (.mm) viewer embedded a Flash .swf, dead
-            // in every browser since ~2021.
-            // What the BROWSER does to an image before it is uploaded (javascripts/image-upload.js).
-            // A phone camera hands over twelve megapixels of JPEG and a screenshot tool hands
-            // over a PNG several times the size of the WebP that looks identical -- and what is
-            // uploaded is what the wiki then stores, backs up and serves forever.
-            // `image-upload-format: ''` turns the whole thing off and uploads what was chosen.
+
             'image-upload-format' => 'image/webp',
-            // The same 1920 the render cap uses, on purpose: an image stored at the size it is
-            // served at needs no resized copy made of it at all, so the wiki keeps one file per
-            // picture instead of two and the first view of a new image is not a resize.
+
             'image-upload-max-width' => 1920,
             'image-upload-max-height' => 1920,
             'image-upload-quality' => 0.82,
-            // Bytes. The quality is lowered a step at a time to try to come under it; it is a
-            // target, not a promise -- `max_file_size` is the limit that actually refuses.
+
             'image-upload-max-size' => 1048576,
-            // The largest an image is SERVED at when nothing asked for a size: a resized copy
-            // is made on first use and cached beside the original. Nothing in a page needs
-            // more, and the file itself is still there for whoever downloads it.
+
             'image-render-max-width' => 1920,
             'image-render-max-height' => 1920,
             'image-small-width' => 140,
@@ -323,18 +261,17 @@ class Init
             'image-big-width' => 780,
             'image-big-height' => 544,
             'authorized-extensions' => [
-                // Images reconnues par PHP
                 'jpg' => 'JPEG',
                 'png' => 'PNG',
                 'gif' => 'GIF',
                 'jpeg' => 'JPEG',
                 'webp' => 'WEBP',
-                // Autres images (peuvent utiliser le tag <img>)
+
                 'avif' => 'AVIF',
                 'bmp' => 'BMP',
                 'tif' => 'TIFF',
                 'svg' => 'SVG',
-                // Audio / Video
+
                 'aiff' => 'AIFF',
                 'anx' => 'Annodex',
                 'axa' => 'Annodex Audio',
@@ -367,7 +304,7 @@ class Init
                 'wav' => 'WAV',
                 'wmv' => 'Windows Media',
                 '3gp' => '3rd Generation Partnership Project',
-                // Documents
+
                 'abw' => 'Abiword',
                 'ai' => 'Adobe Illustrator',
                 'bz2' => 'BZip',
@@ -416,11 +353,11 @@ class Init
                 'xls' => 'Excel',
                 'xlsx' => 'Excel',
                 'xlsm' => 'Excel',
-                // xml: 'XML' removed by default because no more xss cleaner
+
                 'yaml' => 'YAML',
                 'zip' => 'Zip',
                 'scar' => 'SCAR',
-                //  Open Document
+
                 'odt' => 'opendocument text',
                 'ods' => 'opendocument spreadsheet',
                 'odp' => 'opendocument presentation',
@@ -454,27 +391,22 @@ class Init
                 'default_video_service' => 'peertube',
                 'default_peertube_instance' => 'https://framatube.org/',
             ],
-            // contact/mail-sending generic config (ticket 18, formerly tools/contact's config.yaml)
-            'contact_mail_func' => 'mail', // mail, sendmail ou smtp
+
+            'contact_mail_func' => 'mail',
             'contact_smtp_host' => '',
             'contact_smtp_port' => '',
             'contact_smtp_user' => '',
             'contact_smtp_pass' => '',
-            'contact_smtp_secure' => '', // smtp secure (ssl,tls,...)
-            'contact_use_long_wiki_urls_in_emails' => false, // add 'wiki=' in url
-            'contact_reply_to' => '', // default mail to reply to
-            'contact_debug' => 0, // debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
-            'contact_passphrase' => '', // passphrase pour envoyer des mail (cron-triggered digests)
-            'contact_disable_email_for_password' => false, // pour désactiver l'envoie d'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)
-            // import config (formerly yeswiki-extension-importer's config.yaml). Each entry of
-            // dataSources says where Content is imported from and by which importer; there is
-            // deliberately no default source. sync_secret guards /api/import/sync and, empty,
-            // leaves that route refusing every call.
+            'contact_smtp_secure' => '',
+            'contact_use_long_wiki_urls_in_emails' => false,
+            'contact_reply_to' => '',
+            'contact_debug' => 0,
+            'contact_passphrase' => '',
+            'contact_disable_email_for_password' => false,
+
             'dataSources' => [],
             'sync_secret' => '',
-            // autoupdate config (ticket 19, formerly tools/autoupdate's config.yaml): pages
-            // re-provisioned from the default install content after a core upgrade, in case
-            // their default content changed between versions
+
             'admin_pages_to_update' => [
                 'BazaR',
                 'GererSite',
@@ -488,12 +420,12 @@ class Init
                 'TableauDeBord',
                 'GererSauvegardes',
             ],
-            // bazar generic config (ticket 24, formerly tools/bazar's config.yaml)
+
             'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
-            // herse: site-wide Basic Auth gate, off while empty (ticket 21)
+
             'herse_id' => '',
             'herse_password' => '',
-            // webhooks generic config (ticket 20, formerly the webhooks extension's config.yaml)
+
             'webhooks_formats' => [
                 'raw' => 'WEBHOOKS_FORMAT_RAW',
                 'activitypub' => 'WEBHOOKS_FORMAT_ACTIVITYPUB',
@@ -501,21 +433,16 @@ class Init
                 'slack' => 'WEBHOOKS_FORMAT_SLACK',
                 'yeswiki' => 'WEBHOOKS_FORMAT_YESWIKI',
             ],
-            // If no actor field is defined semantically, this value will be used
+
             'webhooks_activitypub_default_actor' => '',
-            // If an actor is defined, we can override the base URL with this config
+
             'webhooks_activitypub_actors_base_url' => '',
-            // Bot config (works for Mattermost if username and profile picture override is enabled)
-            // See https://docs.mattermost.com/developer/webhooks-incoming.html
+
             'webhooks_bot_name' => 'YesWiki Bot',
             'webhooks_bot_icon' => '%base_url%styles/webhooks/default-bot.png',
             'BAZ_ENVOI_MAIL_ADMIN' => false,
             'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
-            // liste_accordeon.tpl.html and its sibling legacy display modes (agenda, blog,
-            // carousel, tableau, timeline, trombinoscope, etc.) are NOT
-            // dead: the actions-builder wizard's entrylist/bazaragenda/bazartableau/...
-            // entries (docs/actions/entrylist.yaml and friends) still default-select these
-            // exact template names, so they're relocated as-is rather than dropped.
+
             'default_bazar_template' => 'liste_accordeon.twig',
             'baz_semantic_types_mapping' => [
                 'https://www.w3.org/ns/activitystreams' => 'activitystreams',
@@ -557,11 +484,7 @@ class Init
             'baz_map_height' => '600px',
             'baz_show_nav' => 'true',
             'baz_wheel_zoom' => 'false',
-            // marker.png itself has never actually existed anywhere in the repo -- a
-            // pre-existing gap, not introduced by this relocation. The default marker
-            // rendering (baz_marker_icon/baz_marker_icon_prefix) is a sprite icon name,
-            // not an image file; this key is only consulted if an admin opts into a
-            // custom marker image.
+
             'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',
             'temp_tag_for_entry_creation' => 'unknown_entry_id',
         ];
@@ -569,17 +492,15 @@ class Init
 
         if (file_exists($this->configFile)) {
             include $this->configFile;
-            // config files written before the rename define $wakkaConfig instead
+
             if (isset($wakkaConfig) && is_array($wakkaConfig)) {
                 $yeswikiConfig = $wakkaConfig;
             }
         } else {
-            // we must init language file without loading the page's settings.. to translate some default config settings
             $yeswikiDefaultConfig['root_page'] = _t('HOMEPAGE_WIKINAME');
             $yeswikiDefaultConfig['yeswiki_name'] = _t('MY_YESWIKI_SITE');
         }
 
-        // Backwards compatibility: map keys of pre-ectoplasme config files to their new names
         $legacyKeyMapping = [
             'mysql_host' => 'db_host',
             'mysql_database' => 'db_database',
@@ -594,7 +515,7 @@ class Init
             }
             unset($yeswikiConfig[$oldKey]);
         }
-        // dropped keys and the removed wakka.php entry script, from pre-ectoplasme config files
+
         unset($yeswikiConfig['wakka_version']);
         if (!empty($yeswikiConfig['base_url'])) {
             $yeswikiConfig['base_url'] = str_replace('/wakka.php?wiki=', '/?', $yeswikiConfig['base_url']);
@@ -602,34 +523,22 @@ class Init
 
         $yeswikiConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $yeswikiConfig);
 
-        // debug is a boolean now; existing config files may still carry the
-        // historical 'yes'/'no' strings
         $yeswikiConfig['debug'] = filter_var($yeswikiConfig['debug'], FILTER_VALIDATE_BOOLEAN);
 
-        // environment overrides (private/.env or real environment variables) win over
-        // yeswiki.config.php; applied before the timezone/debug values are consumed below.
-        // YesWikiKernel::build() applies the same overrides to extension parameters.
         $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 
-        // give a default timezone to avoid error
         if (!empty($yeswikiConfig['timezone'])) {
             date_default_timezone_set($yeswikiConfig['timezone']);
         } elseif (!empty($yeswikiDefaultConfig['timezone'])) {
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
         } elseif (!ini_get('date.timezone')) {
-            // backup in last case
             date_default_timezone_set('GMT');
         }
 
-        // check for locking
         if (file_exists('locked')) {
-            // read password from lockfile
             $lines = file('locked');
             $lockpw = trim($lines[0]);
 
-            // is authentification given?
-            // 0 by default: correct credentials set it nowhere, so `if ($ask)` below read an
-            // undefined variable on exactly the path that is supposed to succeed (ticket 40)
             $ask = 0;
             if (isset($_SERVER['PHP_AUTH_USER'])) {
                 if (!(($_SERVER['PHP_AUTH_USER'] == 'admin') && ($_SERVER['PHP_AUTH_PW'] == $lockpw))) {
@@ -647,7 +556,6 @@ class Init
             }
         }
 
-        // Display all errors if in debug mode
         if ($yeswikiConfig['debug']) {
             ini_set('display_errors', 1);
             error_reporting(E_ALL);
@@ -673,12 +581,9 @@ class Init
      */
     public function initCookies()
     {
-        // configuration du cookie de session
-        // determine le chemin pour les cookies
         $urlParsed = parse_url($this->config['base_url']);
         $CookiePath = $urlParsed['path'];
 
-        // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
         foreach (['index.php'] as $anchor) {
@@ -687,7 +592,6 @@ class Init
             }
         }
 
-        // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
         if (substr($CookiePath, -1) !== '/') {
             $CookiePath .= '/';
         }
@@ -697,7 +601,6 @@ class Init
             $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
-        // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;

@@ -17,13 +17,7 @@ use League\CommonMark\Parser\Inline\InlineParserMatch;
 use League\CommonMark\Parser\InlineParserContext;
 use League\CommonMark\Parser\MarkdownParserStateInterface;
 
-/**
- * Adds Twig-like comments: {# this is invisible once parsed #}. A line devoted only to a
- * comment (optionally spanning several blocks/paragraphs/headings/blank lines, until the
- * closing #} is found) disappears entirely; a comment amid other text on one paragraph is
- * simply removed inline. Either way nothing is rendered, including any {{action}} written
- * inside it - the whole span is swallowed before actions ever get a chance to parse it.
- */
+/** Adds Twig-like comments: {# this is invisible once parsed #}. */
 final class CommentExtension implements ExtensionInterface
 {
     public function register(EnvironmentBuilderInterface $environment): void
@@ -42,7 +36,6 @@ final class CommentBlockStartParser implements BlockStartParserInterface
             return BlockStart::none();
         }
 
-        // does it also close on this same line, or does it keep going across blocks/lines?
         $stillOpen = \strpos($cursor->getRemainder(), '#}') === false;
         $cursor->advanceToEnd();
 
@@ -59,7 +52,6 @@ final class CommentBlock extends AbstractBlock implements RawMarkupContainerInte
 
     public function setLiteral(string $literal): void
     {
-        // a comment never renders anything
     }
 }
 
@@ -104,7 +96,6 @@ final class CommentInlineParser implements InlineParserInterface
 
     public function parse(InlineParserContext $inlineContext): bool
     {
-        // nothing is appended to the container: the comment is simply removed
         $inlineContext->getCursor()->advanceBy($inlineContext->getFullMatchLength());
 
         return true;

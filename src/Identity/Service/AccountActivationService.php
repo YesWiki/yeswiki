@@ -12,14 +12,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * accountactivationbyemail, absorbed into core (ticket 07): activation status/key are
- * fields on the user's Content body (not standalone triples), gated the same way the
- * password hash is -- BODY_KEY_STATUS/BODY_KEY_KEY are in Guard::USER_ALWAYS_HIDDEN_FIELDS,
- * so they're never surfaced via a generic page-read path, only through this service's own
- * internal (ACL-bypassing) reads -- same pattern as UserManager reading the real password
- * hash for auth purposes. The activation key's expiry reuses UserManager's
- * KEY_VALUE_SEPARATOR/KEY_TTL encoding convention (not its triple-based storage, which
- * doesn't apply here), stored as "$key$KEY_VALUE_SEPARATOR$issuedAt".
+ * accountactivationbyemail, absorbed into core (ticket 07): activation status/key are fields on the user's Content body (not standalone triples), gated the same way the password hash is -- BODY_KEY_STATUS/BODY_KEY_KEY are in Guard::USER_ALWAYS_HIDDEN_FIELDS, so they're never surfaced via a generic page-read path, only through this service's own internal (ACL-bypassing) reads -- same pattern as UserManager reading the real password hash for auth purposes.
  */
 class AccountActivationService
 {
@@ -33,13 +26,6 @@ class AccountActivationService
     protected $userManager;
     protected ContainerInterface $container;
 
-    // PageManager is deliberately NOT constructor-injected: it depends on AuthenticationService,
-    // and AuthenticationService depends on this service (for the login-time activation gate) --
-    // constructor-injecting it here would be circular. Fetched late via
-    // $this->container->get(), the same workaround used elsewhere in this codebase for
-    // this exact PageManager/AuthenticationService/UserManager triangle (see UserManager's own
-    // constructor comment). Mailer is late-bound for the same reason (it depends on
-    // AuthenticationService too).
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
@@ -112,12 +98,7 @@ class AccountActivationService
 
         $baseUrl = $this->getBaseUrl();
         $context = ['userName' => $user['name'], 'baseUrl' => $baseUrl, 'link' => $link];
-        // '@templates' is tools/templates/'s own Twig namespace (it's the tool literally
-        // named "templates", e.g. alert-message.twig) -- repo-root templates/ is '@core'
-        // (see TemplateEngine's core-paths registration). Using '@templates' here was a
-        // real bug from ticket 07: sendActivationLink() would have thrown "template not
-        // found" the first time it actually ran, never caught because the ticket 07 tests
-        // deliberately avoided exercising this method (to not trigger a real email send).
+
         $subject = $this->templateEngine->render('@core/emailactivation-email-subject.twig', $context);
         $text = $this->templateEngine->render('@core/emailactivation-email-text.twig', $context);
         $html = $this->templateEngine->render('@core/emailactivation-email-html.twig', $context);
@@ -128,11 +109,7 @@ class AccountActivationService
     }
 
     /**
-     * Clears any activation key past UserManager::KEY_TTL, the same TTL used for
-     * password-recovery keys -- called from the same periodic maintenance pass as
-     * UserManager::purgeExpiredPasswordRecoveryKeys() (YesWiki::Maintenance()). Unlike that
-     * method (which scans triples matching one vocabulary), this scans every user page,
-     * since the key lives in body now.
+     * Clears any activation key past UserManager::KEY_TTL, the same TTL used for password-recovery keys -- called from the same periodic maintenance pass as UserManager::purgeExpiredPasswordRecoveryKeys() (YesWiki::Maintenance()).
      */
     public function purgeExpiredActivationKeys(): void
     {
@@ -208,7 +185,7 @@ class AccountActivationService
         if (!$page) {
             return null;
         }
-        // PageManager returns the body already decoded (ticket 09)
+
         $body = $page['body'] ?? [];
 
         return is_array($body) ? $body : [];

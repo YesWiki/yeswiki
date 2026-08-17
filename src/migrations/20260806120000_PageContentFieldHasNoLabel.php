@@ -5,26 +5,10 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 
-/**
- * The Pages form's `content` field loses the label the seed gave it.
- *
- * A page rendered through its form since ticket 10, and a field renders its label above its
- * value -- so every page in the wiki grew a "Contenu" caption over its own prose.
- *
- * `ContentTypeSchema` has always said the label is empty, and says why: *the prose IS the
- * page*. The SQL seed simply did not follow it and wrote `"label":"Contenu"`. So this is the
- * seed drifting from the schema it is supposed to instantiate -- the same drift ticket 25
- * found once already -- and every wiki installed from that seed carries the wrong label in
- * its stored form.
- *
- * Only the seeded value is removed. A webmaster who deliberately captioned the field keeps
- * their caption: a label this migration does not recognise is left exactly as it is.
- *
- * Idempotent: once the label is empty there is nothing to match.
- */
+/** The Pages form's `content` field loses the label the seed gave it. */
 class PageContentFieldHasNoLabel extends YesWikiMigration
 {
-    /** What the seed wrote. Anything else is somebody's choice. */
+    /** What the seed wrote. */
     private const SEEDED_LABEL = 'Contenu';
 
     public function run()

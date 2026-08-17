@@ -11,9 +11,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 04 (tag-collision-avoidance helper, ADR-0001):
- * PageManager::suggestFreeTag() checks the global Content tag namespace and, on collision,
- * suggests a free numeric-suffixed alternative instead of failing with no path forward.
+ * Regression tests for ticket 04 (tag-collision-avoidance helper, ADR-0001): PageManager::suggestFreeTag() checks the global Content tag namespace and, on collision, suggests a free numeric-suffixed alternative instead of failing with no path forward.
  */
 class PageManagerTagCollisionTest extends YesWikiTestCase
 {
@@ -71,10 +69,6 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
 
     public function testCollisionCheckIsTypeAgnostic()
     {
-        // proves the check works "regardless of which Content type currently holds the
-        // colliding tag" using a real, already-existing different Content type (a bazar
-        // entry) rather than a stub, since forms/users aren't Content yet (tickets 05/06) but
-        // bazar entries already are -- same `pages` table, different `handler`/type marker
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
         $formManager = $wiki->services->get(FormManager::class);
@@ -95,8 +89,6 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
             ]);
             $this->assertTrue($entryManager->isEntry(self::BAZAR_ENTRY_TAG));
 
-            // a bazar entry is Content the same way an ordinary page is (same `pages` table)
-            // -- the tag-collision check must not special-case either
             $this->assertTrue($pageManager->tagExists(self::BAZAR_ENTRY_TAG));
             $suggested = $pageManager->suggestFreeTag(self::BAZAR_ENTRY_TAG);
 

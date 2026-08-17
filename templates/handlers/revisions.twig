@@ -7,8 +7,7 @@
      data-revisions-count="{{ revisionsCount }}"
      data-is-entry="{{ isEntry }}">
   <template v-if="selectedRevision">
-    
-    {# Title #}
+
     <div class="revision-page-title">
       <a class="btn btn-sm btn-default" href="{{ url({}) }}">
         <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>{{  _t('GO_BACK') }}
@@ -18,7 +17,6 @@
       </h1>
     </div>
 
-    {# Timeline #}
     <div class="timeline-container">
       <template v-for="revision in revisions" :key="revision.id">
         <div class="timeline-item"
@@ -33,7 +31,6 @@
       <div class="timeline-bar"></div>
     </div>
 
-    {# Selected Revision Title with buttons #}
     <div class="revision-title-container">
       <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(true)" :disabled="isFirstRevision || null"><use href="src/assets/icons.svg#chevron-left"/></svg>
       <div class="text-center revision-title">
@@ -42,11 +39,7 @@
           {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
           {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
-        {# The labels are element content, NOT `v-text="'…'"`. A translation pasted inside a
-           JS string literal is a translation that may not contain the quote character that
-           closes it, and the French one does: "droits d'accès" ended the string mid-word,
-           so Vue failed to compile this template and the whole revisions screen went blank.
-           Written this way Twig substitutes plain text and Vue never parses it. #}
+
          <a :href="restoreUrl" class="btn btn-success btn-restore"
             :class="{ disabled: isLastRevision }">
           <span v-if="isLastRevision">{{ _t('CURRENT_VERSION') }}</span>
@@ -57,8 +50,7 @@
       </div>
       <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(false)" :disabled="isLastRevision || null"><use href="src/assets/icons.svg#chevron-right"/></svg>
     </div>
-    
-    {# View Types Selector #}
+
     <ul class="view-types-selector yw-nav">
       <li v-for="label, type in viewTypes" role="presentation"
           :class="{active: selectedViewType == type}"
@@ -73,10 +65,9 @@
     </ul>
 
     <div class="preview-container">
-      {# Loader #}
+
       <spinner-loader v-if="!selectedRevision.fullyRetrieved"></spinner-loader>
 
-      {# View Types display #}
       <template v-else>
         <template v-if="displayWikiCode">
           <div v-if="isEntry" class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></div>

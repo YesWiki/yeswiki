@@ -1,11 +1,3 @@
-// Regenerates src/assets/icons.svg — the curated Tabler symbol sprite YesWiki's UI uses
-// instead of an icon font. The set of icons is the value side of src/icon-map.json
-// (historic FontAwesome name -> Tabler outline name); add an entry there, run
-// `node src/build-icon-sprite.mjs`, commit both files.
-//
-// The sprite is committed on purpose: it is a curated asset the pages reference
-// directly (<svg class="yw-icon"><use href="src/assets/icons.svg#name"/></svg>),
-// not a build artifact users must regenerate.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -13,27 +5,16 @@ import { fileURLToPath } from 'node:url'
 
 const srcDir = dirname(fileURLToPath(import.meta.url))
 const map = JSON.parse(readFileSync(join(srcDir, 'icon-map.json'), 'utf8'))
-// icons needed beyond the legacy map (filled variants render as `${name}-filled`)
 const EXTRAS = [
   'filled:star',
   'cursor-text',
-  // the search results' display switcher (list / accordion / cards). Named for the layout
-  // they produce rather than for a FontAwesome class, which is why they are extras: nothing
-  // legacy maps onto them.
   'layout-list',
   'layout-rows',
   'layout-grid',
-  // the settings rail's own addons (ticket 36). The YAML asked for `fill-drip`, `shapes`,
-  // `align-center` and `columns` -- FontAwesome names with no entry in the legacy map, so
-  // every one of them rendered as an empty bordered box beside its label. Extras rather
-  // than map entries: a Component now names a sprite icon directly, and the map is for
-  // the legacy vocabulary in stored content.
   'palette',
   'shape',
   'align-center',
   'columns',
-  // ...and one per setting of the section component, so every caption in the rail is
-  // recognisable at a glance rather than only readable
   'contrast',
   'texture',
   'droplet-half-2',
@@ -44,31 +25,20 @@ const EXTRAS = [
   'eye',
   'box-margin',
   'wand',
-  // the entry-list presentations
   'table',
-  // ...and the settings a list is narrowed down with. A sprite id that is not built is an
-  // empty box beside a caption -- the icon draws nothing and says nothing about it.
   'list-numbers',
   'separator-horizontal',
   'arrows-shuffle',
   'filter',
   'text-decrease',
   'sort-ascending-letters',
-  // three actions that never had a YAML palette entry and gained a Component with the
-  // triage (ticket 36): a table of contents, a QR code and a page's comments
   'list-details',
   'qrcode',
   'message-circle',
-  // the Colour scheme toggle: the three states it cycles through (ADR-0020). System-follows
-  // is a screen rather than a time of day -- the reader is being told whose choice is in
-  // force, and the answer there is "your computer's".
   'sun',
   'moon',
   'device-desktop',
 ]
-// sprite ids whose Tabler source icon has a different name — e.g. the magnifier
-// ships as "loupe" because adblock cosmetic filters hide elements whose
-// attributes mention "#search"
 const RENAMES = { loupe: 'search' }
 
 const names = [
@@ -112,8 +82,6 @@ ${symbols.join('\n')}
 `
 writeFileSync(join(srcDir, 'assets', 'icons.svg'), sprite)
 
-// the same legacy-name map for the browser side (BazarMap markers, the icon input,
-// reaction images... render stored `fa fa-x` choices through the sprite)
 const jsMap = Object.fromEntries(
   Object.entries(map).filter(([key]) => key !== '__comment'),
 )

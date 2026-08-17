@@ -14,5 +14,5 @@ export const login = async (page: Page, username: string, password: string) => {
 }
 
 export const logout = async (page: Page) => {
-  await page.context().clearCookies() // Force logout
+  await page.context().clearCookies()
 }

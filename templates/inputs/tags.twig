@@ -2,9 +2,7 @@
 
 {% block input %}
     {{ include_javascript('javascripts/yw-tags-input.js') }}
-    {# Suggestions are fetched from GET /api/tags as the visitor types. Dumping the wiki's
-       whole keyword vocabulary into every page that carries this field is what ticket 10
-       removed, so this template must not grow an options attribute again. #}
+
     <div class="yw-tag-input" data-yw-tag-input>
         {%- for tag in value|split(',')|map(t => t|trim)|filter(t => t is not empty) -%}
             <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ tag }}">{{ tag }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="{{ _t('TAGS_REMOVE_TAG') }}">&times;</button></span>

@@ -20,17 +20,6 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-/**
- * The editor's file picker, in a browser.
- *
- * Everything here is structurally invisible to phpunit: the list of already-uploaded
- * files is fetched by the rail's own script, so a URL that does not reach the route
- * looks exactly like "this wiki has no files" -- which is what it looked like, for as
- * long as the fetch asked for `/?/api/files` and got the home page back. A test that
- * only asserts the route's JSON would still have passed.
- */
-
-// 1x1 transparent PNG
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -64,8 +53,6 @@ const uploadThroughPicker = async (
   mimeType: string,
   buffer: Buffer,
 ) => {
-  // the rail is a state machine now: the upload action lives on the list view, so a
-  // previous upload (which lands on the file it just made) has to be backed out of first
   await backToList(page)
   await page
     .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
@@ -74,7 +61,6 @@ const uploadThroughPicker = async (
     .locator('#YesWikiFilePickerPanel input[name="upFile"]')
     .setInputFiles({ name, mimeType, buffer })
   await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
-  // the upload lands the file in the list and selects it
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
     name,
   )
@@ -98,25 +84,20 @@ test('the picker lists the files already uploaded, and filters them', async ({
   )
   await backToList(page)
 
-  // both are in the list without reopening anything -- the regression this covers is an
-  // empty list, so the count matters more than the order
   await expect(resultNames(page)).toHaveText(['minutes.txt', 'holiday.png'])
 
-  // each family says how many files it holds
   const families = page.locator('#YesWikiFilePickerPanel .file-picker__family')
   await expect(families).toHaveText(['Tous (2)', 'Images (1)', 'Documents (1)'])
 
   await families.filter({ hasText: 'Images' }).click()
   await expect(resultNames(page)).toHaveText(['holiday.png'])
 
-  // the extension list is built from what the family left, and .txt is not in it
   const extensions = page.locator(
     '#YesWikiFilePickerPanel [data-yw-file-picker-extensions] option',
   )
   await expect(extensions).toHaveText(['Toutes les extensions', '.png'])
 
   await families.filter({ hasText: 'Tous' }).click()
-  // searching the extension finds a kind of file, not just a name
   await page.locator('#YesWikiFilePickerPanel input[name="search"]').fill('txt')
   await expect(resultNames(page)).toHaveText(['minutes.txt'])
 
@@ -127,15 +108,7 @@ test('the picker lists the files already uploaded, and filters them', async ({
   await expect(page.locator('[data-yw-file-picker-empty]')).toBeVisible()
 })
 
-/**
- * The rail shows one thing at a time.
- *
- * It used to show a "choose an existing file" tab beside an "upload" one -- the first
- * switching to the view already on screen -- then append the chosen file *under* a list
- * still offering every other candidate, in a 340px column, above a footer split between
- * Cancel and Insert. This asserts the shape that replaced it, because every part of it is
- * invisible to phpunit: it is all in what the browser shows.
- */
+/** The rail shows one thing at a time. */
 test('the rail shows the list, the upload or the choice -- never two at once', async ({
   page,
 }) => {
@@ -148,11 +121,9 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
   const uploadOpen = panel.locator('[data-yw-file-picker-upload-open]')
   const back = panel.locator('[data-yw-file-picker-back]')
 
-  // the tab that chose the view already on screen is gone, and so is the second way out
   await expect(panel.locator('[data-yw-file-picker-tab]')).toHaveCount(0)
   await expect(panel.locator('.btn-cancel-upload')).toHaveCount(0)
 
-  // browsing: the list and one action, no way back from where you already are
   await expect(list).toBeVisible()
   await expect(uploadOpen).toBeVisible()
   await expect(back).toBeHidden()
@@ -161,7 +132,6 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
     /#upload$/,
   )
 
-  // uploading takes the whole rail
   await uploadOpen.click()
   await expect(uploadPane).toBeVisible()
   await expect(list).toBeHidden()
@@ -171,7 +141,6 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
   await expect(list).toBeVisible()
   await expect(uploadPane).toBeHidden()
 
-  // the search and the extension filter share one line
   const searchBox = panel.locator('.file-picker-search input[name="search"]')
   const extensions = panel.locator('[data-yw-file-picker-extensions]')
   await expect(searchBox).toBeVisible()
@@ -182,7 +151,6 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
   await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
   await backToList(page)
 
-  // choosing one takes the whole rail too, and the row it came from says so
   const chosen = panel.locator('.file-picker__result').first()
   await chosen.click()
   await expect(list).toBeHidden()
@@ -190,7 +158,6 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
   await expect(back).toBeVisible()
   await expect(panel.locator('.btn-insert-upload')).toBeEnabled()
 
-  // going back unmakes the choice, and the row shows which one it was
   await back.click()
   await expect(list).toBeVisible()
   await expect(panel.locator('.btn-insert-upload')).toBeDisabled()
@@ -209,21 +176,14 @@ test('picking a file inserts an attach action for it', async ({ page }) => {
     .click()
   await page.locator('#YesWikiFilePickerPanel .btn-insert-upload').click()
 
-  // a wiki-syntax field gets the component, so what lands in the page is a widget
   await expect
     .poll(() => editorText(page))
     .toMatch(/\{\{attach file="[^"]+" desc="holiday\.png"/)
   await expect(componentsNamed(page, 'attach')).toHaveCount(1)
 })
 
-/**
- * The same rail from the Vditor toolbar. What differs is what gets inserted: a Vditor
- * field stores HTML and never meets the wiki parser, so a {{attach}} action would sit
- * there as literal text. The options that only exist as parameters of that action are
- * not offered either.
- */
+/** The same rail from the Vditor toolbar. */
 const openVditorPicker = async (page: Page) => {
-  // form 1's "Ma présentation" is the seeded wiki's only html-syntax textarea
   await page.goto('/?BazaR&view=saisir&action=saisir_fiche&id=1')
   await page.waitForSelector(
     '.vditor-toolbar__item > button[data-type="yw-file"]',
@@ -248,7 +208,6 @@ test('the Vditor toolbar opens the same picker and inserts Markdown', async ({
     .first()
     .click()
 
-  // an alignment or a PDF display mode has nowhere to go in Markdown, so it is not offered
   await expect(
     page.locator('#YesWikiFilePickerPanel .image-option').first(),
   ).toBeHidden()
@@ -258,7 +217,6 @@ test('the Vditor toolbar opens the same picker and inserts Markdown', async ({
 
   await page.locator('#YesWikiFilePickerPanel .btn-insert-upload').click()
 
-  // the textarea, not the editor surface, is what the form submits
   await expect(page.locator('textarea.vditor-html').first()).toHaveValue(
     /<img src="[^"]*api\/files\/[^"]+\/download" alt="holiday\.png"/,
   )
@@ -273,8 +231,6 @@ test('the Vditor toolbar buttons are styled like the ACeditor ones', async ({
     timeout: 15000,
   })
 
-  // .yw-btn is added by vditor-textarea.js after Vditor has built its own toolbar; every
-  // top-level button gets it, and none of the rows inside a dropdown panel does
   await expect(
     page.locator(
       '.vditor-toolbar > .vditor-toolbar__item > button:not(.yw-btn)',
@@ -282,7 +238,6 @@ test('the Vditor toolbar buttons are styled like the ACeditor ones', async ({
   ).toHaveCount(0)
   await expect(page.locator('.vditor-hint button.yw-btn')).toHaveCount(0)
 
-  // and the class actually paints them: Vditor's own rule makes them transparent
   const background = await page
     .locator('.vditor-toolbar__item > button.yw-btn')
     .first()
@@ -297,8 +252,6 @@ test('both editor toolbars stay on screen, on the same line, when the content is
   await page.goto('/?BazaR&view=saisir&action=saisir_fiche&id=1')
   await page.waitForSelector('.vditor-toolbar--pin', { timeout: 15000 })
 
-  // a long entry: without a sticky toolbar, formatting the bottom of it means scrolling
-  // back up for every button
   await page.evaluate(() => {
     document.querySelector('.vditor-wysiwyg .vditor-reset').innerHTML =
       Array.from({ length: 80 }, (unused, i) => `<p>line ${i}</p>`).join('')
@@ -312,14 +265,10 @@ test('both editor toolbars stay on screen, on the same line, when the content is
     .toBeLessThan(before.y)
   const parked = (await toolbar.boundingBox()).y
 
-  // still fully on screen, and clear of the sticky top bar
   expect(parked).toBeGreaterThan(0)
   await page.mouse.wheel(0, 600)
   await expect.poll(async () => (await toolbar.boundingBox()).y).toBe(parked)
 
-  // the ACeditor parks on exactly the same line -- a form can show both at once, and
-  // yw-core.css's --sticky-toolbar-top is what keeps them agreeing. Asked for by name,
-  // since a page opens with the wysiwyg editor and this is about the other one's bar
   await useSourceEditor(page)
   await page.goto('/?PagePrincipale/edit')
   await page.waitForFunction(
@@ -336,15 +285,7 @@ test('both editor toolbars stay on screen, on the same line, when the content is
     .toBe(parked)
 })
 
-/**
- * Vditor's per-block controls: move the block up, move it down, remove it.
- *
- * They were invisible because Vditor 3.11 declares `customWysiwygToolbar` optional,
- * provides no default, and calls it unconditionally while building that popover -- the
- * TypeError lands between the buttons being created and the panel being positioned, so
- * the buttons existed in the DOM at `display: none` forever. Nothing server-side knew,
- * and the only symptom was in the browser console, which is why this test watches it.
- */
+/** Vditor's per-block controls: move the block up, move it down, remove it. */
 test('a block can be moved and removed from the Vditor popover', async ({
   page,
 }, testInfo) => {
@@ -365,15 +306,11 @@ test('a block can be moved and removed from the Vditor popover', async ({
     'the block popover must actually be shown',
   ).toBeVisible()
 
-  // the cursor is in the second paragraph, so it can go up but not down
   await popover.locator('[data-type="up"]').click()
   await expect(page.locator('textarea.vditor-html').first()).toHaveValue(
     /beta[\s\S]*alpha/,
   )
 
-  // the first block has no previous sibling, so an absent "up" is how this test knows the
-  // popover has been rebuilt for it -- clicking a button the popover has not rebuilt yet
-  // acts on the block it was last bound to
   await page.locator('.vditor-wysiwyg .vditor-reset > p').first().click()
   await expect(popover.locator('[data-type="up"]')).toHaveCount(0)
   await popover.locator('[data-type="remove"]').click()
@@ -385,11 +322,7 @@ test('a block can be moved and removed from the Vditor popover', async ({
   expect(watcher.errors(), 'the browser reported errors').toEqual([])
 })
 
-/**
- * The picker is a rail beside the editor, in the same slot as the actions builder and the
- * link editor -- so opening it closes whichever of those was showing, and it holds the
- * slot while a file is being chosen even though the cursor keeps moving behind it.
- */
+/** The picker is a rail beside the editor, in the same slot as the actions builder and the link editor -- so opening it closes whichever of those was showing, and it holds the slot while a file is being chosen even though the cursor keeps moving behind it. */
 test('the picker takes the rail slot, and keeps it until it is done', async ({
   page,
 }) => {
@@ -403,7 +336,6 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
     ].join('\n'),
   )
 
-  // clicking the component opens the actions builder on it
   await components(page).first().click()
   await expect(page.locator('#actions-builder-panel')).toBeVisible()
 
@@ -415,29 +347,16 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
     'one rail at a time',
   ).toBeHidden()
 
-  // ...and clicking in the document must not close a picker mid-choice: where the file
-  // goes is what that click is for. Every other rail takes it as "I have left"
   await clickText(page, 'plain text')
   await page.waitForTimeout(400)
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeVisible()
 
-  // and the link rail displaces it in turn
   await link(page, 'Le lien').click()
   await expect(page.locator('#YesWikiLinkPanel')).toBeVisible()
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeHidden()
 })
 
-/**
- * An image is converted to WebP and capped before it is uploaded.
- *
- * Only a browser can see this at all: the conversion happens in the page, so every
- * server-side test sees whatever bytes it is handed and calls them correct. What is uploaded
- * is what the wiki stores, backs up and serves forever, so a phone's twelve-megapixel JPEG
- * arriving intact is a cost paid on every page view for the life of the wiki.
- *
- * The picture is drawn HERE rather than committed as a fixture: five megapixels of noise is
- * a five-megabyte file, and a repository is a bad place to keep one.
- */
+/** An image is converted to WebP and capped before it is uploaded. */
 test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)
@@ -445,9 +364,6 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
     .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
     .click()
 
-  // 4200x2400 of noise -- over the cap in both directions, and busy enough that JPEG
-  // cannot make it small by accident. Drawn with rectangles rather than per-pixel ImageData,
-  // which at this size is sixty megabytes of buffer and takes the headless browser with it.
   const original = await page.evaluate(async () => {
     const canvas = document.createElement('canvas')
     canvas.width = 4200
@@ -478,14 +394,11 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   expect(original.size).toBeGreaterThan(200 * 1024)
 
   await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
-  // the extension follows the format: `photo.jpg` is not what was sent
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
     'photo.webp',
     { timeout: 30000 },
   )
 
-  // and what LANDED is within the cap, which is the claim that matters -- read back from
-  // the wiki, not from the browser's copy
   const stored = await page.evaluate(async () => {
     const answer = await fetch(wiki.url('api/files')).then((r) => r.json())
     const entry = answer.find((f) => f.original_filename === 'photo.webp')
@@ -504,20 +417,12 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   expect(stored.type).toBe('image/webp')
   expect(stored.width).toBeLessThanOrEqual(1920)
   expect(stored.height).toBeLessThanOrEqual(1920)
-  // fitted, not squashed: the shape is kept, and the dimension that has furthest to fall is
-  // the one that lands on the cap -- 4200 into 1920 here, which takes 2400 down with it
   expect(stored.width).toBe(1920)
   expect(stored.height).toBe(1097)
   expect(stored.size).toBeLessThan(original.size)
 })
 
-/**
- * A small image is left exactly as it was.
- *
- * The point is bytes, not a uniform extension: re-encoding a 1x1 PNG as WebP makes it
- * bigger, and re-encoding a WebP as WebP makes it worse every time the same picture is
- * uploaded. Both are silent, which is why they are asserted rather than assumed.
- */
+/** A small image is left exactly as it was. */
 test('a small image is uploaded untouched', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)

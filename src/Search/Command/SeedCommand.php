@@ -14,27 +14,7 @@ use YesWiki\Search\Service\SearchIndexQuery;
 use YesWiki\Search\Service\SearchIndexSchema;
 
 /**
- * `./yeswicli search:seed` -- a synthetic corpus and the measurements taken over it
- * (ticket 18's acceptance evidence).
- *
- * ## Why this is part of the ticket and not a follow-up
- *
- * The suite runs SQLite and drives no browser (ticket 25), so nothing in it can tell a
- * correct full-text index from a decorative one: **a full scan and an index scan return
- * exactly the same rows.** The difference only shows up as a number, and only on a corpus
- * large enough to have one. At the scale this rewrite targets -- hundreds of thousands to
- * millions of Contents -- a query that quietly stopped using the index is the single most
- * likely way this ships broken.
- *
- * So `--explain` asserts the plan, not just the result.
- *
- *     ./yeswicli search:seed --count=500000        # build the corpus
- *     ./yeswicli search:seed --explain --benchmark # assert the plan, time the queries
- *     ./yeswicli search:seed --clean               # remove it again
- *
- * The corpus is written straight into the index rather than through `pages`, deliberately:
- * this measures the *query*, and seeding half a million real Contents would measure the
- * indexer instead (which `--benchmark` times separately, over the real drain).
+ * `./yeswicli search:seed` -- a synthetic corpus and the measurements taken over it (ticket 18's acceptance evidence).
  */
 class SeedCommand extends Command
 {
@@ -47,16 +27,7 @@ class SeedCommand extends Command
         'chantier', 'cantine', 'fresque', 'mobilite', 'compost', 'ruche', 'entraide',
     ];
 
-    /**
-     * How many variants of each base word the vocabulary carries (`atelier1`..`atelier100`).
-     *
-     * A corpus where every document contains every word is worse than useless as a
-     * benchmark: every query matches everything, so what gets measured is the cost of
-     * counting the whole table rather than the cost of searching it. With a vocabulary this
-     * wide a specific term lands in a small fraction of documents, which is what a real
-     * wiki looks like -- while the *base* word still matches every variant by prefix, so the
-     * deliberately-broad case stays measurable too.
-     */
+    /** How many variants of each base word the vocabulary carries (`atelier1`..`atelier100`). */
     private const VARIANTS_PER_WORD = 100;
 
     private ContainerInterface $services;
@@ -145,8 +116,7 @@ class SeedCommand extends Command
         $written = 0;
         for ($i = 0; $i < $count; $i++) {
             $tag = self::TAG_PREFIX . $i;
-            // deterministic rather than random: a corpus you cannot reproduce is a benchmark
-            // you cannot compare against last week's
+
             $words = [];
             for ($w = 0; $w < 40; $w++) {
                 $base = self::WORDS[($i * 7 + $w * 13) % count(self::WORDS)];
@@ -196,7 +166,6 @@ class SeedCommand extends Command
         ));
     }
 
-    /** @param list<string> $rows */
     /**
      * @param list<list<string>> $rows one list of column values per index row
      */
@@ -205,9 +174,7 @@ class SeedCommand extends Command
         if ($rows === []) {
             return;
         }
-        // One prepared INSERT executed per row, like SearchIndexer::write(). This command exists
-        // to measure the index at a million rows, so it is the last place that wants to spend
-        // its time concatenating a statement the database then has to parse.
+
         $statement = $this->services->get(DbService::class)->prepare(
             "INSERT INTO {$this->services->get(SearchIndexSchema::class)->table()}"
             . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
@@ -218,33 +185,12 @@ class SeedCommand extends Command
         }
     }
 
-    /**
-     * The assertion that matters: is the full-text index actually being used?
-     *
-     * Harder than it sounds, because the three planners each prove it on a *different query
-     * shape*, and each says so in different words:
-     *
-     * - **MySQL** answers `SELECT COUNT(*) ... MATCH` straight from the FULLTEXT index and
-     *   reports `Rows fetched before execution` -- the best possible plan, naming no index at
-     *   all. Its `SELECT ... LIMIT` plan does name `ft_text`. It also has two EXPLAIN formats:
-     *   tree since 8.0.18, classic tabular (`type = fulltext`) on MariaDB and older MySQL.
-     * - **PostgreSQL** is the reverse: with a `LIMIT` it reasonably expects to hit ten matches
-     *   early in a scan and declines the index; on the COUNT it takes the GIN index.
-     * - **SQLite** shows the FTS5 virtual table on both.
-     *
-     * So both shapes are probed and either one proving it is enough. Encoding one planner's
-     * habits as the rule is how this check ended up reporting "does NOT use the full-text
-     * index" twice for plans that were perfectly good -- and a check that cries wolf gets
-     * ignored, which is worse than not having one.
-     */
+    /** The assertion that matters: is the full-text index actually being used? */
     private function assertUsesIndex(OutputInterface $output): bool
     {
         $db = $this->services->get(DbService::class);
         $table = $this->services->get(SearchIndexSchema::class)->table();
-        // A *selective* term, deliberately. Probing with a word that matches every row asks
-        // the planner whether it wants an index for a query returning the whole table -- to
-        // which "no" is right everywhere, and the check would measure nothing. `atelier7` is
-        // one variant among VARIANTS_PER_WORD, so it lands in a small fraction of the corpus.
+
         $match = $db->dialect()->searchMatchExpression($table, [['atelier7']]);
         $shapes = [
             'count' => "SELECT COUNT(*) FROM {$table} WHERE {$match}",
@@ -262,8 +208,6 @@ class SeedCommand extends Command
             $details[] = "{$shape}: {$detail}";
         }
 
-        // Neither shape took it. On PostgreSQL that may still be a rational choice on a small
-        // corpus, so ask whether the index is usable at all before calling it a failure.
         if ($db->getDriver() === 'pgsql' && $this->postgresIndexIsUsable($db, $shapes['count'])) {
             $output->writeln(
                 '<comment>The planner preferred a sequential scan, but the GIN index is present '
@@ -299,21 +243,18 @@ class SeedCommand extends Command
                 return [
                     $classicType === 'fulltext'
                         || str_contains($text, 'full-text index search')
-                        // answered from the index without touching the table
+
                         || str_contains($text, 'rows fetched before execution'),
                     $classicType !== '' ? "type={$classicType}" : trim($text),
                 ];
             case 'pgsql':
                 return [str_contains($text, 'index scan'), str_contains($text, 'index scan') ? 'GIN index scan' : 'sequential scan'];
             case 'sqlite':
-                // the FTS5 subquery shows as a scan of the virtual table; what must NOT appear
-                // is a scan of the base table
                 return [
                     str_contains($text, '_fts') && !str_contains($text, 'scan ' . strtolower($this->services->get(SearchIndexSchema::class)->table()) . ' '),
                     trim($text),
                 ];
             default:
-                // an unknown driver cannot be judged, and guessing would be worse
                 return [true, 'unknown driver; plan not asserted'];
         }
     }
@@ -337,11 +278,9 @@ class SeedCommand extends Command
         $indexer = $this->services->get(SearchIndexer::class);
 
         $cases = [
-            // the realistic case: one specific term, in a small fraction of the corpus
             'selective term' => 'atelier7',
             'two selective terms' => 'atelier7 jardin7',
-            // deliberately pathological: a prefix matching every variant of a base word, so
-            // the cost of the EXACT result count is visible rather than hidden
+
             'broad prefix' => 'atelier',
             'no match' => 'zzzznotawordzzzz',
         ];

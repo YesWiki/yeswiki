@@ -1,10 +1,3 @@
-// javascripts/pointimage.js -- vanilla-JS replacement for the jQuery+Bootstrap
-// {{pointimage}} widget (ticket 17, relocated from
-// tools/attach/presentation/javascripts/pointimage.js). Modal *closing* (dismiss
-// button, backdrop click, Escape) is handled generically by yw-core.js's
-// `.yw-modal`/data-yw-dismiss="modal" convention; this file only opens the modal
-// (triggered by clicking a spot on the image, not a static button) and implements
-// the marker popovers, for which no vanilla equivalent existed yet.
 ;(function () {
   const modal = document.querySelector('.modal-pointimage')
   const labelCancel = modal
@@ -50,7 +43,6 @@
     }
   })
 
-  // Popovers on marker links: build the bubble lazily on first focus/hover.
   document
     .querySelectorAll('.img-marker[data-yw-popover-title]')
     .forEach((marker) => {
@@ -92,13 +84,10 @@
       marker.addEventListener('mouseenter', openPopover)
       marker.addEventListener('mouseleave', closePopoverUnlessFocused)
       marker.addEventListener('blur', () => {
-        // Delay so a mousedown on a link inside the popover still registers
-        // before the bubble disappears.
         setTimeout(closePopoverUnlessFocused, 150)
       })
     })
 
-  // Add-marker workflow
   document.querySelectorAll('.pointimage-container').forEach((container) => {
     const image = container.querySelector('.pointimage-image')
 
@@ -194,8 +183,6 @@
     })
   })
 
-  // Reset the marker-choice form + colors whenever the modal closes (mirrors the
-  // old 'hide.bs.modal' handler); yw-core.js owns the actual close logic.
   if (modal) {
     new MutationObserver(() => {
       if (!modal.classList.contains('yw-modal--open')) {

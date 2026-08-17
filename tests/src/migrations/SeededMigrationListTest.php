@@ -7,13 +7,7 @@ use PHPUnit\Framework\TestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * A fresh install seeds the already-run-migrations list so the installer's own seed data
- * isn't immediately re-processed by migrations that predate it. That list is hand-written
- * in the seed SQL, and it has silently gone stale three times now (tickets 05, 27, and
- * again by ticket 09's own audit, which found RemoveLoginTplTemplate missing -- so every
- * fresh install was running a REGEXP scan and UPDATE over every page body for nothing).
- *
- * Nothing checked it, so this does. It is a file-name comparison, no wiki and no database.
+ * A fresh install seeds the already-run-migrations list so the installer's own seed data isn't immediately re-processed by migrations that predate it.
  */
 class SeededMigrationListTest extends TestCase
 {
@@ -46,7 +40,9 @@ class SeededMigrationListTest extends TestCase
         );
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function migrationsOnDisk(): array
     {
         $files = glob(self::MIGRATIONS_DIR . '/*.php') ?: [];
@@ -56,7 +52,9 @@ class SeededMigrationListTest extends TestCase
         return $names;
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function seededMigrations(): array
     {
         $sql = (string)file_get_contents(self::SEED);

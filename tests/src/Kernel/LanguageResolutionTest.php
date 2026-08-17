@@ -7,21 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Which language a visitor is answered in.
- *
- * Six things can decide it and the order between them is the whole design, so it is asserted
- * here rather than left to be discovered by a reader who keeps getting the wrong one:
- *
- *   ?lang=  >  cookie  >  installer POST  >  the page's own lang  >  the browser  >  default
- *
- * The two at the end changed places in the release that gave a wiki a list of languages to
- * offer: `default_language` used to win, so a wiki offering English to an English reader still
- * greeted them in its own language and the offer meant nothing until they found the switcher.
- *
- * `detectPreferredLanguage()` takes the Accept-Language header as an argument, which is what
- * makes this a unit test and not a browser one.
- */
+/** Which language a visitor is answered in. */
 class LanguageResolutionTest extends YesWikiTestCase
 {
     /** What a wiki in French that also offers English and Spanish would hold. */
@@ -68,12 +54,7 @@ class LanguageResolutionTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A language the wiki does not offer is not an answer, even when it is installed.
-     *
-     * This is the setting doing its job: `available_languages` is what the wiki publishes, and
-     * negotiation happens inside it.
-     */
+    /** A language the wiki does not offer is not an answer, even when it is installed. */
     public function testANonOfferedLanguageIsNeverNegotiated(): void
     {
         $this->assertSame(
@@ -119,8 +100,7 @@ class LanguageResolutionTest extends YesWikiTestCase
     }
 
     /**
-     * `?lang=` for a language the wiki does not offer is refused the same way -- which is what
-     * stops a link from putting a wiki into a language its webmaster took off the list.
+     * `?lang=` for a language the wiki does not offer is refused the same way -- which is what stops a link from putting a wiki into a language its webmaster took off the list.
      */
     public function testAnUnofferedLanguageInTheUrlIsRefused(): void
     {
@@ -132,12 +112,7 @@ class LanguageResolutionTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A configuration naming no language at all still has to answer something.
-     *
-     * `auto` was that configuration until this release; the migration rewrites it, and this is
-     * what happens to a wiki that has not been migrated yet -- the browser, then French.
-     */
+    /** A configuration naming no language at all still has to answer something. */
     public function testAConfigurationNamingNoLanguageFallsBackRatherThanFailing(): void
     {
         $service = $this->service();

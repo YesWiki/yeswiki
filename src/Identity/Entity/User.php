@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Entity;
 
-use ArrayAccess;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use YesWiki\Identity\Exception\UserNotAuthorizedToSetOffset;
@@ -10,11 +9,6 @@ use YesWiki\Identity\Exception\UserNotExistingOffset;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayAccess
 {
-    // Obviously needs a group or ACLS class. In the meantime, use of GroupOperationsService and so on
-
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-    // User properties (cf database)
-    // The case is, on purpose, similar to the one in the database
     public const PROPS_LIST = [
         'changescount',
         'doubleclickedit',
@@ -26,7 +20,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         'show_comments',
         'signuptime', ];
     protected $properties;
-    // End of user properties (cf database, create-tables.sql and UserManager)
 
     public function __construct(array $properties)
     {
@@ -43,7 +36,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         return $this->properties;
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ getters ~~~~~~~~~~~~~~~~~~ */
     public function getName(): string
     {
         return $this->properties['name'];
@@ -54,25 +46,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         return $this->properties['email'];
     }
 
-    /* ~~~~~~~~~ implements PasswordAuthenticatedUserInterface ~~~~~~~~~~ */
-
-    /**
-     * Returns the hashed password used to authenticate the user.
-     *
-     * Usually on authentication, a plain-text password will be compared to this value.
-     */
+    /** Returns the hashed password used to authenticate the user. */
     public function getPassword(): ?string
     {
         return $this->properties['password'];
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ setters ~~~~~~~~~~~~~~~~~~ */
     public function setPassword(string $hashedPassword)
     {
         $this->properties['password'] = $hashedPassword;
     }
-
-    /* ~~~~~~~~~~~~~~~~~~ implement ArrayAccess ~~~~~~~~~~~~~~~~~~ */
 
     public function offsetExists($offset): bool
     {
@@ -101,8 +84,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         throw new UserNotAuthorizedToSetOffset('unsetting offset is not allowed for User!');
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ implements UserInterface ~~~~~~~~~~~~~~~~~~ */
-
     /**
      * Returns the roles granted to the user.
      *
@@ -110,30 +91,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
      */
     public function getRoles(): array
     {
-        // currently not used
         return [];
     }
 
-    /**
-     * Removes sensitive data from the user.
-     *
-     * This is important if, at any given point, sensitive information like
-     * the plain-text password is stored on this object.
-     */
+    /** Removes sensitive data from the user. */
     public function eraseCredentials(): void
     {
-        // not currently used
     }
 
-    /* ~~~~~~~~~~~~~~~~~~ end of implements ~~~~~~~~~~~~~~~~~~ */
-
-    /**
-     * Returns a string representation that uniquely identifies this user.
-     */
+    /** Returns a string representation that uniquely identifies this user. */
     public function getUserIdentifier(): string
     {
-        // Symfony declares this `non-empty-string`: an account with no name identifies nobody,
-        // and returning '' would make the security layer look one up by the empty identifier
         $name = $this->getName();
         if ($name === '') {
             throw new \LogicException('a user with no name has no identifier');

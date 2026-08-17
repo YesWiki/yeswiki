@@ -14,8 +14,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 class RelationApiController extends YesWikiController
 {
     /**
-     * List qrcode relations (ticket 14, formerly yeswiki-extension-qrcode's own ApiController) --
-     * pairs of Bazar entries linked via {{qrscan}}'s paired QR-code scanning flow.
+     * List qrcode relations (ticket 14, formerly yeswiki-extension-qrcode's own ApiController) -- pairs of Bazar entries linked via {{qrscan}}'s paired QR-code scanning flow.
      */
     #[Route('/api/relations/{type}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllRelations(string $type = 'contact')
@@ -44,9 +43,7 @@ class RelationApiController extends YesWikiController
         return new ApiResponse(empty($entries) ? null : $entries);
     }
 
-    /**
-     * Create a qrcode relation entry linking two scanned Bazar entries (ticket 14).
-     */
+    /** Create a qrcode relation entry linking two scanned Bazar entries (ticket 14). */
     #[Route('/api/relations', methods: ['POST'], options: ['acl' => ['public']])]
     public function createRelation()
     {

@@ -15,12 +15,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 18 (contact absorbed into core): contact-form submission
- * moves to POST /api/contact/mail, routed through Mailer::send() instead of a direct
- * send_mail() call. Doesn't exercise an actual successful send (no SMTP transport in
- * this sandbox, matching LoginRelatedActionsTest's established "don't trigger a real
- * send_mail() call" precedent) -- covers the validation/ACL/routing paths that don't
- * require one, plus a direct Mailer::send() unit test.
+ * Regression test for ticket 18 (contact absorbed into core): contact-form submission moves to POST /api/contact/mail, routed through Mailer::send() instead of a direct send_mail() call.
  */
 #[CoversMethod(ContactApiController::class, 'sendContactMail')]
 class ApiControllerContactTest extends YesWikiTestCase
@@ -28,12 +23,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     private const PRIVATE_PAGE_TAG = 'ApiControllerContactTestPrivatePage';
     private const PUBLIC_PAGE_TAG = 'ApiControllerContactTestPublicPage';
 
-    /**
-     * The fixtures go when the tests do.
-     *
-     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
-     * page in somebody's index, for ever.
-     */
+    /** The fixtures go when the tests do. */
     public static function tearDownAfterClass(): void
     {
         $pageManager = self::getWiki()->services->get(PageManager::class);
@@ -44,8 +34,6 @@ class ApiControllerContactTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
-        // avoid leaking $GLOBALS['wiki'] into later tests (same convention as
-        // FiltertagsActionTest's established $GLOBALS['wiki'] workaround)
         unset($GLOBALS['wiki']);
     }
 
@@ -78,13 +66,9 @@ class ApiControllerContactTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testValidationFailureDoesNotAttemptToSend(YesWikiRuntime $wiki)
     {
-        // contact.functions.php's parseMails()/FindMailFromWikiPage() (reached via the
-        // mail-from-page-body lookup, run before validation) read $GLOBALS['wiki']
-        // directly, only populated by the production HTTP bootstrap -- same pre-existing,
-        // out-of-scope $GLOBALS['wiki']-reliance class of issue as ticket 11's {{aceditor}} tests
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
-        // no 'email'/'message': check_parameters_mail() must reject before Mailer::send() is ever called
+
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', [
             'pageTag' => self::PUBLIC_PAGE_TAG,
             'type' => 'contact',
@@ -103,8 +87,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     {
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
-        // the plain-contact path resolves its receiver from the page body, which requires
-        // read access to that page -- a requester without it must be denied, not attempt to send
+
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', [
             'pageTag' => self::PRIVATE_PAGE_TAG,
             'type' => 'contact',
@@ -126,10 +109,6 @@ class ApiControllerContactTest extends YesWikiTestCase
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $mailer = $wiki->services->get(Mailer::class);
 
-        // no real SMTP/sendmail transport in this sandbox: this exercises that
-        // Mailer::send() (the seam ticket 18 introduces) is reachable and fails
-        // gracefully (returns false) rather than throwing, without actually
-        // depending on a working mail transport being configured
         $result = $mailer->send('sender@example.com', 'Sender', 'receiver@example.com', 'Subject', 'Body');
         $this->assertIsBool($result);
     }

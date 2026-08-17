@@ -1,7 +1,7 @@
 {% extends '@core/bazar-import-export-form.twig' %}
 
 {% block label %}{{ _t('BAZ_TYPE_FICHE_IMPORT') }}{% endblock %}
-{# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
+
 {% block formDetails %}enctype="multipart/form-data" hx-boost="false"{% endblock %}
 
 {% block formContent %}

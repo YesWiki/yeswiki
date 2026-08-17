@@ -5,10 +5,7 @@ namespace YesWiki\Content\Service;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Detects the bazar "fast access" entry view: a request for exactly one entry as
- * pre-rendered html (`api/entries/html/{tag}?fields=html_output`). Lived on the
- * monolithic ApiController (isEntryViewFastAccess/isEntryViewFastAccessHelper)
- * before ticket 08 split it; EmailField and EntryApiController both need it.
+ * Detects the bazar "fast access" entry view: a request for exactly one entry as pre-rendered html (`api/entries/html/{tag}?fields=html_output`).
  */
 class EntryFastAccessService
 {

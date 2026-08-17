@@ -5,20 +5,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 
-/**
- * Ticket 23 renamed the French action names. Per-action ACLs are stored in
- * `wakka.config.php` under `permissions.action.<name>` (ModuleAclService), keyed by the
- * action name -- so a rename orphans the entry and the action falls back to `*`.
- *
- * That failure is silent and it opens up rather than locks down: a webmaster who had
- * restricted `{{gererdroits}}` to `@admins` would find `{{adminacls}}` readable by
- * everybody after upgrading. The body-rewriting migration for page content is deliberately
- * deferred (see docs/action-name-renames.json), but this one is not: it is three lines of
- * config, and getting it wrong is a permissions regression rather than a broken render.
- *
- * Only keys that exist are moved, and an existing entry under the new name always wins --
- * re-running this is a no-op.
- */
+/** Ticket 23 renamed the French action names. */
 class RenameActionAclsToEnglishNames extends YesWikiMigration
 {
     private const RENAMES = [
@@ -58,7 +45,7 @@ class RenameActionAclsToEnglishNames extends YesWikiMigration
             if (!array_key_exists($old, $actions)) {
                 continue;
             }
-            // an ACL already set under the new name is the webmaster's own, and wins
+
             if (!array_key_exists($new, $actions)) {
                 $actions[$new] = $actions[$old];
                 $moved[] = "$old -> $new";

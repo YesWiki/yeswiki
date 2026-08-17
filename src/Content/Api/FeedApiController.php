@@ -17,42 +17,14 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * The wiki's RSS feeds (ticket 35, was the `rss` and `tagrss` page handlers).
- *
- * Neither was a way of looking at a page. `/PageName/rss` served a *bazar list* feed built from
- * `id`/`form_id` in the query string -- the page it hung off contributed nothing but a URL -- and
- * `/PageName/tagrss` served a feed of pages carrying a keyword. Both are now shaped around what
- * they actually return.
- *
- * **The old URLs are gone, with no redirect** (ticket 35, decision 1). That breaks existing feed
- * subscriptions, and a reader gives its owner no signal beyond the feed going quiet, so the removed
- * paths are listed in UPGRADE.md against their replacements.
- *
- * Built with DOM rather than by concatenating strings: the feed used to be assembled with
- * pear/xml_util (abandoned upstream), which escaped each value -- and then the whole document was
- * run through html_entity_decode() to turn the escaped `<![CDATA[` markers back into real CDATA
- * sections. That undid the escaping of everything ELSE too, so a single `&` or `<` in an entry
- * title produced a feed no reader could parse. Here the escaping is the parser's job and CDATA is a
- * node type, so neither trick is needed.
- */
+/** The wiki's RSS feeds (ticket 35, was the `rss` and `tagrss` page handlers). */
 class FeedApiController extends YesWikiController
 {
     private const NS_ATOM = 'http://www.w3.org/2005/Atom';
     private const NS_DC = 'http://purl.org/dc/elements/1.1/';
     private const XML_HEADERS = ['Content-Type' => 'text/xml; charset=UTF-8'];
 
-    /**
-     * The RSS 2.0 feed of a bazar list.
-     *
-     * Every parameter the handler read is read here unchanged -- `id`/`form_id`, `nbitem`/`nb`,
-     * `user`, `q`/`keywords`, `searchfields`, `query`, `fieldmapping`, `datefilter`,
-     * `dateMin`/`minDate`/`period` -- so a link only has to move to the new path.
-     *
-     * The handler additionally required read access to the page it was dispatched on. There is no
-     * such page now, and no access is lost by that: `BazarListService::getEntries()` filters every
-     * entry on its own read ACL, which is the check that was actually protecting anything.
-     */
+    /** The RSS 2.0 feed of a bazar list. */
     #[Route('/api/entries/rss', methods: ['GET'], options: ['acl' => ['public']])]
     public function entriesFeed(Request $request): Response
     {
@@ -67,8 +39,6 @@ class FeedApiController extends YesWikiController
 
             $user = $get->get('user', '');
 
-            // chaine de recherche
-
             $vKeywords = $vSearchManager->aggregateKeywords(
                 $get->has('q') ? urldecode((string)$get->get('q')) : null,
                 $get->has('keywords') ? urldecode((string)$get->get('keywords')) : null
@@ -79,11 +49,7 @@ class FeedApiController extends YesWikiController
             $vQuery = $get->get('query', '');
             $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
-            // fieldMapping
-
             $vFieldMapping = $get->has('fieldmapping') ? urldecode((string)$get->get('fieldmapping')) : null;
-
-            // datefilter
 
             $vDateFilter = $get->has('datefilter') ? urldecode((string)$get->get('datefilter')) : null;
 
@@ -105,7 +71,6 @@ class FeedApiController extends YesWikiController
 
             $vCount = count($vRSSEntries);
 
-            // setlocale() pour avoir les formats de date valides (w3c) --julien
             setlocale(LC_TIME, 'C');
 
             $config = $this->getService(RuntimeConfig::class);
@@ -136,18 +101,13 @@ class FeedApiController extends YesWikiController
             $image = $channel->appendChild($doc->createElement('image'));
             $this->addTag($doc, $image, 'url', $config['BAZ_RSS_LOGOSITE']);
 
-            // where a reader finds this very feed again
             $self = $channel->appendChild($doc->createElementNS(self::NS_ATOM, 'atom:link'));
             $self->setAttribute('href', $request->getSchemeAndHttpHost() . $request->getRequestUri());
             $self->setAttribute('rel', 'self');
             $self->setAttribute('type', 'application/rss+xml');
 
             if ($vCount > 0) {
-                // Creation des items : titre + lien + description + date de publication
                 foreach ($vRSSEntries as $vRSSEntry) {
-                    // every key here is optional: what a list yields depends on the form
-                    // and on the query, and an entry missing one is not a reason to warn
-                    // its way into the middle of an XML document
                     $url = (string)($vRSSEntry['url'] ?? '');
                     $published = strtotime((string)($vRSSEntry['created_at'] ?? $vRSSEntry['updated_at'] ?? ''));
 
@@ -168,7 +128,6 @@ class FeedApiController extends YesWikiController
                     $this->addTag($doc, $item, 'pubDate', $published === false ? null : date('r', $published));
                 }
             } else {
-                // pas d'annonces
                 $item = $channel->appendChild($doc->createElement('item'));
                 $this->addTag($doc, $item, 'title', $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
                 $this->addTag($doc, $item, 'link', $config['base_url'] . $config['root_page'], true);
@@ -179,9 +138,6 @@ class FeedApiController extends YesWikiController
 
             return new Response((string)$doc->saveXML(), Response::HTTP_OK, self::XML_HEADERS);
         } catch (\Exception $e) {
-            // A feed reader cannot show an error page, so a failure is reported as a status rather
-            // than as a body it would try to parse. The handler returned the message as the
-            // document, which a reader reports to its owner as "invalid feed".
             return new Response(
                 'Caught exception: ' . $e->getMessage() . "\n",
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -190,13 +146,7 @@ class FeedApiController extends YesWikiController
         }
     }
 
-    /**
-     * The RSS 2.0 feed of the pages carrying one or more keywords.
-     *
-     * `tags` is a comma-separated list, `type` optionally narrows to one Content type -- the same
-     * two parameters the `tagrss` handler took, which is why they stay in the query string rather
-     * than becoming path segments.
-     */
+    /** The RSS 2.0 feed of the pages carrying one or more keywords. */
     #[Route('/api/tags/rss', methods: ['GET'], options: ['acl' => ['public']])]
     public function tagsFeed(Request $request): Response
     {
@@ -231,8 +181,7 @@ class FeedApiController extends YesWikiController
         $this->addTag($doc, $channel, 'lastBuildDate', date('r'));
 
         $self = $channel->appendChild($doc->createElementNS(self::NS_ATOM, 'atom:link'));
-        // the feed's own address, which the handler got wrong: it advertised href('xml'), the
-        // page's XML handler, so a reader following rel=self left the feed entirely
+
         $self->setAttribute('href', $request->getSchemeAndHttpHost() . $request->getRequestUri());
         $self->setAttribute('rel', 'self');
         $self->setAttribute('type', 'application/rss+xml');
@@ -247,17 +196,11 @@ class FeedApiController extends YesWikiController
             $body = PageBody::decode($page['body'] ?? null);
 
             if ($aclService->hasAccess('read', $tag)) {
-                // Rendering a page's body needs that page to be the current one -- an action inside
-                // it asks PageContext what it is sitting on. The handler restored the previous page
-                // once, after the whole loop; doing it per page means a body that throws cannot
-                // leave the rest of the request pointed at the wrong page.
                 $previousTag = $pageContext->getTag();
                 $previousPage = $pageContext->getPage();
                 $pageContext->setTag($tag);
                 $pageContext->setPage($page + ['body' => $body]);
                 try {
-                    // recentchangesrss and rss are stripped: a feed that renders a feed action
-                    // inside itself is an infinite loop
                     $content = (string)preg_replace('/\{\{recentchangesrss(.*?)\}\}/s', '', PageBody::content($body));
                     $content = (string)preg_replace('/\{\{rss(.*?)\}\}/s', '', $content);
                     $description = $formatter->format($content);
@@ -284,11 +227,7 @@ class FeedApiController extends YesWikiController
         return new Response((string)$doc->saveXML(), Response::HTTP_OK, self::XML_HEADERS);
     }
 
-    /**
-     * One element of the feed. `$cdata` for the values that carry markup or a raw URL --
-     * a CDATA section rather than escaping, so that a reader showing the description gets
-     * the entry's HTML back rather than a page of visible tags.
-     */
+    /** One element of the feed. */
     private function addTag(\DOMDocument $doc, \DOMNode $parent, string $name, ?string $value, bool $cdata = false): void
     {
         $element = $parent->appendChild($doc->createElement($name));
@@ -296,7 +235,7 @@ class FeedApiController extends YesWikiController
         if ($value === '') {
             return;
         }
-        // `]]>` inside an entry would end the section early: split it across two of them
+
         $content = $cdata
             ? $doc->createCDATASection(str_replace(']]>', ']]]]><![CDATA[>', $value))
             : $doc->createTextNode($value);
@@ -305,18 +244,9 @@ class FeedApiController extends YesWikiController
         }
     }
 
-    /**
-     * $value with everything XML 1.0 cannot carry taken out.
-     *
-     * Entry content is whatever anyone ever pasted into this wiki, and a single control
-     * character or broken UTF-8 sequence makes the whole document unparseable -- CDATA
-     * does not help, the character is illegal in the document at all. A feed reader gets
-     * nothing from that; dropping the byte costs it nothing.
-     */
+    /** $value with everything XML 1.0 cannot carry taken out. */
     private function xmlSafe(string $value): string
     {
-        // invalid UTF-8 first: the /u pattern below cannot match against broken sequences
-        // and would return null for the whole string
         $value = (string)mb_convert_encoding($value, 'UTF-8', 'UTF-8');
 
         return (string)preg_replace(
@@ -326,12 +256,7 @@ class FeedApiController extends YesWikiController
         );
     }
 
-    /**
-     * Entities back to characters, because the escaping is the XML writer's job.
-     *
-     * A value arriving already entity-encoded -- an entry title a form stored as `&amp;` -- would
-     * otherwise be escaped twice and reach the reader as `&amp;amp;`.
-     */
+    /** Entities back to characters, because the escaping is the XML writer's job. */
     private function sanitize(?string $string): string
     {
         return html_entity_decode((string)$string, ENT_QUOTES, 'UTF-8');

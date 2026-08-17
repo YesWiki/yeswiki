@@ -2,17 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
-/**
- * An RSA keypair, in PEM.
- *
- * Lived on `HttpSignatureService` until ticket 39, where it was the last thing keeping
- * `FormManager` dependent on federation -- a form gets a keypair the first time it is enabled
- * for ActivityPub, and asking the ActivityPub module for one made `Content` depend on
- * `Federation` for a call that contains no ActivityPub at all.
- *
- * Four lines of `openssl_*` with no protocol in them, so it is Kernel's (ADR-0013): a wiki
- * that never federates anything can still need a keypair.
- */
+/** An RSA keypair, in PEM. */
 class KeyPairGenerator
 {
     /** 2048 bits: what the ActivityPub implementations in the wild expect to verify against. */

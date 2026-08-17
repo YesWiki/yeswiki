@@ -25,9 +25,7 @@ class ThemeSelectorRenderer extends YesWikiController
         $this->themeManager = $themeManager;
     }
 
-    /**
-     * render a template with theme-selector appending the right vars to params.
-     */
+    /** render a template with theme-selector appending the right vars to params. */
     public function renderWithThemeSelector(string $templateName, array $params): string
     {
         $templates = $this->themeManager->getTemplates();
@@ -83,7 +81,6 @@ class ThemeSelectorRenderer extends YesWikiController
      */
     public function showFormThemeSelector($mode = 'selector', $formclass = ''): string
     {
-        // en mode edition on recupere aussi les images de fond
         if ($mode == 'edit') {
             $id = 'form_graphical_options';
             $backgrounds = $this->prepareBackgrounds();
@@ -99,7 +96,6 @@ class ThemeSelectorRenderer extends YesWikiController
             $bgselector = '';
         }
 
-        // page list
         $tablistWikinames = $this->getService(DbService::class)->loadAll(
             'SELECT DISTINCT tag FROM ' . $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . "pages WHERE latest='Y'"
         );
@@ -124,9 +120,7 @@ class ThemeSelectorRenderer extends YesWikiController
         ]);
     }
 
-    /**
-     * prepare backgrounds.
-     */
+    /** prepare backgrounds. */
     protected function prepareBackgrounds(): array
     {
         $backgrounds = [];
@@ -134,17 +128,10 @@ class ThemeSelectorRenderer extends YesWikiController
         $dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
         while ($dir && ($file = readdir($dir)) !== false) {
             $imgextension = strtolower(substr($file, -4, 4));
-            // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
+
             if ($imgextension == '.jpg') {
                 $thumbnail = $backgroundsdir . '/thumbs/' . $file;
                 if (!is_file($thumbnail)) {
-                    // `new \Zebra_Image()` -- the global namespace -- for as long as this file
-                    // has existed, while the installed class is
-                    // `stefangabos\Zebra_Image\Zebra_Image`. Every wiki with a background
-                    // JPEG and no thumbnail for it fataled here and took the theme selector
-                    // down; nine baselined `class.notFound` entries said so and nobody read
-                    // them (ticket 40). ImageResizer was already doing this correctly, one
-                    // module away.
                     if ($this->getService(ImageResizer::class)->resize($backgroundsdir . '/' . $file, $thumbnail, 100, 75)) {
                         $backgrounds[] = $thumbnail;
                     }
@@ -152,7 +139,6 @@ class ThemeSelectorRenderer extends YesWikiController
                     $backgrounds[] = $thumbnail;
                 }
             } elseif ($imgextension == '.png') {
-                // les png sont les images a repeter en mosaique
                 $backgrounds[] = $backgroundsdir . '/' . $file;
             }
         }

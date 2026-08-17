@@ -1,14 +1,3 @@
-// registry.js — designer field configs, keyed by designer type name (ticket 26)
-//
-// Each config declares: `field` (palette entry: label/icon), `attributes` (settings
-// panel definition, keys = the storage attribute keys of the stored JSON template),
-// `advancedAttributes`, `disabledAttributes`, `defaultIdentifier`, optional `set`
-// (multi-field palette entry), `editorHint`, `editorSetup(api)`. There is no client
-// side preview hook: the canvas cards show the field's real entry-form markup, served
-// by `api/forms/preview` (FormController::previewTemplate).
-//
-// Extensions can add their own configs before the engine boots via
-// window.formBuilderFields (same contract as the old builder's field modules).
 import calc from './fields/calc.js'
 import champsMail from './fields/champs_mail.js'
 import checkboxGroup from './fields/checkbox-group.js'
@@ -57,14 +46,11 @@ const registry = {
   openinghours,
   calc,
   custom,
-  // extension-provided configs win over core ones with the same name
   ...(window.formBuilderFields || {}),
 }
 
 export default registry
 
-// palette order = registry order; only configs with a `field` (or `set`) block are
-// directly addable from the palette
 export const paletteEntries = Object.entries(registry)
   .filter(([, config]) => config.field || config.set)
   .map(([type, config]) => ({ type, config }))

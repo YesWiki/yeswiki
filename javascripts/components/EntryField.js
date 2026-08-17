@@ -30,7 +30,7 @@ export default {
           return values.length <= 1 ? values[0] : values
         }
         case 'email':
-          return '' // security
+          return ''
         default:
           return value
       }

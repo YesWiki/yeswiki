@@ -1,54 +1,23 @@
 {% extends "@core/dashboard/layout.twig" %}
 
-{# The wiki's colours and type (ticket 30).
-
-   Presets, and nothing else. The theme/squelette/style selector and the wiki's default
-   theme are going to the configuration file, and per-page themes are a property of the
-   content -- so this screen is the gallery, and a drawer holding everything you do to it.
-
-   **The page IS the gallery.** Choosing a preset and editing one both live in the right-hand
-   drawer, on two screens of it: the list, and the editor the list opens. They used to be a
-   column beside the gallery and a rail over it, which meant the thing being judged was
-   squeezed into two thirds of the width by the controls judging it -- and the controls
-   themselves were in two different places depending on which one you wanted.
-
-   The gallery is the point: a preset is a set of colours and sizes, and the only honest
-   way to judge one is against real components, because a contrast that works on a
-   paragraph can fail on a button. The drawer previews live -- it writes the variables onto
-   the document -- so changing a colour repaints everything below without a round trip. #}
 {% block dashboard_content %}
-  {# Every webfont this wiki has downloaded, declared.
 
-     A family's `@font-face` rules are written into a preset when that preset is saved, so
-     until then no browser has heard of it: picking a downloaded font in the rail set
-     `font-family` on the document and every word carried on rendering in the fallback. This
-     declares what is INSTALLED rather than what any preset names, which is the set the rail
-     can offer -- and is right the moment a font is downloaded, before anything is saved.
-
-     Re-fetched by the JS after a download, so a font just added previews immediately. #}
   <link rel="stylesheet" data-yw-preset-faces
         href="{{ url({ tag: 'api/presets/fonts.css' }) }}">
 
   <div class="yw-preset-head">
     <h1>{{ _t('DASHBOARD_ADMIN_PRESET') }}</h1>
-    {# The way back to the drawer once it has been shut. Only rendered as a control when the
-       drawer is actually closed (CSS, off `:has`) -- a button that opens what is already
-       open reads as a second, disagreeing copy of it. #}
+
     <button type="button" class="yw-btn yw-preset-head__open" data-yw-preset-open>
       {{ icon('brush') }} {{ _t('ADMIN_PRESET_LIST') }}
     </button>
   </div>
 
-  {# What a preset is, and what clicking one does: said once, at the top, where the screen is
-     explained. It belongs here rather than over the list, which is in the drawer now and
-     narrow enough that a paragraph would read as a wall in front of the cards it is about. #}
   <p class="yw-dashboard__intro">
     {{ _t('ADMIN_PRESET_INTRO') }}
     {{ _t('ADMIN_PRESET_TRY_HINT') }}
   </p>
 
-  {# said before anything is attempted rather than discovered on save: an instance whose
-     config file or custom/ is read-only can still be told why nothing will stick #}
   {% if not configWritable %}
     <div class="alert alert-danger">{{ _t('ADMIN_PRESET_CONFIG_NOT_WRITABLE') }}</div>
   {% endif %}
@@ -56,36 +25,14 @@
     <div class="alert alert-warning">{{ _t('ADMIN_PRESET_DIR_NOT_WRITABLE') }}</div>
   {% endif %}
 
-  {# The gallery, and nothing beside it. Rendered through the formatter, so it comes out of
-     the same pipeline as a page body rather than from hand-written markup that could drift
-     from it. No heading, no caption, and no dashboard card around it: the gallery is full of
-     panels and sections, and a frame around a frame makes it read as a widget on a page
-     rather than as the page itself -- which is exactly what is being judged. #}
   <div class="yw-preset-preview page">
     {{ format(include('@core/admin/preset-preview.twig'))|raw }}
   </div>
 
-  {# The drawer, same idiom as the actions builder and the file picker: docked on the right,
-     `hidden` is the whole of its state, and .yw-rail__footer holds what writes the change.
-
-     It holds TWO screens and shows one at a time -- the list of presets, and the editor a
-     card's pencil opens on. Two screens rather than two panels stacked, because at 380px a
-     list of eight presets above fifty fields means the fields you are dragging are always
-     below the fold; and rather than the list staying on the page, because then choosing a
-     preset and editing one are in two different places on screen.
-
-     It opens on the list. A drawer that started shut would leave this screen showing a
-     gallery and no way to change anything -- the close button and the button in the page
-     head are the pair that let it out of the way when the gallery is what you want.
-
-     The list's little forms are siblings of the editor's, never nested: a form inside a form
-     is not markup a browser will honour, and each card's star/copy/delete is its own post. #}
   <aside class="yw-designer__sidebar yw-preset-rail" id="yw-preset-rail"
-         {# the same map as PresetService::INK_FOR, handed to the JS rather than repeated in
-            it: the rail resolves each fill's ink live while you drag, and the two lists
-            drifting would mean a button previewing an ink it will not be saved with #}
+
          data-yw-preset-ink-for="{{ inkFor|json_encode }}">
-    {# ---- screen one: which preset ---- #}
+
     <div class="yw-preset-rail__screen" data-yw-preset-screen="list">
       <div class="yw-rail__header">
         <h2 class="yw-rail__title">{{ _t('ADMIN_PRESET_LIST') }}</h2>
@@ -93,19 +40,13 @@
                 aria-label="close">&times;</button>
       </div>
 
-      {# opens the editor on the current preset's values under a new name: a preset is almost
-         always made by adjusting one that nearly works, not from black on white #}
       <button type="button" class="yw-btn yw-btn--primary yw-btn--block" data-yw-preset-new
               data-preset-values="{{ defaultValues|json_encode }}">
         {{ icon('plus') }} {{ _t('ADMIN_PRESET_NEW') }}
       </button>
 
-    {# Clicking a card TRIES the preset on -- it restyles this page and nothing else, and
-       never leaves the browser. Making it the wiki's is the separate starred button below,
-       because those are two different intentions and one of them changes every page. #}
     <ul class="yw-preset-cards">
-      {# the way back to the theme's own colours -- without it, a preset applied once could
-         be swapped but never taken off #}
+
       <li class="yw-preset-card{{ defaultPreset == '' ? ' yw-preset-card--default' : '' }}"
           data-yw-preset-card="">
         <button type="button" class="yw-preset-card__choose" data-yw-preset-try data-preset-href="">
@@ -117,9 +58,7 @@
         </button>
 
         <div class="yw-preset-card__tools">
-          {# "no preset" is a state, not a preset: when it is the one in use its star is the
-             same filled mark as everywhere else, but there is nothing to toggle off, so it
-             is a mark rather than a button #}
+
           {% if defaultPreset == '' %}
             <span class="yw-preset-card__star yw-preset-card__star--on"
                   title="{{ _t('ADMIN_PRESET_IS_DEFAULT') }}">{{ icon('star-filled') }}</span>
@@ -146,8 +85,7 @@
               {% endfor %}
             </span>
             <span class="yw-preset-card__label">
-              {# the name is drawn in the preset's own type, at its own size: half of what a
-                 preset decides is the typography, which no swatch shows #}
+
               <span class="yw-preset-card__name"
                     style="font-family: {{ preset.values.light['yw-font-heading'] }}; font-size: {{ preset.values.light['yw-font-size-base'] }}">
                 {{ preset.name }}
@@ -155,11 +93,7 @@
               <span class="yw-preset-card__badge">
                 {{ preset.custom ? _t('ADMIN_PRESET_BADGE_CUSTOM') : _t('ADMIN_PRESET_BADGE_THEME') }}
               </span>
-              {# A Preset is complete or it is an error: what a file leaves out is named
-                 here rather than quietly filled in from core's own values, because a
-                 hover colour inherited from somebody else's brand is invisible until it
-                 is wrong. A preset carried over from the nine pre-ADR-0020 variables
-                 lands here, and stays flagged until a webmaster finishes it. #}
+
               {% if not preset.complete %}
                 <span class="yw-preset-card__badge yw-preset-card__badge--incomplete"
                       data-yw-tooltip="{{ preset.missing|join(', ') }}">
@@ -189,9 +123,7 @@
                         title="{{ _t('ADMIN_PRESET_DELETE') }}">{{ icon('trash') }}</button>
               </form>
             {% else %}
-              {# A theme preset is not editable: themes/ is code, shared between farm
-                 instances and replaced on upgrade, so an edit made there would be silently
-                 undone by the next update. Copying it into the wiki is the way in. #}
+
               <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
                     data-yw-preset-duplicate-form>
                 <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
@@ -202,13 +134,6 @@
               </form>
             {% endif %}
 
-            {# The one button here that changes what every other page wears, and it is on every
-               card: a filled star on the preset in use, an outline on the others, so which one
-               the wiki wears is read off the list rather than off a small mark in a corner.
-               Filled, it posts an empty id -- clicking the star of the preset in use takes it
-               off and puts the theme's own colours back.
-               Last of the tools because it is the one that stays visible when the others are
-               not: at the end of the row it stands in the space kept clear for it. #}
             <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false">
               <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
               <input type="hidden" name="preset_action" value="select">
@@ -225,16 +150,13 @@
     </ul>
     </div>
 
-    {# ---- screen two: what that preset is ---- #}
     <div class="yw-preset-rail__screen" data-yw-preset-screen="edit" hidden>
     <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false">
       <div class="yw-rail__header">
-        {# Back to the list, not shut: the editor was opened FROM the list, and closing the
-           whole drawer to get back to the thing you came from is a step nobody wants. #}
+
         <button type="button" class="yw-btn yw-btn--sm yw-rail__back" data-yw-preset-back
                 aria-label="{{ _t('ADMIN_PRESET_LIST') }}">{{ icon('chevron-left') }}</button>
-        {# both titles rendered here rather than assembled in the JS: a string built in
-           JavaScript never reaches the translation catalogue #}
+
         <h2 class="yw-rail__title" data-yw-preset-rail-title
             data-edit-label="{{ _t('ADMIN_PRESET_EDIT') }}"
             data-new-label="{{ _t('ADMIN_PRESET_NEW') }}">{{ _t('ADMIN_PRESET_EDIT') }}</h2>
@@ -242,51 +164,21 @@
 
       <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
       <input type="hidden" name="preset_action" value="save">
-      {# which preset is being rewritten -- empty only when the rail was opened by "create a
-         preset". A save replaces this one, renaming included; it never leaves a second copy
-         behind, because someone fixing a typo in a name wants the name different, not two
-         near-identical presets to choose between. #}
+
       <input type="hidden" name="preset" value="" data-yw-preset-id>
 
-      {# Which half of the preset the fields below belong to, and how to get to the other.
-         Both strings rendered here rather than assembled in the JS: a string built in
-         JavaScript never reaches the translation catalogue. #}
       <p class="yw-preset-rail__scheme-note" data-yw-preset-scheme-note
          data-light="{{ _t('ADMIN_PRESET_EDITING_LIGHT') }}"
          data-dark="{{ _t('ADMIN_PRESET_EDITING_DARK') }}"></p>
 
-
-      {# One field per AUTHORED Design token, grouped the way the token set is grouped. A
-         colour is authored twice -- once per Colour scheme -- because that is what a Preset
-         is: two complete sets of colours the viewer chooses between. Everything that is not
-         a colour (the type, the three spacing steps, the four multipliers) is one value
-         serving both.
-
-         **What is not offered here is the point of ADR-0021.** Eighteen fields went, because
-         core derives their values: every hover colour, the muted text, the two border shades,
-         the focus ring, the shadow colours, the three corner radii, and the panel and ink of
-         each of the four status colours. Asking for them doubled this rail without ever
-         changing the answer -- and the ones a webmaster did fill in by hand were the ones
-         that came out wrong in dark mode, because they had been matched to a light surface.
-
-         Nothing that IS here is optional. A blank field is a missing token, and saving
-         refuses it by name rather than filling it in. #}
       {% for group, groupLabel in groups %}
         <fieldset class="yw-preset-rail__group">
           <legend>{{ _t(groupLabel) }}</legend>
 
-          {# Said once, over the first group of sliders, rather than on each of them: what a
-             measure IS here is the thing nobody guesses, and it is the same fact for all
-             eight of them. #}
           {% if group == 'spacing' %}
             <p class="yw-preset-rail__hint">{{ _t('ADMIN_PRESET_MEASURE_HINT') }}</p>
           {% endif %}
 
-          {# Two fields to a line where the token table pairs them (`row`). The rail was one
-             column and forty-odd rows tall, so the gallery it repaints was never on screen
-             with the control being dragged -- and the pairs are the ones you actually
-             compare: a colour and the ink on it, a surface and the card on it, success beside
-             danger, each heading's colour beside its size. #}
           {% for row in rows[group] %}
             <div class="yw-preset-rail__row{{ row|length > 1 ? ' yw-preset-rail__row--split' : '' }}">
               {% for name in row %}
@@ -295,18 +187,12 @@
                   <label class="yw-form-label" for="yw-preset-light-{{ name }}">
                     <span class="yw-preset-rail__label-text">{{ _t(token.label) }}</span>
 
-                    {# The contrast score sits on the LABEL line, not on a line of its own.
-                       It is per scheme, so both are rendered and the one in force is shown --
-                       the same `data-scheme` the fields below use. That removed a whole row
-                       from every colour, which is twenty rows out of the rail. #}
                     {% if token.contrast is defined %}
                       {% for scheme in schemes %}
                         <span class="yw-preset-rail__badge-slot" data-scheme="{{ scheme }}">
                           <span class="yw-preset-rail__contrast"
                                 data-yw-preset-contrast="{{ scheme }}.{{ name }}"
-                                {# a contrast target already carrying a scheme (`light.yw-surface`)
-                                   keeps it: the ink pair is scheme-independent, and each of the
-                                   two is the page text of one scheme only #}
+
                                 data-against="{{ token.contrast == 'auto-ink' or '.' in token.contrast ? token.contrast : scheme ~ '.' ~ token.contrast }}"
                                 title="{{ _t('ADMIN_PRESET_CONTRAST_HINT') }}"></span>
                         </span>
@@ -315,8 +201,7 @@
                   </label>
 
                   {% if token.kind == 'color-fixed' %}
-                    {# one value for both schemes: what it sits on is not a token, so it does not
-                       flip either (see PresetService::KIND_COLOR_FIXED) #}
+
                     <div class="yw-preset-rail__color">
                       <input type="color" class="yw-preset-rail__picker"
                              data-yw-preset-picker="light.{{ name }}"
@@ -328,23 +213,10 @@
                     </div>
 
                   {% elseif token.kind == 'color' %}
-                    {# ONE scheme at a time: the one the page is currently being read in.
 
-                       Both are rendered and both post -- a Preset is two complete sets of
-                       colours and a save writes both -- but only the set in force is shown,
-                       and the wiki's own light/dark toggle in the top bar swaps them. That is
-                       the whole idea: you edit the dark colours while looking at the dark
-                       page, so the gallery under the rail shows the thing you are changing.
-
-                       Both at once was tried and dropped: the preview can only ever show one
-                       scheme, so the other column was a control with no visible effect. #}
                     {% for scheme in schemes %}
                       <div class="yw-preset-rail__scheme" data-scheme="{{ scheme }}">
-                        {# two controls, one field: the text input is what posts, so a value a
-                           colour picker cannot parse (`rgb(0 0 0 / 50%)`, or a `var()` pointing
-                           at another token) survives untouched unless the picker is actually
-                           used -- a native picker silently reads anything it does not
-                           understand as black #}
+
                         <div class="yw-preset-rail__color">
                           <input type="color" class="yw-preset-rail__picker"
                                  data-yw-preset-picker="{{ scheme }}.{{ name }}"
@@ -353,11 +225,7 @@
                                  name="{{ scheme }}[{{ name }}]"
                                  data-yw-preset-field="{{ scheme }}.{{ name }}"
                                  autocomplete="off" spellcheck="false">
-                          {# Point this colour AT one of the preset's own instead of giving it a
-                             value: the field then holds `var(--yw-primary)` and the two stay in
-                             step. One shared popover for all of them -- a palette per field
-                             would be forty-four copies of the same fourteen swatches, every one
-                             to be kept in sync with the values as they are dragged. #}
+
                           <button type="button" class="yw-btn yw-btn--sm yw-preset-rail__palette-open"
                                   data-yw-preset-palette-open="{{ scheme }}.{{ name }}"
                                   title="{{ _t('ADMIN_PRESET_PALETTE') }}"
@@ -367,18 +235,7 @@
                     {% endfor %}
 
                   {% elseif token.kind == 'size' %}
-                    {# A measure: a slider and a readout, and NO box to type in (ADR-0021).
 
-                       The rail used to put a text field beside the slider so that a value the
-                       slider could not express -- `1.05rem`, a `clamp()` -- survived being
-                       looked at. That was the wrong trade: it meant sixteen lengths to type,
-                       and nobody can hold "is 0.375rem more or less than the gap I have?" in
-                       their head. What a measure is, is a multiple of the wiki's base size,
-                       and the only sensible way to choose one is to drag it while watching the
-                       gallery below repaint.
-
-                       So the slider IS the control, a hidden field is what posts, and the
-                       readout says what the number means -- `0.75×` of the base size, `15px`. #}
                     <div class="yw-preset-rail__size">
                       <input type="range" class="yw-preset-rail__slider" id="yw-preset-light-{{ name }}"
                              data-yw-preset-slider="light.{{ name }}"
@@ -392,11 +249,7 @@
                     </div>
 
                   {% elseif token.kind == 'choice' %}
-                    {# A fixed set of CSS keywords. The value goes into the stylesheet
-                       verbatim, so what is offered here IS the grammar the property takes --
-                       this is the one kind where a Preset writes CSS rather than a colour or
-                       a measure, and the only place a wrong value would produce a rule the
-                       browser silently drops. #}
+
                     <select class="yw-input yw-preset-rail__choice" id="yw-preset-light-{{ name }}"
                             name="light[{{ name }}]" data-yw-preset-field="light.{{ name }}">
                       {% for value, optionLabel in token.options %}
@@ -405,26 +258,10 @@
                     </select>
 
                   {% elseif token.kind == 'font' %}
-                    {# Each option is drawn in the stack it names, which is the only description
-                       of a typeface worth reading. A preset that names something else -- a
-                       webfont, or a stack somebody wrote by hand -- keeps it: the JS puts the
-                       current value in as an option of its own rather than letting a select
-                       silently drop what it cannot represent. #}
+
                     <select class="yw-input yw-preset-rail__font" id="yw-preset-light-{{ name }}"
                             name="light[{{ name }}]" data-yw-preset-field="light.{{ name }}">
-                      {# TWO GROUPS, because they cost different things and the select is the
-                         only place that difference is visible.
 
-                         A local stack is a list of fonts the reader already has, ending in a
-                         generic: it downloads nothing, waits for nothing, and the second page
-                         looks like the first. A webfont is fetched from Google when the preset
-                         is SAVED, stored under `custom/fonts/` and served from the instance
-                         afterwards -- so no reader is handed to Google, but the first paint
-                         waits for a file and the save waits for a download.
-
-                         Each option is drawn in the stack it names, which is the only
-                         description of a typeface worth reading -- and for the local group it
-                         is also the truth, since those fonts are on this machine. #}
                       <optgroup label="{{ _t('ADMIN_PRESET_FONTS_LOCAL') }}">
                         {% for stackName, stack in fontStacks %}
                           <option value="{{ stack }}" style="font-family: {{ stack }}">{{ stackName }}</option>
@@ -447,11 +284,6 @@
             </div>
           {% endfor %}
 
-          {# Adding a webfont belongs beside the selects it adds to -- "the font I want is not
-             in the list" is a thought you have while looking at the list. A BUTTON rather than
-             the form itself: three more controls permanently in a fifty-field rail, for
-             something done once or twice in a wiki's life, is three more things to scroll past
-             every other time. #}
           {% if group == 'type' %}
             <button type="button" class="yw-btn yw-btn--block"
                     data-yw-modal-target="#yw-preset-font-modal">
@@ -461,10 +293,6 @@
         </fieldset>
       {% endfor %}
 
-      {# The name sits with the button that writes it, at the foot of the rail. At the top it
-         was the first thing asked for and the last thing thought about: you name a preset once
-         you have made it, and the footer is the one part of a fifty-field rail that is always
-         on screen. #}
       <div class="yw-rail__footer yw-preset-rail__save">
         <input type="text" class="yw-input" id="yw-preset-name" name="preset_name" required
                autocomplete="off" pattern="[A-Za-z0-9_\- ]+"
@@ -473,22 +301,11 @@
       </div>
     </form>
 
-    {# Adding a webfont, in a modal opened from the Type group.
-
-       Its own POST rather than part of a save: fetching a font is a network round trip, and a
-       slow font server must not be able to stop a preset being written. A sibling of the
-       editing form, never inside it -- a form within a form is not markup a browser honours.
-
-       Google only for now. The service can also copy a family from another YesWiki, and that
-       stays available to it; there is simply no control for it here yet. #}
     <div class="yw-modal" id="yw-preset-font-modal" tabindex="-1" role="dialog"
          aria-labelledby="yw-preset-font-modal-title">
       <div class="yw-modal__dialog">
         <div class="yw-modal__content">
-          {# The endpoint is where the JS sends this; the `action` is where the browser sends it
-             if there is none. They do the same work -- the difference is that the endpoint
-             answers with what happened and the page POST answers with a whole new page, which
-             costs every unsaved edit in the rail beside it. #}
+
           <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
                 data-yw-preset-font-form="{{ url({ tag: 'api/presets/fonts' }) }}"
                 data-yw-preset-font-working="{{ _t('ADMIN_PRESET_FONT_WORKING') }}">
@@ -509,16 +326,7 @@
                 <label class="yw-form-label" for="yw-preset-font-family">
                   <span class="yw-preset-rail__label-text">{{ _t('ADMIN_PRESET_FONT_FAMILY') }}</span>
                 </label>
-                {# The same chip picker the keyword and facet fields use, in its CLOSED mode: a
-                   family Google does not have is a download that fails silently, so free typing
-                   is refused and the catalogue is the only source of a name. Several at a time,
-                   because a body face and a heading face are chosen together.
 
-                   The option map starts EMPTY and is filled by admin-preset.js from
-                   `src/assets/google-fonts.json` on first use -- 1951 names is 29KB, which
-                   would otherwise sit in the head of this screen for something most visits
-                   never touch. `limit` caps what is drawn, which is also what makes it
-                   affordable to fetch each shown family and draw its name in its own face. #}
                 {{ include_javascript('javascripts/yw-tags-input.js') }}
                 <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed
                      data-yw-tag-input-options="{}" data-yw-tag-input-limit="12"
@@ -532,8 +340,6 @@
               </div>
             </div>
 
-            {# what the download did, said where it was asked for. A flash would need the page
-               to reload, which is the thing this whole path exists to avoid. #}
             <p class="yw-preset-font-result" data-yw-preset-font-result role="status" hidden></p>
 
             <div class="yw-modal__footer">
@@ -546,13 +352,6 @@
       </div>
     </div>
 
-
-    {# The palette, once. Its chips are painted by the JS from whatever the fields say at the
-       moment it opens, so it shows this preset's colours and not a snapshot of somebody's.
-
-       Curated (PresetService::PALETTE): every authored colour would be twenty-two swatches,
-       which is a wall rather than a palette. The headings and the chrome are absent on
-       purpose -- they are the things that point at these, not the other way round. #}
     <div class="yw-preset-palette" id="yw-preset-palette" hidden>
       <div class="yw-preset-palette__head">
         <span>{{ _t('ADMIN_PRESET_PALETTE') }}</span>
@@ -568,8 +367,7 @@
             </button>
           </li>
         {% endfor %}
-        {# the way back to a colour of its own: without it a field pointed at the brand could
-           be re-pointed but never un-pointed #}
+
         <li>
           <button type="button" class="yw-preset-palette__pick yw-preset-palette__pick--own"
                   data-yw-preset-palette-pick="">

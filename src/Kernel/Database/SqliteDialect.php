@@ -2,10 +2,7 @@
 
 namespace YesWiki\Kernel\Database;
 
-/**
- * SQLite. The driver that exposed the case-sensitivity and trailing-space bugs MySQL's
- * ci-collations had been masking (see the ectoplasme branch notes).
- */
+/** SQLite. */
 class SqliteDialect implements SqlDialect
 {
     public function driverName(): string
@@ -28,14 +25,7 @@ class SqliteDialect implements SqlDialect
         return "datetime('now', '-" . intval($hours) . " hours')";
     }
 
-    /**
-     * TEXT, and it means it.
-     *
-     * SQLite has no JSON column type -- `json` there is TEXT with the JSON1 functions over it,
-     * and since 3.45 a JSONB blob that has to be converted on read. So there is nothing for
-     * ADR-0018 to change here, and the benchmark that decided it measured this dialect as the
-     * control: TEXT against TEXT, within +/-2% on every query.
-     */
+    /** TEXT, and it means it. */
     public function jsonColumnType(): string
     {
         return 'TEXT';
@@ -43,23 +33,17 @@ class SqliteDialect implements SqlDialect
 
     public function jsonAsText(string $column): string
     {
-        // it never stopped being text
         return $column;
     }
 
     public function jsonExtract(string $column, string $path): string
     {
-        // json_extract() errors on non-JSON input, so guard with json_valid(). The path is
-        // escaped here, not by the caller -- see SqlDialect::jsonExtract().
         $escaped = str_replace("'", "''", $path);
 
         return "(CASE WHEN json_valid($column) THEN json_extract($column, '$escaped') ELSE NULL END)";
     }
 
-    /**
-     * The same SQL. The column type is TEXT either way here, so the guard is needed either
-     * way -- which is precisely why SQLite gains nothing from ADR-0018.
-     */
+    /** The same SQL. */
     public function jsonExtractText(string $column, string $path): string
     {
         return $this->jsonExtract($column, $path);
@@ -67,15 +51,11 @@ class SqliteDialect implements SqlDialect
 
     public function groupConcat(string $column, ?string $orderBy = null): string
     {
-        // GROUP_CONCAT supports neither ORDER BY nor DISTINCT combined with an explicit
-        // separator; its default separator is already ','
         return "GROUP_CONCAT(DISTINCT $column)";
     }
 
     public function quoteIdentifier(string $identifier): string
     {
-        // Doubled, which is how SQL spells an escaped double quote. See MySqlDialect for why
-        // this is worth doing even though every caller passes a literal column name.
         return '"' . str_replace('"', '""', $identifier) . '"';
     }
 
@@ -86,13 +66,11 @@ class SqliteDialect implements SqlDialect
 
     public function regexpOperator(bool $not = false): string
     {
-        // REGEXP is registered as a user function by DbService::initDriverSpecific()
         return ($not ? 'NOT ' : '') . 'REGEXP';
     }
 
     public function findInSet(string $needle, string $haystack, bool $not = false): string
     {
-        // No FIND_IN_SET: match the value at the start, middle or end of the list, or alone
         if ($not) {
             return "(($haystack NOT LIKE $needle || ',%') AND " .
                    "($haystack NOT LIKE '%,' || $needle || ',%') AND " .
@@ -113,8 +91,6 @@ class SqliteDialect implements SqlDialect
 
     public function dumpPreamble(): array
     {
-        // no session SET statements: SQLite rejects them outright, which is one of the
-        // reasons the MySQL-shaped dump could never be replayed here
         return ['BEGIN TRANSACTION'];
     }
 
@@ -133,19 +109,7 @@ class SqliteDialect implements SqlDialect
         return true;
     }
 
-    /**
-     * An ordinary table plus an FTS5 **external-content** table over it, kept in sync by
-     * triggers.
-     *
-     * The obvious shape -- make the index table itself the FTS5 virtual table -- is wrong
-     * here. An FTS5 table has no secondary indexes, so `DELETE ... WHERE tag = ?`, which
-     * every single-Content reindex performs, would scan the whole index. With external
-     * content the base table keeps a real `idx_tag`, and FTS5 stores only the terms.
-     *
-     * `remove_diacritics 2` needs SQLite 3.27+ (2019). No stemmer is configured: FTS5 only
-     * ships a Porter stemmer for English, and ADR-0015 keeps the three dialects comparable
-     * rather than stemming on some and not others.
-     */
+    /** An ordinary table plus an FTS5 **external-content** table over it, kept in sync by triggers. */
     public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
         return [
@@ -188,10 +152,7 @@ class SqliteDialect implements SqlDialect
                 \"tag\" TEXT PRIMARY KEY,
                 \"queued_at\" TEXT NOT NULL
             )",
-            // One row per (Content, keyword): an inverted index, so `tags=` is an indexed
-            // equality lookup rather than a LIKE over a delimited column. ADR-0015 rejected
-            // LIKE-based search for the scale this is built for, and a tag filter is no
-            // different -- `%,cooking,%` cannot use an index at any size.
+
             "CREATE TABLE IF NOT EXISTS \"{$keywordsTable}\" (
                 \"tag\" TEXT NOT NULL,
                 \"keyword\" TEXT NOT NULL,
@@ -216,10 +177,6 @@ class SqliteDialect implements SqlDialect
 
     public function searchMatchExpression(string $table, array $termGroups): string
     {
-        // Each term is quoted before the prefix `*`. Sanitisation already rules out a quote
-        // character, so this cannot escape the string -- what it buys is that FTS5 stops
-        // reading a term as a query operator: a search for `OR` or `NEAR` would otherwise
-        // be parsed as one, and FTS5 raises rather than returning nothing.
         $groups = array_map(
             static fn (array $alternatives): string => '(' . implode(' OR ', array_map(
                 static fn (string $term): string => '"' . $term . '"*',
@@ -227,12 +184,9 @@ class SqliteDialect implements SqlDialect
             )) . ')',
             $termGroups
         );
-        // AND is explicit: FTS5's implicit AND joins *phrases*, and juxtaposing two
-        // parenthesised expressions is a syntax error rather than a conjunction
+
         $query = implode(' AND ', $groups);
 
-        // a subquery rather than a join, so the expression stays a WHERE fragment like the
-        // other two dialects' and callers need no dialect-specific FROM clause
         return "\"{$table}\".\"id\" IN (SELECT rowid FROM \"{$table}_fts\" WHERE \"{$table}_fts\" MATCH '{$query}')";
     }
 }

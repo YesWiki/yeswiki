@@ -3,7 +3,7 @@
 {% block input %}
 	{% set displayFilter = displayFilterLimit and options|length > displayFilterLimit %}
 	{% set displayCheckAll = displaySelectAllLimit and options|length > displaySelectAllLimit %}
-	
+
 	{% if displayFilter or displayCheckAll %}
 		<div class="filter-and-check-all-container">
 			{% if displayCheckAll  %}

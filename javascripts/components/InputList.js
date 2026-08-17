@@ -10,12 +10,10 @@ export default {
       return Object.keys(this.optionsList).includes('')
     },
     optionsList() {
-      // Get the data from a specific form field
       if (this.config.dataFromFormField) {
         if (!this.selectedForms || !this.values[this.config.dataFromFormField])
           return []
         let extraFields = this.formatExtraFieldsAsArray(this.config.extraFields)
-        // allow only 'form_id'
         extraFields =
           extraFields.includes('form_id') &&
           Object.keys(this.selectedForms).length > 1
@@ -31,7 +29,6 @@ export default {
         )
         return fieldConfig ? fieldConfig.options : []
       }
-      // Options are provided in configuration
 
       if (Array.isArray(this.config.options)) {
         return this.config.options.reduce(

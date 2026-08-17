@@ -10,11 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 34's to-do list. The migration changes nothing, so what is worth testing is its
- * *detection*: a page it fails to notice is a page nobody is told about, and the symptom -- a list
- * replaced by an explanation -- appears on the site rather than in any log.
- */
+/** Ticket 34's to-do list. */
 class ReportExternalContentCallsTest extends YesWikiTestCase
 {
     private const TAG = 'TestTicket34ExternalCall';
@@ -25,7 +21,9 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
         require_once 'src/migrations/20260811140000_ReportExternalContentCalls.php';
     }
 
-    /** @return array<string, array{string, bool}> */
+    /**
+     * @return array<string, array{string, bool}>
+     */
     public static function syntaxProvider(): array
     {
         return [
@@ -35,11 +33,10 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
             'mapped onto a local form' => ['{{entrylist id="https://other.wiki|4->2"}}', true],
             'plain http' => ['{{entrylist id="http://other.wiki|4"}}', true],
             'spaces around the value' => ['{{entrylist id=" https://other.wiki|4 "}}', true],
-            // the same value reaches other actions, and some spell the parameter form_id
+
             'entrymap' => ['{{entrymap id="https://other.wiki|4"}}', true],
             'form_id spelling' => ['{{entryexport form_id="https://other.wiki|4"}}', true],
 
-            // and these must NOT be reported
             'a local id' => ['{{entrylist id="4"}}', false],
             'a url in another parameter' => ['{{button link="https://other.wiki" text="go"}}', false],
             'a url in prose' => ['See https://other.wiki|4 for the old syntax.', false],
@@ -56,9 +53,7 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
     }
 
     /**
-     * End to end: a page holding such a call is reported, and the page itself is not touched --
-     * this migration deliberately rewrites nothing, because choosing the replacement needs
-     * decisions (which local form, which syncMode, which credentials) it cannot make.
+     * End to end: a page holding such a call is reported, and the page itself is not touched -- this migration deliberately rewrites nothing, because choosing the replacement needs decisions (which local form, which syncMode, which credentials) it cannot make.
      */
     public function testItReportsWithoutChangingAnything(): void
     {
@@ -100,7 +95,9 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
 
         $logTag = 'LogDesActionsAdministratives' . date('Ymd');
         $pageManager = $wiki->services->get(\YesWiki\Content\Service\PageManager::class);
-        /** @var array<string, mixed>|null $before */
+        /**
+         * @var array<string, mixed>|null $before
+         */
         $before = $pageManager->getOne($logTag);
 
         $migration = new \ReportExternalContentCalls();

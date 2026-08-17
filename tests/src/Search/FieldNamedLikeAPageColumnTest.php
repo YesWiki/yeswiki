@@ -8,23 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A form whose field is called `tag` -- or `time`, or `body`, or `user`.
- *
- * The search builds one CTE that selects `p.*` and then one alias per field of the form.
- * `pages` has short, ordinary column names, so a field named after one of them declared that
- * column twice, and the two drivers disagreed about what to do:
- *
- *   MySQL   SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'tag'
- *   SQLite  accepts it, and the field's value silently replaces the page's `tag` in every row
- *
- * An error page on one, wrong rows on the other, from one query -- reported from a wiki whose
- * directory form had a `tag` field, where every list of it died. The suite runs on SQLite, so
- * it saw the harmless-looking half.
- *
- * Asserted on the generated SQL rather than on a live query, because that is the part both
- * drivers share: no column may be declared twice, whichever engine is asked.
- */
+/** A form whose field is called `tag` -- or `time`, or `body`, or `user`. */
 class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
 {
     private const FORM_ID = 8631;
@@ -44,8 +28,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
     }
 
     /**
-     * A form whose fields are named after page columns. Nothing stops an author doing this:
-     * the field names are theirs to choose.
+     * A form whose fields are named after page columns.
      *
      * @return array<string, mixed>
      */
@@ -70,7 +53,9 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
         return $created;
     }
 
-    /** @return list<string> the column names the SELECT of the CTE declares */
+    /**
+     * @return list<string> the column names the SELECT of the CTE declares
+     */
     private function declaredColumns(string $sql): array
     {
         $start = strpos($sql, 'SELECT ');
@@ -81,8 +66,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
         $select = substr($sql, $start + 7, $from - $start - 7);
 
         $columns = [];
-        // split on the commas that are not inside brackets -- the subselect for the type
-        // triple carries its own
+
         $depth = 0;
         $current = '';
         foreach (str_split($select) as $character) {
@@ -131,8 +115,7 @@ class FieldNamedLikeAPageColumnTest extends YesWikiTestCase
     }
 
     /**
-     * The renamed column is the one the conditions use, or the filter would silently read the
-     * page's tag instead of the field.
+     * The renamed column is the one the conditions use, or the filter would silently read the page's tag instead of the field.
      */
     public function testAConditionOnThatFieldUsesTheSameName(): void
     {

@@ -10,9 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 27 (ADR-0010): form-level behavior lives in form properties -- the entry
- * pipeline computes `title` from entry_title_template, generates slugged tags, and
- * stamps entry ACLs from entry_*_access.
+ * Ticket 27 (ADR-0010): form-level behavior lives in form properties -- the entry pipeline computes `title` from entry_title_template, generates slugged tags, and stamps entry ACLs from entry_*_access.
  */
 class FormPropertiesTest extends YesWikiTestCase
 {
@@ -56,11 +54,9 @@ class FormPropertiesTest extends YesWikiTestCase
             ]);
             $created[] = $entry['tag'];
 
-            // computed title, slugged tag (ADR-0010)
             $this->assertSame("L'Été à Nantes", $entry['title']);
             $this->assertSame('l-ete-a-nantes', $entry['tag']);
 
-            // a second entry with the same title gets a -2 suffix
             $second = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => "L'Été à Nantes",
@@ -68,7 +64,6 @@ class FormPropertiesTest extends YesWikiTestCase
             $created[] = $second['tag'];
             $this->assertSame('l-ete-a-nantes-2', $second['tag']);
 
-            // submission artifacts are stripped from the stored body
             $stored = $entryManager->getOne($entry['tag']);
             $this->assertIsArray($stored, 'the entry just created must be readable back');
             $this->assertArrayNotHasKey('antispam', $stored);
@@ -156,7 +151,7 @@ class FormPropertiesTest extends YesWikiTestCase
         $this->assertSame('OldEntry', $data['tag']);
         $this->assertSame('42', $data['form_id']);
         $this->assertSame('Old title', $data['title']);
-        $this->assertSame('Old title', $data['bf_titre']); // ordinary field data stays
+        $this->assertSame('Old title', $data['bf_titre']);
         $this->assertSame('2020-01-01 00:00:00', $data['created_at']);
         $this->assertSame('1', $data['status']);
         $this->assertArrayNotHasKey('id_fiche', $data);

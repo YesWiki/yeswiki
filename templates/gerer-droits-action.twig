@@ -54,7 +54,7 @@
     </div>
 
     <div class="table-responsive">
-        {# sort-only: search/pagination would detach rows (and their inputs) from the form #}
+
         <table class="yw-table table-acls" data-yw-datatable data-yw-no-search data-yw-no-paginate>
             <thead>
                 <tr>
@@ -83,7 +83,7 @@
                         </label>
                     </td>
                     <td>
-                        {{ format("[[#{page.page} #{page.page}]]")|raw }}{# create a Link to the page#}
+                        {{ format("[[#{page.page} #{page.page}]]")|raw }}
                     </td>
                     <td align="center">
                         {{ _self.displayRights(page.lire) }}

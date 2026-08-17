@@ -1,6 +1,4 @@
-{# ticket 14: the field names travel in this field's own data-field-names attribute (below)
-   rather than in a page-global set by an inline script -- a global could only describe one
-   map, and an inline <script> is exactly what a fragment-rendered field cannot rely on. #}
+
 {% if field.autocomplete is not empty %}
     {{ include_javascript('javascripts/inputs/map-autocomplete.js') }}
 {% endif %}

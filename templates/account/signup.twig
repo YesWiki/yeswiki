@@ -1,11 +1,5 @@
 {% extends "@core/account/guest-layout.twig" %}
 
-{# Signed out, `{{usersettings}}` renders the signup form -- captcha, name pattern and all.
-   AccountController sends anyone already signed in to /user, so this really is the form.
-
-   No heading of our own and no "back to sign in" link: the form brings both, and a screen
-   that adds its own ends up saying "Create an account / Sign up" twice over one form and
-   offering two ways back to the same place. #}
 {% block dashboard_content %}
   {{ renderAction('usersettings')|raw }}
 {% endblock %}

@@ -9,13 +9,7 @@ use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{mailinglist}}` -- converted from the procedural actions/mailinglist.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{mailinglist}}` -- converted from the procedural actions/mailinglist.php by ticket 06. */
 class MailinglistAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -29,10 +23,6 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -43,27 +33,19 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        // ticket 18: relocated from tools/contact/actions/mailinglist.php.
-        // action permettant d'inscrire ou desinscrire massivement des mails a une newsletter
-
         include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
 
-        // recuperation des parametres
         $list = $this->getService(PerformableArguments::class)->get('list');
         if (empty($list)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
         } elseif ($this->getService(AclService::class)->isAdmin()) {
             echo '<h2>' . _('CONTACT_MAILS_TO_ADD_OR_REMOVE') . ' ' . $list . '</h2>';
 
-            // les mails formates sont prets a etre envoyes
             if (isset($_POST['mails'])) {
                 if (is_array($_POST['mails'])) {
                     $mailer = $this->getService(Mailer::class);
                     $tab_listadress = explode('@', $list);
 
-                    // en fonction de l'action demand
-                    // neither button matched leaves this undefined, and it is both displayed
-                    // and used as the recipient below (ticket 40)
                     $listaction = '';
                     if ($_POST['action_mails'] == _t('CONTACT_BTN_SUBSCRIBE')) {
                         $listaction = $tab_listadress[0] . '-subscribe@' . $tab_listadress[1];
@@ -79,10 +61,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                     echo '</div>
         			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '">' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '</a>';
                 }
-            }
-            // la liste des mails non formatee est disponible
-            elseif (isset($_POST['mailinglist'])) {
-                // extrait les mails
+            } elseif (isset($_POST['mailinglist'])) {
                 $regEx = "/([\s]*)[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i";
                 preg_match_all($regEx, $_POST['mailinglist'], $emails);
                 if (is_array($emails) && count($emails[0]) > 0) {
@@ -103,9 +82,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                     echo '<div class="yw-alert yw-alert--danger">' . _t('CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT') . '.</div>
         			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
                 }
-            }
-            // rien n'a ete fait, on propose un formulaire pour ajouter les mails
-            else {
+            } else {
                 echo '<div class="yw-alert yw-alert--info">' . _t('CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE') . '.</div>
         		<form id="ajax-mailing-form" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
         			<label style="display:inline-block;width:200px;text-align:right;">' . _t('CONTACT_YOUR_EMAIL_LIST') . '</label>

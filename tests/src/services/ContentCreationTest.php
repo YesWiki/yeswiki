@@ -22,22 +22,15 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Creating a Content by filling in the form that describes it (ticket 13).
- *
- * Ticket 10 made Page, User and File forms; until this, the one thing you could not do
- * with those forms was create one. What the tests pin down is that creation goes through
- * the type's own persistence and not through the entry path: a page comes out with no
- * type triple (carrying none is what makes it a page) and its keywords indexed, and an
- * account comes out with everything signup gives it -- hashed password, self ownership,
- * a write ACL that is not the wiki's `*` default.
- */
+/** Creating a Content by filling in the form that describes it (ticket 13). */
 class ContentCreationTest extends YesWikiTestCase
 {
     private const PAGE_TITLE = 'Une page née du formulaire';
     private const ACCOUNT_NAME = 'ContentCreationTestAccount';
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private static array $createdTags = [];
 
     public static function tearDownAfterClass(): void
@@ -48,7 +41,9 @@ class ContentCreationTest extends YesWikiTestCase
         }
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function builtInForm(string $contentType): array
     {
         $form = $this->getWiki()->services->get(FormManager::class)->getByContentType($contentType);
@@ -171,11 +166,7 @@ class ContentCreationTest extends YesWikiTestCase
         @unlink($path);
     }
 
-    /**
-     * The derived attributes were locked *text fields* until ticket 13. A text field the
-     * form did not submit yields an empty string, so saving a File from its own edit form
-     * wrote "" over both filenames and 404'd the file it was editing.
-     */
+    /** The derived attributes were locked *text fields* until ticket 13. */
     public function testTheFileFormAsksForBytesAndNotForDerivedAttributes(): void
     {
         $names = array_column($this->builtInForm(ContentTypeSchema::TYPE_FILE)['template'], 'name');
@@ -214,10 +205,7 @@ class ContentCreationTest extends YesWikiTestCase
     }
 
     /**
-     * The whole point of Page/User/File being forms: a webmaster adds a field and it
-     * behaves like any other. UserManager's own body shape names eight keys and dropped
-     * everything else, so until ticket 13 the User form was a schema the User service did
-     * not honour -- including the `profile_picture` ticket 10 declared in code.
+     * The whole point of Page/User/File being forms: a webmaster adds a field and it behaves like any other.
      */
     public function testAFieldAWebmasterAddedToTheUserFormIsStored(): void
     {
@@ -242,7 +230,7 @@ class ContentCreationTest extends YesWikiTestCase
             $body = $wiki->services->get(PageManager::class)
                 ->getOne((string)$created['tag'], null, true, true)['body'] ?? [];
             $this->assertSame('iel', $body['pronouns'] ?? null);
-            // and the account is still an account
+
             $this->assertArrayHasKey('password', $body);
             $this->assertSame('content-creation-extra@example.org', $body['email'] ?? null);
         } finally {
@@ -251,11 +239,7 @@ class ContentCreationTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The other half of "exactly like other forms": the two things that stay refused.
-     * Deleting the Page form does not remove a webmaster's data structure, it removes the
-     * schema every page in the wiki is edited and listed through.
-     */
+    /** The other half of "exactly like other forms": the two things that stay refused. */
     public function testABuiltInFormStillCannotBeEmptiedOrDeleted(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
@@ -274,8 +258,7 @@ class ContentCreationTest extends YesWikiTestCase
     }
 
     /**
-     * Which form describes a row is decided by the row's type triple, so a second Page
-     * form would leave getByContentType() picking arbitrarily between the two.
+     * Which form describes a row is decided by the row's type triple, so a second Page form would leave getByContentType() picking arbitrarily between the two.
      */
     public function testABuiltInTypeStillHasExactlyOneForm(): void
     {
@@ -307,8 +290,6 @@ class ContentCreationTest extends YesWikiTestCase
         $form = $this->builtInForm(ContentTypeSchema::TYPE_PAGE);
         $original = $form['template'];
 
-        // a hand-edited template, a CSV import or an API client submitting the Page form
-        // with `content` deleted and `title` retyped to something that stores nothing
         $form['template'] = [['type' => 'hidden', 'name' => 'title', 'label' => 'Titre']];
         $formManager->update($form);
 

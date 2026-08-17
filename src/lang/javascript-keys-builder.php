@@ -23,7 +23,9 @@ function collectJavascriptTranslationKeys(string $javascriptDir): array
     return $keys;
 }
 
-/** @param list<string> $keys */
+/**
+ * @param list<string> $keys
+ */
 function renderJavascriptKeysFile(array $keys): string
 {
     $lines = array_map(fn (string $key) => "    '$key',", $keys);

@@ -48,8 +48,6 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
     {
         $request = $this->getRequest();
 
-        // a day/week/month preset, set via the request query string (e.g. an interactive
-        // filter link on the same page) takes priority over a fixed tag attribute
         $requestPeriod = $request->query->get('period', '');
         if (in_array($requestPeriod, ['day', 'week', 'month'], true)) {
             $dateMin = date('Y-m-d H:i:s', strtotime('-1 ' . $requestPeriod));
@@ -79,7 +77,6 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                 $lastUsers = array_slice($sortedUsers, 0, $last);
                 $curday = '';
                 foreach ($lastUsers as $user) {
-                    // day header
                     list($day, $time) = explode(' ', $user['signuptime']);
                     if ($day != $curday) {
                         if ($curday) {
@@ -94,7 +91,6 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                 $output .= _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
             }
         } else {
-            // $users is already name-sorted (UserManager::getAll() orders by name)
             if (!empty($users)) {
                 $output .= '<ol class="list-users">';
                 foreach ($users as $user) {

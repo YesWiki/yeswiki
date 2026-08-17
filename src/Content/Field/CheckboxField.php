@@ -6,10 +6,10 @@ use Psr\Container\ContainerInterface;
 
 abstract class CheckboxField extends EnumField
 {
-    protected $displaySelectAllLimit; // number of items without selectall box ; false if no limit
-    protected $displayFilterLimit; // number of items without filter ; false if no limit
-    protected $displayMethod; // empty, tags or dragndrop
-    protected $formName; // form name for drag and drop
+    protected $displaySelectAllLimit;
+    protected $displayFilterLimit;
+    protected $displayMethod;
+    protected $formName;
     protected $normalDisplayMode;
     protected $dragAndDropDisplayMode;
 
@@ -34,7 +34,7 @@ abstract class CheckboxField extends EnumField
         $this->dragAndDropDisplayMode = '';
     }
 
-    public function getValueStructure() // See BazarField::getValueStructure
+    public function getValueStructure()
     {
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
     }
@@ -58,7 +58,6 @@ abstract class CheckboxField extends EnumField
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                 ]);
             default:
-                // List with multi levels
                 if ($this->optionsTree) {
                     return $this->render('@core/inputs/checkbox-tree.twig', [
                         'data' => $this->optionsTree,
@@ -91,7 +90,6 @@ abstract class CheckboxField extends EnumField
 
     public function formatValuesBeforeSave($entry)
     {
-        // We check if the field was emptied on purpose, so there is not merge of previous value
         $fromFormKey = $this->propertyName . self::FROM_FORM_ID;
         if (isset($_REQUEST[$fromFormKey])) {
             $checkboxField = $_REQUEST[$this->propertyName] ?? [];
@@ -145,7 +143,6 @@ abstract class CheckboxField extends EnumField
 
     private function generateTagsData($entry)
     {
-        // list of choices available from options
         $existingTags = [];
         foreach ($this->getOptions() as $key => $label) {
             $existingTags[$key] = [
@@ -170,8 +167,6 @@ abstract class CheckboxField extends EnumField
 
     protected function getFormName()
     {
-        // needed for CheckboxEntry to update title only when
-        // rendering Input and prevent infinite loop at construct
         return $this->formName;
     }
 }

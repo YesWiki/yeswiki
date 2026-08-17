@@ -4,11 +4,7 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Ticket 27 (ADR-0010): the five pseudo-fields (titre / acls / metadatas /
- * utilisateur_wikini / bookmarklet) leave the form template and become form
- * properties applied by the entry pipeline. Converts the latest revision of every
- * form page in place; every form ends up with a non-empty entry_title_template
- * ({{bf_titre}} by default).
+ * Ticket 27 (ADR-0010): the five pseudo-fields (titre / acls / metadatas / utilisateur_wikini / bookmarklet) leave the form template and become form properties applied by the entry pipeline.
  */
 class ExtractFormPropertiesFromTemplate extends YesWikiMigration
 {
@@ -96,7 +92,6 @@ class ExtractFormPropertiesFromTemplate extends YesWikiMigration
             }
 
             if (empty(trim((string)($body['entry_title_template'] ?? '')))) {
-                // the historical implicit convention: the visitor-typed bf_titre field
                 $body['entry_title_template'] = '{{bf_titre}}';
                 $changed = true;
             }

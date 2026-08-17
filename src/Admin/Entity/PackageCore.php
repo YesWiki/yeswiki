@@ -19,7 +19,7 @@ class PackageCore extends Package
         'themes',
         'robots.txt',
         'yeswiki.config.php',
-        'wakka.config.php', // pre-rename instances
+        'wakka.config.php',
         'private',
     ];
 
@@ -46,11 +46,7 @@ class PackageCore extends Package
     {
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = true;
-        // ticket 19: was realpath(dirname($_SERVER['SCRIPT_FILENAME'])) -- the REQUESTING
-        // instance's own docroot, silently diverging from PackageTool/PackageTheme's
-        // (already source-tree-relative) target on a farm, where instance dir != source
-        // dir. YESWIKI_SOURCE_DIR is the single source of truth every package type now
-        // shares (ADR-0007).
+
         $this->localPath = YESWIKI_SOURCE_DIR;
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
@@ -65,11 +61,10 @@ class PackageCore extends Package
         if (substr($this->extractionPath, -1) != '/') {
             $this->extractionPath .= '/';
         }
-        // get the first subfolder extracted from the zip (it contains everything)
+
         $dirs = array_filter(glob($this->extractionPath . '*'), 'is_dir');
         $this->extractionPath = $dirs[0] . '/';
 
-        // check if PHP update needed
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
             $textAction = ($this->newVersionRequested()) ? _t('AU_PHP_TOO_LOW_VERSION_UPDATE') : _t('AU_PHP_TOO_LOW_UPDATE');
@@ -85,7 +80,6 @@ class PackageCore extends Package
 
         if ($res = opendir($this->extractionPath)) {
             while (($file = readdir($res)) !== false) {
-                // Ignore les fichiers de la liste
                 if (!in_array($file, self::IGNORED_FILES)) {
                     $this->copy(
                         $this->extractionPath . '/' . $file,
@@ -104,7 +98,6 @@ class PackageCore extends Package
             }
         }
 
-        // check if cache and files directories are present
         foreach (['cache', 'files'] as $dirName) {
             if (!is_dir($desPath . '/' . $dirName)) {
                 mkdir($desPath . '/' . $dirName);
@@ -116,13 +109,11 @@ class PackageCore extends Package
 
     public function upgradeDefaultTheme()
     {
-        // ticket 16: the bundled default theme is themes/yeswiki now
         $src = $this->extractionPath . '/themes/' . THEME_PAR_DEFAUT;
         $desPath = $this->localPath . '/themes/' . THEME_PAR_DEFAUT;
         $file2ignore = ['.', '..'];
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
-                // Ignore les fichiers de la liste
                 if (!in_array($file, $file2ignore)) {
                     $this->copy($src . '/' . $file, $desPath . '/' . $file);
                 }
@@ -140,7 +131,6 @@ class PackageCore extends Package
         $file2ignore = ['.', '..'];
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
-                // Ignore les fichiers de la liste
                 if (!in_array($file, $file2ignore)) {
                     $this->copy($src . '/' . $file, $desPath . '/' . $file);
                 }
@@ -207,10 +197,6 @@ class PackageCore extends Package
 
         return $result;
     }
-
-    /***************************************************************************
-     * Méthodes privée
-     **************************************************************************/
 
     protected function localRelease()
     {

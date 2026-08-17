@@ -1,28 +1,19 @@
-{# The actions builder, docked as a right-hand rail beside the editor rather than shown
-   as a modal -- same idiom as the form designer (styles/yw-admin.css's .yw-fb).
-   Sits OUTSIDE the edited form, as a sibling of .yw-designer__canvas: its selects and
-   inputs are configuration, not fields, and would otherwise be posted with the page.
-   Hidden until a toolbar button opens it (javascripts/actions-builder-app.js). #}
+
 <aside class="yw-designer__sidebar actions-builder-panel" id="actions-builder-panel" hidden>
   <div id="actions-builder-app">
     <div class="yw-rail__header">
-      {# the palette is the way back, but only while a component is being CHOSEN: on one
-         the document already has, the panel is its properties and there is nothing behind
-         it -- adding another one is the toolbar button's job #}
+
       <button type="button" class="yw-btn yw-btn--sm actions-builder-panel__back"
               v-if="view === 'settings' && !isEditingExistingAction" @click="backToPalette"
               :title="'{{ _t('ACTION_BUILDER_PALETTE_BACK')|e('js') }}'">
         {{ icon('arrow-left') }}
       </button>
-      {# the rail names what it is on: the component, not the drawer it was found in #}
+
       <h2 class="yw-rail__title"
           v-html="view === 'palette' ? '{{ _t('ACTION_BUILDER_PALETTE_TITLE')|e('js') }}' : railTitle"></h2>
       <button type="button" class="yw-close" @click="close" aria-label="close">&times;</button>
     </div>
 
-    {# Palette: every component that can be inserted, searchable. Choosing one is what
-       opens the settings below -- the old dropdown listed groups and made you choose the
-       action again inside the modal. #}
     <div class="actions-builder-panel__body" v-if="view === 'palette'">
       <div class="yw-form-group">
         <input type="text" class="yw-input" v-model="paletteFilter" autocomplete="off"
@@ -34,14 +25,12 @@
       <template v-for="group in paletteGroups" :key="group.id">
         <h3 class="actions-builder-panel__palette-group" v-text="group.label"></h3>
         <div class="actions-builder-panel__palette">
-          {# `title`: three to a row leaves each card a third of the rail, so a name of more
-             than a few words is clamped on the card. The tooltip is where the rest of it is. #}
+
           <button type="button" class="actions-builder-panel__component"
                   v-for="action in group.actions" :key="action.id"
                   :title="action.label"
                   @click="selectFromPalette(group.id, action.id)">
-            {# the component's own icon, not its category's -- every card in a category used
-               to wear the same one, so a palette of six categories had six icons in it #}
+
             <span class="actions-builder-panel__component-icon" v-html="action.icon"></span>
             <span class="actions-builder-panel__component-label" v-html="action.label"></span>
           </button>
@@ -50,21 +39,11 @@
     </div>
 
     <div class="actions-builder-panel__body" v-else>
-      {# No "choose a form" select above the parameters, and no "which action of this
-         group?" select either. The component is decided before this shows -- by the cursor
-         landing in one, or by the palette card that was picked -- and which form it is
-         pointed at is one of its settings (`form-list`), because a Presentation is pointed
-         at a form only when a form is what it lists. #}
 
-      {# Action Configuration #}
       <div v-if="selectedAction" class="action-parameters-container">
 
         <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
 
-        {# The preview, for an editor that has nowhere else to put one. Where the component
-           is rendered in the page being written (the Vditor prototype, whose widget follows
-           this panel as it is filled in), a second copy of it in the rail is the same thing
-           twice and takes the room the parameters want. #}
         <preview-action v-if="!editorRendersComponents" :wiki-code="wikiCodeForIframe"
                         :height="selectedAction ? selectedAction.previewHeight : null"></preview-action>
 
@@ -73,16 +52,12 @@
                :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
             <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS')|e('js') }}'"></h3>
             <div class="config-panel-content">
-              {# Each setting gets a cell of the panel's six-column grid, and says how much
-                 of a row it wants: a third, a half (the default) or all of it. Declared
-                 rather than guessed from the input's markup -- which is what a pile of
-                 `:has()` selectors was doing, and it could only ever guess. #}
+
               <template v-for="(config, propName) in panel.params.properties" :key="propName">
                 <div class="config-cell" :class="{'config-cell--third': spanOf(config) === 2}"
                      :style="{'--yw-span': spanOf(config)}"
                      v-show="checkVisibility(config)">
-                  {# `v-if`: almost no setting has an intro, and an empty div still takes a
-                     cell -- which pushed every input after it into the wrong column #}
+
                   <div class="config-intro" v-if="config.intro" v-html="config.intro"></div>
                   <component :is="componentIdFrom(config)" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
@@ -98,11 +73,6 @@
       </div>
     </div>
 
-    {# No button. Picking a component from the palette writes it into the page, and every
-       change after that lands as it is made -- so there is nothing left to confirm. The
-       button that used to be here also carried a rule nothing said out loud: closing the
-       rail threw away whatever had been typed into it. Ctrl+Z is the way back now, in both
-       editors. See ADR-0017's ticket 36. #}
   </div>
 </aside>
 

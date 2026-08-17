@@ -13,7 +13,7 @@
         <Panel v-for="entry in entriesToDisplay" :key="entry.tag" class="bazar-entry" @opened="getEntryRender(entry)">
         <template #header>
             <div class="panel-heading-container" :class="{'with-image': entry.visual}">
-                {# VISUAL AREA #}
+
                 {% block area_visual %}
                     <div class="visual-area" v-if="entry.visual">
                         <img loading="lazy"
@@ -22,7 +22,7 @@
                     </img>
                 </div>
             {% endblock %}
-            {# TITLE AREA #}
+
             {% block area_title %}
                 <h4 div class="title-area panel-title">
                     <span v-show="entry.color"
@@ -32,11 +32,11 @@
                     <entry-field :entry="entry" prop="title" fallback-prop="bf_titre" class="title"></entry-field>
                 </h4>
             {% endblock %}
-            {# FLOATING AREA #}
+
             {% block area_floating %}
                 <entry-field :entry="entry" prop="floating" class="floating-area"></entry-field>
             {% endblock %}
-            {# SUBTITLE AREA #}
+
             {% block area_subtitle %}
                 <entry-field :entry="entry" prop="subtitle" class="subtitle-area"></entry-field>
             {% endblock %}

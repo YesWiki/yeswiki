@@ -12,12 +12,7 @@ class TagsField extends EnumField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        // A tags field is an Enum whose name historically sat in the linked-object slot,
-        // because the CSV template had nowhere else to put it. A field object that names
-        // itself outright -- every JSON template since ticket 26, the Page form's
-        // `keywords` among them -- is taken at its word instead; without this, declaring
-        // a tags field with a `name` produced an input with no name at all, so its value
-        // was never posted.
+
         if (!empty($this->linkedObjectName)) {
             $this->name = $this->linkedObjectName;
         }
@@ -25,16 +20,13 @@ class TagsField extends EnumField
         $this->propertyName = $this->name;
     }
 
-    public function getValueStructure() // See BazarField::getValueStructure
+    public function getValueStructure()
     {
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
     }
 
     /**
-     * Keywords reach this field in two shapes: a comma-separated string on a bazar entry,
-     * whose tags field is an ordinary form field the webmaster named, and a list on a page,
-     * where they are `body.keywords` (ticket 09). Flattening here is what lets the rest of
-     * the field -- and everything that reads a field's value -- see one shape.
+     * Keywords reach this field in two shapes: a comma-separated string on a bazar entry, whose tags field is an ordinary form field the webmaster named, and a list on a page, where they are `body.keywords` (ticket 09).
      *
      * @param array<string, mixed>|null $entry
      *
@@ -61,16 +53,13 @@ class TagsField extends EnumField
 
         return $this->render('@core/inputs/tags.twig', [
             'value' => $value,
-            // the widget live-searches the keyword vocabulary rather than being handed it
+
             'tagsSearchUrl' => $this->getService(UrlFormatter::class)->href('', 'api/tags'),
         ]);
     }
 
     /**
-     * The keyword index is keyed by the Content's tag, so the tag has to exist before this
-     * field can write it. Without this, creating a Content wrote every keyword against an
-     * empty resource -- junk rows in `triples`, and keywords that stayed unindexed until
-     * the next edit, which is the first time the tag was already there.
+     * The keyword index is keyed by the Content's tag, so the tag has to exist before this field can write it.
      */
     public function requiresTagBeforeFormatting(): bool
     {
@@ -79,18 +68,15 @@ class TagsField extends EnumField
 
     public function formatValuesBeforeSave($entry)
     {
-        // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
 
         $value = $this->getValue($entry);
 
-        // Delete existing tags linked to this entry
         if (!isset($GLOBALS['delete_tags']) && !empty($entry['tag'])) {
             $tripleStore->delete($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }
 
-        // Add back all specified tags
         $tags = explode(',', (string)$value);
         foreach ($tags as $tag) {
             trim($tag);
@@ -138,7 +124,6 @@ class TagsField extends EnumField
 
     private function loadOptionsFromTags()
     {
-        // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
 
         $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');

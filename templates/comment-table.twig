@@ -1,7 +1,7 @@
 {% import "@core/multidelete-macro.twig" as multidelete %}
 
 <div id='comments-table-action'>
-  {# order on date desc #}
+
   <table class="yw-table" data-yw-datatable data-yw-datatable-sort="1,desc">
     <thead>
       <tr>
@@ -29,7 +29,7 @@
           <td>{{ com.tag }}</td>
           <td>{% set tagAnchor = com.parentTag ?? com.parent %}<a class="new-window" href="{{ url({tag:tagAnchor}) }}">{{ tagAnchor }}</a></td>
           <td>
-            {# if admin or comment's owner #}
+
             {% if hasAcl(com.owner) %}
               <a href="{{ url({tag:com.tag,handler:'edit'}) }}"
                 class="yw-btn yw-btn--sm yw-btn--warning new-window" role="button"
@@ -95,6 +95,6 @@
           </div>
         </div>
       </div>
-    </div>{# .yw-modal__content #}
-  </div>{# .yw-modal__dialog #}
+    </div>
+  </div>
 </div>

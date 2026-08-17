@@ -11,10 +11,6 @@ require_once 'tests/YesWikiTestCase.php';
 /**
  * Ticket 14: assets are declared by a render rather than accumulated by a request.
  *
- * The behaviour worth pinning is the capture scope -- everything else in the ticket
- * (fragments carrying their assets, the designer preview, the browser-side deduplication)
- * is built on "render this, and tell me what it needed".
- *
  * @see docs/adr/0014-assets-are-declared-by-a-render-not-accumulated-by-a-request.md
  */
 class AssetRegistryTest extends YesWikiTestCase
@@ -23,8 +19,7 @@ class AssetRegistryTest extends YesWikiTestCase
     {
         $registry = $this->getWiki()->services->get(AssetRegistry::class);
         $this->assertInstanceOf(AssetRegistry::class, $registry);
-        // each test starts from a clean page set: the container hands out one shared
-        // instance, so a leftover declaration would make tests depend on their order
+
         $registry->drain();
 
         return $registry;
@@ -57,9 +52,7 @@ class AssetRegistryTest extends YesWikiTestCase
     }
 
     /**
-     * A fragment is self-contained: its assets go into the response, not onto the page that
-     * happens to be rendering. This is the property the whole ticket rests on -- an API
-     * response has no page to reach.
+     * A fragment is self-contained: its assets go into the response, not onto the page that happens to be rendering.
      */
     public function testCapturedAssetsNeverReachThePage(): void
     {
@@ -101,7 +94,6 @@ class AssetRegistryTest extends YesWikiTestCase
             });
             $this->fail('the exception must propagate');
         } catch (\RuntimeException) {
-            // expected
         }
 
         $registry->addCssFile('styles/yw-core.css');
@@ -118,9 +110,7 @@ class AssetRegistryTest extends YesWikiTestCase
     }
 
     /**
-     * The old registry deduplicated by searching generated HTML with `!strpos(...)`, which is
-     * falsy at offset 0 -- so the first stylesheet registered always failed its own duplicate
-     * check. Identity on the resolved URL cannot express that bug.
+     * The old registry deduplicated by searching generated HTML with `!strpos(...)`, which is falsy at offset 0 -- so the first stylesheet registered always failed its own duplicate check.
      */
     public function testTheFirstEntryIsDeduplicatedToo(): void
     {
@@ -150,7 +140,6 @@ class AssetRegistryTest extends YesWikiTestCase
         $this->assertSame(1, $css->count());
         $this->assertStringContainsString('styles/yw-core.css', $css->toHtml());
 
-        // the head takes the stylesheets, the foot takes what is left
         $rest = $registry->drain();
         $this->assertSame(1, $rest->count());
         $this->assertStringContainsString('javascripts/yw-core.js', $rest->toHtml());
@@ -164,7 +153,6 @@ class AssetRegistryTest extends YesWikiTestCase
 
         $html = $registry->drain()->toHtml();
 
-        // the non-deferred one leads: inline page markup calls into it at parse time
         $this->assertLessThan(
             strpos($html, 'javascripts/yw-core.js'),
             strpos($html, 'javascripts/yeswiki-base-no-defer.js'),
@@ -176,8 +164,7 @@ class AssetRegistryTest extends YesWikiTestCase
     }
 
     /**
-     * A fragment's assets swap into <head> rather than landing inline, so that deleting the
-     * fragment cannot take them with it.
+     * A fragment's assets swap into <head> rather than landing inline, so that deleting the fragment cannot take them with it.
      */
     public function testAFragmentEmitsItsAssetsOutOfBandIntoHead(): void
     {

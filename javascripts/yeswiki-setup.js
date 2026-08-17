@@ -1,6 +1,4 @@
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 ywInitEach('body', () => {
-  // hide the database server fields when the SQLite driver is selected
   const driverSelect = document.getElementById('db_driver_select')
   if (driverSelect) {
     const updateFieldsVisibility = () => {
@@ -19,8 +17,6 @@ ywInitEach('body', () => {
     updateFieldsVisibility()
   }
 
-  // when a database backup is available, the admin account fields are only needed
-  // for a default installation (the backup already contains the admin accounts)
   const contentChoices = document.querySelectorAll(
     'input[type="radio"][name="contentSQL"]',
   )

@@ -5,19 +5,7 @@ namespace YesWiki\Files\Service;
 use stefangabos\Zebra_Image\Zebra_Image;
 
 /**
- * Resized copies of an image, cached under the cache directory (ticket 24, extracted
- * from `Attach`).
- *
- * Two things, deliberately kept together: the *name* a resized copy gets, and the
- * resizing itself. Callers rely on the pair -- "does the resized file already exist, and
- * if not, make it" is the only way this is ever used:
- *
- *     if (!file_exists($dest = $resizer->resizedFilename($src, $w, $h))) {
- *         $resizer->resize($src, $dest, $w, $h);
- *     }
- *
- * The name is derived, not stored, so a cache file orphaned by a re-upload is found again
- * by `FileBrowser` when the original is deleted.
+ * Resized copies of an image, cached under the cache directory (ticket 24, extracted from `Attach`).
  */
 class ImageResizer
 {
@@ -28,14 +16,7 @@ class ImageResizer
         $this->paths = $paths;
     }
 
-    /**
-     * Where the resized copy of $fullFilename at these dimensions lives, whether or not
-     * it exists yet. The upload path is swapped for the cache path so the copy never
-     * lands beside the original.
-     *
-     * $width/$height are interpolated into the name, so callers may pass a glob pattern
-     * (FileBrowser does, to sweep up every size at once).
-     */
+    /** Where the resized copy of $fullFilename at these dimensions lives, whether or not it exists yet. */
     public function resizedFilename(string $fullFilename, string $width, string $height, string $mode = 'fit'): string
     {
         $uploadPath = $this->paths->uploadPath();
@@ -64,9 +45,6 @@ class ImageResizer
         $imgTrans->source_path = $source;
         $imgTrans->target_path = $destination;
 
-        // Zebra_Image still calls imagedestroy(), a no-op deprecated since PHP 8.5.
-        // Silence it here (rather than patching vendor/) so debug-mode deprecation
-        // output isn't echoed into an in-progress image response.
         $previousErrorReporting = error_reporting();
         error_reporting($previousErrorReporting & ~E_DEPRECATED);
         $tempFileName = null;
@@ -90,12 +68,7 @@ class ImageResizer
     }
 
     /**
-     * Crop to the wanted aspect ratio before the resize, via a temp file, so the final
-     * resize never distorts. Returns the temp path to clean up (or null when the image
-     * already has the wanted ratio, or false when its size could not be read).
-     *
-     * The version_compare() guard this carried -- getimagesize() could not read webp on
-     * PHP 7.0.x -- is gone: composer.json requires PHP ^8.3, so it was unreachable.
+     * Crop to the wanted aspect ratio before the resize, via a temp file, so the final resize never distorts.
      *
      * @return string|false|null
      */
@@ -117,11 +90,9 @@ class ImageResizer
         }
 
         if ($imageRatio > $wantedRatio) {
-            // too wide, keep the height
             $newWidth = round($sourceHeight * $wantedRatio);
             $newHeight = $sourceHeight;
         } else {
-            // too tall, keep the width
             $newHeight = round($sourceWidth / $wantedRatio);
             $newWidth = $sourceWidth;
         }
@@ -144,10 +115,7 @@ class ImageResizer
     }
 
     /**
-     * `name_vignette_<w>_<h>_<page revision>_<upload date>.ext`, keeping the encoded
-     * dates so a new revision of the original does not collide with the old thumbnail.
-     * Falls back to plain `name_vignette_<w>_<h>.ext` for a file that is not in the
-     * encoded form at all.
+     * `name_vignette_<w>_<h>_<page revision>_<upload date>.ext`, keeping the encoded dates so a new revision of the original does not collide with the old thumbnail.
      */
     private function thumbnailFilename(string $fullFilename, string $width, string $height): string
     {

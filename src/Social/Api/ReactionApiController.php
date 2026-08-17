@@ -40,7 +40,6 @@ class ReactionApiController extends YesWikiController
         return new ApiResponse($this->getService(ReactionManager::class)->getReactions('', $id, $userId));
     }
 
-    // no route: reachable through the canonical POST /api/reactions/.../delete below
     public function deleteReaction($idreaction, $id, $page, $username)
     {
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
@@ -92,14 +91,11 @@ class ReactionApiController extends YesWikiController
                 $pagetag = $post->get('pagetag');
                 $reactionIdValue = $post->get('id');
                 if ($reactionid) {
-                    if ($pagetag) { // save the reaction
-                        // get reactions from user for this page
+                    if ($pagetag) {
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($pagetag, [$reactionid], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParameters($pagetag);
                         if (!empty($params[$reactionid])) {
-                            // un choix de vote est fait
                             if ($reactionIdValue) {
-                                // test if limits wherer put
                                 if (!empty($params['maxreaction']) && count($userReactions) >= $params['maxreaction']) {
                                     return new ApiResponse(
                                         ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
@@ -117,7 +113,6 @@ class ReactionApiController extends YesWikiController
                                     $reactionValues
                                 );
 
-                                // hurra, the reaction is saved!
                                 return new ApiResponse(
                                     $reactionValues,
                                     Response::HTTP_OK

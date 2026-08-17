@@ -12,17 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 35: `tags=` is an EXACT filter, which is why it exists.
- *
- * Keywords were only ever folded into the index's free-text column, so tag navigation could only be
- * a fuzzy text match: asking for the keyword `recette` also returned every page that merely
- * mentions the word. That is why the `listpages` handler could not simply be pointed at search --
- * it answered an exact question, and search had no exact answer to give.
- *
- * The two assertions that matter are therefore a pair: the keyword filter finds the tagged page,
- * and does **not** find the page that only mentions the word.
- */
+/** Ticket 35: `tags=` is an EXACT filter, which is why it exists. */
 #[CoversMethod(SearchIndexQuery::class, 'search')]
 #[CoversMethod(SearchIndexer::class, 'writeKeywords')]
 class SearchByKeywordTest extends YesWikiTestCase
@@ -31,7 +21,9 @@ class SearchByKeywordTest extends YesWikiTestCase
     private const MENTIONS = 'TestTicket35MentionsPage';
     private const KEYWORD = 'ticket35keyword';
 
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private array $created = [];
 
     protected function setUp(): void
@@ -43,13 +35,11 @@ class SearchByKeywordTest extends YesWikiTestCase
 
         $pageManager = $wiki->services->get(PageManager::class);
 
-        // one page CARRYING the keyword...
         $pageManager->save(self::TAGGED, [
             'content' => 'a page about something else entirely',
             'keywords' => [self::KEYWORD, 'anotherkeyword'],
         ], '', true);
 
-        // ...and one that only MENTIONS the same word in its prose
         $pageManager->save(self::MENTIONS, [
             'content' => 'this page merely says ' . self::KEYWORD . ' in passing',
         ], '', true);
@@ -120,10 +110,7 @@ class SearchByKeywordTest extends YesWikiTestCase
         $this->assertSame([], $missing, 'asking for two keywords means Content carrying both');
     }
 
-    /**
-     * A blank search box must not list the wiki. The phrase-only guard used to do this on its own;
-     * it now has to account for tags without letting "nothing at all" through.
-     */
+    /** A blank search box must not list the wiki. */
     public function testAskingForNothingReturnsNothing(): void
     {
         $this->assertSame(0, $this->query()->search('', null, 50, 0, [])['total']);

@@ -10,10 +10,7 @@ use Endroid\QrCode\Writer\SvgWriter;
 class QrCodeService
 {
     /**
-     * generate an SVG qr code for $data and write it to $path (ticket 14, formerly
-     * yeswiki-extension-qrcode's wiki.php global $GLOBALS['qrcode'] singleton, a thin
-     * Laravel-facade wrapper -- replaced with a direct dependency on endroid/qr-code,
-     * which needs neither the facade nor its transitive illuminate/* packages).
+     * generate an SVG qr code for $data and write it to $path (ticket 14, formerly yeswiki-extension-qrcode's wiki.php global $GLOBALS['qrcode'] singleton, a thin Laravel-facade wrapper -- replaced with a direct dependency on endroid/qr-code, which needs neither the facade nor its transitive illuminate/* packages).
      */
     public function generateToFile(string $data, string $path): void
     {

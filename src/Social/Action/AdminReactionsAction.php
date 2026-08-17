@@ -2,9 +2,6 @@
 
 namespace YesWiki\Social\Action;
 
-/*
- * Admin all reactions.
- */
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
@@ -37,7 +34,7 @@ class AdminReactionsAction extends YesWikiAction implements RegisteredAction, Pr
         if ($this->getService(AclService::class)->isAdmin()) {
             $allReactions = $this->getService(ReactionManager::class)->getReactions();
             foreach ($allReactions as $k => $reactions) {
-                usort($reactions['reactions'], function ($a, $b) { // sort by user
+                usort($reactions['reactions'], function ($a, $b) {
                     return strnatcasecmp($a['user'], $b['user']);
                 });
             }

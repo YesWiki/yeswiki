@@ -9,11 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 12 (templates absorbed into core): TemplateHelperService is
- * the renamed home of tools/templates's Utils service (a mysterious name for what is really
- * layout-primitive/theme presentation helpers). checkGraphicalElements() is the one every
- * layout-primitive action (accordion, col, grid, label, panel, section, buttondropdown) and
- * the {{end}} action depend on to validate open/close pairing.
+ * Regression tests for ticket 12 (templates absorbed into core): TemplateHelperService is the renamed home of tools/templates's Utils service (a mysterious name for what is really layout-primitive/theme presentation helpers).
  */
 #[CoversMethod(TemplateHelperService::class, 'checkGraphicalElements')]
 class TemplateHelperServiceTest extends YesWikiTestCase
@@ -30,7 +26,6 @@ class TemplateHelperServiceTest extends YesWikiTestCase
 
         $this->assertTrue($service->checkGraphicalElements('col', 'SomePage', null), 'no elements at all is a trivially balanced 0 == 0');
 
-        // an {{end elem="col"}} must not count towards a differently-named element's balance
         $wrongElement = '{{panel}}some text{{end elem="col"}}';
         $this->assertFalse($service->checkGraphicalElements('panel', 'SomePage', $wrongElement));
     }

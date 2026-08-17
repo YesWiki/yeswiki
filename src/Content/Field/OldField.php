@@ -6,9 +6,7 @@ use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * Ensure backwardompatibility with old format field.
- */
+/** Ensure backwardompatibility with old format field. */
 #[\Field(['old'])]
 class OldField extends BazarField
 {
@@ -55,7 +53,6 @@ class OldField extends BazarField
         return $this->error ?? $funcName($templateForm, $this->template, 'saisie', $entry);
     }
 
-    // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
         $funcName = $this->functionName;
@@ -73,7 +70,6 @@ class OldField extends BazarField
         return $this->error ?? $funcName($templateForm, $this->template, 'html', $entry);
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

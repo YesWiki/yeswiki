@@ -5,24 +5,7 @@ namespace YesWiki\Kernel\Performable;
 use Symfony\Contracts\EventDispatcher\Event as SymfonyEvent;
 
 /**
- * Dispatched around every action and handler, so an extension can hook one without the
- * filename convention (wave-two ticket 06).
- *
- * The convention it replaces was `__X.php` / `X__.php`, discovered by scanning directories.
- * It could not survive namespacing (the name came from the filename), it ran a whole
- * performable object just to tweak an argument, and it was a second event system living
- * alongside Symfony's. **Core no longer hooks itself at all** -- those callbacks were merged
- * into the classes they wrapped -- but extensions genuinely need to reach in, and this is
- * how they do it.
- *
- * Two things a hook actually did, both supported here:
- *  - a *before* hook mostly rewrote arguments (see the helloworld sample's formatArguments)
- *  - an *after* hook appended output
- *
- * Four event names fire per phase, coarse to specific:
- *   performable.before   action.before   action.greeting.before
- *   performable.after    action.after    action.greeting.after
- * Subscribe to the specific one unless you really mean every action.
+ * Dispatched around every action and handler, so an extension can hook one without the filename convention (wave-two ticket 06).
  */
 class PerformableEvent extends SymfonyEvent
 {
@@ -31,7 +14,9 @@ class PerformableEvent extends SymfonyEvent
 
     private string $type;
     private string $name;
-    /** @var array<mixed> */
+    /**
+     * @var array<mixed>
+     */
     private array $arguments;
     private string $output = '';
 
@@ -57,15 +42,16 @@ class PerformableEvent extends SymfonyEvent
         return $this->name;
     }
 
-    /** @return array<mixed> */
+    /**
+     * @return array<mixed>
+     */
     public function getArguments(): array
     {
         return $this->arguments;
     }
 
     /**
-     * Replace the arguments the performable will run with. Only meaningful on a `before`
-     * event -- by `after` the performable has already run.
+     * Replace the arguments the performable will run with.
      *
      * @param array<mixed> $arguments
      */
@@ -75,8 +61,7 @@ class PerformableEvent extends SymfonyEvent
     }
 
     /**
-     * Merge into the existing arguments, the common case: a hook usually adjusts one key
-     * rather than restating all of them.
+     * Merge into the existing arguments, the common case: a hook usually adjusts one key rather than restating all of them.
      *
      * @param array<mixed> $arguments
      */

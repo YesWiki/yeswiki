@@ -6,14 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Content\Service\ListpagesRewriter;
 
-/**
- * What `{{listpages}}` becomes, on strings -- no wiki, no database.
- *
- * The mapping is the whole of the retirement's risk: a page is an entry of the Pages form
- * (ADR-0011), so the list survives the rewrite, but three of the old action's parameters
- * have no equivalent and are dropped. Each case here is one row of the table in
- * `ListpagesRewriter`'s docblock, so the two cannot drift apart quietly.
- */
+/** What `{{listpages}}` becomes, on strings -- no wiki, no database. */
 class ListpagesRewriterTest extends TestCase
 {
     private const PAGES_FORM = '5';
@@ -72,10 +65,7 @@ class ListpagesRewriterTest extends TestCase
         );
     }
 
-    /**
-     * The three that cannot be carried over. Dropped, not left in place: a call nothing
-     * answers renders an error where a list used to be. Every one is reported.
-     */
+    /** The three that cannot be carried over. */
     public function testWhatCannotBeExpressedIsDroppedAndNamed(): void
     {
         $rewriter = new ListpagesRewriter();

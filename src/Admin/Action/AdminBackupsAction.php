@@ -2,9 +2,6 @@
 
 namespace YesWiki\Admin\Action;
 
-/*
- * Admin backups.
- */
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;

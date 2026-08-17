@@ -44,8 +44,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     * The group's members as historic ACL text, one name per line -- "" when the
-     * group does not exist (historic Wiki::GetGroupACL()).
+     * The group's members as historic ACL text, one name per line -- "" when the group does not exist (historic Wiki::GetGroupACL()).
      */
     public function getMembersText(string $group): string
     {
@@ -57,8 +56,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     * Create or update a group from an ACL-style newline-separated member list
-     * (historic Wiki::SetGroupACL()).
+     * Create or update a group from an ACL-style newline-separated member list (historic Wiki::SetGroupACL()).
      *
      * @return int 0 on success, 1000 when the definition would be recursive,
      *             1001 when the group name is invalid
@@ -94,7 +92,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     *  create group.
+     * create group.
      *
      * @param string $name group name
      *
@@ -107,7 +105,6 @@ class GroupOperationsService extends YesWikiController
         }
         if ($this->isNameValid($name)) {
             foreach ($members as $member) {
-                // plus nécessaire à la création du groupe ?
                 switch ($this->checkMemberValidity($name, $member)) {
                     case 0:
                         break;
@@ -136,13 +133,11 @@ class GroupOperationsService extends YesWikiController
         return $this->groupManager->getAll();
     }
 
-    /**
-     *  delete group.
-     */
+    /** delete group. */
     public function delete(string $name): void
     {
         if (strtolower($name) == ADMIN_GROUP) {
-            throw new InvalidInputException(_t('GROUP_NAME_DOES_NOT_EXIST')); // FIXME
+            throw new InvalidInputException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
         if ($this->groupManager->groupExists($name)) {
             $this->groupManager->delete($name);
@@ -152,7 +147,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     *  add users and/or groups to group.
+     * add users and/or groups to group.
      *
      * @param array $members users and/or groups to add
      *
@@ -166,10 +161,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     * Check if member is valid for group. Perform following check :
-     *  - if $member is a user, check if the user exists
-     *  - if $member is a group, check if the group exists
-     *  - if $member is a group, check if the group doesn't define itself recursively.
+     * Check if member is valid for group.
      *
      * @param string $groupName (without !/@)
      * @param string $member    (with !/@ if present)
@@ -199,8 +191,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     * Checks if a new group acl is defined recursively
-     * (this method expects that groups that are already defined are not themselves defined recursively...).
+     * Checks if a new group acl is defined recursively (this method expects that groups that are already defined are not themselves defined recursively...).
      *
      * @param string $groupName
      *                          The name of the group to test against origin
@@ -210,9 +201,6 @@ class GroupOperationsService extends YesWikiController
      */
     private function CheckGroupRecursive($groupName, $origin, $checked = []): bool
     {
-        // group names are stored case-preserved and looked up with '=', so only normalize
-        // case for comparisons, never for lookups (MySQL's ci collations hid this, but e.g.
-        // SQLite compares case-sensitively)
         $groupName = trim($groupName);
         if (strtolower($groupName) === $origin) {
             return true;
@@ -246,7 +234,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     *  remove  users  and/or groups from group.
+     * remove users and/or groups from group.
      *
      * @param array $members users and/or groups to add
      *
@@ -267,7 +255,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     *  add or replace current members with new one.
+     * add or replace current members with new one.
      *
      * @param array $members new members List
      *
@@ -302,7 +290,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     *  replace current members with new one.
+     * replace current members with new one.
      *
      * @param array $members new members List
      *

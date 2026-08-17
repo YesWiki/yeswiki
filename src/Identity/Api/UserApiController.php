@@ -125,8 +125,6 @@ class UserApiController extends YesWikiController
                     'error' => str_replace('{currentName}', $postName, _t('USERSETTINGS_NAME_ALREADY_USED')),
                 ];
             } catch (UserNameReservedException $th) {
-                // deliberately not folded into the branch above: "somebody already has that
-                // name" would send them trying variations of a name nobody can ever hold
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
                     'notCreated' => [$postName],
@@ -166,8 +164,6 @@ class UserApiController extends YesWikiController
         $users = $this->getService(UserManager::class)->getAll($userFields);
         $accountActivationService = $this->getService(AccountActivationService::class);
 
-        // UserManager::getAll gives array of User but user does not have jsonSerialize
-        // so extract only what is needed from each User
         $users = array_map(function ($user) use ($userFields, $accountActivationService) {
             if (!is_array($user)) {
                 $user = $user->getArrayCopy();
@@ -177,10 +173,6 @@ class UserApiController extends YesWikiController
                 return in_array($k, $userFields);
             }, ARRAY_FILTER_USE_KEY);
 
-            // isAdmin/activatedStatus (accountactivationbyemail, absorbed into core, ticket
-            // 07) are read through AccountActivationService's own internal fetch, not from
-            // $user itself -- activation_status is Field-ACL-hidden on the generic body a
-            // page-read would otherwise return
             $filtered['isAdmin'] = $this->getService(AclService::class)->isAdmin($user['name']);
             $filtered['activatedStatus'] = $accountActivationService->isActivated($user['name']);
 

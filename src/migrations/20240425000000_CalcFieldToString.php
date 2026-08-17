@@ -11,7 +11,6 @@ class CalcFieldToString extends YesWikiMigration
     {
         $formManager = $this->getService(FormManager::class);
 
-        // find CalcField in forms
         $forms = $formManager->getAll();
         if (!empty($forms)) {
             $fields = [];
@@ -20,11 +19,10 @@ class CalcFieldToString extends YesWikiMigration
                 if (!empty($form['prepared'])) {
                     foreach ($form['prepared'] as $field) {
                         if ($field instanceof CalcField) {
-                            // init array for this form, if needed
                             if (empty($fields[$formId])) {
                                 $fields[$formId] = [];
                             }
-                            // append propertyName if not already present
+
                             if (!empty($field->getPropertyName()) && !in_array($field->getPropertyName(), $fields[$formId])) {
                                 $fields[$formId][] = $field->getPropertyName();
                             }
@@ -36,11 +34,9 @@ class CalcFieldToString extends YesWikiMigration
             if (!empty($fields)) {
                 foreach ($fields as $formId => $fieldNames) {
                     if (!empty($fieldNames)) {
-                        // prepare SQL to select concerned entries (SearchManager->search does not manage int)
                         $fieldsNamesList = implode('|', $fieldNames);
                         $regexpOp = $this->dbService->regexpOperator();
 
-                        // Quote identifiers for cross-database compatibility
                         $commentOnCol = $this->dbService->quoteIdentifier('parent');
                         $bodyCol = $this->dbService->quoteIdentifier('body');
                         $typeCol = $this->dbService->quoteIdentifier('type');
@@ -67,7 +63,7 @@ class CalcFieldToString extends YesWikiMigration
                                             SET $bodyCol = replace($bodyCol, '"$fieldName":$oldValue,', '"$fieldName":"$newValue",')
                                             WHERE $idCol = '{$this->dbService->escape($page['id'])}'
                                         SQL;
-                                        // replace
+
                                         $this->dbService->query($replaceSQL);
                                     }
                                 }

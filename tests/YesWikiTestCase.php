@@ -14,15 +14,17 @@ use YesWiki\YesWikiRuntime;
 
 class YesWikiTestCase extends TestCase
 {
-    /** the domains the suite's fixtures use -- nothing else is ever swept */
+    /** the domains the suite's fixtures use -- nothing else is ever swept. */
     private const TEST_EMAIL_DOMAINS = ['@example.com', '@example.tld', '@xyz.earth'];
 
     private static bool $leakSweepRegistered = false;
 
-    /** start of the run, on the same clock signuptime is written with */
+    /** start of the run, on the same clock signuptime is written with. */
     private static string $runStartedAt = '';
 
-    /** @var string[] groups that existed before the run, and so are none of its business */
+    /**
+     * @var string[] groups that existed before the run, and so are none of its business
+     */
     private static array $groupsBeforeRun = [];
 
     protected static function getWiki(): YesWikiRuntime
@@ -36,39 +38,14 @@ class YesWikiTestCase extends TestCase
     }
 
     /**
-     * The suite reads the developer's own yeswiki.config.php (test.config.php has not been
-     * the one for a while), so anything they switch on to try it out changes what the
-     * tests see. An experiment left on turned five assertions about the ACeditor's markup
-     * into failures that said nothing about the code under test.
-     *
-     * What ships off is what is tested; a switch's own behaviour is the business of the
-     * tests that turn it on for themselves.
+     * The suite reads the developer's own yeswiki.config.php (test.config.php has not been the one for a while), so anything they switch on to try it out changes what the tests see.
      */
     private static function pinExperimentalSwitches(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['vditor_wiki_editor'] = false;
     }
 
-    /**
-     * Deletes the users and groups the run created, at process shutdown.
-     *
-     * Per-class teardown cannot: several fixtures are created by static data providers,
-     * which PHPUnit resolves before setUpBeforeClass() and even for tests that end up
-     * skipped. And since users became page rows, every leaked one is a page row too -- a
-     * few days of local runs had left 2226 users and 3352 groups behind, against 310 real
-     * pages and one real group.
-     *
-     * Users are matched on a test email domain AND a signuptime at or after the run
-     * started, so a database that legitimately holds an @example.com account from before
-     * the run keeps it. Groups carry no timestamp, so they are diffed against a snapshot
-     * taken here instead -- this runs on the first getWiki() call, which is the first thing
-     * any provider does, hence before the run has created any group of its own.
-     *
-     * Comments are swept the same way as users, on their timestamp: a test that posts one
-     * leaves a page row behind on every single run, and CommentServiceHashcashTest alone
-     * had accumulated 786 of them on one page. They are matched on `time` at or after the
-     * run started, which in a test database is the suite's own writing.
-     */
+    /** Deletes the users and groups the run created, at process shutdown. */
     private static function registerLeakSweep(YesWikiRuntime $wiki): void
     {
         if (self::$leakSweepRegistered) {
@@ -87,7 +64,6 @@ class YesWikiTestCase extends TestCase
                 try {
                     $userManager->delete($user);
                 } catch (\Throwable $t) {
-                    // best effort: a sweep failure must not turn a passing run red
                 }
             }
 
@@ -96,7 +72,6 @@ class YesWikiTestCase extends TestCase
                 try {
                     $groupManager->delete($group);
                 } catch (\Throwable $t) {
-                    // idem
                 }
             }
 
@@ -129,7 +104,6 @@ class YesWikiTestCase extends TestCase
                 $pageManager->deleteOrphaned($tag);
                 $indexer->delete($tag);
             } catch (\Throwable $t) {
-                // best effort, like the rest of the sweep
             }
         }
     }
@@ -152,10 +126,8 @@ class YesWikiTestCase extends TestCase
     }
 
     /**
-     * Narrow a nullable user lookup: tests that just created or fetched a user call this
-     * to assert the lookup succeeded and get a non-null User for typed service calls.
+     * @var int|null output-buffer depth at test start (see tearDown)
      */
-    /** @var int|null output-buffer depth at test start (see tearDown) */
     private $obLevelAtSetUp;
 
     protected function setUp(): void
@@ -166,9 +138,6 @@ class YesWikiTestCase extends TestCase
 
     protected function tearDown(): void
     {
-        // a caught mid-render crash can leave the render pipeline's output buffer open;
-        // the NEXT test's captured page then swallows stray output (debug SQL, warnings)
-        // and fails on content it never produced. Normalize the depth between tests.
         while ($this->obLevelAtSetUp !== null && ob_get_level() > $this->obLevelAtSetUp) {
             ob_end_clean();
         }

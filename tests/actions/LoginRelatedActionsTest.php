@@ -17,9 +17,9 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 08 (tools/login absorbed into core):
- * - the {{login}}/{{lostpassword}}/{{listusers}} tags must render through their
- *   relocated repo-root actions/templates (catches the @templates-vs-@core Twig
+ * Regression tests for ticket 08 (tools/login absorbed into core).
+ *
+ * @templates-vs-@core Twig
  *   namespace mixup, and the stale duplicate actions/listusers.php that used to
  *   shadow the class-based ListusersAction).
  * - LostPasswordAction::resetPassword() must now enforce the site's password
@@ -71,8 +71,6 @@ class LoginRelatedActionsTest extends YesWikiTestCase
         $this->assertNotEmpty($users, 'Need at least one existing user to test password recovery against.');
         $user = $users[0];
 
-        // build a valid recovery key the same way UserManager::sendPasswordRecoveryEmail() does,
-        // without going through it (that would also trigger a real send_mail() call)
         $passwordHasherFactory = $wiki->services->get(PasswordHasherFactory::class);
         $tripleStore = $wiki->services->get(TripleStore::class);
         $hasher = $passwordHasherFactory->getPasswordHasher($user);
@@ -98,9 +96,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * ensure the cache folder is writable before tests.
-     */
+    /** ensure the cache folder is writable before tests. */
     private function ensureCacheFolderIsWritable()
     {
         $this->assertTrue(is_dir('cache'), 'The cache folder is not existing !');

@@ -1,4 +1,3 @@
-// parse string in vcard format
 function parseVcard(input) {
   const Re1 = /^(version|fn|title|org|url|adr):(.+)$/i
   const Re2 = /^([^:;]+);([^:]+):(.+)$/
@@ -44,9 +43,7 @@ function parseVcard(input) {
   return fields
 }
 
-// do speech synthesis of the text inside the selector
 function speak(selector) {
-  // cut former speech
   window.speechSynthesis.cancel()
   const toSpeak = new SpeechSynthesisUtterance(
     document.querySelector(selector).textContent,
@@ -54,7 +51,6 @@ function speak(selector) {
   window.speechSynthesis.speak(toSpeak)
 }
 
-// clean notification zone and add new notification
 function showNotif(txt, alertClass) {
   const alert = document.querySelector('#qrinfos .yw-alert')
   alert.classList.remove(
@@ -99,7 +95,6 @@ function reset() {
   return false
 }
 
-// reset qrcode app to step1
 document.querySelector('.btn-reset').addEventListener('click', reset)
 
 function stepHandler(currentStep, entry) {
@@ -156,19 +151,15 @@ function stepHandler(currentStep, entry) {
         'yw-alert--success',
       )
 
-      // reset after 10 seconds
       setTimeout(reset, 10000)
 
-      // order people by name to have an unique pair in db
       if (firstpeople.title.toLowerCase() > secondpeople.title.toLowerCase()) {
         const temp = secondpeople
         secondpeople = firstpeople
         firstpeople = temp
       }
-      // TODO test if relation already exists
       const [, url1Query] = firstpeople.url.split('?')
       const [, url2Query] = secondpeople.url.split('?')
-      // make link in database
       const params = new URLSearchParams()
       params.set(
         'bf_titre',
@@ -180,7 +171,6 @@ function stepHandler(currentStep, entry) {
       params.set('form_id', '1300')
       fetch('?api/relations', { method: 'POST', body: params })
 
-      // first mail send
       let message1 = 'Les informations de votre contact:\n'
       message1 = `${message1}${firstpeople.title}\n`
       message1 = `${message1}Email : ${firstpeople.bf_mail}\n`
@@ -191,10 +181,6 @@ function stepHandler(currentStep, entry) {
         message1 = `${message1}Fiche complète : ${firstpeople.url}\n`
       }
 
-      // Ticket 35: this used to POST to `?ContacT/mail`, a page handler that never read $_POST
-      // at all -- it rendered a form and discarded the body, so these two mails were silently
-      // never sent. The route below is what actually sends, and it requires `pageTag`, which was
-      // as much of the problem as the wrong url.
       fetch(wiki.url('api/contact/mail'), {
         method: 'POST',
         body: new URLSearchParams({
@@ -204,12 +190,11 @@ function stepHandler(currentStep, entry) {
           subject: 'QRcode contact',
           message: message1,
           mail: secondpeople.bf_mail,
-          subjectprefix: 'Co-construire 2023', // Todo make a param
+          subjectprefix: 'Co-construire 2023',
           type: 'contact',
         }),
       })
 
-      // second mail send
       let message2 = 'Les informations de votre contact:\n'
       message2 = `${message2}${secondpeople.title}\n`
       message2 = `${message2}Email : ${secondpeople.bf_mail}\n`
@@ -219,10 +204,6 @@ function stepHandler(currentStep, entry) {
       if (secondpeople.url) {
         message2 = `${message2}Fiche complète : ${secondpeople.url}\n`
       }
-      // Ticket 35: this used to POST to `?ContacT/mail`, a page handler that never read $_POST
-      // at all -- it rendered a form and discarded the body, so these two mails were silently
-      // never sent. The route below is what actually sends, and it requires `pageTag`, which was
-      // as much of the problem as the wrong url.
       fetch(wiki.url('api/contact/mail'), {
         method: 'POST',
         body: new URLSearchParams({
@@ -241,9 +222,7 @@ function stepHandler(currentStep, entry) {
   return step
 }
 
-// handler of the qrcode data when successfully read
 function successHandler(data) {
-  // do something when code is read and is a string
   if (
     (typeof data === 'string' || data instanceof String) &&
     data !== 'undefined'
@@ -280,11 +259,10 @@ let lastResult
 
 const qrinfos = document.getElementById('qrinfos')
 
-// This method will trigger user permissions
 const qrCodeFormats = {
   formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
 }
-const html5QrCode = new Html5Qrcode(/* element id */ 'qrreader', qrCodeFormats)
+const html5QrCode = new Html5Qrcode('qrreader', qrCodeFormats)
 const config = { fps: 20, qrbox: 250 }
 const qrCodeSuccessCallback = (decodedText) => {
   if (decodedText !== lastResult) {
@@ -292,20 +270,12 @@ const qrCodeSuccessCallback = (decodedText) => {
     successHandler(decodedText)
   }
 }
-// we prefer back camera for scanning from mobile phone
 html5QrCode
-  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {
-    // parse error, ignore it.
-  })
+  .start({ facingMode: 'environment' }, config, qrCodeSuccessCallback, () => {})
   .catch((err) => {
-    // Start failed, handle it.
     console.error(err)
   })
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
-// the body's *contents*, so a body-keyed initialiser runs once per session and every
-// later page is left uninitialised.
 ywInitEach('#qrinfos', () => {
   const entity = JSON.parse(qrinfos.dataset.entity)
   if (entity && Object.keys(entity).length > 0) {
@@ -342,7 +312,6 @@ ywInitEach('#qrinfos', () => {
     }
     observer.observe(target, observerConfig)
 
-    // first load
     speak('#qrinfos .yw-alert')
   }
 })

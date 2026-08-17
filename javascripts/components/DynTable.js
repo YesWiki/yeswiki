@@ -1,12 +1,3 @@
-// DynTable.js — Vue-native data table for the bazar dynamic index (ticket 16:
-// replaces jQuery DataTables; sorting/search happen in computed properties over
-// the reactive rows, no DOM-driven table library). DataTables-style column defs
-// are still the contract with BazarTable: {data, title, class, orderable,
-// visible, width, render(value, type, row), footer}; render() is called with
-// 'display' for cell html, 'sort' and 'filter' for the comparable/searchable
-// values, exactly as before. No pagination and no visible search input, matching
-// the legacy config (paging:false, search driven externally by BazarTable).
-// Disclosed simplification: the copy/csv/print export buttons are gone.
 export default {
   props: {
     columns: {
@@ -158,7 +149,6 @@ export default {
     sanitizeValue(val) {
       let sanitizedValue = val
       if (Object.prototype.toString.call(val) === '[object Object]') {
-        // because if orthogonal data is defined, value is an object
         sanitizedValue = val.display || ''
       }
       return Number.isNaN(Number(sanitizedValue)) ? 1 : Number(sanitizedValue)

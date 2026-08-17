@@ -27,7 +27,6 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
         $get = $request->query;
         $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['id'] ?? $arg['id'] ?? '';
 
-        // get services
         if (!$this->bazarListService) {
             $this->bazarListService = $this->getService(BazarListService::class);
         }
@@ -52,7 +51,6 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
             return $aclMessage;
         }
 
-        // get services
         $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
         if (!$this->bazarListService) {
@@ -60,8 +58,6 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
         }
 
         $vForms = $this->formManager->getAll();
-
-        // get CSV
 
         $csvraw = null;
 
@@ -82,14 +78,13 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
                     'keywords' => $this->arguments['keywords'],
                 ],
                 [
-                    'fakeMode' => false, // No fake CSV
+                    'fakeMode' => false,
                     'keysInsteadOfValues' => $this->arguments['bazar-export-option-keys-instead-of-values'],
                 ]
             );
 
             $vFilename = $this->CSVManager->buildExportFilename($vTheID);
         } else {
-            // get Forms
             $vSelectedForm = null;
         }
 

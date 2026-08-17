@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -36,13 +35,12 @@ class LinkedEntryField extends BazarField
         $this->limit = $values[self::FIELD_LIMIT] ?? '';
         $this->template = $values[self::FIELD_TEMPLATE] ?? '';
         $this->linkedId = $values[self::FIELD_LINK_TYPE] ?? '';
-        $this->propertyName = null; // to prevent bad saved field when updating entry and !canEdit or at export/import
+        $this->propertyName = null;
         $this->addEntryBtnLabel = $values[self::FIELD_ADD_ENTRY_BTN_LABEL] ?? '';
     }
 
     protected function renderInput($entry)
     {
-        // Display the linked entries only on update
         if (isset($entry['tag'])) {
             return $this->render(
                 '@core/inputs/linked-entry.twig',
@@ -53,7 +51,6 @@ class LinkedEntryField extends BazarField
 
     protected function renderStatic($entry)
     {
-        // Display the linked entries only if tag and form_id
         if (!empty($entry['tag']) && !empty($entry['form_id'])) {
             return $this->render(
                 '@core/fields/linked-entry.twig',
@@ -112,24 +109,13 @@ class LinkedEntryField extends BazarField
 
     protected function getQueryForLinkedLabels($entry): ?string
     {
-        // A `wiki-url|formId` name used to make this field fetch that wiki's form definition here,
-        // with a bare file_get_contents() on every render -- no timeout, no cache, and a fatal
-        // warning turning into an unrenderable page whenever the other site was slow or gone.
-        // Ticket 34 removed render-time dependencies on other sites; content from elsewhere is
-        // imported, so a linked form is a local form.
-        //
-        // This one was reached without going through ExternalBazarService, which is why the
-        // architecture test that greps for network calls outside an importer exists: deleting the
-        // service would not have found it.
         if (str_contains((string)$this->name, '|')) {
             return '';
         }
 
-        // we just query on the field
         return isset($entry['tag']) ? $this->linkedId . '=' . $entry['tag'] : '';
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

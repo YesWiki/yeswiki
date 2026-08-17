@@ -9,12 +9,7 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 10: Page, User and File are forms whose core fields cannot be deleted or
- * retyped, while everything else about them stays the webmaster's to change.
- *
- * `enforce()` is the whole guarantee in one pure function, which is why it is tested
- * here without a wiki: every template write vector the ticket names -- the designer, the
- * API, CSV import, duplication, a hand-edited template -- reaches storage through it.
+ * Ticket 10: Page, User and File are forms whose core fields cannot be deleted or retyped, while everything else about them stays the webmaster's to change.
  */
 class ContentTypeSchemaTest extends TestCase
 {
@@ -29,7 +24,9 @@ class ContentTypeSchemaTest extends TestCase
         $this->assertSame($template, ContentTypeSchema::enforce($template, null));
     }
 
-    /** @return array<string, array{string, list<string>}> */
+    /**
+     * @return array<string, array{string, list<string>}>
+     */
     public static function mandatoryStructures(): array
     {
         return [
@@ -39,7 +36,9 @@ class ContentTypeSchemaTest extends TestCase
         ];
     }
 
-    /** @param list<string> $expected */
+    /**
+     * @param list<string> $expected
+     */
     #[DataProvider('mandatoryStructures')]
     public function testAnEmptyTemplateGetsTheWholeMandatoryStructure(string $type, array $expected): void
     {
@@ -51,12 +50,12 @@ class ContentTypeSchemaTest extends TestCase
         }
     }
 
-    /** @param list<string> $expected */
+    /**
+     * @param list<string> $expected
+     */
     #[DataProvider('mandatoryStructures')]
     public function testDeletingALockedFieldPutsItBack(string $type, array $expected): void
     {
-        // a webmaster (or an API client, or a CSV import) submits a template with the
-        // core structure stripped out
         $enforced = ContentTypeSchema::enforce(
             [['type' => 'texte', 'name' => 'my_own_field', 'label' => 'Mine']],
             $type
@@ -81,11 +80,7 @@ class ContentTypeSchemaTest extends TestCase
         $this->assertSame('mot_de_passe', $password[0]['type'], 'a locked field keeps its declared type');
     }
 
-    /**
-     * The other half of the deal: locked does not mean frozen. If this stops being true
-     * the designer becomes a lie -- the ticket asks for lock badges on otherwise
-     * ordinary fields, not for read-only rows.
-     */
+    /** The other half of the deal: locked does not mean frozen. */
     public function testLabelHelpTextAclAndOrderAreTheWebmastersToChange(): void
     {
         $template = [
@@ -108,14 +103,7 @@ class ContentTypeSchemaTest extends TestCase
     }
 
     /**
-     * A missing locked field returns next to the declared-earlier locked fields it belongs
-     * with, and at the front when there are none.
-     *
-     * `title` is declared first and nothing precedes it, so it leads -- the core structure
-     * is not buried under the webmaster's own fields. `keywords` is declared after
-     * `content`, so it returns after `content` rather than jumping ahead of a webmaster
-     * field that was already sitting there. That distinction is what lets a locked field
-     * newly declared in code (profile_picture on User) appear where it was declared.
+     * A missing locked field returns next to the declared-earlier locked fields it belongs with, and at the front when there are none.
      */
     public function testAMissingLockedFieldReturnsWhereItWasDeclared(): void
     {

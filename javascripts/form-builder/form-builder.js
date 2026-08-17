@@ -1,24 +1,9 @@
-// form-builder.js — vanilla form designer (ticket 26)
-//
-// Elementor-style layout: a left sidebar that shows either the field palette or the
-// selected field's settings, and a canvas listing the form's fields as cards
-// (drag-to-reorder via the vendored SortableJS, loaded globally as window.Sortable).
-//
-// The designer edits the stored JSON template (`template`, an array of
-// named-attribute field objects) directly: converter.js only resolves wiki type
-// keywords to designer configs and back, there is no positional mapping. The
-// #form-builder-text textarea (the "code" tab) is the single source of truth on
-// submit; the designer serializes into it on every change.
 import registry, { paletteEntries } from './registry.js'
 import { parseFields, serializeFields } from './converter.js'
 
 const container = document.getElementById('form-builder-container')
 const textarea = document.getElementById('form-builder-text')
 
-// Fields of a Content type's mandatory core structure (ticket 10). They are ordinary
-// fields here -- relabel, reorder, change the help text or the ACL freely -- except that
-// they cannot be deleted or duplicated. The server enforces the same rule whatever this
-// UI does, so this is the honest affordance, not the protection.
 const lockedFieldNames = (() => {
   try {
     const declared = JSON.parse(container?.dataset.lockedFields || '[]')
@@ -57,15 +42,11 @@ function joinCsv(value) {
   return Array.isArray(value) ? value.join(',') : String(value ?? '')
 }
 
-// a field's config, falling back to the generic numeric-keys editor for
-// unknown/extension types
 function configFor(type) {
   return registry[type] || registry.custom
 }
 
-// ---------------------------------------------------------------- state
-
-let fields = [] // [{ id, type, data }]
+let fields = []
 let selectedId = null
 let uid = 0
 
@@ -78,7 +59,6 @@ function selectedField() {
   return fields.find((field) => field.id === selectedId) || null
 }
 
-// base attributes every field gets unless overridden by the config or disabled
 function baseAttributes() {
   return {
     label: { label: _t('FORM_BUILDER_LABEL_LABEL'), value: '' },
@@ -133,8 +113,6 @@ function makeField(type, extraData = {}) {
   return { id: newId(), type, data }
 }
 
-// ---------------------------------------------------------------- sync
-
 function serialize() {
   return serializeFields(
     fields.map(({ type, data }) => ({ type, data })),
@@ -147,11 +125,6 @@ function syncToTextarea() {
   updateTitleSelect()
   updateRoleSelects()
 }
-
-// ---------------------------------------------------------------- entry title
-// The "field used as title" select under the builder (entry_title_template,
-// ADR-0010): its options mirror the designer's current named fields; picking one
-// stores `{{name}}`, the custom option reveals the free-template input.
 
 const CUSTOM_TITLE = '__custom__'
 const titleSelect = document.getElementById('entry-title-select')
@@ -181,12 +154,6 @@ function updateTitleSelect() {
   titleCustom.classList.toggle('hide', matched)
 }
 
-// ---------------------------------------------------------------- field roles
-// Which field answers each of core's questions (ticket 11). A role left on
-// "automatic" resolves from the field's own type, so these selects only have to
-// say something when a form is ambiguous or the webmaster wants another field --
-// which is why the empty option is the default and is not an error.
-
 function updateRoleSelects() {
   document.querySelectorAll('[data-yw-field-role]').forEach((selectParam) => {
     const select = selectParam
@@ -202,8 +169,6 @@ function updateRoleSelects() {
     select.append(auto)
 
     fields.forEach(({ type, data }) => {
-      // only fields that can play the role: an explicit mapping to anything else is
-      // refused server-side, so offering it would only be a way to fail
       if (!data.name || (types.length > 0 && !types.includes(type))) return
       const option = document.createElement('option')
       option.value = data.name
@@ -236,8 +201,6 @@ function loadFromTextarea() {
   fields = parsed.map(({ type, data }) => ({ id: newId(), type, data }))
   return true
 }
-
-// ---------------------------------------------------------------- layout
 
 let paletteEl
 let settingsEl
@@ -279,10 +242,6 @@ function clearError() {
   errorEl.classList.add('hide')
 }
 
-// ---------------------------------------------------------------- palette
-
-// case- and diacritic-insensitive match ("hidden" finds "Champ caché"'s
-// normalized form too — matching happens on the translated label)
 function normalizeForFilter(text) {
   return String(text).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
@@ -308,7 +267,6 @@ function renderPalette() {
     grid.append(item)
   })
 
-  // live filter on the palette only — a selected field's settings are never filtered
   filter.addEventListener('input', () => {
     const needle = normalizeForFilter(filter.value.trim())
     grid.querySelectorAll('.yw-fb__palette-item').forEach((item) => {
@@ -329,7 +287,6 @@ function renderPalette() {
   }
 }
 
-// narrow screens: the sidebar is a right-side drawer behind a floating button
 function initDrawer() {
   const toggle =
     el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
@@ -358,24 +315,10 @@ function addFromPalette(type, index = fields.length) {
   selectField(added[0].id)
 }
 
-// ---------------------------------------------------------------- previews
-// A card body shows the field exactly as the entry form will render it: the
-// designer posts its template to `api/forms/preview`, which runs every field
-// object through FormManager::prepareData + BazarField::renderInputIfPermitted
-// and answers with the real Twig markup as htmx out-of-band swaps, one per card.
-//
-// Ticket 14: the answer also carries the field's declared assets, so a map preview
-// actually becomes a map. Deduplicating them across cards is core's job now
-// (javascripts/yw-assets.js), not this file's.
-//
-// Previews are cached per field id so rebuilding a card (every keystroke goes
-// through refreshCard) never blanks it: the stale markup stays on screen, dimmed,
-// until the answer for that field lands.
-
 const PREVIEW_DEBOUNCE = 300
 
-const previewHtml = {} // field id -> last markup rendered by the server
-const previewRequests = {} // field id -> id of the last request that asked for it
+const previewHtml = {}
+const previewRequests = {}
 let previewTimer = null
 let previewRequestId = 0
 let previewPendingAll = false
@@ -387,13 +330,6 @@ function previewHolder(field) {
   )
 }
 
-// The previews live inside the form-edit <form>: their controls must never be submitted with
-// it, block its validation, or duplicate an element id.
-//
-// Ids are rewritten rather than removed (ticket 14). Removing them made every preview inert
-// by accident — a field initialiser that looks its parts up by id found nothing — while the
-// actual requirement is only that they stay unique within the page. Prefixing with the card
-// id satisfies both, and `for` attributes are remapped so labels keep working.
 function neutralizePreview(holder, fieldId) {
   holder
     .querySelectorAll('input, select, textarea, button')
@@ -415,8 +351,6 @@ function neutralizePreview(holder, fieldId) {
   })
 }
 
-// some inputs draw nothing by themselves — a hidden field, or a widget the entry
-// form builds in JS the designer does not run — and would leave a blank card body
 function hasVisiblePreview(holder) {
   return (
     holder.textContent.trim() !== '' ||
@@ -445,8 +379,6 @@ function forgetStalePreviews() {
   })
 }
 
-// `ids` null asks for every field, otherwise only the listed ones (an attribute
-// edit changes one card). Calls coalesce until the debounce elapses.
 function schedulePreviews(ids = null) {
   if (ids === null) previewPendingAll = true
   else ids.forEach((id) => previewPendingIds.add(id))
@@ -475,11 +407,6 @@ async function runPreviews() {
   )
   const ids = JSON.stringify(targets.map((field) => field.id))
 
-  // Ticket 14: the answer is markup, not JSON. htmx distributes it — one out-of-band swap
-  // per field, addressed by the card's own id, plus one carrying whatever assets the input
-  // templates declared (leaflet for a map, vditor for a long text), which swap into <head>.
-  // Addressing by id rather than by position also removes the old hazard that one
-  // unbuildable field shifted every card after it.
   try {
     await htmx.ajax('POST', wiki.url('?api/forms/preview'), {
       source: canvasEl,
@@ -487,7 +414,6 @@ async function runPreviews() {
       values: { template, ids },
     })
   } catch (error) {
-    // keep whatever the cards already show rather than blanking the canvas
     console.error('form designer: field preview request failed', error)
     targets.forEach((field) => {
       if (previewRequests[field.id] === requestId) {
@@ -498,23 +424,16 @@ async function runPreviews() {
   }
 
   targets.forEach((field) => {
-    // a later edit already asked for this field again: its answer wins. htmx has already
-    // written into the holder, so a stale response is undone by repainting from the cache
-    // the fresher request will fill.
     const holder = previewHolder(field)
     if (!holder) return
     if (previewRequests[field.id] !== requestId) {
       paintPreview(holder, field)
       return
     }
-    // cache what the swap just put there, so rebuilding the card (every keystroke goes
-    // through refreshCard) repaints instantly instead of blanking
     previewHtml[field.id] = holder.innerHTML
     paintPreview(holder, field)
   })
 }
-
-// ---------------------------------------------------------------- canvas
 
 function initCanvasSort() {
   if (!window.Sortable) return
@@ -523,7 +442,6 @@ function initCanvasSort() {
     handle: '.yw-fb__card-drag',
     animation: 150,
     onAdd(event) {
-      // dropped from the palette: replace the clone with a real field
       const type = event.item.getAttribute('data-fb-type')
       event.item.remove()
       addFromPalette(type, event.newIndex)
@@ -547,8 +465,6 @@ function renderCanvas() {
   }
   fields.forEach((field) => canvasEl.append(renderCard(field)))
   forgetStalePreviews()
-  // cards rebuilt from the cache paint instantly; the ones never previewed yet
-  // (just added, duplicated, or reloaded from the code tab) need a render
   const missing = fields
     .filter((field) => previewHtml[field.id] === undefined)
     .map((field) => field.id)
@@ -615,8 +531,6 @@ function refreshCard(field) {
   const existing = canvasEl.querySelector(`[data-fb-id="${field.id}"]`)
   if (existing) existing.replaceWith(renderCard(field))
 }
-
-// ---------------------------------------------------------------- settings panel
 
 function selectField(id) {
   selectedId = id
@@ -749,7 +663,6 @@ function renderSettings() {
   settingsEl.append(main)
   if (advancedWrap.childElementCount > 1) settingsEl.append(advancedWrap)
 
-  // ------------------------------------------------ editorSetup api
   const readControl = (name) => {
     const control = settingsEl.querySelector(`[data-fb-input="${name}"]`)
     if (!control) return undefined
@@ -814,8 +727,6 @@ function renderSettings() {
       )
       if (label) label.textContent = text
     },
-    // rebuilds a select attribute's option list (the current value stays selected,
-    // and is kept as an extra option if the new list doesn't contain it)
     setOptions: (name, options) => {
       const control = settingsEl.querySelector(
         `select[data-fb-input="${name}"]`,
@@ -838,8 +749,6 @@ function renderSettings() {
         control.append(option)
       })
     },
-    // the settings-panel row of an attribute, for configs that add their own
-    // adjacent controls (e.g. the enum family's create/edit-list buttons)
     getRow: (name) => settingsEl.querySelector(`[data-fb-attribute="${name}"]`),
     onChange: (name, callback) => {
       ;(changeCallbacks[name] = changeCallbacks[name] || []).push(callback)
@@ -884,12 +793,7 @@ function renderSettings() {
   config.editorSetup?.(api)
 }
 
-// ---------------------------------------------------------------- tabs + submit
-
 function bindTabsAndSubmit() {
-  // switching TO the designer tab re-reads the textarea (the code tab may have
-  // changed it); switching AWAY serializes. Invalid JSON keeps the current
-  // designer state and shows an error.
   document.querySelectorAll('a[href="#formbuilder"]').forEach((link) => {
     link.addEventListener('click', () => {
       if (
@@ -910,8 +814,6 @@ function bindTabsAndSubmit() {
     link.addEventListener('click', () => syncToTextarea())
   })
   textarea.form?.addEventListener('submit', () => {
-    // the designer tab may hold unserialized state only when it is the active
-    // pane; the textarea already mirrors every designer change otherwise
     const designerPane = document.getElementById('formbuilder')
     if (designerPane?.classList.contains('active')) syncToTextarea()
   })

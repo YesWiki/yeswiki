@@ -30,19 +30,16 @@ class ApiService
     public function isAuthorized(array $requestParams, RouteCollection $routes)
     {
         $bearerToken = $this->getBearerToken();
-        // connect user from api_allowed_keys (format 'userName' => 'key')
-        // to be admin, the userName should exist and be in @admins group
+
         $bearerIsConnected = $this->connectBearer($bearerToken);
 
-        // acl
         $acl = $this->loadACL($requestParams, $routes);
         $publicMode = in_array('public', $acl);
-        // a route restricted to one or several groups (e.g. "@admins") must always be
-        // checked against the connected user's real membership
+
         $requiresGroup = !empty(array_filter($acl, fn ($entry) => is_string($entry) && strpos($entry, '@') === 0));
-        // remove public
+
         $acl = array_diff($acl, ['public']);
-        // check ACL if not empty after removing public
+
         $hasAcl = !empty(implode(' ', $acl)) && $this->aclService->check(implode("\n", $acl));
 
         if ($requiresGroup) {
@@ -65,9 +62,7 @@ class ApiService
         ;
     }
 
-    /**
-     * Get header Authorization.
-     * */
+    /** Get header Authorization. */
     private function getAuthorizationHeader()
     {
         $headers = $this->currentRequest->get()->headers->get('authorization')
@@ -77,13 +72,11 @@ class ApiService
         return $headers;
     }
 
-    /**
-     * get access token from header.
-     * */
+    /** get access token from header. */
     private function getBearerToken()
     {
         $headers = $this->getAuthorizationHeader();
-        // HEADER: Get the access token from the header
+
         if (!empty($headers)) {
             if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
                 return $matches[1];
@@ -106,9 +99,7 @@ class ApiService
         return $route->hasOption('acl') ? $route->getOption('acl') : [];
     }
 
-    /**
-     * connect user from bearer token.
-     */
+    /** connect user from bearer token. */
     private function connectBearer(?string $bearerToken = null): bool
     {
         if (empty($bearerToken) || !$this->params->has('api_allowed_keys')) {
@@ -121,14 +112,13 @@ class ApiService
         }
         $userName = array_search($bearerToken, $apiAllowedKeys);
         if (!empty($userName)) {
-            // get user from key
             $user = $this->userManager->getOneByName($userName);
         }
 
         if (empty($user)) {
             return false;
         }
-        // login
+
         $this->authenticationService->logout();
         $this->authenticationService->login($user);
 

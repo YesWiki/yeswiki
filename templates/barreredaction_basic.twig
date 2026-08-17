@@ -1,20 +1,4 @@
-{# What you can do to this page, and what it says about itself -- two regions, because
-   they are two different things and were being read as one long strip of links.
 
-   **The cluster** floats in the top-right corner and follows you down the page: editing is
-   the errand people come back for, so it is one click away wherever they are in a long
-   page. Collapsed it is the edit button alone; the rarer verbs (duplicate, files, delete)
-   appear when the pointer is on it. Only someone who may write this page gets one at all --
-   a reader has nothing to open it for.
-
-   **The line** sits at the bottom, quiet and small: who wrote this, when, and the links
-   that belong to those facts -- permissions and comments next to the owner, the revisions
-   next to the dates. Sharing and the favourite star are there too, because they are the
-   two things a reader who cannot edit still wants.
-
-   Everything is CSS: the reveal is `:hover`/`:focus-within`, and where there is no pointer
-   to hover with (a phone) the cluster stops floating and shows every action at once. See
-   `styles/yw-core.css`. #}
 <div class="{{ class }}">
     {% if linkedit is defined %}
         <nav class="yw-page-actions" aria-label="{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}">
@@ -64,28 +48,11 @@
 
     <div class="yw-page-info">
         <div class="yw-page-info__facts">
-            {# who wrote it, and the two things that are about *who* -- permissions and
-               comments -- on the same line as the name they qualify.
 
-               <div>, not <p>: the comments control is a dropdown whose menu is a <ul>, and
-               a <ul> inside a <p> makes the HTML parser close the paragraph early. That
-               left the menu outside `.dropup` -- where the toggle looks for it, so opening
-               the comments did nothing -- and a stray empty <p> behind it. #}
             {% set showAuthor = userIsAdmin and author is not empty %}
             {% if showAuthor or linkedit is defined or linkacls is defined or linkclosecomments is defined or linkopencomments is defined %}
                 <div class="yw-page-info__line">
-                    {# The same verbs the floating cluster carries, as plain links at the foot
-                       of the page and *before* the owner. The cluster is collapsed to a single
-                       icon and only opens on hover, which is fine for the errand you came for
-                       and no good at all for finding out what you are allowed to do here --
-                       these say it in words, in the line that already lists the page's facts.
-                       Links rather than buttons: this line is prose about the page, and a row
-                       of buttons in the middle of it would read as a second toolbar. #}
-                    {# `TEMPLATE_EDIT` ("Éditer"), not `TEMPLATE_EDIT_THIS_PAGE`: the short
-                       verb reads better in a line of prose, and it keeps this link from
-                       having the *same accessible name* as the floating cluster's button.
-                       Two links called "Éditer la page" on one page is a thing a screen
-                       reader announces twice with no way to tell them apart. #}
+
                     {% if linkedit is defined %}
                         <a class="link-edit"
                            href="{{ linkedit }}"
@@ -102,9 +69,7 @@
                             <span>{{ _t("TEMPLATE_DUPLICATE") }}</span>
                         </a>
                     {% endif %}
-                    {# red, and shown only to someone who may actually delete: `linkdeletepage`
-                       is defined by the action only when the permission is there, so the colour
-                       never advertises something that would be refused #}
+
                     {% if linkdeletepage is defined %}
                         <a class="link-deletepage yw-page-info__danger modalbox"
                            href="{{ linkdeletepage }}"
@@ -165,8 +130,7 @@
                     {% if createdAt is not empty %}
                         <span class="date_creation">{{ _t("BAZ_DATE_CREATION")|capitalize }} {{ createdAt }}</span>
                     {% endif %}
-                    {# the dates and the history are one fact: the link is the whole phrase,
-                       so "when was this last touched" and "by what" are the same click #}
+
                     {% if time is defined %}
                         <a title="{{ _t("TEMPLATE_CLICK_TO_SEE_REVISIONS") ~ ' ' ~ page }}"
                            href="{{ linkrevisions }}"
@@ -181,9 +145,6 @@
             {% endif %}
         </div>
 
-        {# Sharing and the star are in the cluster for anyone who has one. A reader who
-           cannot edit has none -- and they are the two things a reader still wants -- so
-           for them, and only them, they stay down here. #}
         {% if linkedit is not defined %}
         <div class="yw-page-info__actions">
             <a title="{{ _t("TEMPLATE_SEE_SHARING_OPTIONS") ~ ' ' ~ page }}"

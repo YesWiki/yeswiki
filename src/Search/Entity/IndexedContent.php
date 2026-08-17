@@ -2,18 +2,7 @@
 
 namespace YesWiki\Search\Entity;
 
-/**
- * One Content as the search index holds it (ticket 18 / ADR-0015).
- *
- * A value object rather than an array because it crosses three seams -- extractor to
- * indexer, indexer to SQL, and the test suite to both -- and because the shape it carries
- * is the whole design: a Content is *not* one document, it is one document per distinct
- * Field ACL guarding its fields.
- *
- * `$buckets` maps an ACL expression to the text of the fields it guards. Public text sits
- * under `''`. Most Content has exactly that one entry; a form with a restricted field
- * produces a second, and the query only ever matches the buckets the searcher passes.
- */
+/** One Content as the search index holds it (ticket 18 / ADR-0015). */
 final class IndexedContent
 {
     /**
@@ -40,14 +29,7 @@ final class IndexedContent
     ) {
     }
 
-    /**
-     * Whether this Content puts anything in the index at all.
-     *
-     * A Content whose every field contributes nothing -- an empty page, an uploaded file
-     * with no description -- still has a title, and is still findable by it. One with
-     * neither is not indexed rather than indexed as a blank row: a blank row matches
-     * nothing and costs a row per Content on a wiki of millions.
-     */
+    /** Whether this Content puts anything in the index at all. */
     public function isEmpty(): bool
     {
         if (trim($this->title) !== '') {

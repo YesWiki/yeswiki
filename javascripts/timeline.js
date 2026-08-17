@@ -1,8 +1,4 @@
-// timeline.js — scroll-driven side-slide effect for the timeline bazar template
-// (ticket 16: vanilla rewrite of the jQuery/jQuery-Easing/Modernizr version; the
-// eased page scroll is now the browser's native smooth scrolling)
 ;(function () {
-  // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
   ywInitEach('#ss-container', () => {
     const container = document.getElementById('ss-container')
     if (!container) return
@@ -18,7 +14,6 @@
       return row.getBoundingClientRect().top + window.scrollY
     }
 
-    // rows initially visible are never animated
     function setViewportRows() {
       rowsOutViewport = rows.filter((row) => rowTop(row) >= winHeight)
     }
@@ -40,8 +35,6 @@
       }
     }
 
-    // both sides of a row start offscreen (-50%) and reach 0% as the row
-    // approaches the center of the window
     function placeRows() {
       const winCenter = winHeight / 2 + window.scrollY
 
@@ -51,7 +44,6 @@
         const top = rowTop(row)
 
         if (top > winHeight + window.scrollY) {
-          // under the viewport: fully hidden
           setSide(
             left,
             'translate3d(-75%, 0, 0) rotateY(-90deg) translate3d(-75%, 0, 0)',

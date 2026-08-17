@@ -18,11 +18,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 17 (attach absorbed into core): uploaded files are their
- * own independent Content entry (FileManager), not tied 1:1 to the page they were
- * uploaded from. Covers the real security fix this ticket makes: downloading now
- * enforces the file's own read ACL (seeded from the owning page at upload time) --
- * previously doDownload() performed no ownership ACL check at all.
+ * Regression test for ticket 17 (attach absorbed into core): uploaded files are their own independent Content entry (FileManager), not tied 1:1 to the page they were uploaded from.
  */
 #[CoversMethod(FileApiController::class, 'uploadFile')]
 #[CoversMethod(FileApiController::class, 'downloadFile')]
@@ -31,12 +27,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
 {
     private const PRIVATE_PAGE_TAG = 'ApiControllerFilesTestPrivatePage';
 
-    /**
-     * The fixtures go when the tests do.
-     *
-     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
-     * page in somebody's index, for ever.
-     */
+    /** The fixtures go when the tests do. */
     public static function tearDownAfterClass(): void
     {
         $pageManager = self::getWiki()->services->get(PageManager::class);
@@ -85,8 +76,6 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $this->assertSame('my document.txt', $entry['original_filename']);
             $this->assertTrue($fileManager->isFileTag($tag));
 
-            // the new file entry's read ACL was seeded from the private owning page --
-            // an anonymous/non-admin request must be denied, not silently served
             $authenticationService->logout();
             $this->expectException(\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException::class);
             $controller->downloadFile(Request::create("/api/files/$tag/download"), $tag);
@@ -125,7 +114,6 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $entry = json_decode($response->getContent(), true);
             $tag = $entry['tag'];
 
-            // explicit public opt-out: override the seeded (private) ACL to '*'
             $aclService->save($tag, 'read', '*');
 
             $authenticationService->logout();
@@ -183,11 +171,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     /**
-     * The picker filters by family and by extension, and both are derived here rather
-     * than stored -- so what the listing says a file is has to survive the MIME sniffer
-     * having no idea. A .csv is reported as text/plain and an unrecognised upload as
-     * application/octet-stream; neither may end up in "other" when the name says
-     * otherwise.
+     * The picker filters by family and by extension, and both are derived here rather than stored -- so what the listing says a file is has to survive the MIME sniffer having no idea.
      */
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testFamilyIsDerivedFromTheExtensionWhenTheMimeTypeIsUseless(YesWikiRuntime $wiki): void
@@ -196,7 +180,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $this->assertSame('image', FileManager::familyOf('application/octet-stream', 'holiday.JPG'));
         $this->assertSame('video', FileManager::familyOf('', 'clip.mp4'));
         $this->assertSame('audio', FileManager::familyOf('', 'interview.ogg'));
-        // no extension to go on: the MIME type is all that is left
+
         $this->assertSame('image', FileManager::familyOf('image/png', 'screenshot'));
         $this->assertSame('document', FileManager::familyOf('application/vnd.oasis.opendocument.text', 'notes'));
         $this->assertSame('other', FileManager::familyOf('application/zip', 'backup.zip'));
@@ -229,8 +213,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
                 $uploaded = json_decode($controller->uploadFile($request)->getContent(), true);
                 $tags[] = $uploaded['tag'];
                 $tmpPaths[] = $tmpPath;
-                // an upload answers in the shape the listing does, so the picker can select
-                // what it just uploaded without a second request
+
                 $this->assertArrayHasKey('family', $uploaded);
                 $this->assertArrayHasKey('extension', $uploaded);
             }
@@ -245,8 +228,6 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $documents = $this->listFiles($controller, ['search' => $marker, 'family' => 'document']);
             $this->assertSame(["$marker-notes.txt"], array_column($documents, 'original_filename'));
 
-            // searching the extension is how someone looks for a kind of file whose name
-            // they do not remember
             $byExtension = $this->listFiles($controller, ['search' => 'png']);
             $this->assertContains("$marker-photo.png", array_column($byExtension, 'original_filename'));
             $this->assertNotContains("$marker-notes.txt", array_column($byExtension, 'original_filename'));

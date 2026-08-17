@@ -48,12 +48,9 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 ),
             ]);
         } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->getService(PageContext::class)->getTag())) {
-            // if no read access to the page
             if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
-                // si une page PageLogin existe, on l'affiche
                 $error .= $this->getService(MarkdownFormatterService::class)->format(PageBody::content($content['body']));
             } else {
-                // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
@@ -93,7 +90,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 if ($toExternalWiki) {
                     $pageTitle = $originalContent['title'] ?? $originalContent['bf_titre'] ?? '';
                     $proposedTag = $this->getService(PageContext::class)->getTag();
-                    // the receiving wiki json_decodes this field back into an entry
+
                     $originalContent = PageBody::encode($this->getService(PageContext::class)->getPage()['body']);
                     $proposedEntry = $this->getService(EntryManager::class)->getOne($proposedTag);
                     $form = $this->getService(FormManager::class)->getOne($proposedEntry['form_id'] ?? null);
@@ -111,7 +108,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     $pageTitle = ($originalContent['titre_liste'] ?? '') . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = generateWikiName('Liste ' . $pageTitle);
                 }
-            } else { // page
+            } else {
                 $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->getService(PageContext::class)->getTag();
                 if ($toExternalWiki) {
                     $proposedTag = $this->getService(PageContext::class)->getTag();
@@ -130,7 +127,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
         if ($toExternalWiki) {
             $title .= ' ' . _t('TO_ANOTHER_YESWIKI');
         }
-        // in ajax request for modal, no title
+
         if ($this->getRequest()->isXmlHttpRequest()) {
             $title = '';
         }

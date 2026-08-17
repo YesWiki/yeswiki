@@ -59,7 +59,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        // create a user
         do {
             $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
@@ -96,13 +95,11 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
         $userDeleted = $userManager->getOneByName($name);
 
-        // delete it after call to UserOperationsService::delete
         if (!empty($userDeleted)) {
             $userManager->delete($userDeleted);
         }
         $authenticationService->logout();
 
-        // check tests
         if ($expectedResult) {
             $this->assertFalse($exceptionThrown);
             $this->assertNull($userDeleted);
@@ -114,7 +111,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
     public static function dataProviderTestDelete()
     {
-        // mode , mode, expected result
         return [
             'not connected' => ['!+', false],
             'not admin' => ['!@admins', false],
@@ -124,7 +120,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
     public static function dataProviderTestCreate()
     {
-        // name, email, newValues, UserNameExist, EmailExist, Other Exception
         return [
             'email name all right' => ['newRandom', 'newRandom', [], false, false, false],
             'email with 5 chars ext' => ['newRandom', 'newRandom2', [], false, false, false],
@@ -232,8 +227,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     }
 
     /**
-     * Deleting a user who is the sole member of a non-admin group must
-     * automatically delete that group and then delete the user.
+     * Deleting a user who is the sole member of a non-admin group must automatically delete that group and then delete the user.
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
@@ -244,7 +238,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        // Create a test user
         do {
             $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
@@ -255,13 +248,11 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $user = self::requireUser($userManager->getOneByName($name));
 
-        // Create a group with only this user as member
         do {
             $groupName = StringUtilService::generateRandomString(8, self::UPPER_CHARS);
         } while ($groupOperationsService->groupExists($groupName));
         $groupOperationsService->create($groupName, [$name]);
 
-        // Log in as admin and delete the user
         $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
         $authenticationService->login($adminUser);
 
@@ -272,7 +263,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
             $exceptionThrown = true;
         } finally {
             $authenticationService->logout();
-            // cleanup if test failed
+
             if (!empty($userManager->getOneByName($name))) {
                 $userManager->delete($userManager->getOneByName($name));
             }
@@ -287,8 +278,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     }
 
     /**
-     * Deleting a user who is the sole member of the admins group must
-     * still throw DeleteUserException to prevent admin lockout.
+     * Deleting a user who is the sole member of the admins group must still throw DeleteUserException to prevent admin lockout.
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
@@ -298,7 +288,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        // Create a second admin to be able to log in and attempt deletion
         do {
             $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
@@ -309,27 +298,14 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $targetUser = $userManager->getOneByName($name);
 
-        // Put the target user as the sole member of a separate standalone group
-        // and also add them to admins — but we can't remove firstAdmin from admins
-        // so we simulate via a dummy group named after ADMIN_GROUP is not modifiable.
-        // Instead: test that trying to delete a user who is sole member of admins throws.
-        // We add the target user to admins, then remove firstAdmin temporarily is unsafe,
-        // so we just test the guard: add target user to admins group solely by checking
-        // the exception is triggered when user is alone in any group named 'admins'.
-        // Since we cannot safely remove firstAdmin, we skip if this would lock out.
         $adminsAcl = $wiki->services->get(GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
         $adminsAcl = array_unique(array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $adminsAcl)))));
         if (count($adminsAcl) !== 1) {
             $this->markTestSkipped('Cannot safely test: admins group has more than one member.');
         }
 
-        // firstAdmin is the sole admin — attempting to delete them must throw
         $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
 
-        // log in as... we can't log in as admin if we're trying to delete the only admin.
-        // Use the newly created user (not yet admin) — will fail with "not admin" first.
-        // So log in as the first admin themselves and try to delete themselves → USER_CANT_DELETE_ONESELF.
-        // The lone-admin guard is tested indirectly: we verify the exception type is DeleteUserException.
         $authenticationService->login($adminUser);
 
         $exceptionThrown = false;
@@ -349,7 +325,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
     public static function dataProviderTestSanitizeName()
     {
-        // name,char,length,Other Exception
         return [
             'random string' => ['newRandom', '', 0, false],
             'empty string' => ['', '', 0, true],
@@ -431,9 +406,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     }
 
     /**
-     * Setting a motto used to assign the sanitised value to `doubleclickedit` instead --
-     * so it left the motto unsanitised, overwrote an unrelated preference, and threw
-     * outright when a submission carried a motto but no doubleclickedit (ticket 13).
+     * Setting a motto used to assign the sanitised value to `doubleclickedit` instead -- so it left the motto unsanitised, overwrote an unrelated preference, and threw outright when a submission carried a motto but no doubleclickedit (ticket 13).
      */
     #[Depends('testUserOperationsServiceExisting')]
     public function testUpdatingOnlyTheMottoTouchesOnlyTheMotto(YesWikiRuntime $wiki): void
@@ -462,8 +435,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
             $this->assertSame('ma devise', $reloaded['motto']);
             $this->assertSame($before, $reloaded['doubleclickedit'], 'an unrelated preference must not move');
         } finally {
-            // UserManager, not UserOperationsService: deleting through the latter
-            // requires an admin session this test has no reason to open
             $leftover = $userManager->getOneByName($name);
             if ($leftover !== null) {
                 $userManager->delete($leftover);

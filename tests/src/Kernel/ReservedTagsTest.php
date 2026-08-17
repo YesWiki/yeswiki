@@ -10,8 +10,7 @@ use YesWiki\Kernel\Routing\ReservedTags;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 20: the declared reserved list, and the guard that stops it drifting away from
- * the routes it is supposed to mirror.
+ * Ticket 20: the declared reserved list, and the guard that stops it drifting away from the routes it is supposed to mirror.
  */
 class ReservedTagsTest extends TestCase
 {
@@ -39,9 +38,6 @@ class ReservedTagsTest extends TestCase
 
     public function testReservedNamesAreRefusedWhateverTheirCase(): void
     {
-        // MySQL's default collation is case-insensitive, so a page tagged `Api` already
-        // answers to a lookup for `api`; reserving only one spelling would close the hole
-        // on SQLite and leave it open on the commonest install
         $this->assertTrue(ReservedTags::isReserved('api'));
         $this->assertTrue(ReservedTags::isReserved('Api'));
         $this->assertTrue(ReservedTags::isReserved('API'));
@@ -50,8 +46,7 @@ class ReservedTagsTest extends TestCase
     }
 
     /**
-     * The bug the old `preg_match('^api')` prefix match caused: a page tagged `apiculture`
-     * was parsed as the API with method `culture`, so it could never be reached.
+     * The bug the old `preg_match('^api')` prefix match caused: a page tagged `apiculture` was parsed as the API with method `culture`, so it could never be reached.
      */
     public function testATagMerelyStartingWithAReservedNameIsNotReserved(): void
     {
@@ -62,8 +57,7 @@ class ReservedTagsTest extends TestCase
     }
 
     /**
-     * A URL is `?Tag/handler`, so handler names live in the second segment and never
-     * compete with a tag: a page tagged `edit` is `?edit`, and its editor is `?edit/edit`.
+     * A URL is `?Tag/handler`, so handler names live in the second segment and never compete with a tag: a page tagged `edit` is `?edit`, and its editor is `?edit/edit`.
      */
     public function testHandlerNamesAreNotReserved(): void
     {
@@ -114,17 +108,14 @@ class ReservedTagsTest extends TestCase
     }
 
     /**
-     * A routed screen with more than one segment names itself by its whole path
-     * (`dashboard/forms`), because an action linking to "this page" reads that name. It is
-     * still the router's, not Content's: the edit bar renders on a page, and a route that
-     * did not answer to this offered "edit this page" for a tag nothing can ever occupy.
+     * A routed screen with more than one segment names itself by its whole path (`dashboard/forms`), because an action linking to "this page" reads that name.
      */
     public function testAMultiSegmentRouteIsReservedByItsFirstSegment(): void
     {
         $this->assertTrue(ReservedTags::isReserved('dashboard/forms'));
         $this->assertTrue(ReservedTags::isReserved('admin/users'));
         $this->assertTrue(ReservedTags::isReserved('API/forms/1'), 'matching stays case-insensitive');
-        // a tag merely starting with a reserved name is ordinary, path or not
+
         $this->assertFalse(ReservedTags::isReserved('apiculture'));
         $this->assertFalse(ReservedTags::isReserved('dashboards/forms'));
     }

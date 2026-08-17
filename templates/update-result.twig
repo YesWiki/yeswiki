@@ -4,7 +4,7 @@
 <strong>{{ _t('SUPPORT_US')}}</strong> !!!<br /><br />
 <a class="btn btn-primary" href="https://www.helloasso.com/associations/yeswiki/formulaires/1/widget"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#heart"/></svg> {{_t('DONATE')}}</a> <a href="https://yeswiki.net/?SoutenirYesWiki">{{_t('LEARN_MORE')}}</a>
 </div>
-{# Upgrade messages result #}
+
 <ul class="list-group span4">
 {% for message in messages %}
     {% set label = "danger" %}
@@ -18,7 +18,6 @@
 {% endfor %}
 </ul>
 
-{# Go Back #}
 <br/>
 <a class="btn btn-sm btn-secondary-1" href="{{ url({}) }}">
     <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>

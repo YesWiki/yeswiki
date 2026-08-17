@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width" />
   <meta charset="UTF-8">
   <title>{{ _t('INSTALLATION_OF_YESWIKI') }}</title>
-  {# Linked by hand rather than declared: the installer runs before there is a wiki to
-     declare anything, and before AssetRegistry has an instance to publish into.
-     install.css was being linked by nobody, which is why the installer's own form has been
-     laying itself out with core's defaults -- it is the third link now. #}
+
   <link href="{{ baseUrl }}styles/yw-core.css" rel="stylesheet">
   <link href="{{ baseUrl }}themes/yeswiki/styles/yeswiki.css" rel="stylesheet">
   <link href="{{ baseUrl }}styles/install.css" rel="stylesheet">

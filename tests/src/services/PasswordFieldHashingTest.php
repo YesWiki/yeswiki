@@ -9,22 +9,14 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * `mot_de_passe` form fields used to store `md5($password)` -- unsalted, and fast enough
- * that a commodity GPU walks the whole plausible keyspace. They now go through the same
- * hasher factory as user-account passwords.
- *
- * Values written by older YesWikis are still md5, and are no longer accepted: verifying one
- * is indistinguishable from trusting a plaintext table that happens to be encoded. The
- * stored value is left alone rather than blanked, so a real password can be set over it.
+ * `mot_de_passe` form fields used to store `md5($password)` -- unsalted, and fast enough that a commodity GPU walks the whole plausible keyspace.
  */
 class PasswordFieldHashingTest extends YesWikiTestCase
 {
     private function field(): PasswordField
     {
         $wiki = $this->getWiki();
-        // the positional array is the internal wire format the field constructors
-        // consume (ADR-0009): slot 0 the type keyword, slot 1 the name, and the rest
-        // padded because BazarField reads up to slot 12 unconditionally
+
         $values = array_fill(0, 16, '');
         $values[0] = 'mot_de_passe';
         $values[1] = 'bf_password';
@@ -49,7 +41,6 @@ class PasswordFieldHashingTest extends YesWikiTestCase
     {
         $field = $this->field();
 
-        // salting: two accounts with the same password must not share a hash
         $this->assertNotSame($field->hash('same password'), $field->hash('same password'));
     }
 
@@ -62,14 +53,7 @@ class PasswordFieldHashingTest extends YesWikiTestCase
         $this->assertFalse($field->verify($hashed, 'not the password'));
     }
 
-    /**
-     * md5 is out. It used to verify here (and rehash on the way through), which kept every
-     * md5 in the installed base a live credential for as long as it went unused.
-     *
-     * Note the second assertion: the *right* password does not get in either. That is the
-     * point -- there is no path where an md5 authenticates, so a leaked hash table is worth
-     * nothing to whoever holds it.
-     */
+    /** md5 is out. */
     public function testALegacyMd5HashIsRefusedEvenWithTheRightPassword(): void
     {
         $field = $this->field();

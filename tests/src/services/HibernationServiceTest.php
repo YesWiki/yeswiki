@@ -14,9 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
 
 /**
- * Regression tests for ticket 15 (security-core-split): HibernationService is the new,
- * standalone home for the hibernation check formerly bundled inside SecurityController
- * (renamed to InputFilter by wave-two ticket 03).
+ * Regression tests for ticket 15 (security-core-split): HibernationService is the new, standalone home for the hibernation check formerly bundled inside SecurityController (renamed to InputFilter by wave-two ticket 03).
  */
 #[CoversMethod(HibernationService::class, 'isWikiHibernated')]
 #[CoversMethod(HibernationNotice::class, 'getMessageWhenHibernated')]
@@ -45,8 +43,7 @@ class HibernationServiceTest extends YesWikiTestCase
     public function testGetMessageWhenHibernatedRendersHibernationNotice(): void
     {
         $wiki = $this->getWiki();
-        // ticket 04 split the rendering out: HibernationService answers the question and
-        // depends on nothing, HibernationNotice renders the banner.
+
         $templateEngine = $wiki->services->get(TemplateEngine::class);
         $this->assertInstanceOf(TemplateEngine::class, $templateEngine);
 
@@ -57,9 +54,6 @@ class HibernationServiceTest extends YesWikiTestCase
 
     public function testHibernationServiceDependsOnNothingButParameters(): void
     {
-        // Guards the fix: every low-level core service asks isWikiHibernated(), so a new
-        // dependency here is depended on by the whole core and re-closes the 12 cycles
-        // ticket 04 removed.
         $ctor = (new \ReflectionClass(HibernationService::class))->getConstructor();
         $this->assertNotNull($ctor);
         $types = array_map(

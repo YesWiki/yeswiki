@@ -57,7 +57,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
         $updated = false;
         foreach ($form['prepared'] as $field) {
             if ($field instanceof MapField) {
-                // update location
                 $entry = array_merge($entry, $this->getMapFieldValue($field, $entry));
                 $tab = $field->formatValuesBeforeSaveIfEditable($entry);
                 if (is_array($tab)) {
@@ -92,7 +91,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
         $this->entryManager->validate(array_merge($data, ['antispam' => 1]));
 
-        // on enleve les champs hidden pas necessaires a la fiche
         unset($data['valider']);
         unset($data['MAX_FILE_SIZE']);
         unset($data['antispam']);
@@ -101,7 +99,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
         unset($data['html_data']);
         unset($data['url']);
 
-        // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
             unset($data['owner']);
         }
@@ -110,7 +107,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
             unset($data['sendmail']);
         }
 
-        // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
             $data = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
@@ -121,10 +117,8 @@ class CleanOldCartoGoogle extends YesWikiMigration
         $owner = $oldPage['owner'] ?? '';
         $user = $oldPage['user'] ?? '';
 
-        // set all other revisions to old
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET latest = 'N' WHERE tag = '{$this->dbService->escape($data['id_fiche'])}'");
 
-        // add new revision
         $userCol = $this->dbService->quoteIdentifier('user');
         $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} " .
             "(tag, time, owner, $userCol, latest, body) VALUES (" .
@@ -143,7 +137,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
         $vLatitudeField = is_callable([$field, 'getLatitudeField']) ? $field->getLatitudeField() : 'bf_latitude';
         $vLongitudeField = is_callable([$field, 'getLongitudeField']) ? $field->getLongitudeField() : 'bf_longitude';
 
-        // backward compatibility with former `carte_google` propertyName
         $returnValue = [];
         if (empty($value)) {
             if (!empty($entry['carte_google'])) {

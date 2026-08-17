@@ -18,10 +18,7 @@ class CommentsAction extends YesWikiAction implements RegisteredAction, Provides
         return 'comments';
     }
 
-    /**
-     * No settings at all: where the comment box goes is the whole decision. A Component with
-     * an empty rail is still worth having -- it is how a writer discovers the tag exists.
-     */
+    /** No settings at all: where the comment box goes is the whole decision. */
     public function components(): array
     {
         return [
@@ -36,7 +33,6 @@ class CommentsAction extends YesWikiAction implements RegisteredAction, Provides
 
     public function run()
     {
-        // render the comments if needed
         return $this->getService(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
     }
 }

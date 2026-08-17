@@ -1,9 +1,5 @@
-// groupsList and formAndListIds are defined in forms_form.twig
 import openRemoteModal from '../../../helpers/remote-modal.js'
 
-// When the user adds, via the code tab, a list or a formId that does not exist, keep the
-// value so it can be offered in the select option list. The template is the stored JSON
-// array of field objects; enum fields carry their list/form id as `linked_object`.
 const _listAndFormUserValues = {}
 try {
   const template = JSON.parse(
@@ -21,13 +17,9 @@ try {
       }
     })
   }
-} catch {
-  // legacy/invalid template text: nothing to collect
-}
+} catch {}
 export const listAndFormUserValues = _listAndFormUserValues
 
-// Some attributes configuration used in multiple fields.
-// ACL tokens are stored trimmed ('*', '+', '%') in the JSON template.
 export const visibilityOptions = {
   '*': _t('EVERYONE'),
   '+': _t('IDENTIFIED_USERS'),
@@ -35,8 +27,6 @@ export const visibilityOptions = {
   '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' }),
 }
 
-// create list of user groups
-// groupsList variable is defined in forms_form.twig
 const _formattedGroupList = {}
 groupsList.forEach((group) => {
   _formattedGroupList[`@${group}`] = _t('MEMBER_OF_GROUP', { groupName: group })
@@ -77,10 +67,6 @@ export const searchableConf = {
   options: { '': _t('NO'), 1: _t('YES') },
 }
 
-// Opens the iframed list editor in a remote modal and resolves its postmessage
-// answer (same contract as the old builder: the editor posts list_created /
-// list_updated back). Listens via addEventListener so concurrent handlers on
-// window.onmessage are left alone, and unhooks itself when the modal closes.
 function openListEditorModal(title, url, expectedMsg, onDone) {
   const modal = openRemoteModal(title, url)
   const onMessage = (event) => {
@@ -107,9 +93,6 @@ function listActionButton(iconClass, onClick) {
   return button
 }
 
-// Shared editorSetup for the enum family (select / checkbox-group / radio-group):
-// the data source choice (list vs form) repopulates the linked_object options, and
-// list sources get create/edit buttons opening the list editor in a remote modal.
 export function enumEditorSetup(api) {
   const updateOptions = () => {
     const source = api.getValue('subtype2') === 'form' ? 'forms' : 'lists'
@@ -133,7 +116,6 @@ export function enumEditorSetup(api) {
       ),
       'list_updated',
       (data) => {
-        // update the options (list name might have changed)
         formAndListIds.lists[data.id] = data.title
         updateOptions()
       },
@@ -150,7 +132,6 @@ export function enumEditorSetup(api) {
       (data) => {
         formAndListIds.lists[data.id] = data.title
         updateOptions()
-        // select the newly created list
         api.setValue('linked_object', data.id)
       },
     )

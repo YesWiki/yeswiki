@@ -16,7 +16,6 @@ class FixDefaultCommentsAcls extends YesWikiMigration
             $config['default_comment_acl'] = 'comments-closed';
             $config->write();
 
-            // Update all pages with new ACL
             $pageManager = $this->getService(PageManager::class);
             $aclService = $this->getService(AclService::class);
 

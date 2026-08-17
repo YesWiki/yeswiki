@@ -1,7 +1,5 @@
 <?php
 
-// ticket 18: relocated from tools/contact/libs/contact.functions.php.
-
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\Mailer;
@@ -20,7 +18,7 @@ function parseMails($emails)
     $userManager = $GLOBALS['yeswikiServices']->get(UserManager::class);
     foreach ($emails as $email) {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $mailList[$email] = $email; // using email as key to avoid duplicates
+            $mailList[$email] = $email;
         } elseif (preg_match('/^@[a-zA-Z0-9]+/m', $email)) {
             $group = substr($email, 1);
             if ($groupManager->groupExists($group)) {
@@ -48,12 +46,10 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
     $message['message'] = '';
     $message['class'] = 'danger';
 
-    // Check sender's name
     if ($type == 'contact' && !$name_sender) {
         $message['message'] .= _t('CONTACT_ENTER_NAME') . '<br />';
     }
 
-    // Check sender's email
     if (!$mail_sender) {
         $message['message'] .= _t('CONTACT_ENTER_SENDER_MAIL') . '<br />';
     }
@@ -61,7 +57,6 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
         $message['message'] .= _t('CONTACT_SENDER_MAIL_INVALID') . '<br />';
     }
 
-    // Check the receiver's email
     if (!$mail_receiver) {
         $message['message'] .= _t('CONTACT_ENTER_RECEIVER_MAIL') . '<br />';
     }
@@ -72,12 +67,10 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
         $message['message'] .= _t('CONTACT_RECEIVER_MAIL_INVALID') . '<br />';
     }
 
-    // Check message (length)
     if ($type != 'subscribe' && $type != 'unsubscribe' && (!$messagebody || strlen($messagebody) < 10)) {
         $message['message'] .= _t('CONTACT_ENTER_MESSAGE') . '<br />';
     }
 
-    // If no errors, we inform of success!
     if ($message['message'] == '') {
         $message['class'] = 'success';
     }
@@ -87,11 +80,9 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
 
 function getPageTitle($page)
 {
-    // the body is a decoded array (ticket 09) : an entry carries its title as a key
-    // ('bf_titre' on legacy bodies), a page its markup under 'content'
     $body = $page['body'] ?? [];
     $content = YesWiki\Content\Entity\PageBody::content($body);
-    // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
+
     $entryTitle = $body[YesWiki\Content\Entity\PageBody::TITLE] ?? $body['bf_titre'] ?? '';
     if ($entryTitle != '') {
         $title = $entryTitle;
@@ -114,32 +105,26 @@ function getPageTitle($page)
 
 function filterMailGroups($var)
 {
-    // returns all string starting with "Mail"
     return preg_match('/^Mail/', $var);
 }
 
 function filterDailyMailGroups($var)
 {
-    // returns all string ending with "Day"
     return preg_match('/Day$/', $var);
 }
 
 function filterWeeklyMailGroups($var)
 {
-    // returns all string ending with "Week"
     return preg_match('/Week$/', $var);
 }
 
 function filterMonthlyMailGroups($var)
 {
-    // returns all string ending with "Month"
     return preg_match('/Month$/', $var);
 }
 
 function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 {
-    // an unrecognised period fell through every arm and left this undefined, then interpolated
-    // it into the subject line (ticket 40)
     $sub = '';
     if ($period == 'day') {
         $sub = _t('CONTACT_DAILY_REPORT');
@@ -152,12 +137,10 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
     $mailer = $GLOBALS['yeswikiServices']->get(Mailer::class);
 
     foreach ($groups as $group) {
-        // get page name
         $page = preg_replace(['/^Mail/', '/' . ucfirst($period) . '$/'], '', $group);
         $_GET['period'] = $period;
         $page = $GLOBALS['yeswikiServices']->get(YesWiki\Content\Service\PageManager::class)->getOne($page);
 
-        // send emails to all group members
         $groupmembers = $GLOBALS['yeswikiServices']->get(YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText($group);
         $groupmembers = explode("\n", $groupmembers);
         $groupmembers = array_map('trim', $groupmembers);
@@ -184,23 +167,19 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 
 function sendEmailsToSubscribers($period = '', $subject = '')
 {
-    // on recupere tous les groupes et on les trie par periode
     $groups = $GLOBALS['yeswikiServices']->get(YesWiki\Identity\Service\GroupOperationsService::class)->getAll();
     $groups = array_filter($groups, 'filterMailGroups');
 
-    // envois journaliers
     if ($period == 'day') {
         $dayGroups = array_filter($groups, 'filterDailyMailGroups');
         sendPeriodicalMailToGroup('day', $dayGroups, $subject);
     }
 
-    // envois hebdomadaires
     if ($period == 'week') {
         $weekGroups = array_filter($groups, 'filterWeeklyMailGroups');
         sendPeriodicalMailToGroup('week', $weekGroups, $subject);
     }
 
-    // envois mensuels
     if ($period == 'month') {
         $monthGroups = array_filter($groups, 'filterMonthlyMailGroups');
         sendPeriodicalMailToGroup('month', $monthGroups, $subject);

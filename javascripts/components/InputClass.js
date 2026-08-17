@@ -17,12 +17,6 @@ export default {
   methods: {
     resetValues() {
       this.classValues = {}
-      // `value` is what a field is pre-filled with when a component is INSERTED; `default`
-      // is what the action does anyway. Falling through from one to the other meant that
-      // opening the rail on a `{{section class="cover full-width text-left"}}` seeded the
-      // shape picker with its suggestion and wrote `shape-rounded` into the class of a
-      // section nobody had asked to reshape. The app applies the same rule for top-level
-      // settings (initValuesOnActionSelected); this is the class picker's copy of it.
       const editing = this.$root.isEditingExistingAction
       for (const propName in this.config.subproperties) {
         const config = this.config.subproperties[propName] || {}
@@ -66,11 +60,7 @@ export default {
     },
     getValues() {
       const result = Object.values(this.classValues)
-      if (!this.values.text && this.values.icon) result.push('btn-icon') // special handling for button action
-      // filtered rather than collapsed: every unset sub-setting contributes an empty string,
-      // so joining leaves a run of spaces per gap -- and the `/\s+/` that was collapsing
-      // them had no `g`, so it fixed the first gap and left the rest. A class of
-      // `cover full-width  text-left` is what came back from opening the rail on a section.
+      if (!this.values.text && this.values.icon) result.push('btn-icon')
       return { class: result.filter(Boolean).join(' ').trim() }
     },
     updateValue(propName, value) {

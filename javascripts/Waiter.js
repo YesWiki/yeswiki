@@ -14,14 +14,14 @@ const waitFor = async (name, base) => {
   if (isReady?.[name]) {
     return base?.[name]
   }
-  isReady[name] = false // define it
+  isReady[name] = false
   if (!(name in cacheResolveReject)) {
     cacheResolveReject[name] = []
   }
   const promise = new Promise((resolve, reject) => {
     cacheResolveReject[name].push({ base, resolve, reject })
   })
-  return await promise.then((...args) => Promise.resolve(...args)) // force .then()
+  return await promise.then((...args) => Promise.resolve(...args))
 }
 
 export default { waitFor, resolve }

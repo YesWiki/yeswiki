@@ -2,9 +2,6 @@
 
 namespace YesWiki\Kernel\Entity;
 
-use ArrayAccess;
-use Countable;
-use Iterator;
 use YesWiki\Kernel\Service\ConfigurationService;
 
 class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
@@ -60,8 +57,6 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
             return;
         }
 
-        // little hack to avoid php caching while require config file : we rename the variable and eval.
-        // 'wakkaConfig' is always accepted too: config files written before ectoplasme define it
         $yeswikiConfig = [];
         $content = str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], file_get_contents($this->_file));
         eval($content);
@@ -83,9 +78,6 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         return $this->configurationService->write($this, $file, $arrayName);
     }
 
-    /***************************************************************************
-     * ArrayAccess
-     **************************************************************************/
     #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
@@ -115,9 +107,6 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         return isset($this->_parameters[$offset]) ? $this->_parameters[$offset] : null;
     }
 
-    /***************************************************************************
-     * Iterator
-     **************************************************************************/
     #[\ReturnTypeWillChange]
     public function rewind()
     {
@@ -148,9 +137,6 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         next($this->_parameters);
     }
 
-    /*************************************************************************
-     * Countable
-     ************************************************************************/
     #[\ReturnTypeWillChange]
     public function count()
     {

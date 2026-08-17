@@ -15,15 +15,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * How an importer is found, and how a data source is configured.
- *
- * Discovery is by service id -- any service whose id ends in "Importer" -- because an
- * importer cannot be a normal container service: it is constructed per data source, with
- * that source's config key. So the definitions exist only to be *listed*, and if one of them
- * ever picks up autowiring, or the id naming drifts, this is what says so; the symptom
- * otherwise is an admin page whose importer list is silently short.
- */
+/** How an importer is found, and how a data source is configured. */
 class ImporterDiscoveryTest extends YesWikiTestCase
 {
     public function testWikiExisting(): YesWikiRuntime
@@ -48,10 +40,6 @@ class ImporterDiscoveryTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testSomethingElseCalledAnImporterIsNotOffered(YesWikiRuntime $wiki): void
     {
-        // "importer" is a word other code uses for other things: yeswiki-extension-fulltextsearch
-        // registers SealImporter and SealBatchImporter, which feed a search index and take a
-        // different constructor entirely. Matching on the name alone offered them to the admin
-        // as data source types, and constructing one would fatal.
         $container = new class extends Container {
             public function getServiceIds(): array
             {
@@ -76,7 +64,7 @@ class ImporterDiscoveryTest extends YesWikiTestCase
 
         foreach (array_keys($importerManager->getAvailableImporters()) as $name) {
             $fields = $importerManager->getAdminFieldsFor((string)$name);
-            // an importer declares its own fields; when to sync it is not one of them
+
             $this->assertArrayHasKey('syncOnMaintenance', $fields, "$name lost syncOnMaintenance");
             $this->assertArrayHasKey('syncIntervalInMin', $fields, "$name lost syncIntervalInMin");
         }
@@ -98,7 +86,6 @@ class ImporterDiscoveryTest extends YesWikiTestCase
             'formId' => '12',
         ]);
 
-        // the pasted entries url carries the remote form id: it is split out, not stored raw
         $this->assertSame('https://remote.example.org', $options['url']);
         $this->assertSame('12', $options['remoteFormId']);
         $this->assertSame(['user' => 'admin', 'password' => 'secret'], $options['auth']);
@@ -117,8 +104,6 @@ class ImporterDiscoveryTest extends YesWikiTestCase
             'formId' => '3',
         ]);
 
-        // an unposted checkbox is false, not absent: a source saved with the box unticked must
-        // not read as "never configured" and inherit some future default
         $this->assertArrayHasKey('syncOnMaintenance', $options);
         $this->assertFalse($options['syncOnMaintenance']);
         $this->assertArrayNotHasKey('syncIntervalInMin', $options);

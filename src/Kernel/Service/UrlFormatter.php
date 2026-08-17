@@ -5,8 +5,7 @@ namespace YesWiki\Kernel\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
- * Wiki URL generation (historic Wiki::Href() and friends): tag/method/params to a full
- * URL under base_url, short-link parsing, wiki-name testing.
+ * Wiki URL generation (historic Wiki::Href() and friends): tag/method/params to a full URL under base_url, short-link parsing, wiki-name testing.
  */
 class UrlFormatter
 {
@@ -74,20 +73,12 @@ class UrlFormatter
             }
             $href .= ($this->params->get('rewrite_mode') ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
         }
-        // No language rides along any more. It used to: every URL this built carried
-        // `&lang=` once a reader had switched, which reached exactly the links YesWiki
-        // generated and no others -- so following a link somebody wrote by hand dropped the
-        // reader back into the wiki's own language halfway through reading it, and sharing a
-        // URL handed your language to whoever opened it. The choice is a cookie now
-        // (LanguageService::COOKIE), which every request carries and no URL has to.
 
         return $href;
     }
 
     /**
-     * Handle a string that could be a valid URL, a yeswiki short link (`Tag/method?x=1`),
-     * or anything else (anchor, relative URL): short links are completed into real URLs,
-     * everything else passes through (historic generateLink()).
+     * Handle a string that could be a valid URL, a yeswiki short link (`Tag/method?x=1`), or anything else (anchor, relative URL): short links are completed into real URLs, everything else passes through (historic generateLink()).
      */
     public function generateLink(mixed $link): ?string
     {
@@ -99,7 +90,6 @@ class UrlFormatter
             return $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
         }
 
-        // a valid URL, or (tolerantly) a relative URL or an anchor
         return $link;
     }
 
@@ -137,19 +127,7 @@ class UrlFormatter
     }
 
     /**
-     * Whether $url addresses this wiki -- the question to ask before sending a visitor
-     * somewhere a *request* asked for.
-     *
-     * "Come back here after signing in" arrives as a query parameter, and a query
-     * parameter is whatever the last person to send the link typed. Redirecting to it
-     * unchecked is the open redirect: `?user&return=https://not-your-wiki.example` is a
-     * sign-in form on your domain that lands on someone else's site.
-     *
-     * The scheme is deliberately not compared -- a wiki configured with `http://` and
-     * served over `https://` is one wiki, and refusing the return there breaks sign-in on
-     * exactly the installs that got TLS right. The host and the path prefix are compared,
-     * and the path must continue at a boundary so `example.org/wiki-evil` is not taken for
-     * a page of `example.org/wiki`.
+     * Whether $url addresses this wiki -- the question to ask before sending a visitor somewhere a *request* asked for.
      */
     public function isInternal(mixed $url): bool
     {
@@ -158,8 +136,6 @@ class UrlFormatter
         }
         $url = trim($url);
 
-        // `//host/path` is a URL to another host that merely looks relative -- and so is
-        // `/\host/path`, which browsers normalise to it
         if (preg_match('#^/[/\\\\]#', $url) === 1) {
             return false;
         }
@@ -177,7 +153,6 @@ class UrlFormatter
         }
         $basePath = rtrim((string)($base['path'] ?? ''), '/');
 
-        // no host at all: a path on this server, which still has to be under the wiki
         if (empty($parts['host'])) {
             $path = (string)($parts['path'] ?? '');
 

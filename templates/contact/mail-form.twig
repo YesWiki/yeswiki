@@ -1,14 +1,4 @@
-{# Ticket 35: the form the /PageName/mail handler used to build by string concatenation.
 
-   Fetched as an HTML fragment from GET /api/contact/form and dropped into a modal, so it must
-   NOT extend a layout: what arrives here is inserted into an existing page.
-
-   Three cases, in the order the handler had them:
-     field      contact whoever owns this entry, through one of its fields
-     logged in  send this page to somebody by email
-     otherwise  say why not, and offer to sign in
-   Both forms post to POST /api/contact/mail via javascripts/contact.js, which reads
-   data-page-tag and data-field. #}
 
 {% if not hasReadAccess %}
   {{ include('@core/alert-message.twig', {type: 'danger', message: _t('LOGIN_NOT_AUTORIZED')}) }}

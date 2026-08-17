@@ -10,7 +10,7 @@ export default {
   defaultIdentifier: 'bf_mail',
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
-    separator: { label: '' }, // separate important attrs from others
+    separator: { label: '' },
     send_email: {
       label: _t('BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL'),
       options: { 0: _t('NO'), 1: _t('YES') },
@@ -29,7 +29,6 @@ export default {
       ...readConf,
       ...{ label: _t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS') },
     },
-    // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read_access: readConf,
     write_access: writeConf,
   },
@@ -40,14 +39,12 @@ export default {
     'see_mail_acls',
     'readWhenForm',
   ],
-  // disabledAttributes: [],
   editorSetup(api) {
     const arrayEquals = (a, b) =>
       Array.isArray(a) &&
       Array.isArray(b) &&
       a.length === b.length &&
       a.every((e) => b.includes(e))
-    // read and readWhenForm mirror each other
     api.onChange('read_access', () => {
       if (
         !arrayEquals(api.getValue('readWhenForm'), api.getValue('read_access'))
@@ -68,8 +65,6 @@ export default {
     })
     const applyButtonMode = () => {
       if (api.getValue('show_contact_form') === 'form') {
-        // when chosing 'form' (or at init), if readAcl is '%', prefer '*'
-        // to show the button to everyone
         if (arrayEquals(api.getValue('read_access'), ['%'])) {
           api.setValue('read_access', ['*'])
         }
@@ -77,8 +72,6 @@ export default {
         api.show('see_mail_acls')
         api.hide('read_access')
       } else {
-        // when chosing 'text' (or at init), if readAcl is '*', prefer '%'
-        // to force the email not to be shown
         const write = api.getValue('write_access') || []
         if (
           arrayEquals(api.getValue('read_access'), ['*']) &&

@@ -60,10 +60,10 @@ class DuplicationManager
     {
         $fields = [];
         $entry = $this->container->get(EntryManager::class)->getOne($id);
-        if (!empty($entry['tag'])) { // bazar entry
+        if (!empty($entry['tag'])) {
             $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($entry['form_id']);
-            // find fields that are textareas
+
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof TextareaField || $field instanceof ImageField || $field instanceof FileField) {
                     $fields[] = $field;
@@ -119,7 +119,7 @@ class DuplicationManager
                         $size = filesize($filePath);
                         $humanSize = $this->humanFilesize($size);
                         if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
-                            continue; // we only take the latest modified version of file
+                            continue;
                         }
                         $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
                     }
@@ -158,7 +158,6 @@ class DuplicationManager
             $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
         if ($this->container->get(EntryManager::class)->isEntry($tag)) {
-            // bazar
             $fields = $this->getUploadFieldsFromEntry($tag);
             $entry = $this->container->get(EntryManager::class)->getOne($tag);
             foreach ($fields as $f) {
@@ -172,7 +171,7 @@ class DuplicationManager
                     }
                 }
             }
-        } elseif (!$this->container->get(ListManager::class)->isList($tag)) { // page
+        } elseif (!$this->container->get(ListManager::class)->isList($tag)) {
             $wikiText = PageBody::content($this->container->get(PageManager::class)->getOne($tag)['body'] ?? []);
             if ($fi = $this->findFilesInWikiText($tag, $wikiText)) {
                 $files = array_merge($files, $fi);
@@ -192,7 +191,7 @@ class DuplicationManager
                 $this->uploadPath . '/' . $toTag . '_',
                 $f['path']
             );
-            // if the file name has not changed, we add newPageTag_ as filename prefix
+
             if ($f['path'] == $newPath) {
                 $newPath = str_replace($this->uploadPath . '/', $this->uploadPath . '/' . $toTag . '_', $newPath);
             }
@@ -220,10 +219,7 @@ class DuplicationManager
         if (!$this->container->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
-        // reserved before taken, and with its own wording: "someone already has this, here
-        // is a free one" and "nobody can ever have this" are different problems, and a
-        // webmaster who is told the wrong one goes looking for a page that does not exist
-        // (ticket 20)
+
         if (ReservedTags::isReserved($data['newTag'])) {
             throw new \Exception(_t('RESERVED_TAG_CANNOT_BE_USED', ['tag' => $data['newTag']]) . ' ' . _t('RESERVED_TAG_TRY_INSTEAD', ['suggestion' => $this->container->get(PageManager::class)->suggestFreeTag($data['newTag'])]));
         }
@@ -259,9 +255,7 @@ class DuplicationManager
                     }
                 }
                 $entry['tag'] = $data['newTag'];
-                // the new name goes in the field this form names its entries with -- the
-                // computed `title` is derived on save, so writing that would be discarded,
-                // and bf_titre is only right for a form that happens to have one (ticket 11)
+
                 $titleField = $this->container->get(FormPropertiesService::class)
                     ->titleFieldName($this->container->get(FormManager::class)->getOne($entry['form_id']));
                 if ($titleField !== null) {
@@ -282,7 +276,6 @@ class DuplicationManager
                 break;
         }
 
-        // duplicate acls
         foreach (['read', 'write', 'comment'] as $privilege) {
             $values = $this->container->get(AclService::class)->load(
                 $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
@@ -296,14 +289,11 @@ class DuplicationManager
             );
         }
 
-        // duplicate metadata (versioned pages.metadata column, not a triple -- see
-        // PageManager::getMetadata()/setMetadata())
         $originalMetadata = $this->container->get(PageManager::class)->getMetadata($data['originalTag']);
         if (!empty($originalMetadata)) {
             $this->container->get(PageManager::class)->setMetadata($data['newTag'], $originalMetadata);
         }
 
-        // duplicate tags (TODO: is there more duplicable triples?)
         $values = $this->container->get(TripleStore::class)->getAll($data['originalTag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         foreach ($values as $val) {
             $this->container->get(TripleStore::class)->create($data['newTag'], 'http://outils-reseaux.org/_vocabulary/tag', $val['value'], '', '');
@@ -326,8 +316,7 @@ class DuplicationManager
         }
 
         $newUrl = explode('/?', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url'])[0];
-        // $req comes from the HTTP request : originalContent is still the remote wiki's
-        // raw content (markup for a page, a JSON field map for an entry)
+
         $newBody = str_replace($req['sourceUrl'], $newUrl, $req['originalContent']);
         if ($req['type'] === 'page') {
             $this->container->get(PageManager::class)->save($tag, [PageBody::CONTENT => $newBody]);
@@ -348,7 +337,7 @@ class DuplicationManager
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
-        // TODO: make options to allow ssl verify
+
         curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -363,10 +352,6 @@ class DuplicationManager
 
     public function humanFilesize($bytes, $decimals = 2)
     {
-        // `@$sz[$factor - 1]` silenced an undefined variable for anything under a kilobyte,
-        // where $sz was never assigned. Indexing the unit list directly says the same thing
-        // without the suppression -- and without relying on PHP's negative string offsets,
-        // where `'KMGT'[-1]` is 'T' rather than nothing (ticket 40).
         $units = ['', 'K', 'M', 'G', 'T'];
         $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);
 

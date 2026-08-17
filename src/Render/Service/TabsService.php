@@ -13,7 +13,7 @@ class TabsService
         'btnClass' => '',
         'prefixCounter' => 0,
         'bottom_nav' => true,
-        'counter_on_bottom_nav' => true, // because default behaviour for tabs in forms
+        'counter_on_bottom_nav' => true,
         'selectedtab' => 1,
         'isClosed' => false,
         'tabOpened' => false,
@@ -44,7 +44,6 @@ class TabsService
             $field->getFormTitles(),
             'form',
             $field->getBtnClass(),
-            // TODO : make a new option for the Tabsfield to change those values
             self::DEFAULT_DATA['bottom_nav'],
             self::DEFAULT_DATA['counter_on_bottom_nav'],
             self::DEFAULT_DATA['selectedtab']
@@ -57,7 +56,6 @@ class TabsService
             $field->getViewTitles(),
             'view',
             $field->getBtnClass(),
-            // TODO : make a new option for the Tabsfield to change those values
             self::DEFAULT_DATA['bottom_nav'],
             self::DEFAULT_DATA['counter_on_bottom_nav'],
             self::DEFAULT_DATA['selectedtab']
@@ -123,7 +121,6 @@ class TabsService
     private function saveInStackIfNeeded(string $mode)
     {
         if ($this->data[$mode]['counter'] !== false) {
-            // init stack for this mode
             if (!isset($this->stack[$mode])) {
                 $this->stack[$mode] = [];
             }
@@ -151,21 +148,20 @@ class TabsService
     {
         $data = $this->data[$mode];
         $data['isLast'] = false;
-        // update internal counter
+
         if ($data['counter'] !== false) {
             if ($increment) {
                 $this->data[$mode]['tabOpened'] = false;
-                // end not already reached
+
                 if ($data['counter'] < count($data['titles'])) {
-                    // do not increase counter if TabChange specified is last
                     $this->data[$mode]['counter'] = $data['counter'] + 1;
                 } else {
-                    $this->data[$mode]['counter'] = false; // to indicate end is reached
+                    $this->data[$mode]['counter'] = false;
                     $data['isLast'] = true;
                 }
             }
         } else {
-            $data['titles'] = []; // to be sure titles are not used
+            $data['titles'] = [];
         }
 
         return $data;
@@ -183,8 +179,7 @@ class TabsService
     }
 
     /**
-     * save current state and return associated index
-     * useful for LinkedEntryField to prevent interference with other rendering.
+     * save current state and return associated index useful for LinkedEntryField to prevent interference with other rendering.
      *
      * @return int index
      */
@@ -201,8 +196,7 @@ class TabsService
     }
 
     /**
-     * reset current state from associated index and return success
-     * useful for LinkedEntryField to prevent interference with other rendering.
+     * reset current state from associated index and return success useful for LinkedEntryField to prevent interference with other rendering.
      */
     public function resetState(int $index): bool
     {

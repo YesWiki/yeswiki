@@ -12,13 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * The designer cannot be the protection -- the server enforces locked fields whatever the
- * UI does -- but it does have to be honest about them, or a webmaster hits a delete button
- * that appears to work and silently doesn't.
- *
- * This renders the real designer page as an admin and checks the one thing the JS depends
- * on: the container carries the Content type's locked field names. Everything the browser
- * then does (lock badge, no delete/duplicate button) is driven from that attribute.
+ * The designer cannot be the protection -- the server enforces locked fields whatever the UI does -- but it does have to be honest about them, or a webmaster hits a delete button that appears to work and silently doesn't.
  */
 class FormDesignerLockedFieldsTest extends YesWikiTestCase
 {
@@ -62,7 +56,7 @@ class FormDesignerLockedFieldsTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
-        // any seeded bazar form: ordinary Content, no core structure
+
         $ordinary = current(array_filter(
             $formManager->getAll(),
             fn ($form) => ($form[ContentTypeSchema::CONTENT_TYPE] ?? ContentTypeSchema::TYPE_ENTRY) === ContentTypeSchema::TYPE_ENTRY

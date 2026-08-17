@@ -44,16 +44,12 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
         $pagetag = $this->getService(PageContext::class)->getTag();
 
         if ($this->check_end_elem('accordion')) {
-            // interpolated into the markup below whether or not the inner branch ran, so an
-            // accordion reaching here without one rendered `id=""` and a warning (ticket 40)
             $accordionID = '';
             if ($GLOBALS['check_' . $pagetag]['accordion']) {
                 $accordionID = uniqid('accordion_');
                 $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
             }
-            // The id is still emitted so a page can link or style one accordion, but the
-            // panels no longer read it: <details> needs no coordination to open and close
-            // (see PanelAction). Its one cost is that panels no longer close each other.
+
             echo '<!-- start of accordion -->' . "\n" .
             "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
         } else {

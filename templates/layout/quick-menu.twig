@@ -1,24 +1,12 @@
-{# The buttons at the right of the navbar: what `PageRapideHaut` used to hold (ticket 30).
 
-   Same markup `{{button icon="…" title="…" link="…"}}` produced, because that is what the
-   page held and what the theme styles: an <a class="yw-btn"> carrying an icon, with the
-   label as its tooltip. An entry with no icon shows its label instead -- a button with
-   neither is dropped before it gets here (LayoutService::quickMenu).
-
-   The account button closes the row, which is where `{{login}}` sat. It is an action rather
-   than markup: what it draws depends on who is looking (sign in, or the avatar and menu). #}
 <div class="yw-topnav-fast-access pull-right">
   {% for entry in entries %}
-    {# `{% if %}` rather than a concatenated attribute: autoescaping applies to the whole
-       expression, so `' title="' ~ label ~ '"'` escapes its own quotes and the browser gets
-       `title=&quot;…&quot;` -- a tooltip that reads with the quotes in it #}
+
     <a class="yw-btn" href="{{ entry.href }}"{% if entry.label %} title="{{ entry.label }}"{% endif %}>
       {%- if entry.glyph %}{{ entry.glyph|raw }}{% else %}{{ entry.label }}{% endif -%}
     </a>
   {% endfor %}
   {% if account %}{{ action('login')|raw }}{% endif %}
-  {# last of the CONFIGURABLE things on the bar, and empty for anyone who is not an admin,
-     which is why there is no permission test here. Past it, outside this block, come the
-     two controls that are the viewer's rather than the wiki's (layout/tools.twig). #}
+
   {{ editChrome|default('')|raw }}
 </div>

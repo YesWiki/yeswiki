@@ -8,11 +8,9 @@ class ComposerScriptsHelper
 {
     public static function postInstall(Event $event)
     {
-        // clean test files from svg-sanitize
         echo "clean test files from svg-sanitize\n";
         array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));
 
-        // clean example files from zebra_image
         echo "clean example files from zebra_image\n";
         array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/images/*'));
         if (is_dir('vendor/stefangabos/zebra_image/examples/images/')) {
@@ -28,13 +26,6 @@ class ComposerScriptsHelper
     {
         self::postInstall($event);
 
-        // update pdfjs-dist
-        // Context
-
-        // `pdfjs-dist` is available as javascript library via `yarn` but as pre-build package.
-        // To use it as viewer in `<iframe>`, we have to download the official viewer package not available via `yarn`.
-
-        // first get list of files
         $data = self::getPdfJsDistFiles();
         $fileData = self::extractPdfJsDistFileUrl($data);
         self::updatePdfJsDist($fileData);
@@ -47,7 +38,7 @@ class ComposerScriptsHelper
             $content = file_get_contents($url, false, stream_context_create([
                 'http' => [
                     'user_agent' => 'Composer',
-                    'timeout' => 5, // total timeout in seconds
+                    'timeout' => 5,
                 ],
             ]));
         } catch (\Throwable $th) {
@@ -97,7 +88,7 @@ class ComposerScriptsHelper
                         $zipContent = file_get_contents($params['url'], false, stream_context_create([
                             'http' => [
                                 'user_agent' => 'Composer',
-                                'timeout' => 15, // total timeout in seconds
+                                'timeout' => 15,
                             ],
                         ]));
                         if (!empty($zipContent)) {
@@ -132,7 +123,7 @@ class ComposerScriptsHelper
                                                 copy('src/assets/pdf-viewer.php', 'javascripts/vendor/pdfjs-dist/web/pdf-viewer.php');
                                             }
                                             echo "Pdfjs-dist updated ! \n";
-                                            // Clean not needded files
+
                                             array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.pdf'));
                                             array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.js.map'));
                                             array_map('unlink', glob('javascripts/vendor/pdfjs-dist/build/*.js.map'));
@@ -195,8 +186,7 @@ class ComposerScriptsHelper
         if (is_link($path)) {
             return unlink($path) !== false;
         }
-        // an unopenable directory left this undefined and the rmdir() below read it: declared
-        // false, because a directory we could not enter is not one we should remove (ticket 40)
+
         $continue = false;
         if ($res = opendir($path)) {
             $continue = true;

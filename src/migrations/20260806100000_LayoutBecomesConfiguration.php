@@ -7,33 +7,7 @@ use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LayoutService;
 
-/**
- * Ticket 30: `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become `layout_*` config.
- *
- * The squelette no longer includes those three pages, so a wiki upgrading into this release
- * would come back with no title, no menu and no quick-access buttons. This reads them one
- * last time and writes what it recognises into configuration.
- *
- * ## It is lossy, and that is the whole difficulty
- *
- * What those pages hold is arbitrary wiki content. A markdown list of links and a `{{nav}}`
- * call parse cleanly into entries; a hand-written table, an `{{include}}`, raw HTML or an
- * action do not. **Nothing is deleted**: the three pages are left exactly as they are, with
- * their revisions, and every line this could not turn into an entry is quoted verbatim in
- * the administrative log so the webmaster can see what did not come across and where it
- * still lives. The alternative -- dropping silently and announcing it in a changelog -- is
- * how a wiki loses a menu nobody notices for a month.
- *
- * ## The retired per-page override
- *
- * A page could name a *different* `PageTitre` / `PageMenuHaut` / `PageRapideHaut` for itself
- * (`ThemeManager::SPECIAL_METADATA`). Once those three are global configuration that has no
- * meaning, so the override is retired for them and kept for the three items that are still
- * pages. Any page that was using it is named in the log -- it is the one case where content
- * genuinely loses a behaviour, and it must not collapse quietly.
- *
- * Idempotent: it does nothing once `layout_navbar` exists in the configuration.
- */
+/** Ticket 30: `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become `layout_*` config. */
 class LayoutBecomesConfiguration extends YesWikiMigration
 {
     /** Which page fed which part of the layout. */
@@ -49,9 +23,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $pageManager = $this->getService(PageManager::class);
         $log = $this->getService(AdministrativeLogService::class);
 
-        // already configured -- a farm instance provisioned with layout_* keys, or this
-        // migration run twice. Re-reading the pages would overwrite what someone has since
-        // edited on /admin/layout, which is worse than doing nothing.
         if ($layout->navbar() !== [] || $layout->quickMenu() !== [] || $layout->hasOwnTitle()) {
             return;
         }
@@ -63,7 +34,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         }
 
         if (implode('', $bodies) === '') {
-            // nothing to carry across: a fresh install, or a wiki that deleted all three
             return;
         }
 
@@ -101,10 +71,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * `PageTitre`: a title, and possibly a logo.
      *
-     * The seeded body is `{{configuration param="yeswiki_name"}}`, which is the fallback
-     * written by hand -- recognised and turned back into "no title of its own", so an
-     * untouched wiki gets an empty field rather than a literal action tag as its name.
-     *
      * @return array{0: string, 1: string, 2: list<string>} title, logo, unparsed lines
      */
     private function readTitle(string $body): array
@@ -114,7 +80,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $title = '';
 
         foreach ($this->meaningfulLines($body) as $line) {
-            // an image, however it was written: markdown, an <img>, or {{attach file="…"}}
             if ($logo === '' && preg_match('/!\[[^\]]*\]\(([^)\s]+)/', $line, $found) === 1) {
                 $logo = $found[1];
                 continue;
@@ -127,7 +92,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
                 $logo = 'files/' . $found[1];
                 continue;
             }
-            // the seeded title: the wiki's own name, which is what an empty field means
+
             if (preg_match('/\{\{\s*configuration\b[^}]*\byeswiki_name\b/i', $line) === 1) {
                 continue;
             }
@@ -144,18 +109,12 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * `PageMenuHaut`: a markdown list, one level of nesting, and/or a `{{nav}}` call.
      *
-     * Indentation decides nesting rather than a fixed number of spaces: wikis indent their
-     * sub-items with two, three or four, and the shallowest bullet in the page is the top
-     * level whatever it is.
-     *
      * @return array{0: list<array{label: string, link: string, children: list<array{label: string, link: string}>}>, 1: list<string>}
      */
     private function readNavbar(string $body): array
     {
         $lines = $this->meaningfulLines($body);
 
-        // the shallowest bullet is the top level, so a wholly-indented list is not read as
-        // one long chain of children
         $topIndent = null;
         foreach ($lines as $line) {
             if (preg_match('/^(\s*)[-*]\s+\S/', $line, $found) === 1) {
@@ -200,9 +159,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     {
         $entries = [];
         $rest = [];
-        // `{{login}}` is the account button, which is a checkbox on the screen now. A page
-        // that never had one gets none -- but a page that had nothing at all is a page this
-        // migration was not given, and hasAccountButton() defaults to true for those.
+
         $account = $body === '';
 
         foreach ($this->meaningfulLines($body) as $line) {
@@ -250,10 +207,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * One list item as a label and a link.
      *
-     * `[Label](Page)`, `[Label](Page "tooltip")` and `[Label](Page){.newtab}` all give the
-     * same entry: the tooltip and the attribute list are markdown extras, not the address.
-     * An item with no link is a label -- which is exactly the dropdown-parent case.
-     *
      * @return array{label: string, link: string}
      */
     private function readLink(string $item): array
@@ -262,7 +215,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
             return ['label' => trim($found[1]), 'link' => trim($found[2])];
         }
 
-        // not a link: strip the emphasis and attribute syntax a bare label may carry
         return ['label' => trim((string)preg_replace('/\{[^}]*\}|[*_`]/', '', $item)), 'link' => ''];
     }
 
@@ -286,17 +238,12 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     /**
      * The lines worth looking at: no blanks, and no `{# … #}` comments.
      *
-     * The seeded `PageTitre` and `PageMenuHaut` both end in a comment block explaining what
-     * the page is for -- prose about a page that no longer exists is not a leftover anyone
-     * needs reported.
-     *
      * @return list<string>
      */
     private function meaningfulLines(string $body): array
     {
         $body = (string)preg_replace('/\{#.*?#\}/s', '', $body);
-        // an unterminated comment too: the seeded PageHeader has one, and a truncated
-        // `{#` would otherwise turn the rest of the page into leftovers
+
         $body = (string)preg_replace('/\{#.*$/s', '', $body);
 
         $lines = [];
@@ -329,12 +276,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         }
     }
 
-    /**
-     * Pages that named a different title bar, top menu or quick menu for themselves.
-     *
-     * Read straight from the metadata column rather than through PageManager: this asks a
-     * question about every page at once, and the answer is a handful of tags.
-     */
+    /** Pages that named a different title bar, top menu or quick menu for themselves. */
     private function reportRetiredOverrides(AdministrativeLogService $log): void
     {
         $db = $this->getService(DbService::class);

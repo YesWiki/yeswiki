@@ -3,8 +3,7 @@
     <!-- Carousel items -->
     <div class="carousel-inner">
         {% for row in backgrounds|sort|batch(8) %}
-          {# keep `is empty` and `and` on one line: Twig reads a line-broken pair as a
-             two-word test name ("empty and") and refuses to compile the template #}
+
           <div class="item{{ ((favoriteBackgroundImage is empty and loop.first)
             or (favoriteBackgroundImage is not empty and "files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
             {% for background in row %}

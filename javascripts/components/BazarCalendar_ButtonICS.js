@@ -23,7 +23,6 @@ export default {
         ).length > 0 ||
         params.id.indexOf(',') > -1
       ) {
-        // filter on entries
         const { entries } = this.bazarcalendar
         entriesParams = {
           query: `tag=${entries.map((entry) => entry.tag).join(',')}`,

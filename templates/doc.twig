@@ -1,15 +1,8 @@
 {% extends "@core/dashboard/layout.twig" %}
 
-{# The documentation, inside the wiki rather than beside it.
-
-   It used to answer with a whole HTML document of its own -- its own <head>, its own
-   stylesheet, no navbar, no way back. Docsify is still what renders the markdown, but it
-   now mounts into this page's canvas (`el` below) and its own navbar is off: the wiki's
-   navbar is the navbar, and the rail on the left is how you leave. #}
 {% block dashboard_content %}
   {{ include_css('styles/yw-admin.css') }}
-  {# docsify REPLACES this node with its own <main>, so everything it builds stays inside
-     the canvas -- the container is the mount point, not a wrapper around one #}
+
   <div id="yw-doc"></div>
 
   <script>
@@ -19,8 +12,6 @@
     var extensions = {{ extensions|json_encode|raw }};
   </script>
 
-  {# Plain tags, not include_javascript(): docsify boots on load and reads the
-     `window.$docsify` that documentation.js sets, so the two must stay in this order. #}
   <script src="javascripts/documentation.js"></script>
   <script src="javascripts/vendor/docsify/docsify.min.js"></script>
   <script src="javascripts/vendor/docsify/prism/prism-php.js"></script>

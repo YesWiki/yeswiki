@@ -5,11 +5,7 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Service\Paginator;
 
-/**
- * Ticket 02 replaced 1706 lines of vendored PEAR Pager with Paginator. These pin the
- * behaviour the one caller (EntryListAction) actually relied on: the current page's
- * slice, PEAR "Jumping"-mode page blocks, and `pageID`-keyed links.
- */
+/** Ticket 02 replaced 1706 lines of vendored PEAR Pager with Paginator. */
 class PaginatorTest extends TestCase
 {
     /**
@@ -57,13 +53,11 @@ class PaginatorTest extends TestCase
     }
 
     /**
-     * PEAR's "Jumping" mode (BAZ_MODE_DIVISION's value) shows page numbers in fixed
-     * blocks of `delta` rather than sliding a window around the current page: with
-     * delta=5, page 3 shows 1-5 and page 6 shows 6-10.
+     * PEAR's "Jumping" mode (BAZ_MODE_DIVISION's value) shows page numbers in fixed blocks of `delta` rather than sliding a window around the current page: with delta=5, page 3 shows 1-5 and page 6 shows 6-10.
      */
     public function testJumpingModeShowsFixedBlocksNotASlidingWindow(): void
     {
-        $items = self::items(100); // 10 pages at perPage=10
+        $items = self::items(100);
 
         $this->assertSame([1, 2, 3, 4, 5], (new Paginator($items, 10, 3, 5))->getPageRange());
         $this->assertSame([6, 7, 8, 9, 10], (new Paginator($items, 10, 6, 5))->getPageRange());
@@ -71,7 +65,6 @@ class PaginatorTest extends TestCase
 
     public function testPageRangeIsTruncatedAtTheLastPage(): void
     {
-        // 7 pages, delta 5 -> second block is 6..7, not 6..10
         $this->assertSame([6, 7], (new Paginator(self::items(65), 10, 6, 5))->getPageRange());
     }
 
@@ -83,7 +76,7 @@ class PaginatorTest extends TestCase
         $this->assertStringContainsString('form=3', $html);
         $this->assertStringContainsString('pageID=1', $html);
         $this->assertStringContainsString('pageID=3', $html);
-        // the stale pageID from the incoming query must not survive alongside the new one
+
         $this->assertSame(1, substr_count($html, 'pageID=2'));
     }
 

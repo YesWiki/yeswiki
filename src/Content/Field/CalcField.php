@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\FormManager;
 
@@ -37,14 +36,13 @@ class CalcField extends BazarField
         parent::__construct($values, $services);
         $this->calcFormula = $values[self::FIELD_CALCFORMULA];
         $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : $values[self::FIELD_DISPLAY_TEXT];
-        $this->default = ''; // to prevent field 5 to change default value
-        $this->maxChars = ''; // to prevent field 4 to change maxChars
+        $this->default = '';
+        $this->maxChars = '';
         $this->formManager = null;
     }
 
     protected function renderInput($entry)
     {
-        // display nothing
         return '';
     }
 
@@ -52,7 +50,6 @@ class CalcField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!in_array($value, [0, '0'], true) && empty($value)) {
-            // 0 should be displayed but not false or null or ""
             return '';
         }
 
@@ -61,14 +58,13 @@ class CalcField extends BazarField
         ]);
     }
 
-    // cette méthode est la plus importante car c'est celle où on définit le calcul à faire
     public function formatValuesBeforeSave($entry)
     {
-        $number = '(?:\d+(?:[,.]\d+)?|pi|π)'; // What is a number
-        $operators = '[+\/*\^%-]'; // Allowed math operators
-        $parenthesis = '\)|\('; // Allowed math operators
-        $fieldPropertyName = '[A-Za-z_0-9]+'; // Allowed math operators
-        $functions = '(?:sinh?|cosh?|tanh?|abs|acosh?|asinh?|atanh?|exp|log10|deg2rad|rad2deg|sqrt|ceil|floor|round)'; // Allowed PHP functions
+        $number = '(?:\d+(?:[,.]\d+)?|pi|π)';
+        $operators = '[+\/*\^%-]';
+        $parenthesis = '\)|\(';
+        $fieldPropertyName = '[A-Za-z_0-9]+';
+        $functions = '(?:sinh?|cosh?|tanh?|abs|acosh?|asinh?|atanh?|exp|log10|deg2rad|rad2deg|sqrt|ceil|floor|round)';
         $specialtest = '(?:test\(([A-Za-z_0-9]+),([A-Za-z_0-9,]*)\))';
         if (!preg_match_all("/($operators|$parenthesis)|($number)|($functions)|$specialtest|($fieldPropertyName)/", $this->calcFormula, $matches)) {
             $value = 0;
@@ -76,19 +72,14 @@ class CalcField extends BazarField
             $formula = '';
             foreach ($matches[0] as $key => $value) {
                 if (!empty($matches[1][$key])) {
-                    // operators or parenthesis
                     $formula .= $matches[1][$key];
                 } elseif (!empty($matches[2][$key]) || in_array($matches[2][$key], [0, '0'], true)) {
-                    // number
                     $formula .= floatval($matches[2][$key]);
                 } elseif (!empty($matches[3][$key])) {
-                    // functions
                     $formula .= $matches[3][$key];
                 } elseif (!empty($matches[4][$key])) {
-                    // test
                     $formula .= $this->testEntryValue($entry, $matches[4][$key], $matches[5][$key] ?? null);
                 } elseif (!empty($matches[6][$key])) {
-                    // field property name
                     $formula .= $this->getEntryValue($entry, $matches[6][$key]);
                 }
             }
@@ -136,7 +127,6 @@ class CalcField extends BazarField
     {
         if (!empty($entry['form_id'])) {
             if (is_null($this->formManager)) {
-                // lazy loading because not possible at construct
                 $this->formManager = $this->getService(FormManager::class);
             }
             $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['form_id']);
@@ -179,7 +169,7 @@ class CalcField extends BazarField
                 while ($j < $len && (ctype_digit($formula[$j]) || $formula[$j] === '.' || $formula[$j] === ',')) {
                     $j++;
                 }
-                // scientific notation (e.g. 1.5E+20)
+
                 if ($j < $len && in_array($formula[$j], ['e', 'E'], true)) {
                     $j++;
                     if ($j < $len && in_array($formula[$j], ['+', '-'], true)) {
@@ -198,7 +188,7 @@ class CalcField extends BazarField
                 $i++;
                 continue;
             }
-            // UTF-8 π (U+03C0 = bytes 0xCF 0x80)
+
             if (ord($c) === 0xCF && $i + 1 < $len && ord($formula[$i + 1]) === 0x80) {
                 $tokens[] = ['type' => 'name', 'value' => 'pi'];
                 $i += 2;
@@ -235,7 +225,6 @@ class CalcField extends BazarField
         return $t;
     }
 
-    // expr = term (('+' | '-') term)*
     private function parseAddSub(): float
     {
         $left = $this->parseMulDivMod();
@@ -248,7 +237,6 @@ class CalcField extends BazarField
         return $left;
     }
 
-    // term = power (('*' | '/' | '%') power)*
     private function parseMulDivMod(): float
     {
         $left = $this->parsePower();
@@ -267,7 +255,6 @@ class CalcField extends BazarField
         return $left;
     }
 
-    // power = unary ('^' unary)* — right-associative
     private function parsePower(): float
     {
         $base = $this->parseUnary();
@@ -280,7 +267,6 @@ class CalcField extends BazarField
         return $base;
     }
 
-    // unary = '-' unary | primary
     private function parseUnary(): float
     {
         $t = $this->peekToken();
@@ -293,7 +279,6 @@ class CalcField extends BazarField
         return $this->parsePrimary();
     }
 
-    // primary = number | 'pi' ['()'] | function '(' expr ')' | '(' expr ')'
     private function parsePrimary(): float
     {
         $t = $this->consumeToken();
@@ -302,7 +287,6 @@ class CalcField extends BazarField
         }
         if ($t['type'] === 'name') {
             if ($t['value'] === 'pi') {
-                // accept both bare "pi" and legacy "pi()"
                 $next = $this->peekToken();
                 if ($next !== null && $next['type'] === 'op' && $next['value'] === '(') {
                     $this->consumeToken();
@@ -352,7 +336,6 @@ class CalcField extends BazarField
         return $this->displayText;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

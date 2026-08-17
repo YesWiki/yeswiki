@@ -1,6 +1,3 @@
-// ===================================
-//     YESWIKI HIGHTLIGHT RULES
-// ====================================
 ace.define(
   'ace/mode/yeswiki_highlight_rules',
   [
@@ -17,7 +14,6 @@ ace.define(
     const { HtmlHighlightRules } = require('./html_highlight_rules')
 
     const markdownLink = {
-      // link markdown
       token: [
         'markup.open.yw-link-markdown',
         'link-text',
@@ -51,33 +47,27 @@ ace.define(
             regex: /\\[\\`*_{}[\]()#+\-.!]/,
           },
           {
-            // pre //
             token: 'markup.pre',
             regex: '([%]{2})',
             next: 'pre-start',
           },
           {
-            // headings //
             token: 'markup.headings.1',
             regex: '([=]{6}(?=\\S))(.*?\\S[=]*)(\\1)',
           },
           {
-            // headings //
             token: 'markup.headings.2',
             regex: '([=]{5}(?=\\S))(.*?\\S[=]*)(\\1)',
           },
           {
-            // headings //
             token: 'markup.headings.3',
             regex: '([=]{4}(?=\\S))(.*?\\S[=]*)(\\1)',
           },
           {
-            // headings //
             token: 'markup.headings.4',
             regex: '([=]{3}(?=\\S))(.*?\\S[=]*)(\\1)',
           },
           {
-            // headings //
             token: 'markup.headings.5',
             regex: '([=]{2}(?=\\S))(.*?\\S[=]*)(\\1)',
           },
@@ -87,13 +77,11 @@ ace.define(
             next: 'allowBlock',
           },
           {
-            // HR ----
             token: 'constant.hr',
             regex: '^[-]{3,50}$',
             next: 'allowBlock',
           },
           {
-            // list ( - or 1. )
             token: 'markup.list',
             regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+',
           },
@@ -105,37 +93,30 @@ ace.define(
         ],
         basic: [
           {
-            // strong ** __
             token: 'bold',
             regex: '([*]{2}(?=.*?))(.*?[*]*)(\\1)',
           },
           {
-            // italic //
             token: 'italic',
             regex: '([/]{2}(?=.*?))(.*?[/]*)(\\1)',
           },
           {
-            // italic markdown _
             token: 'italic',
             regex: '_([^_]+)_',
           },
           {
-            // italic markdown *
             token: 'italic',
             regex: '\\*([^\\*]+)\\*(?!\\w)',
           },
           {
-            // underline __
             token: 'underline',
             regex: '([_]{2}(?=.*?))(.*?[_]*)(\\1)',
           },
           {
-            // stroke @@
             token: 'stroke',
             regex: '([@]{2}(?=.*?))(.*?[@]*)(\\1)',
           },
           {
-            // link
             token: [
               'markup.open.yw-link',
               'link-url',
@@ -195,7 +176,6 @@ ace.define(
         ],
         'pre-start': [
           {
-            // pre //
             token: 'markup.pre',
             regex: '([%]{2})',
             next: 'start',
@@ -224,12 +204,6 @@ ace.define(
   },
 )
 
-// ===================================
-//       YESWIKI BEHAVIOUR
-// ====================================
-// custom ace behaviour, so when we type {, the closing } is auto inserted
-// This code is copied from Cstyle behaviour : https://raw.githubusercontent.com/ajaxorg/ace/23208f2f19020d1f69b90bc3b02460bda8422072/src/mode/behaviour/cstyle.js
-// We just removed the rule "braces" and added the rule "braces2"
 ace.define(
   'ace/mode/yeswiki_behaviour',
   [
@@ -520,7 +494,6 @@ ace.define(
                 cursor.row,
                 cursor.column + 1,
               )
-              // We're escaped.
               if (leftChar === '\\' && token && /escape/.test(token.type))
                 return null
 
@@ -533,15 +506,15 @@ ace.define(
                 pair = stringBefore !== stringAfter
                 if (pair && /string\.end/.test(rightToken.type)) pair = false
               } else {
-                if (stringBefore && !stringAfter) return null // wrap string with different quote
-                if (stringBefore && stringAfter) return null // do not pair quotes inside strings
+                if (stringBefore && !stringAfter) return null
+                if (stringBefore && stringAfter) return null
                 const wordRe = session.$mode.tokenRe
                 wordRe.lastIndex = 0
                 const isWordBefore = wordRe.test(leftChar)
                 wordRe.lastIndex = 0
                 const isWordAfter = wordRe.test(leftChar)
-                if (isWordBefore || isWordAfter) return null // before or after alphanumeric
-                if (rightChar && !/[\s;,.})\]\\]/.test(rightChar)) return null // there is rightChar and it isn't closing
+                if (isWordBefore || isWordAfter) return null
+                if (rightChar && !/[\s;,.})\]\\]/.test(rightChar)) return null
                 const charBefore = line[cursor.column - 2]
                 if (
                   leftChar === quote &&
@@ -589,7 +562,6 @@ ace.define(
       const cursor = editor.getCursorPosition()
       const iterator = new TokenIterator(session, cursor.row, cursor.column)
 
-      // Don't insert in the middle of a keyword/identifier/lexical
       if (
         !this.$matchTokenType(
           iterator.getCurrentToken() || 'text',
@@ -598,7 +570,6 @@ ace.define(
       ) {
         if (/[)}\]]/.test(editor.session.getLine(cursor.row)[cursor.column]))
           return true
-        // Look ahead in case we're at the end of a token
         const iterator2 = new TokenIterator(
           session,
           cursor.row,
@@ -613,7 +584,6 @@ ace.define(
           return false
       }
 
-      // Only insert in front of whitespace/comments
       iterator.stepForward()
       return (
         iterator.getCurrentTokenRow() !== cursor.row ||
@@ -631,7 +601,6 @@ ace.define(
     YesWikiBehaviour.recordAutoInsert = function (editor, session, bracket) {
       const cursor = editor.getCursorPosition()
       const line = session.doc.getLine(cursor.row)
-      // Reset previous state if text or context changed too much
       if (
         !this.isAutoInsertedClosing(
           cursor,
@@ -692,9 +661,6 @@ ace.define(
   },
 )
 
-// ===================================
-//          YESWIKI MODE
-// ====================================
 ace.define(
   'ace/mode/yeswiki',
   [
@@ -725,13 +691,11 @@ ace.define(
 
       this.getNextLineIndent = function (state, line, _tab) {
         const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
-        // For lists, add the - on next line, or increment the number for ordered list 1. 2.
         if (match && match.length > 4) {
           let marker = match[2]
           if (!marker) marker = `${parseInt(match[3], 10) + 1}.`
           return match[1] + marker + match[4]
         }
-        // Next mine use same identation
         return this.$getIndent(line)
       }
       this.$id = 'ace/mode/yeswiki'

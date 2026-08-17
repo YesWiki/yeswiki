@@ -8,9 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 
-/**
- * `/PageName/raw` -- converted from the procedural handlers/page/raw.php by ticket 06.
- */
+/** `/PageName/raw` -- converted from the procedural handlers/page/raw.php by ticket 06. */
 class RawHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -24,8 +22,6 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -41,7 +37,7 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
                 return;
             }
             header('Content-type: text/plain; charset=' . YW_CHARSET);
-            // display raw page
+
             echo PageBody::content($this->getService(PageContext::class)->getPage()['body']);
         } else {
             return;

@@ -77,7 +77,6 @@ class ImportFilesManager
             }
         }
 
-        // Do cURL transfer
         $fp = fopen($to, 'wb');
         $ch = curl_init($from);
         curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -106,12 +105,12 @@ class ImportFilesManager
     public function getTextFieldsFromWikiPage($wikiPage)
     {
         $fields = [];
-        if (!empty($wikiPage['tag'])) { // classic wiki page
+        if (!empty($wikiPage['tag'])) {
             $fields[] = 'body';
-        } elseif (!empty($wikiPage['tag'])) { // bazar entry
+        } elseif (!empty($wikiPage['tag'])) {
             $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($wikiPage['form_id']);
-            // find fields that are textareas
+
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof TextareaField) {
                     $fields[] = $field->getName();
@@ -168,10 +167,6 @@ class ImportFilesManager
 
     public function humanFilesize($bytes, $decimals = 2)
     {
-        // `@$sz[$factor - 1]` silenced an undefined variable for anything under a kilobyte,
-        // where $sz was never assigned. Indexing the unit list directly says the same thing
-        // without the suppression -- and without relying on PHP's negative string offsets,
-        // where `'KMGT'[-1]` is 'T' rather than nothing (ticket 40).
         $units = ['', 'K', 'M', 'G', 'T'];
         $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);
 
@@ -196,8 +191,7 @@ class ImportFilesManager
     }
 
     /**
-     * Find file attachments in page or bazar entry
-     * It finds attachments linked with /download links.
+     * Find file attachments in page or bazar entry It finds attachments linked with /download links.
      *
      * @param string $remoteUrl distant url
      * @param array  $wikiPage  page or entry content as an array
@@ -235,8 +229,7 @@ class ImportFilesManager
     }
 
     /**
-     * Generate local path and download hidden attachments
-     * It downloads attachments linked with /download links.
+     * Generate local path and download hidden attachments It downloads attachments linked with /download links.
      *
      * @param string $remoteUrl      distant url
      * @param string $pageTag        page tag
@@ -269,7 +262,6 @@ class ImportFilesManager
      */
     public function downloadAttachments($remoteUrl, &$wikiPage, $overwrite = false)
     {
-        // Handle Pictures and file attachments
         $attachments = $this->findDirectLinkAttachements($remoteUrl, $wikiPage, true);
 
         if (count($attachments)) {
@@ -278,7 +270,6 @@ class ImportFilesManager
             }
         }
 
-        // Downloading hidden attachments
         $attachments = $this->findHiddenAttachments($remoteUrl, $wikiPage, true);
 
         if (!empty($attachments)) {

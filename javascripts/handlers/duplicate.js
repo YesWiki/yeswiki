@@ -1,5 +1,3 @@
-// duplicate.js — duplicate a page/entry to a remote wiki (ticket 16: vanilla JS,
-// fetch instead of $.ajax)
 let shortUrl = ''
 
 function isValidUrl(string) {
@@ -99,7 +97,6 @@ function setFormMessage(state, text) {
   if (help) help.innerHTML = text
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 ywInitEach(
   '.duplication-wiki-form, .duplication-login-form, #form-duplication',
   (form) => {
@@ -221,8 +218,6 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
       .then((data) => {
         handleLoginResponse(data)
 
-        // if case of entry, we need to check if form id is available and compatible
-        // or propose another id
         const formIdInput = document.getElementById('form-id')
         const formId = formIdInput ? formIdInput.value : undefined
         if (typeof formId !== 'undefined') {
@@ -234,7 +229,6 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
               const requiredFields = form.prepared.filter(
                 (field) => field.required === true,
               )
-              // we check if the found formId is compatible
               if (
                 arrayIncludesAllRequiredFields(
                   window.sourceForm.prepared,
@@ -254,7 +248,6 @@ document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
             })
             .catch((status) => {
               if (status === 404) {
-                // the formId is available
                 setFormMessage(
                   'success',
                   _t('FORM_ID_AVAILABLE', { id: formId }),

@@ -12,10 +12,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 20 (webhooks absorbed into core): the controller must be registered
- * in the container, subscribed to the same comment/entry events as the old
- * extension (and nothing more — no form/user events, per the ticket's scope),
- * and read subscriptions from the triple store unchanged.
+ * Ticket 20 (webhooks absorbed into core): the controller must be registered in the container, subscribed to the same comment/entry events as the old extension (and nothing more — no form/user events, per the ticket's scope), and read subscriptions from the triple store unchanged.
  */
 #[CoversMethod(WebhooksController::class, 'getSubscribedEvents')]
 #[CoversMethod(WebhooksController::class, 'get_all_webhooks')]
@@ -46,9 +43,6 @@ class WebhooksControllerTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testRegisteredAsEventSubscriber(YesWikiRuntime $wiki)
     {
-        // the yeswiki.event_subscriber tag wires the controller into the
-        // EventDispatcher via YesWikiEventCompilerPass — instantiating the
-        // dispatcher must therefore instantiate the controller with it
         $this->assertTrue($wiki->services->has(EventDispatcher::class));
         $dispatcher = $wiki->services->get(EventDispatcher::class);
         $listeners = $dispatcher->getListeners('entry.created');

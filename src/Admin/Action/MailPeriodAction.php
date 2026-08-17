@@ -2,8 +2,6 @@
 
 namespace YesWiki\Admin\Action;
 
-// ticket 18: relocated from tools/contact/actions/MailPeriodAction.php.
-
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
@@ -13,8 +11,6 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
-
-// TODO create GroupManager
 
 class MailPeriodAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -67,7 +63,6 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
                 $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
             }
 
-            // Updating again to get modification from previous operations
             $periods = $this->updatePeriods($periods, $userName);
         }
 
@@ -111,7 +106,6 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
 
     private function unsubscribUserFromAllGroups($userName, $periods)
     {
-        // unsubscribe all groups
         foreach ($periods as $period => $config) {
             if ($config['subscribed']) {
                 $this->unsubscribeUserFromGroup($userName, $config['group']);

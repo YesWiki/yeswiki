@@ -8,11 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Regression tests for ticket 03 (ACLs into metadata; selective vs. full revert):
- * PageManager::revertToRevision() is selective by default (content only) and only restores
- * metadata (including ACLs) too when $fullRevert is explicitly true.
- */
+/** Regression tests for ticket 03 (ACLs into metadata; selective vs. */
 class PageManagerRevertToRevisionTest extends YesWikiTestCase
 {
     private const TAG = 'PageManagerRevertToRevisionRegressionPage';
@@ -20,9 +16,6 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
 
     public function testDefaultRevertDoesNotReopenAnAclTightenedAfterTheRevertedContentEdit()
     {
-        // the exact scenario ticket 03 names explicitly: a page's ACL is tightened after a
-        // content edit; a later default revert to the earlier wording must NOT reopen the
-        // earlier, looser ACL
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
@@ -34,8 +27,6 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $pageManager->setMetadata(self::TAG, ['acls' => ['read' => '@admins']]);
             $this->assertSame('@admins', $pageManager->getOne(self::TAG)['metadatas']['acls']['read'] ?? null);
 
-            // an admin (or automated process) reverts the wording back to v1, without
-            // intending to also reopen access
             $pageManager->revertToRevision(self::TAG, $v1['id']);
 
             $current = $pageManager->getOne(self::TAG);
@@ -90,8 +81,6 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $revisionsBefore = count($pageManager->getRevisions(self::TAG));
             $pageManager->revertToRevision(self::TAG, $v1['id'], fullRevert: true);
 
-            // one revert = one new revision, whether or not it's a full revert -- restoring
-            // metadata shouldn't cost a second insert on top of the content revert's
             $this->assertCount($revisionsBefore + 1, $pageManager->getRevisions(self::TAG));
         } finally {
             $pageManager->deleteOrphaned(self::TAG);
@@ -100,11 +89,6 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
 
     public function testCannotRevertAPageUsingAnotherPagesRevisionId()
     {
-        // regression for a real, pre-existing ACL-bypass this refactor fixed: the old
-        // RevisionsHandler checked write access against the *currently viewed* page but then
-        // saved to $page['tag'] -- the *target revision's* page, from an attacker-controlled
-        // restoreRevisionId. A user with write access to page A could revert page B (which
-        // they might have no write access to at all) to an arbitrary prior revision.
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 

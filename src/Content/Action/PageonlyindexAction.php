@@ -12,13 +12,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 
-/**
- * `{{pageonlyindex}}` -- converted from the procedural actions/pageonlyindex.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{pageonlyindex}}` -- converted from the procedural actions/pageonlyindex.php by ticket 06. */
 class PageonlyindexAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
     public static function performableName(): string
@@ -43,10 +37,6 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -55,18 +45,7 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
         return (string)ob_get_clean();
     }
 
-    /**
-     * Every page of the wiki except the entries -- which is what the name has always meant.
-     *
-     * It asked that question as `body NOT LIKE '{"%'`: an entry's body was JSON and a page's
-     * was wiki markup, so "does it start with a brace" separated them. Ticket 09 made *every*
-     * body JSON and the predicate became universally false -- `{{pageonlyindex}}` has listed
-     * nothing at all since, on every wiki, silently, because an index with no entries in it
-     * looks exactly like an empty index. Measured on a real install: 139 pages, 0 listed.
-     *
-     * The `type` column (ticket 27) is what the question is actually about, and it survives a
-     * body that changes shape again.
-     */
+    /** Every page of the wiki except the entries -- which is what the name has always meant. */
     private function emit(): void
     {
         $db = $this->getService(DbService::class);
@@ -78,7 +57,6 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
         );
         if ($pages) {
             foreach ($pages as $page) {
-                // XXX: strtoupper is locale dependent
                 $firstChar = strtoupper($page['tag'][0]);
                 if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {
                     $firstChar = '#';

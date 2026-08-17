@@ -1,9 +1,3 @@
-/* ---- small screens ----
-   The base type size shrinks in styles/yw-core.css, on `html` rather than here: a theme
-   that redeclared `--yw-font-size-base` inside a media query lost to the Preset's own
-   `:root` declaration, which is later in the cascade and which a media query adds no
-   specificity over. It had therefore stopped working for every wiki wearing a Preset. */
-
 @media (max-width: 767px) {
   #yw-topnav > .container {
     flex-wrap: wrap;

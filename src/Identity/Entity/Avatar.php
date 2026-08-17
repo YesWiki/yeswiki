@@ -2,13 +2,7 @@
 
 namespace YesWiki\Identity\Entity;
 
-/**
- * How an account shows its face: a picture, or a coloured disc with its initials on it.
- *
- * A value object rather than markup, because the two cases are one thing to a caller --
- * "draw this account" -- and because the colours are arithmetic worth testing without a
- * template in the way. `@core/_avatar.twig` is the one place that turns this into HTML.
- */
+/** How an account shows its face: a picture, or a coloured disc with its initials on it. */
 class Avatar
 {
     /** The account this is the face of -- its name, which is its tag. */

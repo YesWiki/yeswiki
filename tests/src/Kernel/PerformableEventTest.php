@@ -10,12 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 06: extensions hook actions and handlers through events instead of by dropping a
- * `__name.php` beside core's file.
- *
- * Core does not use this -- its own callbacks were merged into the classes they wrapped.
- * It exists purely so extensions keep the capability, and the bundled helloworld sample is
- * the live proof (see GreetingHooksSubscriber).
+ * Ticket 06: extensions hook actions and handlers through events instead of by dropping a `__name.php` beside core's file.
  */
 class PerformableEventTest extends YesWikiTestCase
 {
@@ -43,7 +38,6 @@ class PerformableEventTest extends YesWikiTestCase
 
     public function testABeforeListenerCanRewriteArguments(): void
     {
-        // this is what most old __hooks actually did: adjust an argument, not print
         $event = new PerformableEvent('action', 'x', ['message' => 'hi', 'keep' => 1]);
         $event->mergeArguments(['message' => 'hi there']);
 
@@ -59,11 +53,7 @@ class PerformableEventTest extends YesWikiTestCase
         $this->assertSame('<i>a</i><i>b</i>', $event->getOutput());
     }
 
-    /**
-     * The whole point: an extension reaches a core action without touching core. The
-     * helloworld sample subscribes to action.greeting.before/.after -- the two hook files
-     * it used to ship were deleted in favour of this.
-     */
+    /** The whole point: an extension reaches a core action without touching core. */
     public function testTheBundledExtensionHooksACoreActionThroughEvents(): void
     {
         $output = $this->getWiki()->services->get(ActionRunner::class)->action('greeting');

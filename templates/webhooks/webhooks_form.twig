@@ -18,11 +18,9 @@
             <div class="webhooks-form-col">
                 <select class="yw-input" name="form[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled' : '' }}>
                     <option value="0">{{ _t('WEBHOOKS_FORMS_ALL') }}</option>
-                    {# `forms` is id => label (FormManager::getAllLabels()) #}
+
                     {% for id, label in forms %}
-                        {# `==`, not `is same as`: the keys of getAllLabels() are ints (PHP
-                           coerces numeric string keys), while number_format returns a string,
-                           so a strict compare would never select the stored form #}
+
                         <option value="{{ id }}" {{ (webhooks[i] is defined and (webhooks[i].form)|number_format == id) ? "selected" : "" }}>{{ label }}</option>
                     {% endfor %}
                     {% if showComment %}

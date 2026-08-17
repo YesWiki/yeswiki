@@ -20,24 +20,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /**
- * `{{attach}}` -- renders one attached file inline, as an image, player, PDF or link
- * depending on its type.
- *
- * Ticket 24 dissolved the `Attach` class into this action plus three services
- * (AttachedFilePaths, ImageResizer, FileBrowser). What lives here is what was only ever
- * about *this action*: reading its arguments and turning a resolved file into HTML.
- *
- * **The parsed arguments live in a value object, never on `$this`.** Actions are shared
- * services, so one instance renders every `{{attach}}` on the page; per-instance state
- * would leak from one tag to the next. That is exactly what `Attach` avoided by being
- * constructed fresh per tag -- and it is not a hypothetical: an early draft of this class
- * kept the parsed `class=` on `$this` and the second `{{attach}}` on a page inherited the
- * first one's CSS classes and its 20px whiteborder adjustment.
- *
- * Two file models meet here. `file=` is normally a **FileManager tag** (ticket 10): the
- * bytes live under private/ and are served through the ACL-checked download route
- * (ADR-0006). Anything that is not a known tag falls back to the **legacy** search for an
- * encoded filename under files/, which is web-served directly, as it always was.
+ * `{{attach}}` -- renders one attached file inline, as an image, player, PDF or link depending on its type.
  */
 class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -99,13 +82,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         ];
     }
 
-    /**
-     * The settings that only mean something once the file is a picture (or a PDF).
-     *
-     * A `commons` entry of the YAML, which is to say a block of settings declared as if it
-     * were a component of its own -- the browser found it by its NAME. It is a block handed
-     * to the component that uses it now.
-     */
+    /** The settings that only mean something once the file is a picture (or a PDF). */
     private static function pictureSettings(): SettingGroup
     {
         return SettingGroup::named(
@@ -217,8 +194,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             return $request->error;
         }
 
-        // A tag-resolved file's bytes are under private/ and not web-servable; the legacy
-        // filename search is only reached for the untagged fallback.
         $fullFilename = $request->fileTag !== ''
             ? $this->getService(FileManager::class)->getPhysicalPath($request->fileTag)
             : $this->paths()->fullFilename($request->file);
@@ -254,22 +229,13 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         return $this->getService(PerformableArguments::class)->get($name);
     }
 
-    /**
-     * Read this tag's arguments into a fresh value object, validating as we go. See
-     * docs/actions/attach.yaml for the full list.
-     */
+    /** Read this tag's arguments into a fresh value object, validating as we go. */
     private function readArguments(): AttachRequest
     {
         $request = new AttachRequest();
 
         $request->file = htmlspecialchars((string)($this->arg('attachfile') ?: $this->arg('file')));
 
-        // `file=` is a FileManager tag on the current path -- resolve it here so the
-        // renderers below serve it through the ACL-checked download route rather than a
-        // direct static path. Anything else falls through to the legacy filename search.
-        // getOne() answers both questions in one read -- it returns null for a tag that is
-        // not a file, so asking isFileTag() first only bought a `SELECT type` in front of the
-        // `SELECT *` that followed it, for every {{attach}} on the page
         $fileManager = $this->getService(FileManager::class);
         $entry = $request->file === '' ? null : $fileManager->getOne($request->file);
         if ($entry !== null) {
@@ -278,11 +244,11 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         }
 
         $desc = (string)($this->arg('attachdesc') ?: $this->arg('desc'));
-        $request->desc = htmlentities(strip_tags($desc)); // avoid XSS
+        $request->desc = htmlentities(strip_tags($desc));
 
-        $request->link = (string)($this->arg('attachlink') ?: $this->arg('link')); // only meaningful on an image
-        $request->caption = (string)$this->arg('caption'); // shown on hover
-        $request->legend = (string)$this->arg('legend'); // shown underneath
+        $request->link = (string)($this->arg('attachlink') ?: $this->arg('link'));
+        $request->caption = (string)$this->arg('caption');
+        $request->legend = (string)$this->arg('legend');
         $request->nofullimagelink = (string)$this->arg('nofullimagelink');
         $request->height = $this->arg('height');
         $request->width = $this->arg('width');
@@ -321,7 +287,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                 break;
         }
 
-        // one dimension given means a square bound
         if (empty($request->height) && !empty($request->width)) {
             $request->height = $request->width;
         } elseif (!empty($request->height) && empty($request->width)) {
@@ -336,12 +301,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         return '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . $message . '.</div>' . "\n";
     }
 
-    /**
-     * URL serving the file's bytes. A FileManager-tagged entry goes through the API
-     * download route, which is what actually enforces its read ACL (ADR-0006) -- its
-     * bytes under private/ are not web-servable. A legacy file stays under files/ and is
-     * linked directly, as before.
-     */
+    /** URL serving the file's bytes. */
     private function fileUrl(AttachRequest $request, string $fullFilename, bool $forceDownload = false): string
     {
         if ($request->fileTag !== '') {
@@ -353,19 +313,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         return $this->paths()->scriptPath() . $fullFilename;
     }
 
-    /**
-     * The same address, asking for a copy no larger than the page can use.
-     *
-     * A tagged file was always served at its full size here, with the requested width and
-     * height put on the `<img>` as attributes -- so `size="small"` fetched the whole
-     * four-megapixel original and drew it 140 pixels wide. The download route resizes on
-     * demand and caches the copy under private/ beside the bytes, which is how the bazar
-     * image fields already ask for a thumbnail, so this is the same mechanism rather than a
-     * second one.
-     *
-     * With no size asked for, the cap still applies: `image-render-max-*` is what nothing on
-     * a page needs to exceed. The original is untouched on disk and is what a download gives.
-     */
+    /** The same address, asking for a copy no larger than the page can use. */
     private function sizedFileUrl(AttachRequest $request, string $url): string
     {
         $config = $this->getService(RuntimeConfig::class);
@@ -383,10 +331,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
     private function asImage(AttachRequest $request, string $fullFilename): string
     {
-        // A tagged file is served full-size with width/height as plain HTML attributes:
-        // its bytes are under private/, and writing a resized COPY into the public cache/
-        // would defeat the point of moving them there. SVG needs no resize either way.
-        // The legacy path keeps the original resize-to-cache behaviour.
         if ($request->fileTag !== '' || preg_match('/.(svg)$/i', $request->file) === 1) {
             $width = $request->width;
             $height = $request->height;
@@ -406,7 +350,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             $height = $size === false ? null : $size[1];
         }
 
-        // the border is drawn inside the box, so take it off the declared size
         if (strstr($request->classes, 'whiteborder')) {
             $width -= 20;
             $height -= 20;
@@ -484,7 +427,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             $arguments->set('maxwidth', $arguments->get('width'));
         }
 
-        // {{pdf}} expects Bootstrap's pull-* for alignment, {{attach}} takes plain left/right
         $newClass = '';
         foreach (['right', 'left'] as $side) {
             if (strstr($request->classes, $side)) {
@@ -502,8 +444,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 }
 
 /**
- * One `{{attach}}` tag's parsed arguments. Exists so the action -- a shared service --
- * holds no per-tag state; see the class comment above for the bug that proved it needed to.
+ * One `{{attach}}` tag's parsed arguments.
  *
  * @internal
  */

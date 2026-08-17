@@ -32,6 +32,5 @@ export default {
     'queries',
     'display_method',
   ],
-  // disabledAttributes: [],
   editorSetup: enumEditorSetup,
 }

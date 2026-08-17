@@ -17,8 +17,7 @@ class SelectEntryField extends EnumField
         parent::__construct($values, $services);
 
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
-        // A linked form used to be allowed to be a URL, which fetched another wiki's entries at
-        // render time (ticket 34). It is a local form or nothing now, so there is one case left.
+
         $this->options = null;
     }
 
@@ -43,12 +42,10 @@ class SelectEntryField extends EnumField
         }
 
         if ($this->remoteLinkedFormNotice() !== null) {
-            // the stored value is a tag on a wiki we no longer read; there is nothing to link to
             return '';
         }
 
         if ($this->displayMethod === 'fiche') {
-            // TODO add documentation
             return $this->getService(EntryController::class)->view($value);
         }
 
@@ -66,9 +63,7 @@ class SelectEntryField extends EnumField
         return $this->getEntriesOptions();
     }
 
-    /**
-     * check if the current class is EnumEntry.
-     */
+    /** check if the current class is EnumEntry. */
     public function isEnumEntryField(): bool
     {
         return true;

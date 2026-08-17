@@ -1,15 +1,6 @@
 import InputMultiInput from './InputMultiInput.js'
 
-/**
- * The `query` parameter, as conditions rather than as a string.
- *
- * What it writes is what it always was -- `bf_type=3,4|bf_ville!=Lyon` -- but that string
- * is three separators doing three different jobs: `|` between conditions is AND, `,`
- * inside one is OR, and the operator hides in the middle of a field name and a value.
- * Nobody remembers that, so it was a parameter you could only copy from documentation.
- *
- * One row per condition, each of them a field, an operator and the values it accepts.
- */
+/** The `query` parameter, as conditions rather than as a string. */
 export default {
   mixins: [InputMultiInput],
   methods: {
@@ -23,14 +14,12 @@ export default {
         .map((condition) => condition.trim())
         .filter(Boolean)
         .forEach((condition) => {
-          // the longest operators first, or `>=` is read as `>` with a `=` in the value
           const match = /^([^=!<>]+?)\s*(==|!=|<=|>=|=|<|>)\s*(.*)$/.exec(
             condition,
           )
           if (!match) return
           this.elements.push({
             name: match[1].trim(),
-            // `==` and `=` mean the same thing to the search; the select offers one of them
             operator: match[2] === '==' ? '=' : match[2],
             values: match[3].trim(),
           })

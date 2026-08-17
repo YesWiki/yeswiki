@@ -937,8 +937,6 @@ return [
     'DISTANT_LOGIN' => 'Identifikatu urruneko YesWikian',
     'CHECKING_THE_ADMIN_NAME' => 'Administratzailearen izena egiaztatzen',
 
-    // relocated from tools/login/lang/login_eu.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Izena eman',
     'LOGIN_LOGIN' => 'Saioa hasi',
     'LOGIN_WIKINAME' => 'Helbide elektronikoa edo izena',
@@ -993,7 +991,6 @@ return [
     'USERSETTINGS_EMAIL_ALREADY_USED' => '"{email}" helbide elektronikoa beste kontu batek erabiltzen du!',
     'USERSETTINGS_NAME_NOT_FOUND' => '"{currentName}" identifikatzailea ez da existitzen!',
 
-    // relocated from tools/tags/lang/tags_eu.inc.php (ticket 10)
     'TAGS_TAGS' => 'Gako-hitzak',
     'TAGS_ACTION_ADMINTAGS' => '{{admintags ...}} ekintza',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'ekintza Administratzaileen Taldearentzat erreserbatuta dago',
@@ -1363,7 +1360,7 @@ Aldatu beharreko zutabearen testua geroago
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Gunearen deskribapena esaldi batean, erreferentziarako (Kontuz: ez jarri "-rik." (puntua)',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Eragotzi robotek wikia indexatzea (noindex,nofollow,max-image-preview:none,archive,noimageindex)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Web indexaziorako META etiketak',
-    // relocated from tools/attach/lang/attach_eu.inc.php (ticket 17)
+
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Ez dago irudi- fitxategirik',
     'ATTACH_ACTION_ATTACH' => '{{attach ...}} ekintza',
     'ATTACH_PARAM_DESC_REQUIRED' => '"desc" parametroa nahitaezkoa da irudi batentzat',
@@ -1459,7 +1456,6 @@ Aldatu beharreko zutabearen testua geroago
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Gehienezko fitxategi-tamaina (byteak) Gehienezko fitxategi-tamaina (adib.: 2097152, 2048k, 2m)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Bitartekoak txertatzea (irudiak, bideoak)',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Bidali fitxategi hau',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1473,7 +1469,6 @@ Aldatu beharreko zutabearen testua geroago
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_eu.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => '{{suscripcion ...}} ekintza',
     'CONTACT_MAIL_REQUIRED' => 'posta parametroa, nahitaezkoa, falta da.',
     'CONTACT_ACTION_CONTACT' => '{{contact ...}} ekintza',
@@ -1573,7 +1568,6 @@ Aldatu beharreko zutabearen testua geroago
     'EDIT_CONFIG_GROUP_BAZAR' => 'Datu-basea',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Desaktibatu posta elektronikoaren bidalketa pasahitz bat berriro ezartzeko (adib.: LDAP, SSO)',
 
-    // relocated from tools/autoupdate/lang/autoupdate_eu.inc.php (ticket 19)
     'AU_ACL' => 'Fitxategien gaineko eskubideak egiaztatzea',
     'AU_REPO_ERROR' => 'Ekarpen eskuraezinak.',
     'AU_VERSION_WIKI' => 'Wikiaren bertsioa',
@@ -1618,7 +1612,6 @@ Aldatu beharreko zutabearen testua geroago
     'AU_SEVERAL_TOOLS_UPDATE' => '{nbMaius} luzapen dituzu eguneratzeko',
     'AU_ONE_TOOL_UPDATE' => 'Luzapen bat duzu eguneratzeko',
 
-    // relocated from tools/syndication/lang/syndication_eu.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => '{{syndication ..}}} ekintza',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'nahitaez sartu behar da "url" parametroa RSS jario bat sindikatzeko',
     'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'cache direktorioak ez du idazteko baimenik',
@@ -1633,7 +1626,7 @@ Aldatu beharreko zutabearen testua geroago
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'ez dago, aurrez zehaztutako txantiloia erabiltzen da',
     'SYNDICATION_SOURCE' => 'iturburua',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Eduki osoa atzitu',
-    // relocated from tools/bazar/lang/bazar_eu.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Inprimakiak',
     'BAZ_EXISTINGMESSAGEFORM' => 'Formulario honen identifikatzailea aldatu egingo da hautatzen baduzu, zure formularioetan dagoeneko erabiltzen baita.',
     'BAZ_NOANSWERS' => 'Webgunetik erantzunik ez... Egiaztatu URLak YesWiki gune bat Cercopithecus bertsioan edo hurrengoetan adierazten duela',
@@ -2011,7 +2004,6 @@ Hautatu kontrol-laukia "{proposedName}"(r)ekin ordezkatzeko, edo, bestela, aldat
     'BAZ_WIDGET_INSTRUCTION2' => 'Kopiatu beharreko wiki ekintzaren kodea webgune honetako orri batean',
     'BAZ_CORRESPONDANCE_ERROR2' => 'ekintza bazarlista: korrespondentzia parametroa gaizki betetzen da.',
 
-    // relocated from tools/bazar/lang/bazarjs_eu.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Kalkuluak',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Bistaratze-testua',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Gehitu unitate bat behar bada {value}(r)en ondoren (adib.: `{value} €`',
@@ -2287,7 +2279,6 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Erakutsi',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -2305,13 +2296,11 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Honen aldaketa',
     'RSS_HISTORY' => 'historikoa',
     'RSS_HIDDEN_CONTENT' => 'Ezkutuko edukia',
@@ -2322,11 +2311,9 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'RSS_DELETIONS' => 'Ezabapenak',
     'RSS_NO_DIFF' => 'Desberdintasunik ez',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Gehitu eremu bat',
     'FORM_BUILDER_ADVANCED' => 'Ezarpen aurreratuak',
     'FORM_BUILDER_BACK' => 'Itzuli',
@@ -2343,7 +2330,6 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'FORM_BUILDER_NO_PREVIEW' => 'Ez dago aurrebistarik eremu honetarako',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Beharrezkoa',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Fitxen izenburu gisa erabilitako eremua',
     'FORM_EDIT_CUSTOM_TITLE' => 'Izenburu pertsonalizatua…',
     'FORM_EDIT_PERMISSIONS' => 'Fitxen baimenak',

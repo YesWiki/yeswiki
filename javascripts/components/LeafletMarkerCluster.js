@@ -1,7 +1,4 @@
-/**
- * Vue 3 Leaflet MarkerCluster component
- * A lightweight wrapper around Leaflet.markercluster
- */
+/** Vue 3 Leaflet MarkerCluster component A lightweight wrapper around Leaflet.markercluster. */
 export default {
   props: {
     options: {
@@ -45,7 +42,6 @@ export default {
       },
     })
 
-    // Extract event listeners from $attrs (Vue 3 pattern)
     const eventListeners = {}
     Object.keys(this.$attrs).forEach((key) => {
       if (key.startsWith('on') && typeof this.$attrs[key] === 'function') {
@@ -55,14 +51,12 @@ export default {
     })
     L.DomEvent.on(this.mapObject, eventListeners)
 
-    // Find parent map component
     let parent = this.$parent
     while (parent && !parent.mapObject) {
       parent = parent.$parent
     }
     this.parentContainer = parent
 
-    // Add to parent map
     if (this.parentContainer && this.parentContainer.mapObject) {
       this.parentContainer.mapObject.addLayer(this.mapObject)
     }

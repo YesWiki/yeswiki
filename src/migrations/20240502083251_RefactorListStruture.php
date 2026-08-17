@@ -5,8 +5,6 @@ use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
-// Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
-// to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
 class RefactorListStruture extends YesWikiMigration
 {
     public function run()

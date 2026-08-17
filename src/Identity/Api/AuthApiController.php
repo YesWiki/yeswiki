@@ -23,10 +23,8 @@ class AuthApiController extends YesWikiController
         $post = $this->getRequest()->request;
         $userManager = $this->getService(UserManager::class);
 
-        // Try login by user name
         $user = $userManager->getOneByName($post->get('username'));
 
-        // Try login by email
         if (!$user && filter_var($post->get('username'), FILTER_VALIDATE_EMAIL)) {
             $user = $userManager->getOneByEmail($post->get('username'));
         }
@@ -37,8 +35,6 @@ class AuthApiController extends YesWikiController
 
         $authenticationService = $this->getService(AuthenticationService::class);
         if (!$authenticationService->checkPassword(strval($post->get('password')), $user)) {
-            // An md5 from an older YesWiki is refused outright, and "wrong password" would send
-            // an API client into a retry loop over a credential that can never work again.
             return new ApiResponse(
                 ['error' => _t($authenticationService->requiresPasswordReset($user)
                     ? 'LOGIN_PASSWORD_FORMAT_OBSOLETE'

@@ -2,12 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
-/**
- * The historic one-slot `$_SESSION['message']` flash channel (Wiki::SetMessage()/
- * GetMessage()). Distinct from the Tamtamchik SimpleFlash stack the theme header
- * displays; this one is read (and cleared) by whoever asks first — today that is
- * `{{parambody}}` via ParambodyAction.
- */
+/** The historic one-slot `$_SESSION['message']` flash channel (Wiki::SetMessage()/ GetMessage()). */
 class FlashMessageService
 {
     public function setMessage(string $message): void

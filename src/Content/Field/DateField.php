@@ -2,14 +2,12 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Kernel\Service\DateService as CoreDateService;
 
 #[\Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
 {
-    // ticket 18: a date indexed as text makes every year a match-all query
     use ContributesNoSearchableText;
 
     public function requiresTagBeforeFormatting()
@@ -26,7 +24,6 @@ class DateField extends BazarField
         $value = $this->getValue($entry);
 
         if (!empty($value)) {
-            // Default value when entry exist
             $day = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
             $hasTime = (strlen($value) > 10);
             if ($hasTime) {
@@ -37,8 +34,6 @@ class DateField extends BazarField
                 $day = substr($day, 0, 10);
             }
         } elseif (!empty($this->default)) {
-            // Default value when new entry
-            // 0 and 1 are present to manage olf format of this field
             if (in_array($this->default, ['today', '1'])) {
                 $day = date('Y-m-d');
             } else {
@@ -66,7 +61,6 @@ class DateField extends BazarField
                 $this->getService(EntryDateService::class)->followId($entry['tag']);
             }
             if (!$this->getService(EntryDateService::class)->canRegisterMultipleEntries($entry)) {
-                // clean data from entry because not possible to create repetition
                 if (isset($entry['bf_date_fin_evenement_data'])) {
                     unset($entry['bf_date_fin_evenement_data']);
                 }
@@ -130,8 +124,6 @@ class DateField extends BazarField
 
     protected function getValue($entry)
     {
-        // TODO see if it is necessary to look for $_REQUEST
-        // do not take default for this field
         return $entry[$this->propertyName] ?? null;
     }
 }

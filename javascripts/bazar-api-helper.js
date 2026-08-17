@@ -2,7 +2,7 @@ const BASE_URL = `${wiki.baseUrl.replace(/\?+$/, '')}`
 
 function addCommaSeparatedString(mainString, stringToAdd) {
   if (!stringToAdd) {
-    return mainString // Return mainString if stringToAdd is empty
+    return mainString
   }
 
   const mainArray = mainString
@@ -71,10 +71,6 @@ async function modifyEntry(data) {
   }
 }
 
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on .page, not <body>. The delegated listener below lives on .page, which
-// is *inside* the swapped region -- a body-keyed registration would bind to the first page's
-// element and lose it on the next navigation.
 ywInitEach('.page', (pageElement) => {
   function validateDataTargets(el, options = {}) {
     const { execute = false, onValid } = options

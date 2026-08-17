@@ -41,12 +41,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         ?array $wakkaContent,
         array $services
     ) {
-        // This used to skip when SqlDialect::supportsDump() was false, which was PostgreSQL's way
-        // of saying it could not export a table structure at all -- so a pgsql wiki could not be
-        // backed up. Ticket 32 closed that by rebuilding the DDL from the system catalogs, so
-        // there is no driver left to skip for and the assertion below runs everywhere. Kept as an
-        // assertion rather than deleted outright: if a driver ever declines again, this says so
-        // instead of failing several frames deeper inside the archive.
         $this->assertTrue(
             $services['wiki']->services->get(DbService::class)->dialect()->supportsDump(),
             'every supported driver must be able to export its table structure'
@@ -106,8 +100,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     /**
-     * retrieve data from location
-     * delete the zip file because only for tests.
+     * retrieve data from location delete the zip file because only for tests.
      *
      * @return array $data
      */
@@ -122,7 +115,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                 if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
-                    // create tmp folder in cache
                     do {
                         $tmpFolderName = 'tmp_folder_to_delete_' . md5(time());
                     } while (file_exists("cache/$tmpFolderName"));
@@ -158,7 +150,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                         }, $files);
                         $data['files'] = $files;
 
-                        // wakka content
                         if (file_exists("cache/$tmpFolderName/yeswiki.config.php") && is_file("cache/$tmpFolderName/yeswiki.config.php")) {
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/yeswiki.config.php");

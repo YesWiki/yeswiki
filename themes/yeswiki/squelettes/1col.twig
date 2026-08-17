@@ -1,39 +1,7 @@
-{# Squelette = page-level layout.
 
-   Two named blocks, and the renderer renders them OUT OF ORDER: `body` first, then `head`
-   (ticket 15, ADR-0014). That is what lets <head> carry every asset the page turned out to
-   need -- by the time it renders, every action, field and included page has declared its own.
-   Before this, assets registered during the page body could only be flushed at </body>,
-   stylesheets included, so content was painted before its own styles arrived.
-
-   Consequences for a theme author:
-     - `{{ page_content|raw }}` is where the page goes. The old `{WIKINI_PAGE}` brace marker
-       was plain text the renderer split the file on; it no longer exists.
-     - `{{ declared_assets() }}` goes LAST in the head block. It emits everything declared, and
-       an action written after it in that block would register too late to be included.
-     - `{{linkstyle}}` and `{{linkjavascript}}` are gone. Nothing replaces them: assets are
-       declared by whatever needs them and emitted once, here.
-     - Actions may still be called anywhere in either block -- that freedom is why this is two
-       Twig blocks rather than a fixed set of pre-rendered slots.
-
-   Ticket 16 (internal navigation loads through htmx) adds four more, all inside the body
-   block, because the body block is exactly what a boosted navigation swaps:
-     - `hx-boost` on <body>, behind the `htmx_navigation` config flag, plus `hx-headers`
-       carrying the layout fingerprint. That is what lets the server notice that the page you
-       are going to uses a different squelette/theme/lang and answer with a real navigation
-       instead of swapping its body into the wrong chrome.
-     - `{{ page_state() }}` FIRST inside the block: the `wiki` globals and any flash message.
-       Inline markup further down calls `_t()`, which reads `wiki.lang`.
-     - a `.yw-progress` element for `hx-indicator` -- an XHR navigation shows no browser
-       progress, so without it a slow page looks like a dead click.
-     - `#yw-main` focusable (`tabindex="-1"`) and a polite live region, so a swap moves
-       keyboard focus and is announced instead of silently replacing the page. #}
 {% block head %}
 <!doctype html>
-{# `--yw-navbar-height` rides on the root element rather than in a stylesheet, and
-   deliberately: an inline custom property beats the same property declared in ANY
-   stylesheet -- preset, theme or custom.css -- with no `!important` anywhere. That is
-   what "the Layout screen has the last word" means (ticket 30). #}
+
 <html lang="{{ action('configuration param="lang"') }}" style="{{ layout_root_style() }}">
 <head>
   <!-- HTML Metas -->
@@ -49,7 +17,6 @@
   {{ action('favicon')|raw }}
   {{ action('linkrss')|raw }}
 
-  {# every stylesheet and script the whole page declared -- keep this last #}
   {{ declared_assets()|raw }}
 </head>
 {% endblock %}
@@ -58,11 +25,8 @@
 <body {{ action('parambody')|raw }}{% if htmx_navigation %} hx-boost="true" hx-indicator=".yw-progress" hx-headers='{"{{ layout_fingerprint_header }}": "{{ layout_fingerprint }}"}'{% endif %}>
   {{ page_state()|raw }}
 
-  {# htmx-indicator: hidden until a request is in flight; the CSS delays it so a fast
-     navigation shows nothing at all rather than a flicker #}
   <div class="yw-progress htmx-indicator" aria-hidden="true"></div>
-  {# what assistive technology is told after a swap; yw-navigation.js writes the page title
-     here. Empty and polite: it must announce the arrival, not narrate the page. #}
+
   <div id="yw-navigation-announcer" class="sr-only" role="status" aria-live="polite"></div>
 
   <div id="yw-container">
@@ -71,23 +35,12 @@
       Aller au contenu principal
     </a>
 
-    {# Ticket 30: the brand, the navbar and the quick menu come from `layout_*` configuration,
-       edited on /admin/layout. They were three wiki pages (`PageTitre`, `PageMenuHaut`,
-       `PageRapideHaut`) included here and re-parsed on every render.
-       The banner, the side menu and the footer are still pages, and still `{{include}}`d:
-       what people put in them is arbitrary wiki content, which is what a page is for.
-       `layout_page()` rather than the name itself, because a page may name a different
-       banner or footer for itself -- the per-page override, which survives for these three. #}
-    {# `id="yw-layout-chrome"` is load-bearing: the live preview on /admin/layout swaps this
-       block's contents for the same fragment rendered from the form being filled in. #}
     <nav id="yw-topnav" class="fixable" role="navigation">
       <div class="container" id="yw-layout-chrome">
         {{ layout_chrome()|raw }}
       </div>
     </nav>
 
-    {# The banner and the footer are pages, and the pencil beside each opens that page --
-       for whoever may write it. `layout_edit()` answers '' for everyone else. #}
     <header id="yw-header" class="yw-chrome-editable">
       {{ layout_edit('header')|raw }}
       {{ action('include page="' ~ layout_page('PageHeader') ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
@@ -97,16 +50,12 @@
       <div class="yw-main-content alone">
         {{ page_content|raw }}
       </div>
-      {# inside #yw-main, which is what gives the page its column: the line of facts the
-         edit bar ends with is a footnote to the page and lines up with it. (The cluster of
-         actions is `position: fixed`, so where it sits in the markup changes nothing about
-         where it lands.) #}
+
       {{ action('editbar')|raw }}
     </div>
 
     <footer id="yw-footer" class="yw-chrome-editable">
-      {# the pencil hangs off the footer itself, not off the centred container: it lines up
-         with the floating action cluster, which is pinned to the viewport #}
+
       {{ layout_edit('footer')|raw }}
       <div class="container">
         {{ action('include page="' ~ layout_page('PageFooter') ~ '" class="footerpage" doubleclick="1"')|raw }}

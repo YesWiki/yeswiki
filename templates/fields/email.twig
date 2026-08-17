@@ -2,8 +2,7 @@
 
 {% block value %}
     {% if field.showContactForm %}
-        {# ticket 35: the form comes from GET /api/contact/form now, not the /mail handler.
-           A route has no implicit page, so the tag is passed explicitly. #}
+
         <a class="yw-btn modalbox" title="{{ _t('BAZ_CONTACT_BY_MAIL') }}"
            href="{{ url({tag: 'api/contact/form', params: {pageTag: pageTag, field: field.propertyName}}) }}">
             <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg> {{ _t('BAZ_CONTACT_BY_MAIL') }}

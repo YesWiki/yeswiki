@@ -13,12 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression/acceptance tests for ticket 06 (users become Content): user accounts are now
- * `pages` rows typed via a TYPE_URI='user' triple instead of standalone `users` rows,
- * with the password hash (and a few account-preference fields) hidden from non-owner,
- * non-admin viewers via Field ACL (Guard::checkUserAcls()) -- uniformly on the current
- * revision AND on historical ones, since both flow through the same
- * PageManager::checkEntriesACL() choke point.
+ * Regression/acceptance tests for ticket 06 (users become Content): user accounts are now `pages` rows typed via a TYPE_URI='user' triple instead of standalone `users` rows, with the password hash (and a few account-preference fields) hidden from non-owner, non-admin viewers via Field ACL (Guard::checkUserAcls()) -- uniformly on the current revision AND on historical ones, since both flow through the same PageManager::checkEntriesACL() choke point.
  */
 class UserManagerContentTest extends YesWikiTestCase
 {
@@ -52,7 +47,6 @@ class UserManagerContentTest extends YesWikiTestCase
             $this->assertSame(PageType::USER, $page['type'], 'the row states it is an account');
             $this->assertSame(PageType::USER, $pageManager->typeOf($name));
 
-            // the account owns itself, and default_write_acl ('*') is overridden
             $this->assertSame($name, $page['owner']);
             $metadata = $pageManager->getMetadata($name);
             $this->assertSame("%\n@admins", $metadata['acls']['write']);
@@ -73,17 +67,13 @@ class UserManagerContentTest extends YesWikiTestCase
         try {
             $userManager->create($name, 'umct-password@example.tld', 'Aa1!aaaaRegression');
 
-            // internal fetch (auth path) sees the real hash
             $internal = $userManager->getOneByName($name);
             $this->assertNotEmpty($internal['password']);
 
-            // generic page-read path (bypassAcls=false), viewed as the owner: password is
-            // STILL hidden -- no legitimate UI ever needs to show a hash back to anyone
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner['password']);
 
-            // as an unrelated third party: also hidden
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
             $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther['password']);
@@ -113,7 +103,6 @@ class UserManagerContentTest extends YesWikiTestCase
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('umct-fieldacl@example.tld', $bodyAsOwner['email'], 'email must stay visible to the account owner');
 
-            // motto and signuptime are public regardless of viewer
             $this->assertArrayHasKey('signuptime', $bodyAsOther);
             $this->assertNotSame('', $asOther['owner'] ?? null, 'owner column itself is unaffected by field redaction');
         } finally {
@@ -136,11 +125,9 @@ class UserManagerContentTest extends YesWikiTestCase
             $originalHash = $originalUser['password'];
             $firstRevisionTime = $pageManager->getOne($name, null, true, true)['time'];
 
-            sleep(1); // pages.time has only second-granularity (see PageManagerMetadataTest)
+            sleep(1);
             $userManager->update($originalUser, ['motto' => 'updated motto']);
 
-            // fetching the FIRST (historical) revision as an unrelated viewer must still
-            // redact the password -- not just the current one
             $historicalAsOther = $pageManager->getOne($name, $firstRevisionTime, false, false, self::OTHER_VIEWER);
             $this->assertNotNull($historicalAsOther, 'sanity: the historical revision is fetchable');
             $historicalBody = $historicalAsOther['body'];
@@ -153,13 +140,6 @@ class UserManagerContentTest extends YesWikiTestCase
 
     public function testRevertingAUserPageDoesNotCorruptThePasswordHash()
     {
-        // regression test (found by /code-review's Standards axis): revertToRevision()
-        // fetches the target revision via getById(), which -- before this fix -- always
-        // ran users-type pages through Field ACL redaction, unconditionally blanking
-        // `password`. Since revertToRevision() writes that fetched body straight back via
-        // save(), reverting a user page to ANY revision silently erased the real password
-        // hash, not just hid it from display. getById() now takes a $bypassAcls param,
-        // and revertToRevision() passes true.
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
         $pageManager = $wiki->services->get(PageManager::class);
@@ -175,7 +155,7 @@ class UserManagerContentTest extends YesWikiTestCase
 
             $firstRevisionId = $pageManager->getOne($name, null, true, true)['id'];
 
-            sleep(1); // pages.time has only second-granularity
+            sleep(1);
             $userManager->update($originalUser, ['motto' => 'updated motto']);
 
             $pageManager->revertToRevision($name, $firstRevisionId);
@@ -197,7 +177,6 @@ class UserManagerContentTest extends YesWikiTestCase
         $this->cleanupUser($userManager, $collidingTag);
 
         try {
-            // an ordinary page already holds this tag -- not another user
             $pageManager->save($collidingTag, [PageBody::CONTENT => 'existing page content'], '', true);
 
             $created = $userManager->create($collidingTag, 'umct-collision@example.tld', 'Aa1!aaaaRegression');
@@ -231,11 +210,6 @@ class UserManagerContentTest extends YesWikiTestCase
 
     public function testOnlyOwnerAndAdminCanWriteToAUsersPage()
     {
-        // AclService's '%' (owner) check reads the REAL logged-in session
-        // (Wiki::UserIsOwner()), not the $user argument passed to hasAccess() -- a
-        // pre-existing characteristic of every '%' ACL in this codebase, not specific to
-        // users-type Content, so this test simulates real logins rather than passing an
-        // explicit "check as" username.
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
         $aclService = $wiki->services->get(AclService::class);

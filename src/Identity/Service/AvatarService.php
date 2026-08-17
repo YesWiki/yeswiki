@@ -13,28 +13,10 @@ use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * The face of an account: its profile picture, or initials on a colour of its own.
- *
- * Every wiki has accounts that never uploaded anything, so "no picture" is the normal
- * case rather than the error case, and a blank disc for most of the wiki is not an
- * answer. Initials on a colour derived from the name are: it is stable (the same account
- * is the same colour on every screen, forever), it needs no storage, and it tells two
- * accounts apart at navbar size, which is the whole job.
- *
- * **Which field holds the picture is the form's to say** (ticket 11): this asks the User
- * form for the field playing the `image` role rather than reading `profile_picture` by
- * name. Unconfigured, that resolves to the form's first image field -- the locked
- * `profile_picture` ContentTypeSchema declares -- so nothing needs configuring, and a
- * webmaster with two image fields on their User form can still say which one is the face.
- */
+/** The face of an account: its profile picture, or initials on a colour of its own. */
 class AvatarService
 {
-    /**
-     * Rendered pixels of the square thumbnail. Double the ~48px an avatar shows at, so a
-     * dense screen has something to work with; small enough that the navbar does not pull
-     * a phone photo down on every page.
-     */
+    /** Rendered pixels of the square thumbnail. */
     private const SIZE = 128;
 
     private PageManager $pageManager;
@@ -66,13 +48,7 @@ class AvatarService
         $this->urlFormatter = $urlFormatter;
     }
 
-    /**
-     * The avatar of the account named $name.
-     *
-     * A name that is not an account's -- an anonymous editor's IP address, a deleted
-     * author -- still gets initials and a colour rather than nothing: the caller is
-     * drawing someone either way.
-     */
+    /** The avatar of the account named $name. */
     public function forName(string $name): Avatar
     {
         $name = trim($name);
@@ -87,8 +63,6 @@ class AvatarService
         );
     }
 
-    // -- the picture ----------------------------------------------------------------
-
     private function pictureUrl(string $name): ?string
     {
         if ($name === '' || !$this->userManager->isUserTag($name)) {
@@ -101,15 +75,12 @@ class AvatarService
             return null;
         }
 
-        // NOT bypassing the ACLs: a webmaster who put a read ACL on the picture field
-        // meant it, and Guard blanks the value for a reader it excludes (ticket 10)
         $page = $this->pageManager->getOne($name);
         $value = trim((string)(($page['body'] ?? [])[$propertyName] ?? ''));
         if ($value === '') {
             return null;
         }
 
-        // an image field may hold a URL instead of an upload; it is already an address
         if (preg_match('#^https?://#i', $value) === 1) {
             return $value;
         }
@@ -117,15 +88,7 @@ class AvatarService
         return $this->thumbnailUrl($name, $value);
     }
 
-    /**
-     * The square thumbnail of an uploaded picture, generated on first use.
-     *
-     * Where an upload lives and what its resized copy is called both depend on the page
-     * being rendered -- outside safe mode each page owns a directory -- and the page being
-     * rendered here is whatever the visitor asked for, not the account. So the account is
-     * made the current page for the length of the lookup, the same swap `FileField` does
-     * to name a file it is about to write.
-     */
+    /** The square thumbnail of an uploaded picture, generated on first use. */
     private function thumbnailUrl(string $tag, string $fileName): ?string
     {
         $previousTag = $this->pageContext->getTag();
@@ -145,9 +108,6 @@ class AvatarService
                 return $base . $thumbnail;
             }
 
-            // a picture that cannot be resized (an exotic encoding, a read-only cache
-            // directory) is still the account's picture: serve the original rather than
-            // falling back to initials it does not need
             return $this->resizer->resize($source, $thumbnail, self::SIZE, self::SIZE, 'crop') === $thumbnail
                 ? $base . $thumbnail
                 : $base . $source;
@@ -156,8 +116,6 @@ class AvatarService
             $this->pageContext->setPage($previousPage);
         }
     }
-
-    // -- and what stands in for it --------------------------------------------------
 
     /** The first two letters of the name, upper-cased. */
     private function initials(string $name): string
@@ -169,14 +127,7 @@ class AvatarService
         return mb_strtoupper(mb_substr($name, 0, 2));
     }
 
-    /**
-     * A colour derived from the name, as `#rrggbb`.
-     *
-     * Hue, saturation and lightness each come from a different part of one hash, so two
-     * accounts that happen to share a hue still differ, and the lightness genuinely
-     * spans the range -- which is what makes the black-or-white choice below a choice
-     * rather than a constant.
-     */
+    /** A colour derived from the name, as `#rrggbb`. */
     private function background(string $name): string
     {
         $hash = crc32(mb_strtolower($name));
@@ -189,14 +140,12 @@ class AvatarService
     }
 
     /**
-     * Black or white, whichever contrasts more with $hex -- WCAG relative luminance,
-     * which is what "readable on" means to a standard rather than to an eyeball.
+     * Black or white, whichever contrasts more with $hex -- WCAG relative luminance, which is what "readable on" means to a standard rather than to an eyeball.
      */
     private function readableOn(string $hex): string
     {
         $luminance = $this->relativeLuminance($hex);
 
-        // the two contrast ratios against pure black and pure white, (L1+.05)/(L2+.05)
         return ($luminance + 0.05) / 0.05 >= 1.05 / ($luminance + 0.05) ? '#000000' : '#ffffff';
     }
 

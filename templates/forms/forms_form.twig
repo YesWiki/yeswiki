@@ -1,5 +1,4 @@
-{# ticket 26: the form designer is a vanilla ES module (javascripts/form-builder/)
-   editing the stored JSON template directly — no jQuery, no vendored formBuilder #}
+
 {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
 {{ include_javascript('javascripts/form-builder/form-builder.js', false, true) }}
 {{ include_css('styles/yw-admin.css') }}
@@ -80,8 +79,6 @@
     </div>
   </div>
 
-  {# ---- Entry title (entry_title_template, ADR-0010): a select of the form's
-     fields, rebuilt live by the designer, plus a custom-template mode ---- #}
   <div class="yw-form-group" id="entry-title-group">
     <label class="yw-form-label">
       {{ _t('FORM_EDIT_ENTRY_TITLE') }}
@@ -99,11 +96,6 @@
     />
   </div>
 
-  {# ---- Field roles (ticket 11): which field answers core's questions. Left on
-     "automatic", a role resolves from the field's own type, which is why existing
-     forms need no configuration -- these selects only matter when a form is
-     ambiguous or the webmaster wants a different field. Options are filled live by
-     the designer from the fields currently on the canvas. ---- #}
   <fieldset class="yw-form-group" id="field-roles-group">
     <legend class="yw-form-label">{{ _t('FORM_EDIT_FIELD_ROLES') }}</legend>
     <p class="yw-text-muted">{{ _t('FORM_EDIT_FIELD_ROLES_HINT') }}</p>
@@ -122,7 +114,6 @@
     {% endfor %}
   </fieldset>
 
-  {# ---- Permissions (entry_*_access + comments toggle) ---- #}
   <fieldset class="yw-form-group">
     <legend class="yw-form-label">{{ _t('FORM_EDIT_PERMISSIONS') }}</legend>
     <div class="yw-form-group">
@@ -145,7 +136,6 @@
     </div>
   </fieldset>
 
-  {# ---- Presentation (entry_metadatas) ---- #}
   <fieldset class="yw-form-group">
     <legend class="yw-form-label">{{ _t('FORM_EDIT_PRESENTATION') }}</legend>
     <div class="yw-form-group">
@@ -210,11 +200,9 @@
   </div>
 
   <div id="collapseFour" class="yw-collapse">
-    {# Account creation and the bookmarklet describe visitor submissions to a webmaster's
-       form; a built-in Content type has no such thing, and FormManager drops these
-       properties for one, so it must not offer them either (ticket 10). #}
+
     {% if entryOnlyPropertiesAvailable %}
-    {# ---- Account creation (entry_creates_user) ---- #}
+
     <div class="yw-form-group">
       <label>
         <input type="checkbox" id="entry-creates-user-enable" name="entry_creates_user_enable" value="1"
@@ -250,7 +238,6 @@
       </div>
     </div>
 
-    {# ---- Bookmarklet (entry_bookmarklet; the install widget lives on the forms table) ---- #}
     <div class="yw-form-group">
       <label>
         <input type="checkbox" id="entry-bookmarklet-enable" name="entry_bookmarklet_enable" value="1"

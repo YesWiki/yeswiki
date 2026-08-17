@@ -14,7 +14,6 @@ import BazarSearch from './entries-index-dynamic/search-mixin.js'
 const { createApp } = Vue
 
 const load = (domElement) => {
-  // Capture dataset before mounting (Vue 3 replaces the mount element)
   const elementDataset = { ...domElement.dataset }
   const initialParams = elementDataset.params
     ? JSON.parse(elementDataset.params)
@@ -33,10 +32,10 @@ const load = (domElement) => {
     },
     data() {
       return {
-        mounted: false, // when vue get initialized
-        ready: false, // when ajax data have been retrieved
+        mounted: false,
+        ready: false,
         params: initialParams,
-        elementDataset, // Store original dataset for reference
+        elementDataset,
 
         filters: [],
         sortOptions: [],
@@ -53,10 +52,8 @@ const load = (domElement) => {
         search: '',
         currentSort: { field: '', order: null, label: '' },
 
-        // wether to search for a particular form ID (only used when no
-        // form id is defined for the bazar list action)
         searchFormId: '',
-        searchTimer: null, // use ot debounce user input
+        searchTimer: null,
       }
     },
     computed: {
@@ -133,7 +130,6 @@ const load = (domElement) => {
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
-          // filter based on formId, when no form id is specified
           result = result.filter(
             (entry) => String(entry.form_id) === String(this.searchFormId),
           )
@@ -204,8 +200,6 @@ const load = (domElement) => {
             return order === 'asc' ? valueA - valueB : valueB - valueA
           }
 
-          // Case and accent insensitive sort
-
           return order === 'asc'
             ? collator.compare(
                 String(valueA)
@@ -264,7 +258,6 @@ const load = (domElement) => {
               entryValues = entryValues.split(',')
               return entryValues.some(
                 (value) =>
-                  // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
                   value
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
@@ -296,7 +289,7 @@ const load = (domElement) => {
       initFromHash(pHash) {
         const vThis = this
 
-        const vParams = parseSearchParams(pHash) // Return hash as a structured object
+        const vParams = parseSearchParams(pHash)
         let vChamp
         let vOrdre
 
@@ -331,10 +324,6 @@ const load = (domElement) => {
 
               if (cFilter) {
                 cFilter.flattenNodes.forEach((pNode) => {
-                  // Handle values with special chars
-                  // like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-                  // ie : Figuier goutte d&#039;or
-
                   const cFilterValues = pCondition.values.map((pString) =>
                     pString
                       .normalize('NFD')
@@ -395,9 +384,6 @@ const load = (domElement) => {
         } else {
           let fieldsToExclude = []
           if (this.params.template === 'list' && this.params.displayfields) {
-            // In list template (collapsible panels with header and body), the rendered entry
-            // is displayed in the body section and we don't want to show the fields
-            // that are already displayed in the panel header
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.tag}`, {
@@ -423,7 +409,7 @@ const load = (domElement) => {
             entry.html_render = html
             return html
           })
-          .catch(() => 'error') // in case of error do nothing
+          .catch(() => 'error')
       },
       async getJSON(url, options = {}) {
         return fetch(url, options)
@@ -446,7 +432,6 @@ const load = (domElement) => {
             '.entry-list-dynamic-container:not(.mounted)',
           )
           unmounted.forEach((element) => {
-            // Vue 3: check for __vue_app__ instead of __vue__
             if (!('__vue__' in element) && !('__vue_app__' in element))
               load(element)
           })
@@ -478,8 +463,6 @@ const load = (domElement) => {
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field] || typeof entry[field] != 'string') return null
         let values = entry[field].split(',')
-        // If some filters are checked, and the entry have multiple values, we display
-        // the value associated with the checked filter
         if (this.computedFilters[field]) {
           values = values.filter((val) =>
             this.computedFilters[field].includes(val),
@@ -493,20 +476,16 @@ const load = (domElement) => {
         e.preventDefault()
         e.stopPropagation()
       })
-      this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
-      // params already set from elementDataset in data()
+      this.savedHash = decodeURIComponent(document.location.hash.substring(1))
 
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
-      // Retrieve data asynchronoulsy
       fetch(
         `${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(this.params)}`,
       )
         .then((response) => response.json())
         .then((data) => {
-          // process the filters
           const filters = data.filters || []
-          // Calculate the parents
           filters.forEach((filter) => {
             filter.nodes.forEach((rootNode) =>
               recursivelyCalculateRelations(rootNode),
@@ -514,7 +493,6 @@ const load = (domElement) => {
             filter.flattenNodes = filter.nodes
               .map((rootNode) => [rootNode, ...rootNode.descendants])
               .flat()
-            // init some attributes for reactivity
             filter.flattenNodes.forEach((node) => {
               node.count = 0
               node.checked = false
@@ -528,8 +506,6 @@ const load = (domElement) => {
           })
 
           if (this.sortOptions.length > 0) {
-            // params "field" is used to choose default sort (backend sort). If present
-            // we do not overwride this backend sort by the front end dynamic sort
             if (this.params.field) {
               const sort = this.sortOptions.find(
                 (o) =>
@@ -554,20 +530,14 @@ const load = (domElement) => {
             }
           }
 
-          // First display filters cause entries can be a bit long to load
-
           this.filters = filters
 
           this.initFromHash(this.savedHash)
 
-          // Auto paginate if large numbers
           if (data.entries.length > 50 && !this.pagination) this.pagination = 20
-          // Activate cluster for map mode
           if (data.entries.length > 1000) this.params.cluster = true
 
           setTimeout(() => {
-            // Transform forms info into a list of field mapping
-            // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
             Object.values(data.forms).forEach((formFields) => {
               Object.values(formFields).forEach((field) => {
                 this.formFields[field.id] = field
@@ -582,7 +552,6 @@ const load = (domElement) => {
 
             this.entries = data.entries.map((entryAsArray) => {
               const entry = { color: null, icon: null }
-              // Transform entryAsArray data into object using the fieldMapping
               Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
                 entry[mapping] = entryAsArray[key]
               })
@@ -592,10 +561,6 @@ const load = (domElement) => {
                 },
               )
 
-              // In case of Tree, if an entry have only one value down the tree then add all the parent :
-              // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
-              // entryA { checkboxes: "yeswiki" }
-              // => entryA { checkboxes: "yeswiki,website" }
               this.filters.forEach((filter) => {
                 const { propName } = filter
                 if (entry[propName] && typeof entry[propName] == 'string') {
@@ -628,7 +593,6 @@ const load = (domElement) => {
     },
   })
 
-  // Register any components added by external scripts (e.g. BazarCalendar)
   Object.entries(window._bazarDynamicComponents || {}).forEach(
     ([name, component]) => {
       app.component(name, component)
@@ -639,15 +603,9 @@ const load = (domElement) => {
   app.config.globalProperties.wiki = window.wiki
   app.config.globalProperties._t = window._t
 
-  // Add mounted class to element
   domElement.classList.add('mounted')
 
   app.mount(domElement)
 }
 
-// Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
-// to be used inside index-dynamic
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the container -- <body> survives a boosted navigation, so a
-// body-keyed initialiser would never mount the next page's lists
 ywInitEach('.entry-list-dynamic-container', load)

@@ -9,13 +9,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/**
- * `{{doubleclick}}` -- converted from the procedural actions/doubleclic.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
- */
+/** `{{doubleclick}}` -- converted from the procedural actions/doubleclic.php by ticket 06. */
 class DoubleClickAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
@@ -29,10 +23,6 @@ class DoubleClickAction extends YesWikiAction implements RegisteredAction
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -47,7 +37,7 @@ class DoubleClickAction extends YesWikiAction implements RegisteredAction
         $isIframe = $this->getService(PerformableArguments::class)->get('iframe') && (!isset($_GET['iframelinks']) or $_GET['iframelinks'] != '0');
         if ($this->getService(PageContext::class)->getMethod() == 'show' && $this->getService(AclService::class)->hasAccess('write', $page)) {
             $method = $isIframe ? 'editiframe' : 'edit';
-            // javascript du double clic (on peut passer en parametre une page wiki au editer en doublecliquant)
+
             if (!empty($page)) {
                 echo 'ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href($method, $page) . '\';" ';
             } else {

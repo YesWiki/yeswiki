@@ -1,12 +1,3 @@
-// javascripts/contact.js -- ticket 18: vanilla-JS replacement for the jQuery-based
-// tools/contact/libs/contact.js. Submission now posts JSON to POST /api/contact/mail
-// (ApiController::sendContactMail()) instead of relying on a real <form action="">
-// pointed at the old tools/contact/handlers/page/mail.php page-handler; the response
-// is a {type, message} JSON object rendered as a yw-alert (see templates/alert-message.twig),
-// not raw rendered HTML.
-// ticket 14: ywInitEach on <body> rather than a bare DOMContentLoaded. The listener is
-// delegated, so it must be attached exactly once for the document -- marking body is what
-// guarantees that when this file is loaded again by a later fragment.
 ywInitEach('body', (body) => {
   body.addEventListener('click', (e) => {
     const submitBtn = e.target.closest('.mail-submit')
@@ -18,7 +9,6 @@ ywInitEach('body', (body) => {
     e.preventDefault()
     e.stopPropagation()
 
-    // on efface les anciennes erreurs
     form.querySelectorAll('.help-block').forEach((el) => el.remove())
 
     let atLeastOneFieldNotValid = false
@@ -80,8 +70,6 @@ ywInitEach('body', (body) => {
       formData.set('field', form.dataset.field)
     }
 
-    // no leading slash: wiki.baseUrl already ends in `?`, so `/api/...` builds `/?/api/...`,
-    // which redirects to the home page instead of reaching the route
     fetch(wiki.url('api/contact/mail'), { method: 'POST', body: formData })
       .then((response) => response.json())
       .then((result) => {

@@ -14,14 +14,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 35: what the `/PageName/claim` handler did, as two API routes.
- *
- * Both are privileged in a way the handler's name hid. Claiming an *unowned* page grants the caller
- * write access to something they did not have it on, so "has no owner yet" is the entire security
- * model and the negative case matters more than the positive one. Setting comment access hands out
- * a permission, so it is owner-or-admin only.
- */
+/** Ticket 35: what the `/PageName/claim` handler did, as two API routes. */
 #[CoversMethod(PageApiController::class, 'claimPage')]
 #[CoversMethod(PageApiController::class, 'setCommentsAccess')]
 class ClaimRoutesTest extends YesWikiTestCase
@@ -29,7 +22,9 @@ class ClaimRoutesTest extends YesWikiTestCase
     private const UNOWNED = 'TestTicket35Unowned';
     private const OWNED = 'TestTicket35Owned';
 
-    /** @var list<callable> */
+    /**
+     * @var list<callable>
+     */
     private array $cleanups = [];
 
     protected function tearDown(): void
@@ -45,12 +40,7 @@ class ClaimRoutesTest extends YesWikiTestCase
         return $this->getWiki()->services->get(PageApiController::class);
     }
 
-    /**
-     * A real account. PageManager::setOwner() returns early and silently when the named user does
-     * not exist, so a fixture owner has to be an account that actually exists -- naming a string
-     * leaves the page unowned and quietly turns a "cannot steal an owned page" test into a
-     * "can claim an unowned page" one.
-     */
+    /** A real account. */
     private function createUser(): string
     {
         $wiki = $this->getWiki();
@@ -93,16 +83,12 @@ class ClaimRoutesTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $pageManager->save($tag, ['content' => 'a page for the claim tests'], '', true);
         if ($owner === '') {
-            // save() makes whoever is signed in the owner, and setOwner('') returns early because
-            // '' is not an account -- so an *unowned* page cannot be produced through either. The
-            // column is cleared directly, which is the state a page imported or migrated without
-            // an owner is actually in.
             $dbService = $wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
             $dbService->query(
                 'UPDATE ' . $dbService->prefixTable('pages') . 'SET owner = ? WHERE tag = ?',
                 ['', $tag]
             );
-            // the owner is memoised per request, so the direct UPDATE has to be reflected
+
             $pageManager->cacheOwner(['tag' => $tag, 'owner' => '']);
         } else {
             $pageManager->setOwner($tag, $owner);
@@ -113,7 +99,9 @@ class ClaimRoutesTest extends YesWikiTestCase
         };
     }
 
-    /** @param array<string, string> $parameters */
+    /**
+     * @param array<string, string> $parameters
+     */
     private function post(array $parameters = []): void
     {
         $wiki = $this->getWiki();
@@ -197,8 +185,7 @@ class ClaimRoutesTest extends YesWikiTestCase
     }
 
     /**
-     * A group name nobody has would be stored verbatim and match no one, so comments would read as
-     * open in the admin screen and be closed in practice. Refused instead.
+     * A group name nobody has would be stored verbatim and match no one, so comments would read as open in the admin screen and be closed in practice.
      */
     public function testAnUnknownGroupIsRefused(): void
     {

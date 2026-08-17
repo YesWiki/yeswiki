@@ -9,16 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * A required field left empty is the visitor's problem, and is reported as one.
- *
- * Saving an entry whose form has a required field the entry does not fill threw a bare
- * `\Exception`, which came out of the save path as "an unexpected error occurred, please
- * contact the administrator and quote: champs requis:bf_mail" -- above a form that had
- * silently reverted to the stored values. It reads as a crash, names the field by its
- * internal identifier, and loses the edit. Reported from an entry whose form had gained a
- * required email field after the entry was written.
- */
+/** A required field left empty is the visitor's problem, and is reported as one. */
 class EntryValidationMessageTest extends YesWikiTestCase
 {
     private static ?string $formId = null;
@@ -76,8 +67,7 @@ class EntryValidationMessageTest extends YesWikiTestCase
     }
 
     /**
-     * Typed, so the controller can tell it apart from the failures that really are the
-     * site's problem and still deserve "contact the administrator".
+     * Typed, so the controller can tell it apart from the failures that really are the site's problem and still deserve "contact the administrator".
      */
     public function testItIsNotJustAnyException(): void
     {

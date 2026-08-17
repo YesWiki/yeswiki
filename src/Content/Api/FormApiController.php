@@ -16,8 +16,7 @@ use YesWiki\Kernel\Service\AssetRegistry;
 class FormApiController extends YesWikiController
 {
     /**
-     * The form arrays carry the ActivityPub keypair (merged from page metadata for
-     * internal use); the private key must never leave through the public API.
+     * The form arrays carry the ActivityPub keypair (merged from page metadata for internal use); the private key must never leave through the public API.
      */
     private function stripFormSecrets(array $form): array
     {
@@ -36,25 +35,7 @@ class FormApiController extends YesWikiController
     }
 
     /**
-     * Live preview backing the form designer's field cards: each field object of the
-     * posted template goes through the very path the entry form uses
-     * (FormManager::prepareData + BazarField::renderInputIfPermitted), so a card shows
-     * the real Twig markup of the input instead of a JS look-alike.
-     *
-     * Answers with **markup**, not JSON: one out-of-band swap per field, addressed by the
-     * designer's own field id, plus one out-of-band swap carrying whatever assets the input
-     * templates declared while rendering -- leaflet for a map, vditor for a long text. Before
-     * ticket 14 the stylesheets were recovered by diffing `strlen($GLOBALS['css'])` across
-     * the render and the scripts were simply lost, which is why a map preview arrived as
-     * markup with no leaflet behind it and never became a map.
-     *
-     * Addressing by id rather than by position also removes the fragility the positional
-     * answer had: prepareData() silently drops typeless entries, so one unbuildable field
-     * used to shift every card after it.
-     *
-     * Declared here rather than on FormController because routed controllers are
-     * instantiated by YesWikiControllerResolver with `new $class()`: only a controller
-     * with a no-argument constructor can back a route.
+     * Live preview backing the form designer's field cards: each field object of the posted template goes through the very path the entry form uses (FormManager::prepareData + BazarField::renderInputIfPermitted), so a card shows the real Twig markup of the input instead of a JS look-alike.
      */
     #[Route('/api/forms/preview', methods: ['POST'], options: ['acl' => ['@admins']])]
     public function previewFormTemplate(Request $request)
@@ -68,13 +49,7 @@ class FormApiController extends YesWikiController
         $registry = $this->getService(AssetRegistry::class);
         $html = '';
 
-        // The whole batch renders in one capture scope: the assets come back as a value
-        // instead of leaking into a page that, for an API response, does not exist. The set
-        // is self-contained by design -- it re-declares leaflet even if the designer page
-        // already has it, and the browser-side registry is what declines to load it twice.
         $assets = $registry->capture(function () use ($template, $ids, &$html): void {
-            // a field rendering may echo instead of returning (old-style extension fields):
-            // keep any stray output out of the response body
             ob_start();
             try {
                 foreach (array_values($template) as $index => $fieldObject) {
@@ -113,9 +88,6 @@ class FormApiController extends YesWikiController
     #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getForm($formId)
     {
-        // `$vFormId` here and `$vFormID` below -- one letter apart, so the base64 branch
-        // assigned a variable nothing read and the lookup got an undefined one. Fetching a form
-        // through `/api/forms/b64_…` has never worked (ticket 40).
         if (strpos($formId, 'b64_') === 0) {
             $vFormID = base64_decode(urldecode(substr($formId, 4)), true);
         } else {

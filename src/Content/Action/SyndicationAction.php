@@ -2,8 +2,6 @@
 
 namespace YesWiki\Content\Action;
 
-// ticket 23: relocated from tools/syndication/actions/SyndicationAction.php.
-
 use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\Item;
@@ -42,10 +40,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 ->icon('rss')
                 ->description(_t('AB_syndication_action_description'))
                 ->previewHeight('300px')
-                // a feed is a Source now, offered inside every Presentation rather than as
-                // a palette card of its own (ticket 37). Still recognised, so a stored
-                // `{{syndication}}` -- including one naming a retired template -- opens the
-                // rail on everything it can be told.
+
                 ->notOffered()
                 ->settings(
                     Setting::url('url')
@@ -104,7 +99,9 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         ];
     }
 
-    /** @return list<Setting> */
+    /**
+     * @return list<Setting>
+     */
     public static function sourceSelectionSettings(): array
     {
         return [
@@ -113,11 +110,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 ->withIcon('list-numbers')
                 ->default(0)
                 ->min(0),
-            // A feed's summary is written for a feed reader, not for a card: some are a
-            // sentence and some are the whole article. The action has cut them to length
-            // since long before the presentations -- word boundary, tags stripped, a "read
-            // more" link on the end (`feedItemFields`) -- but nothing offered the number,
-            // so the parameter could only be typed into the tag by hand.
+
             Setting::number('maxchars')
                 ->label(_t('AB_syndication_action_maxchars_label'))
                 ->hint(_t('AB_syndication_action_maxchars_hint'))
@@ -129,25 +122,15 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
     /**
      * The feed, as Items -- which is what a Presentation renders (ticket 37).
      *
-     * Nearly a straight rename: an RSS item already has a title, a link, a date, an image
-     * and a summary, which is most of what an Item is. That is why a feed was the second
-     * Source worth having -- it needs no mapping to be told.
-     *
      * @return list<Item>
      */
     public function items(): array
     {
         $pages = [];
         foreach (($this->arguments['url'] ?? []) as $nburl => $url) {
-            // everything read off the feed happens inside read(): the deprecation notices
-            // SimplePie raises come from building an IRI out of an item's link, not from
-            // fetching the feed (FeedLoader)
             $fromFeed = $this->getService(FeedLoader::class)->read(
                 (string)$url,
                 function (\SimplePie\SimplePie $feed) use ($nburl): array {
-                    // a feed that will not load contributes nothing rather than failing the
-                    // list: several urls may be given, and one being down is not the
-                    // others' problem
                     if ($feed->error()) {
                         return [];
                     }
@@ -182,18 +165,10 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             $items[] = new Item(
                 id: (string)($page['url'] ?? ($page['title'] ?? '')),
                 title: (string)($page['title'] ?? ''),
-                // which feed it came from, when several were given: on a list of one feed
-                // there is nothing to tell apart and the slot stays empty
                 subtitle: ($page['source'] ?? '') !== '' ? (string)$page['source'] : null,
                 description: ($page['description'] ?? '') !== '' ? (string)$page['description'] : null,
-                // fetched once and served from here (RemoteImageCache): a feed's image lives
-                // on the publisher's server, so every card drawn from one used to send the
-                // reader there -- at whatever size that server happens to store, and with a
-                // hole in the card whenever it is down
                 image: $image === '' ? null : $cache->localUrl($image),
                 url: ($page['url'] ?? '') !== '' ? (string)$page['url'] : null,
-                // ISO, not the `formatdate` string: a Presentation sorts on this as well as
-                // showing it, and `d.m` sorts alphabetically into nonsense
                 date: is_numeric($stamp) ? date('c', (int)$stamp) : null,
                 categories: array_values(array_map('strval', $page['categories'] ?? [])),
             );
@@ -204,11 +179,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
 
     /**
      * One feed entry's fields, as this action has always read them off SimplePie.
-     *
-     * Extracted so `run()` and `items()` agree on what a feed entry IS. They want different
-     * things around it -- `run()` also decorates admin-only "already imported?" links, and
-     * `items()` wants none of that -- but neither should have its own idea of where the
-     * title lives.
      *
      * @return array<string, mixed>
      */
@@ -222,7 +192,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         }
 
         $feedItem['url'] = $item->get_permalink();
-        // cast, not left nullable: run() keys the list on it and every renderer prints it
+
         $feedItem['title'] = (string)$item->get_title();
         $feedItem['description'] = $item->get_content();
         $desc = $item->get_description();
@@ -255,7 +225,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (!empty($this->arguments['maxchars'])) {
             $feedItem['description'] = (string)preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
             $descLen = strlen($feedItem['description']);
-            // check if text longer than max chars specified
+
             if ($descLen > 0
                 && $descLen > $this->arguments['maxchars']) {
                 $feedItem['description'] = truncate(
@@ -268,9 +238,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             }
         }
 
-        // an item with no date gave `strtotime(null)` -> false -> `date(..., false)`, which PHP
-        // reads as timestamp 0: every dateless feed entry was stamped 01.01.1970. No date now
-        // means no date, which is what the `default` arm below already does (ticket 40).
         $rawDate = $item->get_date('j M Y, g:i a');
         $timestamp = is_string($rawDate) ? strtotime($rawDate) : false;
         $feedItem['datestamp'] = $timestamp;
@@ -351,20 +318,17 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             }
-            // we load all entries to check if entry were already created from feed
+
             $vSearchManager = $this->getService(SearchManager::class);
             $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
         }
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
             $syndication = ['pages' => []];
-            // what the feeds call themselves, for the heading and the link under it. Read
-            // inside the callback like everything else: `get_link()` resolves an IRI too.
+
             $feedTitle = '';
             $feedLink = '';
             foreach ($this->arguments['url'] as $cle => $url) {
-                // everything read off the feed happens in here -- see FeedLoader: the
-                // notices SimplePie raises come from resolving an item's link
                 $failure = $this->getService(FeedLoader::class)->read(
                     (string)$url,
                     function (\SimplePie\SimplePie $feed) use (
@@ -389,7 +353,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                                     $feedItem['linkToEntry'] = $this->getService(UrlFormatter::class)->href('', $entryExists[0]['tag']);
                                 } else {
                                     $entry = [];
-                                    $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+                                    $converter = new HtmlConverter(['strip_tags' => true]);
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
                                             case 'id':
@@ -417,21 +381,20 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                                     $feedItem['mappingInput'] = json_encode($entry);
                                 }
                             }
-                            // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
+
                             $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
                         }
 
                         return null;
                     }
                 );
-                // one feed refusing to load is the whole action's error here, unlike
-                // items(): this rendering has a place to say so
+
                 if ($failure !== null) {
                     return $failure;
                 }
                 $nburl = $nburl + 1;
             }
-            // sort all feeds per date
+
             krsort($syndication['pages']);
             if (empty($this->arguments['title'])) {
                 $title = '';
@@ -443,9 +406,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
 
             $wrapper = '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n";
 
-            // A shared Presentation, if that is what was asked for: `template="card"` means
-            // the same thing here as it does on an entry list (ticket 37). Syndication's own
-            // three templates stay for the bodies that name them.
             if (PresentationRenderer::knows((string)$this->arguments['template'])) {
                 return $wrapper
                     . $this->getService(PresentationRenderer::class)->render(
@@ -456,10 +416,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                     . "\n</div>\n";
             }
 
-            // Syndication's own three templates draw `page.image` themselves, so they need the
-            // same treatment -- but only when one is going to be drawn: `showimage` is off by
-            // default here, and downloading a picture nobody displays is the cost this whole
-            // thing exists to avoid.
             if (!empty($this->arguments['showimage'])) {
                 $cache = $this->getService(RemoteImageCache::class);
                 foreach ($syndication['pages'] as $key => $page) {
@@ -511,9 +467,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
             curl_exec($ch);
             $errors = curl_error($ch);
             if (!empty($errors)) {
-                // `var_dump($errors)` -- debug output straight into the page, on every failed
-                // download of a feed's image. Closing the handles matters too: the early return
-                // leaked both (ticket 40).
                 curl_close($ch);
                 fclose($fp);
 

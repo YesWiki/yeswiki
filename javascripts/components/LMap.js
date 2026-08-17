@@ -1,7 +1,4 @@
-/**
- * Simple Vue 3 Leaflet Map component
- * A lightweight wrapper around Leaflet that works without a bundler
- */
+/** Simple Vue 3 Leaflet Map component A lightweight wrapper around Leaflet that works without. */
 export default {
   name: 'LMap',
   props: {
@@ -61,17 +58,14 @@ export default {
     initMap() {
       if (!this.$refs.mapContainer) return
 
-      // Merge default options with provided options
       const mapOptions = {
         center: this.center,
         zoom: this.zoom,
         ...this.options,
       }
 
-      // Create the Leaflet map
       this.mapObject = L.map(this.$refs.mapContainer, mapOptions)
 
-      // Set up event listeners
       this.mapObject.on('click', (e) => {
         this.$emit('click', e)
       })
@@ -88,7 +82,6 @@ export default {
       this.ready = true
       this.$emit('ready', this.mapObject)
     },
-    // Expose methods that might be needed
     setView(center, zoom) {
       if (this.mapObject) {
         this.mapObject.setView(center, zoom)

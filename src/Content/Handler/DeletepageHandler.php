@@ -19,12 +19,6 @@ use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/deletepage` -- converted from the procedural handlers/page/deletepage.php by ticket 06.
- *
- * Every deletion is one confirmation. It used to be two screens: a page nothing linked to
- * got a plain confirm, and a page with inbound links got a list of them plus a second,
- * `eraselink=oui` confirm that also cleared those link rows. Ticket 29 removed the `links`
- * table, so there is no set of inbound links to warn about and nothing to erase -- the
- * second screen would have shown an empty list above a button that deleted anyway.
  */
 class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -39,8 +33,6 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -51,13 +43,9 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        // get services
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
         $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
-        // get the GET parameter 'incomingurl' for the incoming url
-        // declared unconditionally: the redirect at the end of the handler reads it, and it was
-        // only assigned when the request carried one (ticket 40)
         $incomingurl = '';
         if (!empty($_REQUEST['incomingurl'])) {
             $incomingurl = filter_var($_REQUEST['incomingurl'], FILTER_VALIDATE_URL);
@@ -71,8 +59,6 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             if (!empty($incomingurl)) {
                 $withoutExtraParams = strtok($incomingurl, '&');
                 if ($withoutExtraParams != $this->getService(UrlFormatter::class)->href()) {
-                    // put the incoming url parameter only if the incoming page is not the one deleted
-                    // if the delete page is loaded in a modal box, the incoming page is the modal caller (cf yeswiki-base.js)
                     $incomingUrlParam = '&incomingurl=' . urlencode($incomingurl);
                     $cancelUrl = $incomingurl;
                 }
@@ -97,10 +83,9 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                     $hasBeenDeleted = $this->getService(PageOperationsService::class)->delete($tag);
                     if ($hasBeenDeleted) {
                         $msg = str_replace('{tag}', $tag, _t('DELETEPAGE_MESSAGE'));
-                        // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
+
                         $redirectToIncoming = !empty($incomingurl);
                         if ($redirectToIncoming) {
-                            // to prevent errors when deleting entry from BazaR page
                             $incomingurl = str_replace(
                                 ["&action=voir_fiche&tag=$tag", '&message=ajout_ok'],
                                 [''],
@@ -129,7 +114,6 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 $this->getService(FlashMessageService::class)->setMessage($msg);
                 $this->getService(Redirector::class)->redirect((string)$incomingurl);
             } else {
-                // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
                 $this->getService(FlashMessageService::class)->setMessage($msg);
                 $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page']));
             }

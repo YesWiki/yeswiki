@@ -8,15 +8,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 10 asks for each write vector to be tested, not just the designer. Every one of
- * them -- the designer's POST, the API, an import, a duplication, a hand-edited template
- * -- reaches storage through FormManager::create()/update(), so these exercise the real
- * service rather than the pure function ContentTypeSchemaTest already covers.
- */
+/** Ticket 10 asks for each write vector to be tested, not just the designer. */
 class FormLockedFieldsTest extends YesWikiTestCase
 {
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private static array $createdFormIds = [];
 
     public static function tearDownAfterClass(): void
@@ -26,15 +23,13 @@ class FormLockedFieldsTest extends YesWikiTestCase
             try {
                 $formManager->delete($id);
             } catch (\Throwable $e) {
-                // best effort: the suite shares the developer's database
             }
         }
         self::$createdFormIds = [];
     }
 
     /**
-     * The one form describing a built-in Content type, as created by
-     * CreateContentTypeForms.
+     * The one form describing a built-in Content type, as created by CreateContentTypeForms.
      *
      * @return array<string, mixed>
      */
@@ -54,8 +49,7 @@ class FormLockedFieldsTest extends YesWikiTestCase
     private function createOrdinaryForm(array $data): array
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
-        // create() returns a save status, not the new form, and picks its own id when the
-        // requested one is taken -- so claim a free id first and keep hold of it
+
         $id = $this->firstFreeFormId($formManager);
         $data['id'] = $id;
 
@@ -147,7 +141,7 @@ class FormLockedFieldsTest extends YesWikiTestCase
             $formManager->update([
                 'id' => $form['id'],
                 'label' => $form['label'],
-                // a hidden field would render nothing and read back freely
+
                 'template' => [['type' => 'hidden', 'name' => 'password', 'label' => 'Mot de passe']],
             ]);
 
@@ -162,8 +156,7 @@ class FormLockedFieldsTest extends YesWikiTestCase
     }
 
     /**
-     * Retyping the *form* would be the way around all of the above: declare the User form
-     * to be an ordinary entry form, and its core fields stop being locked.
+     * Retyping the *form* would be the way around all of the above: declare the User form to be an ordinary entry form, and its core fields stop being locked.
      */
     public function testAFormsContentTypeCannotBeChangedAfterCreation(): void
     {
@@ -200,8 +193,7 @@ class FormLockedFieldsTest extends YesWikiTestCase
     }
 
     /**
-     * There is exactly one form per built-in type: a second one would leave
-     * getByContentType() choosing arbitrarily between them.
+     * There is exactly one form per built-in type: a second one would leave getByContentType() choosing arbitrarily between them.
      */
     public function testASecondFormOfABuiltInTypeIsRefused(): void
     {

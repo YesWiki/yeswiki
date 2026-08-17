@@ -1,38 +1,4 @@
-{# The shell every dashboard and admin route renders inside: a left rail of routes, and
-   whatever the route put in `dashboard_content` beside it.
 
-   One shell, not one per section, because the sidebar IS the navigation between these
-   routes -- a page that rendered its own would drift from the others the first time a
-   route was added. Routes are named here once, in `sections` below, and each route tells
-   the shell which one it is via `current`.
-
-   Admin entries are declared like any other and filtered on `is_admin`: the routes
-   themselves are gated by `acl: ['@admins']`, so this is presentation, not enforcement.
-   `scope` says which errand a section belongs to: your account is one thing and the wiki's
-   administration is another, so /user lists the account screens and nothing else while the
-   dashboard lists the wiki. Both `shell_scope` and `is_admin` come from the DashboardShell
-   trait -- derived from the route being rendered, which is why no screen can show one
-   section's entries while claiming to be in the other.
-
-   Administration is what is *in* the wiki -- its content, then who is in it, then the two
-   things people leave on content. System is the wiki itself: the config file, the code, the
-   backups, the bulk in and out, and the mess to clean up. Two errands, so two lists rather
-   than one long one.
-
-   Appearance is everything that decides how the wiki looks (ticket 30). It was spread
-   between `admin/appearance` and `admin/special-pages`, both now retired: knowing that
-   `PageCss` was the stylesheet and `LookWiki` the colours is something you had to be told,
-   which is precisely what a screen is for -- so those are the Preset and Custom CSS screens
-   now, and the remaining chrome pages are ordinary content on the Content screen. It reads
-   outwards from what everyone sees to what almost nobody touches: the shape of every page,
-   its colours, a stylesheet, and finally the templates themselves.
-
-   Three screens have no entry at all. The permissions render on the Content screen, being
-   permissions *over content*. The lists sit with the forms whose fields choose from them,
-   and are public like those forms -- what a list says is already visible in every field
-   that uses it, and who may change one is ListController's to answer. And the API is one of
-   the ways content comes *out* of the wiki, so it is listed on Export beside the feeds and
-   the per-form formats rather than being a heading of its own. #}
 {% set sections = [
   {
     label: _t('DASHBOARD_SECTION_ACCOUNT'),

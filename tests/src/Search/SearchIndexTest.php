@@ -13,15 +13,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The search index (ticket 18 / ADR-0015).
- *
- * The defect this whole ticket exists for: since ticket 09 every body is JSON, so the old
- * `body LIKE '%phrase%'` matched the envelope's own keys -- a search for `title`, `content`,
- * `form_id`, `status` or `keywords` returned **every page in the wiki**, and read to a user
- * as "search is bad" rather than as a bug. testEnvelopeKeysAreNotSearchable is the
- * regression test for it, and the reason the others exist is to keep the replacement honest.
- */
+/** The search index (ticket 18 / ADR-0015). */
 class SearchIndexTest extends YesWikiTestCase
 {
     private const TAG = 'SearchIndexTestPage';
@@ -34,8 +26,7 @@ class SearchIndexTest extends YesWikiTestCase
         if (!$this->getWiki()->services->get(SearchIndexSchema::class)->exists()) {
             $this->markTestSkipped('no search index on this wiki -- run ./yeswicli migrate');
         }
-        // each test starts from no fixture at all: several of them assert an exact total,
-        // and a page left behind by the previous test is indistinguishable from a bug
+
         $this->removeFixtures();
     }
 
@@ -63,22 +54,19 @@ class SearchIndexTest extends YesWikiTestCase
             PageBody::TITLE => $title,
             PageBody::CONTENT => $content,
         ], '', true);
-        // saving dispatches page.created/page.updated, which the subscriber indexes on --
-        // but index() explicitly too, so a failure here reads as "the indexer is broken"
-        // rather than as "the event never fired" (which has its own test below)
+
         $this->getWiki()->services->get(SearchIndexer::class)->index($tag);
     }
 
-    /** @return array{results: list<array<string, string>>, total: int, capped: bool} */
+    /**
+     * @return array{results: list<array<string, string>>, total: int, capped: bool}
+     */
     private function search(string $phrase, ?string $contentType = null): array
     {
         return $this->getWiki()->services->get(SearchIndexQuery::class)->search($phrase, $contentType, 50);
     }
 
-    /**
-     * THE regression. Every one of these words is a key of the JSON envelope, so the old
-     * `body LIKE` search matched every row in `pages` for each of them.
-     */
+    /** THE regression. */
     public function testEnvelopeKeysAreNotSearchable(): void
     {
         $this->savePage(self::TAG, 'Une page ordinaire', 'du texte parfaitement ordinaire');
@@ -124,11 +112,7 @@ class SearchIndexTest extends YesWikiTestCase
         $this->assertSame(1, $this->search('potiron courgette')['total'], 'order must not matter');
     }
 
-    /**
-     * A Content is one result however many ACL buckets it was indexed as. Getting this
-     * wrong would inflate every count on a wiki with restricted fields -- which is precisely
-     * the exactness this design is for.
-     */
+    /** A Content is one result however many ACL buckets it was indexed as. */
     public function testATotalCountsContentsNotIndexRows(): void
     {
         $this->savePage(self::TAG, 'Betterave', 'betterave betterave betterave');
@@ -139,15 +123,7 @@ class SearchIndexTest extends YesWikiTestCase
         $this->assertCount(1, $found['results']);
     }
 
-    /**
-     * A Content whose only searchable text is its NAME must still be in the index.
-     *
-     * The writer emitted one row per ACL bucket, and a Content whose fields hold no text has
-     * no bucket -- so it produced no rows at all. That was every uploaded file (which has a
-     * filename and nothing else) and every account: neither could be found by name, and
-     * neither was counted by contentStats(), which reported "0 files" on a wiki holding
-     * dozens. The fallback row is public with no text; `page_read_acl` still guards it.
-     */
+    /** A Content whose only searchable text is its NAME must still be in the index. */
     public function testAContentWithANameButNoTextIsStillIndexed(): void
     {
         $this->savePage(self::TAG, 'Salsifis', '');
@@ -162,9 +138,7 @@ class SearchIndexTest extends YesWikiTestCase
     }
 
     /**
-     * contentStats() is what the forms screen reports "N entries" from, so it counts
-     * Contents, not index rows -- a Content with restricted fields owns one row per ACL
-     * bucket -- and never counts the forms themselves among the Content they describe.
+     * contentStats() is what the forms screen reports "N entries" from, so it counts Contents, not index rows -- a Content with restricted fields owns one row per ACL bucket -- and never counts the forms themselves among the Content they describe.
      */
     public function testContentStatsCountsContentsAndIgnoresForms(): void
     {
@@ -173,7 +147,7 @@ class SearchIndexTest extends YesWikiTestCase
         $schema = $wiki->services->get(SearchIndexSchema::class);
 
         $this->savePage(self::TAG, 'Panais', 'un texte sur le panais');
-        // a second ACL bucket for the same Content, exactly as a restricted field produces
+
         $db->query(
             "INSERT INTO {$schema->table()}"
             . ' (tag, acl, acl_hash, page_read_acl, owner, content_type, form_id, title, text, updated_at)'
@@ -215,8 +189,7 @@ class SearchIndexTest extends YesWikiTestCase
     }
 
     /**
-     * A rename fires no page.* event, so without an explicit hook the index keeps answering
-     * under the old tag -- every result for the renamed Content would 404.
+     * A rename fires no page.* event, so without an explicit hook the index keeps answering under the old tag -- every result for the renamed Content would 404.
      */
     public function testRenamingAContentMovesItsIndexRows(): void
     {
@@ -229,14 +202,7 @@ class SearchIndexTest extends YesWikiTestCase
         $this->assertSame(self::OTHER_TAG, $found['results'][0]['tag']);
     }
 
-    /**
-     * The event wiring: saving a page must QUEUE it, with no explicit call.
-     *
-     * Queued rather than indexed, deliberately -- see SearchIndexSubscriber. Indexing inline
-     * would mean resolving a form from inside the service that is mid-write, and
-     * FormManager::create() saves the page row before writing the type triple that makes it a
-     * form. The drain here stands in for the end-of-request flush the subscriber registers.
-     */
+    /** The event wiring: saving a page must QUEUE it, with no explicit call. */
     public function testSavingAPageQueuesItThroughTheEvent(): void
     {
         $this->getWiki()->services->get(PageManager::class)->save(self::TAG, [
@@ -255,11 +221,7 @@ class SearchIndexTest extends YesWikiTestCase
         $this->assertSame(1, $this->search('panais')['total']);
     }
 
-    /**
-     * Actions are stripped, never run. Rendering to index would fold every listed entry into
-     * the page's own document, make the result depend on who rendered it, and amount to
-     * arbitrary code execution on a background reindex.
-     */
+    /** Actions are stripped, never run. */
     public function testActionCallsAreStrippedNotRun(): void
     {
         $this->savePage(
@@ -289,15 +251,7 @@ class SearchIndexTest extends YesWikiTestCase
     }
 
     /**
-     * A field whose read_access is `*` is public, exactly as one with no read_access is --
-     * `BazarField::canRead()` grants both to everyone. They must therefore share one ACL
-     * bucket.
-     *
-     * Found by benchmarking rather than by reasoning: keeping them apart splits a Content's
-     * text across two rows for no reason, and it silently defeated SearchIndexQuery's
-     * single-bucket fast path on every real wiki, because the seeded Annuaire and Agenda
-     * forms ship `"read_access":"*"` on every field. A 500k-row corpus with no restricted
-     * field anywhere was taking the expensive GROUP BY path.
+     * A field whose read_access is `*` is public, exactly as one with no read_access is -- `BazarField::canRead()` grants both to everyone.
      */
     public function testAPublicFieldAclSharesTheDefaultBucket(): void
     {
@@ -316,14 +270,7 @@ class SearchIndexTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * The count is exact up to a cap, and says so.
-     *
-     * Counting every match cannot stop at LIMIT, so on a large corpus a broad query would
-     * spend a full pass producing a number nobody reads (measured at ~1.7s over 500k rows).
-     * What must NOT change is that results are never dropped -- paging past the cap still
-     * returns the right rows.
-     */
+    /** The count is exact up to a cap, and says so. */
     public function testAVeryLargeResultSetReportsACappedCount(): void
     {
         $wiki = $this->getWiki();
@@ -332,7 +279,7 @@ class SearchIndexTest extends YesWikiTestCase
         $cap = SearchIndexQuery::COUNT_CAP;
 
         $rows = [];
-        // a handful MORE than the cap, so that paging past it has somewhere to go
+
         for ($i = 0; $i < $cap + 10; $i++) {
             $rows[] = "('" . self::CAP_TAG_PREFIX . $i . "', '', '" . md5('') . "', '*', '',"
                 . " 'page', '', 'Capped fixture', 'zzcapmarker', '2026-01-01 00:00:00')";
@@ -351,7 +298,6 @@ class SearchIndexTest extends YesWikiTestCase
             $this->assertTrue($found['capped'], 'a result set past the cap must say it was capped');
             $this->assertSame($cap, $found['total']);
 
-            // and the cap is on the reported NUMBER, not on what can be reached
             $deep = $wiki->services->get(SearchIndexQuery::class)->search('zzcapmarker', null, 5, $cap - 2);
             $this->assertCount(5, $deep['results'], 'paging past the cap must still return rows');
         } finally {
@@ -365,21 +311,18 @@ class SearchIndexTest extends YesWikiTestCase
     {
         $this->assertSame(0, $this->search('')['total']);
         $this->assertSame(0, $this->search('   ')['total']);
-        // punctuation alone reduces to no terms at all
+
         $this->assertSame(0, $this->search('!!! ???')['total']);
     }
 
     /**
-     * FTS5 reads a bare `OR` / `NEAR` as a query operator and raises on a malformed one,
-     * which would turn a visitor's search into a 500. Terms are quoted for that reason.
+     * FTS5 reads a bare `OR` / `NEAR` as a query operator and raises on a malformed one, which would turn a visitor's search into a 500.
      */
     public function testQueryOperatorsTypedByAVisitorAreNotOperators(): void
     {
         foreach (['OR', 'AND', 'NOT', 'NEAR', '"', "'", '*', '(('] as $hostile) {
             $found = $this->search($hostile);
-            // the assertion that matters is that the call returned at all -- a raised FTS5
-            // parse error is a 500 on a visitor's search box. The coherence check keeps it
-            // from being a bare "no exception" test.
+
             $this->assertLessThanOrEqual(
                 $found['total'],
                 count($found['results']),

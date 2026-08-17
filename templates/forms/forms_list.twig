@@ -7,17 +7,6 @@
 </div>
 {% endif %}
 
-{# Cards, not a table.
-
-   A table is for values you compare down a column, and nothing here is: every row had one
-   name, one description, a handful of export links and a cluster of buttons, so the grid
-   was five columns of ragged, mostly-empty cells with the description -- the one thing
-   that says what a form is FOR -- squeezed under the name in the narrowest one.
-
-   A card gives each form the width of a paragraph, and the actions read as belonging to
-   the form above them rather than as a row of anonymous icons. What the table did offer
-   was search over many forms; that is the filter box below, which is why the cards carry
-   their searchable text in a data attribute. #}
 {% macro formsCards(forms, tooltipMessage) %}
   <div class="forms-cards">
     {% for key, form in forms %}
@@ -26,8 +15,6 @@
   </div>
 {% endmacro %}
 
-{# Core's own Content types first, and apart: these describe the wiki's pages, accounts
-   and files rather than data a webmaster designed. Always three, so no filter. #}
 {% if systemForms|length > 0 %}
   <section class="forms-list__section">
     <h2 class="forms-list__heading">{{ _t('BAZ_SYSTEM_FORMS') }}</h2>

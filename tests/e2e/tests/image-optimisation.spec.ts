@@ -7,20 +7,6 @@ test.beforeEach(async () => {
   resetEnv()
 })
 
-/**
- * An image is served at the size the page uses, not at the size it was uploaded.
- *
- * A file kept by FileManager was always handed out whole: `{{attach size="small"}}` fetched
- * the full picture and drew it 140 pixels wide, and a section's background -- the biggest
- * image on most pages, and the one nobody looks at closely -- was the four-megapixel
- * original on every page view. The download route has resized on demand since ticket 17,
- * caching the copy beside the bytes and behind the same ACL check; these two callers simply
- * never asked it to.
- *
- * Invisible to phpunit twice over: the URL is only half the claim, and the other half is what
- * the wiki actually sends back when a browser follows it.
- */
-
 /** Upload a picture of this size through the API, and return its tag. */
 const uploadPicture = async (page: Page, width: number, height: number) => {
   return page.evaluate(
@@ -78,11 +64,9 @@ test('an attached image is served at the size it is drawn', async ({
   expect(src).toContain('width=140')
 
   const small = await served(page, src)
-  // 140x97 asked for, aspect kept: the height is what binds a 3:2 picture into that box
   expect(small.width).toBeLessThanOrEqual(146)
   expect(small.height).toBeLessThanOrEqual(97)
 
-  // and the original is still there, whole, for whoever downloads it
   const whole = await served(page, src.replace(/[?&]width=\d+&height=\d+/, ''))
   expect(whole.width).toBe(3000)
   expect(small.size).toBeLessThan(whole.size / 10)
@@ -100,14 +84,7 @@ test('an image with no size asked for is still capped', async ({ page }) => {
   expect(image.width).toBe(1920)
 })
 
-/**
- * A picture smaller than the cap comes back untouched, rather than blown up to it.
- *
- * The resizer enlarges smaller images on purpose -- a crop to a fixed ratio needs it -- so
- * asking a 300-pixel logo to "fit 1920" returned a blurry 1920-pixel file several times the
- * size of the one it was made from. Capping every image made that the common case rather
- * than the odd one.
- */
+/** A picture smaller than the cap comes back untouched, rather than blown up to it. */
 test('a small image is not enlarged to the cap', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?PagePrincipale')

@@ -2,33 +2,27 @@
 
 namespace YesWiki\Kernel\Component;
 
-/**
- * Something a webmaster can insert into page content: the palette's unit.
- *
- * A Component is not an Action, and the two lists have never matched -- 105 registered
- * actions against 70 palette entries when this was written, disagreeing in both directions.
- * One Component may write more than one action (`Cards` writes `{{entrylist}}` over a form
- * and `{{syndication}}` over a feed), and several may write the same action pinned to
- * different settings (`bazarcard` and `bazartableau` are both `{{entrylist}}`). What a
- * Component always does is write a `{{tag}}` -- that is the whole of the rule, which is why
- * the `:::info` callouts are a toolbar item rather than a Component, and why matching a tag
- * back to the Component that wrote it needs no second case (see ADR-0017).
- *
- * Immutable: `Setting`s and `SettingGroup`s are shared between Components on purpose, and a
- * builder that mutated in place would let one of them edit another's.
- */
+/** Something a webmaster can insert into page content: the palette's unit. */
 final class Component
 {
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private array $tags;
 
-    /** @var array<string, string> */
+    /**
+     * @var array<string, string>
+     */
     private array $pins = [];
 
-    /** @var list<Setting> */
+    /**
+     * @var list<Setting>
+     */
     private array $settings = [];
 
-    /** @var list<SettingGroup> */
+    /**
+     * @var list<SettingGroup>
+     */
     private array $groups = [];
 
     private Category $category = Category::Other;
@@ -57,7 +51,6 @@ final class Component
 
     private function __construct(private readonly string $id)
     {
-        // the common case by far: the Component is named after the one action it writes
         $this->tags = [$id];
     }
 
@@ -71,11 +64,7 @@ final class Component
     }
 
     /**
-     * The action tags this Component can write -- more than one when the same look is
-     * available over different Sources.
-     *
-     * Recognition starts here: a tag in a page body is only ever matched against Components
-     * that list its name.
+     * The action tags this Component can write -- more than one when the same look is available over different Sources.
      */
     public function writes(string ...$tags): self
     {
@@ -84,13 +73,7 @@ final class Component
         });
     }
 
-    /**
-     * A parameter this Component always writes, and which identifies it on the way back.
-     *
-     * `bazarcard` pins `template=card`: inserting it writes that parameter, and finding it
-     * in a tag is what says the tag is a `bazarcard` rather than a bare `{{entrylist}}`.
-     * A pin is not editable -- change it and you have a different Component.
-     */
+    /** A parameter this Component always writes, and which identifies it on the way back. */
     public function pin(string $name, string $value): self
     {
         return $this->with(function (self $c) use ($name, $value): void {
@@ -103,7 +86,7 @@ final class Component
         return $this->with(fn (self $c) => $c->label = $label);
     }
 
-    /** A sprite icon name, e.g. `layout-grid`. Per Component, not per category. */
+    /** A sprite icon name, e.g. */
     public function icon(string $icon): self
     {
         return $this->with(fn (self $c) => $c->icon = $icon);
@@ -131,7 +114,7 @@ final class Component
         return $this->with(fn (self $c) => $c->doclink = $url);
     }
 
-    /** How tall the rail's live preview of this component should be, e.g. `350px`. */
+    /** How tall the rail's live preview of this component should be, e.g. */
     public function previewHeight(string $height): self
     {
         return $this->with(fn (self $c) => $c->previewHeight = $height);
@@ -144,12 +127,7 @@ final class Component
     }
 
     /**
-     * Editable but not offered: the rail opens on one already written in the page, and the
-     * palette does not list it.
-     *
-     * This is what the YAML's group-level `onlyEdit` was, and it is right for anything
-     * inserted by a route other than the palette -- `{{attach}}` comes from the file
-     * picker, so offering it twice would be offering two ways to do one thing.
+     * Editable but not offered: the rail opens on one already written in the page, and the palette does not list it.
      */
     public function notOffered(): self
     {
@@ -172,9 +150,7 @@ final class Component
     }
 
     /**
-     * A wrapper the rail can insert but not re-open: its parameters describe how many
-     * halves to write (`{{tabs titles="a,b,c"}}`), so editing them afterwards would mean
-     * rewriting content the webmaster has since put inside.
+     * A wrapper the rail can insert but not re-open: its parameters describe how many halves to write (`{{tabs titles="a,b,c"}}`), so editing them afterwards would mean rewriting content the webmaster has since put inside.
      */
     public function addOnly(): self
     {
@@ -201,13 +177,17 @@ final class Component
         return $this->id;
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function tags(): array
     {
         return $this->tags;
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     public function pins(): array
     {
         return $this->pins;
@@ -223,13 +203,17 @@ final class Component
         return $this->category;
     }
 
-    /** @return list<Setting> */
+    /**
+     * @return list<Setting>
+     */
     public function ownSettings(): array
     {
         return $this->settings;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         $properties = [];

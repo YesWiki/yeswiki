@@ -1,7 +1,4 @@
-/**
- * Vue 3 Template Renderer utility
- * Renders slot content to HTML strings for use in non-Vue contexts (like DataTables)
- */
+/** Vue 3 Template Renderer utility Renders slot content to HTML strings for use in. */
 const { createApp, h } = Vue
 
 const templatesForRendering = {}
@@ -12,11 +9,9 @@ const getTemplateFromSlot = (id, base, name, params = {}) => {
     templatesForRendering[id] = {}
   }
   if (!(key in templatesForRendering[id])) {
-    // Vue 3: $slots contains functions that return VNodes
     const slots = base.$slots
     if (slots && name in slots) {
       const slotFn = slots[name]
-      // Create a temporary app to render the slot to HTML
       const tempContainer = document.createElement('div')
       const app = createApp({
         render() {

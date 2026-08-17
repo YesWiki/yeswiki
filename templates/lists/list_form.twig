@@ -17,15 +17,13 @@
 		</div>
 	</div>
 
-	{# List Nodes #}
 	<label class="yw-form-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
 	<div class="nodes-container">
 		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
 	</div>
-	{# Hidden JSON Nodes #}
+
 	<input type="hidden" name="nodes" :value="jsonNodes" />
 
-	{# Form Actions #}
 	<div class="form-actions yw-form-group">
 		<div class="col-sm-9 col-sm-offset-3">
 			<button class="btn btn-primary" type="submit" name="submit">

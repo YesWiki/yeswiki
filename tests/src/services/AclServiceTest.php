@@ -30,7 +30,6 @@ class AclServiceTest extends YesWikiTestCase
 
     public static function checkAclProvider()
     {
-        // acl , expected
         return [
             'public' => ['*', true],
             'connected' => ['+', false],

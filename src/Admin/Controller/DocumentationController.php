@@ -9,13 +9,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * `/doc` -- the documentation, rendered as a page of this wiki.
- *
- * It answered with a standalone HTML document until now: its own <head>, its own theme,
- * no navbar and no way back into the wiki. It is a dashboard route like the others, so it
- * gets the same shell and the same left rail (@core/dashboard/layout.twig).
- */
+/** `/doc` -- the documentation, rendered as a page of this wiki. */
 class DocumentationController extends YesWikiController
 {
     use DashboardShell;

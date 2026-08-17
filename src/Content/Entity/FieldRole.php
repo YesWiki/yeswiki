@@ -2,24 +2,7 @@
 
 namespace YesWiki\Content\Entity;
 
-/**
- * The roles core needs a form's fields to play (ticket 11).
- *
- * Core used to reach into user data by literal field name: the iCal export read
- * `bf_date_debut_evenement`, the map read `bf_latitude`. That only ever worked for
- * webmasters who copied the seeded French forms, and failed silently for everyone else --
- * an empty calendar with nothing to explain it.
- *
- * A role is core's question ("which field holds the start date?"); the answer belongs to
- * the form. This is the same shape as ticket 27's `entry_title_template`, generalised:
- * a form property naming which field plays which role.
- *
- * **A role usually needs no configuration.** Most roles have an unambiguous default from
- * the field's own type -- a `listedatedeb` field is the start date, an `image` field is
- * the image -- so existing forms keep working with no migration and no webmaster action.
- * The explicit map only has to say something when a form is ambiguous (two image fields,
- * say) or when the webmaster wants a different one.
- */
+/** The roles core needs a form's fields to play (ticket 11). */
 class FieldRole
 {
     /** The form-body key holding the explicit role => field-name map. */
@@ -33,8 +16,7 @@ class FieldRole
     public const GEOLOCATION = 'geolocation';
 
     /**
-     * Field types that satisfy each role, most-preferred first. A role with no explicit
-     * mapping resolves to the first field of the first type listed here.
+     * Field types that satisfy each role, most-preferred first.
      *
      * @var array<string, list<string>>
      */
@@ -44,11 +26,13 @@ class FieldRole
         self::IMAGE => ['image'],
         self::EMAIL => ['champs_mail'],
         self::DESCRIPTION => ['textelong'],
-        // latitude/longitude are not separate fields any more: one map field holds both
+
         self::GEOLOCATION => ['map', 'carte_google'],
     ];
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public static function all(): array
     {
         return array_keys(self::DEFAULT_TYPES);
@@ -60,8 +44,7 @@ class FieldRole
     }
 
     /**
-     * The field types that can play this role -- used both to resolve a role with no
-     * explicit mapping and to reject an explicit mapping to an incompatible field.
+     * The field types that can play this role -- used both to resolve a role with no explicit mapping and to reject an explicit mapping to an incompatible field.
      *
      * @return list<string>
      */
@@ -71,9 +54,7 @@ class FieldRole
     }
 
     /**
-     * Normalize a submitted role map: unknown roles dropped, blank field names dropped,
-     * and no two roles pointing at the same field for the date pair (an event whose start
-     * and end are the same field is a data-entry mistake, not a configuration).
+     * Normalize a submitted role map: unknown roles dropped, blank field names dropped, and no two roles pointing at the same field for the date pair (an event whose start and end are the same field is a data-entry mistake, not a configuration).
      *
      * @param mixed $submitted whatever the form body or a POST carried
      *

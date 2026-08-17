@@ -13,7 +13,6 @@ class AddActivityPubCompatibility extends YesWikiMigration
             $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_activitypub_public_key text DEFAULT NULL");
         }
 
-        // Replace bn_sem_context, bn_sem_type, bn_sem_use_template with Twig-based templates
         if (!$this->dbService->schema()->columnExists('nature', 'bn_sem_template')) {
             $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_template text DEFAULT NULL");
             $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_reverse_template text DEFAULT NULL");

@@ -14,15 +14,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Who may do what with the lists, now that the screen is everyone's to open.
- *
- * The lists moved from `/admin/lists` to `/dashboard/lists`, and the route's `@admins` was
- * the *only* check in the whole feature: creating a list, importing a pile of them from
- * another wiki and deleting one asked nothing at all. Public, that is an open door, so
- * every entry point asks now -- and this is what says so, because the buttons being hidden
- * proves nothing about the URL behind them.
- */
+/** Who may do what with the lists, now that the screen is everyone's to open. */
 class ListPermissionsTest extends YesWikiTestCase
 {
     private const LIST_ID = 'ListPermissionsTestList';
@@ -50,32 +42,25 @@ class ListPermissionsTest extends YesWikiTestCase
         try {
             $this->assertNotEmpty($lists->getOne(self::LIST_ID), 'the premise: the list exists');
 
-            // reading is everyone's
             $table = (string)$controller->displayAll();
             $this->assertStringContainsString(self::LIST_ID, $table, 'a visitor sees the lists');
             $this->assertStringContainsString('Alpha', $table, '...and what they say');
-            // ...but not a column of empty cells under a heading called "Actions"
+
             $this->assertStringNotContainsString(_t('BAZ_ACTIONS'), $table);
 
-            // changing them is not -- and not because the button is hidden, because the
-            // controller says no whatever URL you arrive by
             $refused = _t('BAZ_DROIT_INSUFFISANT');
             $this->assertStringContainsString($refused, (string)$controller->create());
             $this->assertStringContainsString($refused, (string)$controller->update(self::LIST_ID));
             $this->assertStringContainsString($refused, (string)$controller->delete(self::LIST_ID));
             $this->assertNotEmpty($lists->getOne(self::LIST_ID), 'and the list is still there');
 
-            // a refusal is not a crash: no file path, no line number, no "contact the
-            // administrator" -- being told no is neither unexpected nor their problem
             $this->assertStringNotContainsString('ListController.php', (string)$controller->delete(self::LIST_ID));
         } finally {
             $wiki->services->get(PageManager::class)->deleteOrphaned(self::LIST_ID);
         }
     }
 
-    /**
-     * A list nobody may read is a list nobody is shown.
-     */
+    /** A list nobody may read is a list nobody is shown. */
     #[Depends('testWikiExisting')]
     public function testAListWithAReadAclIsHiddenFromWhoeverItExcludes(YesWikiRuntime $wiki): void
     {
@@ -95,7 +80,6 @@ class ListPermissionsTest extends YesWikiTestCase
                 'a read ACL is a read ACL on the screen that lists them too'
             );
 
-            // ...and someone the ACL admits still gets it
             $admin = current(array_filter(
                 $userManager->getAll(),
                 fn ($user) => $wiki->services->get(AclService::class)->isAdmin($user['name'])
@@ -106,7 +90,7 @@ class ListPermissionsTest extends YesWikiTestCase
             $authentication->login($admin);
             $forAnAdmin = (string)$controller->displayAll();
             $this->assertStringContainsString(self::SECRET, $forAnAdmin);
-            // and someone who may change them gets the column back
+
             $this->assertStringContainsString(_t('BAZ_ACTIONS'), $forAnAdmin);
         } finally {
             $authentication->logout();

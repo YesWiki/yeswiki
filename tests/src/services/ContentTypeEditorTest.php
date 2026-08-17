@@ -18,15 +18,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The page editor edits the form of the row's **own** Content type.
- *
- * It used to reach for the Page form whatever it was editing, so opening an account or an
- * uploaded file at /edit offered the wiki markup editor and wrote `content`, `title` and
- * `keywords` into that row -- giving an account a page-shaped body it should never have.
- * An account is not wiki markup: the User form has no `content` field, so there is no
- * markup to edit and none is written.
- */
+/** The page editor edits the form of the row's **own** Content type. */
 class ContentTypeEditorTest extends YesWikiTestCase
 {
     private const USER_NAME = 'ContentTypeEditorTestUser';
@@ -64,9 +56,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
         ));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
         $wiki->services->get(AuthenticationService::class)->login($admin);
-        // an account page's ACL is closed by default and the harness's session handling
-        // makes the admin bypass unreliable here; open the row explicitly so the test
-        // exercises the editor rather than the permission check
+
         $wiki->services->get(AclService::class)->save($tag, 'write', '*');
         $wiki->services->get(AclService::class)->save($tag, 'read', '*');
 
@@ -114,7 +104,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
                 'an account is not wiki markup: it must not get the prose editor'
             );
             $this->assertStringNotContainsString('name="body"', $output);
-            // the User form's own fields are what an account is edited through
+
             $this->assertMatchesRegularExpression('/name="(email|profile_picture)"/', $output);
         } finally {
             $this->getWiki()->services->get(AuthenticationService::class)->logout();
@@ -132,8 +122,6 @@ class ContentTypeEditorTest extends YesWikiTestCase
         $this->assertIsArray($page);
 
         try {
-            // a submission that carries markup anyway -- a crafted POST, or a browser
-            // that still had the old form -- must not put it in the account's body
             $_POST = [
                 'submit' => 'Sauver',
                 'previous' => $page['id'],
@@ -144,7 +132,6 @@ class ContentTypeEditorTest extends YesWikiTestCase
             try {
                 $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             } catch (ExitException $e) {
-                // a save redirects
             }
 
             $reloaded = $pageManager->getOne(self::USER_NAME);
@@ -180,8 +167,6 @@ class ContentTypeEditorTest extends YesWikiTestCase
         $fileTag = (string)$file['tag'];
         self::$fileTag = $fileTag;
 
-        // a file's attributes are body fields, which is what makes it downloadable at all
-        // and what its title is computed from (ADR-0002's ticket-09 amendment)
         $this->assertSame(self::FILE_STORED, $file['stored_filename']);
         $this->assertNotNull($wiki->services->get(FileManager::class)->getPhysicalPath($fileTag));
 
@@ -189,12 +174,10 @@ class ContentTypeEditorTest extends YesWikiTestCase
 
         try {
             $this->assertStringNotContainsString('aceditor-textarea', $output);
-            // the only thing a File form asks for is bytes: everything else it stores is
-            // derived from the upload, and offering it as a text box was offering to break
-            // the download (ticket 13)
+
             $this->assertMatchesRegularExpression('/name="file_content"/', $output);
             $this->assertStringNotContainsString('name="stored_filename"', $output);
-            // ...while still showing which file this is
+
             $this->assertStringContainsString(self::FILE_ORIGINAL, $output);
         } finally {
             $wiki->services->get(AuthenticationService::class)->logout();

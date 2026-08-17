@@ -57,7 +57,7 @@ export default {
               : values
         }
         case 'email':
-          return '' // security
+          return ''
         case 'link':
           return value
             ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>`

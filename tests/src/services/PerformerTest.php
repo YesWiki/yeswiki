@@ -36,8 +36,6 @@ class PerformerTest extends YesWikiTestCase
 
     public static function listProvider()
     {
-        // objectType -- 'formatter' was removed by ticket 06: 'wakka' was the only one,
-        // and Wiki::Format() now calls MarkdownFormatterService directly
         return [
             'actions' => ['action'],
             'handlers' => ['handler'],

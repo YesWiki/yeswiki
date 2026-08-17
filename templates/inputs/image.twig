@@ -39,11 +39,7 @@
                name="oldimage_{{ field.propertyName }}"
                value="{{ value }}" />
     {% else %}
-        {# The rail the editors use, rather than a file box of this field's own: it lists
-           the images this wiki already holds and uploads a new one into the same place,
-           so a picture attached here is a file Content like any other. It hands back that
-           file's address, which lands in the URL box below -- the same box, still there
-           for an image hosted somewhere else. #}
+
         {{ include_javascript('javascripts/inputs/file-picker-field.js', false, true) }}
         <div class="file-or-url">
             <button type="button"
@@ -61,9 +57,7 @@
                    class="yw-input image-url-input"
                    placeholder="https://..."
                    {% if field.required %}required{% endif %} />
-            {# `<input id>` + `-preview`, which is what image-field.js looks for: this said
-               `img-<name>-url-preview` and the input is `<name>_url`, so the two never met
-               and the URL preview has never appeared #}
+
             <output id="{{ field.propertyName }}_url-preview"
                     class="image-url-preview"></output>
         </div>

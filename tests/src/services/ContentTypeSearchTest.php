@@ -12,15 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Listing the rows of a form whose Content type is not `entry`.
- *
- * A search used to hardcode two things: a join onto the `fiche_bazar` type triple, and
- * `body.form_id IN (...)`. Neither is true of a page -- a page carries no form_id, and
- * carrying no type triple at all is exactly what makes it a page -- so a bazar view of
- * the Pages form came back empty with nothing to explain it. Which rows a form owns is
- * decided by its Content type (ticket 10).
- */
+/** Listing the rows of a form whose Content type is not `entry`. */
 class ContentTypeSearchTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ContentTypeSearchRegressionPage';
@@ -30,7 +22,9 @@ class ContentTypeSearchTest extends YesWikiTestCase
         self::getWiki()->services->get(PageManager::class)->deleteOrphaned(self::PAGE_TAG);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function builtInForm(string $contentType): array
     {
         $form = $this->getWiki()->services->get(FormManager::class)->getByContentType($contentType);
@@ -39,7 +33,9 @@ class ContentTypeSearchTest extends YesWikiTestCase
         return $form;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function rowsOf(string $contentType): array
     {
         return $this->getWiki()->services->get(SearchManager::class)->search([
@@ -59,7 +55,7 @@ class ContentTypeSearchTest extends YesWikiTestCase
 
         $this->assertArrayHasKey(self::PAGE_TAG, $rows, 'a page must be listed by the Page form');
         $this->assertSame('Une page trouvable', $rows[self::PAGE_TAG]['title']);
-        // the row has to present like any other entry to the rendering machinery
+
         $this->assertSame(self::PAGE_TAG, $rows[self::PAGE_TAG]['tag']);
         $this->assertSame(
             (string)$this->builtInForm(ContentTypeSchema::TYPE_PAGE)['id'],

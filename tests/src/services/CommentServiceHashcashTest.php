@@ -16,12 +16,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 15 (security-core-split): addCommentIfAuthorized()'s own
- * inline hashcash check still required 'tools/security/secret/wp-hashcash.lib' directly
- * after that path was deleted by the same commit, so any comment submitted with
- * use_hashcash on would hit a fatal require_once error instead of the intended
- * "maybe you are a robot" rejection. Fixed by delegating to HashCashService::checkHashcash()
- * like every other hashcash call site.
+ * Regression test for ticket 15 (security-core-split): addCommentIfAuthorized()'s own inline hashcash check still required 'tools/security/secret/wp-hashcash.lib' directly after that path was deleted by the same commit, so any comment submitted with use_hashcash on would hit a fatal require_once error instead of the intended "maybe you are a robot" rejection.
  */
 #[CoversMethod(CommentService::class, 'addCommentIfAuthorized')]
 class CommentServiceHashcashTest extends YesWikiTestCase
@@ -29,10 +24,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     private const PAGE_TAG = 'CommentServiceHashcashRegressionPage';
 
     /**
-     * The success case below posts a real comment, and a comment is a page row: without
-     * this the suite left one behind on every run, 786 of them by the time anyone looked.
-     * deleteOrphaned() takes the page's comments with it (`OR parent = tag`), so the
-     * index rows are collected first -- they are keyed by the comment's own tag.
+     * The success case below posts a real comment, and a comment is a page row: without this the suite left one behind on every run, 786 of them by the time anyone looked.
      */
     public static function tearDownAfterClass(): void
     {
@@ -95,9 +87,6 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the comment path');
 
-        // addCommentIfAuthorized()'s success path renders the new comment via $GLOBALS['wiki'],
-        // normally populated by the production HTTP bootstrap, not the test harness (same
-        // workaround as EditHandlerSaveTest/FiltertagsActionTest)
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {

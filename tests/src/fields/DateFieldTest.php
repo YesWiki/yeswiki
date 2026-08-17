@@ -9,16 +9,7 @@ use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 /**
- * Regression test for ticket 24 (bazar absorbed into core): a blanket namespace
- * rewrite (YesWiki\Bazar\Service\DateService -> YesWiki\Kernel\Service\DateService)
- * collapsed DateField's/FileField's deliberate disambiguation between bazar's own
- * DateService (renamed EntryDateService, since it collided with an unrelated,
- * pre-existing core DateService) and that pre-existing core DateService (timezone
- * formatting only). Both fields ended up calling methods (canRegisterMultipleEntries,
- * followId, isLegacyRecurrenceChild) that only exist on EntryDateService, through a
- * reference to the wrong class -- a fatal "call to undefined method" on every
- * recurring-event save. Caught by code review, not by this test suite (no test
- * previously exercised DateField's recurrence-tracking methods at all).
+ * Regression test for ticket 24 (bazar absorbed into core): a blanket namespace rewrite (YesWiki\Bazar\Service\DateService -> YesWiki\Kernel\Service\DateService) collapsed DateField's/FileField's deliberate disambiguation between bazar's own DateService (renamed EntryDateService, since it collided with an unrelated, pre-existing core DateService) and that pre-existing core DateService (timezone formatting only).
  */
 class DateFieldTest extends YesWikiTestCase
 {
@@ -26,21 +17,20 @@ class DateFieldTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
 
-        // BazarField's legacy 13-column positional array (FIELD_TYPE..FIELD_WRITE_ACCESS)
         $values = [
-            'date', // FIELD_TYPE
-            $propertyName, // FIELD_NAME
-            'Date field under test', // FIELD_LABEL
-            '', // FIELD_SIZE
-            '', // FIELD_MAX_CHARS
-            '', // FIELD_DEFAULT
-            '', // 6
-            '', // 7
-            '0', // FIELD_REQUIRED
-            '0', // FIELD_SEARCHABLE
-            '', // FIELD_HINT
-            '', // FIELD_READ_ACCESS
-            '', // FIELD_WRITE_ACCESS
+            'date',
+            $propertyName,
+            'Date field under test',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '0',
+            '0',
+            '',
+            '',
+            '',
         ];
 
         return new DateField($values, $wiki->services);
@@ -66,8 +56,6 @@ class DateFieldTest extends YesWikiTestCase
             'bf_date_fin_evenement' => '2024-01-01 10:00:00',
         ];
 
-        // this call path is exactly what fataled with "call to undefined method"
-        // when DateField referenced the wrong DateService class
         $result = $field->formatValuesBeforeSave($entry);
 
         $this->assertIsArray($result);
@@ -86,7 +74,6 @@ class DateFieldTest extends YesWikiTestCase
 
         $reflection = new \ReflectionMethod($field, 'renderStatic');
 
-        // exercises EntryDateService::isLegacyRecurrenceChild() -- also fatal before the fix
         $output = $reflection->invoke($field, $entry);
 
         $this->assertIsString($output);

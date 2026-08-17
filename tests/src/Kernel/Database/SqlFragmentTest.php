@@ -5,14 +5,7 @@ namespace YesWiki\Test\Kernel\Database;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Kernel\Database\SqlFragment;
 
-/**
- * The composition rules a fragment builder depends on (ticket 31).
- *
- * The property under test throughout is the correspondence between placeholder order and value
- * order. Everything else about this class is convenience; that one thing is why it exists,
- * because the alternative -- a parallel `$sql` / `$params` pair threaded through a builder --
- * loses the correspondence quietly and only says so at execute() time.
- */
+/** The composition rules a fragment builder depends on (ticket 31). */
 class SqlFragmentTest extends TestCase
 {
     public function testAFragmentKeepsItsSqlAndValuesTogether(): void
@@ -24,8 +17,7 @@ class SqlFragmentTest extends TestCase
     }
 
     /**
-     * Caught at construction rather than three compositions downstream, where the statement no
-     * longer resembles anything a developer wrote.
+     * Caught at construction rather than three compositions downstream, where the statement no longer resembles anything a developer wrote.
      */
     public function testAFragmentWhoseValuesAlreadyDisagreeIsRefused(): void
     {
@@ -56,9 +48,7 @@ class SqlFragmentTest extends TestCase
     }
 
     /**
-     * A clause that contributes nothing must not leave a dangling glue token -- the bug every
-     * caller hand-wrote a guard for, and the reason `empty()` exists as a value rather than as
-     * an `if`.
+     * A clause that contributes nothing must not leave a dangling glue token -- the bug every caller hand-wrote a guard for, and the reason `empty()` exists as a value rather than as an `if`.
      */
     public function testEmptyPartsAreDroppedRatherThanLeavingDanglingGlue(): void
     {
@@ -126,7 +116,7 @@ class SqlFragmentTest extends TestCase
             $where->sql
         );
         $this->assertSame(['entry', '%alice%', '%@admins%', 'bob'], $where->params);
-        // the invariant, asserted directly
+
         $this->assertSame(substr_count($where->sql, '?'), count($where->params));
     }
 }

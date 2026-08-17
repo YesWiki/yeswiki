@@ -2,16 +2,6 @@
 
 namespace YesWiki\Content\Action;
 
-/*
- * Qrcode action for yeswiki, for displaying a qrcode image with given text
- *
- * @category Wiki
- * @package  YesWikiQrcode
- * @author   2011  Francois Labastie <flabastie@hotmail.com>
- * @author   2018-2021 Florian Schmitt <mrflos@lilo.org>
- * @license  GNU AFFERO GENERAL PUBLIC LICENSE version 3
- * @link     https://yeswiki.net
- */
 use YesWiki\Content\Service\QrCodeService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
@@ -30,9 +20,7 @@ class QrcodeAction extends YesWikiAction implements RegisteredAction, ProvidesCo
     }
 
     /**
-     * One setting, and it is the one the action refuses to run without -- which is exactly
-     * why it belongs in the palette rather than being typed by hand: `{{qrcode}}` with no
-     * `text` renders an error box.
+     * One setting, and it is the one the action refuses to run without -- which is exactly why it belongs in the palette rather than being typed by hand: `{{qrcode}}` with no `text` renders an error box.
      */
     public function components(): array
     {
@@ -55,12 +43,10 @@ class QrcodeAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
     public function run()
     {
-        // Lecture des parametres de l'action
         $this->arguments['text'] = !empty($this->arguments['text']) ?
             $this->arguments['text'] :
             null;
 
-        // si pas de texte, on affiche une erreur
         if (empty($this->arguments['text'])) {
             return '<div class="yw-alert yw-alert--danger">' . _t('QR_CODE_ERROR_MISSING_PARAM') . '</div>' . "\n";
         }

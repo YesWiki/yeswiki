@@ -12,9 +12,7 @@ use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * A YesWiki object, with basic functionality like accessing main YesWiki instance, or
- * use easily templates
- * See Performer service which run such object.
+ * A YesWiki object, with basic functionality like accessing main YesWiki instance, or use easily templates See Performer service which run such object.
  */
 abstract class YesWikiPerformable
 {
@@ -24,43 +22,33 @@ abstract class YesWikiPerformable
     protected $arguments = [];
     protected $output;
 
-    /**
-     * Setter for the service container (historic setWiki()).
-     */
+    /** Setter for the service container (historic setWiki()). */
     public function setServices(ContainerInterface $services): void
     {
         $this->services = $services;
     }
 
-    /**
-     * Setter for the parameters.
-     */
+    /** Setter for the parameters. */
     public function setParams(ParameterBagInterface $params): void
     {
         $this->params = $params;
     }
 
-    /**
-     * Setter for the twig property.
-     */
+    /** Setter for the twig property. */
     public function setTwig(TemplateEngine $twig): void
     {
         $this->twig = $twig;
     }
 
-    /**
-     * Setter for the arguments property.
-     */
+    /** Setter for the arguments property. */
     public function setArguments(array &$arguments): void
     {
-        $this->arguments = &$arguments; // passed by ref to be able to change arguments in pre and post actions
+        $this->arguments = &$arguments;
         $formattedArguments = $this->formatArguments($arguments);
-        $this->arguments = array_merge($arguments, $formattedArguments); // not array_merge return a copy not ref
+        $this->arguments = array_merge($arguments, $formattedArguments);
     }
 
-    /**
-     * Setter for the output property.
-     */
+    /** Setter for the output property. */
     public function setOutput(string &$output): void
     {
         $this->output = &$output;
@@ -81,14 +69,15 @@ abstract class YesWikiPerformable
     {
         $data = array_merge($data, ['arguments' => $this->arguments]);
 
-        // add some addition globals
         $vUserManager = $this->services->get(UserManager::class);
         $userName = (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'];
         $this->twig->addGlobal('user', new class($vUserManager, $userName) {
             public string $name;
             private UserManager $userManager;
             private bool $entryResolved = false;
-            /** @var array<mixed>|null */
+            /**
+             * @var array<mixed>|null
+             */
             private ?array $entry = null;
 
             public function __construct(UserManager $userManager, string $name)
@@ -97,7 +86,9 @@ abstract class YesWikiPerformable
                 $this->name = $name;
             }
 
-            /** @return array<mixed> */
+            /**
+             * @return array<mixed>
+             */
             public function getEntry(): array
             {
                 if (!$this->entryResolved) {
@@ -134,16 +125,8 @@ abstract class YesWikiPerformable
         return $this->services->get($className);
     }
 
-    // Shortcut to call an action within another action
     protected function callAction(string $action, $arguments = []): string
     {
-        // This additional argument helps to prevent infinite loops.
-        //
-        // Deliberately the SHORT class name, not get_class(): callers compare it against
-        // literals like 'EntryMapAction', and once ticket 06 gave these classes namespaces
-        // get_class() started returning the FQCN, so every such comparison silently stopped
-        // matching -- turning {{entrymap}} into unbounded recursion. Third time this wave
-        // that get_class() broke on namespacing (after the action name and the ACL key).
         $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
 
         return $this->getService(ActionRunner::class)->action($action, $arguments);
@@ -154,7 +137,6 @@ abstract class YesWikiPerformable
         return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
-    // Can be extended to format the arguments
     protected function formatArguments($arguments)
     {
         return $arguments;

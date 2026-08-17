@@ -6,16 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageType;
 
-/**
- * Answers "what kind of Content is this row, and which form describes it?" (ticket 10).
- *
- * A bazar entry names its own form in `body.form_id`. Nothing else does: a page, an account
- * and an uploaded file are identified by `pages`.`type` (ticket 27). Every caller that needs
- * the form behind a row went and re-derived that rule; this is the one place that knows it.
- *
- * Not every row is form-backed: a form, a list and a comment are Content, but none of them
- * is filled in from a form template, so they answer null here.
- */
+/** Answers "what kind of Content is this row, and which form describes it?" (ticket 10). */
 class ContentTypeResolver
 {
     private ContainerInterface $container;
@@ -28,8 +19,7 @@ class ContentTypeResolver
     }
 
     /**
-     * The Content type of a row, or null for one this concept does not describe -- a form,
-     * a list, a comment, a tag with no row at all.
+     * The Content type of a row, or null for one this concept does not describe -- a form, a list, a comment, a tag with no row at all.
      */
     public function typeOf(string $tag): ?string
     {
@@ -43,8 +33,7 @@ class ContentTypeResolver
     }
 
     /**
-     * The form describing this row: its Content type's form for a built-in type, the form
-     * its `body.form_id` names for a bazar entry, null for anything else.
+     * The form describing this row: its Content type's form for a built-in type, the form its `body.form_id` names for a bazar entry, null for anything else.
      *
      * @return array<string, mixed>|null
      */
@@ -63,20 +52,7 @@ class ContentTypeResolver
     }
 
     /**
-     * The form describing this row, or -- when there is no row yet -- the form of the type
-     * it will be created with.
-     *
-     * The editor is the caller that needs the difference. A page being written for the first
-     * time has no row, so `typeOf()` answers null and `formFor()` with it; that is the right
-     * answer for anything *reading* Content, but the editor is about to create the row, and
-     * {@see PageManager::save()} creates it as {@see PageType::DEFAULT}. Answering null there
-     * cost a new page its title and keywords inputs -- the editor fell back to the bare
-     * markup box, and the fields only appeared once the page existed.
-     *
-     * `formFor()` returns null for two unrelated reasons and only one of them is this one, so
-     * the raw type is what decides: `PageManager::typeOf()` is null only when no row exists.
-     * A row that *does* exist and is simply not form-backed -- a form, a list, a comment --
-     * still answers null here, because creating one of those is not what this is about.
+     * The form describing this row, or -- when there is no row yet -- the form of the type it will be created with.
      *
      * @return array<string, mixed>|null
      */
@@ -92,12 +68,6 @@ class ContentTypeResolver
 
     /**
      * A row in the shape everything downstream reads an entry in.
-     *
-     * Only a bazar entry names its own form (`body.form_id`) and repeats its own tag. A
-     * page, an account and a file carry neither: which form describes them is their type
-     * triple, their tag is the row's, and a locked field that restates the tag (an
-     * account's `username`) is filled in here rather than stored twice. A Content that
-     * never got a title still names itself.
      *
      * @param array<string, mixed> $page          a page row whose `body` is already decoded
      * @param string|null          $contentType   when the caller already knows it, to save a query

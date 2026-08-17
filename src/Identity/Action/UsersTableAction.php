@@ -17,7 +17,6 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\User;
 
 class UsersTableAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -67,7 +66,6 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
 
     public function run()
     {
-        // get Services
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->userOperationsService = $this->getService(UserOperationsService::class);
         $this->userManager = $this->getService(UserManager::class);
@@ -76,22 +74,18 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
         $isAdmin = $this->getService(AclService::class)->isAdmin();
 
         if ($isAdmin) {
-            // adds the activate/inactivate column (accountactivationbyemail, ticket 07)
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/users-table-addon.js');
         }
 
-        // manage POST actions
         $postActionMessages = $this->managePostActions($this->getRequest()->request->all(), $isAdmin);
 
-        // get Users
         $users = $this->userManager->getAll();
 
-        // order by signuptime decreasing
         if (empty($users)) {
             $users = [];
         } else {
             uasort($users, function ($a, $b) {
-                $valueIfLower = 1; // decreasing (-1) for ascending
+                $valueIfLower = 1;
                 if (isset($a['signuptime']) && isset($b['signuptime'])) {
                     if ($a['signuptime'] == $b['signuptime']) {
                         return 0;
@@ -107,16 +101,13 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
                 return 0;
             });
 
-            // limit
             if (!empty($this->arguments['last'])) {
                 $users = array_slice($users, 0, $this->arguments['last'], true);
             }
 
-            // add groups
             $users = $this->addGroups($users);
         }
 
-        // connected user
         $connectedUser = $this->authenticationService->getLoggedUser();
         $connectedUserName = empty($connectedUser['name']) ? '' : $connectedUser['name'];
 
@@ -139,14 +130,13 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
     }
 
     /**
-     * manage Post Actions (delete)
-     * with management of csrf token.
+     * manage Post Actions (delete) with management of csrf token.
      *
      * @return string|null postActionMessages
      */
     private function managePostActions(array $post, bool $isAdmin): ?string
     {
-        if ($isAdmin && (!empty($post['userstable_action']))) { // Check if the page received a post named 'userstable_action'
+        if ($isAdmin && (!empty($post['userstable_action']))) {
             $action = filter_var($post['userstable_action'], FILTER_UNSAFE_RAW);
             $action = in_array($action, [false, null], true) ? '' : htmlspecialchars(strip_tags($action));
             if ($action != 'deleteUser' || empty($post['username'])) {
@@ -156,10 +146,7 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
                 ]);
             }
             $userName = filter_var($post['username'], FILTER_UNSAFE_RAW);
-            // `$username` -- lowercase n, and no such variable. It read as null, `in_array(null,
-            // [false, null], true)` is true, so this blanked the name on EVERY request and the
-            // lookup below always failed: deleting a user from the admin table has never worked,
-            // it just reported "no such user". One baselined `variable.undefined` (ticket 40).
+
             $userName = in_array($userName, [false, null], true) ? '' : htmlspecialchars(strip_tags($userName));
             try {
                 $rawUserName = str_replace(['&#039;', '&#39;'], ['\'', '\''], $userName);

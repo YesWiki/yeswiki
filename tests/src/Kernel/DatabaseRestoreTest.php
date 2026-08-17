@@ -7,14 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use YesWiki\Kernel\Service\DbService;
 
 /**
- * Ticket 17: archive restore replayed the dump through `mysqli_multi_query()`, so it worked on
- * MySQL and nowhere else -- an SQLite install could take a backup it could never put back.
- *
- * **Every test here runs against a throwaway SQLite file in a temp directory.** That is not
- * tidiness: restore drops every prefixed table before replaying, so a test that reached the
- * wiki's own connection would destroy the development database the moment the replay failed.
- * Constructing DbService with its own ParameterBag makes pointing it at the real wiki
- * impossible rather than merely inadvisable.
+ * Ticket 17: archive restore replayed the dump through `mysqli_multi_query()`, so it worked on MySQL and nowhere else -- an SQLite install could take a backup it could never put back.
  */
 class DatabaseRestoreTest extends TestCase
 {
@@ -50,7 +43,7 @@ class DatabaseRestoreTest extends TestCase
             . "', NULL)"
         );
         $this->db->query("INSERT INTO probe_pages (tag, body, note) VALUES ('Other', 'plain', 'kept')");
-        // a table outside the prefix must survive a restore untouched
+
         $this->db->query('CREATE TABLE other_wiki (id INTEGER)');
         $this->db->query('INSERT INTO other_wiki (id) VALUES (42)');
     }
@@ -106,10 +99,7 @@ class DatabaseRestoreTest extends TestCase
         $this->assertCount(2, $this->db->loadAll('SELECT tag FROM probe_pages'), 'rows must not be duplicated');
     }
 
-    /**
-     * A dump replayed on the wrong driver fails part-way — after the tables have been dropped.
-     * Refusing up front is what leaves the database as it was.
-     */
+    /** A dump replayed on the wrong driver fails part-way — after the tables have been dropped. */
     public function testADumpFromAnotherDriverIsRefusedBeforeAnythingIsDropped(): void
     {
         $this->seed();

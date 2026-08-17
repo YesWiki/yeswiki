@@ -1,11 +1,7 @@
-// yw-core.js — core's vanilla-JS behavior for the yw-* design system (ADR-0004/0005).
-// No jQuery, no Bootstrap JS. Delegated listeners so it works for content swapped in
-// later by htmx, not just what's in the DOM at load time.
 ;(function () {
   function closeModal(modal) {
     if (modal && modal.classList.contains('yw-modal--open')) {
       modal.classList.remove('yw-modal--open')
-      // replaces Bootstrap's hidden.bs.modal for close-time cleanup hooks
       modal.dispatchEvent(new CustomEvent('yw-modal-hidden', { bubbles: true }))
     }
   }
@@ -14,27 +10,12 @@
     document.querySelectorAll('.yw-dropdown--open').forEach((dropdown) => {
       if (dropdown !== except) dropdown.classList.remove('yw-dropdown--open')
     })
-    // legacy Bootstrap markup: parent of a .dropdown-menu gets .open
     document.querySelectorAll('.open > .dropdown-menu').forEach((menu) => {
       if (menu.parentElement !== except)
         menu.parentElement.classList.remove('open')
     })
   }
 
-  // ---- Remote-load modal (ticket 16: replaces jQuery `.load()` + `.modal('show')`) ----
-  // Matches the EXACT pre-existing markup contract every "open in a modal" link across
-  // the codebase already uses (`class="modalbox"`/`href`/`data-size`/`data-iframe`/
-  // `data-header`/`title`) rather than inventing a new attribute scheme -- this lets every
-  // existing modalbox link keep working unconverted. Optional attributes on the opener:
-  //   href="<url>"           required: what to load into the modal
-  //   title="..."            modal header title
-  //   data-size="modal-lg"   appends a `yw-modal__dialog--lg`-style modifier (a legacy
-  //                          "modal-" prefix, if present, is stripped before appending)
-  //   data-header="false"    suppresses the header entirely
-  //   data-iframe="1"        loads the url in an <iframe> instead of fetching it
-  //   data-yw-modal-fragment=".foo"  extract only this selector's innerHTML from the
-  //                          fetched response (default: ".page", matching the legacy
-  //                          behavior of always extracting the fetched page's own content)
   function remoteModalShell() {
     let modal = document.getElementById('yw-modal-remote')
     if (!modal) {
@@ -57,8 +38,6 @@
     return modal
   }
 
-  // Loads any <script src> / <link rel=stylesheet> from a fetched fragment that isn't
-  // already present in the main document, so modal content can bring its own assets along.
   function loadMissingAssets(doc) {
     doc.querySelectorAll('script[src]').forEach((script) => {
       const src = script.getAttribute('src')
@@ -80,8 +59,6 @@
     })
   }
 
-  // A url already routed through an edit/iframe handler is left alone; a same-domain url
-  // gets `/iframe` appended so it renders without this wiki's own surrounding chrome
   function addIframeHandlerTo(url) {
     if (/\??.*\/(edit)?iframe(&.*)?/.test(url)) return url
     if (new RegExp(`^${wiki.baseUrl}`).test(url)) return `${url}/iframe`
@@ -145,8 +122,6 @@
     modal.classList.add('yw-modal--open')
   }
 
-  // Resolves the element a toggle points at, reading whichever attribute the
-  // markup uses: the yw-* one, legacy Bootstrap's data-target, or a "#id" href.
   function toggleTarget(toggle, ywAttribute) {
     const selector =
       toggle.getAttribute(ywAttribute) ||
@@ -157,12 +132,6 @@
     return selector ? document.querySelector(selector) : null
   }
 
-  // ---- Tabs (ticket 16: replaces Bootstrap's tab plugin + jQuery historyTabs) ----
-  // Markup contract (legacy attributes honored, no template churn):
-  //   <ul class="yw-tabs"><li class="active"><a href="#pane1" data-toggle="tab">...</a></li>...</ul>
-  //   <div class="yw-tabs__content"><div class="yw-tabs__pane active" id="pane1">...</div>...</div>
-  // A trigger can also live inside the pane container itself (next/previous
-  // buttons) — the nav is then found as the container's preceding tab list.
   function tabNavFor(link, pane) {
     const ownNav = link.closest('ul')
     if (ownNav && ownNav.querySelector('a[data-toggle="tab"], a[data-yw-tab]'))
@@ -198,14 +167,11 @@
         )
       })
     }
-    // A trigger inside the pane container (next/previous button) scrolls back up
-    // to the tab strip, matching the legacy behavior for long tabbed forms
     if (nav && !nav.contains(link)) {
       nav.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 
-  // Remember the visited tab in the browser history (legacy historyTabs behavior)
   function recordTabInHistory(href) {
     const state = { url: href }
     const url = window.location.pathname + window.location.search + href
@@ -229,7 +195,6 @@
     }
   })
 
-  // ticket 14: one initialiser convention (the hash is read once, when the page arrives)
   ywInitEach('body', () => {
     if (window.location.hash) {
       const link = tabLinkFor(window.location.hash)
@@ -237,19 +202,6 @@
     }
   })
 
-  // ---- the Colour scheme switcher (ADR-0020) --------------------------------------
-  //
-  // Three states offered as three marks rather than cycled through by one button: "follow my
-  // system" is a choice of its own, and reaching it should not depend on how many times you
-  // have already clicked. The line they sit on is revealed by hover (see yw-core.css); this
-  // is only about what a click does and which mark is filled.
-  //
-  // The *state* is applied by the tiny inline script CoreAssets puts at the top of the head
-  // (window.ywScheme), which is what stops the wrong scheme being painted first. Nothing here
-  // runs before paint, and nothing here needs to.
-  //
-  // ywInitEach rather than a load listener: an hx-boost navigation replaces the body, so the
-  // controls on screen after a navigation are different elements from the ones wired at load.
   const SCHEME_ICON = { system: 'device-desktop', light: 'sun', dark: 'moon' }
 
   /** The readout beside the options: which scheme is on, as its own glyph and its name. */
@@ -259,8 +211,6 @@
     document.querySelectorAll('[data-yw-scheme]').forEach((readout) => {
       const use = readout.querySelector('use')
       if (use) {
-        // only the fragment is swapped: the sprite's address is whatever the server said it
-        // was, which on a farm is a cache/assets/{version}/ path and not a source-tree one
         const href = use.getAttribute('href') || ''
         use.setAttribute('href', `${href.split('#')[0]}#${SCHEME_ICON[scheme]}`)
       }
@@ -283,48 +233,27 @@
     })
   })
 
-  // once per arrival, and again whenever the scheme changes from anywhere
   ywInitEach('[data-yw-scheme]', paintSchemeState)
   document.addEventListener('yw:scheme', paintSchemeState)
 
-  // A field asking for focus on arrival -- the /search page's search box, today.
-  //
-  // The `autofocus` attribute alone is not enough and the reason is ticket 16: an internal
-  // link is htmx-boosted, so reaching /search from the top bar SWAPS the body rather than
-  // parsing a new document, and `autofocus` only fires on parse. The button that exists to
-  // reach the search page is exactly the path where the attribute does nothing.
-  //
-  // Marked with an attribute rather than by selecting the search box directly, so that
-  // "focus me on arrival" stays a property a template can ask for rather than a list of
-  // selectors kept in step here. ywInitEach marks each element once, so a later swap
-  // elsewhere on the page does not yank focus back out of whatever the visitor moved to.
   ywInitEach('[data-yw-autofocus]', (field) => {
-    // never steal focus from something the visitor is already using: an embedded {{search}}
-    // lower down a page can arrive while they are typing somewhere else
     const active = document.activeElement
     if (active && active !== document.body && active !== field) return
     field.focus({ preventScroll: true })
-    // caret after any prefilled phrase rather than selecting it, so typing extends the
-    // query someone arrived with instead of wiping it
     if (typeof field.setSelectionRange === 'function' && field.value) {
       field.setSelectionRange(field.value.length, field.value.length)
     }
   })
 
-  // Open: click on any [data-yw-modal-target="#id"] / legacy [data-toggle="modal"],
-  // or a remote-loading "a.modalbox"-style link
   document.addEventListener('click', (e) => {
     const opener = e.target.closest(
       '[data-yw-modal-target], [data-toggle="modal"]',
     )
     if (opener) {
       const modal = toggleTarget(opener, 'data-yw-modal-target')
-      // only claim converted .yw-modal targets — a legacy Bootstrap-markup modal
-      // (not yet converted) is still Bootstrap JS's to open, not ours
       if (modal && modal.classList.contains('yw-modal')) {
         e.preventDefault()
         modal.classList.add('yw-modal--open')
-        // Replaces Bootstrap's shown.bs.modal + event.relatedTarget contract
         modal.dispatchEvent(
           new CustomEvent('yw-modal-shown', {
             bubbles: true,
@@ -343,8 +272,6 @@
       return
     }
 
-    // Dismiss: click on [data-yw-dismiss="modal"] (hide) or "alert" (remove);
-    // legacy [data-dismiss] markup means the same thing
     const dismisser = e.target.closest('[data-yw-dismiss], [data-dismiss]')
     if (dismisser) {
       const kind =
@@ -361,7 +288,6 @@
       return
     }
 
-    // Toggle: click on [data-yw-dropdown-toggle] or legacy [data-toggle="dropdown"]
     const toggle = e.target.closest(
       '[data-yw-dropdown-toggle], [data-toggle="dropdown"]',
     )
@@ -376,7 +302,6 @@
         toggle.parentElement &&
         toggle.parentElement.querySelector('.dropdown-menu')
       ) {
-        // legacy Bootstrap markup: toggle .open on the .dropdown-menu's parent
         e.preventDefault()
         const parent = toggle.parentElement
         const willOpen = !parent.classList.contains('open')
@@ -386,7 +311,6 @@
       return
     }
 
-    // Switch tab: click on [data-yw-tab] or legacy [data-toggle="tab"]
     const tabLink = e.target.closest('a[data-yw-tab], a[data-toggle="tab"]')
     if (tabLink) {
       e.preventDefault()
@@ -395,17 +319,11 @@
       return
     }
 
-    // Toggle: click on [data-yw-collapse-toggle="#id"] (accordion panels etc.)
-    // Optional [data-yw-accordion="#id"] closes every other panel within that
-    // container first, mirroring Bootstrap's data-parent exclusive-open behavior.
-    // Legacy [data-toggle="collapse"] markup (data-target/href + data-parent) is
-    // honored too, driving the same .yw-collapse--open class.
     const collapseToggle = e.target.closest(
       '[data-yw-collapse-toggle], [data-toggle="collapse"]',
     )
     if (collapseToggle) {
       const target = toggleTarget(collapseToggle, 'data-yw-collapse-toggle')
-      // legacy Bootstrap .collapse markup toggles its .in class instead
       if (
         target &&
         !target.classList.contains('yw-collapse') &&
@@ -470,20 +388,16 @@
           'aria-expanded',
           willOpen ? 'true' : 'false',
         )
-        // Legacy Bootstrap markup styles the trigger via a .collapsed class
         collapseToggle.classList.toggle('collapsed', !willOpen)
       }
       return
     }
 
-    // Picking an item inside an open dropdown's menu closes it (its own click
-    // action, e.g. a link's href or an onclick handler, still runs normally)
     if (e.target.closest('.yw-dropdown__menu')) {
       closeDropdowns()
       return
     }
 
-    // Click on the backdrop itself (not its dialog) closes the modal
     if (
       e.target.classList.contains('yw-modal') &&
       e.target.classList.contains('yw-modal--open')
@@ -492,22 +406,12 @@
       return
     }
 
-    // Click anywhere else closes any open dropdown
     closeDropdowns()
   })
 
-  // ---------------------------------------------------------------- viewport width
-
-  // The width a full-width block may actually use, which is NOT 100vw: `vw` includes the
-  // vertical scrollbar's gutter, so a 100vw block on a scrolling page overhangs the visible
-  // area by the scrollbar's width and gives the document a horizontal scrollbar of its own.
-  // documentElement.clientWidth is the same measurement with the gutter taken off. See
-  // .full-width in yw-core.css, which falls back to 100vw when this never runs.
   let publishedViewportWidth = null
   function publishViewportWidth() {
     const width = document.documentElement.clientWidth
-    // only when it actually changed: this is called from an observer of the very element
-    // whose size a write here can change, and an unconditional write is a loop
     if (width === publishedViewportWidth) return
     publishedViewportWidth = width
     document.documentElement.style.setProperty(
@@ -518,16 +422,9 @@
 
   publishViewportWidth()
   window.addEventListener('resize', publishViewportWidth)
-  // a swap can add or remove enough content to gain or lose the scrollbar, which changes the
-  // answer without the window ever being resized
   document.addEventListener('htmx:afterSettle', publishViewportWidth)
-  // ...and so can a page that simply grows once it is already settled: an image arriving,
-  // a list rendering itself, an editor's preview finding its height. Any of those can be
-  // what gains the scrollbar, and every full-width block on the page is then 15px too wide
-  // -- which is the horizontal scrollbar this variable exists to avoid.
   new ResizeObserver(publishViewportWidth).observe(document.documentElement)
 
-  // Escape closes the top-most open modal, or any open dropdown
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const open = document.querySelectorAll('.yw-modal--open')

@@ -8,11 +8,7 @@ use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
 
 /**
- * Builds ActionRegistry's name => service-id map from the yeswiki.action / yeswiki.handler
- * tags, mirroring YesWikiEventCompilerPass.
- *
- * The name is read from the class's static performableName() at compile time -- a static
- * call, so nothing is constructed and no service is booted to answer "what actions exist".
+ * Builds ActionRegistry's name => service-id map from the yeswiki.action / yeswiki.handler tags, mirroring YesWikiEventCompilerPass.
  */
 class YesWikiPerformableCompilerPass implements CompilerPassInterface
 {

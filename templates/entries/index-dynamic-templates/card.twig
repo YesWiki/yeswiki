@@ -5,15 +5,11 @@
 {% endblock %}
 
 {% block display_entries %}
-  {# `|default` matters: this number is interpolated straight into a CSS grid template,
-     so a missing `columns` used to emit `repeat(, minmax(0, 1fr))` -- an invalid
-     declaration the browser drops, leaving the cards in a single column with no clue
-     why. 3 is what the actions builder offers as the default. #}
+
   {% set nbcol = params.columns|default(3) %}
   {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
   {% set isLink = isModal or (params.entrydisplay == 'direct') %}
 
-  {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
     {{ include('@core/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
@@ -21,10 +17,9 @@
 
   {% set imWidth = (nbcol == 4) ? 500 : (nbcol == 5 ? 400 : 700 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {# Generate appropriate CSRF tokens for both image processing modes #}
+
   {% set fitToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
   {% set cropToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
-
 
   <div class="bazar-cards-container" v-if="ready"
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]"
@@ -51,7 +46,6 @@
         >
     {% endblock %}
 
-      {# VISUAL AREA #}
       {% block area_visual %}
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="entry.visual">
@@ -79,7 +73,7 @@
       {% endblock %}
 
       <div class="content">
-        {# TITLE AREA #}
+
         {% block area_title %}
         <h4  class="area title-area" v-if="entry.title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
@@ -88,22 +82,18 @@
         </h4>
         {% endblock %}
 
-        {# SUBTITLE AREA #}
         {% block area_subtitle %}
           <entry-field :entry="entry" prop="subtitle" class="area subtitle-area line-clamp" :style="{'webkit-line-clamp': params.lines}"></entry-field>
         {% endblock %}
 
-        {# TEXT AREA #}
         {% block area_text %}
           <entry-field :entry="entry" prop="text" class="area text-area"></entry-field>
         {% endblock %}
 
-        {# FOOTER AREA #}
         {% block area_footer %}
           <entry-field :entry="entry" prop="footer" class="area footer-area"></entry-field>
         {% endblock %}
 
-        {# FLOATING AREA #}
         {% block area_floating %}
           <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
         {% endblock %}

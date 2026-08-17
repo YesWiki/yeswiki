@@ -6,10 +6,6 @@ import InputText from './InputText.js'
 export default {
   props: ['name', 'value', 'config', 'selectedForms', 'values'],
   emits: ['input'],
-  // A slot is usually one of the form's fields, but not always: the card's button is a
-  // choice of what it does. Only the components registered HERE resolve inside this one --
-  // the app's list lives on the root -- so a subproperty of any other type rendered as
-  // nothing at all, silently.
   components: { InputFormField, InputList, InputText },
   mixins: [InputHelper],
   data() {
@@ -29,8 +25,8 @@ export default {
     },
     parseNewValues(newValues) {
       if (newValues[this.name]) {
-        const mappings = newValues[this.name].split(',') // ["bf_image=my_image", "bf_other=my_other"]
-        const propList = Object.keys(this.config.subproperties) // ["bf_image", "bf_baseline"]
+        const mappings = newValues[this.name].split(',')
+        const propList = Object.keys(this.config.subproperties)
         for (const mapping of mappings) {
           const propName = mapping.split('=')[0]
           if (propName && propList.includes(propName)) {
@@ -45,8 +41,6 @@ export default {
         const value = this.mappingValues[propName]
         if (
           propName &&
-          // a slot with no field chosen is not a mapping: writing `title=` mapped the
-          // title onto nothing, and every list carrying one lost its titles
           value !== undefined &&
           value !== null &&
           String(value) !== '' &&

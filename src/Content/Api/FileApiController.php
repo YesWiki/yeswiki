@@ -18,11 +18,7 @@ class FileApiController extends YesWikiController
     private const MAX_RESIZE = 4000;
 
     /**
-     * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php
-     * page-handler AND the AJAX qqFileUploader path -- both funneled into the same
-     * underlying attach code already, this is the one real validated path they become).
-     * Creates a new, independent "file" Content entry (FileManager), not tied 1:1 to
-     * $pageTag afterward -- only used here to seed the new entry's initial read ACL.
+     * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php page-handler AND the AJAX qqFileUploader path -- both funneled into the same underlying attach code already, this is the one real validated path they become).
      */
     #[Route('/api/files', methods: ['POST'], options: ['acl' => ['public']])]
     public function uploadFile(Request $request)
@@ -40,8 +36,6 @@ class FileApiController extends YesWikiController
 
         $fileManager = $this->getService(FileManager::class);
         try {
-            // validation, sanitising and the SVG/XML purge all live in one place now, so
-            // the form field cannot end up with a laxer set of them (ticket 13)
             $stored = $fileManager->storeUpload($uploadedFile);
         } catch (\InvalidArgumentException $e) {
             return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -59,11 +53,7 @@ class FileApiController extends YesWikiController
     }
 
     /**
-     * A file entry as this API hands it out: its stored body, plus the extension and the
-     * family that follow from it. Derived on the way out rather than written into every
-     * body, so an existing file gains a family the moment FileManager learns a new
-     * extension, with no migration -- and so the freshly uploaded entry this route
-     * returns is shaped exactly like the ones the listing returns.
+     * A file entry as this API hands it out: its stored body, plus the extension and the family that follow from it.
      *
      * @param array<string, mixed> $entry
      *
@@ -79,10 +69,7 @@ class FileApiController extends YesWikiController
     }
 
     /**
-     * Consolidated download route (ticket 17, replaces tools/attach's DownloadHandler/
-     * doDownload(), which performed NO ownership ACL check at all -- the only external
-     * gate was AclService::hasAccess('read') with no tag argument, checking whatever
-     * page the current URL happened to resolve to instead of the file's own ACL).
+     * Consolidated download route (ticket 17, replaces tools/attach's DownloadHandler/ doDownload(), which performed NO ownership ACL check at all -- the only external gate was AclService::hasAccess('read') with no tag argument, checking whatever page the current URL happened to resolve to instead of the file's own ACL).
      */
     #[Route('/api/files/{tag}/download', methods: ['GET'], options: ['acl' => ['public']])]
     public function downloadFile(Request $request, string $tag)
@@ -97,18 +84,12 @@ class FileApiController extends YesWikiController
         }
 
         $filename = $entry['original_filename'] ?? basename($path);
-        // `?width=&height=` serves a resized copy instead of the original -- what a bazar
-        // image field asks for when its thumbnail sizes are set. It is served from HERE,
-        // through the same ACL check above, and cached under private/ with the bytes:
-        // a thumbnail dropped in the public cache/ directory would be a readable copy of
-        // a file whose whole point is that reading it is checked.
+
         $resized = $this->resizedCopy($request, $path);
         if ($resized !== null) {
             $path = $resized;
         }
-        // default inline (so {{attach}}'s <img>/<audio>/<iframe> rendering can point straight
-        // at this route now that the bytes no longer live under the web-servable files/ dir);
-        // ?download=1 forces a real "Save As" download
+
         $disposition = !empty($request->query->get('download')) ? 'attachment' : 'inline';
 
         return new StreamedResponse(
@@ -126,11 +107,7 @@ class FileApiController extends YesWikiController
     }
 
     /**
-     * The resized copy this request asked for, generated on first use -- or null when it
-     * asked for none, or when the file is not an image, or when resizing failed.
-     *
-     * Failure is null rather than an error: the caller wanted a smaller picture and gets
-     * the picture. Sizes are clamped because they name a file on disk and arrive in a URL.
+     * The resized copy this request asked for, generated on first use -- or null when it asked for none, or when the file is not an image, or when resizing failed.
      */
     private function resizedCopy(Request $request, string $path): ?string
     {
@@ -144,11 +121,6 @@ class FileApiController extends YesWikiController
         $height = min($height, self::MAX_RESIZE);
         $mode = $request->query->get('mode') === 'crop' ? 'crop' : 'fit';
 
-        // Already inside the box: the original IS the answer, and making a copy would make
-        // it WORSE. The resizer enlarges smaller images (deliberately -- a crop to a fixed
-        // ratio wants it), so a 300-pixel logo asked to fit 1920 came back as a blurry
-        // 1920-pixel file several times the size of the one it was made from. `fit` is a
-        // maximum; `crop` changes the shape, so it still has work to do here.
         if ($mode === 'fit' && $size[0] <= $width && $size[1] <= $height) {
             return null;
         }
@@ -171,17 +143,7 @@ class FileApiController extends YesWikiController
             : null;
     }
 
-    /**
-     * List file entries the requester can read, for the file-picker UI (ticket 17).
-     *
-     * `search` narrows by filename or extension; `family` to one of
-     * FileManager::FAMILIES. Both are answered here rather than left to the caller so
-     * that any consumer filters the same way the picker does -- but the picker itself
-     * asks for the whole list once per opening and narrows in the browser, which is
-     * what makes its filter counts exact and its typing instant. That trade holds while
-     * a wiki's uploads number in the thousands; past that, this route needs paging and
-     * the picker needs to ask it per keystroke again.
-     */
+    /** List file entries the requester can read, for the file-picker UI (ticket 17). */
     #[Route('/api/files', methods: ['GET'], options: ['acl' => ['public']])]
     public function getFiles(Request $request)
     {
@@ -204,8 +166,7 @@ class FileApiController extends YesWikiController
             if (!empty($family) && $entry['family'] !== $family) {
                 continue;
             }
-            // the extension is part of what is searched: typing "pdf" is how someone
-            // looks for a PDF, and the filename alone would only match it by accident
+
             if (!empty($search)
                 && !str_contains(strtolower((string)($entry['original_filename'] ?? '')), $search)
                 && !str_contains($entry['extension'], $search)) {
@@ -214,8 +175,6 @@ class FileApiController extends YesWikiController
             $entries[] = $entry;
         }
 
-        // newest first: the file someone is looking for in an editor is usually the one
-        // they just uploaded, and getAllFileTags() hands them back oldest-first
         return new ApiResponse(array_reverse($entries), Response::HTTP_OK);
     }
 }

@@ -42,7 +42,6 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     public static function displayFormProvider()
     {
-        // acl , expected
         return [
             'not connected' => ['not connected'],
             'connected' => ['connected'],
@@ -75,18 +74,16 @@ class UserSettingsActionTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $users = $userManager->getAll();
 
-        // use first user
         $user = $users[0];
         $email = $user['email'];
         $name = $user['name'];
 
         $this->ensureCacheFolderIsWritable();
 
-        // login
         $authenticationService->login($user);
 
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
-        // logout
+
         $authenticationService->logout();
         $this->assertInstanceOf(User::class, $user);
 
@@ -159,7 +156,6 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     public static function dataProvidertestSignup()
     {
-        // mode , suffix, expected result
         return [
             'bad signup' => ['error', false],
             'good signup' => ['', true],
@@ -175,15 +171,12 @@ class UserSettingsActionTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $params = $wiki->services->get(ParameterBagInterface::class);
         if ($params->get('use_captcha')) {
-            // is currently not possible to test with captach activated
             $this->assertTrue($params->get('use_captcha'));
         } else {
             do {
                 $email = strtolower($this->randomString(10)) . '@example.com';
             } while (!empty($userManager->getOneByEmail($email)));
             do {
-                // trim: UserManager::create() trims the name, so a random name with a trailing
-                // space would be stored trimmed and no longer be found by getOneByName()
                 $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
                     . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
             } while (!empty($userManager->getOneByName($name)));
@@ -194,9 +187,7 @@ class UserSettingsActionTest extends YesWikiTestCase
             $_POST['name'] = $name;
             $_POST['password'] = $password;
             $_POST['confpassword'] = $password . $suffix;
-            // must be $_POST (not $_REQUEST): UserSettingsAction resolves the
-            // action name from the Symfony Request's GET+POST bags, which are
-            // built from $_GET/$_POST, never from $_REQUEST
+
             $_POST['usersettings_action'] = 'signup';
             $this->refreshRequest($wiki);
 
@@ -214,12 +205,10 @@ class UserSettingsActionTest extends YesWikiTestCase
             unset($_POST['password']);
             unset($_POST['confpassword']);
             unset($_POST['usersettings_action']);
-            // (string) cast: PHPStan remembers the pre-creation getOneByName($name) null from
-            // the uniqueness loop above and would flag the null check below as always-false --
-            // but the {{usersettings}} action run just created this very user
+
             $user = $userManager->getOneByName((string)$name);
             $connectedUser = $authenticationService->getLoggedUser();
-            // clean user before tests
+
             if ($user !== null) {
                 $userManager->delete($user);
             }
@@ -281,21 +270,16 @@ class UserSettingsActionTest extends YesWikiTestCase
     }
 
     /**
-     * Wiki::$request (a Symfony Request) is built once from the superglobals
-     * when Wiki is constructed and is never re-synced afterwards; mutating
-     * $_POST/$_GET in a test has no effect on it unless it is rebuilt.
+     * Wiki::$request (a Symfony Request) is built once from the superglobals when Wiki is constructed and is never re-synced afterwards; mutating $_POST/$_GET in a test has no effect on it unless it is rebuilt.
      */
     private function refreshRequest(YesWikiRuntime $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
     }
 
-    /**
-     * ensure the cache folder is writable before tests.
-     */
+    /** ensure the cache folder is writable before tests. */
     private function ensureCacheFolderIsWritable()
     {
-        // cache folder should be writable to ensure that twig template cache system works
         $this->assertTrue(is_dir('cache'), 'The cache folder is not existing !');
         $this->assertTrue(is_writable('cache'), 'The cache folder is not writable !');
     }

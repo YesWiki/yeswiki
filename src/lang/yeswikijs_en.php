@@ -123,10 +123,8 @@ Please confirm their deletion by checking the box below.
     'SHOW_PASSWORD' => 'Show password',
     'HIDE_PASSWORD' => 'Hide password',
 
-    // relocated from tools/tags/lang/tagsjs_en.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Number of pages : {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_en.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Copy',
     'ACTION_BUILDER_PREVIEW' => 'Preview (not clickable)',
     'ACTION_BUILDER_ONLINEDOC' => 'Online documentation',
@@ -135,19 +133,15 @@ Please confirm their deletion by checking the box below.
     'ACTION_BUILDER_GENERATED_TITLE' => 'Generated title',
     'ACTION_BUILDER_CREATION_DATE' => 'Creation date',
     'ACTION_BUILDER_FORM_ID' => 'Form',
-    // relocated from tools/attach/lang/attachjs_en.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'Failed',
 
-    // relocated from tools/contact/lang/contactjs_en.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'This field is mandatory.',
     'CONTACT_EMAIL_NOT_VALID' => 'The given mail is not valid.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
     'DATATABLE_NO_RESULTS' => 'No matching results',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'You have unsaved changes. Leave this page?',
 ];

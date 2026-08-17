@@ -5,7 +5,6 @@ export default {
     attrs: { type: 'tabs' },
     icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#stack-2"/></svg>',
   },
-  // Define an entire group of fields to be added to the stage at a time.
   set: {
     label: _t('BAZ_FORM_EDIT_TABS'),
     name: 'tabs',
@@ -69,7 +68,6 @@ export default {
     'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE'),
   }),
   editorSetup(api) {
-    // legacy syntax accepted | as titles separator, the editor normalizes to ,
     const titles = api.getValue('form_titles')
     if (typeof titles === 'string' && titles.includes('|')) {
       api.setValue('form_titles', titles.replace(/\|/g, ','))

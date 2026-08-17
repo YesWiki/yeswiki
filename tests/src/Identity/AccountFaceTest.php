@@ -25,17 +25,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The account button: an icon on the way in, your face once you are in.
- *
- * Three things here are easy to get wrong in ways nothing else would notice. The colours
- * have to be a *function* of the name -- an account that changes colour between two pages
- * is worse than one with no colour at all -- and the letters have to stay legible on
- * whatever colour comes out. The return URL has to survive a round trip through a form on
- * another page, and must not survive being pointed at another site. And the default
- * template is now the button, which means every screen that wants the form has to be
- * asking for it by name.
- */
+/** The account button: an icon on the way in, your face once you are in. */
 class AccountFaceTest extends YesWikiTestCase
 {
     private const PROBE = 'AccountFaceTestUser';
@@ -50,8 +40,6 @@ class AccountFaceTest extends YesWikiTestCase
         return $wiki;
     }
 
-    // -- the face -------------------------------------------------------------------
-
     #[Depends('testWikiExisting')]
     public function testTheFaceIsTheFirstTwoLettersOfTheName(YesWikiRuntime $wiki): void
     {
@@ -61,7 +49,7 @@ class AccountFaceTest extends YesWikiTestCase
         $this->assertSame('AB', $avatars->forName('ab')->initials, 'upper-cased, whatever was typed');
         $this->assertSame('X', $avatars->forName('X')->initials, 'a one-letter name has one letter');
         $this->assertSame('ZO', $avatars->forName('Zoé')->initials, 'counted in characters, not bytes');
-        // nobody is drawn as a blank disc: an anonymous author still gets a face
+
         $this->assertSame('?', $avatars->forName('')->initials);
     }
 
@@ -94,8 +82,7 @@ class AccountFaceTest extends YesWikiTestCase
     }
 
     /**
-     * The point of picking between black and white rather than always writing in white:
-     * a light background with white letters on it is a blank disc.
+     * The point of picking between black and white rather than always writing in white: a light background with white letters on it is a blank disc.
      */
     #[Depends('testWikiExisting')]
     #[DataProvider('nameProvider')]
@@ -109,13 +96,12 @@ class AccountFaceTest extends YesWikiTestCase
         $contrast = $this->contrastRatio($avatar->background, $avatar->foreground);
         $other = $this->contrastRatio($avatar->background, $avatar->foreground === '#000000' ? '#ffffff' : '#000000');
         $this->assertGreaterThanOrEqual($other, $contrast, "{$name}: the other of black and white reads better");
-        // WCAG AA for large text, which is what two capitals in a 32px disc are
+
         $this->assertGreaterThanOrEqual(3.0, $contrast, "{$name}: {$avatar->background} is not enough to read on");
     }
 
     /**
-     * The picture, when there is one, comes from whichever field the User form says plays
-     * the image role -- not from a field name read out of the body.
+     * The picture, when there is one, comes from whichever field the User form says plays the image role -- not from a field name read out of the body.
      */
     #[Depends('testWikiExisting')]
     public function testTheUserFormIsWhatSaysWhereThePictureIs(YesWikiRuntime $wiki): void
@@ -132,12 +118,7 @@ class AccountFaceTest extends YesWikiTestCase
     }
 
     /**
-     * A picture, once there is one -- through the field the form nominates, stored by the
-     * service that guards which keys a submission may write.
-     *
-     * `UserManager::update()` used to take a hardcoded list of six preference keys, so a
-     * profile picture posted from the account screen was accepted by the form, formatted
-     * by the field, and then silently dropped on the way to the database.
+     * A picture, once there is one -- through the field the form nominates, stored by the service that guards which keys a submission may write.
      */
     #[Depends('testWikiExisting')]
     public function testAPictureIsStoredThroughTheFormAndComesBackAsTheFace(YesWikiRuntime $wiki): void
@@ -156,8 +137,6 @@ class AccountFaceTest extends YesWikiTestCase
             $avatars = $wiki->services->get(AvatarService::class);
             $this->assertNull($avatars->forName(self::PICTURED)->imageUrl, 'no picture yet');
 
-            // an image field may hold an address instead of an upload, and an address is
-            // already the face: nothing to resize, nothing to look for on disk
             $userManager->update($user, [$propertyName => 'https://example.org/face.png']);
             $this->assertSame(
                 'https://example.org/face.png',
@@ -179,12 +158,7 @@ class AccountFaceTest extends YesWikiTestCase
     }
 
     /**
-     * An uploaded picture is found where the ACCOUNT keeps its files, not where the page
-     * doing the drawing keeps its own.
-     *
-     * Outside safe mode every page owns a directory under files/, and the page being
-     * rendered when a face is drawn is any page at all -- so a lookup that trusts the
-     * current page finds nothing, on every screen except the account's own.
+     * An uploaded picture is found where the ACCOUNT keeps its files, not where the page doing the drawing keeps its own.
      */
     #[Depends('testWikiExisting')]
     public function testAnUploadedPictureIsFoundUnderTheAccountNotTheCurrentPage(YesWikiRuntime $wiki): void
@@ -206,11 +180,9 @@ class AccountFaceTest extends YesWikiTestCase
         $fileName = 'profile_picture_20260804090000_20260804090000.png';
         $written = null;
         try {
-            // put a real file where an upload to this account would have landed
             $written = $this->writeFixturePicture($wiki, self::PICTURED, $fileName);
             $userManager->update($user, [$propertyName => $fileName]);
 
-            // ...and ask for the face while some OTHER page is the one being rendered
             $wiki->services->get(PageContext::class)->setTag('SomeUnrelatedPage');
             $imageUrl = $wiki->services->get(AvatarService::class)->forName(self::PICTURED)->imageUrl;
 
@@ -230,8 +202,6 @@ class AccountFaceTest extends YesWikiTestCase
         }
     }
 
-    // -- what the button renders ----------------------------------------------------
-
     #[Depends('testWikiExisting')]
     public function testSignedOutTheButtonIsALinkToTheAccountScreen(YesWikiRuntime $wiki): void
     {
@@ -240,7 +210,7 @@ class AccountFaceTest extends YesWikiTestCase
 
         $this->assertStringContainsString('account-link', $rendered);
         $this->assertStringContainsString('?user', $rendered);
-        // the whole point of the new default: no form in the navigation bar of every page
+
         $this->assertStringNotContainsString('name="password"', $rendered);
         $this->assertStringNotContainsString('yw-avatar', $rendered, 'there is no face to draw yet');
     }
@@ -275,11 +245,7 @@ class AccountFaceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * Every screen whose job is signing someone in must still render the fields. The
-     * default changed under them, and a "you have to sign in to read this" page answering
-     * with a 32-pixel icon is a door with no handle.
-     */
+    /** Every screen whose job is signing someone in must still render the fields. */
     #[Depends('testWikiExisting')]
     public function testTheFormIsStillWhatASignInScreenRenders(YesWikiRuntime $wiki): void
     {
@@ -290,8 +256,6 @@ class AccountFaceTest extends YesWikiTestCase
         $this->assertStringContainsString('login-form', $rendered);
         $this->assertStringContainsString('name="password"', $rendered);
     }
-
-    // -- and where it sends you back to ----------------------------------------------
 
     /**
      * @return array<string, array{string, bool}>
@@ -324,8 +288,7 @@ class AccountFaceTest extends YesWikiTestCase
     }
 
     /**
-     * The round trip: the button remembers the page it was clicked from, and the sign-in
-     * that follows ends there rather than on the account screen.
+     * The round trip: the button remembers the page it was clicked from, and the sign-in that follows ends there rather than on the account screen.
      */
     #[Depends('testWikiExisting')]
     public function testTheButtonRemembersWhereYouWereAndSignInGoesBack(YesWikiRuntime $wiki): void
@@ -336,7 +299,6 @@ class AccountFaceTest extends YesWikiTestCase
 
         $somePage = $urlFormatter->href('', 'SomePage');
         try {
-            // on an ordinary page, the button carries it
             $currentRequest->replace(Request::create($somePage));
             $arguments = $this->loginArguments($wiki);
             $this->assertStringContainsString('?user', $arguments['accounturl']);
@@ -346,7 +308,6 @@ class AccountFaceTest extends YesWikiTestCase
                 'the account link has to say where to come back to'
             );
 
-            // and on the sign-in screen it arrived at, that is where signing in ends
             $currentRequest->replace(Request::create($urlFormatter->href('', 'user', [
                 LoginAction::RETURN_PARAM => $somePage,
             ], false)));
@@ -358,14 +319,11 @@ class AccountFaceTest extends YesWikiTestCase
                 'the account screen does not offer to send you back to the account screen'
             );
 
-            // an address on another site is not a page of this wiki, whoever put it there
             $currentRequest->replace(Request::create($urlFormatter->href('', 'user', [
                 LoginAction::RETURN_PARAM => 'https://not-your-wiki.example/',
             ], false)));
             $arguments = $this->loginArguments($wiki);
-            // it falls back to the page the form was submitted from -- which still has the
-            // rejected address sitting in its query string, so what matters is that
-            // signing in lands on THIS wiki, not that the string is nowhere to be seen
+
             $this->assertTrue(
                 $urlFormatter->isInternal($arguments['loggedinurl']),
                 'signing in must not land on another site, whoever wrote the link'
@@ -389,8 +347,7 @@ class AccountFaceTest extends YesWikiTestCase
     }
 
     /**
-     * A real (tiny) picture in the account's own upload directory -- where a file field
-     * would have put it, asked through the same service the field asks.
+     * A real (tiny) picture in the account's own upload directory -- where a file field would have put it, asked through the same service the field asks.
      */
     private function writeFixturePicture(YesWikiRuntime $wiki, string $tag, string $fileName): string
     {
@@ -414,7 +371,9 @@ class AccountFaceTest extends YesWikiTestCase
         return $path;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function loginArguments(YesWikiRuntime $wiki): array
     {
         $action = new LoginAction();

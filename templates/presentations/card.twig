@@ -1,12 +1,9 @@
-{# Cards. `columns` is interpolated into a CSS grid template, so a missing one has to
-   default here -- an empty value emits `repeat(, minmax(0, 1fr))`, which the browser drops,
-   leaving one column and no clue why (the same trap the Vue card documents). #}
+
 {% import "@core/presentations/_item-fields.twig" as slot %}
 {{ include_css('styles/yw-entries.css') }}
 
 {% set columns = params.columns|default(3) %}
-{# `contain` shows a whole logo where `cover` would crop it; the default keeps a row of
-   cards one shape, which is what a grid of them is for. #}
+
 {% set imagefit = params.imagefit|default('cover') %}
 <div class="yw-items yw-items--card" style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}">
   {% for item in items %}

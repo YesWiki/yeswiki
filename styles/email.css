@@ -1,16 +1,3 @@
-/* What a notification email carries in its <head>.
-
-   Its own file, and deliberately a small one. Mailer inlines this whole stylesheet into
-   every notification, and what it used to inline was `styles/bazar/bazar.css` -- a file
-   whose real content was four `@import` lines that no mail client has ever resolved, so the
-   emails were being styled by the handful of rules that happened to sit beside them.
-
-   Inlining a bundle instead would put 4,400 lines of a design system into every message, to
-   style one rendered entry, in clients that support about a tenth of it. So this is the
-   subset an entry needs, written for email: no custom properties (Outlook drops the
-   declaration and the rule with it), no dark scheme (a mail client picks its own ground and
-   cannot be told otherwise), literal colours because there is no Preset here to ask. */
-
 body {
   margin: 0;
   padding: 16px;
@@ -29,7 +16,6 @@ img {
   height: auto;
 }
 
-/* the rendered entry: its label/value pairs are what the message is about */
 .BAZ_cadre_fiche {
   margin: 0 0 16px;
 }

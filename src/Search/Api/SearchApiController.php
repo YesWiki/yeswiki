@@ -12,18 +12,7 @@ use YesWiki\Search\Action\SearchAction;
 use YesWiki\Search\Service\SearchIndexQuery;
 use YesWiki\Search\Service\SearchResultPresenter;
 
-/**
- * The results fragment `{{search}}` drives with `hx-get` (ticket 26).
- *
- * Returns **HTML, not JSON**, following `GET /api/admin/pages`: the results are a rendered
- * list, htmx swaps them in, and nothing on the client has to know how to build a result row.
- * A JSON endpoint would mean a second renderer in JavaScript and two places for a content
- * type's presentation to drift apart.
- *
- * Public by ACL, and safely so: SearchIndexQuery evaluates the current visitor's page-level
- * and field-level rights inside the SQL, so an unauthenticated request simply matches fewer
- * rows rather than being refused.
- */
+/** The results fragment `{{search}}` drives with `hx-get` (ticket 26). */
 class SearchApiController extends YesWikiController
 {
     #[Route('/api/search', methods: ['GET'], options: ['acl' => ['public']])]
@@ -31,9 +20,7 @@ class SearchApiController extends YesWikiController
     {
         $phrase = trim((string)$request->query->get('q', ''));
         $type = trim((string)$request->query->get('type', ''));
-        // `tags=` is a comma-separated list of keywords the Content must ALL carry (ticket 35).
-        // This is what replaced the `listpages` handler: tag navigation is an exact filter, and
-        // folding it into `q` would have made it a fuzzy text match on the keyword's spelling.
+
         $tags = array_values(array_filter(
             array_map('trim', explode(',', (string)$request->query->get('tags', '')))
         ));
@@ -44,11 +31,7 @@ class SearchApiController extends YesWikiController
             $display = 'list';
         }
 
-        // a tags-only request is a real search, so the empty-box prompt is only for a request
-        // that asks for nothing at all
         if ($phrase === '' && $tags === []) {
-            // the URL is rewritten here too, so clearing the box clears `?q=` rather than
-            // leaving the address bar claiming a search that is no longer on screen
             return $this->withSearchUrl(new Response($this->render('@core/search-results.twig', [
                 'phrase' => '',
                 'results' => [],
@@ -67,21 +50,11 @@ class SearchApiController extends YesWikiController
 
         $query = $this->getService(SearchIndexQuery::class);
         $found = $query->search($phrase, $type === '' ? null : $type, $limit, ($page - 1) * $limit, $tags);
-        // computed across every type, not just the selected one -- a facet's job is to show
-        // what else is there. Skipped when the type filter is hidden, since nothing would
-        // read them.
-        // Facets come from the phrase, so a tags-only search has none to show: facets() would be
-        // asked to count matches for an empty query. Not a loss -- the type filter is still there,
-        // and it is the phrase that makes "what else matched this" a useful question.
+
         $facets = ($request->query->get('facets') === '0' || $phrase === '')
             ? []
             : $query->facets($phrase);
 
-        // Rendered inside a capture scope whose result is deliberately thrown away, the way
-        // {{newtextsearch}} did before it (ADR-0014 records the reasoning): a result row can
-        // render field values, and a field registers its libraries when it renders -- leaflet
-        // for a map, an editor for a long text. A results list shows extracts, not working
-        // inputs, and has no use for any of them.
         $results = [];
         $this->getService(AssetRegistry::class)->capture(
             fn (): array => $this->getService(SearchResultPresenter::class)->present($found['results'], $phrase),
@@ -107,20 +80,10 @@ class SearchApiController extends YesWikiController
     }
 
     /**
-     * Tell the browser which address this result set corresponds to, so a search can be
-     * copied, bookmarked, shared and reloaded.
-     *
-     * Done with the `HX-Replace-Url` **response header** rather than `hx-push-url` on the
-     * elements: the request goes to `/api/search`, and `hx-push-url="true"` would put that
-     * API path in the address bar. Only the server knows the user-facing URL its answer
-     * belongs to, which is exactly what the header is for.
-     *
-     * Replace rather than push: typing debounces into a request every 300ms, and pushing
-     * would bury the previous page under one history entry per keystroke.
+     * Tell the browser which address this result set corresponds to, so a search can be copied, bookmarked, shared and reloaded.
      */
     private function withSearchUrl(Response $response, string $phrase, string $type, string $display, int $page): Response
     {
-        // an empty search is the bare page: no point carrying `?q=` with nothing in it
         $params = array_filter([
             'q' => $phrase,
             'type' => $type,

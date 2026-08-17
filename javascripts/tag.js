@@ -1,10 +1,3 @@
-// tag.js — tag cloud behavior (ticket 16: vanilla JS; the Bootstrap popover is a
-// small self-positioned panel built from the link's data-title/data-content; the
-// unused jQuery $.fn.clearForm helper was dead code and is gone)
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: the labels are keyed individually, so a tag cloud arriving in a swapped page is
-// wired up too -- <body> survives a boosted navigation, so a body-keyed initialiser would
-// only ever run on the first page of a session.
 ywInitEach('.tag-label', (label) => {
   label.addEventListener('mouseenter', () => {
     label.classList.add('label-primary')
@@ -18,9 +11,7 @@ ywInitEach('.tag-label', (label) => {
   })
 })
 
-// the popover wiring below is delegated and page-level: attach it once per document
 ywInitEach('body', () => {
-  // nuage de mots clés : popover au clic
   function closePopovers() {
     document
       .querySelectorAll('.yw-popover.tag-popover')
@@ -50,7 +41,6 @@ ywInitEach('body', () => {
       popover.appendChild(title)
       popover.appendChild(content)
       link.insertAdjacentElement('afterend', popover)
-      // above the link, roughly centered
       const linkRect = link.getBoundingClientRect()
       const popRect = popover.getBoundingClientRect()
       popover.style.left = `${link.offsetLeft + (linkRect.width - popRect.width) / 2}px`

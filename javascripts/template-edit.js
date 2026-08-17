@@ -1,9 +1,3 @@
-// template-edit.js — per-page look options in the edit handler (ticket 16:
-// vanilla JS, fetch instead of $.post)
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
-// the body's *contents*, so a body-keyed initialiser runs once per session and every
-// later page is left uninitialised.
 ywInitEach('#template-edit, .template-edit-form, body', () => {
   const value = (selector) => {
     const el = document.querySelector(selector)
@@ -44,7 +38,6 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
     })
   }
 
-  // on annule les changements de look
   document
     .querySelectorAll('#graphical_options a.button_cancel')
     .forEach((cancel) => {
@@ -56,7 +49,6 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
           value('#hiddensquelette') !== value('[name=squelette_select]') ||
           value('#hiddenstyle') !== value('[name=style_select]')
         ) {
-          // on charge le theme et on remet les valeurs
           const mainstyle = document.getElementById('mainstyle')
           const newstyle = mainstyle ? mainstyle.getAttribute('href') : null
           if (newstyle) {
@@ -67,19 +59,16 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
           }
         }
 
-        // l'image de fond
         unchoose()
         const hiddenimg = value('#hiddenbgimg') || ''
         if (hiddenimg !== '') {
           if (hiddenimg.substr(hiddenimg.length - 4) === '.jpg') {
-            // pour le jpg
             const img = document.querySelector(
               `#bgCarousel .bgimg[src$="${hiddenimg}"]`,
             )
             if (img) img.classList.add('choosen')
             coverBackground(`url(files/backgrounds/${hiddenimg})`)
           } else if (hiddenimg.substr(hiddenimg.length - 4) === '.png') {
-            // pour le png
             const img = document.querySelector(
               `#bgCarousel .mozaicimg[style*="${hiddenimg}"]`,
             )
@@ -87,18 +76,15 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
             mozaicBackground(`url(files/backgrounds/${hiddenimg})`)
           }
         } else {
-          // on enleve les images de fond
           mozaicBackground('none')
         }
 
-        // on remet les valeurs par défaut aux listes déroulantes
         setValue('[name=theme_select]', value('#hiddentheme'))
         setValue('[name=squelette_select]', value('#hiddensquelette'))
         setValue('[name=style_select]', value('#hiddenstyle'))
       })
     })
 
-  // on sauve les metas et on transmet les valeurs changées du theme au formulaire
   document
     .querySelectorAll('#graphical_options a.button_save')
     .forEach((save) => {
@@ -125,7 +111,6 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
 
         setValue('#hiddenbgimg', bgimg)
 
-        // the non-*_select fields of the graphical options form
         const o = {}
         const optionsForm = document.getElementById('form_graphical_options')
         if (optionsForm) {
@@ -173,21 +158,16 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
             body.append(`metadatas[${key}]`, metaValue)
           }
         })
-        fetch(url, { method: 'POST', body }).catch(() => {
-          /* keep silent, matching the old empty $.post callback */
-        })
+        fetch(url, { method: 'POST', body }).catch(() => {})
       })
     })
 
-  // changement de fond d ecran
   document.querySelectorAll('#bgCarousel img.bgimg').forEach((img) => {
     img.addEventListener('click', () => {
-      // Au cas ou le template ne le prend pas en compte, on met html à 100%
       document.documentElement.style.width = '100%'
       document.documentElement.style.height = '100%'
 
       if (img.classList.contains('choosen')) {
-        // desactivation de la meme image de fond
         mozaicBackground('none')
         img.classList.remove('choosen')
       } else {
@@ -199,11 +179,9 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
     })
   })
 
-  // changement de fond d ecran en mosaique
   document.querySelectorAll('#bgCarousel div.mozaicimg').forEach((tile) => {
     tile.addEventListener('click', () => {
       if (tile.classList.contains('choosen')) {
-        // desactivation de la meme image de fond
         mozaicBackground('none')
         tile.classList.remove('choosen')
       } else {
@@ -214,7 +192,6 @@ ywInitEach('#template-edit, .template-edit-form, body', () => {
     })
   })
 
-  // on deplace hashcash au bon endroit
   const hashcash = document.getElementById('hashcash-text')
   const formActions = document.querySelector('#ACEditor .form-actions')
   if (hashcash && formActions) {

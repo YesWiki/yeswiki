@@ -1,4 +1,3 @@
-// TODO better list and translatable
 import { parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
 import { mergeSearchParams, serializeSearchParams } from '../url.js'
 
@@ -22,10 +21,8 @@ export default {
           return entries
       }
     },
-    // Search through API
     distantSearch(entries, search) {
       if (this.isLoading) {
-        // Do not send multiple request in parrallel, wait for the first one to finish
         this.pendingRequest = search
         return
       }
@@ -55,11 +52,8 @@ export default {
         })
       return this.searchedEntries
     },
-    // Search with existing data in javascript
     localSearch(entries, search) {
       const vThis = this
-
-      // Parse search as a keywords search string
 
       const vParsedKeywords = parseKeywords(search)
 
@@ -160,9 +154,6 @@ export default {
             const vRegExp = extractRegExp(pExcluded)
 
             if (vFieldValue) {
-              // `vRegExp`, not `pExcluded`: the field value has been de-accented just above,
-              // so the raw keyword misses every accented match -- and without `i`, every
-              // difference of case too. Matches the included-keyword path.
               const vMatches = vFieldValue.match(new RegExp(vRegExp, 'gi'))
 
               if (vMatches) {

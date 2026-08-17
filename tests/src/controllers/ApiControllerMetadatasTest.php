@@ -16,21 +16,14 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 12 (templates absorbed into core): POST /api/pages/{tag}/metadatas
- * replaces tools/templates's old loadmetadatas.php (confirmed dead, dropped) and
- * savemetadatas.php (a bare $_POST AJAX handler) with a real API route.
+ * Regression test for ticket 12 (templates absorbed into core): POST /api/pages/{tag}/metadatas replaces tools/templates's old loadmetadatas.php (confirmed dead, dropped) and savemetadatas.php (a bare $_POST AJAX handler) with a real API route.
  */
 #[CoversMethod(PageApiController::class, 'savePageMetadatas')]
 class ApiControllerMetadatasTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ApiControllerMetadatasRegressionPage';
 
-    /**
-     * The fixtures go when the tests do.
-     *
-     * phpunit runs against a real wiki -- the developer's own -- so a fixture left behind is a
-     * page in somebody's index, for ever.
-     */
+    /** The fixtures go when the tests do. */
     public static function tearDownAfterClass(): void
     {
         $pageManager = self::getWiki()->services->get(PageManager::class);
@@ -73,7 +66,6 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
             $this->assertSame('1col.tpl.html', $data['squelette']);
             $this->assertSame('margot', $pageManager->getMetadata(self::PAGE_TAG)['theme']);
 
-            // a second call with only one key must merge with, not clobber, the first
             $request2 = Request::create('/api/pages/' . self::PAGE_TAG . '/metadatas', 'POST', [
                 'metadatas' => ['style' => 'light.css'],
             ]);

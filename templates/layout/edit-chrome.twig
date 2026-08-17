@@ -1,26 +1,4 @@
-{# "Edit this bit of the chrome", shown on the bit itself.
 
-   The navbar, the banner and the footer are the three things people ask how to change, and
-   until now the answer was a route or a page name you had to be told (ticket 30 exists
-   because of exactly that). A pencil where the thing is says it without being told.
-
-   The label is written out, not hidden in a tooltip. A bare pencil says "something here is
-   editable" and stops there, while the whole point is to name *which* piece of chrome it
-   opens -- "Éditer le bandeau" answers the question the pencil raises. It can afford the
-   room because it is not on screen until the region it belongs to is hovered (see
-   `.yw-chrome-edit` in yw-core.css), so it never competes with the site's own navigation.
-
-   No `title` and no `aria-label`: the visible text is the accessible name, and either
-   attribute would only repeat it -- `aria-label` would additionally override the text a
-   sighted user reads with a copy of itself.
-
-   It is only rendered for someone who may follow it -- TemplateEngine checks before this
-   template is reached, so there is no disabled state to explain.
-
-   `yw-btn` as well as `yw-chrome-edit`: these are the same control as the floating action
-   button in the corner, so they are the same button -- same shape, same weight, same
-   quiet-until-reached-for treatment. Four affordances that do one kind of thing should not
-   look like four different ideas. #}
 <a class="yw-btn yw-chrome-edit" href="{{ href }}">
   {{ icon('pencil') }}<span class="yw-chrome-edit__label">{{ label }}</span>
 </a>

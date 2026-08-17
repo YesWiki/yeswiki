@@ -2,8 +2,7 @@
 {{ resultsInfo|raw }}
 {% if entries|length > 0 %}
     {{ pager_links|raw }}
-    {# the wiki's one accordion -- see templates/_accordion-item.twig. This used to build its
-       own out of a button, matching collapse ids and yw-core.js's toggle listener. #}
+
     <div class="yw-accordion entry-list no-dblclick" id="accordion{{ params.listindex }}">
     {% for vIndex, entry in entries %}
         {% set summary %}
@@ -12,7 +11,7 @@
                 {{ entry.title|raw }}
             </span>
             {% if entry.soustitre is defined and entry.soustitre is not empty %}
-                {# format the text but remove tags except <br>; collapse consecutive <br> #}
+
                 {% set soustitre = format(entry.soustitre)|striptags('<br>') %}
                 {% set soustitre = soustitre|preg_replace('!^\\s*<br */?>!i', '') %}
                 {% set soustitre = soustitre|preg_replace('#(<br */?>\\s*)+#i', '<br />') %}

@@ -16,29 +16,11 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 class ImageApiController extends YesWikiController
 {
     /**
-     * The CSRF token id the image-cache POST is signed with, shared with the templates
-     * that mint it (`csrfToken("POST api/images/cache/#{w}/#{h}/#{mode}")` in the entry
-     * list templates).
-     *
-     * It belongs to this controller and used to live on ContactApiController, where the
-     * 2400-line ApiController split left it: every call to this route therefore died on
-     * an undefined constant before it could check the token, so no thumbnail could be
-     * generated at all -- a card list asking for a size that was not already cached
-     * showed empty image areas, and the fetch meant to repair that answered with a PHP
-     * error page.
+     * The CSRF token id the image-cache POST is signed with, shared with the templates that mint it (`csrfToken("POST api/images/cache/#{w}/#{h}/#{mode}")` in the entry list templates).
      */
     public const POST_CACHE_URLIMAGE_TOKEN_ID = 'POST api/images/cache/{width}/{height}/{mode}';
 
-    /**
-     * Generate/serve a resized cached copy of an image (ticket 17, relocated from
-     * tools/attach). $filename is a raw legacy filename (Bazar's own image/file fields
-     * upload through the same {pageTag}_{name}_{dates}.{ext} convention tools/attach
-     * always used, and were never migrated to a file-entry tag) -- this route used to
-     * perform NO ownership check at all beyond `file_exists()`, the same vulnerability
-     * class as the download route above. Fixed the same way: recover the owning page
-     * tag from the filename's legacy prefix and deny access unless its read ACL grants
-     * this requester read.
-     */
+    /** Generate/serve a resized cached copy of an image (ticket 17, relocated from tools/attach). */
     #[Route('/api/images/{filename}/cache/{width}/{height}/{mode}', methods: ['POST'], options: ['acl' => ['public']])]
     public function getCacheUrlImageViaPost($filename, $width, $height, $mode)
     {
@@ -57,10 +39,6 @@ class ImageApiController extends YesWikiController
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            // fail closed: every legitimate caller's filename follows the legacy
-            // {pageTag}_{name}_{dates}.{ext} convention, so if we can't recover an owner
-            // page tag from it, there's no ACL we could possibly check -- deny rather
-            // than silently serving the image unauthenticated
             $ownerPageTag = $this->getService(FileManager::class)->guessOwnerPageTagFromLegacyFilename($filename);
             if (empty($ownerPageTag)) {
                 throw new AccessDeniedHttpException();
@@ -120,9 +98,7 @@ class ImageApiController extends YesWikiController
         }
     }
 
-    /**
-     * use $_POST['csrftoken'].
-     */
+    /** use $_POST['csrftoken']. */
     private function checkTokenForGetCacheUrlImageViaPost(int $width, int $height, string $mode): string
     {
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
@@ -135,11 +111,6 @@ class ImageApiController extends YesWikiController
         );
 
         if (!$csrfTokenChecker->checkToken($tokenId, 'POST', 'csrftoken', false)) {
-            // Falling through here used to return null from a `: string` method, i.e. a
-            // TypeError -- an \Error, so neither of the caller's catches (TokenNotFoundException
-            // -> 401, \Exception -> 400) caught it and a bad token produced an uncaught 500.
-            // It failed closed, but it crashed instead of erroring. Throw the exception the
-            // caller already maps to 401, as the other two routes in this controller do.
             throw new TokenNotFoundException('invalid csrftoken for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
 

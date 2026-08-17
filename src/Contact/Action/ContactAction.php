@@ -2,8 +2,6 @@
 
 namespace YesWiki\Contact\Action;
 
-// ticket 18: relocated from tools/contact/actions/ContactAction.php.
-
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -70,7 +68,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
         if (empty($this->arguments['mail'])) {
             return '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         }
-        // this global is for identifying different contact forms on the same page
+
         if (isset($GLOBALS['nbactionmail'])) {
             $GLOBALS['nbactionmail']++;
         } else {

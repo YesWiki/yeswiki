@@ -3,7 +3,7 @@
 {% block input %}
     <div class="input-group">
         <input
-            {# field.type is the sub_type once validated, and "text" when none was declared -- field.subType is the raw value, which is empty on a field that never named one #}
+
             type="{{ field.type }}"
             value="{{ value }}"
             id="{{ field.name }}"

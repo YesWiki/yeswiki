@@ -1,14 +1,12 @@
-{# the entry form's own styling (ADR-0020: the bundle entries trigger) #}
+
 {{ include_css('styles/yw-entries.css') }}
 {{ include_javascript('javascripts/bazar.js', true, true) }}
 {{ error|raw }}
 <h3 class="titre_type_fiche">{{ _t('BAZ_TITRE_SAISIE_FICHE') }}&nbsp;{{ form.label }}</h3>
-{# the form and the actions-builder rail are siblings in one flex row: the rail
-   configures what is being edited, it is not part of what gets posted #}
+
 <div class="yw-designer">
 <div class="yw-designer__canvas">
 
-{# hx-boost="false": htmx swallows a boosted multipart POST -- see ADR-0004/ticket 16 #}
 <form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" hx-boost="false" {% if not showConditions %}novalidate{% endif %}>
   {% if showConditions %}
     {{ form.condition|raw }}
@@ -46,6 +44,6 @@
   {% endif %}
 </form>
 
-</div>{# .yw-designer__canvas #}
+</div>
 {{ include('@core/aceditor-rails.twig') }}
-</div>{# .yw-designer #}
+</div>

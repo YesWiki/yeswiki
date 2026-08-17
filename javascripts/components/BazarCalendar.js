@@ -94,8 +94,6 @@ const BazarCalendar = {
       )
     },
     formatEndDate(entry) {
-      // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
-      // it end one day earlier
       const startDate = this.retrieveTimeZone(entry.bf_date_debut_evenement)
       let endDate = null
       if (entry.bf_date_fin_evenement != null) {
@@ -115,7 +113,7 @@ const BazarCalendar = {
           return startDate
         }
         endDate = new Date(startDate)
-        endDate.setDate(endDate.getDate() + 1) // +1 day
+        endDate.setDate(endDate.getDate() + 1)
         endDate.setHours(0)
         endDate.setMinutes(0)
         endDate.setSeconds(0)
@@ -124,7 +122,7 @@ const BazarCalendar = {
       }
       let endDateRaw = this.retrieveTimeZone(entry.bf_date_fin_evenement)
       if (endDateRaw.length <= 10) {
-        endDate.setDate(endDate.getDate() + 1) // +1 day
+        endDate.setDate(endDate.getDate() + 1)
         endDate.setHours(0)
         endDateRaw = endDate.toISOString()
       }
@@ -132,7 +130,7 @@ const BazarCalendar = {
     },
     manageClick(info) {
       if (this.isNewTabDisplay()) {
-        info.jsEvent.preventDefault() // don't let the browser navigate
+        info.jsEvent.preventDefault()
         window.open(info.event.url)
       } else if (this.isDirectLinkDisplay()) {
         info.jsEvent.preventDefault()
@@ -141,7 +139,7 @@ const BazarCalendar = {
       } else if (
         ['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1
       ) {
-        info.jsEvent.preventDefault() // don't let the browser navigate
+        info.jsEvent.preventDefault()
       }
     },
     mountCalendar() {
@@ -233,7 +231,6 @@ const BazarCalendar = {
       let exportableDate = dateAsString
       if (typeof exportableDate === 'string' && exportableDate?.length > 10) {
         if (exportableDate.match(/\+00:00$/)) {
-          // could be an error
           const dateObj = new Date(exportableDate)
           if (dateObj) {
             const browserTimezoneOffset = dateObj.getTimezoneOffset()
@@ -252,7 +249,6 @@ const BazarCalendar = {
             exportableDate = dateObj.toISOString()
           }
         }
-        // fake date in browser timezone to be sure to be sync with server's timezone
         exportableDate = this.getDateInServerTimeZone(exportableDate)
       }
       return exportableDate
@@ -261,7 +257,6 @@ const BazarCalendar = {
       const { event } = arg
       const htmlAttributes = event.extendedProps.htmlattributes
       const element = arg.el
-      // copy the entry's data-* attributes onto the calendar event element
       const holder = document.createElement('div')
       holder.innerHTML = `<div ${htmlAttributes}></div>`
       const attributesSource = holder.firstElementChild
@@ -302,7 +297,6 @@ const BazarCalendar = {
         })
       }
       if (!element.classList.contains('toolTipDefined')) {
-        // CSS tooltips read the title attribute live, no init needed
         element.classList.add('toolTipDefined')
         element.setAttribute('title', event.title)
       }
@@ -333,11 +327,9 @@ const BazarCalendar = {
           break
         case 'list':
           if (extendedList.length > 0) {
-            initialView = extendedList.slice(1) // remove first char
-            break
+            initialView = extendedList.slice(1)
           }
-        // falls through -- an empty `list` means the default view, which is what the next
-        // case does; the fallthrough IS the intent, so it is said rather than left to be read
+          break
         case 'dayGridMonth':
         default:
           break
@@ -359,13 +351,11 @@ const BazarCalendar = {
         navLinks: true,
         views: {
           dayGridMonth: {
-            // name of view
             eventTimeFormat: {
               hour: '2-digit',
               minute: '2-digit',
               meridiem: false,
             },
-            // other view-specific options here
           },
         },
         weekNumbers: true,

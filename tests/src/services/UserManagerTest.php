@@ -64,7 +64,6 @@ class UserManagerTest extends YesWikiTestCase
 
     public static function dataProviderTestCreate()
     {
-        // name, email, UserNameExist, EmailExist, Other Exception
         return [
             'all right' => ['newRandom', 'newRandom', false, false, false],
             'email with 5 chars ext' => ['newRandom', 'newRandom2', false, false, false],
@@ -91,8 +90,6 @@ class UserManagerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                // trim: UserManager::create() trims the name, so a random name with a trailing
-                // space would be stored trimmed and no longer be found by getOneByName()
                 $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
                     . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
             } while (!empty($userManager->getOneByName($name)));
@@ -163,8 +160,6 @@ class UserManagerTest extends YesWikiTestCase
             $email = strtolower($this->randomString(10)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            // trim: UserManager::create() trims the name, so a random name with a trailing
-            // space would be stored trimmed and no longer be found by getOneByName()
             $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
                 . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
         } while (!empty($userManager->getOneByName($name)));
@@ -197,7 +192,6 @@ class UserManagerTest extends YesWikiTestCase
 
     public static function dataProviderTestUpdate()
     {
-        // newValues, email, UserNameExist, EmailExist, Other Exception
         return [
             'motto update ok' => [[
                 'motto' => self::randomString(50),

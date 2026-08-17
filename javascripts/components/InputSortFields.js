@@ -36,7 +36,6 @@ export default {
       handler(newElements) {
         newElements.forEach((element) => {
           if (element.field && !element.title) {
-            // Use the field as default title
             element.title = element.field
               .replace(/^bf_/, '')
               .replace(/_/g, ' ')

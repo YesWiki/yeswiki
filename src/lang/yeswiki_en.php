@@ -442,14 +442,14 @@ return [
     'AB_templates_section_textcolor_auto' => 'Automatic',
     'NO_ANIMATION' => 'No animation',
     'ADD_COMPONENT' => 'Add a component',
-    // the `:::info` ... `:::` callout blocks, named on their chips in the WYSIWYG editor
+
     'ALERT' => 'Callout',
     'ALERT_DANGER' => 'Danger',
     'ALERT_INFO' => 'Information',
     'ALERT_SUCCESS' => 'Success',
     'ALERT_WARNING' => 'Warning',
     'ARCHIVES' => 'Archives',
-    // the palette's sections, in core's own order (ticket 36, YesWiki\Kernel\Component\Category)
+
     'COMPONENT_CATEGORY_WRITING' => 'Writing',
     'COMPONENT_CATEGORY_MEDIA' => 'Media',
     'COMPONENT_CATEGORY_LISTS' => 'Lists',
@@ -993,8 +993,7 @@ return [
     'DELETE_ALL' => 'Delete them all',
     'FILE_WRITE_PROTECTED' => 'the configuration file is write protected',
     'THIS_IS_NOT_A_VALID_EMAIL' => 'It doesn\'t look like an e-mail address',
-    // ticket 18: the full-text index matches whole words and prefixes, so the old
-    // ?/* wildcards no longer mean anything -- `atelier` already finds `ateliers`
+
     'NEWTEXTSEARCH_HINT' => 'Words are matched from their beginning: atelier also finds ateliers',
     'SEARCH_DISPLAY' => 'Display results as',
     'SEARCH_DISPLAY_LIST' => 'List',
@@ -1052,8 +1051,7 @@ return [
     'CHECKING_ROOT_PAGE_NAME' => 'Check home page name',
     'TINY_MODIFICATION_OF_PAGES_TABLE' => 'Slight modification of the page table',
     'ALREADY_EXISTING' => 'Already exists',
-    // ticket 20: reserved is not the same problem as taken -- "%{tag}" is a name the wiki
-    // itself answers to, so no page, form, entry or account can ever use it
+
     'RESERVED_TAG_CANNOT_BE_USED' => '"%{tag}" is reserved by the wiki and cannot be used as a name.',
     'RESERVED_TAG_TRY_INSTEAD' => 'Try "%{suggestion}" instead.',
     'SEARCH_RESULTS' => 'Results for the search',
@@ -1173,8 +1171,6 @@ return [
     'EDIT_CONFIG_HINT_SIGNUP_EMAIL_ACTIVATION' => 'Enable email verification (true or false)',
     'EDIT_CONFIG_HINT_USER_ACTIVATION_KEY_LENGTH' => 'Length of the user activation key',
 
-    // relocated from tools/login/lang/login_en.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Signup',
     'LOGIN_LOGIN' => 'Login',
     'LOGIN_WIKINAME' => 'Email or username',
@@ -1231,7 +1227,6 @@ return [
     'RECOVERY_MESSAGE_SENT' => 'A message has been sent to {email} with instructions to reset the password',
     'RECOVERY_LINK' => 'Link to reset password',
 
-    // relocated from tools/tags/lang/tags_en.inc.php (ticket 10)
     'TAGS_TAGS' => 'Keywords',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'the share is reserved for the group of directors',
@@ -1338,7 +1333,6 @@ return [
     'AB_tags_listpagestag_rss_label' => 'rss link to the list for given tags',
     'TAGS_REMOVE_TAG' => 'Remove tag',
 
-    // relocated from tools/aceditor/lang/aceditor_en.inc.php (ticket 11)
     'ACTION_BUILDER_CHOOSE_FORM' => 'Pick a form',
     'ACTION_BUILDER_CHOOSE_TEMPLATE' => 'How do you want to display the data',
     'ACTION_BUILDER_CHOOSE_ACTION' => 'Pick an action',
@@ -1499,7 +1493,7 @@ return [
     'TEMPLATE_MODIFY' => 'Modify',
     'TEMPLATE_FORCE_TEMPLATE' => 'Force to the whole wiki.',
     'AB_template_action_label_label' => 'Label',
-    // three actions the YAML palette never listed, given a Component by ticket 36's triage
+
     'AB_toc_label' => 'Table of contents',
     'AB_toc_description' => 'Lists the headings of this page, each one a link to it.',
     'AB_toc_title_label' => 'Heading',
@@ -1671,7 +1665,7 @@ Text of the column to be changed later
     'TEMPLATE_DUPLICATE_ENTRY' => 'Duplicate entry',
     'AB_templates_nav_class_label' => 'Display',
     'AB_template_action_grid_nb' => 'Number of columns',
-    // relocated from tools/attach/lang/attach_en.inc.php (ticket 17)
+
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',
     'ATTACH_ACTION_ATTACH' => 'Action {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => '"desc" parameter required for an image',
@@ -1782,7 +1776,6 @@ Text of the column to be changed later
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'The file does not have an authorized extension, here are the ones that the configuration allows : ',
     'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage...}}',
 
-    // relocated from tools/contact/lang/contact_en.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'the email, required, is missing.',
     'CONTACT_ACTION_CONTACT' => 'Action {{contact ...}}',
@@ -1883,7 +1876,6 @@ Text of the column to be changed later
     'CONTACT_USED_IP' => 'used IP',
     'AB_mailperiod_action_label' => 'Subscribe to receive the content of a page periodically by email',
 
-    // relocated from tools/autoupdate/lang/autoupdate_en.inc.php (ticket 19)
     'AU_ACL' => 'Checking file rights',
     'AU_REPO_ERROR' => 'Inaccessible depots.',
     'AU_NOT_DESIGNATED_UPDATE_INSTANCE' => 'This instance is not the shared source install -- updates can only be triggered from there (see the farm setup documentation).',
@@ -1929,7 +1921,6 @@ Text of the column to be changed later
     'AU_SEVERAL_TOOLS_UPDATE' => 'You have {nbMaj} extensions to update',
     'AU_ONE_TOOL_UPDATE' => 'You have 1 extension to update',
 
-    // relocated from tools/syndication/lang/syndication_en.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'the parameter "url" is required for RSS feed',
     'SYNDICATION_ACTION_TWITTER' => 'Action {{twitter ...}}',
@@ -1946,9 +1937,9 @@ Text of the column to be changed later
     'SYNDICATION_SEE_ALL_CONTENT' => 'Access to all content',
     'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, parameter mapping : id is required',
     'SYNDICATION_COPY_IN_WIKI' => 'Add as entry in my YesWiki',
-    // relocated from tools/bazar/lang/bazar_en.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Forms',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Choose a file to replace this one.',
     'FORM_EDIT_FIELD_ROLES' => 'Field roles',
     'FORM_EDIT_FIELD_ROLES_HINT' => 'Which field answers what. Left on “automatic”, a role is read from the field\'s own type: only fill these in if your form is ambiguous or you want a different field.',
@@ -2351,7 +2342,6 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_SORT_BY' => 'Sort by',
     'BAZ_SORTED_BY' => 'Sorting',
 
-    // relocated from tools/bazar/lang/bazarjs_en.inc.php (ticket 24)
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Display text',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Add if necessary a unit after {value}, (ex: `{value} €`)',
@@ -2664,7 +2654,6 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'DATATABLE_NO_RESULTS' => 'No matching results',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -2682,13 +2671,11 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modification of',
     'RSS_HISTORY' => 'history',
     'RSS_HIDDEN_CONTENT' => 'Hidden content',
@@ -2699,11 +2686,9 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Add a field',
     'FORM_BUILDER_ADVANCED' => 'Advanced settings',
     'FORM_BUILDER_BACK' => 'Back',
@@ -2722,7 +2707,6 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'FORM_BUILDER_NO_PREVIEW' => 'No preview available for this field',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Required',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Field used as entry title',
     'FORM_EDIT_CUSTOM_TITLE' => 'Custom title…',
     'FORM_EDIT_PERMISSIONS' => 'Entry permissions',
@@ -2731,7 +2715,6 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
     'FORM_BUILDER_FILTER' => 'Filter fields…',
 
-    // Dashboard and admin routes (ticket: routes instead of admin pages)
     'DASHBOARD_TITLE' => 'Dashboard',
     'DASHBOARD_SECTION_ACCOUNT' => 'My account',
     'ACCOUNT_TITLE' => 'My account',
@@ -3002,7 +2985,7 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'ADMIN_PERMISSIONS_HANDLERS' => 'Handler permissions',
 
     'EDIT_CONFIG_GROUP_IMPORT' => 'External data import',
-    // Import of external data sources (`{{adminimporters}}`, `importer:sync`)
+
     'IMPORTER_ADMIN_TITLE' => 'Imported data sources',
     'IMPORTER_IMAP' => 'Emails (imap)',
     'IMPORTER_RSS' => 'RSS feed',

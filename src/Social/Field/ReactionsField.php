@@ -2,7 +2,6 @@
 
 namespace YesWiki\Social\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -56,13 +55,6 @@ class ReactionsField extends BazarField
     protected $options;
     protected $reactionsFormatter;
 
-    /*
-     * Display the possible reactions to comment an activity.
-     * Must be declare in the bazar form definition as followed :
-     *    'reactions***idreaction1,idreaction2,idreaction3***titlereaction1,titlereaction2,titlereaction3***image1,image2,image3*** *** *** *** *** *** ***'
-     * Some ids are generic and have associated images and labels : j-ai-appris,j-aime,pas-clair,pas-compris,pas-d-accord,top-gratitude
-     * otherwise, you will need to give a filename that is included in files directory
-     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -72,14 +64,14 @@ class ReactionsField extends BazarField
         $this->options = array_map('_t', self::DEFAULT_OPTIONS);
 
         if (empty(trim($this->name))) {
-            $this->name = 'reactions'; // to ensure backward compatibility
+            $this->name = 'reactions';
         }
 
         $this->label = $values[self::FIELD_LABEL_REACTION] ?? '';
         if (empty(trim($this->label))) {
             $this->label = _t('BAZ_ACTIVATE_REACTIONS');
         }
-        // reset not used values
+
         $this->size = null;
         $this->maxChars = null;
 
@@ -108,10 +100,8 @@ class ReactionsField extends BazarField
         $this->images = isset($values[self::FIELD_IMAGES]) && is_string($values[self::FIELD_IMAGES]) ? trim($values[self::FIELD_IMAGES]) : '';
     }
 
-    // Render the show view of the field
     protected function renderStatic($entry)
     {
-        // the tag of the current entry
         $currentEntryTag = $this->getCurrentTag($entry);
 
         if (is_null($currentEntryTag) || $this->getValue($entry) !== self::DEFAULT_OK_KEY) {
@@ -145,7 +135,6 @@ class ReactionsField extends BazarField
         ]);
     }
 
-    // lazy loading
     public function getImagesPath(): array
     {
         if (is_null($this->imagesPath)) {
@@ -173,7 +162,6 @@ class ReactionsField extends BazarField
 
     protected function getCurrentTag($entry): ?string
     {
-        // the tag of the current activity page
         return !empty($entry['tag']) ? $entry['tag'] : null;
     }
 
@@ -185,7 +173,6 @@ class ReactionsField extends BazarField
         ]);
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

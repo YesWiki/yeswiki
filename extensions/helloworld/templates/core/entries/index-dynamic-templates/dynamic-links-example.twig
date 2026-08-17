@@ -1,18 +1,14 @@
 {% extends "@core/entries/index-dynamic.twig" %}
 
-{# Example of dynamic template : show only links to entries #}
-{# Use this template with {{entrylist id="..." template="dynamic-links-example" dynamic="true"}} #}
-
 {% set necessary_fields = ['bf_titre'] %}
 
 {% block assets %}
-  {# {{ include_css('extensions/helloworld/styles/example.css') }}
-  {{ include_javascript('extensions/helloworld/jaascripts/example.js') }} #}
+
 {% endblock %}
 
 {% block display_entries %}
   <div class="bazar-cards-container" v-if="ready">
-    
+
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
     </div>
@@ -21,7 +17,7 @@
         class="bazar-entry" 
         @click="openEntry(entry)" 
         >
-      {# Title #}
+
       <entry-field :entry="entry" prop="bf_titre"></entry-field>
     </a>
 

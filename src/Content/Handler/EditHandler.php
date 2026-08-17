@@ -34,9 +34,7 @@ use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Search\Service\TagsManager;
 
-/**
- * `/PageName/edit` -- converted from the procedural handlers/page/edit.php by ticket 06.
- */
+/** `/PageName/edit` -- converted from the procedural handlers/page/edit.php by ticket 06. */
 class EditHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -51,8 +49,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $this->emitBefore();
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -61,12 +57,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         return $this->emitAfter((string)ob_get_clean());
     }
 
-    /**
-     * Ran as a before-callback until ticket 06 merged it in.
-     */
+    /** Ran as a before-callback until ticket 06 merged it in. */
     private function emitBefore(): void
     {
-        // merged from handlers/page/__edit.php (ticket 06: core does not hook itself)
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             list($state, $message) = $this->getService(PasswordForEditingService::class)->isGrantedPasswordForEditing();
             if (!$state) {
@@ -86,7 +79,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             list($state, $error) = $this->getService(CaptchaController::class)->checkCaptchaBeforeSave();
 
             if ($state) {
-                // error used in edit.php
                 unset($error);
             }
 
@@ -142,7 +134,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        // Si une valeur de body est passee en paramétre GET (et pas POST) on l'ajoute en titre dans la nouvelle page vierge
         if (isset($_GET['body']) && !isset($_POST['body'])) {
             $_POST['body'] = '======' . $_GET['body'] . '======';
         }
@@ -150,11 +141,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/change-theme.js');
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/template-edit.js');
 
-        // merged from handlers/__EditHandler.php (ticket 06: core does not hook itself)
-        // relocated from tools/bazar/handlers/__EditHandler.php (ticket 24): if the page
-        // being edited is a bazar entry, show the entry-edit form instead of the default
-        // wiki-page edit form, and stop there -- runs before the tag-saving logic below,
-        // matching this callback's actual pre-relocation execution order.
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
 
@@ -170,20 +156,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $plugin_output_new = $this->getService(TemplateEngine::class)->renderPage($plugin_output_new);
 
-            // we use die so that the script stop there and the default handler of wiki isn't called
             $this->getService(Redirector::class)->terminate($plugin_output_new);
         }
     }
 
-    /**
-     * Where "delete this page" goes, for whoever may -- or null.
-     *
-     * The editor carries it because the editor is where the actions are while you are
-     * editing: `{{editbar}}` steps aside there (offering "edit this page" to someone
-     * already editing it is an offer to go where they are), and deleting what you are
-     * looking at is the one thing you might want instead of saving it. Same rule the edit
-     * bar applies in read mode: the owner, an admin, and not while the wiki is hibernated.
-     */
+    /** Where "delete this page" goes, for whoever may -- or null. */
     private function deleteUrl(): ?string
     {
         $tag = $this->getService(PageContext::class)->getTag();
@@ -196,17 +173,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
-     * The fields of the form describing **this row's own Content type**, split around the
-     * one holding the markup.
-     *
-     * Every Content is a form since ticket 10, so the editor asks which one rather than
-     * assuming Page: an account row edited here is the User form, and it has no `content`
-     * field, so no markup editor is offered and none is written. Reaching for the Page
-     * form regardless was how a user or a file ended up with a page-shaped body.
-     *
-     * `content` is the one field the editor renders itself, so the fields declared before
-     * it bracket the ACeditor above and those after it below -- the designer lays a page
-     * out the same way it lays an entry out.
+     * The fields of the form describing **this row's own Content type**, split around the one holding the markup.
      *
      * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool}
      */
@@ -217,8 +184,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $form = $this->getService(ContentTypeResolver::class)
             ->formForEditing($this->getService(PageContext::class)->getTag());
         if ($form === null) {
-            // a row this concept does not describe (a form, a list) keeps the plain
-            // markup editor it has always had
             $split['hasContent'] = true;
 
             return $split;
@@ -237,7 +202,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             if ($field->getPropertyName() === PageBody::KEYWORDS && $this->params->get('hide_keywords')) {
                 continue;
             }
-            // a field that restates the tag is not typed into: it *is* the row's identity
+
             if ($field->getPropertyName() === ContentTypeSchema::tagMirrorField(
                 $form[ContentTypeSchema::CONTENT_TYPE] ?? null
             )) {
@@ -259,8 +224,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
      */
     private function renderContentFields(array $fields, array $body): array
     {
-        // fields are written for bazar entries, which carry their own tag and form_id in
-        // the body; a page, an account or a file gets them from its row and its type
         $form = $this->getService(ContentTypeResolver::class)
             ->formForEditing($this->getService(PageContext::class)->getTag());
         $entry = array_merge($body, [
@@ -276,10 +239,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
     /**
      * Merge the posted values of the Page form's fields into the body being saved.
-     *
-     * Keywords are the one field that does not simply land in the body as posted: ticket
-     * 09 made `body.keywords` a list of keywords, with the tag triples a derived index
-     * rebuilt from it -- see the reindex() call at the save site.
      *
      * @param array<string, mixed> $body
      *
@@ -302,22 +261,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 continue;
             }
             foreach ($field->formatValuesBeforeSaveIfEditable($posted) as $key => $value) {
-                // A file field answers with the keys to DROP as well as the ones to write
-                // -- `oldimage_x`, the hidden input carrying the previous filename. That is
-                // an instruction about the submission, not body content: written through,
-                // it became a `fields-to-remove` key in the saved body (EntryManager acts
-                // on it and unsets it; nothing here did)
                 if ($key === 'fields-to-remove') {
                     continue;
                 }
-                // An empty value for a key the body does not have yet writes nothing:
-                // the form posts every field on every save, so a page seeded without a
-                // `title` would otherwise gain `title => ''` the first time it is saved.
-                // That is a difference, so PageBody::equals() below never matched and
-                // "saved with no change" could not be detected -- every resubmit created
-                // a revision instead of warning. Clearing a key that DOES exist still
-                // records the empty string, which is a real edit. Same rule keywords
-                // already follow above.
+
                 if ($value === '' && !array_key_exists($key, $body)) {
                     continue;
                 }
@@ -328,17 +275,12 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         return $body;
     }
 
-    /**
-     * Ran as an after-callback until ticket 06 merged it in. Receives the rendered output
-     * as $plugin_output_new -- the name the hooks already used -- because several rewrite
-     * it rather than appending.
-     */
+    /** Ran as an after-callback until ticket 06 merged it in. */
     private function emitAfter(string $plugin_output_new): string
     {
         ob_start();
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
-            // Edition
             if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
                 if ($this->getService(RuntimeConfig::class)['use_hashcash']) {
                     $hashCash = $this->getService(HashCashService::class);
@@ -354,7 +296,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        // remove the {{template ...}} action from the page body
         $plugin_output_new = preg_replace(
             '/(\\{\\{template)(.*?)(\\}\\})/is',
             '',
@@ -363,11 +304,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         $themeManager = $this->getService(ThemeManager::class);
 
-        // personnalisation graphique que dans le cas ou on est autorise
         if ((!isset($this->getService(RuntimeConfig::class)['hide_action_template']) or (isset($this->getService(RuntimeConfig::class)['hide_action_template']) && !$this->getService(RuntimeConfig::class)['hide_action_template']))
             && ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner()))))
         ) {
-            // graphical options : theme and background image
             $selecteur = '
         <div id="graphical_options" class="yw-modal">' . "\n" .
                 '  <div class="yw-modal__dialog">' . "\n" .
@@ -388,13 +327,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 '  </div>' . "\n" .
                 '</div> <!-- /#graphical_options -->' . "\n";
 
-            // quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
             $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="' . $themeManager->getFavoriteTheme() . '" />' . "\n";
             $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="' . $themeManager->getFavoriteSquelette() . '" />' . "\n";
             $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="' . $themeManager->getFavoriteStyle() . '" />' . "\n";
             $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="' . $themeManager->getFavoriteBackgroundImage() . '" />' . "\n";
 
-            // on rajoute la personnalisation graphique
             $plugin_output_new = preg_replace('/<\/body>/', $selecteur . "\n" . '</body>', $plugin_output_new);
             $changetheme = true;
         } else {
@@ -402,7 +339,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         $hidden = '';
-        // cas des pages speciales
+
         if (isset($_SERVER['HTTP_REFERER'])) {
             $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_SERVER['HTTP_REFERER']);
             if ($this->getService(UrlFormatter::class)->isWikiName($pagetag) && in_array(
@@ -416,13 +353,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $html = $hidden;
         $target = '<span class="theme-container">';
         if ($changetheme) {
-            // Adds change theme button
             $html .= '<a class="yw-btn" data-yw-modal-target="#graphical_options">' . _t('TEMPLATE_THEME') . '</a>';
         }
         $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
 
         if (!$this->getService(AclService::class)->hasAccess('write')) {
-            // built before the head is rendered, so the login form's own assets are in it
             $body = '<div class="yeswiki-page-widget page-widget page">' . "\n"
                 . '<div class="yw-alert yw-alert--danger">'
                 . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
@@ -439,44 +374,30 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        // on initialise la sortie:
         $output = '';
 
         $isWikiHibernated = $this->getService(HibernationService::class)->isWikiHibernated();
-        // bare-script handler: $this->services is the container, which exposes the current
-        // request as a public property, not via a getRequest() helper (that's only on
-        // YesWikiPerformable-derived actions/handlers)
+
         $request = $this->getService(CurrentRequest::class)->get();
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && !$isWikiHibernated) {
             $submit = $request->request->get('submit') ?: false;
 
-            // fetch fields
             $previous = $request->request->get('previous') ?: (isset($this->getService(PageContext::class)->getPage()['id']) ? $this->getService(PageContext::class)->getPage()['id'] : null);
-            // the editor edits prose: the posted field is markup, the fallback is the
-            // `content` attribute of the loaded page's body (ticket 09)
+
             $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
 
-            // no addslashes: this is an href now, not a string inside an onclick. Cancel
-            // used to be an <a> with no href at all, which is not focusable -- and a link
-            // the keyboard cannot reach is no way out of an editor.
             $cancelUrl = $this->getService(UrlFormatter::class)->href(testUrlInIframe());
 
-            // the Page form's own fields (ticket 10). Once the form has been sent back
-            // they take the posted values, so a preview or an edit conflict re-renders
-            // what was typed rather than what is stored; before that, the stored body is
-            // all there is -- reading the posted values of a form nobody submitted would
-            // overwrite every field with its default.
             $pageFields = $this->contentFormFields();
             $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
             $editedBody = $submit === false
                 ? $previousBody
                 : $this->applyPostedPageFields($previousBody);
 
-            // PREVIEW
             if ($submit == 'preview') {
-                $temp = $this->getService(InclusionStack::class)->replace(); // a priori, ça ne sert à rien, mais on ne sait jamais...
-                $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag()); // on simule totalement un affichage normal
+                $temp = $this->getService(InclusionStack::class)->replace();
+                $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
                 $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                     'previous' => $previous,
                     'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
@@ -498,23 +419,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 }
 
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
-                    // SAVE AND REDIRECT
                     $body = rtrim(str_replace("\r", '', $body));
 
-                    // the editor edits prose, which is one attribute of a page's body
-                    // (ticket 09); the form's other fields -- title, keywords, and
-                    // whatever the webmaster added -- come from their own inputs.
-                    // A Content type with no `content` field has no prose at all: an
-                    // account and a file are not wiki markup, and writing an empty
-                    // `content` onto them would give them a page-shaped body they
-                    // should never have.
                     $newBody = $editedBody;
                     if ($pageFields['hasContent']) {
                         $newBody[PageBody::CONTENT] = $body;
                     }
 
-                    // "nothing changed" now means the whole body, not just the markup:
-                    // retitling a page without touching its prose is a real change
                     $unchanged = !empty($previousBody) && PageBody::equals(
                         array_merge($previousBody, $pageFields['hasContent']
                             ? [PageBody::CONTENT => rtrim(PageBody::content($previousBody))]
@@ -522,38 +433,26 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $newBody
                     );
 
-                    // where to land once this is over: the page you came from if the link
-                    // that brought you here said so, this page otherwise
                     $after = $this->incomingUrl() ?? $this->getService(UrlFormatter::class)->href(testUrlInIframe());
 
                     if ($unchanged) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->getService(Redirector::class)->redirect($after);
                     } else {
-                        // add page (revisions)
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['parent']) ? $this->getService(PageContext::class)->getPage()['parent'] : '');
 
-                        // the keyword index is derived from the body it was just saved
-                        // with, never the other way round (ticket 09)
                         $this->getService(TagsManager::class)->reindex(
                             $this->getService(PageContext::class)->getTag(),
                             TagsManager::keywordsOf(['body' => $newBody])
                         );
 
-                        // forward. A comment still goes back to the page it comments on --
-                        // that is not a "where did I come from" question, it is where the
-                        // thing just saved actually lives.
                         if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
                             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
                             $this->getService(Redirector::class)->redirect($after);
                         }
                     }
-                // (unreachable: redirect() above always throws)
                 } else {
-                    // RENDER FORM
-
-                    // append a comment?
                     if ($request->query->has('appendcomment') || $request->request->has('appendcomment')) {
                         $body = trim($body) . "\n\n----\n\n-- " . $this->getService(AuthenticationService::class)->getLoggedUserName() . ' (' . date('c') . ')';
                     }
@@ -583,10 +482,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        // Main Page
         $output = '<div class="page">' . "\n" . $output . "\n" . '<hr class="hr_clear" />' . "\n" . '</div>' . "\n";
 
-        // Header - // Footer
         if (!testUrlInIframe()) {
             echo $this->getService(TemplateEngine::class)->renderPage($output);
         } else {
@@ -594,22 +491,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         }
     }
 
-    /**
-     * Where the link that opened this editor asked to return to, if it may be trusted.
-     *
-     * `incomingurl` is how the rest of the wiki already says "come back here afterwards"
-     * (EntryController, DeletepageHandler). Editing a *page* ignored it, which is what made
-     * the banner and footer pencils a one-way trip: you edit `PageHeader` from an article and
-     * land on `PageHeader`, a page nobody was reading.
-     *
-     * Checked with `isInternal()` before it is used, and that check is the whole point: a
-     * query parameter is whatever the last person to send the link typed, so redirecting to
-     * it unchecked turns every edit URL into an open redirect.
-     *
-     * Read from POST as well as GET: the form posts to the editor's own address, so a
-     * parameter that only lived in the query string would be gone by the time it is needed
-     * (templates/handlers/edit.twig carries it through as a hidden field).
-     */
+    /** Where the link that opened this editor asked to return to, if it may be trusted. */
     private function incomingUrl(): ?string
     {
         $request = $this->getService(CurrentRequest::class)->get();

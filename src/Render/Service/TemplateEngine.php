@@ -40,20 +40,16 @@ class TemplateEngine
         $this->container = $container;
         $this->assetRegistry = $assetRegistry;
         $this->csrfTokenManager = $csrfTokenManager;
-        // Default paths (main namespace): the instance dir then the source tree. There are no
-        // templates at either root, but it's needed to call relative path like
-        // render('extensions/myext/templates/...') - resolved instance-first so custom overrides win
+
         $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_SOURCE_DIR]);
 
-        // Custom Extension, so we can create action and handlers inside custom folder
         if (file_exists('custom/templates/')) {
             $this->twigLoader->addPath('custom/templates/', 'custom');
         }
-        // Extensions templates paths (added by priority order)
+
         foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionName => $pluginInfo) {
-            // Ability to override an extension template from the custom folder
             $paths = ["custom/templates/$extensionName/"];
-            // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
+
             $paths[] = "custom/themes/tools/$extensionName/templates/";
 
             $paths[] = 'custom/templates/' . $extensionName . '/templates/';
@@ -71,15 +67,13 @@ class TemplateEngine
             $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/templates/';
             $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
 
-            // Ability to override an extension template from another extension
             foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
                 $paths[] = "custom/extensions/$otherExtensionName/templates/$extensionName/";
                 $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
-            // Standard path for an extension template
+
             $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/templates/";
-            // Legacy directories, should not be used anymore for new templates. Maybe
-            // of them are not used by anybody, but just in case we keep them for backward compatibility
+
             $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
@@ -89,10 +83,9 @@ class TemplateEngine
             }
         }
 
-        // Core templates
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
-        // Ability to override an extension template from another extensioncore
+
         foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
             $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
@@ -103,21 +96,13 @@ class TemplateEngine
             }
         }
 
-        // The templates as shipped -- `custom/templates/` is deliberately NOT on this
-        // namespace (ticket 30). One screen needs it: the one that edits the overrides. A
-        // broken override takes out every page, and if it also takes out the screen that
-        // fixes it, the only way back is FTP. `@shipped/admin/custom-templates.twig` and the
-        // shell it extends are therefore the two templates in the wiki that cannot be
-        // overridden -- which is the whole safety net, so do not "tidy" this into @core.
         $this->twigLoader->addPath(YESWIKI_SOURCE_DIR . '/templates/', 'shipped');
 
-        // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
             'cache' => 'cache/templates/',
             'auto_reload' => true,
         ]);
 
-        // Adds Globals
         $wikiRequest = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $this->twig->addGlobal('request', [
             'get' => $wikiRequest->query->all(),
@@ -134,7 +119,6 @@ class TemplateEngine
         $this->twig->addGlobal('config', $this->container->get(RuntimeConfig::class)->all());
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
-        // Adds Helpers
         $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
             if (!empty($this->container->get(RuntimeConfig::class)['debug'])) {
@@ -170,15 +154,11 @@ class TemplateEngine
         $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
             $this->assetRegistry->addJsFile($file, $first, $module);
         });
-        // ticket 15: emits every declared asset, once, at the end of the squelette's head
-        // block. Anything an action registers *after* this point in that block is too late.
+
         $this->addTwigHelper('declared_assets', function () {
             return $this->assetRegistry->drain()->toHtml();
         });
-        // ticket 16: the per-page state a boosted navigation has to refresh -- the `wiki`
-        // globals and any flash message. Rendered *inside* the body block, which is what a
-        // boosted navigation swaps, so both are current on every page rather than only on the
-        // first one. Goes first in that block: inline markup further down calls _t().
+
         $this->addTwigHelper('page_state', function () {
             $coreAssets = $this->container->get(CoreAssets::class);
             $flash = $this->container->get(FlashMessageService::class)->getMessage();
@@ -228,7 +208,6 @@ class TemplateEngine
             if (!file_exists($image_dest) || $safeRefresh) {
                 $result = $resizer->resize($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
-                    // do nothing : error
                     return $basePath . $options['fileName'];
                 }
 
@@ -243,22 +222,15 @@ class TemplateEngine
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
             return $this->container->get(Performer::class)->run($name, 'action', $params);
         });
-        // squelettes: same attribute-string form the historical `{{action attr="…"}}`
-        // squelette syntax used, with Wiki::Action()'s link-tracking semantics
+
         $this->addTwigHelper('action', function ($actionString) {
             return $this->container->get(ActionRunner::class)->action($actionString);
         });
-        // inline JS registered for the page footer aggregate, like AddJavascript()
-        // calls from the historical PHP templates
-        // stored data (reaction images, bazar marker icons...) may still carry historic
-        // FontAwesome class strings: render them through the sprite when a mapping exists
+
         $this->twig->addFunction(new \Twig\TwigFunction('iconFromLegacy', function ($classString, $extraClass = '') {
             return $this->legacyIconToSprite(is_string($classString) ? $classString : null, $extraClass);
         }, ['is_safe' => ['html']]));
 
-        // Tabler sprite icon (src/assets/icons.svg): icon('trash'), icon('star', 'yw-icon--lg').
-        // Registered is_safe: the produced markup is fully escaped here, so templates can
-        // write {{ icon('x') }} without |raw
         $this->twig->addFunction(new \Twig\TwigFunction('icon', function ($name, $extraClass = '') {
             $class = trim('yw-icon ' . $extraClass);
 
@@ -281,13 +253,11 @@ class TemplateEngine
                 return $form['prepared'][$found]->renderStaticIfPermitted($entry);
             }
         });
-        // bazar list templates: resolve a display parameter (color=, icon=, ...)
-        // for one entry — delegates to getCustomValueForEntry() (bazar.functions.php)
+
         $this->addTwigHelper('customValueForEntry', function ($parameter, $field, $entry, $default = '') {
             return getCustomValueForEntry($parameter, $field, $entry, $default);
         });
-        // ticket 07 (tpl.html -> Twig): the page-list/layout templates check page
-        // rights inline; these mirror the Wiki calls the PHP templates used
+
         $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
             return $this->container->get(AclService::class)->hasAccess($privilege, $tag ?: '');
         });
@@ -300,25 +270,19 @@ class TemplateEngine
         $this->addTwigHelper('absoluteUrl', function () {
             return getAbsoluteUrl();
         });
-        // full rendered view of one bazar entry (liste_accordeon expands entries
-        // in place) — delegates to renderEntryView()
+
         $this->addTwigHelper('renderEntry', function ($showManagementBar, $entry, $form = '') {
             return renderEntryView($showManagementBar, $entry, $form ?: '');
         });
-        // thumbnail with the historical cache/image_{W}x{H}_{name} naming the bazar
-        // list templates share (agenda uses WxH, blog/trombinoscope W_H -- the
-        // separator is part of each template's stored-cache contract)
+
         $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
             return resizeImage('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
         });
-        // raw source->destination passthrough for the odd call shapes (placeholder
-        // sources, custom cache names) -- unlike resizedImage, which derives the
-        // cache name from the files/ image name
+
         $this->addTwigHelper('resizeImageTo', function ($source, $destination, $width, $height, $mode = 'fit') {
             return resizeImage($source, $destination, $width, $height, $mode);
         });
-        // strtotime() with the legacy templates' semantics: unparseable or missing
-        // dates become 0 (epoch), never an exception -- entry dates are user data
+
         $this->addTwigHelper('timestamp', function ($value) {
             return (int)strtotime((string)$value);
         });
@@ -328,8 +292,7 @@ class TemplateEngine
         $this->addTwigHelper('fileExists', function ($path) {
             return file_exists((string)$path);
         });
-        // qrcode badge templates: returns the cached SVG path for a payload,
-        // generating it on first use (?refresh=1 regenerates)
+
         $this->addTwigHelper('qrCode', function ($content, $prefix = 'qrcode') {
             $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '-' . md5($content) . '.svg';
             if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
@@ -345,32 +308,19 @@ class TemplateEngine
             return $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
         });
 
-        // ticket 30: the wiki's chrome, from configuration rather than from the three pages
-        // `PageTitre` / `PageMenuHaut` / `PageRapideHaut`. A squelette calls these three; the
-        // three chrome pages that are still pages keep going through {{include}}.
         $this->addTwigHelper('layout_chrome', fn () => $this->renderLayoutChrome());
-        // ...and the root style attribute the whole document wears, which is where the
-        // navbar height lives. Separate from the chrome because it goes on <html>.
+
         $this->addTwigHelper('layout_root_style', fn () => $this->layoutRootStyle());
-        // ...and the pencil that opens whichever bit of the chrome it sits on, for whoever
-        // may follow it. `''` for everyone else, so a squelette needs no permission test.
+
         $this->addTwigHelper('layout_edit', fn (string $part) => $this->renderChromeEditLink($part));
-        // ...and which page a squelette should include for a chrome role, which is the
-        // canonical name unless the page being rendered names another one for itself
+
         $this->addTwigHelper(
             'layout_page',
             fn (string $role) => $this->container->get(LayoutService::class)->pageFor($role)
         );
     }
 
-    /**
-     * The whole top bar: the menu toggle, the brand, the navbar and the quick menu.
-     *
-     * One call rather than three, because it is one swap: the live preview on `/admin/layout`
-     * replaces this block wholesale with the same fragment rendered from the posted form
-     * (AdminController::layoutPreview). A squelette gets the configured chrome by passing
-     * nothing.
-     */
+    /** The whole top bar: the menu toggle, the brand, the navbar and the quick menu. */
     public function renderLayoutChrome(?LayoutChrome $chrome = null): string
     {
         $chrome ??= $this->container->get(LayoutService::class)->current();
@@ -383,18 +333,7 @@ class TemplateEngine
         ]);
     }
 
-    /**
-     * The viewer's own controls at the end of the bar: Colour scheme, and language.
-     *
-     * Not part of the chrome a `LayoutChrome` describes, and deliberately: everything else in
-     * the bar is what an admin decided to put there, and these two are what a *visitor*
-     * decides. An admin removing "light or dark" from the navbar would be removing it from
-     * the readers who need it, so it is not offered as a choice (ADR-0020).
-     *
-     * The language list is the wiki's installed languages, and is empty of interest below two
-     * -- the template draws no control at all in that case rather than one option nobody can
-     * change anything with.
-     */
+    /** The viewer's own controls at the end of the bar: Colour scheme, and language. */
     private function renderChromeTools(): string
     {
         $current = (string)($GLOBALS['prefered_language'] ?? '');
@@ -406,11 +345,9 @@ class TemplateEngine
             $code = (string)$code;
             $languages[] = [
                 'code' => $code,
-                // its own name, in itself: a reader looking for their language is not looking
-                // for the English word for it
+
                 'label' => (string)($names[$code]['nativeName'] ?? $code),
-                // the page they are on, in that language. `lang` in the parameters rather
-                // than appended, so UrlFormatter leaves the current one out (see href()).
+
                 'href' => $this->urlFormatter->href('', $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), ['lang' => $code], false),
                 'current' => $code === $current,
             ];
@@ -422,15 +359,7 @@ class TemplateEngine
         ]);
     }
 
-    /**
-     * The `style` attribute the document's root element wears.
-     *
-     * Where the navbar height goes, and an inline style is the point rather than a shortcut:
-     * a custom property declared here beats the same property declared in *any* stylesheet,
-     * preset or hand-written, without needing `!important` anywhere. Which is what the
-     * setting means -- a number typed on the Layout screen has the last word over what a
-     * preset happens to say (ticket 30).
-     */
+    /** The `style` attribute the document's root element wears. */
     public function layoutRootStyle(?LayoutChrome $chrome = null): string
     {
         $chrome ??= $this->container->get(LayoutService::class)->current();
@@ -438,19 +367,7 @@ class TemplateEngine
         return '--yw-navbar-height: ' . $chrome->navbarHeight . 'px';
     }
 
-    /**
-     * One of the three chrome parts, rendered from a LayoutChrome.
-     *
-     * From a value object rather than from LayoutService, because the live preview on
-     * `/admin/layout` renders a *draft* -- the chrome a posted form describes, which has not
-     * been saved. Passing it in is what lets the preview go through this exact code path
-     * instead of a second one that would drift.
-     *
-     * The links are resolved here rather than in LayoutService: what an entry stores is what
-     * someone typed -- a page name, a route, or a full URL -- and turning that into an href
-     * is UrlFormatter's job, which the service has no business holding for a value that is
-     * only ever needed at render time.
-     */
+    /** One of the three chrome parts, rendered from a LayoutChrome. */
     private function renderLayout(string $part, LayoutChrome $chrome): string
     {
         $current = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
@@ -461,14 +378,11 @@ class TemplateEngine
             return $this->render('@core/layout/brand.twig', [
                 'mode' => $chrome->brandMode,
                 'title' => $chrome->title,
-                // an address is used as it stands -- the file picker stores the file's own
-                // `api/files/…/download` URL, and a wiki may point at an image elsewhere.
-                // Anything else is an instance-relative path (files/logo.png) and is resolved
-                // against the base URL, so it survives path-shaped page URLs.
+
                 'logo' => ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
                     ? $logo
                     : $this->urlFormatter->getBaseUrl() . '/' . $logo,
-                // false, like every other href handed to a template here: Twig escapes it
+
                 'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page'], null, false),
             ]);
         }
@@ -499,34 +413,20 @@ class TemplateEngine
             $entries[] = [
                 'label' => $entry['label'],
                 'href' => $this->layoutHref($entry['link']),
-                // stored icons may be sprite names or historic FontAwesome classes
+
                 'glyph' => $this->legacyIconToSprite($entry['icon']),
             ];
         }
 
         return $this->render('@core/layout/quick-menu.twig', [
             'entries' => $entries,
-            // last inside this block, which is what puts it at the extreme right: the block
-            // itself is floated right, so a sibling *after* it would land to its LEFT
+
             'editChrome' => $this->renderChromeEditLink('navbar'),
             'account' => $chrome->accountButton,
         ]);
     }
 
-    /**
-     * The pencil that opens the screen or page behind a piece of chrome.
-     *
-     * **Admins only, all three of them.** The navbar one has no choice -- `/admin/layout` is
-     * admin-gated, so anyone else would follow it into a refusal. The banner and the footer
-     * could in principle use write access to the page, and that would be wrong here: a
-     * default YesWiki is an open wiki, so `hasAccess('write')` is true for anonymous visitors
-     * and every reader of every page would get two pencils on the site's furniture. Editing
-     * those pages is still open to whoever may write them -- the includes carry
-     * `doubleclick="1"` -- this is only about who is *offered* it unprompted.
-     *
-     * Returns '' rather than a disabled control when the answer is no: an affordance nobody
-     * can use is worse than none, and it saves every squelette a permission test.
-     */
+    /** The pencil that opens the screen or page behind a piece of chrome. */
     private function renderChromeEditLink(string $part): string
     {
         if (!$this->container->get(AclService::class)->isAdmin()) {
@@ -545,29 +445,15 @@ class TemplateEngine
             return '';
         }
 
-        // the *resolved* page, because a page may name a different banner for itself
         $tag = $this->container->get(LayoutService::class)->pageFor($roles[$part]);
 
-        // `incomingurl`, so saving comes back to the page you were reading rather than
-        // stranding you on `PageHeader` -- which is a page nobody reads, only edits. The
-        // wiki's own convention for this (EntryController, DeletepageHandler); EditHandler
-        // learned to honour it for pages at the same time as this.
         return $this->render('@core/layout/edit-chrome.twig', [
-            // `false`: href() HTML-escapes by default, and this value is then escaped AGAIN
-            // by Twig on its way into the attribute -- `&` came out as `&amp;amp;` and the
-            // link led nowhere. Twig does the one escape that is wanted.
             'href' => $this->urlFormatter->href('edit', $tag, ['incomingurl' => getAbsoluteUrl()], false),
             'label' => _t('LAYOUT_EDIT_' . strtoupper($part)),
         ]);
     }
 
-    /**
-     * What someone typed into a layout entry, as an address.
-     *
-     * Anything with a scheme, an anchor or a leading slash is already an address and is left
-     * alone -- a menu entry to another site is an ordinary thing to want. Everything else is
-     * a page name or a route of this wiki (`BacASable`, `search`, `dashboard/forms`).
-     */
+    /** What someone typed into a layout entry, as an address. */
     private function layoutHref(string $link): string
     {
         if ($link === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/|#)~i', $link) === 1) {
@@ -579,23 +465,10 @@ class TemplateEngine
 
     private function addTwigFilters(): void
     {
-        // ticket 07: the converted entry-list templates normalize markup with the
-        // same regexes their PHP predecessors used
         $this->twig->addFilter(new \Twig\TwigFilter('preg_replace', function ($subject, $pattern, $replacement) {
             return preg_replace($pattern, $replacement, (string)$subject);
         }));
 
-        /*
-         * A date written the way the reader's language writes dates: `{{ item.date|moment }}`,
-         * or `|moment('LLL')` to the minute.
-         *
-         * Twig's own `|date('d/m/Y')` is a format, and a format is a language's habit: the
-         * presentations printed `13/08/2026` to every reader, which an English one reads as
-         * the 8th of a month with 13 of them. Carbon's `isoFormat` with the reader's locale
-         * gets all nine catalogs right and asks nobody to translate a format string --
-         * EditBarAction found that out first (`inTheReadersLanguage`), and this is the same
-         * move for templates.
-         */
         $this->twig->addFilter(new \Twig\TwigFilter('moment', function ($stamp, string $format = 'LL'): string {
             if (!is_string($stamp) || trim($stamp) === '') {
                 return '';
@@ -604,12 +477,9 @@ class TemplateEngine
             try {
                 $moment = Carbon::parse($stamp);
             } catch (\Throwable) {
-                // a value that is not a date at all: say nothing rather than something
                 return '';
             }
 
-            // as a statement, not chained: `locale()` with no argument is the getter, so a
-            // chained call is not statically a Carbon
             $moment->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
 
             return $moment->isoFormat($format);
@@ -617,9 +487,7 @@ class TemplateEngine
     }
 
     /**
-     * Render an icon name through the Tabler sprite: accepts a sprite symbol name
-     * directly ("gauge") or a historic FontAwesome class string ("fas fa-heart",
-     * mapped via src/icon-map.json). Null when nothing resolves.
+     * Render an icon name through the Tabler sprite: accepts a sprite symbol name directly ("gauge") or a historic FontAwesome class string ("fas fa-heart", mapped via src/icon-map.json).
      */
     public function legacyIconToSprite(?string $classString, string $extraClass = ''): ?string
     {
@@ -627,8 +495,7 @@ class TemplateEngine
         if ($map === null) {
             $map = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/icon-map.json'), true) ?: [];
             unset($map['__comment']);
-            // ids actually present in the sprite: the map's values + the
-            // generator's EXTRAS (see src/build-icon-sprite.mjs)
+
             $spriteNames = array_fill_keys($map, true) + ['star-filled' => true, 'cursor-text' => true];
         }
         foreach (explode(' ', (string)$classString) as $part) {
@@ -644,11 +511,7 @@ class TemplateEngine
         return null;
     }
 
-    /**
-     * Base-absolute URL of the Tabler sprite. A bare "src/assets/icons.svg" would
-     * resolve against the current page path and 404 on path-shaped URLs
-     * (rewrite-mode handlers like /PageTag/edit).
-     */
+    /** Base-absolute URL of the Tabler sprite. */
     private function spriteUrl(): string
     {
         $baseUrl = (string)$this->container->get(RuntimeConfig::class)->getValue('base_url');
@@ -673,8 +536,7 @@ class TemplateEngine
     }
 
     /**
-     * A squelette compiled as a Twig template, so its `head` and `body` blocks can be
-     * rendered independently -- and therefore out of order (ticket 15, ADR-0014).
+     * A squelette compiled as a Twig template, so its `head` and `body` blocks can be rendered independently -- and therefore out of order (ticket 15, ADR-0014).
      */
     public function createSquelette(string $source): \Twig\TemplateWrapper
     {
@@ -688,22 +550,14 @@ class TemplateEngine
         return $this->twig->createTemplate($wrapped)->render($data);
     }
 
-    /**
-     * Render an untrusted Twig string in a locked-down sandbox environment.
-     *
-     * A fresh Twig instance is created with no globals, no custom functions,
-     * and a strict SecurityPolicy so that administrator-supplied template strings
-     * cannot call PHP functions or access server internals.
-     */
+    /** Render an untrusted Twig string in a locked-down sandbox environment. */
     public function renderSandboxedFromStringNoEscape(string $templateString, array $data = []): string
     {
         $loader = new \Twig\Loader\ArrayLoader(['__sem__' => $templateString]);
         $twig = new \Twig\Environment($loader, ['autoescape' => false]);
 
         $policy = new \Twig\Sandbox\SecurityPolicy(
-            // allowed control-flow tags only
             ['if', 'for', 'set'],
-            // safe data-manipulation and formatting filters
             [
                 'abs', 'batch', 'capitalize', 'date', 'default',
                 'e', 'escape', 'filter', 'first', 'format',
@@ -712,9 +566,7 @@ class TemplateEngine
                 'reduce', 'replace', 'reverse', 'round', 'slice',
                 'sort', 'split', 'striptags', 'title', 'trim', 'upper',
             ],
-            // no method calls on objects
             [],
-            // no property access on objects
             [],
             ['date', 'fileUrl', 'max', 'min', 'random', 'range']
         );
@@ -731,7 +583,6 @@ class TemplateEngine
 
     /**
      * Render a template as a complete page: the squelette around <div class="page">content.
-     * (Previously named renderInSquelette.).
      *
      * @param array<string,mixed> $data
      */
@@ -740,19 +591,13 @@ class TemplateEngine
         return $this->renderPage('<div class="page">' . $this->render($templatePath, $data) . '</div>');
     }
 
-    /**
-     * $content wrapped in the wiki's page skeleton.
-     *
-     * Replaces the header()/footer() pair every caller used to bracket its output with
-     * (ticket 15). A pair could not survive the head being rendered last: the content has to
-     * be a value before the skeleton renders, or `<head>` cannot know what it declared.
-     */
+    /** $content wrapped in the wiki's page skeleton. */
     public function renderPage(string $content): string
     {
         return $this->container->get(ThemeManager::class)->renderPage($content);
     }
 
-    /** The document head alone, for a surface supplying its own body. Call it after the content is built. */
+    /** The document head alone, for a surface supplying its own body. */
     public function renderHead(): string
     {
         return $this->container->get(ThemeManager::class)->renderHead();
@@ -771,8 +616,7 @@ class TemplateEngine
     }
 
     /**
-     * render() with errors swallowed into an inline alert (historic Wiki::render()) --
-     * for legacy fragments where a template failure must not take the page down.
+     * render() with errors swallowed into an inline alert (historic Wiki::render()) -- for legacy fragments where a template failure must not take the page down.
      */
     public function renderSafely(mixed $templatePath, mixed $data): string
     {
@@ -784,9 +628,7 @@ class TemplateEngine
     }
 
     /**
-     * Template names are stored data ({{entrylist template="X.tpl.html"}} in page
-     * bodies, per-page metadata): historical .tpl.html names resolve to their Twig
-     * successors since the tpl.html engine died (ticket 07).
+     * Template names are stored data ({{entrylist template="X.tpl.html"}} in page bodies, per-page metadata): historical .tpl.html names resolve to their Twig successors since the tpl.html engine died (ticket 07).
      */
     public static function resolveLegacyTemplateName(string $templatePath): string
     {
@@ -801,15 +643,6 @@ class TemplateEngine
     /**
      * Whether a template *compiles*, without rendering it or writing it anywhere.
      *
-     * For the Custom Templates screen (ticket 30), which must not accept an override that
-     * cannot parse: the failure would not show up where it was made but as a 500 on every
-     * page that renders the template.
-     *
-     * It has to be **this** environment rather than a throwaway one. Twig 3 resolves filters
-     * and functions at parse time, so a bare environment would reject `{{ _t(…) }}`,
-     * `{{ action(…) }}` and every other helper as unknown -- reporting a syntax error in
-     * templates that are perfectly correct.
-     *
      * @throws \Twig\Error\Error which carries the line number
      */
     public function parseTemplateSource(string $name, string $source): void
@@ -818,9 +651,7 @@ class TemplateEngine
     }
 
     /**
-     * Render a Twig template. The namespace picks the search path: '@core/x.twig'
-     * looks in custom/templates/core/ then templates/, '@myext/x.twig' in the
-     * extension override chain then extensions/myext/templates/.
+     * Render a Twig template.
      *
      * @throws TemplateNotFound when no template matches (template names can be
      *                          stored user data, so this must stay catchable)

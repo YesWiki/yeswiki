@@ -1,10 +1,4 @@
-{# The entry list's search box.
 
-   Uses @core/_searchbox.twig, like {{search}} and everything else that offers a search
-   field. It used to assemble its own out of Bootstrap 3 markup -- `input-group`,
-   `add-on`, `input-prepend`, `btn btn-primary`, `input-lg` -- whose stylesheet ticket 16
-   removed, so it rendered as three loose unstyled controls. One component, one look, one
-   place to change it. #}
 <div id="bazar-search-{{ listId }}">
     <form action=""
           method="get"
@@ -26,9 +20,7 @@
         } only %}
 
         {% if forms|length > 1 %}
-            {# the form chooser stays a select rather than becoming facet chips: these are a
-               webmaster's forms, there can be dozens of them, and unlike the search
-               surface's content types they carry no counts worth showing #}
+
             <div class="yw-searchbox-aside">
                 <label class="sr-only" for="bazar-search-form-{{ listId }}">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</label>
                 <select onchange="javascript:this.form.submit();"

@@ -2,29 +2,14 @@
 
 namespace YesWiki\Render\Service;
 
-/**
- * The wiki's own stylesheet: `custom/styles/custom.css` (ticket 30).
- *
- * This used to be a wiki page called `PageCss`, read by CoreAssets and **inlined into every
- * page**. It had to be inlined: the `/raw` handler serves `text/plain`, and a browser in
- * standards mode refuses a stylesheet link that is not `text/css`. A real file has no such
- * problem -- it is an ordinary, cacheable `<link>`, and `custom/styles/*.css` is a directory
- * CoreAssets already loads, so nothing new had to be taught to load it.
- *
- * Instance-relative, not source-relative. `custom/` belongs to the instance, and on a farm
- * the source tree is shared between wikis that must not share a stylesheet -- the same
- * distinction ThemeManager draws between `getcwd() . '/custom/themes'` and
- * `YESWIKI_SOURCE_DIR . '/themes'`.
- */
+/** The wiki's own stylesheet: `custom/styles/custom.css` (ticket 30). */
 class CustomCssService
 {
     /** Instance-relative, matching how CoreAssets reads the directory. */
     public const DIRECTORY = 'custom/styles';
 
     /**
-     * One well-known name, so "the wiki's custom CSS" is a thing rather than one of however
-     * many files a webmaster has dropped in the directory. Everything else in there is
-     * theirs and is left alone.
+     * One well-known name, so "the wiki's custom CSS" is a thing rather than one of however many files a webmaster has dropped in the directory.
      */
     public const FILENAME = 'custom.css';
 
@@ -48,9 +33,7 @@ class CustomCssService
     }
 
     /**
-     * Whether saving would work, asked *before* offering the box rather than discovered on
-     * submit: an instance whose `custom/` is not writable (a read-only deploy, a wrong
-     * owner after an upgrade) can still be told so on the screen.
+     * Whether saving would work, asked *before* offering the box rather than discovered on submit: an instance whose `custom/` is not writable (a read-only deploy, a wrong owner after an upgrade) can still be told so on the screen.
      */
     public function isWritable(): bool
     {
@@ -72,8 +55,6 @@ class CustomCssService
             throw new \RuntimeException(sprintf('Cannot create %s', self::DIRECTORY));
         }
 
-        // an empty stylesheet is a deletion: leaving a 0-byte file behind means every page
-        // keeps a <link> to nothing
         if (trim($css) === '') {
             if ($this->exists() && !@unlink($this->path())) {
                 throw new \RuntimeException(sprintf('Cannot remove %s', $this->path()));

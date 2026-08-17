@@ -2,7 +2,6 @@ export function recursivelyCalculateRelations(node, parentChain = []) {
   const allParents = [...parentChain]
   const descendants = []
 
-  // Recursively calculate relations for children
   if (node.children && node.children.length > 0) {
     node.children.forEach((child) => {
       const childNode = recursivelyCalculateRelations(child, [
@@ -19,7 +18,6 @@ export function recursivelyCalculateRelations(node, parentChain = []) {
   return node
 }
 
-// deepGet({ comment: { label: 'foo' }}, 'comment.label') => 'foo'
 export function deepGet(obj, path) {
   if (obj === undefined) return undefined
   if (typeof path === 'string') return deepGet(obj, path.split('.'))

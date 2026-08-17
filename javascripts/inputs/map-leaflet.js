@@ -1,14 +1,5 @@
-// map-leaflet.js — geolocation map field (ticket 16: vanilla JS around the same
-// Leaflet/Leaflet.draw logic). Two pre-existing bugs fixed along the way:
-// showAddressError referenced an undefined `msg` variable, and the popup
-// validity check ran :invalid against the wrapper <div> (never matching) instead
-// of its inputs.
 import { drawGeometries } from '../leaflet-draw.helper.js'
 
-// Ticket 14: ywInit rather than DOMContentLoaded, so a map field arriving in a fragment --
-// the form designer's field preview, and every htmx-swapped entry form after it -- becomes a
-// map. The immediate sweep matters here specifically: this file is loaded *by* the fragment
-// that needs it, so it is still downloading when htmx fires htmx:load for that content.
 ywInit((root) => {
   function drawnItemsToGeoJSON(pDrawnItems) {
     const vData = {
@@ -20,7 +11,6 @@ ywInit((root) => {
       if (pLayer instanceof L.Circle) {
         const cLatLng = pLayer.getLatLng()
 
-        // For circles, store center and radius as custom properties
         vData.features.push({
           type: 'Feature',
           properties: {
@@ -29,7 +19,7 @@ ywInit((root) => {
             ...pLayer.options,
           },
           geometry: {
-            type: 'Point', // GeoJSON still sees it as a point
+            type: 'Point',
             coordinates: [cLatLng.lng, cLatLng.lat],
           },
         })
@@ -78,12 +68,6 @@ ywInit((root) => {
 
       const cName = cMe.getAttribute('name')
 
-      // Scoped to this field rather than document.getElementById: a map may now be rendered
-      // as a fragment (a designer preview card) where element ids are rewritten to stay
-      // unique within the page, and where several maps can coexist. The three hidden inputs
-      // already carry distinct classes for exactly this. Ids that legitimately refer to
-      // *other* fields of the entry form (the address autocomplete below, the popup inputs
-      // leaflet injects) stay document-wide -- they are not part of this element's subtree.
       const byId = (id) => document.getElementById(id)
       const setById = (id, value) => {
         const el = byId(id)
@@ -120,7 +104,6 @@ ywInit((root) => {
         return pAcc
       }, {})
 
-      // Init leaflet map
       const cMap = new L.Map(cMe.querySelector('.yw-geolocation-map'), {
         scrollWheelZoom: cMapFieldData.bazWheelZoom,
         zoomControl: cMapFieldData.bazShowNav,
@@ -320,7 +303,6 @@ ywInit((root) => {
             setById(`${cName}_longitude_popup`, changedPos.lng)
           })
         } else {
-          // remove formerly encoded marker position
           if (cLatitude) cLatitude.value = ''
           if (cLongitude) cLongitude.value = ''
           setById(`${cName}_latitude_popup`, '')

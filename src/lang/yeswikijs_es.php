@@ -119,10 +119,8 @@ Confirme su eliminación marcando la casilla siguiente.
     'FORM_ID_NOT_AVAILABLE' => 'El formulario con el identificador {id} ya no está disponible en la url indicada. Debe cambiar el identificador.',
     'FORM_ID_IS_COMPATIBLE' => 'Existe un formulario con el mismo identificador ({id}) en la url indicada y parece tener al menos los mismos campos obligatorios. Se utilizará para la duplicación.',
 
-    // relocated from tools/tags/lang/tagsjs_es.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Número de páginas: {nb}',
 
-    // relocated from tools/aceditor/lang/aceditorjs_es.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Copiar',
     'ACTION_BUILDER_PREVIEW' => 'Vista previa (no se puede hacer clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentación en línea',
@@ -130,19 +128,15 @@ Confirme su eliminación marcando la casilla siguiente.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Fecha de modificación',
     'ACTION_BUILDER_CREATION_DATE' => 'Fecha de creación',
     'ACTION_BUILDER_FORM_ID' => 'Formulario',
-    // relocated from tools/attach/lang/attachjs_es.inc.php (ticket 17)
+
     'ATTACH_FAILED' => 'Fallado',
 
-    // relocated from tools/contact/lang/contactjs_es.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Este campo es obligatorio.',
     'CONTACT_EMAIL_NOT_VALID' => 'El correo electrónico introducido no es válido.',
 
-    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Buscar...',
     'DATATABLE_NO_RESULTS' => 'Sin resultados',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
 
-    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
-    // here instead -- this string is the only part of it a user reads
     'EDIT_LEAVE_WITHOUT_SAVING' => 'Tiene cambios sin guardar. ¿Salir de esta página?',
 ];

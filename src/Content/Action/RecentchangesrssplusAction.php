@@ -18,10 +18,6 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{recentchangesrssplus}}` -- converted from the procedural actions/recentchangesrssplus.php by ticket 06.
- *
- * The body still prints rather than returning, so it runs inside an output buffer in its
- * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
- * in the body from discarding output.
  */
 class RecentchangesrssplusAction extends YesWikiAction implements RegisteredAction
 {
@@ -36,10 +32,6 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // Several of these bodies end in $this->exit(), which throws. The old
-            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
-            // did not discard what had already been printed; keep that by flushing into the
-            // shared output before rethrowing -- and close the buffer either way.
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -65,9 +57,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
         $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
-        // the 500 first characters used to be cut in SQL (LEFT/substr on body); on a JSON
-        // body that would truncate the container rather than the prose, so the cut moved
-        // onto the decoded markup below
+
         if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and parent = '' order by time desc limit " . $max)) {
             if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                 $link = $this->getService(RuntimeConfig::class)['root_page'];
@@ -107,7 +97,6 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
             $output .= "</channel>\n";
             $output .= "</rss>\n";
 
-            // Définition du type de document et de son encodage.
             header('Content-Type: text/xml; charset=ISO-8859-1');
             echo $output;
             $this->getService(Redirector::class)->terminate();

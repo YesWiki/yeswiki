@@ -1,7 +1,3 @@
-// filtertags.js — tag-filtered page grid (ticket 16: vanilla JS; the jQuery
-// wookmark masonry layout is replaced by the browser's normal flow layout —
-// filtering simply shows/hides the matching elements)
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 ywInitEach('.filter-container', (container) => {
   const elements = Array.from(container.querySelectorAll('.filtered-element'))
   const { elementWidth } = container.dataset
@@ -42,7 +38,6 @@ ywInitEach('.filter-container', (container) => {
       filter.classList.toggle('active')
       const group = filter.closest('.filter-group')
       if (group && group.dataset.type === 'radio') {
-        // for the radio type filter buttons, just one active in one row
         Array.from(filter.parentElement.children).forEach((sibling) => {
           if (sibling !== filter && sibling.classList.contains('filter')) {
             sibling.classList.remove('active')

@@ -40,7 +40,7 @@ class TextField extends BazarField
         }
     }
 
-    public function getValueStructure() // See BazarField::getValueStructure
+    public function getValueStructure()
     {
         if ($this->type == 'number' || $this->type == 'range') {
             return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'number']];
@@ -51,7 +51,6 @@ class TextField extends BazarField
 
     protected function renderInput($entry)
     {
-        // Handling all subtypes (url, number) in the text.twig
         return $this->render('@core/inputs/' . ($this->getType() == 'range' ? 'range' : 'text') . '.twig', [
             'value' => $this->getValue($entry),
         ]);
@@ -64,9 +63,6 @@ class TextField extends BazarField
             return '';
         }
 
-        // the field that names its entries renders as the entry's heading. Was a test for
-        // the literal name `bf_titre`, so a form that names its entries any other way had
-        // no heading at all (ticket 11)
         if ($this->isTheFormsTitleField($entry)) {
             return $this->render('@core/fields/title.twig', [
                 'value' => $value,
@@ -104,7 +100,6 @@ class TextField extends BazarField
         return $this->placeholder;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

@@ -7,7 +7,6 @@ use Psr\Container\ContainerInterface;
 #[\Field(['champs_cache'])]
 class HiddenField extends BazarField
 {
-    // ticket 18: not shown to a reader, so not something a reader can be looking for
     use ContributesNoSearchableText;
 
     public function __construct(array $values, ContainerInterface $services)
@@ -22,13 +21,6 @@ class HiddenField extends BazarField
         return '';
     }
 
-    // Format input values before save
-    // public function formatValuesBeforeSave($entry)
-    // {
-    //     return ['fields-to-remove' => [$this->propertyName]];
-    // }
-
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

@@ -53,8 +53,7 @@ class GeoJSONFormatter extends YesWikiController
                         'coordinates' => [$extendedEntry['geo']['longitude'], $extendedEntry['geo']['latitude']],
                     ],
                     'id' => $entry['tag'],
-                    // the computed title (ADR-0010), not whatever the form happens to
-                    // call its title field
+
                     'title' => $entry['title'] ?? $entry['bf_titre'] ?? '',
                     'properties' => $entry,
                 ];
@@ -73,16 +72,11 @@ class GeoJSONFormatter extends YesWikiController
     {
         $propertyName = '';
         if (!empty($entry['form_id']) && $entry['form_id'] == intval($entry['form_id'])) {
-            // '' rather than null: a form with no map field must not index the entry on
-            // a null key, which PHP 8.4 deprecates and which matched nothing anyway
             $propertyName = (string)$this->geolocationPropertyName((int)$entry['form_id'], $cache);
         }
         if (!empty($entry[$propertyName]['latitude']) && !empty($entry[$propertyName]['longitude'])) {
             $latitude = $entry[$propertyName]['latitude'];
             $longitude = $entry[$propertyName]['longitude'];
-        // the shapes below are historical *storage*, not field naming: entries written
-        // before 20260203091701_BazarChangeModelForGeolocation still carry their
-        // coordinates nested under the old keys, or flat, or in one carte_google string
         } elseif (!empty($entry[$propertyName]['bf_latitude']) && !empty($entry[$propertyName]['bf_longitude'])) {
             $latitude = $entry[$propertyName]['bf_latitude'];
             $longitude = $entry[$propertyName]['bf_longitude'];
@@ -106,10 +100,7 @@ class GeoJSONFormatter extends YesWikiController
     }
 
     /**
-     * Which field of this form holds the geolocation -- the form's answer, not a guess at
-     * a field name (ticket 11). Was a private "first MapField wins" scan, which is exactly
-     * what the geolocation role defaults to, minus the ability for a webmaster to say
-     * which map field is the one to export when a form has more than one.
+     * Which field of this form holds the geolocation -- the form's answer, not a guess at a field name (ticket 11).
      *
      * @param array<int, string|null> &$cache per-form-id memo
      */

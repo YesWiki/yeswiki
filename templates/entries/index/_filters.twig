@@ -1,22 +1,4 @@
-{#
-  The facets, as a form the server answers (ticket 37).
 
-  Checking a box used to be a browser affair: `bazar.js` hid the `.bazar-entry` elements whose
-  data attributes did not match. Only some templates draw one of those, so a card list had
-  facets that did nothing at all -- and hiding what is on the page is not filtering a list:
-  with `pagination` you got a page with holes in it and no way to reach the rest.
-
-  So the boxes post their selection (`facet[bf_type][]=a`) and htmx swaps the answer in. Every
-  template gets working facets, the counts and the pager come back right, and the URL that
-  results is one you can send to somebody. Without javascript the same form still submits.
-
-  Laid out above the list, each facet is one tag input instead: beside the list a box can be
-  as tall as it likes, above it every value costs a line of the page before the first result.
-  Same parameter, same form, same request -- `yw-tags-input.js` in its closed mode, which is
-  core's own chip picker and needs no framework (a `v-select` here would have put Vue on a
-  reader's page for a dropdown). Its listeners are delegated, so a swapped-in row is live
-  without being initialised.
-#}
 {% set horizontal = params.filterposition == 'top' %}
 {% if horizontal %}
   {{ include_javascript('javascripts/yw-tags-input.js') }}
@@ -24,19 +6,16 @@
 <div class="filters-col">
   <form class="filters no-dblclick {{ params.filterposition }}"
         method="get" action="{{ facetForm.action }}"
-        {# the path alone: everything else is a hidden input, so htmx serialises the page url
-           and the selection together. Given the url too, htmx would append the form to it and
-           each swap would push a url one copy of itself longer. #}
+
         hx-get="{{ facetForm.action }}"
-        {# the selection changing, and nothing else: v-select's own search box is an input
-           inside this form, and a bare `change` would send a request when it loses focus #}
+
         hx-trigger="change from:find .filter-checkbox, yw:tags-changed"
         hx-target="#facette-container-{{ listId }}"
         hx-select="#facette-container-{{ listId }}"
         hx-swap="outerHTML"
         hx-push-url="true"
         hx-boost="false">
-    {# what the page url says besides the facets, so a submit without htmx lands on this page #}
+
     {% for name, value in facetForm.params %}
       <input type="hidden" name="{{ name }}" value="{{ value }}">
     {% endfor %}
@@ -71,10 +50,7 @@
       {% for key, filter in filters %}
         {% set offered = filter.nodes|filter(node => node.count > 0) %}
         {% if horizontal %}
-          {# The option map, assembled pair by pair: `merge` renumbers integer keys, and a
-             facet's values are usually `1`, `2`, `3` -- built with it, every option ends up
-             offering the wrong value. A list of pairs is safe because appending is what
-             merge does to one. #}
+
           {% set pairs = [] %}
           {% for node in offered %}
             {% set pairs = pairs|merge([
@@ -92,8 +68,7 @@
               <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
                      id="facet-{{ listId }}-{{ filter.propName }}" placeholder="{{ _t('BAZ_FILTER_CHOOSE') }}">
               <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
-              {# one parameter holding the lot, which is the spelling `?facet=field=1,3` has
-                 always used; the checkboxes write one input per value instead #}
+
               <input type="hidden" name="facet[{{ filter.propName }}]" data-yw-tag-input-value
                      value="{{ checked|map(node => node.value)|join(',') }}">
             </div>

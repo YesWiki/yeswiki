@@ -8,10 +8,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 
 class FaviconAction extends YesWikiAction implements RegisteredAction
 {
-    /**
-     * `{{favicon}}` in page content. Stated rather than inferred from the filename, which
-     * is what let this class finally have a namespace (ticket 06).
-     */
+    /** `{{favicon}}` in page content. */
     public static function performableName(): string
     {
         return 'favicon';
@@ -21,12 +18,11 @@ class FaviconAction extends YesWikiAction implements RegisteredAction
     {
         $favicon = $this->getService(RuntimeConfig::class)->getValue('favicon');
 
-        // backward compatibility, favicon used to be in the theme folder
         if (!$favicon) {
             $favicon = "themes/{$this->getService(RuntimeConfig::class)->getValue('favorite_theme')}/images/favicon.png";
             if (file_exists("custom/$favicon")) {
                 $favicon = "custom/$favicon";
-            } // handles custom theme
+            }
         }
 
         $isEmoji = strpos($favicon, '.') === false;

@@ -5,9 +5,7 @@ namespace YesWiki\Test\Core;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
- * The compiled container's ParameterBag is frozen at runtime (can't be mutated), so tests
- * that need a specific config value use this decorator: it overrides a fixed set of keys and
- * delegates everything else to the real bag.
+ * The compiled container's ParameterBag is frozen at runtime (can't be mutated), so tests that need a specific config value use this decorator: it overrides a fixed set of keys and delegates everything else to the real bag.
  */
 class ForcedParameterBag implements ParameterBagInterface
 {

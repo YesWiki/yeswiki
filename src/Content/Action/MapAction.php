@@ -15,7 +15,6 @@ class MapAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        // Retrocompatibility
         return $this->callAction('entrymap', $this->arguments);
     }
 }

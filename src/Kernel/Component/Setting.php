@@ -3,32 +3,19 @@
 namespace YesWiki\Kernel\Component;
 
 /**
- * One editable parameter of a Component: what the settings rail draws an input for, and
- * what ends up as `param="value"` in the tag.
- *
- * `type` is the contract with the browser -- it selects the Vue input, exactly as the
- * YAML's `type:` did (`javascripts/components/InputHelper.js` maps it to `input-{type}`,
- * with text/number/range/url/email all sharing `input-text`). The named constructors below
- * are that list, written out: an unspellable type used to be a silent `input-hidden`, and
- * now it is a call that does not exist.
- *
- * Immutable. Twelve Presentations share the same two blocks of settings, and a fluent
- * object that mutated in place would let one of them relabel a setting for all the others.
+ * One editable parameter of a Component: what the settings rail draws an input for, and what ends up as `param="value"` in the tag.
  */
 final class Setting
 {
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     */
     private function __construct(
         private readonly string $name,
         private readonly ?string $type,
         private array $payload = [],
     ) {
     }
-
-    // ---------------------------------------------------------------
-    // The types. One named constructor per Vue input, so a typo cannot
-    // compile into a hidden field the way an unknown `type:` string did.
-    // ---------------------------------------------------------------
 
     public static function text(string $name): self
     {
@@ -62,19 +49,6 @@ final class Setting
 
     /**
      * A closed list of values.
-     *
-     * Two shapes, because both are natural to write: `value => label` when they differ,
-     * and a plain list when they do not (a number of columns is its own label). A list is
-     * detected rather than keyed, or its array indexes would become the values -- offering
-     * 0, 1, 2 for a choice of 2, 3, 4.
-     *
-     * `array-key` rather than `string`, and the keys are cast on the way in: a value that
-     * is written into the tag as `1` cannot be held as a string key, because PHP turns a
-     * numeric string key into an int whatever the declaration says.
-     *
-     * An option may itself be conditional -- `['label' => …, 'showif' => …]` rather than a
-     * bare label -- for a choice that is only offered when another setting says so. Rare,
-     * and the rail understands it; it is why a label here is not simply a string.
      *
      * @param array<array-key, string|int|array<string, mixed>> $options value => label, or
      *                                                                   just the values
@@ -119,15 +93,7 @@ final class Setting
         return new self($name, 'entry-list');
     }
 
-    /**
-     * Pick one of this wiki's forms -- what a list has to be told before anything else.
-     *
-     * The forms themselves are not declared with the setting: the rail is handed all of
-     * them once (`ActionsBuilderService`), and a component that carried the list would
-     * carry it again for every other component. Declaring which setting is the form is
-     * also what tells the rail whose fields to offer everywhere else, since a `formField`
-     * setting is a field OF this one.
-     */
+    /** Pick one of this wiki's forms -- what a list has to be told before anything else. */
     public static function form(string $name): self
     {
         return new self($name, 'form-list');
@@ -160,13 +126,7 @@ final class Setting
         return new self($name, 'facets');
     }
 
-    /**
-     * Narrow a list to the entries whose fields say something: `bf_type=3|bf_ville=Lyon`.
-     *
-     * A composite input like the mappings, because that string is a list of conditions and
-     * writing one by hand means knowing the field names, the seven operators and which
-     * separator means AND (`|`) and which means OR (`,`).
-     */
+    /** Narrow a list to the entries whose fields say something: `bf_type=3|bf_ville=Lyon`. */
     public static function query(string $name): self
     {
         return new self($name, 'query');
@@ -198,18 +158,14 @@ final class Setting
     }
 
     /**
-     * Pick a picture through the file manager -- browse what the page already holds, or
-     * upload one, rather than typing a filename and hoping it is spelt the same.
+     * Pick a picture through the file manager -- browse what the page already holds, or upload one, rather than typing a filename and hoping it is spelt the same.
      */
     public static function image(string $name): self
     {
         return new self($name, 'image');
     }
 
-    /**
-     * A number chosen by dragging. For the ones where the right value is whatever looks
-     * right, and no one knows it as a number before they see it.
-     */
+    /** A number chosen by dragging. */
     public static function slider(string $name, float $min, float $max, float $step = 1): self
     {
         return (new self($name, 'range'))
@@ -218,10 +174,7 @@ final class Setting
             ->with('step', $step);
     }
 
-    /**
-     * Not an input at all: a rule between settings, or a line of prose in the panel.
-     * They carry no name in the tag, so they are given one only to key the payload.
-     */
+    /** Not an input at all: a rule between settings, or a line of prose in the panel. */
     public static function divider(string $name = 'divider'): self
     {
         return new self($name, 'divider');
@@ -231,10 +184,6 @@ final class Setting
     {
         return (new self($name, 'hint'))->with('label', $text);
     }
-
-    // ---------------------------------------------------------------
-    // Modifiers
-    // ---------------------------------------------------------------
 
     public function label(string $label): self
     {
@@ -246,25 +195,13 @@ final class Setting
         return $this->with('hint', $hint);
     }
 
-    /**
-     * A caption above the control, for the settings whose `label` is not one.
-     *
-     * A checkbox's label is the sentence beside the box -- it is what you click and what
-     * says what ticking it does -- so it cannot also be the word above it naming the thing
-     * being set. Every other input has one caption doing both jobs; a checkbox needs two.
-     */
+    /** A caption above the control, for the settings whose `label` is not one. */
     public function title(string $title): self
     {
         return $this->with('title', $title);
     }
 
-    /**
-     * The value the action itself uses when the parameter is absent.
-     *
-     * Load-bearing beyond documentation: a setting left at its default is **omitted** from
-     * the tag, which is what keeps `{{entrylist id="x"}}` from being written out with
-     * thirty parameters restating what the action would have done anyway.
-     */
+    /** The value the action itself uses when the parameter is absent. */
     public function default(string|int|bool $default): self
     {
         return $this->with('default', $default);
@@ -275,12 +212,6 @@ final class Setting
     {
         return $this->with('value', $value);
     }
-
-    // ---------------------------------------------------------------
-    // How much of a row a setting takes. The rail lays its settings out on a six-column
-    // grid, so these are the three divisions that come out even. Half is the default and
-    // needs no call; a composite input takes the row whether it says so or not.
-    // ---------------------------------------------------------------
 
     public function third(): self
     {
@@ -297,17 +228,7 @@ final class Setting
         return $this->with('span', 6);
     }
 
-    /**
-     * Writes its value into a shared parameter, alongside every other setting that names
-     * the same one.
-     *
-     * `class` is the case: a section's shape, alignment, text tone and full-width-ness are
-     * four separate choices that arrive as one space-separated string. They used to be
-     * declared as sub-settings of a single `class` setting, which meant the rail drew them
-     * as one block -- and a block cannot be interleaved with the ordinary parameters it
-     * belongs among. Here they are settings like any other, and the rail joins them on the
-     * way out and splits them on the way back in.
-     */
+    /** Writes its value into a shared parameter, alongside every other setting that names the same one. */
     public function writesTo(string $parameter): self
     {
         return $this->with('writesTo', $parameter);
@@ -342,9 +263,6 @@ final class Setting
     /**
      * Only shown when other settings say so.
      *
-     * `showIf('dynamic')` means "when `dynamic` is set to anything truthy";
-     * `showIf(['search' => 'dynamic'])` means "when `search` is exactly that".
-     *
      * @param string|array<string, string|int|bool> $condition
      */
     public function showIf(string|array $condition): self
@@ -355,17 +273,12 @@ final class Setting
     /**
      * ...and this one as well, keeping whatever it already asks for.
      *
-     * The rail ANDs the conditions of a `showif`, so two of them are one condition -- but
-     * `showIf()` replaces rather than adds, and a Setting is shared: a Presentation folds
-     * in a Source's settings behind "when this source is chosen", and doing that with
-     * `showIf()` threw away the condition the Source's own setting was declared with.
-     *
      * @param array<string, string|int|bool> $condition
      */
     public function andShowIf(array $condition): self
     {
         $existing = $this->payload['showif'] ?? [];
-        // the string shorthand means "set to anything", which is what the rail reads it as
+
         if (is_string($existing)) {
             $existing = [$existing => 'notNull'];
         }
@@ -374,9 +287,7 @@ final class Setting
     }
 
     /**
-     * Shown only for some of the Components sharing this settings block, or hidden for
-     * some of them. Only meaningful on a shared SettingGroup -- a Component's own settings
-     * are already only its own.
+     * Shown only for some of the Components sharing this settings block, or hidden for some of them.
      *
      * @param list<string> $componentIds
      */
@@ -385,7 +296,9 @@ final class Setting
         return $this->with('showOnlyFor', $componentIds);
     }
 
-    /** @param list<string> $componentIds */
+    /**
+     * @param list<string> $componentIds
+     */
     public function exceptFor(array $componentIds): self
     {
         return $this->with('showExceptFor', $componentIds);
@@ -398,8 +311,7 @@ final class Setting
     }
 
     /**
-     * Values a form's own fields cannot supply, offered alongside them: `owner`,
-     * `created_at`, `updated_at`, `url`, `form_id`.
+     * Values a form's own fields cannot supply, offered alongside them: `owner`, `created_at`, `updated_at`, `url`, `form_id`.
      *
      * @param list<string> $fields
      */
@@ -411,16 +323,6 @@ final class Setting
     /**
      * Narrow a `formField` to the kinds of field that can actually play its part.
      *
-     * A card's picture can only come from an image field and its date only from a date
-     * one, so offering every field of the form is offering a choice that mostly does not
-     * work: picking `bf_description` for the visual slot produces a broken image, and
-     * nothing says why. The names are the types a form's fields are stored under -- what
-     * `#[\Field([...])]` declares on each BazarField and what the forms API reports for
-     * each field.
-     *
-     * The pseudo-fields an `extraFields()` adds are kept whatever this says: they have no
-     * type, and a setting that asked for them meant them.
-     *
      * @param list<string> $types
      */
     public function ofTypes(array $types): self
@@ -428,9 +330,7 @@ final class Setting
         return $this->with('fieldTypes', $types);
     }
 
-    /**
-     * Settings nested inside this one -- what `class` and `field-mapping` are made of.
-     */
+    /** Settings nested inside this one -- what `class` and `field-mapping` are made of. */
     public function subSettings(self ...$settings): self
     {
         $payload = [];
@@ -441,14 +341,7 @@ final class Setting
         return $this->with('subproperties', $payload);
     }
 
-    /**
-     * This setting's value is the TAG the component writes, not a parameter of it.
-     *
-     * A Presentation is the only thing that needs this: `Cards` writes `{{entrylist}}` or
-     * `{{syndication}}` depending on the source picked, and a tag cannot carry which tag it
-     * is. Implies `notWritten()`, since the value has already been used by the time the
-     * parameters are assembled.
-     */
+    /** This setting's value is the TAG the component writes, not a parameter of it. */
     public function decidesTag(): self
     {
         return $this->with('decidesTag', true)->notWritten();
@@ -467,10 +360,7 @@ final class Setting
     }
 
     /**
-     * An escape hatch for a payload key a modifier does not cover -- the ones only one
-     * component in the wiki uses (`intro`, `only`, `iconprefix`, `btn-label-add`,
-     * `dataFromFormField`). Kept deliberately awkward: reach for it and you are declaring
-     * something nothing else declares, which is worth noticing.
+     * An escape hatch for a payload key a modifier does not cover -- the ones only one component in the wiki uses (`intro`, `only`, `iconprefix`, `btn-label-add`, `dataFromFormField`).
      */
     public function raw(string $key, mixed $value): self
     {
@@ -487,7 +377,9 @@ final class Setting
         return $this->type;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return ['type' => $this->type] + $this->payload;

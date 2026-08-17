@@ -45,11 +45,10 @@ class ListManager
 
     public function getOne($id, $parent = null): ?array
     {
-        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
+        if (isset($this->cachedLists[$id]) && $parent === null) {
             return $this->cachedLists[$id];
         }
 
-        // Ensure a list exist with this ID
         if (!$this->isList($id)) {
             return null;
         }
@@ -93,10 +92,6 @@ class ListManager
         return $data;
     }
 
-    // The structure of List object has been changed in 2024
-    // Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
-    // to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
-    // We still convert the strucure on the fly in case the migration went wrong
     public function convertDataStructure($json)
     {
         if (isset($json['titre_liste'])) {
@@ -172,8 +167,6 @@ class ListManager
             throw new \Exception('Unauthorized');
         }
 
-        // deleteOrphaned() already drops every triple keyed on the tag, and the type is a
-        // column on the row it just deleted
         $this->pageManager->deleteOrphaned($id);
 
         unset($this->cachedLists[$id]);
@@ -203,7 +196,6 @@ class ListManager
 
     /**
      * Recursively trims string values in a multidimensional array (in-place).
-     * Non-string values are left untouched.
      *
      * @param array  $array    The input array (will be modified by reference)
      * @param string $charlist Optional. The characters to trim. Defaults to whitespace.

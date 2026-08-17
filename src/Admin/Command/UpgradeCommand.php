@@ -33,10 +33,6 @@ class UpgradeCommand extends Command
 
         $updateService = $this->services->get(AutoUpdateService::class);
 
-        // ADR-0007: on a farm, only the instance sharing YESWIKI_SOURCE_DIR as its own
-        // YESWIKI_INSTANCE_DIR may trigger an upgrade -- a satellite instance running this
-        // command would otherwise silently mutate the shared source out from under every
-        // other farm instance.
         if (!$updateService->isDesignatedUpdateInstance()) {
             $output->writeln('<error>' . _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') . '</error>');
 

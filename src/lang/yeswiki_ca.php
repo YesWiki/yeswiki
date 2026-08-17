@@ -559,8 +559,6 @@ return [
     'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => 'Nou CL inscrit amb èxit al manipulador',
     'USER_GOTOADMIN' => 'Gestió d\'usuaris',
 
-    // relocated from tools/login/lang/login_ca.inc.php (ticket 08)
-
     'LOGIN_SIGNUP' => 'Registrar-se',
     'LOGIN_LOGIN' => 'Connectar-se',
     'LOGIN_WIKINAME' => 'Correu electrònic',
@@ -612,7 +610,6 @@ return [
     'LOGIN_NEW_PASSWORD' => 'Contrasenya nova',
     'LOGIN_COOKIES_ERROR' => 'Cal que accepteu les galetes per connectar-vos',
 
-    // relocated from tools/tags/lang/tags_ca.inc.php (ticket 10)
     'TAGS_ACTION_ADMINTAGS' => 'Acció {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'acció és exclusiva de l\'administrador',
     'TAGS_NO_WRITE_ACCESS' => 'No teniu dret d\'escriptura en aquesta pàgina',
@@ -961,7 +958,7 @@ return [
     'AB_templates_section_pattern_cross' => 'Creu Alineada',
     'AB_template_actions_success' => 'Èxit',
     'AB_templates_section_file_label' => 'Imatge de fons',
-    // relocated from tools/attach/lang/attach_ca.inc.php (ticket 17)
+
     'ATTACH_ACTION_ATTACH' => 'Acció {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'Paràmetre "desc" necessari per a una imatge',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'el paràmetre "height", en píxels, ha d\'estar compost només per nombres enters',
@@ -1057,7 +1054,6 @@ return [
     'ATTACH_DELETED_ON' => ' - Suprimit el: {data}',
     'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'El fitxer està buit.',
 
-    // ticket 17 file-picker UI: English placeholder, pending native-speaker translation
     'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar aquest fitxer',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
@@ -1071,7 +1067,6 @@ return [
     'ATTACH_FILE_PICKER_FAMILY_DOCUMENT' => 'Documents',
     'ATTACH_FILE_PICKER_FAMILY_OTHER' => 'Other',
 
-    // relocated from tools/contact/lang/contact_ca.inc.php (ticket 18)
     'CONTACT_ACTION_ABONNEMENT' => 'Acció {{subscribe ...}}',
     'CONTACT_MAIL_REQUIRED' => 'L\'adreça email de contacte és obligatòria.',
     'CONTACT_ACTION_CONTACT' => 'Acció {{contact ...}}',
@@ -1171,7 +1166,6 @@ return [
     'AB_mailperiod_action_hint' => 'Perquè aquesta acció funcioni heu de verificar certs paràmetres sobre el vostre servidor. Veure la documentació sobre https://yeswiki.net/?MailPeriod',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'Afegir \'wiki=\' als enllaços cap a aquest wiki en els e-mails',
 
-    // relocated from tools/autoupdate/lang/autoupdate_en.inc.php (ticket 19) -- English placeholder, autoupdate was never translated for this language
     'AU_ACL' => 'Checking file rights',
     'AU_REPO_ERROR' => 'Inaccessible depots.',
     'AU_NOT_DESIGNATED_UPDATE_INSTANCE' => 'This instance is not the shared source install -- updates can only be triggered from there (see the farm setup documentation).',
@@ -1217,7 +1211,6 @@ return [
     'AU_SEVERAL_TOOLS_UPDATE' => 'You have {nbMaj} extensions to update',
     'AU_ONE_TOOL_UPDATE' => 'You have 1 extension to update',
 
-    // relocated from tools/syndication/lang/syndication_ca.inc.php (ticket 23)
     'SYNDICATION_ACTION_SYNDICATION' => 'Acció {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'El paràmetre "url" és obligatori per sindicar un flux RSS',
     'SYNDICATION_ACTION_TWITTER' => 'Acció {{twitter ...}}',
@@ -1232,9 +1225,9 @@ return [
     'SYNDICATION_READ_MORE' => 'Llegir més',
     'SYNDICATION_SOURCE' => 'cal critiseacute; fer un r♣eacute; veure "cache" al r♣eacute',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accés a tots els continguts',
-    // relocated from tools/bazar/lang/bazar_ca.inc.php (ticket 24)
+
     'BAZ_FORMULAIRE' => 'Formularis',
-    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+
     'BAZ_FILECONTENT_REPLACE_HINT' => 'Trieu un fitxer per substituir aquest.',
     'BAZ_SYSTEM_FORMS' => 'Continguts del wiki',
     'BAZ_USER_FORMS' => 'Formularis',
@@ -1618,7 +1611,6 @@ return [
     'DATATABLE_NO_RESULTS' => 'Cap resultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostra',
 
-    // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
@@ -1636,13 +1628,11 @@ return [
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
 
-    // herse (ticket 21, formerly the herse extension)
     'ACCESS_DENIED' => 'Access denied',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 
-    // rss (ticket 22, formerly tools/rss)
     'RSS_CHANGE_OF' => 'Modification of',
     'RSS_HISTORY' => 'history',
     'RSS_HIDDEN_CONTENT' => 'Hidden content',
@@ -1653,11 +1643,9 @@ return [
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
 
-    // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 
-    // form designer (ticket 26)
     'FORM_BUILDER_ADD_FIELDS' => 'Afegeix un camp',
     'FORM_BUILDER_ADVANCED' => 'Paràmetres avançats',
     'FORM_BUILDER_BACK' => 'Enrere',
@@ -1674,7 +1662,6 @@ return [
     'FORM_BUILDER_NO_PREVIEW' => 'Vista prèvia no disponible per a aquest camp',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatori',
 
-    // form edit page sections (ticket 27)
     'FORM_EDIT_ENTRY_TITLE' => 'Camp utilitzat com a títol de les fitxes',
     'FORM_EDIT_CUSTOM_TITLE' => 'Títol personalitzat…',
     'FORM_EDIT_PERMISSIONS' => 'Permisos de les fitxes',

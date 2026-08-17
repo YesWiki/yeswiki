@@ -27,7 +27,7 @@ class AceditorAction extends YesWikiAction implements RegisteredAction
             'placeholder' => $args['placeholder'] ?? '',
             'rows' => $args['rows'] ?? 3,
             'maxChars' => $args['maxChars'] ?? null,
-            'tempTag' => $args['tempTag'] ?? null, // used in new entry form
+            'tempTag' => $args['tempTag'] ?? null,
             'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false),
         ];
     }
@@ -56,15 +56,7 @@ class AceditorAction extends YesWikiAction implements RegisteredAction
         ]);
     }
 
-    /**
-     * Which editor writes this field.
-     *
-     * PROTOTYPE (javascripts/vditor-components.js): the same field, edited as what it will
-     * look like rather than as its source. The config says which one a wiki opens with --
-     * the ACeditor, until this has been lived with -- and the reader's own choice, made by
-     * the switch button in either toolbar, outranks it. That choice is a cookie because it
-     * has to be legible here, before a line of JavaScript has run.
-     */
+    /** Which editor writes this field. */
     private function chosenEditorTemplate(): string
     {
         $chosen = $this->getService(CurrentRequest::class)->get()->cookies->get(self::EDITOR_COOKIE);

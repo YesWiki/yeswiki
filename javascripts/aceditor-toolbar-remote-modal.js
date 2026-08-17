@@ -1,5 +1,3 @@
-// Opens a yw-modal loaded with a remote page's content (e.g. the formatting-rules
-// help page), fetched and injected client-side -- the toolbar's "remote" buttons.
 export default function (title, url) {
   const modal = document.createElement('div')
   modal.className = 'yw-modal'
@@ -32,8 +30,6 @@ export default function (title, url) {
         : html
     })
 
-  // Remove the (dynamically created, one-off) modal from the DOM once yw-core.js
-  // closes it, however that happens (close button, backdrop click, Escape)
   const observer = new MutationObserver(() => {
     if (!modal.classList.contains('yw-modal--open')) {
       observer.disconnect()

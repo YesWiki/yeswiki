@@ -1,25 +1,3 @@
-/* ============================================================
-   yw-content — what a page's own content asks for
-
-   Styling nothing in the request pipeline can predict: it is the page body that decides,
-   by carrying a gallery or a scanner. Registered by the template that renders the thing, and
-   by ContentAssetScanner for what is recognised in the rendered HTML rather than produced by
-   an action.
-
-   ADR-0020 collapsed ~40 stylesheets into six bundles, BY LOAD TRIGGER rather than into one
-   file: merging everything would have made ADR-0014's conditional declaration decorative and
-   shipped the map and the WYSIWYG editor to every visitor. Each section below names the file
-   it came from; add to the section a rule belongs to rather than to the end.
-
-   `styles/vendor/**` is not ours to merge and stays as it is. So do `styles/animate.css`
-   (declared by a section that carries an animation) and `styles/install.css` (the installer
-   renders before any of this exists).
-   ============================================================ */
-
-/* ============================================================
-   from styles/bazar/photobox.css
-   ============================================================ */
-
 .pbgallery li {
   list-style: none;
   perspective: 100px;
@@ -87,7 +65,6 @@
   opacity: 0;
 }
 
-/* Normilizes box-sizing  */
 #pbOverlay *,
 #pbOverlay *::before,
 #pbOverlay *::after {
@@ -113,7 +90,6 @@
   user-select: none;
   background: var(--yw-overlay);
 
-  /* background:radial-gradient(rgba(0,0,0,.6) 0%, rgba(0,0,0,.9) 100%); */
   transform: translate3d(0, 0, 0);
   transition: opacity 300ms ease;
 }
@@ -193,7 +169,6 @@
   vertical-align: middle;
 }
 
-/* Animation when image was not loaded */
 @keyframes deadImage {
   50% {
     text-shadow: 0 0 25px var(--yw-shadow-color-strong);
@@ -222,11 +197,10 @@
   display: inline-block;
 }
 
-/* #pbOverlay.error .pbWrapper{ display:inline-block; width:100%; } */
 .pbLoading .pbWrapper {
   display: inline-block\9;
   width: 100%;
-} /* ie8+9 hack */
+}
 .pbWrapper::before {
   content: '\2716';
   color: transparent;
@@ -282,7 +256,6 @@
   box-shadow: 0 0 20px var(--yw-shadow-color);
 }
 
-/* FOR MOBILE */
 .mobile.show .pbWrapper > div,
 .mobile.show .pbWrapper > img {
   transition: 30ms;
@@ -313,7 +286,6 @@
   transition: 0.4s ease-in;
 }
 
-/* -- close button -- */
 #pbCloseBtn,
 #pbAutoplayBtn {
   position: absolute;
@@ -360,7 +332,6 @@
   background: var(--yw-danger);
 }
 
-/* -- autoplay controller -- */
 #pbAutoplayBtn {
   display: none;
   right: auto;
@@ -498,7 +469,7 @@
   font-size: 0.9em;
   text-shadow: 1px 1px 1px var(--yw-shadow-color-strong);
   padding-left: var(--yw-space-lg-x);
-} /* padding-left from <label> */
+}
 .pbCaptionText.change {
   transform: translateY(25px);
   opacity: 0;
@@ -513,7 +484,6 @@
   padding: 0;
 }
 
-/* hide thumbnails */
 #pbThumbsToggler:checked ~ #pbCaption .pbThumbs {
   margin: 0;
 }
@@ -523,9 +493,6 @@
 }
 
 .pbThumbs {
-  /* How tall the strip of thumbnails is -- and therefore how far below the fold it is
-     parked when it is not asked for, which is the negative margin below. One number, so
-     the strip cannot end up half-visible when it changes. Component geometry, not a token. */
   --yw-photobox-thumbs-height: 80px;
 
   display: none;
@@ -610,7 +577,7 @@
 }
 .pbThumbs li:hover img {
   min-height: 96%;
-} /* fix a bug in Chrome and Opera */
+}
 .pbThumbs li.fast a img {
   transition: none;
 }
@@ -668,7 +635,6 @@
   transform: scale(0.4) translateX(-350px);
 }
 
-/* */
 #pbPrevBtn b::before,
 #pbNextBtn b::after {
   display: inline;
@@ -686,7 +652,6 @@
   content: '\203A';
 }
 
-/* */
 .on #pbPrevBtn:hover b {
   transform: scale(1) translateX(20px);
 }
@@ -706,7 +671,6 @@
   text-align: right;
 }
 
-/* ------- media queries (for small screens) ----------- */
 @media all and (width <=700px) {
   .pbWrapper img,
   .hide .pbWrapper img.prepare {
@@ -740,16 +704,11 @@
   }
 }
 
-/* fix for Chrome */
 @media all and (width <=710px) {
   .pbThumbs li.active a img {
     min-height: 96%;
   }
 }
-
-/* ============================================================
-   from styles/qrcodescan.css
-   ============================================================ */
 
 #qr-container {
   background: var(--yw-surface-sunken);
@@ -782,7 +741,7 @@
   color: var(--yw-text);
   line-height: 26px;
   margin: 0;
-  /*font-family: proxima-nova, sans-serif;*/
+
   font-style: normal;
   text-rendering: optimizeLegibility !important;
   font-smooth: always !important;
@@ -795,7 +754,7 @@
   color: var(--yw-text);
   line-height: 22px;
   margin: 0;
-  /*font-family: proxima-nova, sans-serif;*/
+
   font-style: normal;
   text-rendering: optimizeLegibility !important;
   font-smooth: always !important;
@@ -804,7 +763,6 @@
 }
 
 .stepper__row {
-  /*width: 623px;*/
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -943,10 +901,6 @@
 #multimedia-player figcaption * {
   padding: 0;
 }
-
-/* ============================================================
-   from styles/qrcardscan.css
-   ============================================================ */
 
 #qr-container {
   background: var(--yw-surface-sunken);

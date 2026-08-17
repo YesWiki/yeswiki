@@ -9,9 +9,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * `/PageName/share` -- converted from the procedural handlers/page/share.php by ticket 06.
- */
+/** `/PageName/share` -- converted from the procedural handlers/page/share.php by ticket 06. */
 class ShareHandler extends YesWikiHandler implements RegisteredHandler
 {
     public static function performableName(): string
@@ -25,8 +23,6 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         try {
             $this->emit();
         } catch (\Throwable $t) {
-            // handlers commonly end in exit()/redirect, which throw; keep what was already
-            // printed and close the buffer either way (see ticket 06)
             $this->output .= (string)ob_get_clean();
 
             throw $t;
@@ -35,23 +31,16 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         return $this->emitAfter((string)ob_get_clean());
     }
 
-    /**
-     * Ran as an after-callback until ticket 06 merged it in. Receives the rendered output
-     * as $plugin_output_new -- the name the hooks already used -- because several rewrite
-     * it rather than appending.
-     */
+    /** Ran as an after-callback until ticket 06 merged it in. */
     private function emitAfter(string $plugin_output_new): string
     {
         ob_start();
 
-        // merged from handlers/page/ShareHandler__.php (ticket 06: core does not hook itself)
-        // creation et affichage QRcode du lien de page
         $url = $this->getService(UrlFormatter::class)->href();
         $cacheImage = 'cache/qrcode-' . $this->getService(PageContext::class)->getTag() . '-url.svg';
         $this->getService(QrCodeService::class)->generateToFile($url, $cacheImage);
         $html = '<img class="right" src="' . $cacheImage . '" title="' . _t('QR_CODE_PAGE') . '" alt="' . $url . '" />' . "\n";
 
-        // Agrégation du QRcode dans le buffer du handler share
         $plugin_output_new = preg_replace(
             '/<div class="page">/',
             '<div class="page">' . "\n" . $html . "\n",
@@ -66,7 +55,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         $url = $this->getService(UrlFormatter::class)->href();
         $tag = $this->getService(PageContext::class)->getTag();
         $shareText = _t('TEMPLATE_SHARE_MUST_READ') . $url;
-        // icon names refer to the Tabler sprite (src/assets/icons.svg)
+
         $targets = [
             ['href' => 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($url), 'icon' => 'brand-facebook', 'label' => _t('TEMPLATE_SHARE_FACEBOOK')],
             ['href' => 'https://twitter.com/intent/tweet?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'brand-x', 'label' => _t('TEMPLATE_SHARE_TWITTER')],
@@ -74,7 +63,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
             ['href' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($url), 'icon' => 'brand-linkedin', 'label' => _t('TEMPLATE_SHARE_LINKEDIN')],
             ['href' => 'https://wa.me/?text=' . urlencode($shareText), 'icon' => 'brand-whatsapp', 'label' => _t('TEMPLATE_SHARE_WHATSAPP')],
             ['href' => 'https://t.me/share/url?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'brand-telegram', 'label' => _t('TEMPLATE_SHARE_TELEGRAM')],
-            // the by-mail share is the wiki's own sendmail handler, not an external network
+
             ['href' => $this->getService(UrlFormatter::class)->href('sendmail'), 'icon' => 'mail', 'label' => _t('TEMPLATE_SHARE_MAIL')],
         ];
         $html = '<div class="yw-share-buttons">' . "\n";
@@ -105,7 +94,6 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         </div>
         ';
 
-        // si l'on est dans une requete ajax, pas besoin de titre, et pas besoin de charger tout le html
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             echo '<div class="page">' . "\n" . $html . "\n" . '</div>';
         } else {

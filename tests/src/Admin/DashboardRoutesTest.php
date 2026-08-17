@@ -16,16 +16,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Administration as routes rather than as seeded wiki pages.
- *
- * Two things are worth a test here and neither is the markup. First, that every `/admin/*`
- * route declares `@admins`: the gate is the route's own option, checked by ApiService
- * before the controller runs, so a route added later without it would be silently public.
- * Second, that each screen actually renders -- these controllers are thin wrappers around
- * actions, and the way they break is an action name that no longer exists, which shows up
- * as an empty page rather than as an error.
- */
+/** Administration as routes rather than as seeded wiki pages. */
 class DashboardRoutesTest extends YesWikiTestCase
 {
     public function testWikiExisting(): YesWikiRuntime
@@ -67,8 +58,6 @@ class DashboardRoutesTest extends YesWikiTestCase
             $this->assertContains('public', $acl, "{$path} is meant to be readable by anyone");
         }
 
-        // a page tagged `dashboard` or `admin` would have no URL at all, so both names are
-        // reserved -- ReservedTagsTest checks the list against the route table itself
         $this->assertTrue(ReservedTags::isReserved('dashboard'));
         $this->assertTrue(ReservedTags::isReserved('Admin'), 'reserving is case-insensitive');
     }
@@ -99,31 +88,26 @@ class DashboardRoutesTest extends YesWikiTestCase
                 $this->assertStringNotContainsString($key, $body, 'every label is translated');
             }
 
-            // the API route list is a dashboard screen too, from its own controller
             $api = (string)$wiki->services->get(DocumentationApiController::class)->getDocumentation()->getContent();
             $this->assertStringContainsString('yw-dashboard__sidebar', $api, '/api renders the rail');
 
-            // an action linking to "this page" must get the whole route path: the URL
-            // parser reads `?dashboard/forms` as tag `dashboard` + method `forms`, and a
-            // self-link built from the tag alone lands on a different screen
             $forms = (string)$dashboard->forms()->getContent();
             $this->assertStringContainsString('dashboard/forms&', $forms, 'BazaR links keep the whole route');
             $this->assertStringNotContainsString('?dashboard&', $forms);
-            // BazaR's own tab bar is off on these routes: the rail is the navigation
+
             $this->assertStringNotContainsString('BAZ_menu', $forms);
 
             $adminController = $wiki->services->get(AdminController::class);
             $screens = [
                 'content', 'imports', 'keywords',
-                // `appearance` is retired: its two blocks live on `preset` now (ticket 30),
-                // beside the component gallery a colour preset is actually judged against
+
                 'layout', 'preset', 'customCss', 'customTemplates',
                 'users', 'groups', 'reactions', 'spam', 'config', 'updates', 'backups',
             ];
             foreach ($screens as $method) {
                 $body = (string)$adminController->{$method}()->getContent();
                 $this->assertStringContainsString('yw-dashboard__canvas', $body, "admin/{$method} renders");
-                // an action that no longer exists renders as its own name in a comment
+
                 $this->assertStringNotContainsString('does not exist', $body, "admin/{$method} runs its action");
                 $this->assertNoUntranslatedKeys($body, "admin/{$method}");
                 $this->assertFilePickerIsWiredUp($body, "admin/{$method}");
@@ -134,13 +118,7 @@ class DashboardRoutesTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The rail groups screens by the errand that brings someone to them.
-     *
-     * Administration is what is *in* the wiki; System is the wiki itself. Two screens have
-     * no entry of their own at all: the permissions render on the Content screen (they are
-     * permissions over content) and the lists sit with the Forms they belong to.
-     */
+    /** The rail groups screens by the errand that brings someone to them. */
     #[Depends('testWikiExisting')]
     public function testTheRailGroupsScreensByErrand(YesWikiRuntime $wiki): void
     {
@@ -164,7 +142,6 @@ class DashboardRoutesTest extends YesWikiTestCase
                 'the permissions are a section of the content screen now, not an entry of their own'
             );
 
-            // ...and the content screen is where they went
             foreach (['ADMIN_PERMISSIONS_PAGES', 'ADMIN_PERMISSIONS_ACTIONS', 'ADMIN_PERMISSIONS_HANDLERS'] as $key) {
                 $this->assertStringContainsString(_t($key), $rail, "the content screen carries {$key}");
             }
@@ -174,9 +151,7 @@ class DashboardRoutesTest extends YesWikiTestCase
                 $this->railOrder($rail, ['dashboard/export', 'dashboard/lists', 'dashboard/forms']),
                 'the lists sit with the forms they belong to'
             );
-            // Appearance is its own errand (ticket 30) and reads outwards: the layout is the
-            // shape of every page, the preset its colours, and the CSS what you reach for
-            // when neither of the two can say it
+
             $this->assertStringContainsString(_t('DASHBOARD_SECTION_APPEARANCE'), $rail);
             $this->assertSame(
                 ['admin/layout', 'admin/preset', 'admin/custom-css', 'admin/custom-templates'],
@@ -191,8 +166,6 @@ class DashboardRoutesTest extends YesWikiTestCase
                 'the appearance screen is retired: its blocks are on the preset screen'
             );
 
-            // Administration reads people-ward: what is in the wiki, who is in it, how they
-            // are grouped, then the two things that describe and answer content
             $this->assertSame(
                 ['admin/content', 'admin/users', 'admin/groups', 'admin/keywords', 'admin/reactions'],
                 $this->railOrder($rail, [
@@ -201,9 +174,6 @@ class DashboardRoutesTest extends YesWikiTestCase
                 'Administration reads from the content to the people to what they leave on it'
             );
 
-            // The API has no entry of its own: it is one of the ways the wiki's content comes
-            // out, so it is listed on the Export screen with the feeds and the per-form formats.
-            // The route itself still renders (see testEveryDashboardRouteRenders).
             $this->assertStringNotContainsString(
                 '<span>' . _t('DASHBOARD_API') . '</span>',
                 $rail,
@@ -216,8 +186,6 @@ class DashboardRoutesTest extends YesWikiTestCase
                 'System reads from the file that configures the wiki to the mess to clean up'
             );
 
-            // a visitor gets the public half of the rail, lists included: what a list says
-            // is already visible in every field that uses it
             $authentication->logout();
             $visitor = (string)$wiki->services->get(DashboardController::class)->activity()->getContent();
             $this->assertStringContainsString('dashboard/lists', $visitor);
@@ -228,18 +196,7 @@ class DashboardRoutesTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * A file-picker button needs two other things on the page, and both are easy to forget.
-     *
-     * The panel (`@core/aceditor-rails.twig`) and the module that binds the click
-     * (`javascripts/inputs/file-picker-field.js`). Miss either and the button renders,
-     * looks right, and does nothing -- there is no error anywhere, which is why this went
-     * unnoticed on the Layout screen until someone clicked it. `usersettings.twig` shipped
-     * the button without the panel once, for the same reason.
-     *
-     * Asserted as a rule over every screen rather than on the one that broke: the next
-     * screen to add a picker will forget the same two lines.
-     */
+    /** A file-picker button needs two other things on the page, and both are easy to forget. */
     private function assertFilePickerIsWiredUp(string $body, string $screen): void
     {
         if (!str_contains($body, 'data-yw-file-picker-field')) {
@@ -260,18 +217,9 @@ class DashboardRoutesTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * A key that has no translation renders as itself, which reads as a label nobody wrote.
-     *
-     * The Layout screen shipped a button labelled `ATTACH_FILE_PICKER_CHOOSE_EXISTING` --
-     * a key that exists in no catalogue, so `_t()` handed back the key. Nothing fails, and
-     * it looks like a translation that has not been done yet rather than a name that was
-     * never defined.
-     */
+    /** A key that has no translation renders as itself, which reads as a label nobody wrote. */
     private function assertNoUntranslatedKeys(string $body, string $screen): void
     {
-        // an all-caps token of three or more underscore-separated words, in text position:
-        // narrow enough not to trip on CSS class names, JS constants or SQL
         preg_match_all('/>\s*([A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,})\s*</', $body, $found);
 
         $this->assertSame(
@@ -291,9 +239,6 @@ class DashboardRoutesTest extends YesWikiTestCase
      */
     private function railOrder(string $page, array $routes): array
     {
-        // the rail only: the canvas beside it is full of links to these same routes, and
-        // an order read across both would be an order of whatever the screen happens to
-        // render today
         $from = strpos($page, 'yw-dashboard__sidebar');
         $this->assertNotFalse($from, 'the premise: this screen renders the rail');
         $rail = substr($page, $from, (int)strpos($page, '</nav>', $from) - $from);

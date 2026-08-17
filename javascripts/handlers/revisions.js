@@ -2,7 +2,6 @@ import SpinnerLoader from '../components/SpinnerLoader.js'
 
 const { createApp } = Vue
 
-// Capture dataset before mounting (Vue 3 replaces the mount element)
 const mountElement = document.querySelector('.revisions-container')
 const elementDataset = mountElement ? { ...mountElement.dataset } : {}
 
@@ -76,7 +75,6 @@ const app = createApp({
         hour: 'numeric',
         minute: 'numeric',
       })
-      // initial prop so it gets reactive
       rev.current_code = ''
       rev.current_html = ''
       rev.commit_diff_html = ''
@@ -145,7 +143,6 @@ const app = createApp({
           ((rev.timestamp - this.firstRevision.timestamp) / timelineLength) *
           100
         if (prevRevision) {
-          // At least 1% gap between each, otherwise we don't see anything in the UI
           const minGap = this.minGapBetween(rev, prevRevision)
           rev.placeInTimeLine = Math.min(
             rev.placeInTimeLine,
@@ -155,8 +152,6 @@ const app = createApp({
         prevRevision = rev
       })
 
-      // due to the 1% gap, it can occurs that the first revision ends up with negative position
-      // so we recover that gap on the first revisions
       if (this.firstRevision.placeInTimeLine < 0) {
         this.firstRevision.placeInTimeLine = 0
         prevRevision = null
@@ -176,7 +171,6 @@ const app = createApp({
       }
     },
     minGapBetween(rev1, rev2) {
-      // Bigger gap if different day
       return rev1.time.setHours(0, 0, 0, 0) === rev2.time.setHours(0, 0, 0, 0)
         ? 1.3
         : 3
@@ -184,7 +178,6 @@ const app = createApp({
   },
 })
 
-// Vue 3: Use app.config.globalProperties instead of Vue.prototype
 app.config.globalProperties.window = window
 
 if (mountElement) {

@@ -4,21 +4,14 @@ namespace YesWiki\Import\Service;
 
 use YesWiki\Kernel\Exception\CurlTimeoutException;
 
-// use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-//
 class ImportService
 {
-    // protected $wiki;
-    // protected $params;
-
-    public function __construct(/* ParameterBagInterface $params */)
+    public function __construct()
     {
-        // $this->params = $params;
     }
 
     /**
-     * extract baseUrl and rootPage for external url
-     * TODO check if this function should be in UrlService after refactor.
+     * extract baseUrl and rootPage for external url TODO check if this function should be in UrlService after refactor.
      *
      * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
      */
@@ -42,8 +35,7 @@ class ImportService
     }
 
     /**
-     * extract baseUrl, rewriteModeEnabled and tag
-     * TODO check if this function should be in UrlService after refactor.
+     * extract baseUrl, rewriteModeEnabled and tag TODO check if this function should be in UrlService after refactor.
      *
      * @param string $inputUrl
      *
@@ -51,9 +43,6 @@ class ImportService
      */
     private function extractBaseUrlModeAndTag($inputUrl): array
     {
-        // the guard at the end of this method already asks `is_null($rewriteModeEnabled)`, so
-        // null is the value it was written to expect when no pattern matched -- it just was
-        // never assigned one (ticket 40)
         $rewriteModeEnabled = null;
         if (preg_match('/wiki=(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
             $tag = $matches[1];
@@ -88,8 +77,7 @@ class ImportService
     }
 
     /**
-     * retrieve url after redirection
-     * TODO check if this function should be in UrlService after refactor.
+     * retrieve url after redirection TODO check if this function should be in UrlService after refactor.
      *
      * @return string $outputUrl
      */
@@ -139,8 +127,8 @@ class ImportService
         curl_setopt($ch, CURLOPT_WRITEHEADER, $fph);
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 6); // total timeout in seconds
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
         curl_exec($ch);
         $error = curl_errno($ch);
         curl_close($ch);

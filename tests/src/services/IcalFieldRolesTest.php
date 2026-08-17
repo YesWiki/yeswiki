@@ -10,15 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 11's stated acceptance test, written first: **a form whose date fields are not
- * named `bf_date_debut_evenement` / `bf_date_fin_evenement` still produces correct iCal.**.
- *
- * Core used to read those literal French strings out of user data, so the calendar and
- * the iCal export only worked for webmasters who happened to name their fields that way
- * -- typically because they copied the seeded Agenda form. A webmaster who named the
- * field `bf_debut` got an empty export and no error explaining why.
- *
- * Core now asks the form which field plays the `start_date` role instead.
+ * Ticket 11's stated acceptance test, written first: **a form whose date fields are not named `bf_date_debut_evenement` / `bf_date_fin_evenement` still produces correct iCal.**.
  */
 class IcalFieldRolesTest extends YesWikiTestCase
 {
@@ -84,8 +76,7 @@ class IcalFieldRolesTest extends YesWikiTestCase
     }
 
     /**
-     * The acceptance test itself: a real entry on that form exports as a VEVENT with the
-     * right start and end, read through the roles.
+     * The acceptance test itself: a real entry on that form exports as a VEVENT with the right start and end, read through the roles.
      */
     public function testIcalExportWorksWithoutTheConventionalFieldNames(): void
     {
@@ -117,10 +108,7 @@ class IcalFieldRolesTest extends YesWikiTestCase
     }
 
     /**
-     * The other half of the promise: a form that *does* use the historic French names --
-     * every wiki seeded from the shipped Agenda form -- keeps working untouched, because
-     * the roles default from the field's type and those fields are `listedatedeb` /
-     * `listedatefin` regardless of what they are called. No migration, no webmaster action.
+     * The other half of the promise: a form that *does* use the historic French names -- every wiki seeded from the shipped Agenda form -- keeps working untouched, because the roles default from the field's type and those fields are `listedatedeb` / `listedatefin` regardless of what they are called.
      */
     public function testTheSeededFrenchNamedAgendaFormStillWorks(): void
     {

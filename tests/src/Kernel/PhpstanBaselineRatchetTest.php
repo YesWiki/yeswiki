@@ -4,52 +4,23 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * A ceiling on the PHPStan baseline: each kind of suppression may fall, never rise.
- *
- * The baseline already catches *stale* entries by itself -- `ignore.unmatched` fires when a
- * baselined error stops occurring, which is how ticket 39's module split found seven at once.
- * What it has never had is a ceiling. A new file could be written, baselined and merged, and
- * the number only went up: 3,398 when this was written.
- *
- * ## Why per identifier, and not one total
- *
- * 82% of the baseline is `missingType.*` -- annotation debt with no behaviour in it. The rest
- * are assertions that the code is *wrong*, and those are where defects hide: ticket 35 found a
- * feature dead on arrival behind an `if.alwaysFalse`, and ticket 40 found
- * `ThemeSelectorRenderer::prepareBackgrounds()` fatally instantiating a class in the wrong
- * namespace behind nine `class.notFound`s.
- *
- * A single total would let 2,772 annotations fall by one and pay for a new `class.notFound`.
- * They are not the same currency, so they are not counted in the same purse.
- *
- * ## Lowering a number
- *
- * Required, not optional: the counts are asserted exactly, so converting a call site means
- * editing this file. That is the same deliberate friction `EscapeRatchetTest` uses -- a ceiling
- * nobody has to touch stops describing the code within a month.
- *
- * A new identifier that is not on this list at all fails too: adding a kind of suppression the
- * codebase has never had is exactly the event worth noticing.
- */
+/** A ceiling on the PHPStan baseline: each kind of suppression may fall, never rise. */
 class PhpstanBaselineRatchetTest extends TestCase
 {
     private const BASELINE = __DIR__ . '/../../../phpstan/baseline.neon';
 
     /**
-     * Suppressions per error identifier. Lower these; never raise them.
+     * Suppressions per error identifier.
      *
      * @var array<string, int>
      */
     private const CEILING = [
-        // ---- annotation debt: mechanical, no behaviour in it ----
         'missingType.return' => 885,
         'missingType.parameter' => 704,
         'missingType.iterableValue' => 569,
         'missingType.property' => 462,
         'missingType.generics' => 7,
 
-        // ---- claims that the code is wrong: burn these first (ticket 40) ----
         'argument.type' => 127,
         'offsetAccess.notFound' => 33,
         'function.alreadyNarrowedType' => 22,
@@ -110,7 +81,9 @@ class PhpstanBaselineRatchetTest extends TestCase
         'varTag.variableNotFound' => 1,
     ];
 
-    /** @return array<string, int> */
+    /**
+     * @return array<string, int>
+     */
     private function actualCounts(): array
     {
         $counts = [];
@@ -138,13 +111,7 @@ class PhpstanBaselineRatchetTest extends TestCase
             . implode("\n", $grown));
     }
 
-    /**
-     * The other direction, and the reason the ceiling is exact.
-     *
-     * A count that has fallen and not been recorded leaves headroom nobody decided to grant --
-     * which is how a ceiling stops meaning anything. Lower the number in `CEILING` in the same
-     * commit that removes the suppression.
-     */
+    /** The other direction, and the reason the ceiling is exact. */
     public function testTheCeilingIsNotStale(): void
     {
         $actual = $this->actualCounts();
@@ -161,8 +128,7 @@ class PhpstanBaselineRatchetTest extends TestCase
     }
 
     /**
-     * The headline number, so that a change to it is visible in a diff even when it moves
-     * between kinds.
+     * The headline number, so that a change to it is visible in a diff even when it moves between kinds.
      */
     public function testTheTotalIsWhatWeThinkItIs(): void
     {

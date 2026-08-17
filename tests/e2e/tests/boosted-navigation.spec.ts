@@ -1,43 +1,21 @@
 import { expect, Page, test } from '@playwright/test'
 import { attachConsole, watchConsole } from '../helpers/console'
 
-/**
- * Ticket 16: internal links load through htmx, so a navigation swaps the squelette's body
- * block instead of reloading the page.
- *
- * Everything that broke while this was built broke *only in a browser, only on the second
- * page*: the first visit initialised fine and every later one did not, because the
- * initialiser was keyed on something that survives the swap. No PHP test can see that. These
- * are the tests that can.
- *
- * Configure which pages to exercise if yours are named differently:
- *   YESWIKI_PAGE_WITH_LIST=CartoAnnuaire YESWIKI_PAGE_WITH_EDITOR=SaisirAnnuaire yarn test-e2e
- */
+/** Ticket 16: internal links load through htmx, so a navigation swaps the squelette's body block instead of reloading the page. */
 
 const PAGE_WITH_LIST = process.env.YESWIKI_PAGE_WITH_LIST || 'CartoAnnuaire'
 const PAGE_WITH_EDITOR =
   process.env.YESWIKI_PAGE_WITH_EDITOR || 'SaisirAnnuaire'
 
-/**
- * A *mounted* editor, not merely present markup: vditor hides the original textarea and
- * builds its own container beside it, so `textarea[data-vditor-ready]` is correctly invisible
- * and asserting on it fails for the wrong reason.
- */
+/** A *mounted* editor, not merely present markup: vditor hides the original textarea and builds its own container beside it, so `textarea[data-vditor-ready]` is correctly invisible and asserting on it fails for the wrong reason. */
 const EDITOR = '.vditor, .aceditor-container .ace_editor'
 
-/**
- * A widget that only exists once JavaScript has run — a Vue list, or leaflet having built its
- * map. Either proves the page's initialisers fired.
- */
+/** A widget that only exists once JavaScript has run — a Vue list, or leaflet having built its map. */
 const MOUNTED_WIDGET =
   process.env.YESWIKI_WIDGET_SELECTOR ||
   '.entry-list-dynamic-container > *, .leaflet-container'
 
-/**
- * Mark the current document, then navigate by clicking. If the mark survives, the page was
- * swapped rather than reloaded -- which is what makes the rest of these tests meaningful
- * instead of trivially true.
- */
+/** Mark the current document, then navigate by clicking. */
 const markDocument = (page: Page) =>
   page.evaluate(() => {
     // @ts-expect-error test-only marker
@@ -60,16 +38,10 @@ const navigateByLink = async (page: Page, tag: string) => {
     tag,
     { timeout: 10000 },
   )
-  // htmx settles asynchronously; the initialisers run on htmx:load after that
   await page.waitForTimeout(500)
 }
 
 test('the navbar keeps its height from page to page', async ({ page }) => {
-  // The reported symptom -- the bar appearing to change height as you navigate -- turned out
-  // to be the browser's default 8px body margin, fixed with `body { margin: 0 }`. This guards
-  // the navbar's own half: `li.active a` adds a 2px bottom border, so without the transparent
-  // border every link reserves, the current page's link would be 2px taller than its
-  // neighbours and the bar would grow by 2px on exactly the pages that have one.
   await page.setViewportSize({ width: 1000, height: 500 })
 
   const heights: number[] = []
@@ -85,7 +57,6 @@ test('the navbar keeps its height from page to page', async ({ page }) => {
     )
   }
 
-  // and with a link marked current, which is the state the border reservation is for
   await page.goto('/')
   heights.push(
     await page.evaluate(() => {
@@ -111,7 +82,6 @@ test.describe('boosted navigation', () => {
 
     const body = page.locator('body')
     await expect(body).toHaveAttribute('hx-boost', 'true')
-    // the layout fingerprint is what lets the server refuse to swap a differently-skinned page
     await expect(body).toHaveAttribute('hx-headers', /HX-YesWiki-Layout/)
   })
 
@@ -129,10 +99,7 @@ test.describe('boosted navigation', () => {
     ).toBe(true)
   })
 
-  /**
-   * The regression that started this: `ywInitEach` was keyed on <body>, which survives a swap,
-   * so the editor was only ever built on the first page of a session.
-   */
+  /** The regression that started this: `ywInitEach` was keyed on <body>, which survives a swap, so the editor was only ever built on the first page of a session. */
   test('the editor initialises on a page reached by a boosted navigation', async ({
     page,
   }, testInfo) => {
@@ -144,7 +111,6 @@ test.describe('boosted navigation', () => {
       'the editor must work on a direct load',
     ).toBeVisible({ timeout: 15000 })
 
-    // leave and come back through links, so both navigations are boosted
     await navigateByLink(page, PAGE_WITH_LIST)
     await navigateByLink(page, PAGE_WITH_EDITOR)
 
@@ -165,8 +131,6 @@ test.describe('boosted navigation', () => {
 
     await page.goto(`/?${PAGE_WITH_LIST}`)
     const widget = page.locator(MOUNTED_WIDGET).first()
-    // if this page has no JS-mounted widget there is nothing to prove here; say so rather
-    // than fail, and point at the knob for pages named differently
     if ((await widget.count()) === 0) {
       test.skip(
         true,
@@ -181,8 +145,6 @@ test.describe('boosted navigation', () => {
     await navigateByLink(page, PAGE_WITH_EDITOR)
     await navigateByLink(page, PAGE_WITH_LIST)
 
-    // Distinguish "the page content never arrived" from "it arrived and never mounted" --
-    // they have different causes, and guessing between them costs a whole run.
     const diagnostic = await page.evaluate(() => {
       const holders = [
         ...document.querySelectorAll('.entry-list-dynamic-container'),
@@ -197,7 +159,6 @@ test.describe('boosted navigation', () => {
         leafletContainers:
           document.querySelectorAll('.leaflet-container').length,
         mainContentChars: (main?.innerHTML || '').length,
-        // what the page actually says where the map should be
         mainExcerpt: (main?.textContent || '')
           .replace(/\s+/g, ' ')
           .trim()
@@ -218,14 +179,7 @@ test.describe('boosted navigation', () => {
     expect(watcher.errors(), 'the browser reported errors').toEqual([])
   })
 
-  /**
-   * Does the *server* answer a boosted request with the same page?
-   *
-   * Compares the two responses byte-for-presence rather than reasoning about them. If the
-   * boosted one is missing markup the direct one has, the fault is server-side -- the
-   * fragment path rendering something different -- and no amount of client-side
-   * initialisation work will fix it.
-   */
+  /** Does the *server* answer a boosted request with the same page? */
   test('a boosted request returns the same content as a direct one', async ({
     page,
   }, testInfo) => {
@@ -242,10 +196,6 @@ test.describe('boosted navigation', () => {
     const directBody = await direct.text()
     const boostedBody = await boosted.text()
 
-    // The boosted response is the body block: the same content, minus the <head>. Comparing a
-    // named marker is brittle -- it assumes which widget the page uses, which is how the first
-    // version of this test asked about a container CartoAnnuaire does not have. Comparing
-    // *size* asks the real question: did the content survive the fragment path?
     const report = {
       directStatus: direct.status(),
       boostedStatus: boosted.status(),
@@ -274,10 +224,7 @@ test.describe('boosted navigation', () => {
     ).toBeGreaterThan(0.8)
   })
 
-  /**
-   * The catch-all. Every fault this ticket produced showed up here first, and this is the
-   * assertion that would have caught all of them without anyone predicting the mechanism.
-   */
+  /** The catch-all. */
   test('a round trip produces no console errors', async ({
     page,
   }, testInfo) => {
@@ -310,9 +257,6 @@ test.describe('boosted navigation', () => {
     const watcher = watchConsole(page)
     const railLink = (route: string) =>
       page.locator(`.yw-dashboard__sidebar a[href*="${route}"]`).first()
-    // The wiki's own menu, by what it points at rather than by how many links it holds: the
-    // login modal's markup sits inside the navbar after a boosted swap and outside it on a
-    // direct load, so a count differs for a reason that has nothing to do with this.
     const wikiMenuLinks = () => page.locator('#yw-topnav .topnavpage a').count()
 
     await page.goto('/?doc')
@@ -327,8 +271,6 @@ test.describe('boosted navigation', () => {
     ).toBeGreaterThan(0)
 
     for (let round = 0; round < 2; round += 1) {
-      // any other dashboard screen will do -- this was `api` until ticket 30 took the API
-      // out of the rail and listed it on Export, where it belongs
       await railLink('dashboard/export').click()
       await page.waitForFunction(
         () => window.location.href.includes('export'),
@@ -347,8 +289,6 @@ test.describe('boosted navigation', () => {
         page.locator('.yw-dashboard__canvas main .markdown-section'),
         `docsify did not render after round trip ${round + 1}`,
       ).toBeVisible({ timeout: 15000 })
-      // the navbar must still be the wiki's own: hijacked, docsify empties it and marks it
-      // `app-nav`, so its own menu links are what disappear
       expect(
         await wikiMenuLinks(),
         `the wiki navbar was emptied after round trip ${round + 1}`,

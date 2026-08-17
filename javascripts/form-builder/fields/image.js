@@ -45,5 +45,4 @@ export default {
     'image_width',
     'max_size',
   ],
-  // disabledAttributes: [],
 }

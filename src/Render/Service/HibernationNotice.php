@@ -4,14 +4,7 @@ namespace YesWiki\Render\Service;
 
 use YesWiki\Kernel\Service\HibernationService;
 
-/**
- * Renders the banner shown while the wiki is hibernated.
- *
- * Split out of HibernationService by wave-two ticket 04. The status check itself sits at
- * the bottom of the dependency graph -- most core services ask it -- so it must not depend
- * on the template engine. This class may: nothing in the rendering chain depends on it,
- * only actions and handlers at the edge of the graph do.
- */
+/** Renders the banner shown while the wiki is hibernated. */
 class HibernationNotice
 {
     protected HibernationService $hibernationService;
@@ -23,9 +16,7 @@ class HibernationNotice
         $this->templateEngine = $templateEngine;
     }
 
-    /**
-     * get alert message when hibernated.
-     */
+    /** get alert message when hibernated. */
     public function getMessageWhenHibernated(): string
     {
         return $this->templateEngine->render('@core/alert-message-with-back.twig', [

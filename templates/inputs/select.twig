@@ -11,7 +11,7 @@
     >
         {% if not value %}
             <option value='' selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
-        {% else %}{# To be able to unselect we need an empty option#}
+        {% else %}
             <option value=''></option>
         {% endif %}
         {% for key, option in options %}

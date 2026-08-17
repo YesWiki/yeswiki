@@ -1,32 +1,9 @@
-{# The two controls that belong to the VIEWER rather than to the wiki: which Colour scheme
-   they read it in, and which language they read it in (ADR-0020).
 
-   They are core's and they sit apart from the quick menu on purpose. The quick menu is what
-   an admin puts there; these two are not, and must not be — a page whose colours or language
-   a visitor cannot change is a page some visitors cannot read, so removing them is not a
-   choice a wiki gets to make. Hence the divider: what is to the left of it is this wiki's,
-   what is to the right of it is YesWiki's.
-
-   Collapsed, each is a mark saying what is on. The choices arrive **in their own column**
-   when one is reached for, overlaying the bar rather than taking room in it: a row of
-   controls permanently in the navbar would be the loudest thing on it, and a line that
-   expanded in flow would shove the account button sideways on every hover. Below 768px there
-   is nothing to hover with, so the choices are simply part of the bar (see yw-core.css).
-
-   TWO dropdowns, not one panel holding both. They answer different questions -- how the page
-   is coloured, and what language it is in -- and a reader opening one has no business being
-   shown the other. As one panel they read as a single run of six marks, and the rule drawn
-   between the halves was doing the work a separate menu does properly. #}
 <div class="yw-topnav-tools">
-  {# ---- how it is coloured ---- #}
+
   <div class="yw-topnav-tools__menu">
     <div class="yw-topnav-tools__panel">
-      {# Three states, not two: "follow my system" is a choice of its own, and it is the one a
-         visitor who has never touched this is already in. Radios rather than a cycling button
-         so reaching the third is one click from anywhere rather than three. #}
-      {# the labels are written out rather than built from the state name: `_t('SCHEME_' ~
-         scheme|upper)` would work and would be invisible to every tool that finds translation
-         keys by grepping for them #}
+
       <div class="yw-switcher" role="group" aria-label="{{ _t('SCHEME_TOGGLE') }}">
         {% for scheme, option in {
           'system': { glyph: 'device-desktop', label: _t('SCHEME_SYSTEM') },
@@ -42,7 +19,6 @@
       </div>
     </div>
 
-    {# what is on, without asking: the scheme's own glyph (yw-core.js keeps it current) #}
     <span class="yw-topnav-tools__current" data-yw-scheme aria-hidden="true"
           data-label-system="{{ _t('SCHEME_SYSTEM') }}"
           data-label-light="{{ _t('SCHEME_LIGHT') }}"
@@ -51,18 +27,12 @@
     </span>
   </div>
 
-  {# ---- what language it is in ----
-     Only where there is something to choose between. A wiki says which languages it offers
-     (`other_languages`, chosen at install time and on the configuration screen), and one is
-     the ordinary answer: that wiki gets no menu at all, and no readout of a language nobody
-     can change either. #}
   {% if languages|length > 1 %}
     <div class="yw-topnav-tools__menu">
       <div class="yw-topnav-tools__panel">
         <div class="yw-switcher" role="group" aria-label="{{ _t('LANGUAGE_CHOOSE') }}">
           {% for language in languages %}
-            {# links, not buttons: the language is a property of the address (`lang=`), so
-               each one is a real page a reader can bookmark, open in a tab, or share #}
+
             <a class="yw-switcher__option{{ language.current ? ' yw-switcher__option--on' : '' }}"
                href="{{ language.href }}" hreflang="{{ language.code }}" lang="{{ language.code }}"
                title="{{ language.label }}"{{ language.current ? ' aria-current="true"' : '' }}>

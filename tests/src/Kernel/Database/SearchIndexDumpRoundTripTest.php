@@ -9,21 +9,7 @@ use YesWiki\Kernel\Database\SchemaManager;
 use YesWiki\Kernel\Database\SqlDumper;
 use YesWiki\Kernel\Service\DbService;
 
-/**
- * Ticket 32: a dump has to survive the search index.
- *
- * A backup is only worth what it restores, and this was the gap between the two. On SQLite the
- * search index is an FTS5 virtual table with four shadow tables and a pair of triggers
- * (ADR-0015), and the dump treated all of that as ordinary storage. The archive was written
- * without complaint and then **could not be replayed** -- it died on
- * `INSERT INTO "x_fts" ("title", "text", "x_fts", "rank")`, because those last two are FTS5
- * pseudo-columns. Worse than the PostgreSQL bug this ticket was raised for: that one refused to
- * make a backup at all, loudly, at backup time.
- *
- * Built against a throwaway SQLite file rather than the wiki's DbService, for the reason
- * DatabaseRestoreTest gives: restore drops every prefixed table, so pointing this at the
- * development database has to be impossible rather than merely inadvisable.
- */
+/** Ticket 32: a dump has to survive the search index. */
 #[CoversMethod(SqlDumper::class, 'dump')]
 #[CoversMethod(SchemaManager::class, 'dumpRoleFor')]
 #[CoversMethod(SchemaManager::class, 'postDataStatements')]
@@ -69,7 +55,9 @@ class SearchIndexDumpRoundTripTest extends TestCase
         );
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private function search(string $term): array
     {
         $expression = $this->dbService->dialect()->searchMatchExpression('rt_search_index', [[$term]]);
@@ -88,7 +76,6 @@ class SearchIndexDumpRoundTripTest extends TestCase
         $this->assertSame('', $dump['error']);
         $this->assertNotSame('', $dump['sql']);
 
-        // this is the assertion that used to fail, and it failed at restore time
         $this->dbService->restoreFromDump($dump['sql']);
 
         $this->assertSame(
@@ -98,12 +85,7 @@ class SearchIndexDumpRoundTripTest extends TestCase
         );
     }
 
-    /**
-     * The triggers, which are what keeps the index in step with the table. They were not dumped
-     * at all, so a restored wiki went on working for existing rows and silently stopped indexing
-     * every row written afterwards -- a failure that only shows up as "search misses recent
-     * pages", long after the restore.
-     */
+    /** The triggers, which are what keeps the index in step with the table. */
     public function testTheRestoredIndexIsStillMaintained(): void
     {
         $this->dbService->restoreFromDump($this->dbService->dumper()->dump()['sql']);
@@ -125,10 +107,6 @@ class SearchIndexDumpRoundTripTest extends TestCase
             'the derived index is repopulated rather than inserted row by row'
         );
 
-        // The bug's exact signature. The dump legitimately names the FTS table -- in the triggers
-        // and in the rebuild -- so what has to be absent is an INSERT of its *rows*, which is
-        // recognisable by the FTS5 pseudo-columns `rank` and the table's own name appearing as a
-        // column. Asserting on `rank` catches it precisely and nothing else in a dump produces it.
         $this->assertStringNotContainsString(
             '"rank"',
             $sql,

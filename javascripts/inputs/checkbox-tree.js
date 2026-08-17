@@ -6,12 +6,6 @@ function uncheckElement(el) {
   el.checked = false
 }
 
-// ticket 14: three per-element initialisers instead of one DOMContentLoaded sweep, so a
-// checkbox tree rendered into a fragment is wired up too -- and so a second pass over the
-// document cannot bind the same listeners twice.
-// Handle chevron click (only expand/collapse)
-// note: instant show/hide (no slide animation) -- matches yw-core.js's own
-// .yw-collapse--open convention rather than replicating jQuery's slideUp/slideDown timing
 ywInitEach('.checkbox-node .checkbox-label', (label) => {
   label.addEventListener('click', (event) => {
     const nodeContainer = label.closest('.node-container')
@@ -40,7 +34,6 @@ ywInitEach('.checkbox-node .checkbox-label', (label) => {
   })
 })
 
-// Handle checkbox clicks - expand/collapse & check parent uncheck children
 ywInitEach('.checkbox-node input[type=checkbox]', (checkbox) => {
   checkbox.addEventListener('change', () => {
     const nodeContainer = checkbox.closest('.node-container')

@@ -17,15 +17,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The page editor edits the Page form, not just the markup.
- *
- * A page is a form like any other since ticket 10, but its editor still only knew about
- * prose: there was no input for the page's own title, and keywords were hand-built HTML
- * in the handler rather than the `tags` field the form declares. So a page could not be
- * given a title at all -- which is why a bazar list of Pages showed a column of blanks --
- * and a webmaster who added a field to the Page form got nowhere to fill it in.
- */
+/** The page editor edits the Page form, not just the markup. */
 class PageEditFormFieldsTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'PageEditFormFieldsRegressionPage';
@@ -47,7 +39,6 @@ class PageEditFormFieldsTest extends YesWikiTestCase
         $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 
-        // the Page form must actually declare the fields this test is about
         $form = $wiki->services->get(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_PAGE);
         $this->assertNotNull($form, 'the Page form should exist -- run ./yeswicli migrate');
         $this->assertContains(PageBody::TITLE, array_column($form['template'], 'name'));
@@ -70,7 +61,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
 
         $pageContext->setTag(self::PAGE_TAG);
         $pageContext->setPage($page);
-        // {{aceditor}} reaches for the global service container (see EditHandlerSaveTest)
+
         $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {
@@ -104,8 +95,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             } catch (ExitException $e) {
                 $redirected = true;
             }
-            // retitling a page without touching its prose is a real change: the old
-            // "nothing changed" test only compared the markup, so this save was dropped
+
             $this->assertTrue($redirected, 'a title-only change must save, not be dismissed as no change');
 
             $reloaded = $pageManager->getOne(self::PAGE_TAG);
@@ -114,7 +104,6 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             $this->assertSame('contenu initial', trim(PageBody::content($reloaded['body'])));
             $this->assertSame(['alpha', 'beta'], TagsManager::keywordsOf($reloaded), 'keywords are a list in the body');
 
-            // ... and the derived reverse index follows the body it was saved with
             $indexed = array_column($wiki->services->get(TagsManager::class)->getAll(self::PAGE_TAG), 'value');
             sort($indexed);
             $this->assertSame(['alpha', 'beta'], $indexed);
@@ -126,15 +115,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * ... including a page that does not exist yet.
-     *
-     * The fields come from the form describing the row's Content type, and a page being
-     * written for the first time has no row to have a type: the resolver answered null, the
-     * editor took that for "nothing describes this" and fell back to the bare markup box. So
-     * a new page could not be given a title or keywords *while it was being written* -- only
-     * afterwards, by editing it a second time, which is the moment nobody comes back for.
-     */
+    /** ... */
     #[Depends('testWikiExisting')]
     public function testANewPageIsOfferedTheSameFieldsBeforeItExists(YesWikiRuntime $wiki): void
     {
@@ -145,8 +126,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 
         $tag = self::PAGE_TAG . 'ThatDoesNotExistYet';
-        // `typeOf()` rather than `getOne()`: "no row at all" is exactly the condition under
-        // test, and it keeps this from being the same expression as the getOne() below
+
         $this->assertNull($pageManager->typeOf($tag), 'the fixture must start with no such row');
 
         $admin = current(array_filter(
@@ -176,7 +156,6 @@ class PageEditFormFieldsTest extends YesWikiTestCase
                 'a page being created must be offered its keywords too'
             );
 
-            // and what is typed into them is what gets saved, on the very first save
             $_POST = [
                 'submit' => 'Sauver',
                 'body' => 'tout premier contenu',
@@ -187,7 +166,6 @@ class PageEditFormFieldsTest extends YesWikiTestCase
             try {
                 $performer->run('edit', 'handler', []);
             } catch (ExitException $e) {
-                // the save redirects, which is how it ends
             }
 
             $created = $pageManager->getOne($tag);

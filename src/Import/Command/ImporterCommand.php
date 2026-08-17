@@ -11,14 +11,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
 
-/**
- * `./yeswicli importer:sync` -- imports the data sources declared in `dataSources`.
- *
- * Every other way of importing ends up here: the cron or webhook calling `/api/import/sync`,
- * the `{{sync}}` button, and the automatic sync, which spawns this command per source when
- * the wiki does its housekeeping. Each source's outcome is recorded as its last sync, so the
- * admin page can report it whichever of those triggered it.
- */
+/** `./yeswicli importer:sync` -- imports the data sources declared in `dataSources`. */
 class ImporterCommand extends Command
 {
     private ContainerInterface $services;
@@ -76,8 +69,6 @@ class ImporterCommand extends Command
      */
     private function syncSource(string $id, array $sourceOptions, OutputInterface $output): void
     {
-        // the importers report their per-entry detail by echoing it: captured so it can be
-        // both printed here and kept as this source's last-sync log
         ob_start();
         $result = $this->services->get(ImporterManager::class)->syncSource($id, $sourceOptions);
         $log = trim(ob_get_clean() . "\n" . $result);

@@ -15,19 +15,10 @@ export const createPageWithContent = async (
 
   await page.getByRole('link', { name: 'créer' }).click()
   await replaceEditorTextNewContent(page, content)
-  // saveEditor, not click + waitForLoadState: the latter waits on the CURRENT document's
-  // load state, so if the navigation has not started yet it resolves immediately and the
-  // caller carries on against the pre-save page. Same race as ticket 25's defect 9.
   await saveEditor(page)
 }
 
-/**
- * Give `tag` this content, whether or not the page already exists.
- *
- * `createPageWithContent` goes through the "créer" link, so it asserts the page is new and a
- * spec that does not reset the database fails on its second run. Reaching the editor by URL
- * works either way, which is what a test wanting *a page with this content* actually means.
- */
+/** Give `tag` this content, whether or not the page already exists. */
 export const setPageContent = async (
   page: Page,
   tag: string,

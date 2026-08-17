@@ -10,18 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 34: a list may no longer name another wiki.
- *
- * `{{entrylist id="https://other.wiki|4"}}` fetched that wiki's entries over HTTP on every page
- * view. Content from elsewhere is imported now, so it is this wiki's -- searchable, in the search
- * index, under this wiki's ACLs, and there when the source wiki is not.
- *
- * The refusal has to be *visible*, which is why these tests care about the exception type as much
- * as the fact that it throws: Performer renders an HttpException as its message alone, so the
- * reader gets an explanation in place of the list and the rest of the page still works. A plain
- * \Exception would come out wrapped in PERFORMABLE_ERROR and a stack trace.
- */
+/** Ticket 34: a list may no longer name another wiki. */
 #[CoversMethod(BazarListService::class, 'getForms')]
 #[CoversMethod(BazarListService::class, 'getEntries')]
 class ExternalContentRefusedTest extends YesWikiTestCase
@@ -31,7 +20,9 @@ class ExternalContentRefusedTest extends YesWikiTestCase
         return $this->getWiki()->services->get(BazarListService::class);
     }
 
-    /** @return array<string, array{string}> */
+    /**
+     * @return array<string, array{string}>
+     */
     public static function externalIdProvider(): array
     {
         return [
@@ -78,7 +69,6 @@ class ExternalContentRefusedTest extends YesWikiTestCase
     /** A local id is the ordinary case and must be entirely unaffected. */
     public function testALocalIdIsUntouched(): void
     {
-        // whether form 1 exists on this wiki is not the point; getting an answer at all is
         $forms = $this->service()->getForms(['id' => '1']);
 
         $this->assertArrayNotHasKey('externals', $forms);
@@ -86,15 +76,11 @@ class ExternalContentRefusedTest extends YesWikiTestCase
 
     public function testAnEmptyIdListsEveryLocalForm(): void
     {
-        // '' means "every local form", so this must not throw and must not be keyed by anything
-        // resembling the old externals bucket
         $this->assertArrayNotHasKey('externals', $this->service()->getForms(['id' => '']));
     }
 
     /**
-     * The parser stays, and that is deliberate: telling a url-form id from a local one is what
-     * makes the notice possible at all. Deleting the parse would turn a refusal with an
-     * explanation into "Invalid ID".
+     * The parser stays, and that is deliberate: telling a url-form id from a local one is what makes the notice possible at all.
      */
     public function testTheIdParserStillDistinguishesLocalFromExternal(): void
     {
@@ -106,17 +92,9 @@ class ExternalContentRefusedTest extends YesWikiTestCase
         $this->assertStringContainsString('other.wiki', $parsed['externals'][0]['url']);
     }
 
-    /**
-     * Nothing under src/ may reach an external site to render a page any more. Asserted against
-     * the source rather than by behaviour, because the failure this guards against is someone
-     * reintroducing a fetch in a code path no test happens to cover.
-     */
+    /** Nothing under src/ may reach an external site to render a page any more. */
     public function testNoFieldFetchesARemoteSiteToRenderItself(): void
     {
-        // Fields only. Services legitimately reach the network outside rendering -- ImportService
-        // and ImportFilesManager download during an import, DuplicationManager copies a whole
-        // wiki -- and lumping them in would make this assertion something to be suppressed rather
-        // than kept. A *field* renders, so a field has no business doing it at all.
         $offenders = [];
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(YESWIKI_SOURCE_DIR . '/src/Content/Field')
@@ -125,10 +103,7 @@ class ExternalContentRefusedTest extends YesWikiTestCase
             if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
-            // Tokenised, not grepped. A regex over the source also matches the words inside a
-            // comment -- including the comment in LinkedEntryField explaining that the fetch was
-            // removed, which made this fail while the code was correct. A guard that trips on
-            // prose is a guard someone deletes.
+
             foreach (token_get_all((string)file_get_contents($file->getPathname())) as $token) {
                 if (!is_array($token) || $token[0] !== T_STRING) {
                     continue;

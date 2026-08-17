@@ -73,7 +73,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     {
         $this->getServices();
 
-        // init vars
         $request = $this->getRequest();
         $this->setActionFromRequest($request->query->all() + $request->request->all());
         $this->error = '';
@@ -116,23 +115,23 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
             if (!empty($this->wantedUserName)) {
                 $this->adminIsActing = true;
                 $user = $this->userManager->getOneByName($this->wantedUserName);
-                if (empty($user)) { // Did not find the user in DB
+                if (empty($user)) {
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
                 $this->referrer = filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
             } elseif (!empty($this->wantedEmail)) {
                 $this->adminIsActing = true;
 
-                $user = $this->userManager->getOneByEmail($this->wantedEmail); // In this case we need to load the right user
+                $user = $this->userManager->getOneByEmail($this->wantedEmail);
 
-                if (empty($user)) { // Did not find the user in DB
+                if (empty($user)) {
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
             }
         } else {
             $userFromSession = $this->authenticationService->getLoggedUser();
             $user = isset($userFromSession['name']) ? $this->userManager->getOneByName($userFromSession['name']) : null;
-            if ($user) { // Trying to instanciate $user from the session cooky)
+            if ($user) {
                 $this->userLoggedIn = true;
             }
         }
@@ -164,6 +163,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 break;
             case 'signup':
                 $this->signup($post);
+
                 // no break
             default:
                 $this->retrieveUsernameAndEmailFromPost($post);
@@ -207,12 +207,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     /**
      * The User form's own fields, minus the three this screen already asks for by hand.
      *
-     * An account is a form like everything else (ticket 10), and this is the screen where
-     * its owner fills that form in -- the profile picture core declares, and whatever a
-     * webmaster added beside it. Username, password and e-mail are left out because they
-     * are not ordinary values: the username *is* the row's tag, the password goes through
-     * the hasher, and a new e-mail has to be checked against every other account's.
-     *
      * @return list<BazarField>
      */
     private function profileFields(): array
@@ -254,8 +248,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * What those fields make of the submission -- an uploaded picture moved into place and
-     * named, a plain field taken as typed.
+     * What those fields make of the submission -- an uploaded picture moved into place and named, a plain field taken as typed.
      *
      * @param array<string, mixed> $post
      *
@@ -263,17 +256,12 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
      */
     private function postedProfileValues(array $post, User $user): array
     {
-        // the stored body first, so a field the submission does not mention (one whose ACL
-        // hid it from this visitor) keeps what it had rather than being cleared
         $entry = array_merge($this->accountAsEntry($user), $post, ['tag' => $user['name']]);
 
         return (array)$this->asAccountPage($user, function () use ($entry) {
             $values = [];
             foreach ($this->profileFields() as $field) {
                 foreach ($field->formatValuesBeforeSaveIfEditable($entry) as $key => $value) {
-                    // a file field answers with the keys to DROP as well as the ones to
-                    // write (`oldimage_x`, the input that carried the previous filename):
-                    // those are instructions about the submission, not body content
                     if ($key === 'fields-to-remove' || !is_scalar($value)) {
                         continue;
                     }
@@ -286,8 +274,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * The account in the shape a field reads an entry in: its stored body, its tag, and
-     * the form that describes it.
+     * The account in the shape a field reads an entry in: its stored body, its tag, and the form that describes it.
      *
      * @return array<string, mixed>
      */
@@ -301,16 +288,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return array_merge($body, ['tag' => $name, 'form_id' => $form['id'] ?? null]);
     }
 
-    /**
-     * Run $work with the account as the current page.
-     *
-     * A file field answers "where does this upload live?" with the page being rendered --
-     * outside safe mode, each page owns a directory under files/. The page being rendered
-     * here is `user`, the account screen, and the account's picture belongs to the account.
-     * Without this, an upload was written under the account's tag (formatValuesBeforeSave()
-     * swaps the context itself, to name the file) and then looked for under `user`, so the
-     * picture saved and vanished in the same request.
-     */
+    /** Run $work with the account as the current page. */
     private function asAccountPage(User $user, callable $work): mixed
     {
         $pageContext = $this->getService(PageContext::class);
@@ -329,7 +307,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
 
     private function logout()
     {
-        // User wants to log out
         $this->authenticationService->logout();
         $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
@@ -338,7 +315,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     private function deleteByAdmin(?User &$user = null)
     {
         if ($this->adminIsActing && !empty($this->wantedUserName)) {
-            // Admin trying to delete user
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-delete', false);
                 if (empty($user)) {
@@ -348,7 +324,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 }
                 $this->userOperationsService->delete($user);
                 $user = null;
-                // forward
+
                 $this->getService(FlashMessageService::class)->setMessage(_t('USER_DELETED') . ' !');
                 $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->referrer));
             } catch (TokenNotFoundException $th) {
@@ -367,9 +343,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     return is_scalar($item) ? $item : '';
                 }, $post);
 
-                // the User form's own fields go through the fields themselves, not through
-                // the raw POST: an uploaded picture arrives in $_FILES and is a filename
-                // only once the field has moved it into place
                 $this->userOperationsService->update(
                     $user,
                     array_merge($sanitizedPost, $this->postedProfileValues($post, $user))
@@ -378,24 +351,20 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
 
                 if (!empty($user)) {
-                    if ($this->userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cookies
+                    if ($this->userLoggedIn) {
                         $this->authenticationService->login($user);
                     }
-                    // forward
+
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_PARAMETERS_SAVED') . ' !');
-                    if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
+                    if ($this->userLoggedIn) {
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
-                    } else { // That's the admin acting, we need to pass the user on
+                    } else {
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', 'user=' . $this->wantedUserName . '&from=' . $this->referrer, false));
                     }
-                } else { // Unable to update
+                } else {
                     throw new \Exception('');
                 }
             } catch (ExitException $th) {
-                // redirecting throws (Redirector) and ExitException is an ordinary
-                // \Exception, so the catch-all below was swallowing the SUCCESSFUL update
-                // leaving the page -- and answering "e-mail non modifié" to someone whose
-                // settings had just been saved. signup() has always had this guard.
                 throw $th;
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
@@ -403,7 +372,6 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $email = isset($post['email']) && is_string($post['email']) ? htmlspecialchars($post['email']) : '';
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED'));
             } catch (\Exception $th) {
-                // TODO use a specific exception
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
             }
         }
@@ -412,18 +380,16 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     private function changePassword(?User $user, array $post)
     {
         if ($this->userLoggedIn && $user !== null) {
-            // User wants to change password
-            if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) { // check password first
+            if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) {
                 $this->errorPasswordChange = _t('USER_WRONG_PASSWORD') . ' !';
-            } else { // user properly typed his old password in
-                // check token
+            } else {
                 try {
                     $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-changepass', false);
 
                     $password = $post['password'];
                     $this->authenticationService->setPassword($user, $password);
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_PASSWORD_CHANGED') . ' !');
-                    // reload $user
+
                     $userName = $user['name'];
                     $user = $this->userManager->getOneByName($userName);
                     if (!empty($user)) {
@@ -431,13 +397,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     }
                     $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
                 } catch (ExitException $ex) {
-                    // the redirect above, which is the password having been changed --
-                    // not a \Throwable this handler is for (see update())
                     throw $ex;
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
                 } catch (BadFormatPasswordException|\Throwable $ex) {
-                    // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
             }
@@ -477,7 +440,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     && $post['confpassword'] !== $password
                 ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
-                } else { // Password is correct
+                } else {
                     $_POST['submit'] = InputFilter::EDIT_PAGE_SUBMIT_VALUE;
                     list($state, $error) = $this->captchaController->checkCaptchaBeforeSave();
                     if (!$state) {
@@ -494,7 +457,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                         ]);
                         if (!empty($user)) {
                             $this->authenticationService->login($user);
-                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href()); // forward
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
                         }
                         $this->error = _t('USER_CREATION_FAILED') . '.';
                     }

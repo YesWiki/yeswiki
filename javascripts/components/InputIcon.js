@@ -1,6 +1,3 @@
-// InputIcon — actions-builder icon input: a plain text input with a live preview.
-// Accepts a Tabler sprite name ("heart") or a historic FontAwesome class string
-// ("fas fa-heart"), both rendered through src/assets/icons.svg.
 import { legacyIconMap, legacyIconToSprite } from '../yw-icon-map.js'
 
 export default {

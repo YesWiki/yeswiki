@@ -15,10 +15,7 @@ use YesWiki\YesWikiRuntime;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression tests for ticket 10's rebuilt page-tag editor: the old widget dumped
- * every tag in the wiki into a client-side JS array (bootstrap-tagsinput's
- * typeahead source) on every page edit; the new one is a live-search htmx widget
- * that queries GET /api/tags instead, so it should never carry the full tag list.
+ * Regression tests for ticket 10's rebuilt page-tag editor: the old widget dumped every tag in the wiki into a client-side JS array (bootstrap-tagsinput's typeahead source) on every page edit; the new one is a live-search htmx widget that queries GET /api/tags instead, so it should never carry the full tag list.
  */
 class TagsWidgetTest extends YesWikiTestCase
 {
@@ -42,8 +39,7 @@ class TagsWidgetTest extends YesWikiTestCase
 
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'body content'], '', true);
         $wiki->services->get(TagsManager::class)->save(self::PAGE_TAG, 'widgettesttag');
-        // a tag on an unrelated page: must NOT leak into this page's widget markup --
-        // that's exactly the "dump every tag" behavior this ticket removed
+
         $tripleStore->create('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, 'unrelatedtag', '', '');
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
@@ -54,9 +50,6 @@ class TagsWidgetTest extends YesWikiTestCase
         $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($pageManager->getOne(self::PAGE_TAG));
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
-        // the footer's debug query-log dump (admin + debug config + loaded theme) would
-        // append this test's own INSERT statements to the page and trip the
-        // assertStringNotContainsString below -- render without it
         $runtimeConfig = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
         $previousDebug = $runtimeConfig['debug'] ?? null;
         $runtimeConfig['debug'] = false;

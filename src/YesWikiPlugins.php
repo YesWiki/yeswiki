@@ -2,10 +2,6 @@
 
 namespace YesWiki;
 
-/*
-Classe de gestion des plugins et des thémes
-*/
-
 class Plugins
 {
     public $location;
@@ -47,7 +43,6 @@ class Plugins
         return $this->p_list;
     }
 
-    /* Lecture d'un répertoire é la recherche des desc.xml */
     public function _readDir()
     {
         if ($this->location === null) {
@@ -58,7 +53,6 @@ class Plugins
 
         $d = dir($this->location);
 
-        // Liste du répertoire des plugins
         while (($entry = $d->read()) !== false) {
             if ($entry != '.' && $entry != '..'
                 && is_dir($this->location . $entry)

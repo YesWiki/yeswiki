@@ -1,4 +1,4 @@
-{# Save Button #}
+
 {% if arguments.saveButton %}
     {% set action = config['preview_before_save'] ? 'preview' : saveValue %}
     <div class="btn-group">
@@ -8,7 +8,7 @@
                 class="aceditor-btn-save yw-btn yw-btn--primary">{{ _t("ACEDITOR_SAVE") }}</button>
     </div>
 {% endif %}
-{# Text formatting #}
+
 <div class="btn-group format-menu yw-dropdown">
     <a class="yw-btn" href="#" data-yw-dropdown-toggle>
         {{ _t("ACEDITOR_FORMAT") }}
@@ -27,9 +27,7 @@
         <li>{{ _self.button('inline_code', '') }}</li>
         <li>{{ _self.button('comment', '') }}</li>
         <li class="yw-dropdown__divider"></li>
-        {# Markup syntax, so the toolbar is where they live rather than the components
-           palette -- ADR-0017. Beside `comment` and `highlight`, which are the same kind of
-           thing and have always been here. #}
+
         <li>{{ _self.calloutButton('info') }}</li>
         <li>{{ _self.calloutButton('success') }}</li>
         <li>{{ _self.calloutButton('warning') }}</li>
@@ -47,12 +45,9 @@
     {{ _self.button("line") }}
 </div>
 <div class="btn-group pages">{{ _self.button("link") }}</div>
-{# Upload file #}
+
 {{ include("@core/file-picker-button.twig") }}
-{# Actions builder. One button, not a menu: choosing what to insert happens in the rail's
-   palette, where every component is visible at once and searchable, rather than in a
-   dropdown that only listed the groups. This button only ADDS -- editing a component
-   already written is done by putting the cursor in it, see javascripts/aceditor.js. #}
+
 <div class="btn-group actions-builder-button">
     <button type="button" class="yw-btn aceditor-btn open-actions-builder-btn">
         <svg class="yw-icon" aria-hidden="true">
@@ -61,7 +56,7 @@
         <span>{{ _t("ACEDITOR_ACTIONS") }}</span>
     </button>
 </div>
-{# Help #}
+
 <div class="btn-group">
     <a class="yw-btn aceditor-btn aceditor-btn-help"
        data-remote="true"
@@ -72,9 +67,7 @@
         </svg>
     </a>
 </div>
-{# PROTOTYPE: leave for the editor that shows the page rather than its source. Last, and
-   floated to the far end of the bar: it is not one of the things you do to what you are
-   writing. See javascripts/editor-switch.js. #}
+
 <div class="btn-group aceditor-switch-editor">
     <button type="button" class="yw-btn aceditor-btn aceditor-btn-switch-editor"
             title="{{ _t("SWITCH_TO_VISUAL_EDITOR") }}">
@@ -177,8 +170,7 @@
         },
         "COMMENT": {
             "yeswiki": [
-                "{#",
-                "#}"
+                ""
             ]
         },
         "BOLD": {
@@ -244,10 +236,6 @@
         </a>
     {% endmacro %}
 
-{# A callout is not a pair of delimiters wrapped around a selection: pressing one while the
-   cursor is already inside a callout must CHANGE it rather than nest a second one in the
-   first, the way a heading level does. So it carries its type and javascripts/aceditor.js
-   does the rest -- see AceWrapper.applyCallout(). #}
 {% macro calloutButton(type) %}
     <a href="#" class="yw-btn aceditor-btn aceditor-btn-callout"
        data-callout="{{ type }}"

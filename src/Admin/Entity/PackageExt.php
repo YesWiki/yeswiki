@@ -45,7 +45,6 @@ abstract class PackageExt extends Package
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
 
-        // get the first subfolder extracted from the zip (it contains everything)
         $dirs = array_filter(glob($this->extractionPath . '/*'), 'is_dir');
         $extractionPath = $dirs[0] . '/';
 
@@ -66,7 +65,6 @@ abstract class PackageExt extends Package
         $json = json_encode($infos);
         file_put_contents($this->infosFilePath(), $json);
 
-        // TODO Vérifier que l'action a bien été éxécutée.
         return true;
     }
 

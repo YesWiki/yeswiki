@@ -11,24 +11,12 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Ticket 20's migration: Content already sitting on a tag the router owns is renamed off
- * it, because such a row is unreachable by its own tag and renaming is the only thing that
- * gives it a URL back.
- *
- * The fixture is inserted with raw SQL on purpose -- PageManager::save() now refuses a
- * reserved tag, which is exactly the state a real upgrading wiki is in and exactly the
- * state no supported API can reproduce.
- *
- * Safety: if this wiki genuinely holds Content on a reserved tag, the test skips rather
- * than running a rename over somebody's real data as a side effect of `make test`. That
- * wiki wants the actual migration, not this.
+ * Ticket 20's migration: Content already sitting on a tag the router owns is renamed off it, because such a row is unreachable by its own tag and renaming is the only thing that gives it a URL back.
  */
 class RenameContentOffReservedTagsTest extends YesWikiTestCase
 {
     public static function setUpBeforeClass(): void
     {
-        // YesWikiMigration is only autoloadable once getWiki() has registered
-        // src/autoload.inc.php's fallback autoloader
         self::getWiki();
         require_once 'src/migrations/20260801000000_RenameContentOffReservedTags.php';
     }
@@ -49,9 +37,6 @@ class RenameContentOffReservedTagsTest extends YesWikiTestCase
         $expectedNewTag = $pageManager->suggestFreeTag($reserved);
 
         try {
-            // `user` and `time` are reserved words on PostgreSQL, so the fixture quotes them --
-            // unquoted, this test could not run at all on one of the three supported drivers
-            // ("syntax error at or near \"user\""), which is what the pgsql CI leg found.
             $dbService->query(
                 "INSERT INTO {$pages} (tag, {$dbService->quoteIdentifier('time')}, body, owner,"
                 . " {$dbService->quoteIdentifier('user')}, latest, parent)"
@@ -86,7 +71,6 @@ class RenameContentOffReservedTagsTest extends YesWikiTestCase
                 'the triples keyed on the old tag must follow it, or the Content loses its type and keywords'
             );
 
-            // idempotent: a second pass has nothing to do and must not move it again
             $migration->run();
             $this->assertTrue($pageManager->tagExists($expectedNewTag), 'a second run must be a no-op');
         } finally {

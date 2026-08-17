@@ -13,9 +13,7 @@ abstract class YesWikiController
 {
     protected ContainerInterface $services;
 
-    /**
-     * Setter for the service container (historic setWiki()).
-     */
+    /** Setter for the service container (historic setWiki()). */
     #[Required]
     public function setServices(ContainerInterface $services): void
     {

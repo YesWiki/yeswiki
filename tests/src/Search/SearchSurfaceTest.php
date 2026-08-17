@@ -17,14 +17,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The search surface (ticket 26): `{{search}}`, `/api/search`, and what a result looks like.
- *
- * The index itself is covered by SearchIndexTest and SearchIndexAclTest. What is under test
- * here is everything between a matching row and a visitor: the fragment's shape, the
- * per-content-type presentation, and the ACL boundary at the *endpoint*, which is where a
- * mistake would be a disclosure rather than a bad result.
- */
+/** The search surface (ticket 26): `{{search}}`, `/api/search`, and what a result looks like. */
 class SearchSurfaceTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'SearchSurfaceTestPage';
@@ -77,7 +70,9 @@ class SearchSurfaceTest extends YesWikiTestCase
         $wiki->services->get(SearchIndexer::class)->index($tag);
     }
 
-    /** @param array<string, string|int> $query */
+    /**
+     * @param array<string, string|int> $query
+     */
     private function fragment(array $query): string
     {
         return (string)$this->getWiki()->services->get(SearchApiController::class)
@@ -85,18 +80,15 @@ class SearchSurfaceTest extends YesWikiTestCase
             ->getContent();
     }
 
-    // ------------------------------------------------------------------ the action
-
     public function testTheActionRendersAFormAndAResultsContainer(): void
     {
         $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
         $this->assertStringContainsString('id="yw-search-form"', $html);
         $this->assertStringContainsString('id="yw-search-results"', $html);
-        // the container fetches the fragment rather than the action rendering results itself,
-        // so filtering and paging are one endpoint rather than two rendering paths
+
         $this->assertStringContainsString('hx-get=', $html);
-        // the field is named `q`, so a shared search URL stays short
+
         $this->assertStringContainsString('name="q"', $html);
     }
 
@@ -104,16 +96,13 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $html = $this->getWiki()->services->get(ActionRunner::class)->action('search');
 
-        // one component for every search field in the wiki -- the surface must not grow its
-        // own markup again, which is how it ended up with a class that had no CSS at all
         $this->assertStringContainsString('yw-searchbox', $html);
         $this->assertStringContainsString('yw-searchbox__icon', $html);
         $this->assertStringContainsString('yw-searchbox__button', $html);
     }
 
     /**
-     * The content-type filter is not beside the box; it arrives with the results, because a
-     * filter is only meaningful once there is something to narrow.
+     * The content-type filter is not beside the box; it arrives with the results, because a filter is only meaningful once there is something to narrow.
      */
     public function testTheTypeFilterIsNotOfferedBeforeAnySearch(): void
     {
@@ -128,15 +117,11 @@ class SearchSurfaceTest extends YesWikiTestCase
         $scoped = $this->getWiki()->services->get(ActionRunner::class)
             ->action('search', ['filters' => '0', 'type' => 'entry']);
 
-        // the type travels so the embedded box stays scoped ...
         $this->assertStringContainsString('name="type"', $scoped);
         $this->assertStringContainsString('value="entry"', $scoped);
-        // ... and the facet row is suppressed, since it would only offer to widen past what
-        // the webmaster asked for
+
         $this->assertStringContainsString('name="facets"', $scoped);
     }
-
-    // ------------------------------------------------------------------ the fragment
 
     public function testAnEmptyPhrasePromptsRatherThanListingTheWholeWiki(): void
     {
@@ -162,7 +147,6 @@ class SearchSurfaceTest extends YesWikiTestCase
     {
         $html = $this->fragment(['q' => 'zzzzaucunresultatzzzz']);
 
-        // the message is Twig-escaped in the fragment, so compare against the escaped form
         $this->assertStringContainsString(htmlspecialchars(_t('NO_SEARCH_RESULT'), ENT_QUOTES), $html);
     }
 
@@ -175,8 +159,7 @@ class SearchSurfaceTest extends YesWikiTestCase
     }
 
     /**
-     * Facets arrive WITH the results, carry counts, and cover every type the query matches --
-     * not just the selected one, since the point of a facet is to show what else is there.
+     * Facets arrive WITH the results, carry counts, and cover every type the query matches -- not just the selected one, since the point of a facet is to show what else is there.
      */
     public function testTheFacetRowArrivesWithTheResultsAndCarriesCounts(): void
     {
@@ -195,8 +178,6 @@ class SearchSurfaceTest extends YesWikiTestCase
     /** Selecting a facet keeps it checked, so the choice survives the swap that renders it. */
     public function testTheSelectedFacetComesBackChecked(): void
     {
-        // a phrase spanning more than one content type: with only one there is nothing to
-        // narrow and the row is deliberately not rendered at all
         $html = $this->fragment(['q' => 'wiki', 'type' => 'page']);
         if (!str_contains($html, 'yw-facets')) {
             $this->markTestSkipped('this wiki matches only one content type for that phrase');
@@ -209,16 +190,11 @@ class SearchSurfaceTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * Three ways to read the same results. The mode is a *radio*, so it is form state that
-     * travels with the query -- switching layout must not re-run a different search.
-     */
+    /** Three ways to read the same results. */
     public function testResultsCanBeRenderedAsAListAccordionOrCards(): void
     {
         $this->savePage(self::PAGE_TAG, 'Le potager', 'un texte sur la ciboulette');
 
-        // the switcher itself lives in the FORM, not in the fragment: it says how to read
-        // whatever comes back, so it must not appear and disappear with the results
         $action = $this->getWiki()->services->get(ActionRunner::class)->action('search');
         $this->assertStringContainsString('yw-display-switch', $action);
 
@@ -228,9 +204,7 @@ class SearchSurfaceTest extends YesWikiTestCase
 
         $accordion = $this->fragment(['q' => 'ciboulette', 'display' => 'accordion']);
         $this->assertStringContainsString('yw-search-results--accordion', $accordion);
-        // <details>, not a JS widget: the browser already has an accessible one -- and it is
-        // the wiki's ONE accordion partial, shared with the entry list, the syndication list,
-        // the pages accordion and the {{panel}} action
+
         $this->assertStringContainsString('<details', $accordion);
         $this->assertStringContainsString('yw-accordion__item', $accordion);
         $this->assertStringContainsString('yw-accordion__summary', $accordion);
@@ -250,11 +224,7 @@ class SearchSurfaceTest extends YesWikiTestCase
         $this->assertStringNotContainsString('yw-search-results--evil', $html);
     }
 
-    /**
-     * The endpoint is public by ACL, and safely so *because* the query evaluates rights in
-     * SQL. If that ever stopped being true this is a disclosure, not a wrong result -- which
-     * is why it is asserted at the endpoint and not only at the query.
-     */
+    /** The endpoint is public by ACL, and safely so *because* the query evaluates rights in SQL. */
     public function testThePublicEndpointDoesNotLeakAPrivatePage(): void
     {
         $this->savePage(self::PRIVATE_TAG, 'Secret', 'un texte sur le topinambour', '@admins');
@@ -279,28 +249,18 @@ class SearchSurfaceTest extends YesWikiTestCase
         $onePage = $this->fragment(['q' => 'ciboulette', 'limit' => 20]);
         $this->assertStringNotContainsString('yw-search-pagination', $onePage);
 
-        // force several pages out of the seeded corpus rather than inventing one
         $manyPages = $this->fragment(['q' => 'wiki', 'limit' => 1]);
         if (!str_contains($manyPages, htmlspecialchars(_t('NO_SEARCH_RESULT'), ENT_QUOTES))) {
             $this->assertStringContainsString('yw-search-pagination', $manyPages);
         }
     }
 
-    /**
-     * The one place ticket 18's key/label decision leaks into what a person sees.
-     *
-     * The index deliberately stores an enum option's **key**, so a relabel costs no
-     * reindexing -- which means an excerpt cut straight from indexed text would read
-     * `atelier` or `3` where a visitor expects "Atelier participatif". The presenter reads
-     * them back; a miss shows a raw key, never a missed match.
-     */
+    /** The one place ticket 18's key/label decision leaks into what a person sees. */
     public function testAnExcerptShowsOptionLabelsRatherThanStoredKeys(): void
     {
         $wiki = $this->getWiki();
         $translator = $wiki->services->get(\YesWiki\Search\Service\FormOptionTranslator::class);
 
-        // whatever this wiki's seeded lists happen to hold -- the mapping is what is under
-        // test, not a particular option
         $key = null;
         $label = null;
         foreach ($wiki->services->get(\YesWiki\Content\Service\FormManager::class)->getAll() as $form) {
@@ -327,8 +287,6 @@ class SearchSurfaceTest extends YesWikiTestCase
             'an excerpt must be able to read a stored key back as the label a visitor typed'
         );
     }
-
-    // ------------------------------------------------------------------ retirements
 
     public function testTheRetiredActionsAreGone(): void
     {

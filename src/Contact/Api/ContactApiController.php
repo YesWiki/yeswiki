@@ -20,19 +20,7 @@ use YesWiki\Render\Service\ThemeManager;
 class ContactApiController extends YesWikiController
 {
     /**
-     * Consolidated contact-mail-sending route (ticket 18, replaces the ajax branch of
-     * tools/contact's handlers/page/mail.php page-handler). Mail is now sent through
-     * Mailer::send() instead of a direct send_mail() call. No CSRF token or spam/
-     * honeypot protection is added here -- the contact form had neither before this
-     * ticket, and both are explicitly deferred to a later, dedicated security pass.
-     *
-     * Handles the same three request shapes the old handler multiplexed onto one
-     * route, distinguished by which POST fields are present: a plain contact/
-     * subscribe/unsubscribe form (mail=), a per-field "contact via this entry
-     * field" link (field=, reading the entry's own value for that field), and
-     * "send this wiki page by email" (type=mail). $pageTag is new: the old handler
-     * read its ACL/page-body context implicitly from the page it was dispatched on;
-     * an API route has no such implicit context, so the caller passes it explicitly.
+     * Consolidated contact-mail-sending route (ticket 18, replaces the ajax branch of tools/contact's handlers/page/mail.php page-handler).
      */
     #[Route('/api/contact/mail', methods: ['POST'], options: ['acl' => ['public']])]
     public function sendContactMail(Request $request)
@@ -77,13 +65,9 @@ class ContactApiController extends YesWikiController
         if (!$mailReceiver) {
             $hasReadAccess = $aclService->hasAccess('read', $pageTag);
             if ($hasReadAccess) {
-                // le squelette du theme pourrait contenir des actions avec des mails
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
-                // The mail recipient is the Nth {{mail}} action across squelette-and-page, so
-                // the page content has to sit where the squelette puts it. Ticket 15 replaced
-                // the plain-text `{WIKINI_PAGE}` marker with the `page_content` Twig variable;
-                // matching on that keeps the ordering, and a squelette without it still scans.
+
                 $pageContent = PageBody::content($page['body'] ?? []);
                 $fileContent = file_exists($chemin) ? (string)file_get_contents($chemin) : '';
                 $body = preg_replace('/\{\{\s*page_content[^}]*\}\}/', $pageContent, $fileContent, 1, $replaced);
@@ -103,10 +87,6 @@ class ContactApiController extends YesWikiController
         $nameSender = (string)$request->request->get('name', '') ?: false;
         $type = (string)$request->request->get('type', '');
 
-        // Declared before the branch chain below, which assigns them in some arms and not in
-        // others while the send() at the end reads all three unconditionally. The code already
-        // wrote `$subject ?? ''` in one place, so the gap was known -- just not everywhere
-        // (ticket 40).
         $subject = '';
         $messageTxt = '';
         $messageHtml = '';
@@ -149,7 +129,7 @@ class ContactApiController extends YesWikiController
         if ($message['class'] == 'success') {
             $mailingList = (string)$request->request->get('mailinglist', '');
             if (!empty($mailingList)) {
-                $mailReceiver = array_pop($mailReceiver); // for the lists, only one mail receiver possible
+                $mailReceiver = array_pop($mailReceiver);
                 if ($mailingList == 'ezmlm') {
                     $mailReceiver = str_replace('@', '-' . str_replace('@', '=', $mailSender) . '@', $mailReceiver);
                 } elseif ($mailingList == 'sympa') {
@@ -184,17 +164,7 @@ class ContactApiController extends YesWikiController
         return new ApiResponse(['type' => $message['class'], 'message' => $message['message']], Response::HTTP_OK);
     }
 
-    /**
-     * The contact form, as an HTML fragment (ticket 35, was `/PageName/mail`).
-     *
-     * `templates/fields/email.twig` opens this in a modal, so the answer is markup rather than
-     * JSON -- which is what an API route is for when the caller is a modal: a fragment fetched over
-     * HTTP. What it is *not* is a way of looking at a page, which is what the handler it replaces
-     * was registered as.
-     *
-     * `pageTag` is explicit for the same reason `sendContactMail()` needs it: a route has none of
-     * the implicit page context a handler was dispatched with.
-     */
+    /** The contact form, as an HTML fragment (ticket 35, was `/PageName/mail`). */
     #[Route('/api/contact/form', methods: ['GET'], options: ['acl' => ['public']])]
     public function contactForm(Request $request): Response
     {
@@ -207,7 +177,6 @@ class ContactApiController extends YesWikiController
         $hasReadAccess = $aclService->hasAccess('read', $pageTag);
         $isLoggedIn = !empty($this->getService(\YesWiki\Identity\Service\AuthenticationService::class)->getLoggedUser());
 
-        // contact.js binds the submit handler; only declared when there is a form to submit
         if ($hasReadAccess && ($isLoggedIn || $request->query->get('field', '') !== '')) {
             $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }

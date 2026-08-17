@@ -1,47 +1,29 @@
-// This code come from https://github.com/BinarCode/vue2-transitions
-// Updated for Vue 3 compatibility
-
 const BaseTransitionMixin = {
   inheritAttrs: false,
   props: {
-    /**
-     * Transition duration. Number for specifying the same duration for enter/leave transitions
-     * Object style {enter: 300, leave: 300} for specifying explicit durations for enter/leave
-     */
+    /** Transition duration. */
     duration: {
       type: [Number, Object],
       default: 200,
     },
-    /**
-     * Transition delay. Number for specifying the same delay for enter/leave transitions
-     * Object style {enter: 300, leave: 300} for specifying explicit durations for enter/leave
-     */
+    /** Transition delay. */
     delay: {
       type: [Number, Object],
       default: 0,
     },
-    /**
-     * Whether the component should be a `transition-group` component.
-     */
+    /** Whether the component should be a `transition-group` component. */
     group: Boolean,
-    /**
-     * Transition tag, in case the component is a `transition-group`
-     */
+    /** Transition tag, in case the component is a `transition-group`. */
     tag: {
       type: String,
       default: 'span',
     },
-    /**
-     *  Transform origin property https://tympanus.net/codrops/css_reference/transform-origin/.
-     *  Can be specified with styles as well but it's shorter with this prop
-     */
+    /** Transform origin property https://tympanus.net/codrops/css_reference/transform-origin/. */
     origin: {
       type: String,
       default: '',
     },
-    /**
-     * Element styles that are applied during transition. These styles are applied on @beforeEnter and @beforeLeave hooks
-     */
+    /** Element styles that are applied during transition. */
     styles: {
       type: Object,
       default: () => ({
@@ -62,7 +44,6 @@ const BaseTransitionMixin = {
       return this.group ? 'transition-group' : 'transition'
     },
     hooks() {
-      // In Vue 3, $listeners is merged into $attrs
       return {
         ...this.$attrs,
         beforeEnter: this.beforeEnter,
@@ -183,7 +164,6 @@ export default {
     },
 
     afterEnter(el) {
-      // for safari: remove class then reset height is necessary
       el.style.transition = ''
       el.style.height = ''
       el.style.overflow = el.dataset.oldOverflow
@@ -205,13 +185,11 @@ export default {
         ? this.duration.leave
         : this.duration
       if (el.scrollHeight !== 0) {
-        // for safari: add class after set height, or it will jump to zero height suddenly, weired
         el.style.transition = this.transitionStyle(leaveDuration)
         el.style.height = 0
         el.style.paddingTop = 0
         el.style.paddingBottom = 0
       }
-      // necessary for transition-group
       this.setAbsolutePosition(el)
     },
 

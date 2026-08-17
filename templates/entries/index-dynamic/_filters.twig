@@ -2,7 +2,7 @@
     {% if params.search %}{{ include("@core/entries/index-dynamic/_search_input.twig") }}{% endif %}
     <div class="filters no-dblclick {{ params.filterposition }}">
         <div class="results-info text-info">
-            {# Filter Result Count #}
+
             <template v-if="filters.length > 0 && params.filtersresultnb">
                 <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
                 <span class="result-label">
@@ -10,7 +10,7 @@
                     <template v-else> {{ _t("BAZ_FICHE_CORRESPONDANT_FILTRES") }}</template>
                 </span>
             </template>
-            {# Reset filters #}
+
             <template v-if="filters.length > 0 && params.resetfiltersbutton">
                 <span class="btn btn-xs btn-info reset-filters pull-right"
                       @click="resetFilters()"
@@ -18,7 +18,7 @@
                 <div class="clearfix"></div>
             </template>
         </div>
-        {# Sort button #}
+
         <div class="input-group dropdown sort-by" v-if="sortOptions.length > 0">
             <span class="input-group-addon addon-icon">{{ _t("BAZ_SORTED_BY") }}</span>
             <button type="button"
@@ -44,7 +44,7 @@
                 </li>
             </ul>
         </div>
-        {# Filters = Facettes #}
+
         <div class="results-container">
             <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
             <template #header>

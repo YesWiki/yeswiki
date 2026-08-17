@@ -1,5 +1,5 @@
 {% if entries|length > 0 %}
-{# affiche un evenement dans le temps -- year headers get .ss-row, entries get .bazar-entry #}
+
 {% macro row(left, right, rowClass, entry, isYear) %}
 {% if isYear %}<div class="ss-row{{ rowClass != '' ? ' ' ~ rowClass : '' }}">{% else %}<div class="bazar-entry ss-row{{ rowClass != '' ? ' ' ~ rowClass : '' }}" {{ entry.html_data|default('')|raw }}>{% endif %}                <div class="ss-left">
                         {{ left|raw }}

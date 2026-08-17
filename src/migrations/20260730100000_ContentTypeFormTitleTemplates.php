@@ -6,18 +6,7 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiMigration;
 
 /**
- * Repair the Page, User and File forms created before their title template knew about
- * Content types.
- *
- * CreateContentTypeForms made those three forms with no `entry_title_template`, so they
- * inherited the bazar default `{{bf_titre}}` -- a field name none of them has. A page's
- * title is `title`, a user's is `username`, a file's is `original_filename`.
- *
- * Only a form still carrying the untouched bazar default is repaired: a webmaster who has
- * since chosen their own title template keeps it.
- *
- * Idempotent -- a form already naming a real field is left alone, so this is safe to
- * re-run and harmless on a wiki whose seed created the forms correctly.
+ * Repair the Page, User and File forms created before their title template knew about Content types.
  */
 class ContentTypeFormTitleTemplates extends YesWikiMigration
 {

@@ -36,7 +36,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
         $dom = new \DOMDocument();
         @$dom->loadHTML('<div><iframe src="x">.</div>');
         $serialized = $dom->saveHTML();
-        // Some libxml versions escape the dangling closing tags as text nodes
+
         if (str_contains($serialized, '&lt;')) {
             return 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;';
         }
@@ -98,7 +98,6 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
                 'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
             ],
             'iframe with disallowed non-https src' => [
-                // src attribute is stripped (fails URI.SafeIframeRegexp), the empty iframe tag remains
                 'This is an iframe :<br /><iframe src="http://yeswiki.net"></iframe>',
                 'This is an iframe :<br /><iframe></iframe>',
             ],
@@ -111,7 +110,6 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
                 'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
             ],
             'dirty iframe' => [
-                // libxml serializes unclosed iframe differently depending on version — both outputs are valid
                 'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.',
                 [
                     'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.</iframe>',

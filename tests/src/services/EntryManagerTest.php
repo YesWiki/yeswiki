@@ -9,20 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for a bug found while testing the {{newtextsearch}} SQL-injection fix :
- * EntryManager::getHtmlDataAttributes() used to fall back to
- * $GLOBALS['wiki']->services->get(FormManager::class) when the form wasn't already in its
- * local $formtab cache (appendDisplayData() always calls it with the default
- * $formtab = ''). That global is only populated by the production HTTP bootstrap, so any
- * getOne()/appendDisplayData() call outside a real request threw "Call to a member
- * function get() on null". Fixed to use $this->wiki (already injected), matching every
- * other FormManager lookup in this file.
- *
- * The isEntry()/getOne() assertions after create() are a plain sanity check (EntryManager
- * already handles its isEntry() cache correctly around PageManager::save()'s internal
- * getOne() call, at the end of create() : no fix needed there) rather than a second
- * regression, kept because they exercise getHtmlDataAttributes() through the real
- * create()-then-read path this bug was found in.
+ * Regression test for a bug found while testing the {{newtextsearch}} SQL-injection fix : EntryManager::getHtmlDataAttributes() used to fall back to $GLOBALS['wiki']->services->get(FormManager::class) when the form wasn't already in its local $formtab cache (appendDisplayData() always calls it with the default $formtab = '').
  */
 class EntryManagerTest extends YesWikiTestCase
 {
@@ -42,13 +29,10 @@ class EntryManagerTest extends YesWikiTestCase
             'condition' => '',
         ]);
 
-        // proves getOne() no longer needs the production HTTP bootstrap's global
         unset($GLOBALS['wiki']);
 
         $tag = null;
         try {
-            // tag supplied explicitly to avoid the unrelated legacy generateWikiName()
-            // global function (also $GLOBALS['wiki']-dependent, out of scope here)
             $entry = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Test entry',

@@ -7,22 +7,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Reading a feed must not write anything.
- *
- * The vendored SimplePie reads `$this->normalization[$this->scheme]` with a **null** scheme
- * in `IRI::scheme_normalization()`, which happens for every relative link a feed carries --
- * and PHP 8.5 deprecates a null array offset, `isset()` included. With `debug` on, which is
- * every working copy, that is a notice per link printed into the middle of the page
- * rendering the feed: reported from korben.info's, a wall of them above the cards.
- *
- * There is no SimplePie release that fixes it (1.9.0 is the latest), so the level is
- * masked while it parses. The test asserts the symptom -- that nothing is PRINTED -- rather
- * than the mechanism, because two mechanisms that looked right did not work: a handler
- * installed around `init()` (SimplePie installs its own inside, and a notice raised there
- * never reaches ours) and a level masked after the constructor (`set_feed_url()` parses an
- * IRI, so sixteen notices are out before it).
- */
+/** Reading a feed must not write anything. */
 class FeedLoaderTest extends YesWikiTestCase
 {
     private string $feedFile = '';
@@ -30,8 +15,7 @@ class FeedLoaderTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // relative links are the point: an absolute one carries a scheme and never reaches
-        // the branch that deprecates
+
         $this->feedFile = tempnam(sys_get_temp_dir(), 'yw-feed') . '.xml';
         file_put_contents($this->feedFile, <<<'XML'
             <?xml version="1.0" encoding="utf-8"?>
@@ -78,9 +62,6 @@ class FeedLoaderTest extends YesWikiTestCase
         );
     }
 
-    // PHPUnit's own error handler records every deprecation the parse raises, mask or no
-    // mask, and would report them as issues of this test. What is under test is what PHP
-    // PRINTS, so the test needs the plain engine behaviour.
     #[\PHPUnit\Framework\Attributes\WithoutErrorHandler]
     public function testReadingAFeedPrintsNothing(): void
     {

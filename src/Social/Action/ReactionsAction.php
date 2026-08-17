@@ -2,9 +2,6 @@
 
 namespace YesWiki\Social\Action;
 
-/*
- * Allow signed-in users to react with icon, emojis or pictures on the page.
- */
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Component\Category;
@@ -69,9 +66,6 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
 
     public function run()
     {
-        // A `title` is mandatory, and the error return says so. Below it sat the superseded
-        // fallback -- auto-numbering an id from a `$GLOBALS['nbreactions']` counter -- which
-        // the return made unreachable and which nothing else in the wiki reads (ticket 40).
         if (empty($this->arguments['title'])) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',

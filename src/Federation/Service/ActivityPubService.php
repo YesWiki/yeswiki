@@ -49,9 +49,6 @@ class ActivityPubService
      */
     public function getFormActorUri(array $form): string
     {
-        // parse_url() returns false for a malformed URL, and the keys are all optional even
-        // when it succeeds -- a wiki whose base_url is not a full URL would have fataled here
-        // rather than produced a wrong actor URI (ticket 40)
         $baseUrl = $this->params->get('base_url');
         $parsed = parse_url(is_string($baseUrl) ? $baseUrl : '');
         $scheme = is_array($parsed) ? ($parsed['scheme'] ?? 'https') : 'https';
@@ -132,7 +129,6 @@ class ActivityPubService
 
         foreach ($recipients as $recipient) {
             if ($recipient === 'https://www.w3.org/ns/activitystreams#Public') {
-                // Ignore
             } elseif ($recipient === $this->getFormCollectionUri($form, 'followers')) {
                 $newRecipients = array_merge($newRecipients, $this->getFollowers($form));
             } else {
@@ -151,7 +147,7 @@ class ActivityPubService
     {
         $activity['@context'] = 'https://www.w3.org/ns/activitystreams';
         $activity['actor'] = $this->getFormActorUri($form);
-        $activity['id'] = $activity['actor'] . '#' . strtolower($activity['type']); // Transient URI, allowed by ActivityPub specs
+        $activity['id'] = $activity['actor'] . '#' . strtolower($activity['type']);
 
         $recipientsUris = $this->getRecipients($form, $activity);
 
@@ -168,7 +164,7 @@ class ActivityPubService
                 'resolve' => $resolve,
             ]);
 
-            $body = $response->getContent(false); // The real error message is on the body
+            $body = $response->getContent(false);
             $statusCode = $response->getStatusCode();
 
             if ($statusCode < 200 || $statusCode >= 300) {
@@ -193,7 +189,6 @@ class ActivityPubService
             case 'Follow':
                 $this->addFollower($form, $activity['actor']);
 
-                // Send back an Accept activity
                 $this->postActivity([
                     'type' => 'Accept',
                     'object' => $activity,
@@ -212,7 +207,7 @@ class ActivityPubService
             case 'Create':
                 $object = $activity['object'];
                 $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
-                $entry['read-only'] = 1; // Prevent modification from the local interface, as the source of truth is the remote actor
+                $entry['read-only'] = 1;
                 $entryManager = $this->container->get(EntryManager::class);
                 $entryManager->create($form['id'], $entry, false, $object['id']);
                 break;
@@ -326,7 +321,6 @@ class ActivityPubService
         $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
         $entryManager = $this->container->get(EntryManager::class);
 
-        // Fetch actor profile to get its outbox URL
         $resolve = $this->ssrfUrlValidator->resolveSafe($actorUri);
         $response = $this->httpClient->request('GET', $actorUri, [
             'headers' => ['Accept' => 'application/activity+json'],
@@ -341,7 +335,6 @@ class ActivityPubService
 
         $remoteItems = $this->fetchAllOutboxItems($actor['outbox']);
 
-        // Collect all remote object IDs so we can detect deletions afterwards
         $remoteObjectIds = [];
 
         foreach ($remoteItems as $item) {
@@ -349,7 +342,6 @@ class ActivityPubService
             $object = $item['object'] ?? null;
 
             if ($type === 'Delete') {
-                // object may be a string (the ID itself) or an array with a Tombstone
                 $objectId = is_array($object) ? ($object['id'] ?? null) : $object;
                 if ($objectId) {
                     $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
@@ -373,9 +365,7 @@ class ActivityPubService
                 if (empty($existingTriples)) {
                     $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                     $entry['read-only'] = 1;
-                    // var_dump($entry);
-                    // var_dump($object);
-                    // exit();
+
                     $entryManager->create($form['id'], $entry, false, $object['id']);
                     $stats['created']++;
                 } else {
@@ -392,9 +382,6 @@ class ActivityPubService
             }
         }
 
-        // Detect objects deleted on the remote side (no longer in the outbox):
-        // any local entry whose sourceUrl comes from the same host as the actor
-        // but is absent from the current outbox should be removed.
         $actorHost = parse_url($actorUri, PHP_URL_HOST);
         $localEntries = $entryManager->search(['id' => $form['id']]);
 
@@ -421,7 +408,7 @@ class ActivityPubService
     {
         $items = [];
         $url = $outboxUrl;
-        $maxPages = 20; // Safety limit to avoid infinite loops
+        $maxPages = 20;
 
         for ($page = 0; $url && $page < $maxPages; $page++) {
             $resolve = $this->ssrfUrlValidator->resolveSafe($url);
@@ -433,7 +420,6 @@ class ActivityPubService
             $data = json_decode($response->getContent(), true);
             $type = $data['type'] ?? null;
 
-            // Paginated collection: follow `first` before collecting items
             if ($type === 'OrderedCollection' && isset($data['first']) && !isset($data['orderedItems'])) {
                 $url = is_string($data['first']) ? $data['first'] : ($data['first']['id'] ?? null);
                 continue;
@@ -445,7 +431,6 @@ class ActivityPubService
                 $items = array_merge($items, $data['items']);
             }
 
-            // Follow the next page, if any
             if (isset($data['next'])) {
                 $url = is_string($data['next']) ? $data['next'] : ($data['next']['id'] ?? null);
             } else {

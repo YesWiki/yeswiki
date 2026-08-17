@@ -44,14 +44,10 @@ class ListController extends YesWikiController
                 }
                 echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
             } else {
-                // the table below is still theirs to read: say no to the import, not to
-                // the screen
                 $refusal = $this->refusal();
             }
         }
 
-        // a list with a read ACL is not everyone's to see, and this screen is everyone's
-        // to open: it lists what the reader may read, and nothing else
         $lists = array_filter(
             $this->listManager->getAll(),
             fn ($key) => $this->aclService->hasAccess('read', $key),
@@ -61,7 +57,7 @@ class ListController extends YesWikiController
         foreach ($lists as $key => $list) {
             $lists[$key]['canEdit'] = $this->mayEdit((string)$key);
             $lists[$key]['canDelete'] = $this->mayDelete((string)$key);
-            // Small trick : create a fake SelectListField so we can reuse the code to compute the options
+
             $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
             $lists[$key]['options'] = $field->getOptions();
         }
@@ -72,15 +68,7 @@ class ListController extends YesWikiController
         ]);
     }
 
-    /**
-     * Who may change the lists: an admin, or -- for one list -- whoever owns it.
-     *
-     * That is what this screen enforced when it was `/admin/lists`, and going public must
-     * not hand anybody a power they did not have. The write ACL alone will not do it: most
-     * wikis leave `default_write_acl` open, so `hasAccess('write')` says yes to a passer-by,
-     * and the edit and delete buttons were offered to every visitor the moment the screen
-     * became one they could open.
-     */
+    /** Who may change the lists: an admin, or -- for one list -- whoever owns it. */
     private function mayCreate(): bool
     {
         return !$this->hibernationService->isWikiHibernated() && $this->aclService->isAdmin();
@@ -88,7 +76,6 @@ class ListController extends YesWikiController
 
     private function mayEdit(string $id): bool
     {
-        // ...and the list's own write ACL on top, for a wiki that sets one
         return $this->mayDelete($id) && $this->aclService->hasAccess('write', $id);
     }
 
@@ -99,14 +86,7 @@ class ListController extends YesWikiController
     }
 
     /**
-     * Every way into this controller says who it is for, because the *screen* no longer
-     * does: it used to sit behind `/admin/lists` and the route's `@admins` was the only
-     * check anywhere -- creating, importing and deleting a list asked nothing at all.
-     * Public now, so each one asks.
-     *
-     * Rendered rather than thrown: an exception here comes back as "an unexpected error
-     * occurred, please contact the administrator" with the file and line that raised it,
-     * and being told no is neither unexpected nor the administrator's problem.
+     * Every way into this controller says who it is for, because the *screen* no longer does: it used to sit behind `/admin/lists` and the route's `@admins` was the only check anywhere -- creating, importing and deleting a list asked nothing at all.
      */
     private function refusal(): string
     {
@@ -150,8 +130,6 @@ class ListController extends YesWikiController
 
     public function update($id)
     {
-        // the form itself, not only the save: opening an editor for a list you may not
-        // write is an offer that fails on the button
         if (!$this->mayEdit((string)$id)) {
             return $this->refusal();
         }

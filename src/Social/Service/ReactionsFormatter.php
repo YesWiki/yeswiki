@@ -31,17 +31,15 @@ class ReactionsFormatter extends YesWikiController
             $labels = $rawLabels;
             $ids = array_map('URLify::slug', $labels);
         } else {
-            // security to prevent badly formatted ids
             $ids = array_map('URLify::slug', $ids);
             $labels = [];
             foreach ($ids as $k => $id) {
                 $labels[$k] = (!empty($rawLabels[$k]))
                     ? $rawLabels[$k]
                     : (
-                        // if ids are default ones, we have some titles
                         (array_key_exists($id, $defaultLabels))
                         ? $defaultLabels[$id]
-                        : $id  // we show just the id, as it's our only information available
+                        : $id
                     );
             }
         }
@@ -61,7 +59,7 @@ class ReactionsFormatter extends YesWikiController
         foreach ($ids as $k => $id) {
             $sanitizedImageFilename = empty($rawImages[$k]) ? '' : basename($rawImages[$k]);
             $baseUrl = $this->urlFormatter->getBaseUrl();
-            $images[$k] = empty($rawImages[$k]) // if ids are default ones, we have some images
+            $images[$k] = empty($rawImages[$k])
                 ? (
                     (array_key_exists($id, $defaultImages))
                     ? (
@@ -81,7 +79,7 @@ class ReactionsFormatter extends YesWikiController
                 )
                 : (
                     basename($rawImages[$k]) !== $rawImages[$k]
-                    ? '' // error
+                    ? ''
                     : (
                         (preg_match('/\\.(gif|jpeg|png|jpg|svg|webp)$/i', $rawImages[$k]))
                         ? (
@@ -93,7 +91,7 @@ class ReactionsFormatter extends YesWikiController
                                 : (
                                     file_exists(YESWIKI_SOURCE_DIR . "/styles/images/{$rawImages[$k]}")
                                     ? "$baseUrl/styles/images/{$rawImages[$k]}"
-                                    : '' // error
+                                    : ''
                                 )
                             )
                         )

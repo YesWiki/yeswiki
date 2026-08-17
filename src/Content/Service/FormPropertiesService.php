@@ -10,7 +10,6 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TagsField;
-use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
@@ -24,11 +23,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * Applies a form's `entry_*` properties (ADR-0010) to entries: title computation +
- * tag generation, entry ACL stamping, the optional comments toggle, presentation
- * metadata, and account creation. These behaviors were historically smuggled into the
- * template as pseudo-fields (titre / acls / metadatas / utilisateur_wikini); they are
- * form-level configuration and live on the form body now.
+ * Applies a form's `entry_*` properties (ADR-0010) to entries: title computation + tag generation, entry ACL stamping, the optional comments toggle, presentation metadata, and account creation.
  */
 class FormPropertiesService
 {
@@ -75,26 +70,19 @@ class FormPropertiesService
         return $this->container->get($className);
     }
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~ entry title + tag ~~~~~~~~~~~~~~~~~~~~~~~~ */
-
     /**
-     * Computes the entry's `title` from the form's `entry_title_template` -- a
-     * `{{field}}` substitution template ("{{bf_nom}} {{bf_prenom}}"), with per-type
-     * value resolution for enum/file/image fields (option label rather than key,
-     * filename rather than raw value). Ported from the retired TitleField.
+     * Computes the entry's `title` from the form's `entry_title_template` -- a `{{field}}` substitution template ("{{bf_nom}} {{bf_prenom}}"), with per-type value resolution for enum/file/image fields (option label rather than key, filename rather than raw value).
      */
     public function computeTitle(array $form, array $entry): string
     {
         $template = trim((string)($form['entry_title_template'] ?? ''));
         if ($template === '') {
-            // pre-migration safety net: behave like the historical default
             $template = self::DEFAULT_TITLE_TEMPLATE;
         }
 
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($template);
         $formManager = $this->getService(FormManager::class);
 
-        // TODO improve import detection
         if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
             $formId = $entry['form_id'] ?? null;
             foreach ($this->referencedFieldNames($value) as $fieldName) {
@@ -102,16 +90,13 @@ class FormPropertiesService
                 if ($field instanceof EnumField || $field instanceof FileField) {
                     $fieldValue = $field->getValue($entry);
                     if ($field instanceof CheckboxField) {
-                        // get first value instead of keys
                         $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
                         $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
                         $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
                     } elseif ($field instanceof TagsField) {
-                        // get first value instead of keys
                         $fieldValues = explode(',', $fieldValue);
                         $replacement = trim($fieldValues[0]) ?? '';
                     } elseif ($field instanceof EnumField) {
-                        // get value instead of key
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } elseif ($field instanceof ImageField) {
                         $filenameKey = 'filename-' . $field->getPropertyName();
@@ -147,23 +132,13 @@ class FormPropertiesService
             }
         }
 
-        // A {{field}} the entry has no value for is substituted by nothing rather than
-        // left standing: an unresolved placeholder is not a name, and showing a visitor
-        // "{{title}}" in a list is worse than showing them the tag.
         $value = trim((string)preg_replace('#{{(.*)}}#U', '', $value));
 
-        // An unresolvable template leaves the Content nameless -- a page whose title was
-        // never filled in, a template referencing a field that was since deleted. The tag
-        // is the only other name a Content is guaranteed to have, and it is what a visitor
-        // sees in the URL, so it is the honest fallback (better than a blank row in every
-        // list, which is what an empty title produces).
         return $value !== '' ? $value : trim((string)($entry['tag'] ?? ''));
     }
 
     /**
-     * The title of an already-stored Content: what it carries, or the computed title,
-     * or its tag. Read paths use this so a Content saved before it had a title -- every
-     * page, until ticket 10 gave the editor a title field -- still names itself.
+     * The title of an already-stored Content: what it carries, or the computed title, or its tag.
      *
      * @param array<string, mixed>|null $form
      * @param array<string, mixed>      $entry
@@ -179,14 +154,7 @@ class FormPropertiesService
     }
 
     /**
-     * Which field of this form *carries* the title -- the title role, in the shape ticket
-     * 11 gives every other role: core asks the form instead of assuming `bf_titre`.
-     *
-     * The first field the form's own title template references, so a form named
-     * "{{bf_nom}} {{bf_prenom}}" answers `bf_nom`. Null when the template names nothing
-     * the form has, which is the honest answer -- a caller that needs to *write* a title
-     * has nowhere to put it, and one that needs to *read* one should read the computed
-     * `title` instead of a field.
+     * Which field of this form *carries* the title -- the title role, in the shape ticket 11 gives every other role: core asks the form instead of assuming `bf_titre`.
      *
      * @param array<string, mixed>|null $form
      */
@@ -216,8 +184,7 @@ class FormPropertiesService
     }
 
     /**
-     * Generates a new entry's tag from its title: a lowercase slug (ADR-0010),
-     * collisions suffixed -2 / -3 by PageManager::suggestFreeTag().
+     * Generates a new entry's tag from its title: a lowercase slug (ADR-0010), collisions suffixed -2 / -3 by PageManager::suggestFreeTag().
      */
     public function generateTag(string $title): string
     {
@@ -229,14 +196,8 @@ class FormPropertiesService
         return $this->pageManager->suggestFreeTag($slug);
     }
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~ entry ACLs + comments ~~~~~~~~~~~~~~~~~~~~~~~~ */
-
     /**
-     * Stamps the form's entry_read_access / entry_write_access / entry_comment_access
-     * onto a saved entry. Empty properties mean "config defaults apply" (no stamping);
-     * `user` or `#` resolve to the entry's creator. On CREATE ($force = true) the
-     * properties override the config defaults PageManager::save() just initialized;
-     * on UPDATE they only fill genuinely absent ACLs, never clobbering manual ones.
+     * Stamps the form's entry_read_access / entry_write_access / entry_comment_access onto a saved entry.
      */
     public function applyEntryAcls(array $form, array $entry, bool $force = false): void
     {
@@ -266,7 +227,6 @@ class FormPropertiesService
         }
 
         if (!empty($toStamp)) {
-            // one batched revision, not one per privilege (ADR-0002 versions ACLs)
             $this->aclService->saveMany($tag, $toStamp);
         }
     }
@@ -283,10 +243,7 @@ class FormPropertiesService
         return (empty($commentsType) || !is_string($commentsType)) ? '' : $commentsType;
     }
 
-    /**
-     * The author's posted comments-toggle choice opens or closes the entry's comments.
-     * The comment ACL IS the state -- nothing is stored in the entry body.
-     */
+    /** The author's posted comments-toggle choice opens or closes the entry's comments. */
     private function resolveCommentsChoice(array $form, array $entry): string
     {
         $choice = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
@@ -303,8 +260,7 @@ class FormPropertiesService
     }
 
     /**
-     * Renders the comments toggle appended at the end of the entry form when
-     * entry_permit_activate_comments is on.
+     * Renders the comments toggle appended at the end of the entry form when entry_permit_activate_comments is on.
      */
     public function renderCommentsToggle(array $form, ?array $entry): string
     {
@@ -332,7 +288,6 @@ class FormPropertiesService
 
     private function replaceWithCreator($right, array $entry)
     {
-        // `user` or `#` mean the entry's creator gets the right
         if ($right === 'user' || $right === '#') {
             return $entry['nomwiki'] ?? $this->container->get(AuthenticationService::class)->getLoggedUserName();
         }
@@ -340,11 +295,8 @@ class FormPropertiesService
         return $right;
     }
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~ presentation metadata ~~~~~~~~~~~~~~~~~~~~~~~~ */
-
     /**
-     * Applies the form's entry_metadatas {theme, skeleton, style, background_image,
-     * css_preset} to the saved entry's page metadata (retired metadatas field).
+     * Applies the form's entry_metadatas {theme, skeleton, style, background_image, css_preset} to the saved entry's page metadata (retired metadatas field).
      */
     public function applyEntryMetadatas(array $form, array $entry): void
     {
@@ -363,8 +315,6 @@ class FormPropertiesService
         ));
     }
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~ account creation ~~~~~~~~~~~~~~~~~~~~~~~~ */
-
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
     private const FORCE_LABEL = '_force_label';
     private const USER_PROPERTY_NAME = 'nomwiki';
@@ -375,10 +325,7 @@ class FormPropertiesService
     }
 
     /**
-     * Renders the account-creation block (username + passwords) appended to the entry
-     * form when entry_creates_user is configured. Ported from the retired
-     * utilisateur_wikini field; the POST contract (nomwiki, mot_de_passe_wikini, ...)
-     * is unchanged.
+     * Renders the account-creation block (username + passwords) appended to the entry form when entry_creates_user is configured.
      */
     public function renderUserCreationInputs(array $form, ?array $entry): string
     {
@@ -433,9 +380,7 @@ class FormPropertiesService
     }
 
     /**
-     * Creates (or links) the wiki account configured by entry_creates_user during entry
-     * save. Returns the entry-data changes (nomwiki + fields-to-remove), like the
-     * retired field's formatValuesBeforeSave did.
+     * Creates (or links) the wiki account configured by entry_creates_user during entry save.
      *
      * @throws UserFieldException
      */
@@ -463,7 +408,6 @@ class FormPropertiesService
             $this->aclService->isAdmin()
             && in_array($request->request->get(self::USER_PROPERTY_NAME . self::FORCE_LABEL, false), [true, 'true', 1, '1'], true)
         ) {
-            // force entry creation but do not create user if existing for this email
             $existingUser = $userManager->getOneByEmail($entry[$emailField]);
             $value = !empty($existingUser) ? $existingUser['name'] : null;
         }
@@ -475,8 +419,6 @@ class FormPropertiesService
         } else {
             $wikiName = $entry[$nameField] ?? '';
             if (!$this->urlFormatter->isWikiName($wikiName)) {
-                // usernames are NEVER slugified (ADR-0010) -- the historical wikiname
-                // generation stays for generated usernames
                 $wikiName = generateWikiName($wikiName, 0);
             }
             if ($this->isUserByName($wikiName)) {
@@ -518,7 +460,6 @@ class FormPropertiesService
 
             $this->addUserToGroups($wikiName, $entry, $addToGroup);
 
-            // Do not send mails if we are importing
             if (!$isImport) {
                 $mailer->notifyNewUser($wikiName, $entry[$emailField]);
                 if ($mailingList !== '') {
@@ -527,7 +468,6 @@ class FormPropertiesService
             }
         }
 
-        // indicateur pour la gestion des droits associee a la fiche.
         $GLOBALS['created_user_name'] = $wikiName;
 
         return [
@@ -588,7 +528,6 @@ class FormPropertiesService
             $forceGroupCreation = (substr($group, 0, 1) === '+');
             $groupName = substr($group, $forceGroupCreation ? 1 : 0);
             if (substr($groupName, 0, 1) !== '@') {
-                // field name
                 $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['form_id'] ?? null);
                 if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
                     $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
@@ -640,10 +579,8 @@ class FormPropertiesService
 
     private function findANewNotExistingUserName(string $firstWikiName): string
     {
-        // remove last numbers
         $baseWikiName = preg_replace('/[0-9]*$/', '', $firstWikiName);
 
-        // a loop 1000 should be enough
         for ($i = 1; $i < 1000; $i++) {
             $newName = "$baseWikiName$i";
             if (!$this->isUserByName($newName)) {

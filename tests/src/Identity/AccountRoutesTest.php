@@ -19,15 +19,7 @@ use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The account as routes (`/user`), replacing the navbar's login modal.
- *
- * What is worth testing here is not the markup but who gets shown what, because every one
- * of these routes is deliberately `public` -- a signed-out visitor has to be able to reach
- * them to sign in at all -- and the gate is therefore inside the controller rather than in
- * the route's ACL. Get that wrong in either direction and it is invisible until someone
- * either sees another person's account screen or cannot find the signup form.
- */
+/** The account as routes (`/user`), replacing the navbar's login modal. */
 class AccountRoutesTest extends YesWikiTestCase
 {
     private const PROBE = 'AccountRoutesTestUser';
@@ -52,12 +44,9 @@ class AccountRoutesTest extends YesWikiTestCase
 
         $this->assertNotEmpty($routes, 'the account routes must be discoverable');
         foreach ($routes as $path => $acl) {
-            // `@registered` here would answer someone who has not signed in with a refusal,
-            // and a refusal is not a sign-in form
             $this->assertContains('public', $acl, "{$path} must be reachable without an account");
         }
 
-        // a page tagged `user` would have no URL at all
         $this->assertTrue(ReservedTags::isReserved('user'));
         $this->assertTrue(ReservedTags::isReserved('User'), 'reserving is case-insensitive');
         $this->assertTrue(ReservedTags::isReserved('user/pages'), 'the first segment decides');
@@ -73,9 +62,7 @@ class AccountRoutesTest extends YesWikiTestCase
         foreach (['account', 'pages', 'entries', 'reactions'] as $method) {
             $body = (string)$account->{$method}()->getContent();
             $this->assertStringContainsString('login-form', $body, "/user/{$method} must offer the sign-in form");
-            // and must NOT have rendered what it is for: `getLoggedUserName()` answers with
-            // the client's IP when nobody is signed in, so a controller asking IT whether
-            // there is a session shows every anonymous visitor the account screen
+
             $this->assertStringNotContainsString(
                 'usersettings_action" value="update',
                 $body,
@@ -83,13 +70,10 @@ class AccountRoutesTest extends YesWikiTestCase
             );
         }
 
-        // ... and it comes with no rail at all: a sidebar on the way in is a list of places
-        // you cannot go yet, taking width from the one form the screen exists for
         $signIn = (string)$account->account()->getContent();
         $this->assertStringContainsString('yw-account-guest__card', $signIn, 'the sign-in form is a centred card');
         $this->assertStringNotContainsString('yw-dashboard__sidebar', $signIn, 'no rail before you sign in');
 
-        // the two screens the sign-in form links to must be themselves, not it
         $signup = (string)$account->signup()->getContent();
         $this->assertStringContainsString('usersettings_action" value="signup"', $signup);
         $this->assertStringNotContainsString('login-form', $signup, 'the signup form is not the sign-in form');
@@ -116,9 +100,7 @@ class AccountRoutesTest extends YesWikiTestCase
             $body = (string)$account->account()->getContent();
             $this->assertStringNotContainsString('login-form', $body, 'a signed-in visitor gets their account');
             $this->assertStringContainsString('usersettings_action" value="update"', $body);
-            // the rail on an account screen lists the account and NOTHING else: your account
-            // and the wiki's administration are two different errands, and the dashboard is
-            // one navbar button away
+
             $this->assertStringContainsString('?user/pages', $body, 'the rail links the account screens');
             $this->assertStringNotContainsString('?dashboard/', $body, 'the account rail is not the dashboard');
             $this->assertStringNotContainsString('?admin/', $body, 'the account rail is not the admin rail');
@@ -131,7 +113,6 @@ class AccountRoutesTest extends YesWikiTestCase
                 );
             }
 
-            // signing up when you are already signed in is a screen with nothing to do
             $this->assertInstanceOf(RedirectResponse::class, $account->signup());
             $this->assertInstanceOf(RedirectResponse::class, $account->lostPassword());
 
@@ -149,11 +130,7 @@ class AccountRoutesTest extends YesWikiTestCase
     }
 
     /**
-     * A routed screen renders its actions through Twig, and Twig wraps ANYTHING that escapes
-     * a template in a RuntimeError. `{{login}}` ends a successful sign-in by throwing
-     * ExitException (Redirector), so what reaches the kernel's exception listener is a
-     * RuntimeError *carrying* it -- and an `instanceof` on the throwable itself misses,
-     * which turned every sign-in through /user into a 500 with a stack trace in it.
+     * A routed screen renders its actions through Twig, and Twig wraps ANYTHING that escapes a template in a RuntimeError.
      */
     #[Depends('testWikiExisting')]
     public function testARedirectFromInsideATemplateIsNotAnError(YesWikiRuntime $wiki): void

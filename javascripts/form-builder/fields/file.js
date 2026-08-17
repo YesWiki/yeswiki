@@ -30,5 +30,4 @@ export default {
     'max_size',
     'authorized_exts_label',
   ],
-  // disabledAttributes: [],
 }

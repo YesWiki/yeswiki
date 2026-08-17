@@ -1,6 +1,3 @@
-// InputColor — actions-builder color input (ticket 16: native <input type=color>
-// replaces the jQuery spectrum picker; disclosed simplification: no preset
-// palette grid, the browser's own color dialog is used)
 export default {
   props: ['value', 'config'],
   emits: ['input'],

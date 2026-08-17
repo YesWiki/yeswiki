@@ -11,11 +11,7 @@ export default class {
   app
 
   constructor() {
-    // A page can render an editor without the rails -- the comment form did. Mounting
-    // then leaves `app` undefined, and every later call would throw on it, so the
-    // builder becomes inert instead: no panel, nothing to open.
     if (!document.getElementById('actions-builder-app')) return
-    // Initialize only once the app
     if (window.actionBuilderApp) {
       this.app = window.actionBuilderApp
     } else {
@@ -65,7 +61,6 @@ export default class {
 
   open(editor, options) {
     if (!this.app) return
-    // Handle backward compat
     if (options.action) {
       const [actionName] = options.action.split(' ')
       const newActionName =

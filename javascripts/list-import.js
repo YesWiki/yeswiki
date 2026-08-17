@@ -1,6 +1,4 @@
-// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 ywInitEach('#btn-import-lists', () => {
-  // import de listes à partir d'un yeswiki
   const btnimportlist = document.getElementById('btn-import-lists')
   const resultimportlist = document.getElementById('import-lists-result')
   const resultimporttable = document.getElementById('import-lists-table')
@@ -13,20 +11,16 @@ ywInitEach('#btn-import-lists', () => {
   }
 
   btnimportlist.addEventListener('click', () => {
-    // on enleve les anciens contenus
     resultimportlist.innerHTML = ''
     resultimportform.classList.add('hide')
     resultimporttable.querySelector('tbody').innerHTML = ''
 
-    // url saisie
     let url = document.getElementById('url-import-lists').value
 
-    // expression réguliere pour trouver une url valide
     const rgHttpUrl =
       /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-À-ſ]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?(#([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?)?$/
 
     if (rgHttpUrl.test(url)) {
-      // on formate l url pour acceder au service json de yeswiki
       const taburl = url.split('wakka.php')
       url = `${taburl[0].replace(/\/+$/g, '')}/?wiki=BazaR/json&demand=lists`
       resultimportlist.innerHTML = `<div class="yw-alert yw-alert--info">
@@ -47,7 +41,6 @@ ywInitEach('#btn-import-lists', () => {
             count += 1
             let list = {}
 
-            // Convert old data structure
             if (listData.titre_liste) {
               list = {
                 title: listData.titre_liste,

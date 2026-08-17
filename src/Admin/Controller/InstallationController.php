@@ -2,7 +2,6 @@
 
 namespace YesWiki\Admin\Controller;
 
-use PDO;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\YesWikiLoader;
 use YesWiki\Identity\Entity\User;
@@ -13,16 +12,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
-/**
- * Web installer, run by Init::doInstall() when the configuration file does not exist
- * yet. At that point there is no database and no service container, so this controller
- * only relies on plain PHP, PDO and a Twig environment of its own.
- *
- * Values forced by the environment (private/.env or real environment variables, see
- * EnvironmentConfiguration) are shown disabled in the form and win over posted values,
- * so an instance can be installed non-interactively: provision DB_* / ADMIN_* variables
- * and POST to ?PagePrincipale&installAction=install.
- */
+/** Web installer, run by Init::doInstall() when the configuration file does not exist yet. */
 class InstallationController
 {
     /** Legacy POST/config keys still accepted, mapped to their current names. */
@@ -37,7 +27,9 @@ class InstallationController
 
     private const TABLE_NAMES = ['pages', 'triples'];
 
-    /** A database backup at this location (instance-relative) can be restored instead of the default content. */
+    /**
+     * A database backup at this location (instance-relative) can be restored instead of the default content.
+     */
     public const BACKUP_SQL_FILE = 'private/backups/content.sql';
 
     /** SQLite databases always live at this instance-relative path. */
@@ -56,27 +48,20 @@ class InstallationController
     protected $adminPasswordConf;
     protected $contentSQL;
 
-    /** @var \PDO|null */
+    /**
+     * @var \PDO|null
+     */
     protected $dbLink;
 
     /** The driver's own message for the last failed execSqlTemplate(), for the error page. */
     private ?string $lastSqlError = null;
 
-    /** @var array[] every check already passed, ['result' => 'success'|'warning', 'output' => text] */
+    /**
+     * @var array[] every check already passed, ['result' => 'success'|'warning', 'output' => text]
+     */
     protected $messages = [];
 
-    /**
-     * The connection, once there is one.
-     *
-     * Fourteen call sites reached through `$this->dbLink` directly, and PHPStan said so eight
-     * times: the property is `PDO|null` until `connectDatabase()` has run, so every one of them
-     * was a potential "Call to a member function exec() on null" -- a fatal with no message,
-     * during an install, on someone else's server (ticket 40).
-     *
-     * They cannot actually be reached before the connection exists today. That is a property of
-     * the current call order, not of the code, and it is exactly what a message like this one is
-     * for: if the order ever changes, the installer says what went wrong instead of dying.
-     */
+    /** The connection, once there is one. */
     private function db(): \PDO
     {
         if ($this->dbLink === null) {
@@ -92,20 +77,17 @@ class InstallationController
      */
     public function __construct(array $config, string $configFile)
     {
-        // no Wiki object exists yet: hand the configuration (which may carry an
-        // environment-forced default_language) to the language detection directly
         LanguageService::getInstance()->loadPreferredLanguage((object)['config' => $config]);
 
         $this->config = $config;
         $this->configFile = $configFile;
         $this->env = $this->environmentForcedValues();
 
-        // the retry form re-posts the whole config as a JSON string
         if (isset($_POST['config']) && is_string($_POST['config'])) {
             $_POST['config'] = json_decode(html_entity_decode($_POST['config']), true) ?? [];
         }
         $this->configPosted = $this->mapLegacyKeys($_POST['config'] ?? []);
-        // merge posted values, then re-apply the environment overrides: they always win
+
         $this->config = EnvironmentConfiguration::apply(array_merge($this->config, $this->configPosted));
 
         $this->adminName = $_POST['admin_name'] ?? $this->envValue('ADMIN_NAME') ?? '';
@@ -131,8 +113,7 @@ class InstallationController
     }
 
     /**
-     * Run all installation steps; on failure display the checks done so far, the error,
-     * and a retry form carrying the posted values.
+     * Run all installation steps; on failure display the checks done so far, the error, and a retry form carrying the posted values.
      */
     protected function install(): void
     {
@@ -148,7 +129,7 @@ class InstallationController
             }
             $this->writeRobotsTxtFile();
             $this->writeConfigFile();
-            // installation successful!
+
             header('Location: ' . $this->config['base_url'] . $this->config['root_page']);
             exit;
         } catch (\Exception $ex) {
@@ -179,9 +160,7 @@ class InstallationController
             'config' => $this->config,
             'env' => $this->env,
             'locale' => $GLOBALS['prefered_language'],
-            // everything YesWiki is translated into here, not what some wiki offers: this
-            // screen is where "which languages does this wiki offer" is answered for the
-            // first time
+
             'installedLanguages' => $GLOBALS['installed_languages'] ?? $GLOBALS['available_languages'],
             'languagesList' => $GLOBALS['languages_list'],
             'availableDrivers' => $availableDrivers,
@@ -215,9 +194,7 @@ class InstallationController
     }
 
     /**
-     * Connect to the database server, creating the database if needed (SQLite files are
-     * simply created in place; for MySQL/PostgreSQL a CREATE DATABASE is attempted when
-     * the database is missing).
+     * Connect to the database server, creating the database if needed (SQLite files are simply created in place; for MySQL/PostgreSQL a CREATE DATABASE is attempted when the database is missing).
      */
     protected function connectDatabase(): void
     {
@@ -240,7 +217,6 @@ class InstallationController
             return;
         }
 
-        // MySQL or PostgreSQL: connect to the server first
         try {
             $this->dbLink = new \PDO(
                 $this->serverDsn($driver),
@@ -272,7 +248,6 @@ class InstallationController
             $this->pass(_t('TRYING_TO_CREATE_DATABASE') . ' "' . $this->config['db_database'] . '"');
         }
 
-        // reconnect with the database selected
         try {
             $this->dbLink = new \PDO(
                 $this->serverDsn($driver) . ';dbname=' . $this->config['db_database'],
@@ -291,21 +266,7 @@ class InstallationController
         }
     }
 
-    /**
-     * A connection to the *server*, before the wiki's own database is known to exist.
-     *
-     * PostgreSQL needs a database named here and MySQL does not, which is the whole subtlety:
-     * libpq given no `dbname` falls back to **the connecting user's name**, so this worked only
-     * where the database happened to be named after its owner and failed with
-     * `FATAL: database "<user>" does not exist` everywhere else. The install then reported the
-     * failure as an ordinary page, so the next thing anyone saw was `yeswicli` answering
-     * "Command migrate is not defined" -- the console registers almost nothing without a
-     * `base_url` in the config that never got written.
-     *
-     * `postgres` is the maintenance database every PostgreSQL install has; `tests/e2e/reset.sh`
-     * already attaches to `template1` for the same reason. MySQL keeps connecting with no
-     * database, which is valid there and is what `databaseExists()` then interrogates.
-     */
+    /** A connection to the *server*, before the wiki's own database is known to exist. */
     private function serverDsn(string $driver): string
     {
         $dsn = $driver . ':host=' . $this->config['db_host'];
@@ -373,7 +334,6 @@ class InstallationController
         }
         $this->pass(_t('CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION'));
 
-        // same rule as UserOperationsService::sanitizeName()
         if (
             empty($this->adminName)
             || !is_string($this->adminName)
@@ -395,12 +355,7 @@ class InstallationController
     }
 
     /**
-     * Hashes the admin password with the same 'auto' algorithm the runtime
-     * PasswordHasherFactory (src/Identity/Service/PasswordHasherFactory.php) configures for
-     * User::class, so the seeded hash is exactly what UserManager would produce.
-     * Historically this was md5(), which used to keep logging in via the runtime's
-     * migrate_from chain. That chain is gone -- md5 no longer authenticates at all -- so an
-     * installer that seeded one would create an admin who could not sign in.
+     * Hashes the admin password with the same 'auto' algorithm the runtime PasswordHasherFactory (src/Identity/Service/PasswordHasherFactory.php) configures for User::class, so the seeded hash is exactly what UserManager would produce.
      */
     protected function hashAdminPassword(): string
     {
@@ -409,9 +364,7 @@ class InstallationController
         return $factory->getPasswordHasher('admin')->hash($this->adminPassword);
     }
 
-    /**
-     * Create the tables and insert the default pages from the .sql.twig templates.
-     */
+    /** Create the tables and insert the default pages from the .sql.twig templates. */
     protected function installDatabaseContent(): void
     {
         $replacements = [
@@ -421,11 +374,7 @@ class InstallationController
             'email' => $this->adminEmail,
             'rootPage' => $this->config['root_page'],
             'url' => $this->config['base_url'],
-            // the admin account is seeded as a `pages` row (see UserManager) -- built as a
-            // single pre-encoded JSON value rather than interpolating {{WikiName}}/
-            // {{password}}/{{email}} into hand-assembled JSON in the twig template, so this
-            // one json_encode() call is the only place responsible for JSON-escaping (the
-            // template's own {{...}} substitution only does SQL-string escaping, not JSON)
+
             'adminUserBody' => json_encode([
                 'email' => $this->adminEmail,
                 'motto' => '',
@@ -436,25 +385,16 @@ class InstallationController
                 'show_comments' => 'N',
                 'password' => $this->hashAdminPassword(),
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            // default_write_acl is '*' (everyone) -- without this override, anyone could
-            // edit the admin account's page; matches UserManager::persistNewUserPage()
+
             'adminUserMetadata' => json_encode(['acls' => ['write' => "%\n@admins"]]),
         ];
 
-        // Table creation runs OUTSIDE any transaction: MySQL and MariaDB implicitly commit
-        // on every DDL statement, so a transaction opened around CREATE TABLE is already
-        // gone by the time we reach commit() -- which then throws "There is no active
-        // transaction" and fails the whole install. SQLite has transactional DDL and hides
-        // this, which is why the phpunit suite never caught it. Failed table creation is
-        // undone by dropEmptyTables() instead, the same way a failed content insert is.
         if (!$this->execSqlTemplate('installation-create-tables.sql.twig', $replacements)) {
             $this->dropEmptyTables();
             throw new \Exception(_t('CREATION_OF_TABLES') . ' :<br />' . _t('NOT_POSSIBLE_TO_CREATE_SQL_TABLES') . $this->sqlErrorDetail());
         }
         $this->pass(_t('CREATION_OF_TABLES'));
 
-        // The seed content is all INSERTs -- nothing here implicitly commits on any
-        // dialect, so the transaction is still open when we reach commit().
         $this->db()->beginTransaction();
         if (!$this->execSqlTemplate('installation-default-content.sql.twig', $replacements)) {
             $this->db()->rollBack();
@@ -467,23 +407,7 @@ class InstallationController
         $this->installSearchIndex();
     }
 
-    /**
-     * Create the search index and queue the seeded content for it (ticket 18 / ADR-0015).
-     *
-     * A fresh install cannot get this from the migration that creates it on an *existing*
-     * wiki: new installs seed their migrations as already-run, so anything only a migration
-     * does simply never happens here. That is not a hypothetical -- it is defect 4 of ticket
-     * 25, where fresh installs shipped a Pages form with no `syntax` for exactly this
-     * reason, and every page rendered its own markup verbatim.
-     *
-     * The DDL comes from the dialect rather than from `installation-create-tables.sql.twig`,
-     * so the index has one definition and not two that drift. The installer runs before the
-     * container exists, but a dialect has no dependencies to inject.
-     *
-     * Outside a transaction, like the other DDL above: MySQL implicitly commits on every DDL
-     * statement, so wrapping it achieves nothing except a "no active transaction" throw at
-     * commit time.
-     */
+    /** Create the search index and queue the seeded content for it (ticket 18 / ADR-0015). */
     private function installSearchIndex(): void
     {
         $db = $this->dbLink;
@@ -501,9 +425,6 @@ class InstallationController
             $db->exec($statement);
         }
 
-        // The seed is a few dozen pages, so this could have been indexed inline. It is
-        // queued instead so that a fresh install and an upgraded one converge through the
-        // same drain -- one path to keep working, not two.
         $db->exec(
             "INSERT INTO {$queue} (tag, queued_at) SELECT DISTINCT tag, {$dialect->now()}"
             . " FROM {$prefix}pages WHERE latest = 'Y'"
@@ -512,15 +433,11 @@ class InstallationController
         $this->pass(_t('CREATION_OF_SEARCH_INDEX'));
     }
 
-    /**
-     * Restore the database from private/backups/content.sql, adapting the table prefix.
-     * Dump files hold one statement per line, so statements are split on line ends.
-     */
+    /** Restore the database from private/backups/content.sql, adapting the table prefix. */
     protected function importBackup(): void
     {
         $sql = file_get_contents(self::BACKUP_SQL_FILE);
-        // `pages`, unlike `acls` (dropped in ticket 03), exists in every schema version this
-        // backup file could have come from -- old or new
+
         preg_match('/`(.*)pages`/m', $sql, $matches);
         $backupPrefix = $matches[1] ?? null;
         if ($backupPrefix === null) {
@@ -549,8 +466,7 @@ class InstallationController
     }
 
     /**
-     * After a failed content insertion, drop the tables left empty so the
-     * installation can be retried from a clean state.
+     * After a failed content insertion, drop the tables left empty so the installation can be retried from a clean state.
      */
     private function dropEmptyTables(): void
     {
@@ -564,7 +480,6 @@ class InstallationController
                     $this->db()->exec("DROP TABLE IF EXISTS $quotedName");
                 }
             } catch (\Throwable $th) {
-                // table absent: nothing to clean
             }
         }
     }
@@ -592,7 +507,7 @@ class InstallationController
                 ['robots' => 'noindex,nofollow,max-image-preview:none,noarchive,noimageindex']
             );
         }
-        // only used to write robots.txt, not a YesWiki config value
+
         unset($this->config['allow_robots']);
 
         if (file_put_contents('robots.txt', $robotFile) === false) {
@@ -603,11 +518,9 @@ class InstallationController
 
     protected function writeConfigFile(): void
     {
-        // set version to current version, yay!
         $this->config['yeswiki_version'] = YESWIKI_VERSION;
         $this->config['yeswiki_release'] = YESWIKI_RELEASE;
         if ($this->dbDriver() === 'mysql') {
-            // new installs are utf8mb4; older wikis get a conversion on update
             $this->config['db_charset'] = 'utf8mb4';
         }
         foreach (['allow_raw_html', 'rewrite_mode'] as $name) {
@@ -627,7 +540,7 @@ class InstallationController
             if (!$configurationService->write($configuration)) {
                 throw new \Exception(_t('CONFIGURATION_FILE_NOT_WRITABLE'));
             }
-            chmod($this->configFile, 0600); // only the system user can read/write the config
+            chmod($this->configFile, 0600);
         } catch (\Throwable $th) {
             throw new \Exception(_t('WRITE_CONFIG') . ' <tt>' . $this->configFile . '</tt> :<br />' . _t('CONFIGURATION_FILE_NOT_CREATED') . '. ' . _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE') . '.<br />' . _t('ERROR') . ' "' . $th->getMessage() . '"');
         }
@@ -636,15 +549,6 @@ class InstallationController
 
     /**
      * The chrome a fresh wiki wears, as configuration (ticket 30).
-     *
-     * This is what the seeded `PageTitre`, `PageMenuHaut` and `PageRapideHaut` used to hold,
-     * and the reason those three pages are no longer seeded. No title: the field is empty and
-     * LayoutService falls back to `yeswiki_name`, which is what the seeded `PageTitre`
-     * (`{{configuration param="yeswiki_name"}}`) said in the longest possible way.
-     *
-     * Written here rather than declared as a default in YesWikiInit, deliberately: a default
-     * would make every existing wiki look like it already had a layout, and the migration that
-     * reads the three pages skips a wiki that does.
      *
      * @return array<string, mixed>
      */
@@ -674,12 +578,6 @@ class InstallationController
     /**
      * Render a Twig SQL template file.
      *
-     * YesWiki's own template syntax ({{ }} and {# #}) is used verbatim inside the SQL
-     * content (default page content), so Twig is configured with different delimiters
-     * ([[ ]] / <% %> / <# #>) to avoid parsing that content as Twig.
-     *
-     * Also used by UpdateAdminPagesService to extract the default admin pages.
-     *
      * @param string $templateFile absolute path to the .sql.twig template file
      * @param array  $variables    variables to pass to the template
      */
@@ -687,7 +585,7 @@ class InstallationController
     {
         $loader = new \Twig\Loader\FilesystemLoader(dirname($templateFile));
         $twig = new \Twig\Environment($loader, [
-            'autoescape' => false, // SQL templates must not be HTML-escaped
+            'autoescape' => false,
         ]);
         $twig->setLexer(new \Twig\Lexer($twig, [
             'tag_comment' => ['<#', '#>'],
@@ -700,9 +598,7 @@ class InstallationController
     }
 
     /**
-     * Split a SQL script into individual statements, respecting single-quoted string
-     * literals (including '' escaped quotes) so that semicolons inside string values
-     * are not mistaken for statement separators.
+     * Split a SQL script into individual statements, respecting single-quoted string literals (including '' escaped quotes) so that semicolons inside string values are not mistaken for statement separators.
      *
      * @return string[]
      */
@@ -733,16 +629,6 @@ class InstallationController
             $statements[] = $current;
         }
 
-        // A fragment carrying nothing but comments is dropped, not just an empty one. The
-        // seed templates end their sections with `-- end triples` and the like, so the tail
-        // after the last `;` is a comment: MySQL and SQLite execute that happily as a no-op,
-        // and **PostgreSQL rejects it** with a bare "SQLSTATE[HY000]: General error" -- an
-        // empty query. Every fresh PostgreSQL install failed at "Insertion des pages par
-        // défaut", and the installer's guess for that was "Déjà créée ?".
-        //
-        // Third divergence of this exact shape in this one method's neighbourhood, after
-        // ticket 25's transactional-DDL and backslash-escape defects. The pattern is always
-        // the same: the templates are written for one dialect's tolerance.
         return array_values(array_filter(array_map('trim', $statements), function ($statement) {
             return self::stripSqlComments($statement) !== '';
         }));
@@ -757,8 +643,7 @@ class InstallationController
     }
 
     /**
-     * Render a .sql.twig template for the current driver, substitute the {{keyword}}
-     * placeholders and execute the resulting statements.
+     * Render a .sql.twig template for the current driver, substitute the {{keyword}} placeholders and execute the resulting statements.
      */
     private function execSqlTemplate(string $templateName, array $replacements): bool
     {
@@ -766,26 +651,11 @@ class InstallationController
             YESWIKI_SOURCE_DIR . '/templates/' . $templateName,
             [
                 'driver' => $this->dbDriver(),
-                // ADR-0018. A column type is not a value, so it comes in through the template's
-                // own variables rather than through the `{{...}}` replacements below, which
-                // SQL-string-escape everything they substitute. The dialect is the one place
-                // it is written down -- the migration that converts an existing wiki asks the
-                // same method, so a fresh install and an upgraded one cannot end up different.
+
                 'bodyType' => SqlDialectFactory::forDriver($this->dbDriver())->jsonColumnType(),
             ]
         );
 
-        // MySQL and MariaDB treat a backslash as an escape character inside string
-        // literals; standard SQL and SQLite do not. Since ticket 09 the seeded page bodies
-        // are JSON, so they are full of \" and \n -- which MySQL silently ate, storing
-        // invalid JSON. PageBody::decode() then falls back to treating the whole thing as
-        // raw markup, so the page rendered its own JSON envelope. 39 of the 61 seeded
-        // pages were affected on a fresh MySQL install; SQLite installs were fine, which
-        // is why the phpunit suite never saw it.
-        //
-        // These templates already use the standard '' for a literal apostrophe, so asking
-        // the server for standard behaviour is all that is needed. Scoped to this method
-        // on purpose: mysqldump output (importBackup) DOES rely on backslash escapes.
         $db = $this->dbLink;
         if ($db === null) {
             return false;
@@ -799,7 +669,6 @@ class InstallationController
         }
 
         try {
-            // after the sql_mode change, so quote() escapes the way the server now parses
             foreach ($replacements as $keyword => $value) {
                 $quoted = $db->quote((string)$value);
                 $sql = str_replace('{{' . $keyword . '}}', substr($quoted, 1, -1), $sql);
@@ -809,10 +678,6 @@ class InstallationController
                 $db->exec($statement);
             }
         } catch (\PDOException $th) {
-            // Kept, because the caller's message is a *guess* ("Déjà créée ?") and the
-            // driver's is a fact. On PostgreSQL that difference was the whole debugging
-            // session: "already created?" sent me looking for a stale database when the
-            // real answer was in the statement the server refused.
             $this->lastSqlError = $th->getMessage();
 
             return false;
@@ -834,9 +699,7 @@ class InstallationController
     }
 
     /**
-     * Configuration values forced by the environment, as configKey => value: every
-     * private/.env entry plus the known variables from the real environment. The
-     * matching form fields are shown disabled.
+     * Configuration values forced by the environment, as configKey => value: every private/.env entry plus the known variables from the real environment.
      */
     private function environmentForcedValues(): array
     {

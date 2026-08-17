@@ -9,15 +9,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `{{editbar}}` offers nothing on a routed name.
- *
- * A reserved tag has no Content behind it at all -- that is what CONTEXT's "Reserved tag"
- * entry says and what ticket 20 enforced everywhere a tag is chosen. The edit bar had not
- * been told: `/search` and `/doc` rendered "edit this page", a file manager, duplicate and
- * share for a tag `PageManager::save()` refuses to write. Following the edit link opened an
- * editor whose save can only ever throw ReservedTagException.
- */
+/** `{{editbar}}` offers nothing on a routed name. */
 class EditBarOnRoutesTest extends YesWikiTestCase
 {
     private string $previousTag = '';
@@ -34,7 +26,9 @@ class EditBarOnRoutesTest extends YesWikiTestCase
         parent::tearDown();
     }
 
-    /** @param array<string, string> $arguments */
+    /**
+     * @param array<string, string> $arguments
+     */
     private function editBarFor(string $tag, array $arguments = []): string
     {
         $wiki = $this->getWiki();
@@ -63,8 +57,7 @@ class EditBarOnRoutesTest extends YesWikiTestCase
     }
 
     /**
-     * Naming a page explicitly is asking for *that* page's bar, so a routed surface stays
-     * free to show one for something else.
+     * Naming a page explicitly is asking for *that* page's bar, so a routed surface stays free to show one for something else.
      */
     public function testAnExplicitPageParameterIsStillHonouredOnARoute(): void
     {

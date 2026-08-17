@@ -1,7 +1,7 @@
 function handleFileSelect(evt) {
   const target = evt.target || evt.srcElement
   const { id } = target
-  const { files } = target // FileList object
+  const { files } = target
 
   for (var i = 0, f; (f = files[i]); i++) {
     const fileMaxSize = document.getElementById(id).dataset.maxSize

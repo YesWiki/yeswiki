@@ -1,14 +1,5 @@
 {% extends "@core/account/guest-layout.twig" %}
 
-{# Signing in, as a screen rather than as a modal.
-
-   Every account screen renders this one when there is no session: /user/pages asked for
-   your pages, and the honest answer to that from a signed-out browser is "sign in first",
-   in the same shell, not a refusal and not a redirect that loses what you asked for.
-
-   The two links out of it go to routes rather than to `ParametresUtilisateur` and
-   `MotDePassePerdu`: seeded pages any wiki may have renamed or deleted, which is exactly
-   what a login screen cannot afford to depend on. #}
 {% block dashboard_content %}
   <h1>{{ _t('LOGIN_LOGIN') }}</h1>
   {{ renderAction('login', {

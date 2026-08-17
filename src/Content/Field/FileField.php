@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
@@ -21,7 +20,6 @@ use YesWiki\Kernel\Service\UrlFormatter;
 #[\Field(['fichier'])]
 class FileField extends BazarField
 {
-    // ticket 18: the stored filename is a UUID; ImageField and the External* variants inherit this
     use ContributesNoSearchableText;
 
     protected $readLabel;
@@ -32,9 +30,7 @@ class FileField extends BazarField
     protected $maxSize;
     protected $authorizedExts;
 
-    /**
-     * Check if a value is a URL.
-     */
+    /** Check if a value is a URL. */
     protected function isUrl(?string $value): bool
     {
         if (empty($value)) {
@@ -62,8 +58,6 @@ class FileField extends BazarField
             ? FileManager::parseSize($values[self::FIELD_MAX_SIZE])
             : 0;
 
-        // take the min size limit, excluding 0 values that mean no limit
-        // (if every limit is 0, keep 0: min() on an empty array is an error)
         $this->maxSize = min(array_filter(
             [
                 $maxFieldSize,
@@ -87,7 +81,6 @@ class FileField extends BazarField
                             $this->getService(FileBrowser::class)->moveToTrash($rawFileName);
                         }
                     } else {
-                        // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;
                         $this->updateEntryAfterFileDelete($entry);
                     }
@@ -116,10 +109,6 @@ class FileField extends BazarField
         );
     }
 
-    /*
-    *	indicates if tag must be set before to format the value
-    */
-
     public function requiresTagBeforeFormatting()
     {
         return true;
@@ -129,7 +118,6 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        // Check if a URL was submitted
         $urlPropertyName = $this->propertyName . '_url';
         $urlValue = $entry[$urlPropertyName] ?? null;
         if (!empty($urlValue) && $this->isUrl($urlValue)) {
@@ -139,7 +127,6 @@ class FileField extends BazarField
             ];
         }
 
-        // Check if the current value is a URL (keep it if no new file uploaded)
         if ($this->isUrl($value) && empty($_FILES[$this->propertyName]['name'])) {
             return [$this->propertyName => $value];
         }
@@ -153,8 +140,7 @@ class FileField extends BazarField
             $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
             $pathinfo = pathinfo($filePath);
-            // a name with no dot in it has no 'extension' key at all, and the check below
-            // already treats an empty extension as "not authorised" (ticket 40)
+
             $extension = strtolower($pathinfo['extension'] ?? '');
             $extension = preg_replace('/_$/', '', $extension);
             if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
@@ -190,7 +176,6 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        // Handle URL value
         if ($this->isUrl($value)) {
             return $this->render('@core/fields/file.twig', [
                 'value' => $value,
@@ -217,9 +202,7 @@ class FileField extends BazarField
         return '';
     }
 
-    /**
-     * check if user is allowed to delete file.
-     */
+    /** check if user is allowed to delete file. */
     protected function isAllowedToDeleteFile(array $entry, string $fileName): bool
     {
         return !$this->getService(HibernationService::class)->isWikiHibernated()
@@ -268,7 +251,6 @@ class FileField extends BazarField
         return $this->authorizedExts;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -283,10 +265,9 @@ class FileField extends BazarField
 
     protected function getFullFileName(string $fileName, string $tag, bool $newName = false): string
     {
-        // current page
         $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-        // fake page
+
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
             'tag' => $tag,
@@ -297,7 +278,6 @@ class FileField extends BazarField
         ]);
         $fullFileName = $this->paths()->fullFilename($fileName, $newName);
 
-        // reset params
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
@@ -311,7 +291,6 @@ class FileField extends BazarField
      */
     protected function sanitizeFilename(string $filename): string
     {
-        // Remove accents and spaces
         return $this->getService(FileManager::class)->sanitizeFilename($filename);
     }
 
@@ -331,7 +310,6 @@ class FileField extends BazarField
     {
         $entryManager = $this->services->get(EntryManager::class);
 
-        // unset value in entry from db without modifier from GET
         $entryFromDb = $entryManager->getOne($entry['tag']);
         if (!empty($entryFromDb)) {
             $previousGet = $_GET;
@@ -341,12 +319,10 @@ class FileField extends BazarField
             $previousRequest = $_REQUEST;
             $_REQUEST = [];
 
-            // remove current field
             unset($entryFromDb[$this->propertyName]);
 
-            // be careful to recurrence
             if (isset($entryFromDb['bf_date_fin_evenement_data']) && is_string($entryFromDb['bf_date_fin_evenement_data'])) {
-                unset($entryFromDb['bf_date_fin_evenement_data']); // remove links to parent
+                unset($entryFromDb['bf_date_fin_evenement_data']);
             }
 
             $entryFromDb['antispam'] = 1;
@@ -357,16 +333,11 @@ class FileField extends BazarField
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
 
-            // be careful to recurrence
-
             if (!empty($newEntry['tag'])
                 && is_string($newEntry['tag'])
                 && isset($newEntry['bf_date_fin_evenement'])) {
                 $this->getService(EntryDateService::class)->followId($newEntry['tag']);
             }
-
-            // no dispatch here: EntryManager::update() above announces `entry.updated` itself
-            // now, and firing it a second time would double every subscriber (ticket 39)
         }
     }
 }

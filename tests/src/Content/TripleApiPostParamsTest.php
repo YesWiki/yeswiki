@@ -7,23 +7,11 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * `POST /api/triples` reads its parameters from the request **body**.
- *
- * It did not. `extractTriplesParams()` took `INPUT_GET` / `INPUT_POST` — which are ints — in a
- * parameter declared `string`. PHP coerced the constant, so the `$method === INPUT_POST` inside
- * compared `"0"` against `0` with `===` and was **always false**: every call, POST included,
- * read `property` and `user` off the query string.
- *
- * One `argument.type` entry in the PHPStan baseline had been saying so (ticket 40). Nothing
- * failed, because a POST that supplies its parameters in the URL still works — which is exactly
- * how the API is exercised by hand.
- */
+/** `POST /api/triples` reads its parameters from the request **body**. */
 class TripleApiPostParamsTest extends YesWikiTestCase
 {
     public function testTheMethodParameterKeepsTheTypeItsConstantsHave(): void
     {
-        // boots the wiki so the controller's base class is autoloadable before reflecting
         self::getWiki();
         $method = (new \ReflectionMethod(TripleApiController::class, 'extractTriplesParams'))
             ->getParameters()[0];
@@ -36,9 +24,7 @@ class TripleApiPostParamsTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * The bag the method picks, which is the behaviour the wrong type broke.
-     */
+    /** The bag the method picks, which is the behaviour the wrong type broke. */
     public function testAPostReadsTheRequestBodyRatherThanTheQueryString(): void
     {
         self::getWiki();

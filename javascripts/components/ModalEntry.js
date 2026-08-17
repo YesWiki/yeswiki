@@ -9,7 +9,6 @@ export default {
     displayEntry(entry) {
       this.entry = entry
       this.$root.getEntryRender(entry)
-      // if other modals are open, close them first
       document.querySelectorAll('.yw-modal--open').forEach((modal) => {
         modal.classList.remove('yw-modal--open')
       })
