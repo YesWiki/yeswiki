@@ -304,8 +304,9 @@ and so is every image already uploaded — nothing is rewritten in place.
 
 **A syndicated feed's images are downloaded and served from here.** `{{syndication}}` used to
 put the publisher's own image URL into every card, so a page showing three feeds sent each
-reader off to three other sites. The picture is now fetched once, shrunk to the same cap, and
-kept in `cache/remote/`, which the wiki serves as a static file. Delete that directory whenever
+reader off to three other sites. The picture is now fetched once, shrunk to the same cap,
+converted to WebP like an upload is, and kept in `cache/remote/`, which the wiki serves as a
+static file. Delete that directory whenever
 you like; it refills on demand. Anything that cannot be fetched falls back to the remote
 address, exactly as before.
 

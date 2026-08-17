@@ -69,6 +69,17 @@ class RemoteImageCacheTest extends YesWikiTestCase
         return (string)ob_get_clean();
     }
 
+    /** The same picture as a JPEG, to check what comes out does not depend on what went in. */
+    private function jpeg(int $width, int $height): string
+    {
+        $image = imagecreatetruecolor(max(1, $width), max(1, $height));
+        imagefilledrectangle($image, 0, 0, $width, $height, (int)imagecolorallocate($image, 20, 120, 200));
+        ob_start();
+        imagejpeg($image);
+
+        return (string)ob_get_clean();
+    }
+
     /** The service, answering every fetch with these bytes (or nothing at all, for null). */
     private function cache(?string $answer): FetchlessRemoteImageCache
     {
@@ -140,15 +151,45 @@ class RemoteImageCacheTest extends YesWikiTestCase
         $this->assertSame([self::REMOTE], $cache->fetched, 'fetched once, for two renders');
     }
 
-    /** A picture already smaller than the cap is kept as it came, not re-encoded. */
-    public function testASmallImageIsCachedWithoutBeingResized(): void
+    /**
+     * A picture already smaller than the cap keeps its pixels, but still becomes WebP.
+     *
+     * Both halves matter: nothing this wiki serves is a PNG a WebP could have been, and a
+     * feed thumbnail must not be blown up to the cap on its way through -- the resizer
+     * enlarges smaller images by default, so a 300px picture asked for at 1920 comes out
+     * bigger and no sharper.
+     */
+    public function testASmallImageIsConvertedButNotEnlarged(): void
     {
-        $bytes = $this->png(300, 200);
-        $cache = $this->cache($bytes);
+        $cache = $this->cache($this->png(300, 200));
 
         $path = $this->pathOf($cache->localUrl(self::REMOTE));
 
-        $this->assertSame($bytes, (string)file_get_contents($path), 'byte for byte');
+        $size = (array)getimagesize($path);
+        $this->assertSame(300, $size[0], 'kept at its own size');
+        $this->assertSame(200, $size[1]);
+        $this->assertSame(IMAGETYPE_WEBP, $size[2], 'and served as WebP');
+    }
+
+    /**
+     * Whatever the publisher stores it as, what this wiki serves is WebP.
+     *
+     * A feed's PNG is routinely two or three times the size of the WebP that looks identical,
+     * and the copy is being re-encoded anyway -- this is the same rule the browser applies to
+     * an upload (javascripts/image-upload.js), and the two must not disagree.
+     */
+    public function testEveryCachedCopyIsWebpWhateverCameIn(): void
+    {
+        foreach ([$this->png(3000, 1500), $this->jpeg(3000, 1500)] as $index => $bytes) {
+            $cache = $this->cache($bytes);
+
+            $path = $this->pathOf($cache->localUrl(self::REMOTE . '?' . $index));
+
+            $this->assertStringEndsWith('.webp', $path);
+            $size = getimagesize($path);
+            $this->assertIsArray($size);
+            $this->assertSame(IMAGETYPE_WEBP, $size[2]);
+        }
     }
 
     /**
@@ -172,7 +213,7 @@ class RemoteImageCacheTest extends YesWikiTestCase
         $cache = $this->cache('<?php echo "not a picture";');
 
         $this->assertSame(self::REMOTE, $cache->localUrl(self::REMOTE));
-        $this->assertSame([], glob('cache/remote/*.png') ?: []);
+        $this->assertSame([], glob('cache/remote/*.webp') ?: []);
     }
 
     /**

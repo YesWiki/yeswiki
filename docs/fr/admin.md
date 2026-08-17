@@ -994,8 +994,8 @@ gagner.
   n'est pas modifié et reste ce que l'on obtient en le téléchargeant.
 
 Cette même limite s'applique aux images des flux syndiqués (`{{syndication}}`) :
-l'image d'un article est téléchargée une fois, réduite, puis rangée dans
-`cache/remote/` et servie par ce wiki. Vos lecteurs ne sont donc pas envoyés
+l'image d'un article est téléchargée une fois, réduite, convertie en WebP, puis
+rangée dans `cache/remote/` et servie par ce wiki. Vos lecteurs ne sont donc pas envoyés
 chez l'éditeur du flux à chaque affichage, et une image indisponible ne fait
 plus un trou dans la page. Ce dossier ne se vide pas tout seul : on peut le
 supprimer sans rien casser, les images seront retéléchargées à la demande.

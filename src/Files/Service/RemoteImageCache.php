@@ -22,9 +22,9 @@ use YesWiki\Kernel\Service\UrlFormatter;
  *   - **The page broke when they did.** A feed image that 404s, or a server that is slow, is
  *     a hole in a card that has nothing to do with this wiki.
  *
- * So the image is downloaded once, resized to the render cap, and written into the public
- * cache directory. After that it is a static file this wiki serves, and the feed's own
- * caching decides how often anything is refetched.
+ * So the image is downloaded once, resized to the render cap, converted to WebP and written
+ * into the public cache directory. After that it is a static file this wiki serves, and the
+ * feed's own caching decides how often anything is refetched.
  *
  * **Every failure falls back to the remote URL**, which is exactly what happened before this
  * class existed. A feed image is decoration; nothing here is worth an empty card over.
@@ -57,12 +57,24 @@ class RemoteImageCache
      */
     private const USER_AGENT = 'YesWiki/1.0 (+https://yeswiki.net)';
 
-    /** Types worth caching, mapped to the extension the resized copy is written under. */
-    private const TYPES = [
-        IMAGETYPE_JPEG => 'jpg',
-        IMAGETYPE_PNG => 'png',
-        IMAGETYPE_WEBP => 'webp',
-    ];
+    /**
+     * Types worth caching. What comes out is always WebP, whichever of these came in.
+     *
+     * GIF is not here: resizing one through GD keeps the first frame and drops the animation,
+     * which is a worse outcome than linking the original. Neither is SVG -- `getimagesize()`
+     * does not read one, so it never reaches this list, and rasterising a drawing that has no
+     * resolution would make it bigger rather than smaller.
+     */
+    private const TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP];
+
+    /**
+     * The extension every cached copy is written under, whatever the publisher sent.
+     *
+     * Same rule the browser applies to an upload (javascripts/image-upload.js): a picture this
+     * wiki serves is WebP. A feed's PNG is typically two or three times the size of the WebP
+     * that looks identical, and this one is re-encoded anyway -- it is being resized.
+     */
+    private const EXTENSION = 'webp';
 
     private ParameterBagInterface $params;
     private RuntimeConfig $config;
@@ -107,11 +119,9 @@ class RemoteImageCache
         }
 
         $key = sha1($url . '|' . $width . 'x' . $height);
-        foreach (self::TYPES as $extension) {
-            $cached = $directory . '/' . $key . '.' . $extension;
-            if (is_file($cached)) {
-                return $this->urlFormatter->getBaseUrl() . '/' . $cached;
-            }
+        $cached = $directory . '/' . $key . '.' . self::EXTENSION;
+        if (is_file($cached)) {
+            return $this->urlFormatter->getBaseUrl() . '/' . $cached;
         }
 
         $miss = $directory . '/' . $key . '.miss';
@@ -181,8 +191,16 @@ class RemoteImageCache
      *
      * The bytes are sniffed rather than trusted: `Content-Type` is the publisher's word for
      * it, and what this writes into a public directory has to be an image because it IS one,
-     * not because a header said so. GIF is refused -- resizing one through GD keeps the first
-     * frame and drops the animation, which is a worse outcome than linking the original.
+     * not because a header said so.
+     *
+     * The re-encode is what makes the copy WebP: `ImageResizer` reads the format to write from
+     * the destination's extension, so a JPEG in becomes a WebP out. It runs even for a picture
+     * already inside the cap -- there the size asked for is the picture's own, so the pixels
+     * are untouched and only the container changes. The one thing not re-encoded is a WebP
+     * that is already small enough, which is nothing but a lossy generation lost.
+     *
+     * An animated WebP fails the resize (GD reads one frame, and Zebra_Image refuses rather
+     * than silently flattening it) and so falls back to the remote URL, exactly as a GIF does.
      */
     private function store(string $url, string $directory, string $key, int $width, int $height): ?string
     {
@@ -192,15 +210,13 @@ class RemoteImageCache
         }
 
         $size = @getimagesizefromstring($bytes);
-        if ($size === false || !isset(self::TYPES[$size[2]])) {
+        if ($size === false || !in_array($size[2], self::TYPES, true)) {
             return null;
         }
 
-        $destination = $directory . '/' . $key . '.' . self::TYPES[$size[2]];
+        $destination = $directory . '/' . $key . '.' . self::EXTENSION;
 
-        // already small enough: kept as it came, because a re-encode of a picture that needs
-        // no resizing costs quality and saves nothing. The point of caching it is still met.
-        if ($size[0] <= $width && $size[1] <= $height) {
+        if ($size[2] === IMAGETYPE_WEBP && $size[0] <= $width && $size[1] <= $height) {
             return file_put_contents($destination, $bytes) === false ? null : $destination;
         }
 
@@ -208,7 +224,15 @@ class RemoteImageCache
         if (file_put_contents($temporary, $bytes) === false) {
             return null;
         }
-        $resized = $this->resizer->resize($temporary, $destination, $width, $height);
+        // capped to the picture's own size, because the resizer enlarges smaller images when
+        // asked for a box bigger than they are -- a 300px feed thumbnail blown up to 1920 is
+        // a bigger file that shows less
+        $resized = $this->resizer->resize(
+            $temporary,
+            $destination,
+            min($width, $size[0]),
+            min($height, $size[1])
+        );
         @unlink($temporary);
 
         return $resized === $destination ? $destination : null;
