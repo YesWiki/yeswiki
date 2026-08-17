@@ -133,7 +133,8 @@ class FileBrowser
         foreach (['fit', 'crop'] as $mode) {
             foreach ($threeOrFour as $width) {
                 foreach ($threeOrFour as $height) {
-                    $patterns[] = $this->resizer->resizedFilename($filename, $width, $height, $mode);
+                    $pattern = $this->resizer->resizedFilename($filename, $width, $height, $mode);
+                    $patterns[] = (string)preg_replace('/\.[a-z0-9]+$/i', '.*', $pattern);
                 }
             }
         }

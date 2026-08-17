@@ -17,6 +17,9 @@ class FileApiController extends YesWikiController
     /** Ceiling on a `?width=`/`?height=`: they name a file on disk and arrive in a URL. */
     private const MAX_RESIZE = 4000;
 
+    /** The format every resized copy is written in, whatever the original was. */
+    private const DERIVED_FORMAT = 'webp';
+
     /**
      * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php page-handler AND the AJAX qqFileUploader path -- both funneled into the same underlying attach code already, this is the one real validated path they become).
      */
@@ -85,9 +88,12 @@ class FileApiController extends YesWikiController
 
         $filename = $entry['original_filename'] ?? basename($path);
 
+        $mimeType = $entry['mime_type'] ?: 'application/octet-stream';
         $resized = $this->resizedCopy($request, $path);
         if ($resized !== null) {
             $path = $resized;
+            $mimeType = 'image/' . self::DERIVED_FORMAT;
+            $filename = pathinfo($filename, PATHINFO_FILENAME) . '.' . self::DERIVED_FORMAT;
         }
 
         $disposition = !empty($request->query->get('download')) ? 'attachment' : 'inline';
@@ -98,7 +104,7 @@ class FileApiController extends YesWikiController
             },
             Response::HTTP_OK,
             [
-                'Content-Type' => $entry['mime_type'] ?: 'application/octet-stream',
+                'Content-Type' => $mimeType,
                 'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
                 'Content-Length' => (string)filesize($path),
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
@@ -117,6 +123,9 @@ class FileApiController extends YesWikiController
         if ($width < 1 || $height < 1 || $size === false) {
             return null;
         }
+        if (!in_array($size[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
+            return null;
+        }
         $width = min($width, self::MAX_RESIZE);
         $height = min($height, self::MAX_RESIZE);
         $mode = $request->query->get('mode') === 'crop' ? 'crop' : 'fit';
@@ -130,9 +139,8 @@ class FileApiController extends YesWikiController
             return null;
         }
 
-        $extension = pathinfo($path, PATHINFO_EXTENSION);
         $destination = $cacheDir . '/' . pathinfo($path, PATHINFO_FILENAME)
-            . "_{$mode}_{$width}_{$height}" . ($extension === '' ? '' : ".{$extension}");
+            . "_{$mode}_{$width}_{$height}." . self::DERIVED_FORMAT;
 
         if (file_exists($destination)) {
             return $destination;

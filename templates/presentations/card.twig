@@ -5,10 +5,11 @@
 {% set columns = params.columns|default(3) %}
 
 {% set imagefit = params.imagefit|default('cover') %}
+{% set cardWidth = (1170 / columns)|round(0, 'ceil') * 2 %}
 <div class="yw-items yw-items--card" style="--yw-item-columns: {{ columns }}; --yw-item-image-fit: {{ imagefit == 'contain' ? 'contain' : 'cover' }}">
   {% for item in items %}
     <article class="yw-item yw-item--card{{ item.image ? ' has-image' : '' }}">
-      {{ slot.image(item, item.title) }}
+      {{ slot.image(item, item.title, cardWidth) }}
       <div class="yw-item__body">
         {{ slot.badge(item) }}
         {{ slot.title(item) }}

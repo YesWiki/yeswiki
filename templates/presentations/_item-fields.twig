@@ -3,9 +3,13 @@
   {% if item.badge %}<span class="yw-item__badge">{{ item.badge }}</span>{% endif %}
 {% endmacro %}
 
-{% macro image(item, alt) %}
+{% macro image(item, alt, width) %}
   {% if item.image %}
-    <img class="yw-item__image" src="{{ item.image }}" alt="{{ alt|default('') }}" loading="lazy" />
+    {% set w = width|default(0) %}
+    <img class="yw-item__image"
+         src="{{ w > 0 ? image_at(item.image, w, (w * 2 / 3)|round) : item.image }}"
+         {% if w > 0 %}width="{{ w }}" height="{{ (w * 2 / 3)|round }}"{% endif %}
+         alt="{{ alt|default('') }}" loading="lazy" />
   {% endif %}
 {% endmacro %}
 

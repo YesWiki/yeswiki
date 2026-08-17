@@ -87,7 +87,7 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
         $entry = $fileManager->create('picture.png', $stored, 'SomeEntry', (int)filesize($path), 'image/png');
         $tag = $entry['tag'] ?? self::FILE_TAG;
 
-        $cached = FileManager::STORAGE_DIR . '/cache/' . pathinfo($stored, PATHINFO_FILENAME) . '_fit_120_90.png';
+        $cached = FileManager::STORAGE_DIR . '/cache/' . pathinfo($stored, PATHINFO_FILENAME) . '_fit_120_90.webp';
 
         try {
             $response = $wiki->services->get(FileApiController::class)->downloadFile(
@@ -106,6 +106,8 @@ class ImageFieldOwnFilesTest extends YesWikiTestCase
                 var_export(substr($body, 0, 200), true)
             ));
             $this->assertLessThan(600, $size[0], 'and a smaller one than was uploaded');
+            $this->assertSame(IMAGETYPE_WEBP, $size[2], 'a derived copy is WebP whatever the original was');
+            $this->assertSame('image/webp', $response->headers->get('Content-Type'));
 
             $this->assertFileExists($cached, 'the resized copy is cached');
             $this->assertStringStartsWith(

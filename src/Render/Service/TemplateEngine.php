@@ -186,6 +186,24 @@ class TemplateEngine
             }
             throw new \Exception('`$tokenId` should be a string or an array !');
         });
+        $this->addTwigHelper('image_at', function ($url, $width, $height = null) {
+            $url = (string)$url;
+            $width = (int)$width;
+            $height = (int)($height ?: $width);
+            if ($url === '' || $width < 1) {
+                return $url;
+            }
+
+            $base = $this->urlFormatter->getBaseUrl();
+            if (!str_starts_with($url, $base) || preg_match('#api/files/[^/?&]+/download#', $url) !== 1) {
+                return $url;
+            }
+
+            return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query([
+                'width' => $width,
+                'height' => $height,
+            ]);
+        });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
                 throw new \Exception('`urlImage` should be called with `fileName` key in params!');

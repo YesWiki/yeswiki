@@ -9,6 +9,9 @@ use stefangabos\Zebra_Image\Zebra_Image;
  */
 class ImageResizer
 {
+    /** The format every resized copy is written in, whatever the original was. */
+    public const FORMAT = 'webp';
+
     private AttachedFilePaths $paths;
 
     public function __construct(AttachedFilePaths $paths)
@@ -123,8 +126,7 @@ class ImageResizer
         if (empty($file['name'])) {
             $pathInfo = pathinfo($fullFilename);
 
-            return "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}"
-                . (isset($pathInfo['extension']) ? ".{$pathInfo['extension']}" : '');
+            return "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}." . self::FORMAT;
         }
 
         $prefix = '';
@@ -135,6 +137,6 @@ class ImageResizer
 
         return $file['path'] . '/' . $prefix . $file['name']
             . '_vignette_' . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload']
-            . '.' . $file['ext'];
+            . '.' . self::FORMAT;
     }
 }
