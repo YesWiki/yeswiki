@@ -302,6 +302,53 @@ class PresetServiceTest extends YesWikiTestCase
         );
     }
 
+    /**
+     * A stack the CSS formatter has wrapped is still the stack it was.
+     *
+     * A long `font-family` gets broken over several lines when the file is formatted, so the
+     * value came back with newlines and indentation inside it. Nothing rendered wrong -- CSS
+     * treats them as whitespace -- but every exact comparison against it failed: the rail did
+     * not recognise its own `Monospace Code` stack and showed the raw text as a bespoke
+     * option, and isSystemStack() stopped recognising it and had ThemeManager ask Google for a
+     * webfont called `ui-monospace`.
+     */
+    public function testAWrappedFontStackIsStillRecognised(): void
+    {
+        $service = $this->service();
+        $wrapped = ":root {\n  --yw-font-mono:\n    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,\n    'DejaVu Sans Mono', monospace;\n}";
+
+        $read = $service->valuesOf($wrapped)['light']['yw-font-mono'];
+
+        $this->assertSame(PresetService::FONT_STACKS['Monospace Code'], $read);
+        $this->assertTrue(
+            PresetService::isSystemStack($read),
+            'a stack the formatter wrapped must not be mistaken for a webfont to download'
+        );
+    }
+
+    /** Every shipped preset names fonts the rail can offer back to it. */
+    public function testShippedPresetsUseOfferableFonts(): void
+    {
+        $service = $this->service();
+        $offered = array_merge(
+            array_values(PresetService::FONT_STACKS),
+            array_values($service->webfonts())
+        );
+
+        foreach ($service->all() as $preset) {
+            if ($preset['custom']) {
+                continue;
+            }
+            foreach (['yw-font-body', 'yw-font-heading', 'yw-font-mono'] as $token) {
+                $this->assertContains(
+                    $preset['values']['light'][$token],
+                    $offered,
+                    $preset['name'] . "'s " . $token . ' is a value the select cannot offer back'
+                );
+            }
+        }
+    }
+
     /** A rail opens on a complete set of values, whatever the file it was opened on says. */
     public function testEveryTokenHasAValueForTheEditor(): void
     {

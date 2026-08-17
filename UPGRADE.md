@@ -49,7 +49,27 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 1. **Back up** (above).
 2. **Replace the code.** Either `./yeswicli upgrade`, or the `{{update}}` admin screen, or
    unpack the release over your instance by hand.
-3. **Run the migrations.**
+3. **Regenerate the autoloader.**
+
+   ```bash
+   composer install
+   ```
+
+   Not optional, and not covered by replacing the files. PHP namespaces are mapped in
+   `vendor/composer/autoload_psr4.php`, which composer writes — it is not read from
+   `composer.json` at runtime. Ectoplasme splits the application into eleven namespaces
+   Doryphore did not have (`YesWiki\Import\`, `YesWiki\Render\`, `YesWiki\Content\` and the
+   rest), so an instance whose files were swapped without this boots with an autoloader that
+   cannot see most of the code.
+
+   If you skip it you get a container error naming whichever file sorts first in the first
+   namespace it failed on — for example `Expected to find class
+"YesWiki\Import\Service\ImapImporter" … but it was not found!`. **That file is fine**; it
+   is a symptom, not the cause. YesWiki now detects this at boot and says so instead.
+
+   Restart PHP-FPM afterwards if you run an opcode cache, or it will keep serving the old map.
+
+4. **Run the migrations.**
 
    ```bash
    ./yeswicli migrate
@@ -63,8 +83,8 @@ upgrading and keep that instead. Do not skip this step: everything below is a on
 error ...`, and the migration stays pending, so fixing the cause and re-running is safe.
    > Do not read a zero exit status as success; grep the output for `AU_ERROR`.
 
-4. **Work through [Still by hand](#still-by-hand).**
-5. **Tell your users about passwords** (see [Passwords](#passwords)) — some of them will be
+5. **Work through [Still by hand](#still-by-hand).**
+6. **Tell your users about passwords** (see [Passwords](#passwords)) — some of them will be
    signed out and unable to sign back in until they reset.
 
 Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date wiki prints

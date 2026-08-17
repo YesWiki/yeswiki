@@ -381,9 +381,13 @@ c'est cette copie que l'on édite.
 
 Pour modifier la police de caractères par défaut, 2 solutions possibles :
 
-- choisir parmi la liste de polices de caractères disponibles dans l'écran Personnalisation
-  (les piles proposées n'ont rien à télécharger : ce sont des polices déjà présentes chez le
-  lecteur)
+- choisir dans l'écran Personnalisation, où le sélecteur de police est séparé en deux :
+  **Polices locales**, des piles de polices déjà présentes chez le lecteur — rien à
+  télécharger, rien à attendre, et la deuxième page s'affiche comme la première ; et
+  **Webfonts**, récupérées une fois chez Google au moment de l'enregistrement, stockées dans
+  `custom/fonts/` et servies ensuite par votre wiki (vos lecteurs ne sont donc pas exposés à
+  Google, mais le premier affichage attend le fichier). Toute police déjà téléchargée dans
+  `custom/fonts/` reste proposée, même si elle n'est pas dans la liste.
 - ou copier vos polices sur votre serveur dans le dossier /custom/fonts puis les déclarer
   dans le CSS personnalisé du wiki (écran « CSS personnalisé »)
 

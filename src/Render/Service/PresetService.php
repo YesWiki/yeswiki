@@ -344,6 +344,44 @@ class PresetService
         'yw-info',
     ];
 
+    /**
+     * Webfonts the rail offers: families fetched from Google and served from the instance.
+     *
+     * A short, opinionated list rather than Google's whole catalogue. Enumerating it would
+     * mean a network call to draw the screen and a thousand names in a select; these are
+     * families that cover the same ground FONT_STACKS does -- a workhorse sans, a reading
+     * serif, a couple with character, a monospace -- and pair with each other.
+     *
+     * Anything already downloaded under `custom/fonts/` is offered too, whether it is here or
+     * not (see webfonts()), so a webmaster who fetched something else keeps it.
+     *
+     * **These cost what FONT_STACKS does not.** Choosing one means the file is fetched from
+     * Google when the preset is saved, stored under `custom/fonts/` and served from the
+     * instance afterwards -- so readers are not tracked by Google, but the first paint waits
+     * for a font and the save waits for a download. That is the trade the two groups exist to
+     * make visible: the local ones download nothing and are on screen instantly.
+     *
+     * @var array<string, string> family name => the `font-family` value it becomes
+     */
+    public const WEBFONTS = [
+        'Nunito' => "'Nunito', sans-serif",
+        'Roboto' => "'Roboto', sans-serif",
+        'Open Sans' => "'Open Sans', sans-serif",
+        'Lato' => "'Lato', sans-serif",
+        'Montserrat' => "'Montserrat', sans-serif",
+        'Raleway' => "'Raleway', sans-serif",
+        'Work Sans' => "'Work Sans', sans-serif",
+        'Merriweather' => "'Merriweather', serif",
+        'Lora' => "'Lora', serif",
+        'Playfair Display' => "'Playfair Display', serif",
+        'Source Serif 4' => "'Source Serif 4', serif",
+        'Bitter' => "'Bitter', serif",
+        'Fira Sans' => "'Fira Sans', sans-serif",
+        'Fira Code' => "'Fira Code', monospace",
+        'JetBrains Mono' => "'JetBrains Mono', monospace",
+        'Space Mono' => "'Space Mono', monospace",
+    ];
+
     /** The light-scheme colours a preset is recognised by in the list -- its swatch strip. */
     public const SWATCHES = [
         'yw-primary',
@@ -464,6 +502,33 @@ class PresetService
         }
 
         return $missing;
+    }
+
+    /**
+     * Every webfont the rail offers: the curated list, plus whatever is already downloaded.
+     *
+     * A family under `custom/fonts/` has been fetched and is being served, so it must be
+     * offerable however it got there -- a preset that used it, an earlier release's list, a
+     * webmaster who put the files there by hand. Dropping one from the select would leave a
+     * preset naming a font the screen could not re-select.
+     *
+     * @return array<string, string> family name => the `font-family` value it becomes
+     */
+    public function webfonts(): array
+    {
+        $fonts = self::WEBFONTS;
+
+        foreach (glob(ThemeManager::CUSTOM_FONT_PATH . '/*', GLOB_ONLYDIR) ?: [] as $directory) {
+            // the directory is the family, lowercased, as installAndGetCSSForFont wrote it
+            $family = ucwords(str_replace(['-', '_'], ' ', basename($directory)));
+            if (!isset($fonts[$family])) {
+                $fonts[$family] = "'" . $family . "', sans-serif";
+            }
+        }
+
+        ksort($fonts);
+
+        return $fonts;
     }
 
     public function isConfigWritable(): bool
@@ -779,7 +844,9 @@ class PresetService
      */
     public static function isSystemStack(string $family): bool
     {
-        return in_array(trim($family), self::FONT_STACKS, true);
+        $normalised = (string)preg_replace('/\s+/', ' ', trim($family));
+
+        return in_array($normalised, self::FONT_STACKS, true);
     }
 
     /**
@@ -1067,13 +1134,23 @@ class PresetService
         return $blocks;
     }
 
-    /** @return array<string, string> token name (without the leading --) => value */
+    /**
+     * @return array<string, string> token name (without the leading --) => value
+     *
+     * Runs of whitespace are collapsed to one space, which CSS does anyway and this has to as
+     * well: the formatter wraps a long value over several lines, so a font stack came back
+     * with newlines and indentation inside it. Nothing rendered wrong -- the browser reads it
+     * the same -- but every exact comparison against it failed, so the rail could not
+     * recognise its own `Monospace Code` stack and showed the raw text as an option of its
+     * own, and isSystemStack() stopped recognising it and asked Google for a webfont called
+     * `ui-monospace`.
+     */
     private function declarationsIn(string $body): array
     {
         $declarations = [];
         if (preg_match_all('/--([a-z0-9-]+)\s*:\s*([^;]+);/i', $body, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $declarations[$match[1]] = trim($match[2]);
+                $declarations[$match[1]] = (string)preg_replace('/\s+/', ' ', trim($match[2]));
             }
         }
 

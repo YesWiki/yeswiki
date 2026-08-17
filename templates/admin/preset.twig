@@ -389,9 +389,29 @@
                        silently drop what it cannot represent. #}
                     <select class="yw-input yw-preset-rail__font" id="yw-preset-light-{{ name }}"
                             name="light[{{ name }}]" data-yw-preset-field="light.{{ name }}">
-                      {% for stackName, stack in fontStacks %}
-                        <option value="{{ stack }}" style="font-family: {{ stack }}">{{ stackName }}</option>
-                      {% endfor %}
+                      {# TWO GROUPS, because they cost different things and the select is the
+                         only place that difference is visible.
+
+                         A local stack is a list of fonts the reader already has, ending in a
+                         generic: it downloads nothing, waits for nothing, and the second page
+                         looks like the first. A webfont is fetched from Google when the preset
+                         is SAVED, stored under `custom/fonts/` and served from the instance
+                         afterwards -- so no reader is handed to Google, but the first paint
+                         waits for a file and the save waits for a download.
+
+                         Each option is drawn in the stack it names, which is the only
+                         description of a typeface worth reading -- and for the local group it
+                         is also the truth, since those fonts are on this machine. #}
+                      <optgroup label="{{ _t('ADMIN_PRESET_FONTS_LOCAL') }}">
+                        {% for stackName, stack in fontStacks %}
+                          <option value="{{ stack }}" style="font-family: {{ stack }}">{{ stackName }}</option>
+                        {% endfor %}
+                      </optgroup>
+                      <optgroup label="{{ _t('ADMIN_PRESET_FONTS_WEB') }}">
+                        {% for family, stack in webfonts %}
+                          <option value="{{ stack }}" style="font-family: {{ stack }}">{{ family }}</option>
+                        {% endfor %}
+                      </optgroup>
                     </select>
 
                   {% else %}

@@ -265,6 +265,9 @@ class AdminController extends YesWikiController
             'inkFor' => PresetService::INK_FOR,
             // what the two font selects offer, each option drawn in the stack it names
             'fontStacks' => PresetService::FONT_STACKS,
+            // the families that have to be fetched, as against the stacks already on the
+            // reader's machine -- two groups, because the cost is different
+            'webfonts' => $presets->webfonts(),
             'defaultPreset' => $presets->default(),
             // "new" opens on what the wiki is wearing: a preset is almost always made by
             // adjusting one that nearly works, not from black on white

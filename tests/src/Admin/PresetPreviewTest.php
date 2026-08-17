@@ -512,6 +512,39 @@ class PresetPreviewTest extends YesWikiTestCase
         $this->assertStringContainsString('data-yw-preset-palette-pick=""', $screen);
     }
 
+    /**
+     * The font select separates what costs a download from what does not.
+     *
+     * They were one flat list, so "Nunito" and "Neo-Grotesque" looked like the same kind of
+     * choice when one of them fetches a file from Google on save and makes the first paint
+     * wait for it. Two `<optgroup>`s is the only place that difference is visible.
+     */
+    public function testFontsAreSplitIntoLocalStacksAndWebfonts(): void
+    {
+        $screen = $this->screen();
+        $presets = $this->getWiki()->services->get(PresetService::class);
+
+        $this->assertStringContainsString('<optgroup label="' . _t('ADMIN_PRESET_FONTS_LOCAL'), $screen);
+        $this->assertStringContainsString('<optgroup label="' . _t('ADMIN_PRESET_FONTS_WEB'), $screen);
+
+        // every local stack, drawn in itself -- the option's own preview
+        foreach (PresetService::FONT_STACKS as $name => $stack) {
+            $this->assertStringContainsString('>' . $name . '</option>', $screen);
+            $this->assertStringContainsString(
+                'style="font-family: ' . htmlspecialchars($stack, ENT_QUOTES) . '"',
+                $screen,
+                $name . ' is not drawn in its own stack'
+            );
+        }
+
+        // and every webfont, including any already downloaded under custom/fonts/ -- a family
+        // that is being served but is not offered is one a preset could name and the screen
+        // could not re-select
+        foreach ($presets->webfonts() as $family => $stack) {
+            $this->assertStringContainsString('>' . $family . '</option>', $screen, $family);
+        }
+    }
+
     /** The type is still chosen from a list drawn in itself, and the size still slides. */
     public function testTheRailOffersAFontSelect(): void
     {

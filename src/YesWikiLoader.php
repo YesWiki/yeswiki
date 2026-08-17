@@ -87,6 +87,7 @@ class YesWikiLoader
                     throw new \Exception('ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>');
                 }
                 $loader = require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
+                self::checkAutoloaderIsCurrent();
             } catch (\Throwable $th) {
                 $message = $th->getMessage();
                 // echo message directly because TemplateEngine not ready here
@@ -110,5 +111,49 @@ class YesWikiLoader
         }
 
         return self::$runtime;
+    }
+
+    /**
+     * The generated autoloader knows every namespace `composer.json` declares.
+     *
+     * **Replacing the code is not enough on its own.** PSR-4 prefixes are baked into
+     * `vendor/composer/autoload_psr4.php` when composer runs; they are not read from
+     * `composer.json` at runtime. Ectoplasme introduced eleven prefixes Doryphore never had
+     * (`YesWiki\Import\`, `YesWiki\Render\`, `YesWiki\Content\` and the rest), so an
+     * instance whose files were swapped without `composer install` boots with an autoloader
+     * that cannot see half the application.
+     *
+     * What that failure looks like, unhelpfully, is a Symfony container error naming
+     * whichever file happens to sort first in the directory it gave up on:
+     *
+     *     Expected to find class "YesWiki\Import\Service\ImapImporter" in file
+     *     "…/src/Import/Service/ImapImporter.php" … but it was not found!
+     *
+     * That file is fine. It is simply the first one alphabetically in the first namespace the
+     * container tried to scan. Nothing in the message says "run composer", and the class it
+     * names is a red herring, which is the whole reason for checking here instead.
+     */
+    private static function checkAutoloaderIsCurrent(): void
+    {
+        $generated = YESWIKI_SOURCE_DIR . '/vendor/composer/autoload_psr4.php';
+        $manifest = YESWIKI_SOURCE_DIR . '/composer.json';
+        if (!is_file($generated) || !is_file($manifest)) {
+            return;
+        }
+
+        $declared = json_decode((string)file_get_contents($manifest), true);
+        $declared = is_array($declared) ? ($declared['autoload']['psr-4'] ?? []) : [];
+        if (!is_array($declared) || $declared === []) {
+            return;
+        }
+
+        /** @var array<string, mixed> $mapped */
+        $mapped = require $generated;
+        $missing = array_values(array_diff(array_keys($declared), array_keys($mapped)));
+        if ($missing === []) {
+            return;
+        }
+
+        throw new \Exception('ERROR ! : the autoloader in <code>vendor/</code> is older than this code. It does not know ' . implode(', ', array_map(static fn (string $prefix): string => '<code>' . htmlspecialchars($prefix) . '</code>', $missing)) . ', so most of YesWiki cannot be loaded.<br/><br/><strong>Run <code>composer install</code> in ' . htmlspecialchars(YESWIKI_SOURCE_DIR) . '</strong> (or <code>composer dump-autoload</code> if <code>vendor/</code> is already up to date), then reload. If you have an opcode cache, restart PHP too.');
     }
 }
