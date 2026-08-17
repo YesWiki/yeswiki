@@ -11,6 +11,7 @@ use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FeedLoader;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -173,9 +174,11 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
      */
     private function itemsFrom(array $pages): array
     {
+        $cache = $this->getService(RemoteImageCache::class);
         $items = [];
         foreach ($pages as $page) {
             $stamp = $page['datestamp'] ?? null;
+            $image = (string)($page['image'] ?? '');
             $items[] = new Item(
                 id: (string)($page['url'] ?? ($page['title'] ?? '')),
                 title: (string)($page['title'] ?? ''),
@@ -183,7 +186,11 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                 // there is nothing to tell apart and the slot stays empty
                 subtitle: ($page['source'] ?? '') !== '' ? (string)$page['source'] : null,
                 description: ($page['description'] ?? '') !== '' ? (string)$page['description'] : null,
-                image: ($page['image'] ?? null) !== null && $page['image'] !== '' ? (string)$page['image'] : null,
+                // fetched once and served from here (RemoteImageCache): a feed's image lives
+                // on the publisher's server, so every card drawn from one used to send the
+                // reader there -- at whatever size that server happens to store, and with a
+                // hole in the card whenever it is down
+                image: $image === '' ? null : $cache->localUrl($image),
                 url: ($page['url'] ?? '') !== '' ? (string)$page['url'] : null,
                 // ISO, not the `formatdate` string: a Presentation sorts on this as well as
                 // showing it, and `d.m` sorts alphabetically into nonsense
@@ -447,6 +454,19 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                         $this->arguments
                     )
                     . "\n</div>\n";
+            }
+
+            // Syndication's own three templates draw `page.image` themselves, so they need the
+            // same treatment -- but only when one is going to be drawn: `showimage` is off by
+            // default here, and downloading a picture nobody displays is the cost this whole
+            // thing exists to avoid.
+            if (!empty($this->arguments['showimage'])) {
+                $cache = $this->getService(RemoteImageCache::class);
+                foreach ($syndication['pages'] as $key => $page) {
+                    if (!empty($page['image'])) {
+                        $syndication['pages'][$key]['image'] = $cache->localUrl((string)$page['image']);
+                    }
+                }
             }
 
             return $wrapper .
