@@ -296,8 +296,10 @@ both.
 ### 7. Images are converted and capped
 
 **New pictures are uploaded as WebP.** The browser converts an image and fits it inside
-3840x2160 before sending it, so what the wiki stores is a few hundred kilobytes rather than a
-phone's twelve megapixels. GIFs, SVGs and anything already smaller than the cap are left alone,
+1920x1920 before sending it, so what the wiki stores is a few hundred kilobytes rather than a
+phone's twelve megapixels. That is the same bound images are _served_ at, so a stored picture
+needs no resized copy made of it -- raise `image-upload-max-width`/`-height` if your wiki is
+also where the full-resolution originals are meant to live. GIFs, SVGs and anything already smaller than the cap are left alone,
 and so is every image already uploaded — nothing is rewritten in place.
 
 **Pictures are served at the size the page uses.** `{{attach}}` and a `{{section}}` background

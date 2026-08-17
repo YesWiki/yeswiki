@@ -445,7 +445,7 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
     .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
     .click()
 
-  // 4200x2400 of noise -- over the 4K cap on the long side, and busy enough that JPEG
+  // 4200x2400 of noise -- over the cap in both directions, and busy enough that JPEG
   // cannot make it small by accident. Drawn with rectangles rather than per-pixel ImageData,
   // which at this size is sixty megabytes of buffer and takes the headless browser with it.
   const original = await page.evaluate(async () => {
@@ -502,12 +502,12 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   })
 
   expect(stored.type).toBe('image/webp')
-  expect(stored.width).toBeLessThanOrEqual(3840)
-  expect(stored.height).toBeLessThanOrEqual(2160)
+  expect(stored.width).toBeLessThanOrEqual(1920)
+  expect(stored.height).toBeLessThanOrEqual(1920)
   // fitted, not squashed: the shape is kept, and the dimension that has furthest to fall is
-  // the one that lands on the cap -- 2400 into 2160 here, which takes 4200 down to 3780
-  expect(stored.width).toBe(3780)
-  expect(stored.height).toBe(2160)
+  // the one that lands on the cap -- 4200 into 1920 here, which takes 2400 down with it
+  expect(stored.width).toBe(1920)
+  expect(stored.height).toBe(1097)
   expect(stored.size).toBeLessThan(original.size)
 })
 

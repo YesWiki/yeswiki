@@ -43,8 +43,8 @@ function settings() {
   const configured = (typeof wiki !== 'undefined' && wiki.imageUpload) || {}
   return {
     format: 'image/webp',
-    maxWidth: 3840,
-    maxHeight: 2160,
+    maxWidth: 1920,
+    maxHeight: 1920,
     quality: 0.82,
     maxSize: 0,
     ...configured,

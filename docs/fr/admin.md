@@ -974,9 +974,12 @@ gagner.
   `image/webp` par défaut. Mettre une chaîne vide désactive complètement la
   conversion : l'image part telle qu'elle a été choisie.
 - **Largeur / hauteur maximales des images envoyées -
-  image-upload-max-width, image-upload-max-height** : 3840 × 2160 (4K) par
-  défaut. Une image plus grande est réduite pour tenir dans ce cadre, sans
-  déformation.
+  image-upload-max-width, image-upload-max-height** : 1920 × 1920 par défaut.
+  Une image plus grande est réduite pour tenir dans ce cadre, sans déformation.
+  C'est volontairement la même valeur que la limite d'affichage ci-dessous :
+  une image stockée à la taille à laquelle elle est servie n'a besoin d'aucune
+  copie redimensionnée. Augmentez-la (3840 × 2160 pour de la 4K) si le wiki sert
+  aussi de dépôt pour les fichiers d'origine.
 - **Qualité de la conversion - image-upload-quality** : 0.82 par défaut, entre 0
   et 1.
 - **Poids visé pour une image envoyée - image-upload-max-size** : 1 Mo par

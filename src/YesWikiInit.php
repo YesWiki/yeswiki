@@ -302,8 +302,11 @@ class Init
             // uploaded is what the wiki then stores, backs up and serves forever.
             // `image-upload-format: ''` turns the whole thing off and uploads what was chosen.
             'image-upload-format' => 'image/webp',
-            'image-upload-max-width' => 3840,  // 4K, the point past which nothing on a page gains
-            'image-upload-max-height' => 2160,
+            // The same 1920 the render cap uses, on purpose: an image stored at the size it is
+            // served at needs no resized copy made of it at all, so the wiki keeps one file per
+            // picture instead of two and the first view of a new image is not a resize.
+            'image-upload-max-width' => 1920,
+            'image-upload-max-height' => 1920,
             'image-upload-quality' => 0.82,
             // Bytes. The quality is lowered a step at a time to try to come under it; it is a
             // target, not a promise -- `max_file_size` is the limit that actually refuses.
