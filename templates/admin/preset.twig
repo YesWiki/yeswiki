@@ -17,6 +17,18 @@
    paragraph can fail on a button. The drawer previews live -- it writes the variables onto
    the document -- so changing a colour repaints everything below without a round trip. #}
 {% block dashboard_content %}
+  {# Every webfont this wiki has downloaded, declared.
+
+     A family's `@font-face` rules are written into a preset when that preset is saved, so
+     until then no browser has heard of it: picking a downloaded font in the rail set
+     `font-family` on the document and every word carried on rendering in the fallback. This
+     declares what is INSTALLED rather than what any preset names, which is the set the rail
+     can offer -- and is right the moment a font is downloaded, before anything is saved.
+
+     Re-fetched by the JS after a download, so a font just added previews immediately. #}
+  <link rel="stylesheet" data-yw-preset-faces
+        href="{{ url({ tag: 'api/presets/fonts.css' }) }}">
+
   <div class="yw-preset-head">
     <h1>{{ _t('DASHBOARD_ADMIN_PRESET') }}</h1>
     {# The way back to the drawer once it has been shut. Only rendered as a control when the
@@ -243,11 +255,6 @@
          data-light="{{ _t('ADMIN_PRESET_EDITING_LIGHT') }}"
          data-dark="{{ _t('ADMIN_PRESET_EDITING_DARK') }}"></p>
 
-      <div class="yw-form-group">
-        <label class="yw-form-label" for="yw-preset-name">{{ _t('ADMIN_PRESET_NAME') }}</label>
-        <input type="text" class="yw-input" id="yw-preset-name" name="preset_name" required
-               autocomplete="off" pattern="[A-Za-z0-9_\- ]+">
-      </div>
 
       {# One field per AUTHORED Design token, grouped the way the token set is grouped. A
          colour is authored twice -- once per Colour scheme -- because that is what a Preset
@@ -297,7 +304,10 @@
                         <span class="yw-preset-rail__badge-slot" data-scheme="{{ scheme }}">
                           <span class="yw-preset-rail__contrast"
                                 data-yw-preset-contrast="{{ scheme }}.{{ name }}"
-                                data-against="{{ token.contrast == 'auto-ink' ? 'auto-ink' : scheme ~ '.' ~ token.contrast }}"
+                                {# a contrast target already carrying a scheme (`light.yw-surface`)
+                                   keeps it: the ink pair is scheme-independent, and each of the
+                                   two is the page text of one scheme only #}
+                                data-against="{{ token.contrast == 'auto-ink' or '.' in token.contrast ? token.contrast : scheme ~ '.' ~ token.contrast }}"
                                 title="{{ _t('ADMIN_PRESET_CONTRAST_HINT') }}"></span>
                         </span>
                       {% endfor %}
@@ -381,6 +391,19 @@
                       <input type="hidden" name="light[{{ name }}]" data-yw-preset-field="light.{{ name }}">
                     </div>
 
+                  {% elseif token.kind == 'choice' %}
+                    {# A fixed set of CSS keywords. The value goes into the stylesheet
+                       verbatim, so what is offered here IS the grammar the property takes --
+                       this is the one kind where a Preset writes CSS rather than a colour or
+                       a measure, and the only place a wrong value would produce a rule the
+                       browser silently drops. #}
+                    <select class="yw-input yw-preset-rail__choice" id="yw-preset-light-{{ name }}"
+                            name="light[{{ name }}]" data-yw-preset-field="light.{{ name }}">
+                      {% for value, optionLabel in token.options %}
+                        <option value="{{ value }}">{{ _t(optionLabel) }}</option>
+                      {% endfor %}
+                    </select>
+
                   {% elseif token.kind == 'font' %}
                     {# Each option is drawn in the stack it names, which is the only description
                        of a typeface worth reading. A preset that names something else -- a
@@ -423,13 +446,106 @@
               {% endfor %}
             </div>
           {% endfor %}
+
+          {# Adding a webfont belongs beside the selects it adds to -- "the font I want is not
+             in the list" is a thought you have while looking at the list. A BUTTON rather than
+             the form itself: three more controls permanently in a fifty-field rail, for
+             something done once or twice in a wiki's life, is three more things to scroll past
+             every other time. #}
+          {% if group == 'type' %}
+            <button type="button" class="yw-btn yw-btn--block"
+                    data-yw-modal-target="#yw-preset-font-modal">
+              {{ icon('download') }} {{ _t('ADMIN_PRESET_FONT_ADD_OPEN') }}
+            </button>
+          {% endif %}
         </fieldset>
       {% endfor %}
 
-      <div class="yw-rail__footer">
+      {# The name sits with the button that writes it, at the foot of the rail. At the top it
+         was the first thing asked for and the last thing thought about: you name a preset once
+         you have made it, and the footer is the one part of a fifty-field rail that is always
+         on screen. #}
+      <div class="yw-rail__footer yw-preset-rail__save">
+        <input type="text" class="yw-input" id="yw-preset-name" name="preset_name" required
+               autocomplete="off" pattern="[A-Za-z0-9_\- ]+"
+               aria-label="{{ _t('ADMIN_PRESET_NAME') }}" placeholder="{{ _t('ADMIN_PRESET_NAME') }}">
         <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
       </div>
     </form>
+
+    {# Adding a webfont, in a modal opened from the Type group.
+
+       Its own POST rather than part of a save: fetching a font is a network round trip, and a
+       slow font server must not be able to stop a preset being written. A sibling of the
+       editing form, never inside it -- a form within a form is not markup a browser honours.
+
+       Google only for now. The service can also copy a family from another YesWiki, and that
+       stays available to it; there is simply no control for it here yet. #}
+    <div class="yw-modal" id="yw-preset-font-modal" tabindex="-1" role="dialog"
+         aria-labelledby="yw-preset-font-modal-title">
+      <div class="yw-modal__dialog">
+        <div class="yw-modal__content">
+          {# The endpoint is where the JS sends this; the `action` is where the browser sends it
+             if there is none. They do the same work -- the difference is that the endpoint
+             answers with what happened and the page POST answers with a whole new page, which
+             costs every unsaved edit in the rail beside it. #}
+          <form method="post" action="{{ url({ tag: 'admin/preset' }) }}" hx-boost="false"
+                data-yw-preset-font-form="{{ url({ tag: 'api/presets/fonts' }) }}"
+                data-yw-preset-font-working="{{ _t('ADMIN_PRESET_FONT_WORKING') }}">
+            <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+            <input type="hidden" name="preset_action" value="install_font">
+
+            <div class="yw-modal__header">
+              <h3 class="yw-modal__title" id="yw-preset-font-modal-title">
+                {{ _t('ADMIN_PRESET_FONT_MODAL_TITLE') }}
+              </h3>
+              <button type="button" class="yw-close" data-yw-dismiss="modal" aria-label="close">&times;</button>
+            </div>
+
+            <div class="yw-modal__body">
+              <p class="yw-preset-rail__hint">{{ _t('ADMIN_PRESET_FONT_ADD_HINT') }}</p>
+
+              <div class="yw-form-group">
+                <label class="yw-form-label" for="yw-preset-font-family">
+                  <span class="yw-preset-rail__label-text">{{ _t('ADMIN_PRESET_FONT_FAMILY') }}</span>
+                </label>
+                {# The same chip picker the keyword and facet fields use, in its CLOSED mode: a
+                   family Google does not have is a download that fails silently, so free typing
+                   is refused and the catalogue is the only source of a name. Several at a time,
+                   because a body face and a heading face are chosen together.
+
+                   The option map starts EMPTY and is filled by admin-preset.js from
+                   `src/assets/google-fonts.json` on first use -- 1951 names is 29KB, which
+                   would otherwise sit in the head of this screen for something most visits
+                   never touch. `limit` caps what is drawn, which is also what makes it
+                   affordable to fetch each shown family and draw its name in its own face. #}
+                {{ include_javascript('javascripts/yw-tags-input.js') }}
+                <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed
+                     data-yw-tag-input-options="{}" data-yw-tag-input-limit="12"
+                     data-yw-google-fonts="{{ googleFontsUrl }}">
+                  <input type="text" class="yw-input yw-tag-input__search" id="yw-preset-font-family"
+                         data-yw-tag-input-search autocomplete="off" spellcheck="false"
+                         placeholder="{{ _t('ADMIN_PRESET_FONT_PLACEHOLDER') }}">
+                  <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
+                  <input type="hidden" name="font_family" data-yw-tag-input-value value="">
+                </div>
+              </div>
+            </div>
+
+            {# what the download did, said where it was asked for. A flash would need the page
+               to reload, which is the thing this whole path exists to avoid. #}
+            <p class="yw-preset-font-result" data-yw-preset-font-result role="status" hidden></p>
+
+            <div class="yw-modal__footer">
+              <button type="submit" class="yw-btn yw-btn--primary">
+                {{ icon('download') }} {{ _t('ADMIN_PRESET_FONT_ADD') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
 
     {# The palette, once. Its chips are painted by the JS from whatever the fields say at the
        moment it opens, so it shows this preset's colours and not a snapshot of somebody's.

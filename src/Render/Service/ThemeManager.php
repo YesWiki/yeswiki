@@ -19,6 +19,21 @@ class ThemeManager implements EventSubscriberInterface
     public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
     public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
     public const CUSTOM_FONT_PATH = 'custom/fonts';
+
+    /**
+     * What a downloaded family's `@font-face` rules are kept in, beside its files.
+     *
+     * The rules used to exist in exactly one place: inside a Preset, written when that preset
+     * was saved. Which meant a family could be fully downloaded and still be invisible to
+     * every browser -- nothing declared it -- so choosing it in the rail previewed nothing at
+     * all, and the admin screen had no way to draw a font it had just fetched.
+     *
+     * Keeping them with the files makes a family self-describing: `unicode-range` and the
+     * weight of each file are Google's own answer, recorded once, rather than something to
+     * be guessed back out of a file name later.
+     */
+    public const FONT_FACES_FILE = 'faces.css';
+
     /**
      * What a page may say about its own chrome, beside the theme it wears.
      *
@@ -34,12 +49,15 @@ class ThemeManager implements EventSubscriberInterface
         'PageMenu',
         'favorite_preset',
     ];
-    public const USER_AGENTS = [
-        'eot' => 'Mozilla/2.0 (compatible; MSIE 3.01; Windows 98)',
-        'woff' => 'Mozilla/5.0 (Windows; U; Windows NT 6.1; fr; rv:1.9.2) Gecko/20100115 Firefox/3.6',
-        'woff2' => 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0',
-        'truetype' => '',
-    ];
+    /**
+     * What Google is told we are, so it answers with woff2.
+     *
+     * `fonts.googleapis.com` serves a different format per User-Agent. This used to be four
+     * of them -- IE 3.01 for `eot`, Firefox 3.6 for `woff`, a modern one for `woff2`, none
+     * for `ttf` -- fetched in turn. Every browser this release supports takes woff2, so one
+     * ordinary Chrome string is the whole table now.
+     */
+    public const BROWSER_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     protected $errorMessage;
     protected $favorites;
@@ -673,59 +691,239 @@ class ThemeManager implements EventSubscriberInterface
             return '';
         }
 
-        $css = '';
         $fontFamily = $this->cleanFont($fontFamily);
-        if (!empty($fontFamily)) {
-            $newCss = $this->getFontFiles($fontFamily);
-            if (!empty($newCss)) {
-                $css .= "\n$newCss";
-            }
+        if (empty($fontFamily)) {
+            return '';
         }
 
-        return $css;
+        // Already downloaded: its rules were recorded with its files, and re-fetching them
+        // would put a Google round trip in front of every save of every preset naming it --
+        // including the offline instance whose fonts were copied in from another wiki.
+        $stored = $this->fontFaces($fontFamily);
+        if ($stored !== '') {
+            return "\n" . trim($stored);
+        }
+
+        $newCss = $this->getFontFiles($fontFamily);
+        if (empty($newCss)) {
+            return '';
+        }
+        $this->writeFontFaces($fontFamily, $newCss);
+
+        return "\n$newCss";
     }
 
+    /**
+     * Fetch a webfont's files into `custom/fonts/`, from Google or from another YesWiki.
+     *
+     * Returns whether anything landed. The files are what matters -- the `@font-face` rules
+     * that point at them are written into a Preset when it is saved
+     * (installAndGetCSSForFont), so this only has to make the font *available* for the rail
+     * to offer and for a preset to name.
+     *
+     * From another wiki, the files are copied straight across: a YesWiki serves them from
+     * `custom/fonts/<family>/`, under names it produced itself, so the same convention reads
+     * them back. That path exists for the instance that cannot reach Google at all -- and for
+     * not asking Google twice for something you already fetched onto your other wiki.
+     */
+    /**
+     * Fetch a webfont from Google so a Preset can name it. Returns whether anything landed.
+     *
+     * Only the files matter here -- the `@font-face` rules pointing at them are written into
+     * a Preset when it is saved (installAndGetCSSForFont), so this exists to make a family
+     * *available* before anything names it.
+     */
+    public function installFont(string $family): bool
+    {
+        $css = $this->getFontFiles($family);
+        if ($css === '') {
+            return false;
+        }
+        $this->writeFontFaces($family, $css);
+
+        return true;
+    }
+
+    /** Keep a family's `@font-face` rules beside its files. See FONT_FACES_FILE. */
+    public function writeFontFaces(string $family, string $css): void
+    {
+        $directory = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family));
+        if (is_dir($directory)) {
+            file_put_contents($directory . '/' . self::FONT_FACES_FILE, trim($css) . "\n");
+        }
+    }
+
+    /** A family's stored rules, or '' if it was installed before they were kept. */
+    public function fontFaces(string $family): string
+    {
+        $file = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family))
+            . '/' . self::FONT_FACES_FILE;
+
+        return is_file($file) ? (string)file_get_contents($file) : '';
+    }
+
+    /**
+     * Copy one file another wiki described, keeping the name it is known by there.
+     *
+     * The descriptor comes from that wiki's `/api/presets/fonts`, which reads it out of its
+     * own preset -- so style, weight and subset are facts rather than a convention guessed
+     * from a file name, and every weight of the family comes across rather than the one an
+     * old fetcher happened to have.
+     *
+     * @param array{family?: mixed, style?: mixed, weight?: mixed, subset?: mixed, unicodeRange?: mixed, url?: mixed} $font
+     */
+    public function importRemoteFontFile(array $font): ?string
+    {
+        $url = (string)($font['url'] ?? '');
+        if (!preg_match('~^https?://~i', $url) || !str_ends_with(strtolower($url), '.woff2')) {
+            return null;
+        }
+
+        $local = $this->importFontFile(
+            (string)($font['family'] ?? ''),
+            (string)($font['style'] ?? 'normal'),
+            (string)($font['weight'] ?? '400'),
+            (string)($font['subset'] ?? ''),
+            $url
+        );
+
+        // importFontFile hands back the URL unchanged when it could not write
+        return $local === $url ? null : self::fontFaceRule(
+            (string)($font['family'] ?? ''),
+            (string)($font['style'] ?? 'normal'),
+            (string)($font['weight'] ?? '400'),
+            (string)($font['unicodeRange'] ?? ''),
+            $local
+        );
+    }
+
+    /**
+     * One `@font-face` block, in the shape Google's own answer has.
+     *
+     * Used for the copied-from-another-wiki path, where there is no CSS to localise: that
+     * wiki answered with the descriptors instead, and they have to come back out as rules a
+     * browser can read. Same text either way, so a family reads the same however it arrived.
+     */
+    public static function fontFaceRule(
+        string $family,
+        string $style,
+        string $weight,
+        string $unicodeRange,
+        string $src
+    ): string {
+        $rule = "@font-face {\n"
+            . "  font-family: '" . str_replace("'", '', $family) . "';\n"
+            . '  font-style: ' . ($style !== '' ? $style : 'normal') . ";\n"
+            . '  font-weight: ' . ($weight !== '' ? $weight : '400') . ";\n"
+            . "  font-display: swap;\n"
+            . '  src: url(' . $src . ") format('woff2');\n";
+        if ($unicodeRange !== '') {
+            $rule .= '  unicode-range: ' . $unicodeRange . ";\n";
+        }
+
+        return $rule . "}\n";
+    }
+
+    /** GET a URL, or null if it did not answer with a body. Public for the preset importer. */
+    public function fetchUrl(string $url): ?string
+    {
+        return $this->fetch($url);
+    }
+
+    /** GET a URL, or null if it did not answer with a body. */
+    private function fetch(string $url, string $userAgent = ''): ?string
+    {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        if ($userAgent !== '') {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: text/css,*/*;q=0.1']);
+            curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        }
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        $body = curl_exec($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $failed = curl_errno($ch);
+        curl_close($ch);
+
+        return (!$failed && $status < 400 && is_string($body) && $body !== '') ? $body : null;
+    }
+
+    /**
+     * Fetch a webfont's woff2 files and return the `@font-face` rules that point at them.
+     *
+     * **woff2 only, and every weight the family has.** This used to ask Google's old `css`
+     * endpoint four times over, spoofing IE 3.01, Firefox 3.6 and a modern Firefox in turn to
+     * be served `eot`, `woff`, `woff2` and `ttf` -- four round trips and four copies on disk,
+     * three of them formats no browser this release supports will ever ask for. Worse, that
+     * endpoint answers with the regular face and nothing else, so a wiki using Nunito had no
+     * bold at all and every bold heading was a shape the browser smeared on its own.
+     *
+     * `css2` with an ordinary browser User-Agent answers woff2 only, and takes an axis: this
+     * asks for regular and bold, upright and italic. Verified against the live API -- a family
+     * that has none of the extras still answers 200 with what it does have, so there is
+     * nothing to fall back to and no error to handle.
+     *
+     * @return string the rules, with `src` pointing at the copies now under custom/fonts/
+     */
     protected function getFontFiles(string $fontFamily): string
     {
-        $css = '';
-
-        $fontFamilyForUrl = $this->convertFamilyToUrl($fontFamily);
-        if (!empty($fontFamilyForUrl)) {
-            $data = [];
-            foreach (self::USER_AGENTS as $name => $value) {
-                $data[$name] = $this->getFontDescription($fontFamilyForUrl, $name);
-                if (empty($data[$name])) {
-                    unset($data[$name]);
-                }
-            }
-            $css = $this->formatCSS($data);
+        $family = $this->convertFamilyToUrl($fontFamily);
+        if (empty($family)) {
+            return '';
         }
 
-        return $css;
+        $css = $this->fetch(
+            'https://fonts.googleapis.com/css2?family=' . $family
+            . ':ital,wght@' . rawurlencode('0,400;0,700;1,400;1,700') . '&display=swap',
+            self::BROWSER_USER_AGENT
+        );
+
+        return $css === null ? '' : $this->localiseFontFaces($css, $this->cleanFont($fontFamily));
     }
 
-    protected function getFontDescription(string $fontFamily, string $userAgent): array
+    /**
+     * Download each `src` and rewrite it to the local copy.
+     *
+     * The subset each block covers is the comment above it (`/* latin-ext *``/`), which is the
+     * only place Google names it -- and it has to reach the file name, because the blocks are
+     * otherwise identical and would overwrite each other.
+     */
+    protected function localiseFontFaces(string $css, string $family): string
     {
-        $data = [];
-        $ch = curl_init("https://fonts.googleapis.com/css?family=$fontFamily&subset=latin-ext");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        $headers = ['Accept: text/css,*/*;q=0.1'];
-        if (!empty(self::USER_AGENTS[$userAgent])) {
-            $headers[] = 'User-Agent: ' . self::USER_AGENTS[$userAgent];
-        }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $result = curl_exec($ch);
-        $errorNb = curl_errno($ch);
-        curl_close($ch);
-        if (!$errorNb) {
-            $data = $this->parseCSS(is_string($result) ? $result : '');
-        }
+        $subset = '';
 
-        return $data;
+        return (string)preg_replace_callback(
+            '~/\*\s*([a-z0-9-]+)\s*\*/|@font-face\s*\{[^}]*\}~i',
+            function (array $match) use (&$subset, $family): string {
+                if (!str_contains($match[0], '@font-face')) {
+                    $subset = $match[1] ?? '';
+
+                    return $match[0];
+                }
+
+                $block = $match[0];
+                preg_match('/font-style:\s*([a-z]+)/i', $block, $style);
+                preg_match('/font-weight:\s*([0-9]+)/i', $block, $weight);
+                preg_match('~url\(([^)]+)\)~', $block, $url);
+                if (empty($url[1])) {
+                    return $block;
+                }
+
+                $local = $this->importFontFile(
+                    $family,
+                    $style[1] ?? 'normal',
+                    $weight[1] ?? '400',
+                    $subset,
+                    trim($url[1], "'\"")
+                );
+
+                return str_replace($url[1], $local, $block);
+            },
+            $css
+        ) ?: $css;
     }
 
     protected function cleanFont(string $fontFamily): string
@@ -750,181 +948,31 @@ class ThemeManager implements EventSubscriberInterface
         );
     }
 
-    protected function parseCSS(string $css): array
+    /**
+     * Copy one woff2 into `custom/fonts/<family>/` and return the path a rule should use.
+     *
+     * The name carries style, weight and subset because that is what distinguishes the files:
+     * a family arrives as a dozen blocks that differ only in those three, and a name built
+     * from the family alone would leave one file and eleven overwrites.
+     *
+     * On failure the remote URL is returned unchanged, so the rule still works -- the font is
+     * then served by Google rather than by this wiki, which is worse but not broken.
+     */
+    protected function importFontFile(string $family, string $style, string $weight, string $subset, string $url): string
     {
-        $data = [];
-        $this->parseFontFace($css, '', $data);
-        $this->parseFontFace($css, 'latin', $data);
-        $this->parseFontFace($css, 'latin-ext', $data);
-
-        return $data;
-    }
-
-    protected function parseFontFace(string $css, string $subset, array &$data)
-    {
-        $formattedSubSet = empty($subset) ? '' : "\/\*\s*" . preg_quote($subset, '/') . "\s*\*\/\s*";
-        if (preg_match("/$formattedSubSet@font-face \{([^}]*)src: url\((https:\/\/fonts\.gstatic\.com\/[A-Za-z0-9_\-.\/]+)\)(?: format\('([A-Za-z0-9 \-_]+)'\))?([^}]*)\}/", $css, $match)) {
-            $format = empty($match[3]) ? 'eot' : $match[3];
-            $data[$subset] = [
-                'url' => [
-                    $format => $match[2],
-                ],
-            ];
-            if (preg_match("/font-family: '([A-Za-z0-9 ]+)';/", $match[1], $familyMatch)) {
-                $data[$subset]['family'] = $familyMatch[1];
-            }
-            if (preg_match('/font-style: ([A-Za-z0-9 ]+);/', $match[1], $styleMatch)) {
-                $data[$subset]['style'] = $styleMatch[1];
-            }
-            if (preg_match('/font-weight: ([A-Za-z0-9 ]+);/', $match[1], $weightMatch)) {
-                $data[$subset]['weight'] = $weightMatch[1];
-            }
-            if (preg_match("/unicode-range: ([A-Za-z0-9 \+,\-]+);/", $match[4], $rangeMatch)) {
-                $data[$subset]['unicode-range'] = $rangeMatch[1];
-            }
-        }
-    }
-
-    protected function formatCSS(array $data): string
-    {
-        $css = '';
-        $formattedData = [];
-        foreach ($data as $userAgent => $values) {
-            foreach ($values as $charset => $raw) {
-                if (!empty($raw['family']) && !empty($raw['style']) && !empty($raw['weight'])) {
-                    $key = "{$raw['family']}-{$raw['style']}-{$raw['weight']}";
-                    if (!isset($formattedData[$key])) {
-                        $formattedData[$key] = [
-                            'family' => $raw['family'],
-                            'style' => $raw['style'],
-                            'weight' => $raw['weight'],
-                            'charsets' => [],
-                        ];
-                    }
-                    foreach ($raw['url'] as $format => $url) {
-                        if (!isset($formattedData[$key]['charsets'][$charset])) {
-                            $formattedData[$key]['charsets'][$charset] = [
-                                'url' => [],
-                            ];
-                        }
-                        if (isset($raw['unicode-range'])
-                            && !isset($formattedData[$key]['charsets'][$charset]['unicode-range'])) {
-                            $formattedData[$key]['charsets'][$charset]['unicode-range'] = $raw['unicode-range'];
-                        }
-                        if (!isset($formattedData[$key]['charsets'][$charset]['url'][$format])) {
-                            $formattedData[$key]['charsets'][$charset]['url'][$format] = $url;
-                        }
-                    }
-                }
-            }
-        }
-        if (!empty($formattedData)) {
-            foreach ($formattedData as $raw) {
-                foreach ($raw['charsets'] as $charset => $val) {
-                    $eotUrl = $val['url']['eot'] ?? '';
-                    $woff2Url = $val['url']['woff2'] ?? '';
-                    $woffUrl = $val['url']['woff'] ?? '';
-                    $truetypeUrl = $val['url']['truetype'] ?? '';
-                    if (!empty($eotUrl)) {
-                        $eotUrl = $this->importFontFile(
-                            $raw['family'],
-                            $raw['style'],
-                            $raw['weight'],
-                            $charset,
-                            'eot',
-                            $eotUrl
-                        );
-                        $eotUrl = "\n  src: url('$eotUrl');";
-                    }
-                    foreach (['woff2', 'woff', 'truetype'] as $name) {
-                        $varName = "{$name}Url";
-                        $var = ${$varName};
-                        if (!empty($var)) {
-                            $var = $this->importFontFile(
-                                $raw['family'],
-                                $raw['style'],
-                                $raw['weight'],
-                                $charset,
-                                $name,
-                                $var
-                            );
-                            ${$varName} = ",\n        url('$var') format('$name')";
-                        }
-                    }
-                    $unicodeRange = $val['unicode-range'] ?? '';
-                    if (!empty($unicodeRange)) {
-                        $unicodeRange = "\n  unicode-range: $unicodeRange;";
-                    }
-
-                    if (!empty($charset)) {
-                        $css .=
-                        <<<CSS
-
-                        /* $charset */
-
-                        CSS;
-                    }
-
-                    $css .=
-                    <<<CSS
-                    @font-face {
-                      font-family: '{$raw['family']}';
-                      font-style: {$raw['style']};
-                      font-weight: {$raw['weight']};$eotUrl
-                      src: local('')$woff2Url$woffUrl$truetypeUrl;$unicodeRange
-                    }
-                    CSS;
-                }
-            }
+        $folder = sanitizeFilename($family);
+        $directory = self::CUSTOM_FONT_PATH . '/' . $folder;
+        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            return $url;
         }
 
-        return $css;
-    }
-
-    protected function importFontFile(string $family, string $style, string $weight, string $charset, string $format, string $url): string
-    {
-        $folderSystemName = sanitizeFilename($family);
-        if (!is_dir(self::CUSTOM_FONT_PATH . "/$folderSystemName")) {
-            mkdir(self::CUSTOM_FONT_PATH . "/$folderSystemName", 0777, true);
+        $name = sanitizeFilename($family . '-' . $style . '-' . $weight . '-' . $subset) . '.woff2';
+        $bytes = $this->fetch($url, self::BROWSER_USER_AGENT);
+        if ($bytes === null || file_put_contents($directory . '/' . $name, $bytes) === false) {
+            return $url;
         }
 
-        switch ($format) {
-            case 'eot':
-                $ext = '.eot';
-                break;
-            case 'woff2':
-                $ext = '.woff2';
-                break;
-            case 'woff':
-                $ext = '.woff';
-                break;
-            case 'truetype':
-                $ext = '.ttf';
-                break;
-
-            default:
-                $ext = '';
-                break;
-        }
-        $fileName = sanitizeFilename("$family-$style-$weight-$charset") . $ext;
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        $result = curl_exec($ch);
-        $errorNb = curl_errno($ch);
-        curl_close($ch);
-        if (!$errorNb && !empty($result)) {
-            if (file_put_contents(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName", $result)
-                && file_exists(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName")) {
-                return '../../' . self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName";
-            }
-        }
-
-        return $url;
+        return '../../' . self::CUSTOM_FONT_PATH . '/' . $folder . '/' . $name;
     }
 
     /**

@@ -14149,19 +14149,7 @@ parameters:
 			path: ../src/Render/Service/ThemeManager.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:formatCSS\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:getCustomCSSPresets\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:getFontDescription\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
@@ -14185,24 +14173,6 @@ parameters:
 			path: ../src/Render/Service/ThemeManager.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:parseCSS\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:parseFontFace\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:parseFontFace\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:saveMetadataIfNeeded\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -14217,18 +14187,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:setFavorite\(\) has parameter \$newVal with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Part \$eotUrl \(0\|0\.0\|array\{\}\|string\|false\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
-
-		-
-			message: '#^Part \$unicodeRange \(0\|0\.0\|array\{\}\|string\|false\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: ../src/Render/Service/ThemeManager.php
 

@@ -18,7 +18,7 @@ text so a derived value is correct in both Colour schemes for free; that a **mea
 multiplier, never a typed length** — three spacing steps **on two axes each** in `rem` (which
 _is_ the wiki's base type size) and four unitless scales, all chosen with a slider and no text
 box; and that the **chrome and the headings are the Preset's**, not the theme's, with a colour
-and a size **per heading level**. The set is 43 authored tokens; the dark scheme restates 22
+and a size **per heading level**. The set is 56 authored tokens; the dark scheme restates 22
 colours instead of 31.
 
 ## Considered Options
@@ -105,7 +105,7 @@ colours instead of 31.
   redefinition, so `var(--yw-primary)` in the dark block picks the dark primary by itself.
   **A loop, however, computes to black in silence** — no warning, no fallback, nothing a rule
   can notice — so `PresetService::cycleIn()` refuses to save one and names the loop. The
-  palette is **curated** (14 of the 22 authored colours): the headings and the chrome are the
+  palette is **curated** (13 of the 22 authored colours): the headings and the chrome are the
   things that point at these rather than the other way round, and all twenty-two would be a
   wall rather than a palette. One shared popover, painted from the live values on open, since
   a copy per field would be forty-four sets of the same swatches to keep in step.
@@ -136,6 +136,34 @@ colours instead of 31.
   because a light ground is light in both schemes, and core picks the more legible of the two
   per fill. The contrast badge on a fill scores it against the ink it will actually get
   (`contrast => 'auto-ink'`), not a named partner.
+- **One ink pair, asked once.** `--yw-text` and `--yw-text-inverse` were authored, and
+  authored per scheme — four values expressing one decision, with four chances to disagree.
+  They are derived now: the page's ink is whichever of `--yw-ink-on-light` /
+  `--yw-ink-on-dark` suits the scheme in force, and the inverse is the other. The same pair
+  then answers every fill (`INK_FOR`) and every ground a page author chose. A Preset sets two
+  text colours, once, and never per scheme.
+- **A `{{section bgcolor="…"}}` gets an ink core chose**, where core can tell: a hex literal is
+  measured against the pair, and `var(--yw-primary)` reuses the ink already resolved for that
+  fill. Anything else — a `color-mix()`, a keyword, a gradient — is left to the author's
+  `class="white"`/`"black"`, which is also what an explicit class continues to override.
+  Guessing wrong here is unreadable text on somebody's cover image, so it is not guessed.
+- **Google's catalogue is vendored, not queried.** `src/assets/google-fonts.json` is 1951
+  family names, 29KB, no metadata — so it cannot go stale in any way that matters and it
+  costs no network call to draw a screen. It does two jobs: the font picker filters against
+  it (a closed chip list, several families at a time, because a body face and a heading face
+  are chosen together), and `installFont()` validates against it. That validation replaced a
+  shape regex, which `Opne Sans` passes — a well-formed name Google answers with nothing, so
+  the webmaster got a blank failure after a round trip instead of "no such font" before one.
+  The list is fetched by the browser on first use of the box rather than inlined: 29KB in the
+  head of a screen that is mostly about colours, for something most visits never touch.
+- **The picker previews what it offers**, which is the one thing a list of names cannot tell
+  you. The suggestion list is capped at 12, and the shown families are fetched in a single
+  `css2` request so each name renders in its own face. That request goes from the **admin's**
+  browser to Google — the only place in YesWiki where that happens, and a webmaster
+  deliberately browsing Google's catalogue rather than a reader being handed to it. It fails
+  soundlessly by design: where Google is unreachable the names simply stay in the wiki's own
+  font, and the picker, the chips and the download all still work, because the catalogue is
+  vendored and the fetching is the server's job.
 - **Where that choice is made** — measured before deciding. `oklch(from …)` and
   `contrast-color()` both work in the browsers this release supports, and both only ever
   answer black or white; feeding the switch into a `color-mix` percentage to pick between two
@@ -144,6 +172,59 @@ colours instead of 31.
   by `PresetService::resolve()`, written into the file by `save()`, and recomputed live by the
   rail while you drag. They are the one computed value that can go stale — hand-edit a
   preset's `--yw-primary` without saving from the screen and its ink keeps the old answer.
+
+- **A fourth kind of control: `choice`** — a fixed set of CSS keywords, for heading casing
+  and alignment. It is the only kind where a Preset writes CSS _grammar_ rather than a colour
+  or a measure, so what the select offers has to BE what the property takes; a value outside
+  the set is a rule the browser silently drops. Alignment stores `start`/`end` rather than
+  `left`/`right` — identical in every language YesWiki ships, correct in a right-to-left one.
+- **Webfonts are installable from the screen, from Google or from another YesWiki.** Its own
+  POST rather than part of a save: fetching a font is a network round trip, and a slow font
+  server must not be able to stop a preset being written. It is an **API call**, not a page
+  POST: as a page POST it redirected back to `/admin/preset`, which put the drawer back on the
+  list with every unsaved edit gone — and "the font I want is not in this list" is a thought
+  you have _while_ designing a preset, so the one moment anybody reaches for it was the moment
+  losing the screen cost most. The form still carries a plain `action` for a browser with no
+  JS; the difference is only what the answer costs. The second source exists because
+  a YesWiki already serves its fonts from `custom/fonts/<family>/` under names it wrote
+  itself — so an instance that cannot reach Google at all can still copy one across. The
+  address is checked before a connection is opened: http(s) with a host name, never a bare IP
+  or a `file://`, because it is a URL _this server_ fetches on an admin's say-so.
+
+- **How a webfont is fetched, and from where.** The old fetcher asked Google's `css` endpoint
+  four times over, spoofing IE 3.01, Firefox 3.6 and a modern Firefox to be served `eot`,
+  `woff`, `woff2` and `ttf` — and that endpoint answers with the regular face only, so a wiki
+  using Nunito had **no bold at all** and every bold heading was a shape the browser smeared
+  on its own. It now asks `css2` once with an ordinary browser User-Agent, on an
+  `ital,wght@0,400;0,700;1,400;1,700` axis: woff2 only, real weights, both slopes. Verified
+  against the live API — a family lacking the extras still answers 200 with what it has, so
+  there is nothing to fall back to.
+- **A downloaded family declares itself, beside its files.** The `@font-face` rules used to
+  exist in exactly one place — inside a Preset, written when that preset was saved — so a font
+  could be fully downloaded, offered in the select, chosen, and still be a name no browser had
+  ever heard of: `font-family` changed and every word carried on rendering in the fallback. No
+  error, no warning, nothing to see, and identical from the webmaster's side to the choice not
+  registering. They are now written to `custom/fonts/<family>/faces.css` as the font is
+  fetched, and `/api/presets/fonts.css` serves every installed family to the admin screen.
+  Keeping them beside the files also means `unicode-range` and the real weight of each file
+  are Google's own answer recorded once, rather than something to be guessed back out of a
+  file name — and that saving a preset no longer re-downloads a family it already has.
+- **A curated family that is not downloaded yet is previewed from Google.** The list names
+  sixteen; a wiki has fetched however many it has used. The file properly arrives on save, so
+  choosing one of the others moved nothing — the same silence again. The admin's browser asks
+  Google for it, exactly as the picker does when drawing its suggestions. Nothing on a public
+  page changes and no reader is handed to Google. The guard is the **face registry**, not
+  `document.fonts.check()`: with no rule for a family, `check` resolves it to a system font
+  and answers _true_, which is precisely the case being tested for.
+- **Copying a look between wikis: a Preset API, not a file listing.** `/api/presets/fonts`
+  answers with a descriptor per file — family, style, weight, `unicode-range`, absolute URL —
+  read out of the preset's own `@font-face` blocks. **The preset file is the manifest**: those
+  blocks were written when the font was fetched and already say all of it, so nothing is
+  stored twice and nothing can disagree with what the wiki renders with. Reusing the file
+  manager instead was considered and rejected: its bytes live outside the web root and are
+  served through PHP per request, and a bare `.woff2` upload carries no weight or slope — the
+  two things that make a webfont worth having. Fonts stay in `custom/fonts/`, served
+  statically.
 
 ## Consequences
 

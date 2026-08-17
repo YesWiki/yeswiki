@@ -386,6 +386,11 @@ a.bazar-card {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* A card is a thing lying ON the page, which is the whole reason it has a border and a
+     radius -- and a shadow is what says so. Its absence was why the preset screen's "shadow
+     strength" slider appeared to do nothing: the control worked, and not one element in the
+     gallery it repaints had a shadow to show for it. */
+  box-shadow: 0 1px 3px var(--yw-shadow-color);
   border: var(--yw-border-width) solid var(--yw-border);
   border-radius: var(--yw-radius-md);
   background: var(--yw-surface);
@@ -512,11 +517,11 @@ a.bazar-card {
    from styles/bazar/entries/index-dynamic.css
    ============================================================ */
 
-.bazar-list-dynamic-container.mounted {
+.entry-list-dynamic-container.mounted {
   opacity: 1 !important;
 }
 
-.bazar-list-dynamic-container .panel-group.ready {
+.entry-list-dynamic-container .panel-group.ready {
   opacity: 1 !important;
 }
 
@@ -524,39 +529,39 @@ a.bazar-card {
 /*   PAGINATION  */
 /* ------------- */
 
-.bazar-list-dynamic-container .results-col {
+.entry-list-dynamic-container .results-col {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
 }
 
-.bazar-list-dynamic-container .pagination {
+.entry-list-dynamic-container .pagination {
   display: flex;
   justify-content: center;
 }
 
-.bazar-list-dynamic-container .pagination > li {
+.entry-list-dynamic-container .pagination > li {
   margin: 0 var(--yw-space-sm-x);
   padding: 0 var(--yw-space-md-x);
   cursor: pointer;
   border-radius: var(--yw-radius-sm);
 }
 
-.bazar-list-dynamic-container .pagination > li:hover {
+.entry-list-dynamic-container .pagination > li:hover {
   font-weight: bold;
 }
 
-.bazar-list-dynamic-container .pagination > li.active {
+.entry-list-dynamic-container .pagination > li.active {
   background-color: var(--yw-primary);
   color: var(--yw-text-muted);
   font-weight: bold;
 }
 
-.bazar-list-dynamic-container .pagination > li i {
+.entry-list-dynamic-container .pagination > li i {
   color: var(--yw-primary);
 }
 
-.bazar-list-dynamic-container .pagination > li.disabled {
+.entry-list-dynamic-container .pagination > li.disabled {
   opacity: 0.6;
 }
 
@@ -609,7 +614,16 @@ a.bazar-card {
 /* ------------- */
 /* LIST TEMPLATE */
 /* ------------- */
-.bazar-list.dynamic .panel-heading-container {
+/* A list of entries is a block on a page, and the thing after it is not part of it. It had
+   no margin of its own at all, so a `{{entrylist}}` followed by a paragraph ran straight into
+   it -- the gap you saw was whatever the next element happened to bring.
+
+   `lg` is the "between components" step: this is one component ending, not a gap inside one. */
+.entry-list {
+  margin-bottom: var(--yw-space-lg-y);
+}
+
+.entry-list.dynamic .panel-heading-container {
   display: grid;
   grid-template-areas:
     'title floating'
@@ -618,7 +632,7 @@ a.bazar-card {
   grid-template-rows: max-content;
 }
 
-.bazar-list.dynamic .panel-heading-container.with-image {
+.entry-list.dynamic .panel-heading-container.with-image {
   grid-template-areas:
     'visual title floating'
     'visual subtitle subtitle';
@@ -626,12 +640,12 @@ a.bazar-card {
 }
 
 @media (width <= 1000px) {
-  .bazar-list.dynamic .panel-heading-container.with-image {
+  .entry-list.dynamic .panel-heading-container.with-image {
     grid-template-columns: 25% auto auto;
   }
 }
 
-.bazar-list.dynamic .panel-heading-container .visual-area {
+.entry-list.dynamic .panel-heading-container .visual-area {
   grid-area: visual;
   background-size: cover;
   align-self: stretch;
@@ -642,18 +656,18 @@ a.bazar-card {
   background-color: var(--yw-surface-sunken);
 }
 
-.bazar-list.dynamic .panel-heading-container .visual-area img {
+.entry-list.dynamic .panel-heading-container .visual-area img {
   object-fit: cover;
   width: 100%;
   min-height: 100px;
   max-height: 170px;
 }
 
-.bazar-list.dynamic .panel-heading-container .title-area {
+.entry-list.dynamic .panel-heading-container .title-area {
   grid-area: title;
 }
 
-.bazar-list.dynamic .panel-heading-container .floating-area {
+.entry-list.dynamic .panel-heading-container .floating-area {
   grid-area: floating;
   float: right;
   font-weight: normal;
@@ -663,18 +677,18 @@ a.bazar-card {
   padding-right: var(--yw-space-lg-x);
 }
 
-.bazar-list.dynamic .panel-heading-container .subtitle-area {
+.entry-list.dynamic .panel-heading-container .subtitle-area {
   grid-area: subtitle;
   font-size: 0.95em;
   text-align: justify;
   padding-top: var(--yw-space-md-y);
 }
 
-.bazar-list.dynamic .panel-heading-container p {
+.entry-list.dynamic .panel-heading-container p {
   margin: 0;
 }
 
-.bazar-list.dynamic .panel-body {
+.entry-list.dynamic .panel-body {
   font-size: 0.95em;
   margin-top: var(--yw-space-md-y);
 }
@@ -1196,7 +1210,7 @@ a.ical-export-button {
 }
 
 /* ENTRY PANEL */
-.bazar-list-dynamic-template-container .entry-container {
+.entry-list-dynamic-template-container .entry-container {
   position: relative;
   transition: all 0.3s;
   min-height: 50%;
@@ -1206,30 +1220,30 @@ a.ical-export-button {
   overflow: auto;
 }
 
-.bazar-list-dynamic-template-container .entry-container .btn-close i {
+.entry-list-dynamic-template-container .entry-container .btn-close i {
   padding-right: var(--yw-space-md-x);
 }
 
 .facette-container.dynamic[data-filter-align='right']
-  .bazar-list-dynamic-template-container
+  .entry-list-dynamic-template-container
   .entry-container {
   padding-left: 0;
   padding-right: var(--yw-space-md-x);
 }
 
 .facette-container.dynamic:not([data-filter-align='right'])
-  .bazar-list-dynamic-template-container
+  .entry-list-dynamic-template-container
   .entry-container
   .btn-close
   i {
   padding-right: 0;
 }
 
-.bazar-list-dynamic-template-container .entry-container .btn-close {
+.entry-list-dynamic-template-container .entry-container .btn-close {
   height: 5.4rem;
 }
 
-.bazar-list-dynamic-template-container.small-width .entry-container {
+.entry-list-dynamic-template-container.small-width .entry-container {
   position: absolute;
   inset: 0;
   z-index: 1000;
@@ -2568,7 +2582,7 @@ input.yw-input.error {
   padding: var(--yw-space-sm-y) 0;
 }
 
-.bazar-lists select {
+.entry-lists select {
   width: 250px;
   display: inline-block;
 }

@@ -322,8 +322,14 @@ test('a colour is scored against the one it sits on, per scheme', async ({
   const rail = page.locator('#yw-preset-rail')
   await rail.locator('[data-yw-preset-new]').click()
 
-  const badge = rail.locator('[data-yw-preset-contrast="light.yw-text"]')
-  const ink = rail.locator('[data-yw-preset-field="light.yw-text"]')
+  // The light-ground ink IS the page's text: `--yw-text` is derived from it, so this is the
+  // one field that decides what a paragraph looks like. It is scheme-independent, hence
+  // `light.` here being the field's name rather than a scheme it belongs to -- and its badge
+  // is scored against the LIGHT surface specifically, which is the scheme it is the ink of.
+  const badge = rail.locator(
+    '[data-yw-preset-contrast="light.yw-ink-on-light"]',
+  )
+  const ink = rail.locator('[data-yw-preset-field="light.yw-ink-on-light"]')
   const ground = rail.locator('[data-yw-preset-field="light.yw-surface"]')
 
   // The WCAG scale's own reference points, so this asserts the arithmetic and not merely
@@ -362,10 +368,13 @@ test('a colour is scored against the one it sits on, per scheme', async ({
   // every previewed colour at its light value and the page stayed white.
   await expect.poll(async () => token(page, '--yw-surface')).not.toBe('#000000')
 
-  await rail.locator('[data-yw-preset-field="dark.yw-text"]').fill('#111111')
+  // the dark-ground ink is scored against the DARK surface, the scheme it is the ink of
+  await rail
+    .locator('[data-yw-preset-field="light.yw-ink-on-dark"]')
+    .fill('#111111')
   await rail.locator('[data-yw-preset-field="dark.yw-surface"]').fill('#000000')
   await expect(
-    rail.locator('[data-yw-preset-contrast="dark.yw-text"]'),
+    rail.locator('[data-yw-preset-contrast="light.yw-ink-on-dark"]'),
   ).toHaveAttribute('data-grade', 'fail')
 
   // the light half kept its own values and its own score while the dark half was edited
@@ -438,4 +447,95 @@ test('the screen is refused to someone who is not an admin', async ({
 }) => {
   await page.goto('/?admin/preset')
   await expect(page.locator('.yw-preset-cards')).toHaveCount(0)
+})
+
+/**
+ * Has the browser actually got this typeface -- rules AND bytes?
+ *
+ * `document.fonts.check()` is no use here: with no `@font-face` for a family it falls back
+ * to a system font and answers TRUE, which is exactly the broken case. The registry is
+ * unambiguous -- a face is in it only because a rule declared it, and its status reaches
+ * `loaded` only once the file behind it arrived.
+ */
+async function loadedFace(page: Page, family: string) {
+  return page.evaluate(async (name) => {
+    await document.fonts.load(`16px '${name}'`)
+    return [...document.fonts].some(
+      (face) =>
+        face.family.replace(/['"]/g, '') === name && face.status === 'loaded',
+    )
+  }, family)
+}
+
+/**
+ * Downloading a webfont must not cost the preset you were designing.
+ *
+ * This was a form POST: it installed the font, redirected back to /admin/preset, and the
+ * drawer came back on the LIST screen with every unsaved edit gone. "The font I want is not
+ * in this list" is a thought you have *while* designing a preset, so the one moment anybody
+ * reaches for it is the moment losing the screen costs most.
+ *
+ * Only an e2e test can see this. The service installs the font correctly either way -- what
+ * changed is that the page no longer goes anywhere, and nothing below the browser knows
+ * whether it did.
+ */
+test('adding a webfont keeps the preset being edited', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?admin/preset')
+
+  const rail = page.locator('#yw-preset-rail')
+  await rail.locator('[data-yw-preset-new]').click()
+
+  // something to lose: a name, and a colour that is nothing like any shipped preset's
+  await rail.locator('#yw-preset-name').fill('EditsThatMustSurvive')
+  await rail
+    .locator('[data-yw-preset-field="light.yw-primary"]')
+    .fill('#ff00aa')
+  await expect.poll(async () => token(page, '--yw-primary')).toBe('#ff00aa')
+
+  await rail.locator('[data-yw-modal-target="#yw-preset-font-modal"]').click()
+  const modal = page.locator('#yw-preset-font-modal')
+  await expect(modal).toHaveClass(/yw-modal--open/)
+
+  await modal.locator('#yw-preset-font-family').fill('Lobster')
+  await modal.locator('[data-yw-tag-input-suggestion]').first().click()
+  await expect(modal.locator('[name="font_family"]')).toHaveValue('Lobster')
+
+  await modal.locator('button[type="submit"]').click()
+  await expect(modal.locator('[data-yw-preset-font-result]')).toContainText(
+    'Lobster',
+    { timeout: 30000 },
+  )
+
+  // THE POINT: still the editor, still the edits. A reload would have put the drawer back on
+  // the list with an empty name and the default preset's brand colour.
+  await expect(rail.locator('#yw-preset-name')).toHaveValue(
+    'EditsThatMustSurvive',
+  )
+  await expect(
+    rail.locator('[data-yw-preset-field="light.yw-primary"]'),
+  ).toHaveValue('#ff00aa')
+  expect(await token(page, '--yw-primary')).toBe('#ff00aa')
+
+  // and the font is now offered, without the list having been re-rendered by the server
+  const body = rail.locator('[data-yw-preset-field="light.yw-font-body"]')
+  await expect(body.locator('option', { hasText: 'Lobster' })).toHaveCount(1)
+
+  // ...and choosing it previews it, which is the second half of the same bug: the rules that
+  // declare a family used to be written only into a saved preset, so a font could be fully
+  // downloaded and still be a name no browser had heard of. `document.fonts.check` is the
+  // browser saying it can actually draw with it.
+  await body.selectOption({ label: 'Lobster' })
+  await expect
+    .poll(async () => loadedFace(page, 'Lobster'), { timeout: 20000 })
+    .toBe(true)
+
+  // The other half of "a webfont does not preview": a family the wiki OFFERS but has not
+  // downloaded. The file arrives when the preset is saved, which is correct and is also
+  // indistinguishable, while choosing it, from nothing having happened -- so the admin's
+  // browser fetches it from Google to draw with, exactly as the picker does.
+  await body.selectOption({ label: 'Playfair Display' })
+  await expect
+    .poll(async () => loadedFace(page, 'Playfair Display'), { timeout: 20000 })
+    .toBe(true)
 })

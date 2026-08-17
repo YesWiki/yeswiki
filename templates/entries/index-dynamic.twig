@@ -18,7 +18,7 @@
 
 {% set params = params|merge({necessary_fields: (necessary_fields|default([])|reduce((carry, v) => carry|merge({ (v): v }), {})|keys)}) %}
 
-<div class="bazar-list-dynamic-container no-dblclick {{ params.class ? params.class : ''}}" data-params="{{ params|json_encode }}"
+<div class="entry-list-dynamic-container no-dblclick {{ params.class ? params.class : ''}}" data-params="{{ params|json_encode }}"
      style="opacity: 0" :class="{mounted: mounted}">
 
   {% set showFiltersSidebar = params.groups or params.sortfields %}
@@ -40,7 +40,7 @@
     {% endif %}
 
     <div class="results-col">
-      <div class="bazar-list dynamic" ref="entriesContainer">
+      <div class="entry-list dynamic" ref="entriesContainer">
         {% block display_entries %}
         {% endblock %}
       </div>

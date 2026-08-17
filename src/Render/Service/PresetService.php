@@ -69,6 +69,14 @@ class PresetService
     public const KIND_SIZE = 'size';
     /** A font stack: one value, both schemes. */
     public const KIND_FONT = 'font';
+    /**
+     * One of a fixed set of CSS keywords: a select, one value, both schemes.
+     *
+     * `options` is the set, as `css value => translation key`. The value goes into the
+     * stylesheet verbatim, so it has to be a keyword the property actually takes -- this is
+     * the one kind where a Preset writes CSS grammar rather than a colour or a measure.
+     */
+    public const KIND_CHOICE = 'choice';
 
     /**
      * Every Design token a Preset AUTHORS, in the order the editing rail offers them.
@@ -110,28 +118,33 @@ class PresetService
      * derived `--yw-*-text`, not the authored colour, so scoring the authored one would
      * report a failure on a warning yellow that nothing ever draws text in.
      *
-     * @var array<string, array{kind: string, group: string, label: string, min?: int|float, max?: int|float, step?: int|float, unit?: string, contrast?: string, row?: string}>
+     * @var array<string, array{kind: string, group: string, label: string, min?: int|float, max?: int|float, step?: int|float, unit?: string, contrast?: string, row?: string, options?: array<string, string>}>
      */
     public const TOKENS = [
         'yw-primary' => ['kind' => self::KIND_COLOR, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_PRIMARY', 'contrast' => 'auto-ink', 'row' => 'brand-a'],
-        'yw-secondary' => ['kind' => self::KIND_COLOR, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_SECONDARY', 'contrast' => 'auto-ink', 'row' => 'brand-a'],
+        'yw-secondary' => ['kind' => self::KIND_COLOR, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_SECONDARY', 'contrast' => 'auto-ink', 'row' => 'brand-b'],
         'yw-tertiary' => ['kind' => self::KIND_COLOR, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_TERTIARY', 'contrast' => 'auto-ink', 'row' => 'brand-b'],
 
-        // The two inks, scheme-INDEPENDENT on purpose: "the ink for a light ground" means
-        // the same thing at midnight as at noon, because a light ground is light in both
-        // schemes. They replace `--yw-on-primary` (one ink authored against the brand) and
-        // `--yw-text-on-dark` (one ink for grounds the preset does not choose) with one pair
-        // that answers both questions -- and core picks whichever of them contrasts more
-        // with each fill, which is what stops white landing on a yellow warning button.
-        'yw-ink-on-light' => ['kind' => self::KIND_COLOR_FIXED, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_INK_ON_LIGHT', 'row' => 'ink'],
-        'yw-ink-on-dark' => ['kind' => self::KIND_COLOR_FIXED, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_INK_ON_DARK', 'row' => 'ink'],
+        // THE TWO INKS, and the only text colours a Preset sets. Scheme-INDEPENDENT on
+        // purpose: "the ink for a light ground" means the same thing at midnight as at noon,
+        // because a light ground is light in both schemes.
+        //
+        // Everything else about text falls out of them. `--yw-text` is whichever one suits
+        // the scheme in force -- the light-ground ink on a light page, the dark-ground ink on
+        // a dark one -- and `--yw-text-inverse` is the other. Core picks between them again
+        // per fill (INK_FOR), and again for a ground a page author chose. So the question is
+        // asked once and answered everywhere, instead of being asked four times and kept in
+        // step by hand.
+        //
+        // `contrast` is scheme-qualified here, which nothing else needs: each ink is the page
+        // text of ONE scheme, so scoring it against the surface of the other would report on
+        // a pairing that never happens.
+        'yw-ink-on-light' => ['kind' => self::KIND_COLOR_FIXED, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_INK_ON_LIGHT', 'contrast' => 'light.yw-surface', 'row' => 'ink'],
+        'yw-ink-on-dark' => ['kind' => self::KIND_COLOR_FIXED, 'group' => 'brand', 'label' => 'ADMIN_PRESET_TOKEN_INK_ON_DARK', 'contrast' => 'dark.yw-surface', 'row' => 'ink'],
 
         'yw-surface' => ['kind' => self::KIND_COLOR, 'group' => 'surfaces', 'label' => 'ADMIN_PRESET_TOKEN_SURFACE', 'row' => 'surf-a'],
-        'yw-surface-raised' => ['kind' => self::KIND_COLOR, 'group' => 'surfaces', 'label' => 'ADMIN_PRESET_TOKEN_SURFACE_RAISED', 'row' => 'surf-a'],
-        'yw-surface-sunken' => ['kind' => self::KIND_COLOR, 'group' => 'surfaces', 'label' => 'ADMIN_PRESET_TOKEN_SURFACE_SUNKEN'],
-
-        'yw-text' => ['kind' => self::KIND_COLOR, 'group' => 'text', 'label' => 'ADMIN_PRESET_TOKEN_TEXT', 'contrast' => 'yw-surface', 'row' => 'text-a'],
-        'yw-text-inverse' => ['kind' => self::KIND_COLOR, 'group' => 'text', 'label' => 'ADMIN_PRESET_TOKEN_TEXT_INVERSE', 'row' => 'text-a'],
+        'yw-surface-raised' => ['kind' => self::KIND_COLOR, 'group' => 'surfaces', 'label' => 'ADMIN_PRESET_TOKEN_SURFACE_RAISED', 'row' => 'surf-b'],
+        'yw-surface-sunken' => ['kind' => self::KIND_COLOR, 'group' => 'surfaces', 'label' => 'ADMIN_PRESET_TOKEN_SURFACE_SUNKEN', 'row' => 'surf-b'],
 
         'yw-border' => ['kind' => self::KIND_COLOR, 'group' => 'lines', 'label' => 'ADMIN_PRESET_TOKEN_BORDER', 'row' => 'lines'],
         // in pixels rather than a multiple of the type size: a hairline is a hairline at
@@ -146,10 +159,20 @@ class PresetService
         'yw-warning' => ['kind' => self::KIND_COLOR, 'group' => 'status', 'label' => 'ADMIN_PRESET_TOKEN_WARNING', 'contrast' => 'auto-ink', 'row' => 'status-b'],
         'yw-info' => ['kind' => self::KIND_COLOR, 'group' => 'status', 'label' => 'ADMIN_PRESET_TOKEN_INFO', 'contrast' => 'auto-ink', 'row' => 'status-b'],
 
-        'yw-navbar-bg' => ['kind' => self::KIND_COLOR, 'group' => 'chrome', 'label' => 'ADMIN_PRESET_TOKEN_NAVBAR_BG', 'row' => 'navbar'],
-        'yw-navbar-text' => ['kind' => self::KIND_COLOR, 'group' => 'chrome', 'label' => 'ADMIN_PRESET_TOKEN_NAVBAR_TEXT', 'contrast' => 'yw-navbar-bg', 'row' => 'navbar'],
-        'yw-footer-bg' => ['kind' => self::KIND_COLOR, 'group' => 'chrome', 'label' => 'ADMIN_PRESET_TOKEN_FOOTER_BG', 'row' => 'footer'],
-        'yw-footer-text' => ['kind' => self::KIND_COLOR, 'group' => 'chrome', 'label' => 'ADMIN_PRESET_TOKEN_FOOTER_TEXT', 'contrast' => 'yw-footer-bg', 'row' => 'footer'],
+        // Two groups, not one. As `chrome` they were four fields whose labels had to carry
+        // "de la barre" and "du pied de page" to say which was which -- a group heading does
+        // that better, and says it once.
+        'yw-navbar-bg' => ['kind' => self::KIND_COLOR, 'group' => 'navbar', 'label' => 'ADMIN_PRESET_TOKEN_BG', 'row' => 'navbar-a'],
+        'yw-navbar-text' => ['kind' => self::KIND_COLOR, 'group' => 'navbar', 'label' => 'ADMIN_PRESET_TOKEN_INK', 'contrast' => 'yw-navbar-bg', 'row' => 'navbar-a'],
+        // The bar's own shadow: what lifts it off the page it is sticky over. Its colour is
+        // separate from `--yw-shadow-color` because a coloured bar wants a shadow tinted to
+        // match, and the spread is what decides whether the bar floats or sits flat -- 0 is a
+        // legitimate setting and is what a bar with a hairline border wants.
+        'yw-navbar-shadow' => ['kind' => self::KIND_COLOR, 'group' => 'navbar', 'label' => 'ADMIN_PRESET_TOKEN_SHADOW', 'row' => 'navbar-b'],
+        'yw-navbar-shadow-spread' => ['kind' => self::KIND_SIZE, 'group' => 'navbar', 'label' => 'ADMIN_PRESET_TOKEN_SHADOW_SPREAD', 'min' => 0, 'max' => 40, 'step' => 1, 'unit' => 'px', 'row' => 'navbar-b'],
+
+        'yw-footer-bg' => ['kind' => self::KIND_COLOR, 'group' => 'footer', 'label' => 'ADMIN_PRESET_TOKEN_BG', 'row' => 'footer-a'],
+        'yw-footer-text' => ['kind' => self::KIND_COLOR, 'group' => 'footer', 'label' => 'ADMIN_PRESET_TOKEN_INK', 'contrast' => 'yw-footer-bg', 'row' => 'footer-a'],
 
         // ONE COLOUR AND ONE SIZE PER LEVEL. This was two colours (h1-h3, h4-h6) and a
         // single scale multiplying a ramp core wrote -- which meant a wiki could say "bigger
@@ -162,18 +185,40 @@ class PresetService
         // other measure here -- and `rem` rather than `em` because `em` compounds, which is
         // what used to make the same heading come out one size in a page and another inside
         // a panel.
-        'yw-heading-1' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1', 'contrast' => 'yw-surface', 'row' => 'h1'],
-        'yw-heading-2' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2', 'contrast' => 'yw-surface', 'row' => 'h2'],
-        'yw-heading-3' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3', 'contrast' => 'yw-surface', 'row' => 'h3'],
-        'yw-heading-4' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4', 'contrast' => 'yw-surface', 'row' => 'h4'],
-        'yw-heading-5' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5', 'contrast' => 'yw-surface', 'row' => 'h5'],
-        'yw-heading-6' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6', 'contrast' => 'yw-surface', 'row' => 'h6'],
-        'yw-heading-1-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h1'],
-        'yw-heading-2-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h2'],
-        'yw-heading-3-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h3'],
-        'yw-heading-4-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h4'],
-        'yw-heading-5-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h5'],
-        'yw-heading-6-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h6'],
+        // Grouped BY LEVEL, not by property: four fields for h1, then four for h2. The
+        // question anybody actually has is "what does my h2 look like", and answering it
+        // meant reading four lists in parallel when the tokens were ordered the other way.
+        // Two rows each -- colour beside size, casing beside alignment.
+
+        'yw-heading-1' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1', 'contrast' => 'yw-surface', 'row' => 'h1-a'],
+        'yw-heading-1-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h1-a'],
+        'yw-heading-1-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1_TRANSFORM', 'row' => 'h1-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-1-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_1_ALIGN', 'row' => 'h1-b', 'options' => self::TEXT_ALIGNMENTS],
+
+        'yw-heading-2' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2', 'contrast' => 'yw-surface', 'row' => 'h2-a'],
+        'yw-heading-2-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h2-a'],
+        'yw-heading-2-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2_TRANSFORM', 'row' => 'h2-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-2-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_2_ALIGN', 'row' => 'h2-b', 'options' => self::TEXT_ALIGNMENTS],
+
+        'yw-heading-3' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3', 'contrast' => 'yw-surface', 'row' => 'h3-a'],
+        'yw-heading-3-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h3-a'],
+        'yw-heading-3-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3_TRANSFORM', 'row' => 'h3-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-3-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_3_ALIGN', 'row' => 'h3-b', 'options' => self::TEXT_ALIGNMENTS],
+
+        'yw-heading-4' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4', 'contrast' => 'yw-surface', 'row' => 'h4-a'],
+        'yw-heading-4-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h4-a'],
+        'yw-heading-4-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4_TRANSFORM', 'row' => 'h4-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-4-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_4_ALIGN', 'row' => 'h4-b', 'options' => self::TEXT_ALIGNMENTS],
+
+        'yw-heading-5' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5', 'contrast' => 'yw-surface', 'row' => 'h5-a'],
+        'yw-heading-5-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h5-a'],
+        'yw-heading-5-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5_TRANSFORM', 'row' => 'h5-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-5-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_5_ALIGN', 'row' => 'h5-b', 'options' => self::TEXT_ALIGNMENTS],
+
+        'yw-heading-6' => ['kind' => self::KIND_COLOR, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6', 'contrast' => 'yw-surface', 'row' => 'h6-a'],
+        'yw-heading-6-size' => ['kind' => self::KIND_SIZE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6_SIZE', 'min' => 0.5, 'max' => 4, 'step' => 0.05, 'unit' => 'rem', 'row' => 'h6-a'],
+        'yw-heading-6-transform' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6_TRANSFORM', 'row' => 'h6-b', 'options' => self::TEXT_TRANSFORMS],
+        'yw-heading-6-align' => ['kind' => self::KIND_CHOICE, 'group' => 'titles', 'label' => 'ADMIN_PRESET_TOKEN_HEADING_6_ALIGN', 'row' => 'h6-b', 'options' => self::TEXT_ALIGNMENTS],
 
         'yw-font-body' => ['kind' => self::KIND_FONT, 'group' => 'type', 'label' => 'ADMIN_PRESET_TOKEN_FONT_BODY'],
         'yw-font-heading' => ['kind' => self::KIND_FONT, 'group' => 'type', 'label' => 'ADMIN_PRESET_TOKEN_FONT_HEADING'],
@@ -225,10 +270,10 @@ class PresetService
     public const GROUPS = [
         'brand' => 'ADMIN_PRESET_GROUP_BRAND',
         'surfaces' => 'ADMIN_PRESET_GROUP_SURFACES',
-        'text' => 'ADMIN_PRESET_GROUP_TEXT',
         'lines' => 'ADMIN_PRESET_GROUP_LINES',
         'status' => 'ADMIN_PRESET_GROUP_STATUS',
-        'chrome' => 'ADMIN_PRESET_GROUP_CHROME',
+        'navbar' => 'ADMIN_PRESET_GROUP_NAVBAR',
+        'footer' => 'ADMIN_PRESET_GROUP_FOOTER',
         'titles' => 'ADMIN_PRESET_GROUP_TITLES',
         'type' => 'ADMIN_PRESET_GROUP_TYPE',
         'spacing' => 'ADMIN_PRESET_GROUP_SPACING',
@@ -269,6 +314,33 @@ class PresetService
         'yw-danger' => 'yw-on-danger',
         'yw-warning' => 'yw-on-warning',
         'yw-info' => 'yw-on-info',
+    ];
+
+    /**
+     * How a heading's letters are cased. `none` leaves what the author typed.
+     *
+     * @var array<string, string>
+     */
+    public const TEXT_TRANSFORMS = [
+        'none' => 'ADMIN_PRESET_TRANSFORM_NONE',
+        'uppercase' => 'ADMIN_PRESET_TRANSFORM_UPPERCASE',
+        'capitalize' => 'ADMIN_PRESET_TRANSFORM_CAPITALIZE',
+        'lowercase' => 'ADMIN_PRESET_TRANSFORM_LOWERCASE',
+    ];
+
+    /**
+     * Where a heading sits on its line.
+     *
+     * `start` and `end` rather than `left` and `right`: they mean the same thing in every
+     * language YesWiki currently ships, and the right thing in one written right-to-left.
+     * The labels say left and right, because that is what somebody choosing is looking at.
+     *
+     * @var array<string, string>
+     */
+    public const TEXT_ALIGNMENTS = [
+        'start' => 'ADMIN_PRESET_ALIGN_LEFT',
+        'center' => 'ADMIN_PRESET_ALIGN_CENTER',
+        'end' => 'ADMIN_PRESET_ALIGN_RIGHT',
     ];
 
     /** The two Colour schemes a colour token is authored in. */
@@ -333,8 +405,6 @@ class PresetService
         'yw-surface',
         'yw-surface-raised',
         'yw-surface-sunken',
-        'yw-text',
-        'yw-text-inverse',
         'yw-ink-on-light',
         'yw-ink-on-dark',
         'yw-border',
@@ -389,7 +459,7 @@ class PresetService
         'yw-tertiary',
         'yw-surface',
         'yw-surface-sunken',
-        'yw-text',
+        'yw-ink-on-light',
     ];
 
     /** Where core's own default token values are read from: the file that declares them. */
@@ -531,6 +601,347 @@ class PresetService
         return $fonts;
     }
 
+    /** The Google catalogue, vendored: 1951 family names, one array, no metadata. */
+    private const GOOGLE_FONTS_FILE = 'src/assets/google-fonts.json';
+
+    /** @var list<string>|null */
+    private ?array $catalogue = null;
+
+    /**
+     * Every family Google offers, by name.
+     *
+     * Vendored rather than asked for at runtime: it is a static list, and fetching it would
+     * put a network round trip in front of drawing an admin screen -- on an instance that
+     * cannot reach Google, the screen would hang before showing anything, which is exactly
+     * the case where a webmaster most wants to see what is already installed.
+     *
+     * @return list<string>
+     */
+    public function googleFonts(): array
+    {
+        if ($this->catalogue === null) {
+            $path = defined('YESWIKI_SOURCE_DIR')
+                ? YESWIKI_SOURCE_DIR . '/' . self::GOOGLE_FONTS_FILE
+                : self::GOOGLE_FONTS_FILE;
+            $decoded = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
+            $this->catalogue = is_array($decoded) ? array_values(array_filter($decoded, 'is_string')) : [];
+        }
+
+        return $this->catalogue;
+    }
+
+    /**
+     * The catalogue's own spelling of a family, or '' if it does not have one.
+     *
+     * Matched case-insensitively and then answered in the catalogue's casing, because that
+     * casing is what the download URL and the folder name are built from: `open sans` typed
+     * into the box has to become `Open Sans` before anything asks Google for it.
+     */
+    public function googleFontNamed(string $family): string
+    {
+        $family = trim($family);
+        foreach ($this->googleFonts() as $known) {
+            if (strcasecmp($known, $family) === 0) {
+                return $known;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Fetch a webfont so the rail can offer it, and return the family it installed.
+     *
+     * Two sources, because there are two situations. **Google** is where a font that is not
+     * here yet comes from. **Another YesWiki** is for the one you already fetched onto your
+     * other instance: its files are served from `custom/fonts/<family>/`, so pointing at that
+     * wiki copies them across without asking Google a second time -- which is also the only
+     * way to install one on a server that cannot reach Google at all.
+     *
+     * Either way the files land in `custom/fonts/` and are served from here afterwards. A
+     * reader is never sent to Google.
+     */
+    public function installFont(string $family): string
+    {
+        $family = trim($family);
+        if (self::isSystemStack($family)) {
+            throw new \InvalidArgumentException(_t('ADMIN_PRESET_FONT_IS_LOCAL'));
+        }
+
+        // Checked against the catalogue, not against a shape: `Opne Sans` is a perfectly
+        // well-formed family name and Google answers a request for it with nothing at all,
+        // so a regex would let a typo through to a network round trip and a blank failure.
+        // The catalogue's own spelling is what comes back -- it is what the URL and the
+        // folder name are built from.
+        $family = $this->googleFontNamed($family);
+        if ($family === '') {
+            throw new \InvalidArgumentException(_t('ADMIN_PRESET_FONT_BAD_NAME'));
+        }
+
+        if (!$this->themeManager->installFont($family)) {
+            throw new \RuntimeException(_t('ADMIN_PRESET_FONT_NOT_FOUND', ['family' => $family]));
+        }
+
+        return $family;
+    }
+
+    /**
+     * Install several families at once, and say which ones landed.
+     *
+     * A comma-separated list, because picking a typeface is picking a set: a body face and a
+     * heading face are chosen together, and downloading them one screen-round-trip at a time
+     * is three page loads to answer one question.
+     *
+     * A family that fails does not stop the others -- the wiki ends up with what it could
+     * get, and is told what it could not, which beats an all-or-nothing that leaves nothing.
+     *
+     * @return array{installed: list<string>, failed: list<string>}
+     */
+    public function installFonts(string $families): array
+    {
+        $installed = [];
+        $failed = [];
+
+        foreach (array_filter(array_map('trim', explode(',', $families))) as $family) {
+            try {
+                $installed[] = $this->installFont($family);
+            } catch (\Throwable) {
+                $failed[] = $family;
+            }
+        }
+
+        if ($installed === [] && $failed === []) {
+            throw new \InvalidArgumentException(_t('ADMIN_PRESET_FONT_BAD_NAME'));
+        }
+
+        return ['installed' => $installed, 'failed' => $failed];
+    }
+
+    /**
+     * Copy the webfonts another YesWiki uses, by asking it what they are.
+     *
+     * The remote wiki answers `/api/presets/fonts` with a descriptor per file -- family,
+     * style, weight, `unicode-range`, absolute URL -- read out of its own presets. So this
+     * gets the *whole* family: every weight and both slopes, which is the thing a font
+     * mattering at all depends on and the thing a guess at file names could never produce.
+     *
+     * `$family` narrows it to one family; empty takes everything that wiki uses.
+     *
+     * @return list<string> the families installed
+     */
+    public function installFontsFromWiki(string $wikiUrl, string $family = '', string $preset = ''): array
+    {
+        $base = $this->fontSource($wikiUrl);
+        $url = $base . '/?api/presets/fonts';
+        if ($preset !== '') {
+            $url .= '&preset=' . rawurlencode($preset);
+        }
+
+        $answer = json_decode((string)$this->themeManager->fetchUrl($url), true);
+        $fonts = is_array($answer) ? ($answer['fonts'] ?? null) : null;
+        if (!is_array($fonts) || $fonts === []) {
+            throw new \RuntimeException(_t('ADMIN_PRESET_FONT_NONE_THERE', ['wiki' => $wikiUrl]));
+        }
+
+        $installed = [];
+        foreach ($fonts as $font) {
+            if (!is_array($font) || empty($font['family']) || empty($font['url'])) {
+                continue;
+            }
+            if ($family !== '' && strcasecmp((string)$font['family'], $family) !== 0) {
+                continue;
+            }
+            $rule = $this->themeManager->importRemoteFontFile($font);
+            if ($rule !== null) {
+                $installed[(string)$font['family']][] = $rule;
+            }
+        }
+
+        // the rules go beside the files, like Google's do (ThemeManager::FONT_FACES_FILE):
+        // a family is only usable once something declares it, and a copy that brought the
+        // files without the declarations would be a font nothing could name
+        foreach ($installed as $family => $rules) {
+            $this->themeManager->writeFontFaces((string)$family, implode("\n", $rules));
+        }
+
+        if ($installed === []) {
+            throw new \RuntimeException(_t('ADMIN_PRESET_FONT_NONE_THERE', ['wiki' => $wikiUrl]));
+        }
+
+        return array_keys($installed);
+    }
+
+    /**
+     * The base a font is fetched from: '' for Google, or another wiki's address.
+     *
+     * The wiki's address is checked rather than used as given. It is a URL this server is
+     * about to request, so anything but plain http(s) to a named host is refused -- `file://`
+     * would read the disk, and a bare IP is the shape of somebody probing the network the
+     * server sits in rather than naming a wiki.
+     */
+    private function fontSource(string $from): string
+    {
+        $from = trim($from);
+        if ($from === '') {
+            return '';
+        }
+
+        $parts = parse_url($from);
+        $host = is_array($parts) ? ($parts['host'] ?? '') : '';
+        $scheme = is_array($parts) ? strtolower((string)($parts['scheme'] ?? '')) : '';
+        if (!in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($host, FILTER_VALIDATE_IP)) {
+            throw new \InvalidArgumentException(_t('ADMIN_PRESET_FONT_BAD_SOURCE'));
+        }
+
+        return rtrim($from, '/');
+    }
+
+    /**
+     * The webfonts a preset needs, as everything another wiki would need to install them.
+     *
+     * **The preset file is the manifest.** Its `@font-face` blocks already carry family,
+     * style, weight, the subset's `unicode-range` and a `src` per file -- written there when
+     * the font was fetched. So there is nothing to store, nothing to keep in step, and
+     * nothing that can disagree with what the preset actually renders with: describing the
+     * fonts *is* reading the file.
+     *
+     * URLs come back absolute against `$baseUrl`, because a preset stores them relative to
+     * itself (`../../custom/fonts/…`) and the wiki asking is not this one.
+     *
+     * @return list<array{family: string, style: string, weight: string, subset: string, unicodeRange: string, url: string}>
+     */
+    public function fontsOf(string $id, string $baseUrl = ''): array
+    {
+        $preset = $this->find($id);
+        if ($preset === null) {
+            return [];
+        }
+
+        $css = (string)file_get_contents($preset['path']);
+        $fonts = [];
+        $subset = '';
+
+        if (!preg_match_all('~/\*\s*([a-z0-9-]+)\s*\*/|@font-face\s*\{[^}]*\}~i', $css, $matches)) {
+            return [];
+        }
+
+        foreach ($matches[0] as $index => $block) {
+            if (!str_contains($block, '@font-face')) {
+                $subset = $matches[1][$index];
+                continue;
+            }
+            // only woff2 is offered: it is the only format core fetches now, and the only
+            // one worth another wiki's bandwidth
+            if (!preg_match('~url\(\s*[\'"]?([^\)\'"]*\.woff2)~i', $block, $url)) {
+                continue;
+            }
+            preg_match("/font-family:\s*'?([^;']+)'?;/i", $block, $family);
+            preg_match('/font-style:\s*([a-z]+)/i', $block, $style);
+            preg_match('/font-weight:\s*([0-9]+)/i', $block, $weight);
+            preg_match('/unicode-range:\s*([^;}]+)/i', $block, $range);
+
+            $fonts[] = [
+                'family' => trim($family[1] ?? ''),
+                'style' => $style[1] ?? 'normal',
+                'weight' => $weight[1] ?? '400',
+                'subset' => $subset,
+                'unicodeRange' => trim($range[1] ?? ''),
+                'url' => $this->absoluteFontUrl(trim($url[1]), $baseUrl),
+            ];
+        }
+
+        return $fonts;
+    }
+
+    /**
+     * `@font-face` rules for every family under `custom/fonts/`, whatever names it.
+     *
+     * **This is what makes a webfont previewable.** A preset's rules are written into the
+     * preset file when it is saved, so until then the browser has never heard of the family:
+     * choosing it in the rail set `font-family: 'Nunito', sans-serif` on the document and
+     * every word carried on rendering in Arial. Nothing was broken, and nothing looked like
+     * it had happened -- which is the same symptom as the choice not registering at all.
+     *
+     * So the admin screen links this instead. It declares what is *installed*, which is a
+     * superset of what any one preset names, and is therefore also right the moment a font
+     * is downloaded and before anything has been saved.
+     *
+     * Families installed before their rules were kept (ThemeManager::FONT_FACES_FILE) are
+     * described from their file names, which carry style, weight and subset by construction.
+     * `unicode-range` is the one thing not recoverable that way; leaving it out costs a
+     * subset file or two on this screen and nothing else, since the preset a reader gets is
+     * still built from the real rules.
+     */
+    public function installedFontFaces(string $baseUrl = ''): string
+    {
+        $css = [];
+
+        foreach (glob(ThemeManager::CUSTOM_FONT_PATH . '/*', GLOB_ONLYDIR) ?: [] as $directory) {
+            $stored = $directory . '/' . ThemeManager::FONT_FACES_FILE;
+            $rules = is_file($stored)
+                ? (string)file_get_contents($stored)
+                : $this->facesFromFileNames($directory);
+            if (trim($rules) === '') {
+                continue;
+            }
+
+            // stored relative to a preset (`../../custom/fonts/…`), served from a route --
+            // so nothing a browser resolves this against would find the file
+            $css[] = (string)preg_replace_callback(
+                '~url\(\s*[\'"]?([^)\'"]+)[\'"]?\s*\)~',
+                fn (array $match): string => 'url(' . $this->absoluteFontUrl(trim($match[1]), $baseUrl) . ')',
+                $rules
+            );
+        }
+
+        return implode("\n", $css);
+    }
+
+    /**
+     * Describe a family from the names of its files, for one installed before faces.css.
+     *
+     * `<family>-<style>-<weight>-<subset>.woff2` is what importFontFile writes, and the
+     * directory is the family -- so the prefix is known and what follows it parses.
+     */
+    private function facesFromFileNames(string $directory): string
+    {
+        $folder = basename($directory);
+        $family = ucwords(str_replace(['-', '_'], ' ', $folder));
+        $rules = [];
+
+        foreach (glob($directory . '/*.woff2') ?: [] as $file) {
+            $name = basename($file, '.woff2');
+            if (!preg_match('~^' . preg_quote($folder, '~') . '-(normal|italic)-([0-9]+)~', $name, $parts)) {
+                continue;
+            }
+            $rules[] = ThemeManager::fontFaceRule(
+                $family,
+                $parts[1],
+                $parts[2],
+                '',
+                '../../' . ThemeManager::CUSTOM_FONT_PATH . '/' . $folder . '/' . basename($file)
+            );
+        }
+
+        return implode("\n", $rules);
+    }
+
+    /**
+     * A preset's `../../custom/fonts/…` made absolute, so another wiki can fetch it.
+     *
+     * Left alone if it is already absolute: a preset whose fonts were never localised still
+     * points at Google, and copying that URL across is the honest answer -- the wiki asking
+     * will localise it itself.
+     */
+    private function absoluteFontUrl(string $url, string $baseUrl): string
+    {
+        if ($baseUrl === '' || preg_match('~^(https?:)?//~i', $url)) {
+            return $url;
+        }
+
+        return rtrim($baseUrl, '/') . '/' . ltrim(str_replace('../', '', $url), '/');
+    }
+
     public function isConfigWritable(): bool
     {
         return is_writable(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -630,9 +1041,13 @@ class PresetService
 
         // ThemeManager writes the file and, for the font families, downloads and installs the
         // webfont locally -- which is the reason not to write the file here
+        // all THREE font tokens: mono was left out, so a preset whose code blocks named a
+        // webfont was written with no `@font-face` for it and rendered in the fallback --
+        // the same silent nothing as an uninstalled font, on the one token nobody re-reads
         $result = $this->themeManager->writeCustomCSSPreset($file, $this->toCss($values), [
             $values['light']['yw-font-body'] ?? '',
             $values['light']['yw-font-heading'] ?? '',
+            $values['light']['yw-font-mono'] ?? '',
         ]);
         if (!$result['status']) {
             throw new \RuntimeException($result['message']);
@@ -874,6 +1289,47 @@ class PresetService
         }
 
         return $values;
+    }
+
+    /**
+     * The ink for a background a PAGE AUTHOR chose, as a CSS value, or '' if it cannot tell.
+     *
+     * A `{{section bgcolor="…"}}` is the one ground core does not pick: somebody typed it.
+     * Two shapes are answerable, and they cover what people actually write --
+     *
+     *   `#f9c401`            a literal, which can be measured against the wiki's two inks
+     *   `var(--yw-primary)`  a fill, whose ink core has already resolved (`--yw-on-primary`)
+     *
+     * -- and anything else (a `color-mix()`, a keyword, a gradient) answers '', because
+     * guessing wrong here means unreadable text on somebody's cover image. Those keep the
+     * `white`/`black` classes, which is an author saying it outright.
+     */
+    public function inkForBackground(string $background, string $scheme = 'light'): string
+    {
+        $background = trim($background);
+        if ($background === '') {
+            return '';
+        }
+
+        // a fill core already resolved an ink for: use that answer rather than a second one
+        if (preg_match('~^var\(\s*--([a-z0-9-]+)\s*\)$~i', $background, $match)) {
+            $ink = self::INK_FOR[$match[1]] ?? '';
+
+            return $ink === '' ? '' : 'var(--' . $ink . ')';
+        }
+
+        if (!preg_match('/^#([0-9a-f]{3}|[0-9a-f]{6})$/i', $background)) {
+            return '';
+        }
+
+        $values = $this->valuesFor($this->default());
+        $onLight = $values['light']['yw-ink-on-light'] ?? '';
+        $onDark = $values['light']['yw-ink-on-dark'] ?? '';
+
+        // the token, not the literal: a preset changing its inks must move the section too
+        return $this->inkOn($background, $onLight, $onDark) === $onLight
+            ? 'var(--yw-ink-on-light)'
+            : 'var(--yw-ink-on-dark)';
     }
 
     /**

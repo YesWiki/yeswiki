@@ -7,62 +7,75 @@
    choice a wiki gets to make. Hence the divider: what is to the left of it is this wiki's,
    what is to the right of it is YesWiki's.
 
-   Collapsed, the cluster is a mark or two saying what is on. The options arrive **on one
-   line** when it is reached for, overlaying the bar rather than taking room in it: a row of
+   Collapsed, each is a mark saying what is on. The choices arrive **in their own column**
+   when one is reached for, overlaying the bar rather than taking room in it: a row of
    controls permanently in the navbar would be the loudest thing on it, and a line that
    expanded in flow would shove the account button sideways on every hover. Below 768px there
-   is nothing to hover with, so the line is simply part of the bar (see yw-core.css). #}
-<div class="yw-topnav-tools">
-  <div class="yw-topnav-tools__panel">
-    {# Three states, not two: "follow my system" is a choice of its own, and it is the one a
-       visitor who has never touched this is already in. Radios rather than a cycling button
-       so reaching the third is one click from anywhere rather than three. #}
-    {# the labels are written out rather than built from the state name: `_t('SCHEME_' ~
-       scheme|upper)` would work and would be invisible to every tool that finds translation
-       keys by grepping for them #}
-    <div class="yw-switcher" role="group" aria-label="{{ _t('SCHEME_TOGGLE') }}">
-      {% for scheme, option in {
-        'system': { glyph: 'device-desktop', label: _t('SCHEME_SYSTEM') },
-        'light': { glyph: 'sun', label: _t('SCHEME_LIGHT') },
-        'dark': { glyph: 'moon', label: _t('SCHEME_DARK') },
-      } %}
-        <button type="button" class="yw-switcher__option" data-yw-scheme-set="{{ scheme }}"
-                title="{{ option.label }}" aria-pressed="false">
-          {{ icon(option.glyph) }}
-          <span class="yw-switcher__label">{{ option.label }}</span>
-        </button>
-      {% endfor %}
-    </div>
+   is nothing to hover with, so the choices are simply part of the bar (see yw-core.css).
 
-    {# Only where there is something to choose between. A wiki says which languages it
-       offers (`other_languages`, chosen at install time and on the configuration screen), and
-       one is the ordinary answer: that wiki gets no control at all, and no readout of a
-       language nobody can change either. #}
-    {% if languages|length > 1 %}
-      <div class="yw-switcher" role="group" aria-label="{{ _t('LANGUAGE_CHOOSE') }}">
-        {% for language in languages %}
-          {# links, not buttons: the language is a property of the address (`lang=`), so
-             each one is a real page a reader can bookmark, open in a tab, or share #}
-          <a class="yw-switcher__option{{ language.current ? ' yw-switcher__option--on' : '' }}"
-             href="{{ language.href }}" hreflang="{{ language.code }}" lang="{{ language.code }}"
-             title="{{ language.label }}"{{ language.current ? ' aria-current="true"' : '' }}>
-            <span class="yw-switcher__code">{{ language.code }}</span>
-            <span class="yw-switcher__label">{{ language.label }}</span>
-          </a>
+   TWO dropdowns, not one panel holding both. They answer different questions -- how the page
+   is coloured, and what language it is in -- and a reader opening one has no business being
+   shown the other. As one panel they read as a single run of six marks, and the rule drawn
+   between the halves was doing the work a separate menu does properly. #}
+<div class="yw-topnav-tools">
+  {# ---- how it is coloured ---- #}
+  <div class="yw-topnav-tools__menu">
+    <div class="yw-topnav-tools__panel">
+      {# Three states, not two: "follow my system" is a choice of its own, and it is the one a
+         visitor who has never touched this is already in. Radios rather than a cycling button
+         so reaching the third is one click from anywhere rather than three. #}
+      {# the labels are written out rather than built from the state name: `_t('SCHEME_' ~
+         scheme|upper)` would work and would be invisible to every tool that finds translation
+         keys by grepping for them #}
+      <div class="yw-switcher" role="group" aria-label="{{ _t('SCHEME_TOGGLE') }}">
+        {% for scheme, option in {
+          'system': { glyph: 'device-desktop', label: _t('SCHEME_SYSTEM') },
+          'light': { glyph: 'sun', label: _t('SCHEME_LIGHT') },
+          'dark': { glyph: 'moon', label: _t('SCHEME_DARK') },
+        } %}
+          <button type="button" class="yw-switcher__option" data-yw-scheme-set="{{ scheme }}"
+                  title="{{ option.label }}" aria-pressed="false">
+            {{ icon(option.glyph) }}
+            <span class="yw-switcher__label">{{ option.label }}</span>
+          </button>
         {% endfor %}
       </div>
-    {% endif %}
+    </div>
+
+    {# what is on, without asking: the scheme's own glyph (yw-core.js keeps it current) #}
+    <span class="yw-topnav-tools__current" data-yw-scheme aria-hidden="true"
+          data-label-system="{{ _t('SCHEME_SYSTEM') }}"
+          data-label-light="{{ _t('SCHEME_LIGHT') }}"
+          data-label-dark="{{ _t('SCHEME_DARK') }}">
+      {{ icon('device-desktop') }}
+    </span>
   </div>
 
-  {# what is on, without asking: the scheme's own glyph (yw-core.js keeps it current) and the
-     language's code #}
-  <span class="yw-topnav-tools__current" data-yw-scheme aria-hidden="true"
-        data-label-system="{{ _t('SCHEME_SYSTEM') }}"
-        data-label-light="{{ _t('SCHEME_LIGHT') }}"
-        data-label-dark="{{ _t('SCHEME_DARK') }}">
-    {{ icon('device-desktop') }}
-    {% if languages|length > 1 %}
-      <span class="yw-switcher__code">{{ language|upper }}</span>
-    {% endif %}
-  </span>
+  {# ---- what language it is in ----
+     Only where there is something to choose between. A wiki says which languages it offers
+     (`other_languages`, chosen at install time and on the configuration screen), and one is
+     the ordinary answer: that wiki gets no menu at all, and no readout of a language nobody
+     can change either. #}
+  {% if languages|length > 1 %}
+    <div class="yw-topnav-tools__menu">
+      <div class="yw-topnav-tools__panel">
+        <div class="yw-switcher" role="group" aria-label="{{ _t('LANGUAGE_CHOOSE') }}">
+          {% for language in languages %}
+            {# links, not buttons: the language is a property of the address (`lang=`), so
+               each one is a real page a reader can bookmark, open in a tab, or share #}
+            <a class="yw-switcher__option{{ language.current ? ' yw-switcher__option--on' : '' }}"
+               href="{{ language.href }}" hreflang="{{ language.code }}" lang="{{ language.code }}"
+               title="{{ language.label }}"{{ language.current ? ' aria-current="true"' : '' }}>
+              <span class="yw-switcher__code">{{ language.code }}</span>
+              <span class="yw-switcher__label">{{ language.label }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <span class="yw-topnav-tools__current" aria-hidden="true" title="{{ _t('LANGUAGE_CHOOSE') }}">
+        <span class="yw-switcher__code">{{ language|upper }}</span>
+      </span>
+    </div>
+  {% endif %}
 </div>

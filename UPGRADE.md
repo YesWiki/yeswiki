@@ -265,7 +265,51 @@ historical names through `iconFromLegacy()`, so shipped markup is fine, but
 
 Use the `icon()` Twig helper, or `iconFromLegacy()` if you want the legacy name translated.
 
-### 6. Removed features
+### 6. CSS and JavaScript targeting `bazar-list*`
+
+Everything named `bazar-list…` is named `entry-list…` now — the list is a list of **entries**,
+and `bazar` was the old name for the thing that holds them:
+
+| was                                      | is                                       | what it is                            |
+| ---------------------------------------- | ---------------------------------------- | ------------------------------------- |
+| `.bazar-list`                            | `.entry-list`                            | the class on a list of entries        |
+| `.bazar-list-dynamic-container`          | `.entry-list-dynamic-container`          | the mount point of a dynamic list     |
+| `.bazar-list-dynamic-template-container` | `.entry-list-dynamic-template-container` | the mount point of its entry template |
+| `.bazar-lists`                           | `.entry-lists`                           | a wrapper some markup uses            |
+| `id="bazar-list-<n>"`                    | `id="entry-list-<n>"`                    | one list on the page, by number       |
+| `bazar-list-dynamic-ready` (event)       | `entry-list-dynamic-ready`               | fired when a dynamic list has mounted |
+
+Core's stylesheets, templates and scripts moved together, so nothing shipped is affected. What
+a migration cannot reach is **yours**: a selector in `custom/styles/custom.css`, a template of
+your own, or a `<style>` block written inside a page's own text — that last one is common,
+since styling a list by dropping `<style>.bazar-list …</style>` above it is a documented trick.
+
+Search your CSS, templates, page content and any custom JavaScript for `bazar-list` and rename
+it. The event matters if you wrote code that waits for a dynamic list: nothing in core listens
+for it, so it exists precisely for scripts of yours, and a listener on the old name will simply
+never fire again.
+
+`.entry-list` also has a bottom margin of its own now (`--yw-space-lg-y`); it had none, so
+whatever followed a list ran straight into it. If you had added one yourself, you will now have
+both.
+
+### 7. Images are converted and capped
+
+**New pictures are uploaded as WebP.** The browser converts an image and fits it inside
+3840x2160 before sending it, so what the wiki stores is a few hundred kilobytes rather than a
+phone's twelve megapixels. GIFs, SVGs and anything already smaller than the cap are left alone,
+and so is every image already uploaded — nothing is rewritten in place.
+
+**Pictures are served at the size the page uses.** `{{attach}}` and a `{{section}}` background
+now ask the download route for a copy no larger than 1920 on its longest side (or exactly the
+size the `size=`/`width=` parameters name). The copy is made on first use and cached beside the
+original, behind the same permission check; the original is untouched and is what a download
+gives. A picture smaller than the cap is served as it is, not enlarged to it.
+
+Both are configurable — `image-upload-*` and `image-render-*`, listed in the admin
+documentation. `image-upload-format: ''` turns the conversion off entirely.
+
+### 8. Removed features
 
 Check whether any page or template of yours depends on these, because nothing replaces them:
 

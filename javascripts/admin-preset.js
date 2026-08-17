@@ -227,6 +227,10 @@ if (rail) {
    */
   function ensureOption(field, value) {
     if (field.tagName !== 'SELECT') return
+    // ...but never onto a fixed-keyword select: `text-transform` takes what CSS says it
+    // takes, and a preset holding something else is a rule the browser drops rather than a
+    // value worth preserving
+    if (field.classList.contains('yw-preset-rail__choice')) return
     field.querySelector('[data-yw-preset-own]')?.remove()
     if (value === '' || [...field.options].some((o) => o.value === value))
       return
@@ -239,9 +243,17 @@ if (rail) {
     field.insertBefore(option, field.firstChild)
   }
 
-  /** A font select shows its own choice, so the preview is there before the list is opened. */
+  /**
+   * A font select shows its own choice, so the preview is there before the list is opened.
+   *
+   * Scoped to the FONT selects: the casing and alignment ones are selects too, and setting
+   * `font-family: uppercase` on them is a rule the browser drops, which is the quiet kind of
+   * wrong that survives a review.
+   */
   function showChosenFont(field) {
-    if (field.tagName === 'SELECT') field.style.fontFamily = field.value
+    if (field.classList.contains('yw-preset-rail__font')) {
+      field.style.fontFamily = field.value
+    }
   }
 
   /** Put the number a slider is on into words beside it. */
@@ -438,6 +450,257 @@ if (rail) {
       const grade = gradeOf(ratio)
       badge.textContent = `${ratio.toFixed(1)} ${grade === 'fail' ? '✕' : grade}`
       badge.dataset.grade = grade
+    }
+  }
+
+  // ---- Google's catalogue, for the font picker ----------------------------------------
+  //
+  // 1951 family names. They fill the chip picker's option map, which it re-reads on every
+  // keystroke -- so handing them over late needs no re-initialisation, and the screen does
+  // not carry 29KB of JSON that most visits never look at.
+  //
+  // Fetched once, on first use of the box rather than on arrival: an instance that cannot
+  // reach its own assets should fail when somebody asks for a font, not while drawing a
+  // screen that is mostly about colours.
+  const fontPicker = rail.querySelector('[data-yw-google-fonts]')
+  let cataloguePromise = null
+
+  function loadGoogleFonts() {
+    if (cataloguePromise) return cataloguePromise
+
+    cataloguePromise = fetch(fontPicker.dataset.ywGoogleFonts)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((families) => {
+        // the widget wants `{value: label}`; a family is its own label
+        const options = {}
+        for (const family of families) options[family] = family
+        fontPicker.dataset.ywTagInputOptions = JSON.stringify(options)
+        return options
+      })
+      .catch(() => ({}))
+
+    return cataloguePromise
+  }
+
+  /**
+   * Draw each suggested family in its own face.
+   *
+   * A list of names tells you nothing about a typeface, which is the one thing you are
+   * choosing. The widget caps what it shows, so the set on screen is small enough to fetch:
+   * one stylesheet request naming all of them, and each name then renders in itself.
+   *
+   * The request goes from the ADMIN's browser to Google -- the only place in YesWiki that
+   * happens, and it is a webmaster deliberately browsing Google's catalogue rather than a
+   * reader being handed to it. Nothing on a public page changes.
+   *
+   * It also fails soundlessly and must: on an instance that cannot reach Google, the
+   * stylesheet simply never arrives and the names stay in the wiki's own font. The picker,
+   * the chips and the download button all still work -- the catalogue is vendored, and the
+   * fetching is the server's job.
+   */
+  const previewed = new Set()
+
+  /** Ask Google for these families, once each, so this document can draw them. */
+  function askGoogleFor(families) {
+    const wanted = families.filter((family) => family && !previewed.has(family))
+    if (!wanted.length) return
+    for (const family of wanted) previewed.add(family)
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href =
+      'https://fonts.googleapis.com/css2?' +
+      wanted.map((family) => `family=${encodeURIComponent(family)}`).join('&') +
+      '&display=swap'
+    document.head.appendChild(link)
+  }
+
+  function previewFamilies(families) {
+    askGoogleFor(families)
+
+    for (const option of fontPicker.querySelectorAll(
+      '[data-yw-tag-input-suggestion]',
+    )) {
+      // Quoted, and with a REAL generic to fall back to. A family name can contain spaces
+      // and digits, so `Roboto Mono` unquoted is two families neither of which exists -- and
+      // `inherit` is not a font-family a list may end in: as a fallback it makes the whole
+      // declaration invalid, which drops it and leaves every name in the browser's default.
+      // That is what this looked like when it was silently doing nothing.
+      option.style.fontFamily = `'${option.dataset.id.replace(/'/g, '')}', sans-serif`
+    }
+  }
+
+  if (fontPicker) {
+    const search = fontPicker.querySelector('[data-yw-tag-input-search]')
+    // `focus` and not `input`: the list has to be there before the first keystroke is
+    // filtered against it, or the first thing typed suggests nothing.
+    //
+    // ...which focus alone does NOT guarantee, because the fetch takes as long as it takes:
+    // type "Lob" quickly enough and all three keystrokes are filtered against an empty
+    // catalogue, leaving a box with text in it and no suggestions under it -- indistinguishable
+    // from a family Google does not have. So the arrival of the list re-runs the filter
+    // against whatever has been typed by then.
+    search?.addEventListener(
+      'focus',
+      () =>
+        loadGoogleFonts().then(() => {
+          if (search.value !== '') {
+            search.dispatchEvent(new Event('input', { bubbles: true }))
+          }
+        }),
+      { once: true },
+    )
+    fontPicker.addEventListener('yw:tags-suggested', (event) => {
+      previewFamilies(event.detail.values)
+    })
+  }
+
+  // ---- downloading a webfont, without losing the preset being edited -------------------
+  //
+  // This was a form POST: it installed the font, redirected back to /admin/preset, and the
+  // rail came back on the LIST screen with every unsaved edit gone. Adding a font is a
+  // thought you have in the middle of designing a preset -- "the one I want is not in this
+  // list" -- so the one moment you reach for it is the moment losing the screen costs most.
+  //
+  // The endpoint does the same work and answers with what happened, so the screen stays
+  // exactly as it was and grows two options in the selects. Falls back to the page POST when
+  // the fetch cannot be made at all, which is still better than nothing having happened.
+  const fontForm = rail.querySelector('[data-yw-preset-font-form]')
+
+  /** Say what landed, where it was asked for. */
+  function reportInstall(node, message, failed) {
+    if (!node) return
+    node.textContent = message
+    node.classList.toggle('yw-preset-font-result--failed', Boolean(failed))
+    node.hidden = false
+  }
+
+  /**
+   * Re-fetch the installed-faces stylesheet, so a font just downloaded can be drawn.
+   *
+   * A new href, not `link.href = link.href`: an identical URL is a cache hit and the browser
+   * does not go back to the server, which is precisely the case here -- the file did not
+   * change, its *contents* did.
+   */
+  function refreshFontFaces() {
+    const link = document.querySelector('[data-yw-preset-faces]')
+    if (!link) return
+    const url = new URL(link.href, document.baseURI)
+    url.searchParams.set('installed', String(Date.now()))
+    link.href = url.toString()
+  }
+
+  /**
+   * Put the families the wiki now has into every font select.
+   *
+   * The webfont group is rebuilt from the server's own answer rather than by appending what
+   * was typed: what a family is *called* and what stack it becomes are the service's to say,
+   * and a guess here would put a slightly different string in the select from the one a
+   * reload produces. Each select keeps its own value, because this is not a change to the
+   * preset -- it is a change to what may be chosen.
+   */
+  function rebuildWebfonts(webfonts) {
+    for (const select of rail.querySelectorAll('.yw-preset-rail__font')) {
+      const groups = select.querySelectorAll('optgroup')
+      const group = groups[groups.length - 1]
+      if (!group) continue
+      const chosen = select.value
+      group.replaceChildren()
+      for (const [family, stack] of Object.entries(webfonts)) {
+        const option = document.createElement('option')
+        option.value = stack
+        option.textContent = family
+        option.style.fontFamily = stack
+        group.appendChild(option)
+      }
+      // the value survives the rebuild, or is put back as an option of its own if the
+      // preset names something no longer offered -- same contract as on first render
+      select.value = chosen
+      ensureOption(select, chosen)
+      select.value = chosen
+      showChosenFont(select)
+    }
+  }
+
+  /**
+   * A webfont the wiki offers but has not downloaded yet, previewed from Google.
+   *
+   * The curated list names sixteen families; a wiki has downloaded however many of them it
+   * has actually used. Choosing one of the others changed `--yw-font-body` and nothing else
+   * moved -- correct, since the file arrives when the preset is SAVED, and indistinguishable
+   * from the choice not registering.
+   *
+   * So the admin's browser asks Google for it, exactly as the picker does when drawing its
+   * suggestions: a webmaster deliberately looking at typefaces, on an admin screen. Nothing
+   * on a public page changes, and no reader is ever handed to Google -- the saved preset is
+   * served from this wiki.
+   *
+   * Installed families are already declared by the faces stylesheet, so `check()` answers for
+   * them and nothing is asked. On an instance that cannot reach Google the request fails
+   * soundlessly and the preview is what it was before: the fallback.
+   */
+  function previewChosenWebfont(stack) {
+    const family = (stack.match(/^\s*'([^']+)'/) || [])[1]
+    if (!family) return
+    // The REGISTRY, not `document.fonts.check()`. With no `@font-face` for a family, `check`
+    // resolves it to a system font and answers *true* -- which is precisely the case this
+    // exists for, so guarding on it means never asking. A face is in the registry only
+    // because a rule declared it, which is the actual question.
+    const declared = [...document.fonts].some(
+      (face) => face.family.replace(/['"]/g, '') === family,
+    )
+    if (!declared) askGoogleFor([family])
+  }
+
+  for (const select of rail.querySelectorAll('.yw-preset-rail__font')) {
+    select.addEventListener('change', () => previewChosenWebfont(select.value))
+  }
+
+  fontForm?.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const result = fontForm.querySelector('[data-yw-preset-font-result]')
+    const button = fontForm.querySelector('button[type="submit"]')
+    reportInstall(result, fontForm.dataset.ywPresetFontWorking || '…', false)
+    if (button) button.disabled = true
+
+    fetch(fontForm.dataset.ywPresetFontForm, {
+      method: 'POST',
+      body: new FormData(fontForm),
+      headers: { Accept: 'application/json' },
+    })
+      .then((response) => response.json().then((body) => ({ response, body })))
+      .then(({ response, body }) => {
+        if (!response.ok) {
+          reportInstall(result, body.error || String(response.status), true)
+          return
+        }
+        rebuildWebfonts(body.webfonts || {})
+        refreshFontFaces()
+        const installed = body.installed || []
+        const failed = body.failed || []
+        reportInstall(
+          result,
+          [installed.join(', '), failed.length ? `✕ ${failed.join(', ')}` : '']
+            .filter(Boolean)
+            .join(' — '),
+          failed.length,
+        )
+        // the chips go, because they have been acted on: leaving them would make a second
+        // press re-download what is already here
+        if (installed.length) clearFontPicker()
+      })
+      .catch(() => fontForm.submit())
+      .finally(() => {
+        if (button) button.disabled = false
+      })
+  })
+
+  /** Empty the chip picker after its families have been downloaded. */
+  function clearFontPicker() {
+    if (!fontPicker) return
+    for (const chip of fontPicker.querySelectorAll(
+      '[data-yw-tag-input-remove]',
+    )) {
+      chip.click()
     }
   }
 

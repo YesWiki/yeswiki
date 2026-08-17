@@ -426,3 +426,104 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
   await expect(page.locator('#YesWikiLinkPanel')).toBeVisible()
   await expect(page.locator('#YesWikiFilePickerPanel')).toBeHidden()
 })
+
+/**
+ * An image is converted to WebP and capped before it is uploaded.
+ *
+ * Only a browser can see this at all: the conversion happens in the page, so every
+ * server-side test sees whatever bytes it is handed and calls them correct. What is uploaded
+ * is what the wiki stores, backs up and serves forever, so a phone's twelve-megapixel JPEG
+ * arriving intact is a cost paid on every page view for the life of the wiki.
+ *
+ * The picture is drawn HERE rather than committed as a fixture: five megapixels of noise is
+ * a five-megabyte file, and a repository is a bad place to keep one.
+ */
+test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openPicker(page)
+  await page
+    .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
+    .click()
+
+  // 4200x2400 of noise -- over the 4K cap on the long side, and busy enough that JPEG
+  // cannot make it small by accident. Drawn with rectangles rather than per-pixel ImageData,
+  // which at this size is sixty megabytes of buffer and takes the headless browser with it.
+  const original = await page.evaluate(async () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 4200
+    canvas.height = 2400
+    const context = canvas.getContext('2d')
+    for (let i = 0; i < 4000; i += 1) {
+      context.fillStyle = `hsl(${(i * 37) % 360} 90% ${20 + ((i * 11) % 60)}%)`
+      context.fillRect(
+        (i * 173) % canvas.width,
+        (i * 271) % canvas.height,
+        40 + ((i * 7) % 90),
+        40 + ((i * 13) % 90),
+      )
+    }
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', 0.95),
+    )
+    const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
+    const transfer = new DataTransfer()
+    transfer.items.add(file)
+    const input = document.querySelector(
+      '#YesWikiFilePickerPanel input[name="upFile"]',
+    )
+    input.files = transfer.files
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+    return { size: file.size }
+  })
+  expect(original.size).toBeGreaterThan(200 * 1024)
+
+  await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
+  // the extension follows the format: `photo.jpg` is not what was sent
+  await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
+    'photo.webp',
+    { timeout: 30000 },
+  )
+
+  // and what LANDED is within the cap, which is the claim that matters -- read back from
+  // the wiki, not from the browser's copy
+  const stored = await page.evaluate(async () => {
+    const answer = await fetch(wiki.url('api/files')).then((r) => r.json())
+    const entry = answer.find((f) => f.original_filename === 'photo.webp')
+    const blob = await fetch(wiki.url(`api/files/${entry.tag}/download`)).then(
+      (r) => r.blob(),
+    )
+    const bitmap = await createImageBitmap(blob)
+    return {
+      size: blob.size,
+      type: blob.type,
+      width: bitmap.width,
+      height: bitmap.height,
+    }
+  })
+
+  expect(stored.type).toBe('image/webp')
+  expect(stored.width).toBeLessThanOrEqual(3840)
+  expect(stored.height).toBeLessThanOrEqual(2160)
+  // fitted, not squashed: the shape is kept, and the dimension that has furthest to fall is
+  // the one that lands on the cap -- 2400 into 2160 here, which takes 4200 down to 3780
+  expect(stored.width).toBe(3780)
+  expect(stored.height).toBe(2160)
+  expect(stored.size).toBeLessThan(original.size)
+})
+
+/**
+ * A small image is left exactly as it was.
+ *
+ * The point is bytes, not a uniform extension: re-encoding a 1x1 PNG as WebP makes it
+ * bigger, and re-encoding a WebP as WebP makes it worse every time the same picture is
+ * uploaded. Both are silent, which is why they are asserted rather than assumed.
+ */
+test('a small image is uploaded untouched', async ({ page }) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await openPicker(page)
+
+  await uploadThroughPicker(page, 'holiday.png', 'image/png', PNG)
+  await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
+    'holiday.png',
+  )
+})

@@ -296,6 +296,23 @@ class Init
             // attach_jplayer_skin dropped: jPlayer was replaced by native <audio controls>.
             // ext_freemind dropped: the FreeMind (.mm) viewer embedded a Flash .swf, dead
             // in every browser since ~2021.
+            // What the BROWSER does to an image before it is uploaded (javascripts/image-upload.js).
+            // A phone camera hands over twelve megapixels of JPEG and a screenshot tool hands
+            // over a PNG several times the size of the WebP that looks identical -- and what is
+            // uploaded is what the wiki then stores, backs up and serves forever.
+            // `image-upload-format: ''` turns the whole thing off and uploads what was chosen.
+            'image-upload-format' => 'image/webp',
+            'image-upload-max-width' => 3840,  // 4K, the point past which nothing on a page gains
+            'image-upload-max-height' => 2160,
+            'image-upload-quality' => 0.82,
+            // Bytes. The quality is lowered a step at a time to try to come under it; it is a
+            // target, not a promise -- `max_file_size` is the limit that actually refuses.
+            'image-upload-max-size' => 1048576,
+            // The largest an image is SERVED at when nothing asked for a size: a resized copy
+            // is made on first use and cached beside the original. Nothing in a page needs
+            // more, and the file itself is still there for whoever downloads it.
+            'image-render-max-width' => 1920,
+            'image-render-max-height' => 1920,
             'image-small-width' => 140,
             'image-small-height' => 97,
             'image-medium-width' => 300,

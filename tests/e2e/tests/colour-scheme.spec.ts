@@ -17,7 +17,10 @@ const PAGE = process.env.YESWIKI_PAGE_WITH_LIST || 'CartoAnnuaire'
 const OTHER = process.env.YESWIKI_PAGE_WITH_EDITOR || 'SaisirAnnuaire'
 
 /** The cluster, its readout, and one of the three marks inside it. */
-const TOOLS = '.yw-topnav-tools'
+// The scheme's own menu, not the cluster: the cluster holds two dropdowns now, and hovering
+// it opens whichever one the pointer happens to land on.
+const TOOLS = '.yw-topnav-tools__menu:has([data-yw-scheme])'
+const LANGUAGES = '.yw-topnav-tools__menu:has(a[hreflang])'
 const READOUT = '[data-yw-scheme]'
 const scheme = (state: string) => `[data-yw-scheme-set="${state}"]`
 
@@ -79,33 +82,63 @@ test('the three states are offered as three marks, and the one in force is marke
   ).toBeNull()
 })
 
-test('the line is not in the bar until it is reached for', async ({ page }) => {
+test('each menu opens on its own, as a column of choices', async ({ page }) => {
   await page.goto(`/?${PAGE}`)
 
-  const line = page.locator('.yw-topnav-tools__panel')
-  const opacity = () =>
-    line.evaluate((element) => getComputedStyle(element).opacity)
+  // TWO dropdowns, not one panel holding both: they answer different questions, and a reader
+  // opening one has no business being shown the other.
+  const menus = page.locator('.yw-topnav-tools__menu')
+  await expect(menus).toHaveCount(2)
 
-  expect(await opacity(), 'the options are showing before anyone asked').toBe(
-    '0',
-  )
+  const scheme = menus.filter({ has: page.locator('[data-yw-scheme]') })
+  const language = menus.filter({ hasNot: page.locator('[data-yw-scheme]') })
+  const opacityOf = (menu: ReturnType<typeof page.locator>) =>
+    menu
+      .locator('.yw-topnav-tools__panel')
+      .evaluate((element) => getComputedStyle(element).opacity)
 
-  await page.locator(TOOLS).hover()
-  await expect.poll(opacity).toBe('1')
+  expect(
+    await opacityOf(scheme),
+    'the options are showing before anyone asked',
+  ).toBe('0')
+  expect(await opacityOf(language)).toBe('0')
 
-  // One line: every option on the same row. Their *middles*, not their tops -- a language's
-  // two-letter code is a shorter box than a scheme's icon, and they are centred against each
-  // other, so the tops differ by a pixel or two while the line is perfectly single.
-  const rows = await line.evaluate(
-    (element) =>
-      new Set(
-        [...element.querySelectorAll('.yw-switcher__option')].map((option) => {
-          const box = option.getBoundingClientRect()
-          return Math.round(box.top + box.height / 2)
-        }),
-      ).size,
-  )
-  expect(rows, 'the options wrapped onto more than one line').toBe(1)
+  // hovering one opens THAT one, and leaves the other shut
+  await scheme.hover()
+  await expect.poll(() => opacityOf(scheme)).toBe('1')
+  expect(await opacityOf(language), 'the other menu opened too').toBe('0')
+
+  await language.hover()
+  await expect.poll(() => opacityOf(language)).toBe('1')
+  expect(await opacityOf(scheme), 'the other menu stayed open').toBe('0')
+
+  // A COLUMN. It used to be one nowrap line of six marks, where "is this third one the last
+  // scheme or the first language?" was a question the panel asked rather than answered.
+  await scheme.hover()
+  await expect.poll(() => opacityOf(scheme)).toBe('1')
+  const shape = await scheme
+    .locator('.yw-topnav-tools__panel')
+    .evaluate((element) => {
+      const options = [...element.querySelectorAll('.yw-switcher__option')].map(
+        (option) => option.getBoundingClientRect(),
+      )
+
+      return {
+        options: options.length,
+        switchers: element.querySelectorAll('.yw-switcher').length,
+        rows: new Set(
+          options.map((box) => Math.round(box.top + box.height / 2)),
+        ).size,
+        lefts: new Set(options.map((box) => Math.round(box.left))).size,
+        widths: new Set(options.map((box) => Math.round(box.width))).size,
+      }
+    })
+
+  expect(shape.switchers, 'a menu holds one switcher, not both').toBe(1)
+  expect(shape.options, 'system, light and dark').toBe(3)
+  expect(shape.rows, 'the options are stacked, one per row').toBe(shape.options)
+  expect(shape.lefts, 'the options are aligned down one edge').toBe(1)
+  expect(shape.widths, 'the options are the same width').toBe(1)
 })
 
 test('the wiki can be read in another language, from the same cluster', async ({
@@ -122,7 +155,8 @@ test('the wiki can be read in another language, from the same cluster', async ({
     page.locator('.yw-topnav-tools a[aria-current="true"]'),
   ).toHaveCount(1)
 
-  await page.locator(TOOLS).hover()
+  // the LANGUAGE menu, which is the other dropdown -- TOOLS is the scheme's
+  await page.locator(LANGUAGES).hover()
   const target = page.locator('.yw-topnav-tools a[hreflang="en"]')
   await target.click()
 

@@ -31,7 +31,7 @@ const EDITOR = '.vditor, .aceditor-container .ace_editor'
  */
 const MOUNTED_WIDGET =
   process.env.YESWIKI_WIDGET_SELECTOR ||
-  '.bazar-list-dynamic-container > *, .leaflet-container'
+  '.entry-list-dynamic-container > *, .leaflet-container'
 
 /**
  * Mark the current document, then navigate by clicking. If the mark survives, the page was
@@ -185,7 +185,7 @@ test.describe('boosted navigation', () => {
     // they have different causes, and guessing between them costs a whole run.
     const diagnostic = await page.evaluate(() => {
       const holders = [
-        ...document.querySelectorAll('.bazar-list-dynamic-container'),
+        ...document.querySelectorAll('.entry-list-dynamic-container'),
       ]
 
       const main = document.querySelector('#yw-main')

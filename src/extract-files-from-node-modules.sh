@@ -24,6 +24,10 @@ mkdir -p styles/vendor/vue-select && copy_css node_modules/vue-select/dist/vue-s
 mkdir -p javascripts/vendor/sortablejs && copy_js node_modules/sortablejs/Sortable.min.js javascripts/vendor/sortablejs/sortable.js
 mkdir -p javascripts/vendor/vuedraggable && copy_js node_modules/vuedraggable/dist/vuedraggable.umd.js javascripts/vendor/vuedraggable/vuedraggable.js
 
+# Compressor.js -- images are converted to WebP and capped in the BROWSER before upload
+# (javascripts/image-upload.js). The ESM build, because every consumer is a module.
+mkdir -p javascripts/vendor/compressorjs && copy_js node_modules/compressorjs/dist/compressor.esm.js javascripts/vendor/compressorjs/compressor.js
+
 # Leaflet
 mkdir -p javascripts/vendor/leaflet && copy_js node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js
 mkdir -p styles/vendor/leaflet && copy_css node_modules/leaflet/dist/leaflet.css styles/vendor/leaflet/leaflet.css

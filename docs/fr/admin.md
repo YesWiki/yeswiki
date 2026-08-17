@@ -419,49 +419,74 @@ déclaration suffit pour changer quelque chose partout :
 
 ```css
 :root {
-  /* la couleur principale : titres, liens, boutons, onglet actif... */
+  /* les trois couleurs de la charte : la principale (liens, boutons, onglet actif),
+     et deux d'appoint. Leurs variantes survolée et enfoncée en sont calculées. */
   --yw-primary: #0c5d6a;
+  --yw-secondary: #d8604c;
+  --yw-tertiary: #7d6b9e;
 
-  /* le fond de la page, et celui des cartes et panneaux posés dessus */
+  /* l'encre : une couleur pour ce qui est écrit sur un fond clair, une autre pour un
+     fond sombre. On les choisit une fois, et tout le wiki s'en sert — le texte de la
+     page (`--yw-text`) est l'une des deux selon le mode, et une bande de couleur pleine
+     prend celle des deux qui se lit dessus. */
+  --yw-ink-on-light: #26282c;
+  --yw-ink-on-dark: #f2f4f7;
+
+  /* le fond de la page, celui des cartes et panneaux posés dessus, et celui des bandes
+     en creux */
   --yw-surface: #ffffff;
   --yw-surface-raised: #ffffff;
-
-  /* le texte. Le texte secondaire (`--yw-text-muted`) en est calculé : c'est cette
-     couleur fondue dans le fond, et il n'y a donc rien à garder en accord. */
-  --yw-text: #4e5056;
+  --yw-surface-sunken: #f4f5f7;
 
   /* les traits. Les variantes marquée et légère en sont calculées. */
   --yw-border: #d8d9dc;
   --yw-border-width: 1px;
 
   /* messages : succès, erreur, avertissement, information. Une seule couleur chacun :
-     le fond du message et son encre en sont calculés, contre le fond et le texte de la
-     page — ce qui les rend justes en clair comme en sombre sans les écrire deux fois. */
+     le fond du message, son encre et celle d'un bouton plein en sont calculés — ce qui
+     les rend justes en clair comme en sombre sans les écrire deux fois. */
   --yw-success: #1f8a7d;
   --yw-danger: #c0392b;
   --yw-warning: #d99100;
   --yw-info: #1989a0;
 
-  /* la barre de menu et le pied de page */
+  /* la barre de menu : ses couleurs, et son ombre portée (0 = aucune) */
   --yw-navbar-bg: #ffffff;
   --yw-navbar-text: #4e5056;
+  --yw-navbar-shadow: rgb(0 0 0 / 12%);
+  --yw-navbar-shadow-spread: 0px;
+
+  /* le pied de page */
   --yw-footer-bg: #ffffff;
   --yw-footer-text: #4e5056;
 
-  /* les titres : la couleur des h1 à h3, celle des h4 à h6, et la taille de toute
-     l'échelle d'un coup */
-  --yw-heading: #0c5d6a;
-  --yw-heading-sub: #d8604c;
-  --yw-heading-scale: 1;
+  /* les titres : chaque niveau a sa couleur, sa taille, sa casse et son alignement.
+     La taille est un multiple de celle du texte, la casse et l'alignement des mots-clés
+     CSS (`none`/`uppercase`/`capitalize`/`lowercase`, `start`/`center`/`end`). */
+  --yw-heading-1: #0c5d6a;
+  --yw-heading-1-size: 2.25rem;
+  --yw-heading-1-transform: none;
+  --yw-heading-1-align: start;
+  /* ... et de même pour les niveaux 2 à 6 */
 
-  /* Le rythme : trois espacements, et rien d'autre. `rem` est ici la taille du texte du
-     wiki, donc ce sont des multiples de celle-ci — un wiki au texte plus grand a des
-     pages proportionnellement plus aérées, sans rien changer d'autre. */
-  --yw-space-sm: 0.25rem; /* dans un contrôle */
-  --yw-space-md: 0.75rem; /* dans un composant */
-  --yw-space-lg: 2rem; /* entre composants */
+  /* les polices, et la taille du texte du wiki */
+  --yw-font-body: system-ui, sans-serif;
+  --yw-font-heading: system-ui, sans-serif;
+  --yw-font-mono: ui-monospace, monospace;
+  --yw-font-size-base: 1rem;
 
-  /* et trois multiplicateurs : 0 donne des coins carrés, aucun trait, aucune ombre */
+  /* Le rythme : trois espacements, sur deux axes chacun, et rien d'autre. `rem` est ici
+     la taille du texte du wiki, donc ce sont des multiples de celle-ci — un wiki au
+     texte plus grand a des pages proportionnellement plus aérées, sans rien changer
+     d'autre. */
+  --yw-space-sm-y: 0.25rem; /* dans un contrôle */
+  --yw-space-sm-x: 0.5rem;
+  --yw-space-md-y: 0.75rem; /* dans un composant */
+  --yw-space-md-x: 1rem;
+  --yw-space-lg-y: 2rem; /* entre composants */
+  --yw-space-lg-x: 2rem;
+
+  /* et deux multiplicateurs : 0 donne des coins carrés et aucune ombre */
   --yw-radius-scale: 1;
   --yw-shadow-strength: 1;
 }
@@ -470,13 +495,13 @@ déclaration suffit pour changer quelque chose partout :
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --yw-surface: #14171a;
-    --yw-text: #e3e5e8;
+    --yw-navbar-bg: #1b1f23;
   }
 }
 
 :root[data-theme='dark'] {
   --yw-surface: #14171a;
-  --yw-text: #e3e5e8;
+  --yw-navbar-bg: #1b1f23;
 }
 ```
 
@@ -932,6 +957,38 @@ voir d'autres façons de gérer les droits d'accès, voir le paragraphe
   attach-video-config[default_video_service]** :
 - **Adresse du serveur peertube par défaut -
   attach-video-config[default_peertube_instance]** :
+
+#### Optimisation des images
+
+Une image est convertie et redimensionnée **dans le navigateur**, avant d'être
+envoyée : ce qui arrive sur le serveur est ce que le wiki stockera, sauvegardera
+et servira ensuite. Une photo de téléphone de douze mégapixels devient une WebP
+de quelques centaines de kilo-octets, sans différence visible à l'écran.
+
+Ne sont pas touchés : les GIF (une conversion via le navigateur ne garderait que
+la première image), les SVG (qui n'ont pas de résolution), et toute image déjà
+plus petite que la limite — la réencoder ferait perdre de la qualité sans rien
+gagner.
+
+- **Format de conversion des images envoyées - image-upload-format** :
+  `image/webp` par défaut. Mettre une chaîne vide désactive complètement la
+  conversion : l'image part telle qu'elle a été choisie.
+- **Largeur / hauteur maximales des images envoyées -
+  image-upload-max-width, image-upload-max-height** : 3840 × 2160 (4K) par
+  défaut. Une image plus grande est réduite pour tenir dans ce cadre, sans
+  déformation.
+- **Qualité de la conversion - image-upload-quality** : 0.82 par défaut, entre 0
+  et 1.
+- **Poids visé pour une image envoyée - image-upload-max-size** : 1 Mo par
+  défaut, en octets. La qualité est abaissée par paliers pour essayer de passer
+  sous cette valeur ; c'est un objectif, pas une garantie — la limite qui refuse
+  réellement un fichier reste `attach_config[max_file_size]`.
+- **Taille maximale d'affichage d'une image - image-render-max-width,
+  image-render-max-height** : 1920 × 1920 par défaut. Une image insérée dans une
+  page ou posée en fond d'une section est servie redimensionnée à cette taille
+  au plus (une copie est fabriquée à la première demande et conservée à côté du
+  fichier d'origine, derrière le même contrôle des droits). Le fichier d'origine
+  n'est pas modifié et reste ce que l'on obtient en le téléchargeant.
 
 ### Base de données
 

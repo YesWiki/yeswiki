@@ -6,18 +6,18 @@
 const TableHelper = {
   tables: [],
   checkedFilters: {},
-  findBazarListFiltersContainer(table) {
-    const bazarList = table.closest('.bazar-list')
-    if (!bazarList || !bazarList.parentElement) return null
-    if (!bazarList.parentElement.classList.contains('results-col')) return null
-    const columns = bazarList.parentElement.parentElement
+  findEntryListFiltersContainer(table) {
+    const entryList = table.closest('.entry-list')
+    if (!entryList || !entryList.parentElement) return null
+    if (!entryList.parentElement.classList.contains('results-col')) return null
+    const columns = entryList.parentElement.parentElement
     const filtersCol = columns ? columns.querySelector('.filters-col') : null
     return filtersCol ? filtersCol.querySelector('.filters') : null
   },
   updateCheckedFilters() {
     const res = {}
     this.tables.forEach((table) => {
-      const filterContainer = this.findBazarListFiltersContainer(table)
+      const filterContainer = this.findEntryListFiltersContainer(table)
       const tableFilters = {}
       if (filterContainer) {
         filterContainer
@@ -44,7 +44,7 @@ const TableHelper = {
     })
   },
   updateNBResults(table, nbResults) {
-    const filterContainer = this.findBazarListFiltersContainer(table)
+    const filterContainer = this.findEntryListFiltersContainer(table)
     if (!filterContainer) return
     const nbResultInfoNode = filterContainer.querySelector('.nb-results')
     if (!nbResultInfoNode) return

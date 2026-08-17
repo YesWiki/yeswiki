@@ -136,12 +136,22 @@ class FileApiController extends YesWikiController
     {
         $width = (int)$request->query->get('width', 0);
         $height = (int)$request->query->get('height', 0);
-        if ($width < 1 || $height < 1 || @getimagesize($path) === false) {
+        $size = @getimagesize($path);
+        if ($width < 1 || $height < 1 || $size === false) {
             return null;
         }
         $width = min($width, self::MAX_RESIZE);
         $height = min($height, self::MAX_RESIZE);
         $mode = $request->query->get('mode') === 'crop' ? 'crop' : 'fit';
+
+        // Already inside the box: the original IS the answer, and making a copy would make
+        // it WORSE. The resizer enlarges smaller images (deliberately -- a crop to a fixed
+        // ratio wants it), so a 300-pixel logo asked to fit 1920 came back as a blurry
+        // 1920-pixel file several times the size of the one it was made from. `fit` is a
+        // maximum; `crop` changes the shape, so it still has work to do here.
+        if ($mode === 'fit' && $size[0] <= $width && $size[1] <= $height) {
+            return null;
+        }
 
         $cacheDir = FileManager::STORAGE_DIR . '/cache';
         if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {

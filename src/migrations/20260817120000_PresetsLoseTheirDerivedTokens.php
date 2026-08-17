@@ -232,6 +232,12 @@ class PresetsLoseTheirDerivedTokens extends YesWikiMigration
         foreach (self::HEADING_SIZE as $token => $size) {
             $values['light'][$token] = $size;
         }
+        // casing and alignment are new too: nothing in the old file expressed either, so
+        // every level starts on "as typed", aligned with the text around it
+        for ($level = 1; $level <= 6; $level++) {
+            $values['light']['yw-heading-' . $level . '-transform'] = 'none';
+            $values['light']['yw-heading-' . $level . '-align'] = 'start';
+        }
         $values['light']['yw-border-width'] = '1px';
         $values['light']['yw-shadow-strength'] = '1';
         foreach (self::SPACE_ANCHOR as $token => $anchor) {

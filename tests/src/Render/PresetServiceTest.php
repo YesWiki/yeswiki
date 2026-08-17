@@ -26,6 +26,8 @@ class PresetServiceTest extends YesWikiTestCase
      * appear in PresetService::TOKENS, and nothing may stop being declared.
      */
     private const DERIVED = [
+        'yw-text',
+        'yw-text-inverse',
         'yw-primary-hover',
         'yw-surface-hover',
         'yw-overlay',
@@ -349,6 +351,324 @@ class PresetServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * What installFont() refuses before it touches the network.
+     *
+     * Each of these would otherwise become a curl call: a nonsense family is a request to
+     * Google for nothing, and a source URL is a request THIS SERVER makes to an address
+     * somebody typed into an admin form. `file://` would read the disk and a bare IP is the
+     * shape of somebody probing the network the server sits in, so both are refused before a
+     * connection is opened rather than after.
+     */
+    public function testInstallingAFontRefusesWhatItShouldNotFetch(): void
+    {
+        $service = $this->service();
+
+        foreach (['', '   ', 'https://evil.example/x', '../../etc/passwd', str_repeat('a', 80)] as $family) {
+            try {
+                $service->installFont($family);
+                $this->fail('a family of "' . $family . '" should not have been fetched');
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+
+        // a local stack needs no download, and asking for one is a sign of a confused screen
+        $this->expectException(\InvalidArgumentException::class);
+        $service->installFont(PresetService::FONT_STACKS['Neo-Grotesque']);
+    }
+
+    public function testTheWikiAFontIsCopiedFromMustBeAnOrdinaryAddress(): void
+    {
+        $service = $this->service();
+
+        foreach ([
+            'file:///etc/passwd',
+            'ftp://example.org',
+            'http://127.0.0.1/wiki',
+            'https://192.168.1.10',
+            'not a url',
+        ] as $source) {
+            try {
+                $service->installFontsFromWiki($source);
+                $this->fail($source . ' should not be fetched from');
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            } catch (\RuntimeException) {
+                $this->fail($source . ' reached the network before being checked');
+            }
+        }
+    }
+
+    /**
+     * A preset describes its own fonts, because its `@font-face` blocks already say it all.
+     *
+     * This is what makes copying a look between wikis work: the stylesheet alone is useless
+     * without the files it names, and a *guess* at those file names cannot know which weights
+     * exist. Reading the blocks gives family, style, weight, `unicode-range` and a URL each --
+     * every weight and both slopes, as facts rather than a convention.
+     */
+    public function testAPresetDescribesTheFontsItNeeds(): void
+    {
+        $service = $this->service();
+
+        // a preset with no webfont has nothing to describe, and must not invent any
+        $this->assertSame([], $service->fontsOf('default.css', 'https://wiki.example'));
+        $this->assertSame([], $service->fontsOf('there-is-no-such-preset.css'));
+
+        $css = <<<'CSS'
+            :root { --yw-font-body: 'Nunito', sans-serif; }
+            /* latin */
+            @font-face {
+              font-family: 'Nunito';
+              font-style: italic;
+              font-weight: 700;
+              src: url(../../custom/fonts/nunito/nunito-italic-700-latin.woff2) format('woff2');
+              unicode-range: U+0000-00FF;
+            }
+            CSS;
+        $path = sys_get_temp_dir() . '/yw-preset-fonts-' . getmypid() . '.css';
+        file_put_contents($path, $css);
+
+        try {
+            $fonts = $this->fontsOfFile($service, $path, 'https://wiki.example');
+
+            $this->assertCount(1, $fonts);
+            $this->assertSame('Nunito', $fonts[0]['family']);
+            $this->assertSame('italic', $fonts[0]['style'], 'the slope has to survive, or bold italic is lost');
+            $this->assertSame('700', $fonts[0]['weight'], 'the weight is the whole point');
+            $this->assertSame('latin', $fonts[0]['subset']);
+            $this->assertSame('U+0000-00FF', $fonts[0]['unicodeRange']);
+            // absolute, because the wiki asking is not this one and `../../` means nothing there
+            $this->assertSame(
+                'https://wiki.example/custom/fonts/nunito/nunito-italic-700-latin.woff2',
+                $fonts[0]['url']
+            );
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    /**
+     * A downloaded family is declared to the browser, whether or not a preset names it.
+     *
+     * **This is the bug that made the font selector look broken.** A family's `@font-face`
+     * rules were written into a *preset*, when that preset was saved -- so a font could be
+     * fully downloaded, offered in the select, chosen, and still be a name no browser had
+     * ever heard of. Picking it set `font-family` on the document and every word carried on
+     * rendering in the fallback: no error, no console warning, nothing to see. Identical, from
+     * the webmaster's side, to the choice not registering at all.
+     */
+    public function testEveryInstalledFamilyIsDeclaredWhateverNamesIt(): void
+    {
+        $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-face';
+        @mkdir($directory, 0777, true);
+        file_put_contents($directory . '/' . ThemeManager::FONT_FACES_FILE, <<<'CSS'
+            @font-face {
+              font-family: 'Zz Test Face';
+              font-style: italic;
+              font-weight: 700;
+              src: url(../../custom/fonts/zz-test-face/zz-test-face-italic-700-latin.woff2) format('woff2');
+              unicode-range: U+0000-00FF;
+            }
+            CSS);
+
+        try {
+            $css = $this->service()->installedFontFaces('https://wiki.example');
+
+            $this->assertStringContainsString("font-family: 'Zz Test Face'", $css);
+            // the subset survives, because it came from Google's own answer rather than
+            // from a file name -- it is the reason the rules are kept at all
+            $this->assertStringContainsString('unicode-range: U+0000-00FF', $css);
+            // absolute: a preset stores `../../custom/fonts/…` relative to ITSELF, and this
+            // is served from a route, so nothing a browser resolved it against would find it
+            $this->assertStringContainsString(
+                'url(https://wiki.example/custom/fonts/zz-test-face/zz-test-face-italic-700-latin.woff2)',
+                $css
+            );
+            $this->assertStringNotContainsString('../../', $css);
+        } finally {
+            @unlink($directory . '/' . ThemeManager::FONT_FACES_FILE);
+            @rmdir($directory);
+        }
+    }
+
+    /**
+     * A family installed before its rules were kept is described from its file names.
+     *
+     * `<family>-<style>-<weight>-<subset>.woff2` is what importFontFile writes, so style and
+     * weight are recoverable -- which is what stops an upgrade turning every already-installed
+     * font into one the rail offers and cannot draw.
+     */
+    public function testAFamilyWithNoStoredRulesIsDescribedFromItsFiles(): void
+    {
+        $directory = ThemeManager::CUSTOM_FONT_PATH . '/zz-test-old';
+        @mkdir($directory, 0777, true);
+        file_put_contents($directory . '/zz-test-old-italic-700-latin.woff2', 'not really a font');
+
+        try {
+            $css = $this->service()->installedFontFaces('https://wiki.example');
+
+            $this->assertStringContainsString("font-family: 'Zz Test Old'", $css);
+            $this->assertStringContainsString('font-style: italic', $css);
+            $this->assertStringContainsString('font-weight: 700', $css);
+            $this->assertStringContainsString(
+                'url(https://wiki.example/custom/fonts/zz-test-old/zz-test-old-italic-700-latin.woff2)',
+                $css
+            );
+        } finally {
+            @unlink($directory . '/zz-test-old-italic-700-latin.woff2');
+            @rmdir($directory);
+        }
+    }
+
+    /**
+     * The mono face is fetched and declared like the other two.
+     *
+     * It was left out of the list handed to the writer: a preset whose code blocks named a
+     * webfont was written with no `@font-face` for it at all. Same silent nothing as an
+     * uninstalled font, on the one token nobody looks at twice.
+     */
+    public function testTheMonospaceFontIsInstalledLikeTheOthers(): void
+    {
+        $source = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/Render/Service/PresetService.php');
+        $call = substr($source, (int)strpos($source, 'writeCustomCSSPreset'), 300);
+
+        foreach (['yw-font-body', 'yw-font-heading', 'yw-font-mono'] as $token) {
+            $this->assertStringContainsString($token, $call, $token . ' is not handed to the writer');
+        }
+    }
+
+    /** fontsOf() addressed by path rather than by preset id, for a fixture on disk. */
+    /** @return list<array{family: string, style: string, weight: string, subset: string, unicodeRange: string, url: string}> */
+    private function fontsOfFile(PresetService $service, string $path, string $baseUrl): array
+    {
+        // find() resolves an id against the theme and custom directories, so a fixture has to
+        // be put where one of them will see it
+        $copy = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . basename($path);
+        @mkdir(ThemeManager::CUSTOM_CSS_PRESETS_PATH, 0777, true);
+        copy($path, $copy);
+
+        try {
+            return $service->fontsOf(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . basename($path), $baseUrl);
+        } finally {
+            @unlink($copy);
+        }
+    }
+
+    /**
+     * The two inks are the ONLY text colours a Preset sets, and everything else follows.
+     *
+     * `--yw-text` and `--yw-text-inverse` used to be authored, and authored per scheme -- four
+     * values expressing one decision, with four chances to disagree. They are derived now:
+     * the page's ink is whichever of the pair suits the scheme in force, and the inverse is
+     * the other. Asked once, answered everywhere.
+     */
+    public function testTextIsDerivedFromTheTwoInks(): void
+    {
+        $this->assertArrayNotHasKey('yw-text', PresetService::TOKENS, 'the page ink is not authored');
+        $this->assertArrayNotHasKey('yw-text-inverse', PresetService::TOKENS);
+        $this->assertArrayHasKey('yw-ink-on-light', PresetService::TOKENS);
+        $this->assertArrayHasKey('yw-ink-on-dark', PresetService::TOKENS);
+
+        // both are scheme-independent: a light ground is light at midnight too
+        foreach (['yw-ink-on-light', 'yw-ink-on-dark'] as $ink) {
+            $this->assertSame(PresetService::KIND_COLOR_FIXED, PresetService::TOKENS[$ink]['kind'], $ink);
+        }
+
+        // ...and each is scored against the surface of the scheme where it IS the page's ink;
+        // against the other scheme's surface it would report a pairing that never happens
+        $this->assertSame('light.yw-surface', PresetService::TOKENS['yw-ink-on-light']['contrast']);
+        $this->assertSame('dark.yw-surface', PresetService::TOKENS['yw-ink-on-dark']['contrast']);
+    }
+
+    /**
+     * A background a page author typed gets an ink core chose -- where core can tell.
+     *
+     * This is the one ground a stylesheet cannot measure, so it used to be left to
+     * `class="white"`/`"black"`: an author guessing, and guessing again every time the
+     * preset's colours moved. Two shapes are answerable and the rest deliberately are not --
+     * guessing wrong here is unreadable text on somebody's cover image.
+     */
+    public function testCoreChoosesTheInkForABackgroundItCanRead(): void
+    {
+        $service = $this->service();
+
+        // a literal is measured against the wiki's own two inks
+        $this->assertSame('var(--yw-ink-on-light)', $service->inkForBackground('#f9c401'), 'bright yellow wants dark ink');
+        $this->assertSame('var(--yw-ink-on-dark)', $service->inkForBackground('#0c5d6a'), 'deep teal wants light ink');
+
+        // a fill already has a resolved ink: use that answer rather than computing a second
+        $this->assertSame('var(--yw-on-primary)', $service->inkForBackground('var(--yw-primary)'));
+        $this->assertSame('var(--yw-on-warning)', $service->inkForBackground('var(--yw-warning)'));
+
+        // and everything else is left alone rather than guessed at
+        foreach ([
+            'var(--yw-surface)',
+            'color-mix(in oklab, red, blue)',
+            'rebeccapurple',
+            'linear-gradient(red, blue)',
+            '',
+        ] as $unreadable) {
+            $this->assertSame('', $service->inkForBackground($unreadable), $unreadable . ' is not knowable');
+        }
+    }
+
+    /**
+     * The Google catalogue is vendored, and a family is checked against it before anything
+     * is fetched.
+     *
+     * A shape regex was the old check, and `Opne Sans` passes one: it is a perfectly
+     * well-formed family name, Google answers a request for it with nothing at all, and the
+     * webmaster gets a blank failure after a network round trip. The catalogue turns that
+     * into "no such font" before a connection is opened, and hands back Google's own casing,
+     * which is what the download URL and the folder name are built from.
+     */
+    public function testAFamilyIsCheckedAgainstTheVendoredCatalogue(): void
+    {
+        $service = $this->service();
+        $catalogue = $service->googleFonts();
+
+        $this->assertGreaterThan(1000, count($catalogue), 'the vendored list must actually be there');
+        $this->assertContains('Nunito', $catalogue);
+        $this->assertContains('JetBrains Mono', $catalogue);
+
+        // matched case-insensitively, answered in the catalogue's casing
+        $this->assertSame('Open Sans', $service->googleFontNamed('open sans'));
+        $this->assertSame('Open Sans', $service->googleFontNamed('  OPEN SANS  '));
+
+        // ...and a typo is not a font
+        $this->assertSame('', $service->googleFontNamed('Opne Sans'));
+        $this->assertSame('', $service->googleFontNamed(''));
+    }
+
+    /**
+     * Installing refuses what is not in the catalogue WITHOUT reaching the network.
+     *
+     * Asserted by the exception type: an unknown family is an argument problem, and a family
+     * that is real but could not be fetched is a runtime one. If this ever started throwing
+     * the latter, the check had stopped happening before the download.
+     */
+    public function testAnUnknownFamilyIsRefusedBeforeAnyDownload(): void
+    {
+        $service = $this->service();
+
+        foreach (['Opne Sans', 'Definitely Not A Font', '', '   ', '../../etc/passwd'] as $unknown) {
+            try {
+                $service->installFont($unknown);
+                $this->fail('"' . $unknown . '" should not have been fetched');
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            } catch (\RuntimeException) {
+                $this->fail('"' . $unknown . '" reached the network before being checked');
+            }
+        }
+
+        // a local stack is not a download either
+        $this->expectException(\InvalidArgumentException::class);
+        $service->installFont(PresetService::FONT_STACKS['Neo-Grotesque']);
+    }
+
     /** A rail opens on a complete set of values, whatever the file it was opened on says. */
     public function testEveryTokenHasAValueForTheEditor(): void
     {
@@ -443,10 +763,10 @@ class PresetServiceTest extends YesWikiTestCase
      */
     public function testOneOddValueDoesNotHideTheOthers(): void
     {
-        $values = $this->service()->valuesOf(":root {\n  --yw-primary: rgb(1, 2, 3);\n  --yw-text: #abcdef;\n}");
+        $values = $this->service()->valuesOf(":root {\n  --yw-primary: rgb(1, 2, 3);\n  --yw-surface: #abcdef;\n}");
 
         $this->assertSame('rgb(1, 2, 3)', $values['light']['yw-primary']);
-        $this->assertSame('#abcdef', $values['light']['yw-text']);
+        $this->assertSame('#abcdef', $values['light']['yw-surface']);
     }
 
     /**

@@ -187,6 +187,11 @@ services:
   YesWiki\Search\Api\:
     resource: 'Search/Api/*'
 
+  # what another wiki asks this one about its Presets, so a look can be copied between
+  # instances along with the font files it needs (ADR-0021)
+  YesWiki\Render\Api\:
+    resource: 'Render/Api/*'
+
   YesWiki\Admin\Api\:
     resource: 'Admin/Api/*'
 

@@ -410,7 +410,7 @@ const BazarCalendar = {
     },
   },
   template: `
-    <div class="bazar-list-dynamic-template-container">
+    <div class="entry-list-dynamic-template-container">
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg></div>

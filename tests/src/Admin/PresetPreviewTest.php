@@ -415,12 +415,18 @@ class PresetPreviewTest extends YesWikiTestCase
             }
             $scored++;
 
-            // What it is scored against must be either a real token or the `auto-ink`
-            // sentinel -- anything else and the badge reads a field that is not on the
-            // screen, and silently shows nothing at all.
+            // What it is scored against must be a real token, possibly scheme-qualified
+            // (`light.yw-surface`), or the `auto-ink` sentinel -- anything else and the badge
+            // reads a field that is not on the screen, and silently shows nothing at all.
             if ($definition['contrast'] !== PresetService::CONTRAST_AUTO_INK) {
+                $against = $definition['contrast'];
+                $qualified = str_contains($against, '.');
+                if ($qualified) {
+                    [$onScheme, $against] = explode('.', $against, 2);
+                    $this->assertContains($onScheme, PresetService::SCHEMES, $token);
+                }
                 $this->assertArrayHasKey(
-                    $definition['contrast'],
+                    $against,
                     PresetService::TOKENS,
                     $token . ' is scored against something that is not authored'
                 );
@@ -432,14 +438,14 @@ class PresetPreviewTest extends YesWikiTestCase
                     $screen,
                     $token . ' has no ' . $scheme . ' score'
                 );
-                // `auto-ink` carries no scheme: the ink pair is scheme-independent, and
-                // which of the two a fill gets is worked out in the browser
-                $this->assertStringContainsString(
-                    $definition['contrast'] === PresetService::CONTRAST_AUTO_INK
-                        ? 'data-against="auto-ink"'
-                        : 'data-against="' . $scheme . '.' . $definition['contrast'] . '"',
-                    $screen
-                );
+                // `auto-ink` carries no scheme (the ink a fill gets is worked out in the
+                // browser); a contrast that is already scheme-qualified keeps its own.
+                $expected = match (true) {
+                    $definition['contrast'] === PresetService::CONTRAST_AUTO_INK => 'auto-ink',
+                    str_contains($definition['contrast'], '.') => $definition['contrast'],
+                    default => $scheme . '.' . $definition['contrast'],
+                };
+                $this->assertStringContainsString('data-against="' . $expected . '"', $screen);
             }
         }
 
@@ -543,6 +549,178 @@ class PresetPreviewTest extends YesWikiTestCase
         foreach ($presets->webfonts() as $family => $stack) {
             $this->assertStringContainsString('>' . $family . '</option>', $screen, $family);
         }
+    }
+
+    /**
+     * A webfont can be fetched from the screen, so the list is not a closed set.
+     *
+     * Its own `<form>`, and a SIBLING of the editing form -- a form inside a form is not
+     * markup a browser honours, and this posts on its own rather than as part of a save,
+     * because installing a font is a network round trip and a slow font server must not be
+     * able to stop a preset being written.
+     */
+    /**
+     * A webfont is added from a modal, opened from the Type group.
+     *
+     * A button rather than the form itself: three more controls permanently in a fifty-field
+     * rail, for something done once or twice in a wiki's life, is three more things to scroll
+     * past every other time. The opener sits with the font selects, because "the font I want
+     * is not in the list" is a thought you have while looking at the list.
+     */
+    public function testAWebfontIsAddedFromAModalOpenedByTheFontSelects(): void
+    {
+        $screen = $this->screen();
+
+        // the opener, and the modal it opens
+        $this->assertStringContainsString('data-yw-modal-target="#yw-preset-font-modal"', $screen);
+        $this->assertStringContainsString('id="yw-preset-font-modal"', $screen);
+        $this->assertStringContainsString('value="install_font"', $screen);
+        $this->assertStringContainsString('name="font_family"', $screen);
+
+        // ...and the opener really is under the font selects, not at the far end of the rail
+        $selectAt = strpos($screen, 'name="light[yw-font-mono]"');
+        $openerAt = strpos($screen, 'data-yw-modal-target="#yw-preset-font-modal"');
+        $this->assertIsInt($selectAt);
+        $this->assertIsInt($openerAt);
+        $this->assertGreaterThan($selectAt, $openerAt, 'the opener belongs under the font selects');
+
+        // The modal's form is a SIBLING of the editor's -- a form inside a form is not markup
+        // a browser honours, and its submit would simply be dropped.
+        $this->assertSame(0, $this->deepestFormNesting($screen), 'the installer must not nest in the editor');
+
+        // Google only for now: the "from another wiki" field is gone from the screen, though
+        // the service can still do it.
+        $this->assertStringNotContainsString('name="font_source"', $screen);
+    }
+
+    /**
+     * The picker shows a handful of families and draws each in its own face.
+     *
+     * The cap is not cosmetic: an empty box matches all 1951 names, so without it the widget
+     * builds two thousand elements on every keystroke. It is also what makes the preview
+     * affordable -- whatever is on screen is small enough to fetch in one request.
+     */
+    public function testTheFontPickerIsCappedSoItCanBePreviewed(): void
+    {
+        $screen = $this->screen();
+
+        $this->assertStringContainsString('data-yw-tag-input-limit="12"', $screen);
+    }
+
+    /**
+     * Fonts are picked from Google's catalogue, several at a time, and not free-typed.
+     *
+     * The option map is rendered EMPTY on purpose: 1951 family names is 29KB of JSON, and
+     * putting it in the head of this screen would cost every visit for something most never
+     * touch. The picker fetches it on first use, and the widget re-reads the attribute on
+     * every keystroke, so filling it late needs no re-initialisation.
+     */
+    public function testFontsArePickedFromTheCatalogue(): void
+    {
+        $screen = $this->screen();
+
+        $this->assertStringContainsString('data-yw-tag-input-closed', $screen, 'a family Google lacks is a silent failure');
+        $this->assertStringContainsString('data-yw-tag-input-options="{}"', $screen, 'the catalogue must not be inlined');
+        $this->assertStringContainsString('data-yw-google-fonts="', $screen);
+        $this->assertStringContainsString('google-fonts.json', $screen);
+        // base-absolute, or it 404s on a rewrite-shaped URL like /PageTag/edit
+        $this->assertMatchesRegularExpression('~data-yw-google-fonts="https?://~', $screen);
+        // and it posts the chips, comma-joined, under the name the controller reads
+        $this->assertMatchesRegularExpression(
+            '/<input type="hidden" name="font_family"[^>]*data-yw-tag-input-value/',
+            $screen
+        );
+    }
+
+    /**
+     * The bar and the footer are groups of their own, so their fields need no suffix.
+     *
+     * As one `chrome` group, four labels had to carry "de la barre" and "du pied de page" to
+     * say which was which -- a group heading does that better, and says it once.
+     */
+    public function testTheBarAndTheFooterAreSeparateGroups(): void
+    {
+        $screen = $this->screen();
+
+        $this->assertArrayHasKey('navbar', PresetService::GROUPS);
+        $this->assertArrayHasKey('footer', PresetService::GROUPS);
+        $this->assertArrayNotHasKey('chrome', PresetService::GROUPS);
+
+        // the labels are the bare thing, repeated in both groups -- which is only possible
+        // because the heading says which is which
+        $this->assertSame('ADMIN_PRESET_TOKEN_BG', PresetService::TOKENS['yw-navbar-bg']['label']);
+        $this->assertSame('ADMIN_PRESET_TOKEN_BG', PresetService::TOKENS['yw-footer-bg']['label']);
+
+        // the bar carries a shadow of its own: a coloured bar wants one tinted to match, and
+        // `--yw-shadow-color` is the page's neutral
+        $this->assertStringContainsString('name="light[yw-navbar-shadow]"', $screen);
+        $this->assertStringContainsString('data-yw-preset-slider="light.yw-navbar-shadow-spread"', $screen);
+    }
+
+    /**
+     * Adding a font does not reload the screen, and the screen declares what is installed.
+     *
+     * Two halves of one complaint: downloading a webfont threw away the preset being edited
+     * (a form POST that redirected), and choosing a webfont previewed nothing (its rules live
+     * in a saved preset, so an installed-but-unnamed family was undeclared).
+     */
+    public function testTheScreenInstallsAFontWithoutLosingWhatIsBeingEdited(): void
+    {
+        $screen = $this->screen();
+
+        // the endpoint the JS posts to, beside the plain `action` that still works without it
+        $this->assertMatchesRegularExpression(
+            '/data-yw-preset-font-form="[^"]*api\/presets\/fonts"/',
+            $screen
+        );
+        $this->assertStringContainsString('preset_action" value="install_font"', $screen);
+        // what happened, said in the modal: there is no page load left to carry a flash
+        $this->assertStringContainsString('data-yw-preset-font-result', $screen);
+
+        // and every installed family is declared to the browser, whatever names it
+        $this->assertMatchesRegularExpression(
+            '/<link rel="stylesheet" data-yw-preset-faces\s+href="[^"]*api\/presets\/fonts\.css"/',
+            $screen
+        );
+    }
+
+    /** The preset is named where it is saved, not fifty fields above. */
+    public function testTheNameSitsWithTheSaveButton(): void
+    {
+        $screen = $this->screen();
+
+        $footerAt = strpos($screen, 'yw-preset-rail__save');
+        $nameAt = strpos($screen, 'id="yw-preset-name"');
+        $this->assertIsInt($footerAt);
+        $this->assertIsInt($nameAt);
+        $this->assertGreaterThan($footerAt, $nameAt, 'the name belongs in the footer');
+        // it lost its own label there, so it has to keep one a screen reader can use
+        $this->assertMatchesRegularExpression('/id="yw-preset-name"[^>]*aria-label=/', $screen);
+    }
+
+    /** Headings can be cased and aligned, per level, from a fixed set of CSS keywords. */
+    public function testEachHeadingLevelHasCasingAndAlignment(): void
+    {
+        $screen = $this->screen();
+
+        for ($level = 1; $level <= 6; $level++) {
+            foreach (['transform', 'align'] as $property) {
+                $this->assertMatchesRegularExpression(
+                    '/<select[^>]*name="light\[yw-heading-' . $level . '-' . $property . '\]"/',
+                    $screen,
+                    'h' . $level . ' must be able to set its ' . $property
+                );
+            }
+        }
+
+        // the values are CSS grammar, so what is offered has to BE grammar the property takes
+        foreach (array_keys(PresetService::TEXT_TRANSFORMS) as $keyword) {
+            $this->assertStringContainsString('value="' . $keyword . '"', $screen);
+        }
+        // `start`/`end`, not `left`/`right`: identical in every language YesWiki ships, and
+        // correct in one written right-to-left
+        $this->assertArrayHasKey('start', PresetService::TEXT_ALIGNMENTS);
+        $this->assertArrayNotHasKey('left', PresetService::TEXT_ALIGNMENTS);
     }
 
     /** The type is still chosen from a list drawn in itself, and the size still slides. */

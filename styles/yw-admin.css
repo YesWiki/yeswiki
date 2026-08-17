@@ -929,6 +929,36 @@ span.yw-preset-card__star {
   line-height: 1;
 }
 
+/* What a download did, said in the modal that asked for it -- there is no page load to
+   carry a flash, which is the point of the whole path. */
+.yw-preset-font-result {
+  margin: var(--yw-space-sm-y) var(--yw-space-md-x) 0;
+  color: var(--yw-text-muted);
+  font-size: 0.85em;
+}
+
+.yw-preset-font-result--failed {
+  color: var(--yw-danger);
+}
+
+/* The name and the button that writes it, on one line at the foot of the rail. The name was
+   the first field of fifty, which is to say the first thing asked for and the last thing
+   thought about: a preset is named once it has been made. */
+.yw-preset-rail__save {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+}
+
+.yw-preset-rail__save .yw-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yw-preset-rail__save .yw-btn {
+  flex: 0 0 auto;
+}
+
 /* The palette itself: one popover for every colour field, positioned by the JS under
    whichever button opened it. Absolute inside the rail rather than fixed, so it scrolls with
    the field it belongs to instead of hanging in the air over a different one -- which works

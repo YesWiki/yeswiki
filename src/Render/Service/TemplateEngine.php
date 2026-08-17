@@ -579,7 +579,7 @@ class TemplateEngine
 
     private function addTwigFilters(): void
     {
-        // ticket 07: the converted bazar-list templates normalize markup with the
+        // ticket 07: the converted entry-list templates normalize markup with the
         // same regexes their PHP predecessors used
         $this->twig->addFilter(new \Twig\TwigFilter('preg_replace', function ($subject, $pattern, $replacement) {
             return preg_replace($pattern, $replacement, (string)$subject);

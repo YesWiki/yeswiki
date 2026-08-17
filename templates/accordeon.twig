@@ -4,7 +4,7 @@
 <h2>{{ title }}</h2>
 {% endif %}
 {# the wiki's one accordion -- see templates/_accordion-item.twig #}
-<div class="yw-accordion bazar-list no-dblclick {{ class }}" id="accordion{{ urlHash }}">
+<div class="yw-accordion entry-list no-dblclick {{ class }}" id="accordion{{ urlHash }}">
 {% for page in syndication.pages %}
   {% set summary %}
         {% if page.date is not empty %}

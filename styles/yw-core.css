@@ -79,12 +79,17 @@
   --yw-secondary: #d0442d;
   --yw-tertiary: #d78958;
 
-  /* The two inks, and the only colours here that do NOT flip with the scheme: "the ink for a
-     light ground" means the same thing at midnight as at noon, because a light ground is
-     light in both. They answer two questions that used to have a token each -- what goes on
-     a brand fill (`--yw-on-primary`) and what goes on a ground the preset did not choose at
-     all (`--yw-text-on-dark`): an uploaded photo, an entry's own colour, a section
-     background a page author typed. */
+  /* -- the two inks -----------------------------------------------------------
+     A wiki's main colours include the two it writes in, which is why these sit with the
+     brand rather than in a group of their own -- there is nothing else left in one.
+
+     THE ONLY text colours a Preset sets. Scheme-independent on purpose: "the
+     ink for a light ground" means the same thing at midnight as at noon, because a light
+     ground is light in both schemes.
+
+     Everything else about text falls out of them, just below: `--yw-text` is whichever suits
+     the scheme in force and `--yw-text-inverse` is the other, core picks between them again
+     per fill, and again for a ground a page author chose. Asked once, answered everywhere. */
   --yw-ink-on-light: #14171a;
   --yw-ink-on-dark: #ffffff;
 
@@ -92,12 +97,6 @@
   --yw-surface: #ffffff;
   --yw-surface-raised: #ffffff;
   --yw-surface-sunken: #f2f2f2;
-
-  /* -- text ------------------------------------------------------------------- */
-  --yw-text: #4e5056;
-  /* text and icons ON a filled surface -- a coloured button, a tooltip, a dark strip.
-     It flips with the scheme because what it sits on flips with it. */
-  --yw-text-inverse: #ffffff;
 
   /* -- lines ------------------------------------------------------------------ */
   --yw-border: #d8d9dc;
@@ -118,6 +117,11 @@
      That is a Preset's decision, so it is a token and the second stylesheet is gone. */
   --yw-navbar-bg: #ffffff;
   --yw-navbar-text: #4e5056;
+  /* the bar's own shadow: what lifts it off the page it is sticky over. Separate from
+     `--yw-shadow-color` because a coloured bar wants a shadow tinted to match, and 0
+     spread is a legitimate setting -- a bar with a hairline border wants no shadow. */
+  --yw-navbar-shadow: rgb(0 0 0 / 12%);
+  --yw-navbar-shadow-spread: 0px;
   --yw-footer-bg: #ffffff;
   --yw-footer-text: #4e5056;
 
@@ -149,6 +153,18 @@
   --yw-heading-4-size: 1.1rem;
   --yw-heading-5-size: 1rem;
   --yw-heading-6-size: 0.9rem;
+  --yw-heading-1-transform: none;
+  --yw-heading-1-align: start;
+  --yw-heading-2-transform: none;
+  --yw-heading-2-align: start;
+  --yw-heading-3-transform: none;
+  --yw-heading-3-align: start;
+  --yw-heading-4-transform: none;
+  --yw-heading-4-align: start;
+  --yw-heading-5-transform: none;
+  --yw-heading-5-align: start;
+  --yw-heading-6-transform: none;
+  --yw-heading-6-align: start;
 
   /* -- type (scheme-independent) ---------------------------------------------- */
   --yw-font-body:
@@ -264,6 +280,17 @@
     var(--yw-text)
   );
   --yw-overlay: rgb(0 0 0 / 50%);
+
+  /* The page's own ink is one of the two, chosen by the scheme rather than authored a second
+     time: the light-ground ink on a light page, the dark-ground ink on a dark one. The dark
+     blocks below swap them, which is the whole of what a Colour scheme does to text.
+
+     `--yw-text-inverse` is simply the other one -- what reads on a patch filled with the
+     page's own ink, a tooltip or a filled chip. It used to be authored, and authored
+     separately per scheme, which is three chances to disagree with a value that is not
+     actually a choice. */
+  --yw-text: var(--yw-ink-on-light);
+  --yw-text-inverse: var(--yw-ink-on-dark);
 
   --yw-text-muted: color-mix(in oklab, var(--yw-text) 72%, var(--yw-surface));
 
@@ -381,8 +408,10 @@
     --yw-surface-raised: #1d2125;
     --yw-surface-sunken: #101315;
 
-    --yw-text: #e3e5e8;
-    --yw-text-inverse: #14171a;
+    /* the scheme is what swaps them: the dark-ground ink is the page's now, and the
+       light-ground one is what reads on a patch filled with it */
+    --yw-text: var(--yw-ink-on-dark);
+    --yw-text-inverse: var(--yw-ink-on-light);
 
     --yw-border: #383e44;
 
@@ -393,6 +422,7 @@
 
     --yw-navbar-bg: #1d2125;
     --yw-navbar-text: #e3e5e8;
+    --yw-navbar-shadow: rgb(0 0 0 / 45%);
     --yw-footer-bg: #14171a;
     --yw-footer-text: #e3e5e8;
 
@@ -433,8 +463,10 @@
   --yw-surface-raised: #1d2125;
   --yw-surface-sunken: #101315;
 
-  --yw-text: #e3e5e8;
-  --yw-text-inverse: #14171a;
+  /* the scheme is what swaps them: the dark-ground ink is the page's now, and the
+     light-ground one is what reads on a patch filled with it */
+  --yw-text: var(--yw-ink-on-dark);
+  --yw-text-inverse: var(--yw-ink-on-light);
 
   --yw-border: #383e44;
 
@@ -445,6 +477,7 @@
 
   --yw-navbar-bg: #1d2125;
   --yw-navbar-text: #e3e5e8;
+  --yw-navbar-shadow: rgb(0 0 0 / 45%);
   --yw-footer-bg: #14171a;
   --yw-footer-text: #e3e5e8;
 
@@ -1036,6 +1069,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
   padding-left: var(--yw-space-md-x);
   margin-left: var(--yw-space-sm-x);
   border-left: var(--yw-border-width) solid var(--yw-border-subtle);
@@ -1072,6 +1106,15 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 /* What is on, without asking: the scheme's own glyph and the language's code. Quieter than
    the bar's buttons -- it is a readout rather than a control, and the controls are one
    movement away. */
+/* Each menu is its own dropdown: its own mark, its own column, opened on its own. They used
+   to be one panel with a rule down the middle -- which is the work a second menu does, done
+   worse, and it showed a reader who wanted the language a list of colour schemes too. */
+.yw-topnav-tools__menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .yw-topnav-tools__current {
   display: inline-flex;
   align-items: center;
@@ -1081,8 +1124,8 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   cursor: default;
 }
 
-.yw-topnav-tools:hover .yw-topnav-tools__current,
-.yw-topnav-tools:focus-within .yw-topnav-tools__current {
+.yw-topnav-tools__menu:hover .yw-topnav-tools__current,
+.yw-topnav-tools__menu:focus-within .yw-topnav-tools__current {
   opacity: 1;
 }
 
@@ -1097,6 +1140,12 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 
 /* The options, on ONE line. Below, where there is no pointer to reveal anything with, that
    line is simply part of the bar. */
+/* IN FLOW -- which is what a phone gets, there being no pointer to open a panel with. One
+   line, as it has always been: the cluster is part of the bar there, and a column of six
+   controls would turn the navbar into a 120px band on every page.
+
+   The dropdown further down turns this into a column; that is where the stacking belongs,
+   because that is where there is somewhere to stack into. */
 .yw-topnav-tools__panel {
   display: flex;
   flex-wrap: nowrap;
@@ -1173,26 +1222,51 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 @media (hover: hover) and (min-width: 768px) {
   .yw-topnav-tools__panel {
     position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
+    /* Below the cluster and aligned to its right edge -- a dropdown, which is what a column
+       of choices is. It used to open leftward and centred on the bar (`right: 100%`, `top:
+       50%`), which suited one short line; a column hung there would run off the top of the
+       navbar and be cut off by it. */
+    top: calc(100% + var(--yw-space-sm-y));
+    right: 0;
     z-index: 2;
-    /* As wide as the line it holds. Without it the box is shrink-to-fit against the space
-       left of `right: 100%` -- which is none, since that edge IS the cluster's left edge --
-       and ten marks come out stacked three deep behind the bar. */
+    /* As wide as its widest row, rather than shrink-to-fit against whatever space happens to
+       be left of it. */
     width: max-content;
-    padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+    min-width: 100%;
+    padding: var(--yw-space-md-y) var(--yw-space-sm-x);
     background: var(--yw-surface-raised);
     border: var(--yw-border-width) solid var(--yw-border);
-    border-radius: var(--yw-radius-full);
+    /* not the pill it was: a pill around a column pinches its first and last row */
+    border-radius: var(--yw-radius-md);
     box-shadow: 0 2px 8px var(--yw-shadow-color);
+    /* A COLUMN, and the two groups in it kept apart. They were one nowrap line, which read
+       as a single run of six or seven marks -- "is this third one the last scheme or the
+       first language?" is a question the panel was asking rather than answering. Stacked,
+       each group is a list read down, and the rule between them says where one ends. */
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--yw-space-sm-y) 0;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease;
   }
 
-  .yw-topnav-tools:hover > .yw-topnav-tools__panel,
-  .yw-topnav-tools:focus-within > .yw-topnav-tools__panel {
+  .yw-topnav-tools__panel .yw-switcher {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--yw-space-sm-y) 0;
+  }
+
+  /* a row in a list rather than a mark in a line: it gets the width of the widest one, and
+     room either side of its glyph */
+  .yw-topnav-tools__panel .yw-switcher__option {
+    display: flex;
+    padding-left: var(--yw-space-md-x);
+    padding-right: var(--yw-space-md-x);
+  }
+
+  .yw-topnav-tools__menu:hover > .yw-topnav-tools__panel,
+  .yw-topnav-tools__menu:focus-within > .yw-topnav-tools__panel {
     opacity: 1;
     pointer-events: auto;
   }
@@ -3469,6 +3543,11 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-panel,
 .panel {
   margin-bottom: var(--yw-space-md-y);
+  /* A panel lies ON the page, which is what its border and radius already say -- a shadow is
+     what makes it look it. Its absence is why the preset screen's shadow-strength slider
+     appeared to do nothing: the control worked, and not one element in the gallery it
+     repaints had a shadow to show for it. */
+  box-shadow: 0 1px 3px var(--yw-shadow-color);
   border: var(--yw-border-width) solid var(--yw-border);
   border-radius: var(--yw-radius-sm);
 }

@@ -32,6 +32,13 @@
   background: var(--yw-navbar-bg);
   color: var(--yw-navbar-text);
   border-bottom: var(--yw-border-width) solid var(--yw-navbar-border);
+  /* The bar's own shadow, in its own colour: a bar painted with the brand wants a shadow
+     tinted to match, not the page's neutral one. `0px` spread is the default and means no
+     shadow at all -- a bar with a hairline border does not need one, and the two together
+     read as a double edge. */
+  box-shadow: 0 var(--yw-navbar-shadow-spread)
+    calc(var(--yw-navbar-shadow-spread) * 2)
+    calc(var(--yw-navbar-shadow-spread) / -4) var(--yw-navbar-shadow);
   padding: var(--yw-space-sm-y) 0;
   z-index: 100;
   box-sizing: border-box;

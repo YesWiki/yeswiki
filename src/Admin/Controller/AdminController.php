@@ -14,6 +14,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\CustomCssService;
 use YesWiki\Render\Service\CustomTemplateService;
@@ -268,6 +269,13 @@ class AdminController extends YesWikiController
             // the families that have to be fetched, as against the stacks already on the
             // reader's machine -- two groups, because the cost is different
             'webfonts' => $presets->webfonts(),
+            // Google's catalogue, fetched by the picker on first use. Base-absolute for the
+            // same reason the icon sprite is: a bare `src/assets/…` resolves against the
+            // current page path and 404s on a rewrite-shaped URL like /PageTag/edit.
+            'googleFontsUrl' => rtrim(
+                (string)$this->getService(RuntimeConfig::class)->getValue('base_url'),
+                '?'
+            ) . 'src/assets/google-fonts.json',
             'defaultPreset' => $presets->default(),
             // "new" opens on what the wiki is wearing: a preset is almost always made by
             // adjusting one that nearly works, not from black on white
@@ -336,6 +344,41 @@ class AdminController extends YesWikiController
                     // the saved id's name rather than what was typed: a name is folded to a
                     // file name, so this is the one the card below will be wearing
                     Flash::success(_t('ADMIN_PRESET_SAVED', ['name' => $presets->nameOf($saved)]));
+                    break;
+
+                    // Fetch a webfont so it can be chosen. Its own action rather than part of a
+                    // save: installing a font is a network round trip that either works or does
+                    // not, and tying it to a save would mean a preset that fails to write
+                    // because a font server was slow.
+                case 'install_font':
+                    // Two sources, one button. With another wiki's address, we ask IT what
+                    // fonts its presets use and copy those -- every weight and both slopes,
+                    // because that wiki's presets say so. Without one, the family name goes
+                    // to Google.
+                    $wiki = trim((string)$request->request->get('font_source', ''));
+                    $family = trim((string)$request->request->get('font_family', ''));
+                    if ($wiki !== '') {
+                        $families = $presets->installFontsFromWiki($wiki, $family);
+                        Flash::success(_t('ADMIN_PRESET_FONT_INSTALLED', [
+                            'family' => implode(', ', $families),
+                        ]));
+                        break;
+                    }
+                    // several at once: the picker is a chip list, because a body face and a
+                    // heading face are chosen together
+                    $result = $presets->installFonts($family);
+                    if ($result['failed'] !== []) {
+                        Flash::warning(_t('ADMIN_PRESET_FONT_INSTALLED_SOME', [
+                            'installed' => $result['installed'] === []
+                                ? '—'
+                                : implode(', ', $result['installed']),
+                            'failed' => implode(', ', $result['failed']),
+                        ]));
+                        break;
+                    }
+                    Flash::success(_t('ADMIN_PRESET_FONT_INSTALLED', [
+                        'family' => implode(', ', $result['installed']),
+                    ]));
                     break;
 
                 case 'delete':

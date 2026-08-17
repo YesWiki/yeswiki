@@ -353,6 +353,34 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         return $this->paths()->scriptPath() . $fullFilename;
     }
 
+    /**
+     * The same address, asking for a copy no larger than the page can use.
+     *
+     * A tagged file was always served at its full size here, with the requested width and
+     * height put on the `<img>` as attributes -- so `size="small"` fetched the whole
+     * four-megapixel original and drew it 140 pixels wide. The download route resizes on
+     * demand and caches the copy under private/ beside the bytes, which is how the bazar
+     * image fields already ask for a thumbnail, so this is the same mechanism rather than a
+     * second one.
+     *
+     * With no size asked for, the cap still applies: `image-render-max-*` is what nothing on
+     * a page needs to exceed. The original is untouched on disk and is what a download gives.
+     */
+    private function sizedFileUrl(AttachRequest $request, string $url): string
+    {
+        $config = $this->getService(RuntimeConfig::class);
+        $width = (int)($request->width ?: ($config['image-render-max-width'] ?? 0));
+        $height = (int)($request->height ?: ($config['image-render-max-height'] ?? 0));
+        if ($width < 1 || $height < 1) {
+            return $url;
+        }
+
+        return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query([
+            'width' => $width,
+            'height' => $height,
+        ]);
+    }
+
     private function asImage(AttachRequest $request, string $fullFilename): string
     {
         // A tagged file is served full-size with width/height as plain HTML attributes:
@@ -384,7 +412,9 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             $height -= 20;
         }
 
-        $imgSrc = $request->fileTag !== '' ? $this->fileUrl($request, $fullFilename) : ($this->paths()->scriptPath() . $imgName);
+        $imgSrc = $request->fileTag !== ''
+            ? $this->sizedFileUrl($request, $this->fileUrl($request, $fullFilename))
+            : ($this->paths()->scriptPath() . $imgName);
         $img = '<img loading="lazy" class="img-responsive" src="' . $imgSrc . '" '
             . 'alt="' . $request->desc . ($request->link ? "\nLien vers: $request->link" : '') . '"'
             . (!empty($width) ? ' width="' . $width . '"' : '')

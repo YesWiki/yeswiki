@@ -43,9 +43,9 @@ class PhpstanBaselineRatchetTest extends TestCase
      */
     private const CEILING = [
         // ---- annotation debt: mechanical, no behaviour in it ----
-        'missingType.return' => 886,
+        'missingType.return' => 885,
         'missingType.parameter' => 704,
-        'missingType.iterableValue' => 573,
+        'missingType.iterableValue' => 569,
         'missingType.property' => 462,
         'missingType.generics' => 7,
 
@@ -69,7 +69,7 @@ class PhpstanBaselineRatchetTest extends TestCase
         'throws.notThrowable' => 4,
         'binaryOp.invalid' => 3,
         'booleanNot.alwaysFalse' => 3,
-        'encapsedStringPart.nonString' => 3,
+        'encapsedStringPart.nonString' => 1,
         'greater.alwaysTrue' => 3,
         'if.alwaysFalse' => 3,
         'return.unusedType' => 3,

@@ -4,7 +4,7 @@
     {{ pager_links|raw }}
     {# the wiki's one accordion -- see templates/_accordion-item.twig. This used to build its
        own out of a button, matching collapse ids and yw-core.js's toggle listener. #}
-    <div class="yw-accordion bazar-list no-dblclick" id="accordion{{ params.listindex }}">
+    <div class="yw-accordion entry-list no-dblclick" id="accordion{{ params.listindex }}">
     {% for vIndex, entry in entries %}
         {% set summary %}
             <span class="bazar-entry-title">

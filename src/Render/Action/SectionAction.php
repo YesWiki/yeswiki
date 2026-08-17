@@ -13,7 +13,9 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\PresetService;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -469,8 +471,17 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
                     return;
                 }
+                // Capped, not full size. A section's background is the biggest picture on
+                // most pages and the one nobody looks at closely -- serving the four-megapixel
+                // original of it made every page carrying one slow for no visible gain. The
+                // download route resizes on demand and caches the copy beside the bytes, under
+                // the same ACL check; the original is what a download still gives.
+                $config = $this->getService(RuntimeConfig::class);
                 $imageUrl = $this->getService(UrlFormatter::class)
-                    ->href('', 'api/files/' . rawurlencode($file) . '/download', [], false);
+                    ->href('', 'api/files/' . rawurlencode($file) . '/download', [
+                        'width' => (int)($config['image-render-max-width'] ?? 0),
+                        'height' => (int)($config['image-render-max-height'] ?? 0),
+                    ], false);
             } else {
                 $paths = $this->getService(AttachedFilePaths::class);
 
@@ -556,10 +567,22 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     . ($opacity !== '' ? '--yw-section-image-opacity:' . (float)$opacity . '; ' : '');
             }
 
+            // an author's `class="white"`/`"black"` still wins: it is said outright, and this
+            // is only ever an inference from a colour
+            $sectionInk = (str_contains($class, 'white') || str_contains($class, 'black'))
+                ? ''
+                : $this->getService(PresetService::class)->inkForBackground((string)$bgcolor);
+
             echo '<!-- start of section -->
     <section' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="' . $class
                 . ($imageUrl !== null ? ' with-bg-image' : '') . '" data-file="' . $file . '" style="'
                 . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
+                // ...and the ink that reads on it, where core can tell. A background somebody
+                // typed is the one ground a stylesheet cannot measure, so it used to be left
+                // to `class="white"`/`"black"` -- an author guessing, and guessing again every
+                // time the preset's colours moved. Where the value is a literal or one of the
+                // wiki's own fills, the answer is knowable, so it is answered.
+                . ($sectionInk !== '' ? 'color:' . $sectionInk . '; ' : '')
                 . (!empty($height) ? 'height:' . $height . 'px; ' : '')
                 . ($minHeight !== '' ? 'min-height:' . (float)$minHeight . 'vh; ' : '')
                 . (!empty($pattern) ? $pattern : '')

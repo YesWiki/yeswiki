@@ -441,9 +441,9 @@ const load = (domElement) => {
           })
       },
       loadBazarListDynamicIfNeeded(html) {
-        if (html.match(/<div class="bazar-list-dynamic-container/)) {
+        if (html.match(/<div class="entry-list-dynamic-container/)) {
           const unmounted = document.querySelectorAll(
-            '.bazar-list-dynamic-container:not(.mounted)',
+            '.entry-list-dynamic-container:not(.mounted)',
           )
           unmounted.forEach((element) => {
             // Vue 3: check for __vue_app__ instead of __vue__
@@ -621,7 +621,7 @@ const load = (domElement) => {
             this.calculateBaseEntries()
             this.ready = true
             this.updateHash()
-            const event = new Event('bazar-list-dynamic-ready')
+            const event = new Event('entry-list-dynamic-ready')
             document.dispatchEvent(event)
           }, 0)
         })
@@ -650,4 +650,4 @@ const load = (domElement) => {
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
 // ticket 16: keyed on the container -- <body> survives a boosted navigation, so a
 // body-keyed initialiser would never mount the next page's lists
-ywInitEach('.bazar-list-dynamic-container', load)
+ywInitEach('.entry-list-dynamic-container', load)

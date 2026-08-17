@@ -143,7 +143,9 @@ test('the template editor is dark when the reader is, and survives leaving the s
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
 
   await page.goto('/?PagePrincipale')
-  await page.locator('.yw-topnav-tools').hover()
+  // the scheme's own menu: the cluster holds two dropdowns, and hovering it opens whichever
+  // one the pointer lands on
+  await page.locator('.yw-topnav-tools__menu:has([data-yw-scheme])').hover()
   await page.locator('[data-yw-scheme-set="dark"]').click()
 
   await page.goto('/?admin/custom-templates')

@@ -91,7 +91,7 @@ class LinkedEntryField extends BazarField
 
     protected function isEmptyOutput(string $output): bool
     {
-        return empty($output) || preg_match('/<div id="[^"]+" class="bazar-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/', $output);
+        return empty($output) || preg_match('/<div id="[^"]+" class="entry-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/', $output);
     }
 
     private function getBazarListAction($entry): string

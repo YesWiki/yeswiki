@@ -280,6 +280,15 @@ class CoreAssets
             'pageTag' => $this->pageContext->getTag(),
             'isDebugEnabled' => ($this->config->getValue('debug') ? 'true' : 'false'),
             'antiCsrfToken' => $this->csrfTokenManager->getToken('main')->getValue(),
+            // what the browser does to an image before uploading it -- read by
+            // javascripts/image-upload.js, which every upload path goes through
+            'imageUpload' => [
+                'format' => (string)($this->config['image-upload-format'] ?? 'image/webp'),
+                'maxWidth' => (int)($this->config['image-upload-max-width'] ?? 3840),
+                'maxHeight' => (int)($this->config['image-upload-max-height'] ?? 2160),
+                'quality' => (float)($this->config['image-upload-quality'] ?? 0.82),
+                'maxSize' => (int)($this->config['image-upload-max-size'] ?? 0),
+            ],
         ];
         $minSearchKeywordLength = isset($this->config['min_search_keyword_length'])
             ? (int)$this->config['min_search_keyword_length']

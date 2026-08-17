@@ -22,32 +22,46 @@ h6 {
    any heading was -- and `em` compounds, so a heading inside a panel came out a different
    size from the same heading in the page body.
 
-   Every value is a token now, one per level. Bare element selectors, so any component that
+   Every value is a token now, one per level -- colour, size, casing and alignment.
+   `text-align` takes `start`/`end` rather than `left`/`right`: identical in every language
+   YesWiki ships today, and correct in one written right-to-left. Bare element selectors, so any component that
    sizes or colours its own headings still wins on specificity, exactly as it did over the
    browser's defaults. */
 h1 {
   font-size: var(--yw-heading-1-size);
   color: var(--yw-heading-1);
+  text-transform: var(--yw-heading-1-transform);
+  text-align: var(--yw-heading-1-align);
 }
 h2 {
   font-size: var(--yw-heading-2-size);
   color: var(--yw-heading-2);
+  text-transform: var(--yw-heading-2-transform);
+  text-align: var(--yw-heading-2-align);
 }
 h3 {
   font-size: var(--yw-heading-3-size);
   color: var(--yw-heading-3);
+  text-transform: var(--yw-heading-3-transform);
+  text-align: var(--yw-heading-3-align);
 }
 h4 {
   font-size: var(--yw-heading-4-size);
   color: var(--yw-heading-4);
+  text-transform: var(--yw-heading-4-transform);
+  text-align: var(--yw-heading-4-align);
 }
 h5 {
   font-size: var(--yw-heading-5-size);
   color: var(--yw-heading-5);
+  text-transform: var(--yw-heading-5-transform);
+  text-align: var(--yw-heading-5-align);
 }
 h6 {
   font-size: var(--yw-heading-6-size);
   color: var(--yw-heading-6);
+  text-transform: var(--yw-heading-6-transform);
+  text-align: var(--yw-heading-6-align);
 }
 
 a {

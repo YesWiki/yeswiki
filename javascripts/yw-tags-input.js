@@ -145,12 +145,36 @@
       return !needle || String(label).toLowerCase().includes(needle)
     })
 
+    // What you typed, first. A substring match anywhere is what makes this list useful on a
+    // long vocabulary, and it is also what buries the obvious answer: typing `lora` into the
+    // 1951 Google families offered `Explora` above `Lora`, because both contain it and
+    // nothing said which was meant. Exact, then starts-with, then the rest -- each group
+    // alphabetically, so the order is stable rather than whatever the map was built in.
+    if (needle) {
+      const rank = (label) => {
+        const value = String(label).toLowerCase()
+        if (value === needle) return 0
+        return value.startsWith(needle) ? 1 : 2
+      }
+      matches.sort(
+        ([, a], [, b]) =>
+          rank(a) - rank(b) || String(a).localeCompare(String(b)),
+      )
+    }
+
+    // At most this many on screen. A vocabulary can be long -- Google's font catalogue is
+    // 1951 names, and an empty box matches every one of them -- so without a cap the widget
+    // builds two thousand elements on each keystroke, and offers a list nobody scrolls. The
+    // cap is also what makes a live preview affordable: whatever is shown can be fetched.
+    const limit = Number(widget.dataset.ywTagInputLimit || 0)
+    const shown = limit > 0 ? matches.slice(0, limit) : matches
+
     list.innerHTML = ''
-    if (!matches.length) {
+    if (!shown.length) {
       list.hidden = true
       return
     }
-    matches.forEach(([id, label]) => {
+    shown.forEach(([id, label]) => {
       const item = document.createElement('li')
       const button = document.createElement('button')
       button.type = 'button'
@@ -161,6 +185,15 @@
       list.appendChild(item)
     })
     list.hidden = false
+    // ...and say which ones, so a caller can decorate them without re-implementing the
+    // filtering: the font picker draws each name in its own face, and only what is on
+    // screen is worth fetching for that.
+    widget.dispatchEvent(
+      new CustomEvent('yw:tags-suggested', {
+        bubbles: true,
+        detail: { values: shown.map(([id]) => id) },
+      }),
+    )
   }
 
   document.addEventListener('htmx:afterRequest', (e) => {
