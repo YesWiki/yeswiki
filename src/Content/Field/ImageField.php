@@ -48,7 +48,7 @@ class ImageField extends FileField
     {
         $id = $entry['form_id'] ?? $_SESSION['current_form_id'] ?? 'no_id';
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
-        if (file_exists($this->getBasePath() . $default_image_filename)) {
+        if ($this->storage()->exists($this->getBasePath() . $default_image_filename)) {
             return $default_image_filename;
         }
 
@@ -95,7 +95,7 @@ class ImageField extends FileField
 
         if (
             !empty($value)
-            || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
+            || (!empty($imgDefault) && $this->storage()->exists($this->getBasePath() . $imgDefault))
         ) {
             if ($this->getRequest()->query->has('suppr_image') && $this->getRequest()->query->get('suppr_image') === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
@@ -115,8 +115,8 @@ class ImageField extends FileField
             }
 
             if (
-                file_exists($this->getBasePath() . $value)
-                || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
+                $this->storage()->exists($this->getBasePath() . $value)
+                || (!empty($imgDefault) && $this->storage()->exists($this->getBasePath() . $imgDefault))
             ) {
                 $img = $value ? $value : $imgDefault;
 
@@ -186,13 +186,15 @@ class ImageField extends FileField
             $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
             if ($this->isImage($rawFileName) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
-                if (!file_exists($filePath)) {
+                if (!$this->storage()->exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
 
-                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
-                    chmod($filePath, 0755);
+                    if (!is_uploaded_file($_FILES[$this->propertyName]['tmp_name'])) {
+                        throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
+                    }
+                    $this->storage()->writeFrom($filePath, $_FILES[$this->propertyName]['tmp_name']);
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
@@ -202,7 +204,7 @@ class ImageField extends FileField
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
                         $resizer = $this->getService(ImageResizer::class);
                         $filePathResized = $resizer->resizedFilename($filePath, (string)$this->thumbnailWidth, (string)$this->thumbnailHeight);
-                        if (!file_exists($filePathResized)) {
+                        if (!$this->storage()->exists($filePathResized)) {
                             $resizer->resize($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
                         }
                     }
@@ -210,7 +212,7 @@ class ImageField extends FileField
                     if (!empty($this->imageWidth) && !empty($this->imageHeight)) {
                         $resizer = $this->getService(ImageResizer::class);
                         $filePathResized = $resizer->resizedFilename($filePath, (string)$this->imageWidth, (string)$this->imageHeight);
-                        if (!file_exists($filePathResized)) {
+                        if (!$this->storage()->exists($filePathResized)) {
                             $resizer->resize($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
                         }
                     }
@@ -228,7 +230,7 @@ class ImageField extends FileField
             $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
         } elseif (!empty($value)) {
             $img = $this->getValue($entry);
-            $entry[$this->propertyName] = file_exists($this->getBasePath() . $img) && $img != $this->getDefaultImageName($entry) ? $img : '';
+            $entry[$this->propertyName] = $this->storage()->exists($this->getBasePath() . $img) && $img != $this->getDefaultImageName($entry) ? $img : '';
         } else {
             $entry[$this->propertyName] = '';
         }
@@ -252,7 +254,7 @@ class ImageField extends FileField
             return '<img src="' . htmlspecialchars($sized) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
         }
 
-        if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
+        if (isset($value) && $value != '' && $this->storage()->exists($this->getBasePath() . $value)) {
             return $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                 'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                 'imageFullPath' => $this->getBasePath() . $value,

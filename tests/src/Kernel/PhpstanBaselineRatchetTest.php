@@ -15,7 +15,7 @@ class PhpstanBaselineRatchetTest extends TestCase
      * @var array<string, int>
      */
     private const CEILING = [
-        'missingType.return' => 885,
+        'missingType.return' => 884,
         'missingType.parameter' => 704,
         'missingType.iterableValue' => 569,
         'missingType.property' => 462,
@@ -31,7 +31,7 @@ class PhpstanBaselineRatchetTest extends TestCase
         'property.notFound' => 8,
         'nullCoalesce.expr' => 6,
         'nullCoalesce.offset' => 6,
-        'foreach.nonIterable' => 5,
+        'foreach.nonIterable' => 4,
         'method.unused' => 5,
         'nullCoalesce.variable' => 5,
         'empty.offset' => 4,

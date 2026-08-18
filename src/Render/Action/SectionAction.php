@@ -5,6 +5,7 @@ namespace YesWiki\Render\Action;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -432,7 +433,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     return;
                 }
                 $fullFilename = $paths->fullFilename($file);
-                $imageUrl = $fullFilename === '' ? null : $fullFilename;
+                $imageUrl = $fullFilename === '' ? null : $this->getService(Storage::class)->url($fullFilename);
             }
 
             $height = $this->arguments['height'] ?? '';
@@ -515,7 +516,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 echo '<div>';
             }
 
-            if (isset($fullFilename) && (!file_exists($fullFilename) || $fullFilename === '')) {
+            if (isset($fullFilename) && ($fullFilename === '' || !$this->getService(Storage::class)->exists($fullFilename))) {
                 echo '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . ' (' . htmlspecialchars($file) . ')</div>';
             }
         } else {

@@ -13,10 +13,12 @@ class ImageResizer
     public const FORMAT = 'webp';
 
     private AttachedFilePaths $paths;
+    private Storage $storage;
 
-    public function __construct(AttachedFilePaths $paths)
+    public function __construct(AttachedFilePaths $paths, Storage $storage)
     {
         $this->paths = $paths;
+        $this->storage = $storage;
     }
 
     /** Where the resized copy of $fullFilename at these dimensions lives, whether or not it exists yet. */
@@ -40,48 +42,65 @@ class ImageResizer
         if (empty($source) || empty($destination)) {
             return false;
         }
+        $sourceSize = $mode === 'crop' ? $this->storage->imageSize($source) : false;
+
+        return $this->storage->withLocalCopy(
+            $source,
+            fn (string $local) => $this->storage->withLocalTarget(
+                $destination,
+                fn (string $target) => $this->resizeLeased($local, $target, $destination, $width, $height, $mode, $sourceSize)
+            )
+        );
+    }
+
+    /**
+     * Zebra_Image cannot be handed anything but a real path, so this is what a lease exists for.
+     *
+     * @return string|int|false
+     */
+    private function resizeLeased(string $source, string $target, string $destination, mixed $width, mixed $height, string $mode, mixed $sourceSize)
+    {
         $imgTrans = new Zebra_Image();
         $imgTrans->auto_handle_exif_orientation = true;
         $imgTrans->preserve_aspect_ratio = true;
         $imgTrans->enlarge_smaller_images = true;
         $imgTrans->preserve_time = true;
         $imgTrans->source_path = $source;
-        $imgTrans->target_path = $destination;
+        $imgTrans->target_path = $target;
 
         $previousErrorReporting = error_reporting();
         error_reporting($previousErrorReporting & ~E_DEPRECATED);
-        $tempFileName = null;
+
         try {
-            if ($mode === 'crop') {
-                $tempFileName = $this->cropToRatio($imgTrans, $source, $destination, $width, $height);
-                if ($tempFileName === false) {
-                    return false;
-                }
+            if ($mode !== 'crop') {
+                $result = $imgTrans->resize(intval($width), intval($height), ZEBRA_IMAGE_NOT_BOXED, -1);
+
+                return $result ? $destination : $imgTrans->error;
             }
-            $result = $imgTrans->resize(intval($width), intval($height), ZEBRA_IMAGE_NOT_BOXED, -1);
+
+            return $this->storage->withTemporaryFile(
+                (string)(pathinfo($source)['extension'] ?? ''),
+                function (string $cropped) use ($imgTrans, $target, $destination, $width, $height, $sourceSize) {
+                    if (!$this->cropToRatio($imgTrans, $sourceSize, $cropped, $target, $width, $height)) {
+                        return false;
+                    }
+                    $result = $imgTrans->resize(intval($width), intval($height), ZEBRA_IMAGE_NOT_BOXED, -1);
+
+                    return $result ? $destination : $imgTrans->error;
+                }
+            );
         } finally {
             error_reporting($previousErrorReporting);
         }
-
-        if ($tempFileName !== null && file_exists($tempFileName)) {
-            unlink($tempFileName);
-        }
-
-        return $result ? $imgTrans->target_path : $imgTrans->error;
     }
 
-    /**
-     * Crop to the wanted aspect ratio before the resize, via a temp file, so the final resize never distorts.
-     *
-     * @return string|false|null
-     */
-    private function cropToRatio(Zebra_Image $imgTrans, string $source, string $destination, mixed $width, mixed $height)
+    /** Crop to the wanted aspect ratio before the resize, via a temporary file, so the final resize never distorts. */
+    private function cropToRatio(Zebra_Image $imgTrans, mixed $sourceSize, string $cropped, string $target, mixed $width, mixed $height): bool
     {
-        $size = @getimagesize($imgTrans->source_path);
-        if ($size === false) {
+        if (!is_array($sourceSize)) {
             return false;
         }
-        list($sourceWidth, $sourceHeight) = $size;
+        list($sourceWidth, $sourceHeight) = $sourceSize;
         if ($sourceHeight == 0) {
             return false;
         }
@@ -89,7 +108,7 @@ class ImageResizer
         $wantedRatio = $width / $height;
         $imageRatio = $sourceWidth / $sourceHeight;
         if ($imageRatio == $wantedRatio) {
-            return null;
+            return true;
         }
 
         if ($imageRatio > $wantedRatio) {
@@ -100,21 +119,13 @@ class ImageResizer
             $newWidth = $sourceWidth;
         }
 
-        $ext = pathinfo($source)['extension'] ?? '';
-        do {
-            $tempFile = tmpfile();
-            $uri = (string)(stream_get_meta_data($tempFile)['uri'] ?? '');
-            $tempFileName = $uri . ".$ext";
-            unlink($uri);
-        } while (file_exists($tempFileName));
-
-        $imgTrans->target_path = $tempFileName;
+        $imgTrans->target_path = $cropped;
         if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
-            $imgTrans->source_path = $tempFileName;
+            $imgTrans->source_path = $cropped;
         }
-        $imgTrans->target_path = $destination;
+        $imgTrans->target_path = $target;
 
-        return $tempFileName;
+        return true;
     }
 
     /**

@@ -4,6 +4,8 @@ namespace YesWiki\Import\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConsoleService;
 
 /** Syncs, without any external cron, the data sources flagged `syncOnMaintenance`. */
@@ -17,11 +19,13 @@ class SyncScheduler
 
     protected ParameterBagInterface $params;
     protected ContainerInterface $services;
+    protected Storage $storage;
 
-    public function __construct(ParameterBagInterface $params, ContainerInterface $services)
+    public function __construct(ParameterBagInterface $params, ContainerInterface $services, Storage $storage)
     {
         $this->params = $params;
         $this->services = $services;
+        $this->storage = $storage;
     }
 
     /** Claim whatever is due and get it imported off the visitor's clock. */
@@ -120,7 +124,7 @@ class SyncScheduler
         if (strlen($output) > self::MAX_LOG_LENGTH) {
             $output = '[...]' . substr($output, -self::MAX_LOG_LENGTH);
         }
-        @file_put_contents($file, $output);
+        $this->storage->storeDerived($file, $output);
     }
 
     /**
@@ -131,13 +135,13 @@ class SyncScheduler
     public function getLastSync(string $source): ?array
     {
         $file = $this->stateFile($source);
-        if ($file === null || !is_file($file)) {
+        if ($file === null || !$this->storage->fileExists($file)) {
             return null;
         }
 
         return [
-            'time' => (int)filemtime($file),
-            'output' => (string)file_get_contents($file),
+            'time' => $this->storage->lastModified($file),
+            'output' => $this->storage->read($file),
         ];
     }
 
@@ -182,9 +186,11 @@ class SyncScheduler
     private function lastRunTime(string $source): int
     {
         $file = $this->stateFile($source);
-        $time = ($file !== null && is_file($file)) ? @filemtime($file) : false;
+        if ($file === null || !$this->storage->fileExists($file)) {
+            return 0;
+        }
 
-        return $time === false ? 0 : (int)$time;
+        return $this->storage->lastModified($file);
     }
 
     /**
@@ -196,28 +202,26 @@ class SyncScheduler
         if ($file === null) {
             return false;
         }
-        if (!is_file($file)) {
-            return @file_put_contents($file, '') !== false;
+        $kept = $this->storage->fileExists($file) ? $this->storage->read($file) : '';
+
+        try {
+            $this->storage->write($file, $kept);
+        } catch (StorageException) {
+            return false;
         }
 
-        return @touch($file);
+        return true;
     }
 
-    /**
-     * Path of $source's state file, or null when the directory it belongs in cannot be created (a read-only cache directory just means no automatic sync on this wiki).
-     */
+    /** Path of $source's state file, or null when the source's name leaves nothing to make one from. */
     private function stateFile(string $source): ?string
     {
         $name = preg_replace('/[^A-Za-z0-9._-]/', '_', $source);
         if ($name === '' || $name === null) {
             return null;
         }
-        $dir = $this->cachePath() . '/' . self::STATE_DIR;
-        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
-            return null;
-        }
 
-        return $dir . '/' . $name . '.log';
+        return $this->cachePath() . '/' . self::STATE_DIR . '/' . $name . '.log';
     }
 
     private function cachePath(): string

@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -37,17 +38,20 @@ class FileManager
     protected $tripleStore;
     protected $pageManager;
     protected $aclService;
+    protected Storage $storage;
 
     public function __construct(
         ContainerInterface $container,
         TripleStore $tripleStore,
         PageManager $pageManager,
-        AclService $aclService
+        AclService $aclService,
+        Storage $storage
     ) {
         $this->container = $container;
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
         $this->aclService = $aclService;
+        $this->storage = $storage;
     }
 
     /** "2M"/"512k"-style size string to bytes (historic Wiki::parse_size()). */
@@ -151,7 +155,7 @@ class FileManager
         }
         $path = self::STORAGE_DIR . '/' . $entry['stored_filename'];
 
-        return file_exists($path) ? $path : null;
+        return $this->storage->fileExists($path) ? $path : null;
     }
 
     /**
@@ -184,9 +188,11 @@ class FileManager
         $mimeType = $uploadedFile->getMimeType() ?? '';
 
         $storedFilename = $this->suggestFreeFilename($this->sanitizeFilename($originalFilename));
-        $uploadedFile->move(self::STORAGE_DIR, $storedFilename);
+        $stored = self::STORAGE_DIR . '/' . $storedFilename;
+        $this->storage->writeFrom($stored, $uploadedFile->getPathname());
         if (in_array($ext, ['svg', 'xml'], true)) {
-            $this->container->get(HtmlPurifierService::class)->cleanFile(self::STORAGE_DIR . '/' . $storedFilename, $ext);
+            $purifier = $this->container->get(HtmlPurifierService::class);
+            $this->storage->withLocalTarget($stored, fn (string $local) => $purifier->cleanFile($local, $ext));
         }
 
         return [
@@ -237,10 +243,7 @@ class FileManager
      */
     public function suggestFreeFilename(string $sanitizedFilename): string
     {
-        if (!is_dir(self::STORAGE_DIR)) {
-            mkdir(self::STORAGE_DIR, 0755, true);
-        }
-        if (!file_exists(self::STORAGE_DIR . '/' . $sanitizedFilename)) {
+        if (!$this->storage->exists(self::STORAGE_DIR . '/' . $sanitizedFilename)) {
             return $sanitizedFilename;
         }
 
@@ -250,7 +253,7 @@ class FileManager
 
         for ($suffix = 2; $suffix <= 1000; $suffix++) {
             $candidate = $base . '-' . $suffix . $ext;
-            if (!file_exists(self::STORAGE_DIR . '/' . $candidate)) {
+            if (!$this->storage->exists(self::STORAGE_DIR . '/' . $candidate)) {
                 return $candidate;
             }
         }
@@ -275,8 +278,8 @@ class FileManager
         $entry = $this->getOne($tag);
         if (!empty($entry['stored_filename'])) {
             $path = self::STORAGE_DIR . '/' . $entry['stored_filename'];
-            if (file_exists($path)) {
-                unlink($path);
+            if ($this->storage->fileExists($path)) {
+                $this->storage->delete($path);
             }
         }
         $this->pageManager->deleteOrphaned($tag);

@@ -11,6 +11,7 @@ use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TagsField;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -25,6 +26,7 @@ class CSVManager
     protected $errormsg;
 
     protected UrlFormatter $urlFormatter;
+    protected Storage $storage;
 
     /**
      * contructor.
@@ -34,7 +36,9 @@ class CSVManager
         FormManager $formManager,
         ContainerInterface $container,
         UrlFormatter $urlFormatter,
+        Storage $storage,
     ) {
+        $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -237,7 +241,7 @@ class CSVManager
                 // against nothing -- and exported a password hash into a CSV.
                 if (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
                     // ajoute l'URL de base aux images et fichiers
-                    $value = $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
+                    $value = $this->storage->url(BAZ_CHEMIN_UPLOAD . $value);
                 } elseif (
                     $header['field'] instanceof EnumField
                     && !($header['field'] instanceof TagsField)
@@ -425,27 +429,26 @@ class CSVManager
                 $filename = basename($filesData['name']);
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
-                    if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                        if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
-                            if ($columnIndexesForPropertyNames
-                                = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
-                            ) {
-                                // next lines
-                                $extracted = [];
-                                while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
-                                    $this->errormsg = [];
-                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
-                                    $extracted[] = [
-                                        'entry' => $extractedData,
-                                        'errormsg' => $this->errormsg,
-                                    ];
-                                }
+                    $handle = $this->storage->readForeignStream($filesData['tmp_name']);
+                    if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
+                        if ($columnIndexesForPropertyNames
+                            = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
+                        ) {
+                            // next lines
+                            $extracted = [];
+                            while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
+                                $this->errormsg = [];
+                                $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
+                                $extracted[] = [
+                                    'entry' => $extractedData,
+                                    'errormsg' => $this->errormsg,
+                                ];
                             }
                         }
-                        fclose($handle);
-
-                        return $extracted ?? null;
                     }
+                    fclose($handle);
+
+                    return $extracted ?? null;
                 }
             }
         }
@@ -829,7 +832,7 @@ class CSVManager
         $fileCopied = copyUrlToLocalFile($imageorig, BAZ_CHEMIN_UPLOAD . $nomimage);
         if ($fileCopied) {
             $value = $nomimage;
-        } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
+        } elseif ($this->storage->exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
             if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
                 // on enleve les accents sur les noms de fichiers, et les espaces
                 $nomimage = preg_replace(
@@ -842,13 +845,8 @@ class CSVManager
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
                 // verification de la presence de ce fichier
-                if (!file_exists($chemin_destination)) {
-                    rename(
-                        BAZ_CHEMIN_UPLOAD
-                            . $imageorig,
-                        $chemin_destination,
-                    );
-                    chmod($chemin_destination, 0755);
+                if (!$this->storage->exists($chemin_destination)) {
+                    $this->storage->move(BAZ_CHEMIN_UPLOAD . $imageorig, $chemin_destination);
                 }
             } else {
                 $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
@@ -887,16 +885,12 @@ class CSVManager
         $fileCopied = copyUrlToLocalFile($fileUrl, BAZ_CHEMIN_UPLOAD . $file);
         if ($fileCopied) {
             $value = $file;
-        } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $fileUrl)) {
+        } elseif ($this->storage->exists(BAZ_CHEMIN_UPLOAD . $fileUrl)) {
             $value = $file;
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $file;
             // verification de la presence de ce fichier
-            if (!file_exists($chemin_destination)) {
-                rename(
-                    BAZ_CHEMIN_UPLOAD . $fileUrl,
-                    $chemin_destination,
-                );
-                chmod($chemin_destination, 0755);
+            if (!$this->storage->exists($chemin_destination)) {
+                $this->storage->move(BAZ_CHEMIN_UPLOAD . $fileUrl, $chemin_destination);
             }
         } else {
             $this->errormsg[] = _t('BAZ_FILE_NOT_FOUND') . ' : ' . $fileUrl;
@@ -985,26 +979,25 @@ class CSVManager
                 exit('Error: The ZipArchive PHP extension is not installed or enabled.');
             }
 
-            $zip = new \ZipArchive();
-            $tempZipFile = tempnam(sys_get_temp_dir(), 'zip');
+            $archive = $this->storage->withTemporaryFile('zip', function (string $tempZipFile) use ($csvFiles): string {
+                $zip = new \ZipArchive();
+                if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                    exit('Error: Cannot create ZIP archive.');
+                }
+                foreach ($csvFiles as $filename => $csvString) {
+                    $zip->addFromString($filename, $csvString);
+                }
+                $zip->close();
 
-            if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                exit('Error: Cannot create ZIP archive.');
-            }
-
-            foreach ($csvFiles as $filename => $csvString) {
-                $zip->addFromString($filename, $csvString);
-            }
-
-            $zip->close();
+                return $this->storage->readForeign($tempZipFile);
+            });
 
             header('Content-Type: application/zip');
             header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
-            header('Content-Length: ' . filesize($tempZipFile));
+            header('Content-Length: ' . strlen($archive));
             header('Connection: close');
 
-            readfile($tempZipFile);
-            unlink($tempZipFile);
+            echo $archive;
             exit;
         }
     }

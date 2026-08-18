@@ -28,17 +28,20 @@ class RemoteImageCache
     private RuntimeConfig $config;
     private UrlFormatter $urlFormatter;
     private ImageResizer $resizer;
+    private Storage $storage;
 
     public function __construct(
         ParameterBagInterface $params,
         RuntimeConfig $config,
         UrlFormatter $urlFormatter,
-        ImageResizer $resizer
+        ImageResizer $resizer,
+        Storage $storage
     ) {
         $this->params = $params;
         $this->config = $config;
         $this->urlFormatter = $urlFormatter;
         $this->resizer = $resizer;
+        $this->storage = $storage;
     }
 
     /** This picture, served from this wiki -- or the address it came from, if it cannot be. */
@@ -56,29 +59,25 @@ class RemoteImageCache
         }
 
         $directory = $this->directory();
-        if ($directory === null) {
-            return $url;
-        }
-
         $key = sha1($url . '|' . $width . 'x' . $height);
         $cached = $directory . '/' . $key . '.' . self::EXTENSION;
-        if (is_file($cached)) {
-            return $this->urlFormatter->getBaseUrl() . '/' . $cached;
+        if ($this->storage->fileExists($cached)) {
+            return $this->storage->url($cached);
         }
 
         $miss = $directory . '/' . $key . '.miss';
-        if (is_file($miss) && (time() - (int)filemtime($miss)) < self::MISS_TTL) {
+        if ($this->storage->fileExists($miss) && (time() - $this->storage->lastModified($miss)) < self::MISS_TTL) {
             return $url;
         }
 
         $stored = $this->store($url, $directory, $key, $width, $height);
         if ($stored === null) {
-            @touch($miss);
+            $this->storage->storeDerived($miss, '');
 
             return $url;
         }
 
-        return $this->urlFormatter->getBaseUrl() . '/' . $stored;
+        return $this->storage->url($stored);
     }
 
     /** Is this an address worth this server making a request to? */
@@ -100,19 +99,13 @@ class RemoteImageCache
         return !str_starts_with($url, $this->urlFormatter->getBaseUrl());
     }
 
-    /** The shared cache directory, created on demand -- or null if it cannot be. */
-    private function directory(): ?string
+    /** The shared cache directory, which the first write brings into being. */
+    private function directory(): string
     {
         $attachConfig = $this->params->get('attach_config');
         $base = is_array($attachConfig) ? (string)($attachConfig['cache_path'] ?? 'cache') : 'cache';
 
-        $directory = $base . '/remote';
-
-        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
-            return null;
-        }
-
-        return $directory;
+        return $base . '/remote';
     }
 
     /** Fetch, check, resize, keep. */
@@ -131,11 +124,11 @@ class RemoteImageCache
         $destination = $directory . '/' . $key . '.' . self::EXTENSION;
 
         if ($size[2] === IMAGETYPE_WEBP && $size[0] <= $width && $size[1] <= $height) {
-            return file_put_contents($destination, $bytes) === false ? null : $destination;
+            return $this->storage->storeDerived($destination, $bytes) ? $destination : null;
         }
 
         $temporary = $destination . '.tmp';
-        if (file_put_contents($temporary, $bytes) === false) {
+        if (!$this->storage->storeDerived($temporary, $bytes)) {
             return null;
         }
 
@@ -145,7 +138,7 @@ class RemoteImageCache
             min($width, $size[0]),
             min($height, $size[1])
         );
-        @unlink($temporary);
+        $this->storage->delete($temporary);
 
         return $resized === $destination ? $destination : null;
     }

@@ -150,7 +150,7 @@ Which of three homes a path has, and therefore what may be done with it. **Publi
 _Avoid_: "private/public" as file permissions (Protected is about the access check, not the mode), treating Runtime as a cache that can be pointed anywhere, calling `custom/` private because it sits outside the docroot on some installs.
 
 **Lease**:
-A temporary real file on a real disk, for the libraries that cannot take a stream — `ZipArchive`, `Zebra_Image`, `HTMLPurifier::cleanFile`, `getimagesize`. `withLocalCopy()` materialises an object, runs a block, and cleans up; `withLocalTarget()` is the mirror, for producing a file and then storing it. On a local tier both are a passthrough that copies nothing. The point is that the cost of doing this to a remote object is visible where it is paid.
+A temporary real file on a real disk, for the libraries that cannot take a stream — `ZipArchive`, `Zebra_Image`, `HTMLPurifier::cleanFile`, `getimagesize`. `withLocalCopy()` materialises an object, runs a block, and cleans up; `withLocalTarget()` is the mirror, for producing (or editing) a file and then storing it; `withTemporaryFile()` is the scratch file such a block needs and nobody keeps. On a local tier the first two are a passthrough that copies nothing. The point is that the cost of doing this to a remote object is visible where it is paid.
 _Avoid_: stream wrappers (`ZipArchive` ignores them, so the failure is invisible until it is on S3), keeping a materialised copy beyond the block.
 
 **Derived artefact**:

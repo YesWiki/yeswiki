@@ -3,12 +3,13 @@
 namespace YesWiki\Admin\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 
@@ -16,13 +17,16 @@ class ArchiveController extends YesWikiController
 {
     protected $archiveService;
     protected $params;
+    protected Storage $storage;
 
     public function __construct(
         ArchiveService $archiveService,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        Storage $storage
     ) {
         $this->archiveService = $archiveService;
         $this->params = $params;
+        $this->storage = $storage;
     }
 
     public function getArchive(string $id)
@@ -44,8 +48,17 @@ class ArchiveController extends YesWikiController
                 ob_start();
             }
 
-            $response = new BinaryFileResponse($filePath);
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
+            $storage = $this->storage;
+            $response = new StreamedResponse(function () use ($storage, $filePath) {
+                $bytes = $storage->readStream($filePath);
+                fpassthru($bytes);
+                fclose($bytes);
+            });
+            $response->headers->set(
+                'Content-Disposition',
+                $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id)
+            );
+            $response->headers->set('Content-Length', (string)$this->storage->fileSize($filePath));
             $response->headers->set('Content-Type', 'application/zip');
             $response->headers->set('Access-Control-Allow-Origin', '*');
             $response->headers->set('Access-Control-Allow-Credentials', 'true');

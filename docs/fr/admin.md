@@ -1124,24 +1124,10 @@ Quelques pistes si vous rencontrez des erreurs lors de la sauvegarde :
   vous avec un message comme quoi "dossier de sauvegarde n'est pas accessible en
   écriture" :
 
-1.  Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre
-    site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') >
-    `Fichier de conf`).
-2.  Rendez-vous dans la partie `Sécurité`
-3.  Recherchez le paramètre `privatePath` (Localisation des sauvegardes)
-
-- si ce paramètre contient le chemin d'un dossier de votre serveur, vérifiez que
-  ce dossier existe bien et que l'environnement `php` du site internet a les
-  droits d'écriture pour ce dossier.
-- si le paramètre est vide, vous pouvez le remplir avec le chemin d'un dossier
-  de votre serveur (Pour une adresse relative par rapport au dossier de base de
-  votre serveur, na pas commencer par `/`). Ce chemin ne doit pas être
-  accessible depuis internet
-- si vous souhaitez conserver le paramètre avec une valeur vide, ce sera la
-  dossier `private/backups/` qui sera utilisé. Pensez-bien à le rendre non
-  accessible depuis internet;
-- il est possible d'utiliser la valeur `%TMP` pour que les sauvegardes se
-  fassent dans le dossier temporaire du serveur
+Les sauvegardes sont toujours dans `private/backups`, il n'y a plus de réglage
+pour en changer. Vérifiez donc que ce dossier existe et que l'environnement
+`php` du site a le droit d'y écrire — et qu'il n'est pas accessible depuis
+internet.
 
 - **lancement impossible des commandes console sur le serveur** Le système de
   sauvegarde de YesWiki utilise des commandes console sur le serveur pour faire
@@ -1182,15 +1168,8 @@ vous pouvez rendre accessible `mysqldump` sur votre serveur.
   sauvegarde. Ceci est une restriction pour éviter les fuites de données depuis
   les fichiers de sauvegardes. Pour corriger ceci:
 
-1.  Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre
-    site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') >
-    `Fichier de conf`).
-2.  Rendez-vous dans la partie `Sécurité`
-3.  Recherchez le paramètre `privatePath` (Localisation des sauvegardes)
-4.  Notez la valeur de ce paramètre (s'il est vide, considérez qu'il vaut
-    `private/backups`)
-5.  Vérifier que ce dossier n'est pas accessible depuis internet avec votre
-    configuration de serveur
+Vérifiez que le dossier `private/backups` n'est pas accessible depuis internet
+avec votre configuration de serveur.
 
 - si le dossier est un sous-dossier de votre site internet, vous devez
   configurer votre serveur pour restreindre l'accès :
@@ -1198,3 +1177,102 @@ vous pouvez rendre accessible `mysqldump` sur votre serveur.
   `DENY FROM ALL` dans ce fichier
 - soit en configurant votre logiciel http (`apache`, `nginx`, ...) pour qu'il
   interdise l'accès internet à ce dossier
+
+## Stocker les fichiers dans un bucket S3
+
+Par défaut, un wiki garde ses fichiers sur son propre disque et il n'y a rien à
+configurer. Un wiki peut aussi confier ses **fichiers publics** (`custom/`,
+`files/`, les vignettes de `cache/`) et ses **fichiers protégés**
+(`private/files/`, `private/backups/`) à un stockage objet compatible S3 :
+SeaweedFS, Garage, Scaleway, OVH, Wasabi, R2, B2 ou AWS. C'est ce qui permet de
+faire tourner un wiki dans un conteneur sans volume de données, ou derrière
+plusieurs serveurs web.
+
+Ce qui **reste toujours local**, quelle que soit la configuration : la base
+SQLite, l'index de recherche, le conteneur compilé, les templates compilés, les
+verrous et `custom/extensions/`. Ce sont des fichiers que quelque chose d'autre
+que YesWiki lit comme de vrais fichiers ; demander à les mettre dans un bucket
+est **refusé au démarrage**, avec le chemin fautif dans le message.
+
+### Configuration
+
+Les identifiants se mettent dans `private/.env`, **jamais** dans
+`yeswiki.config.php` : ce dernier est dans la racine web. Une variable
+réellement présente dans l'environnement l'emporte sur le fichier.
+
+```ini
+YESWIKI_STORAGE=s3                  # local (défaut) | s3
+YESWIKI_S3_BUCKET=mon-wiki
+YESWIKI_S3_REGION=fr-par
+YESWIKI_S3_ENDPOINT=https://s3.fr-par.scw.cloud
+YESWIKI_S3_KEY=...
+YESWIKI_S3_SECRET=...
+YESWIKI_S3_PREFIX=                  # seulement si plusieurs wikis partagent un bucket
+YESWIKI_S3_PATH_STYLE=0             # 1 pour SeaweedFS et tout ce qui n'a pas d'adressage par sous-domaine
+YESWIKI_S3_PUBLIC_URL=https://cdn.example/mon-wiki   # où les objets publics sont lisibles
+```
+
+`YESWIKI_S3_PUBLIC_URL` est obligatoire : les fichiers publics sont servis
+**directement par le bucket ou le CDN**, sans passer par PHP. Les fichiers
+protégés, eux, continuent d'être servis par le wiki derrière son contrôle
+d'accès, et n'ont jamais d'URL.
+
+Le bucket doit exister avant la première écriture (sauf sur SeaweedFS, qui le
+crée tout seul), et sa politique doit autoriser la lecture anonyme des préfixes
+publics **et elle seule** :
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": [
+      "arn:aws:s3:::mon-wiki/custom/*",
+      "arn:aws:s3:::mon-wiki/files/*",
+      "arn:aws:s3:::mon-wiki/cache/*"
+    ]
+  }]
+}
+```
+
+### CORS : sans ça, les polices disparaissent
+
+Une police servie depuis un autre domaine que la page est une requête
+**cross-origin**. Si le bucket ne renvoie pas `Access-Control-Allow-Origin`, le
+navigateur refuse la police **sans rien dire** et la page retombe sur une police
+système. Il faut donc autoriser au moins `GET` depuis l'adresse du wiki :
+
+```json
+[{
+  "AllowedOrigins": ["https://mon-wiki.example"],
+  "AllowedMethods": ["GET"],
+  "AllowedHeaders": ["*"],
+  "MaxAgeSeconds": 3600
+}]
+```
+
+### Déplacer un wiki existant
+
+Configurer le bucket ne déplace rien : c'est la commande qui le fait, et c'est
+vous qui choisissez le moment.
+
+```bash
+./yeswicli storage:sync --dry-run    # ce qui serait copié, sans rien écrire
+./yeswicli storage:sync              # les fichiers publics et protégés
+./yeswicli storage:sync --with-backups
+```
+
+Les sauvegardes suivent : elles sont écrites dans `private/backups`, qui est un
+chemin protégé, donc dans le bucket quand il y en a un. Le wiki les sert
+lui-même, derrière son contrôle d'accès — elles n'ont jamais d'URL.
+
+Ce qui reste local pendant une sauvegarde : le fichier de progression que la
+page interroge pendant que la commande travaille (`cache/archive/`), et le zip
+en cours de fabrication, envoyé dans le bucket une fois refermé.
+
+La commande est **relançable** : un objet déjà présent à la même taille est
+laissé tel quel. Les sauvegardes sont hors du lot par défaut, parce qu'elles
+sont en général le plus gros de ce qu'un wiki possède et le moins urgent à
+déplacer.

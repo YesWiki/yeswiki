@@ -2,6 +2,9 @@
 
 namespace YesWiki\Render\Service;
 
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
+
 /**
  * Template overrides in `custom/templates/`, as something a webmaster can see and edit (ticket 30).
  */
@@ -20,6 +23,7 @@ class CustomTemplateService
 
     public function __construct(
         protected TemplateEngine $templateEngine,
+        protected Storage $storage,
     ) {
     }
 
@@ -30,20 +34,19 @@ class CustomTemplateService
      */
     public function overrides(): array
     {
-        if (!is_dir(self::DIRECTORY)) {
-            return [];
-        }
-
         $found = [];
-        foreach ($this->twigFilesIn(self::DIRECTORY) as $path) {
+        foreach ($this->storage->files(self::DIRECTORY, true) as $path) {
+            if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'twig') {
+                continue;
+            }
             $relative = substr($path, strlen(self::DIRECTORY) + 1);
             [$namespace, $target] = $this->splitOverride($relative);
             $found[] = [
                 'path' => $relative,
                 'namespace' => $namespace,
                 'target' => $target,
-                'size' => (int)@filesize($path),
-                'modified' => (int)@filemtime($path),
+                'size' => $this->storage->fileSize($path),
+                'modified' => $this->storage->lastModified($path),
                 'shipped' => $namespace === self::CORE_NAMESPACE && $this->shippedPath($target) !== null,
             ];
         }
@@ -75,7 +78,7 @@ class CustomTemplateService
     {
         $path = $this->overridePath($relative);
 
-        return is_file($path) ? (string)file_get_contents($path) : '';
+        return $this->storage->fileExists($path) ? $this->storage->read($path) : '';
     }
 
     /** The shipped original of a `core/…` override, or null when there is none. */
@@ -92,7 +95,7 @@ class CustomTemplateService
 
     public function exists(string $relative): bool
     {
-        return is_file($this->overridePath($relative));
+        return $this->storage->fileExists($this->overridePath($relative));
     }
 
     /**
@@ -105,12 +108,10 @@ class CustomTemplateService
         $path = $this->overridePath($relative);
         $this->check($relative, $contents);
 
-        $directory = dirname($path);
-        if (!is_dir($directory) && !@mkdir($directory, 0o755, true) && !is_dir($directory)) {
-            throw new \RuntimeException(sprintf('Cannot create %s', $directory));
-        }
-        if (@file_put_contents($path, $contents) === false) {
-            throw new \RuntimeException(sprintf('Cannot write %s', $path));
+        try {
+            $this->storage->write($path, $contents);
+        } catch (StorageException $exception) {
+            throw new \RuntimeException(sprintf('Cannot write %s', $path), 0, $exception);
         }
 
         $this->clearCompiled();
@@ -124,11 +125,14 @@ class CustomTemplateService
     public function delete(string $relative): void
     {
         $path = $this->overridePath($relative);
-        if (!is_file($path)) {
+        if (!$this->storage->fileExists($path)) {
             return;
         }
-        if (!@unlink($path)) {
-            throw new \RuntimeException(sprintf('Cannot remove %s', $path));
+
+        try {
+            $this->storage->delete($path);
+        } catch (StorageException $exception) {
+            throw new \RuntimeException(sprintf('Cannot remove %s', $path), 0, $exception);
         }
 
         $this->clearCompiled();
@@ -158,12 +162,7 @@ class CustomTemplateService
 
     public function isWritable(): bool
     {
-        if (is_dir(self::DIRECTORY)) {
-            return is_writable(self::DIRECTORY);
-        }
-        $parent = dirname(self::DIRECTORY);
-
-        return is_dir($parent) && is_writable($parent);
+        return $this->storage->isWritable(self::DIRECTORY);
     }
 
     /**
@@ -203,15 +202,7 @@ class CustomTemplateService
             }
         }
 
-        $path = self::DIRECTORY . '/' . $relative;
-        $root = realpath(self::DIRECTORY);
-        $parent = realpath(dirname($path));
-
-        if ($root !== false && $parent !== false && !str_starts_with($parent . '/', $root . '/')) {
-            throw new \RuntimeException('A template override must live under ' . self::DIRECTORY);
-        }
-
-        return $path;
+        return self::DIRECTORY . '/' . $relative;
     }
 
     /** The shipped file behind a `core/` override, or null. */
@@ -268,17 +259,9 @@ class CustomTemplateService
     /** Twig compiles to `cache/templates/`, keyed on the path. */
     private function clearCompiled(): void
     {
-        if (!is_dir(self::COMPILED_CACHE)) {
+        if (!$this->storage->directoryExists(self::COMPILED_CACHE)) {
             return;
         }
-        $walker = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(self::COMPILED_CACHE, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($walker as $file) {
-            if ($file instanceof \SplFileInfo) {
-                $file->isDir() ? @rmdir($file->getPathname()) : @unlink($file->getPathname());
-            }
-        }
+        $this->storage->deleteDirectory(self::COMPILED_CACHE);
     }
 }

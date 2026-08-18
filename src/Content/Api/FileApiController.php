@@ -10,6 +10,7 @@ use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 
 class FileApiController extends YesWikiController
@@ -98,15 +99,19 @@ class FileApiController extends YesWikiController
 
         $disposition = !empty($request->query->get('download')) ? 'attachment' : 'inline';
 
+        $storage = $this->getService(Storage::class);
+
         return new StreamedResponse(
-            function () use ($path) {
-                readfile($path);
+            function () use ($path, $storage) {
+                $bytes = $storage->readStream($path);
+                fpassthru($bytes);
+                fclose($bytes);
             },
             Response::HTTP_OK,
             [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
-                'Content-Length' => (string)filesize($path),
+                'Content-Length' => (string)$storage->fileSize($path),
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
             ]
         );
@@ -122,7 +127,8 @@ class FileApiController extends YesWikiController
     {
         $width = (int)$request->query->get('width', 0);
         $height = (int)$request->query->get('height', 0);
-        $size = @getimagesize($path);
+        $storage = $this->getService(Storage::class);
+        $size = $storage->imageSize($path);
         if ($width < 1 || $height < 1 || $size === false) {
             return null;
         }
@@ -138,15 +144,10 @@ class FileApiController extends YesWikiController
             $height = min($height, $size[1]);
         }
 
-        $cacheDir = FileManager::STORAGE_DIR . '/cache';
-        if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {
-            return null;
-        }
-
-        $destination = $cacheDir . '/' . pathinfo($path, PATHINFO_FILENAME)
+        $destination = FileManager::STORAGE_DIR . '/cache/' . pathinfo($path, PATHINFO_FILENAME)
             . "_{$mode}_{$width}_{$height}." . self::DERIVED_FORMAT;
 
-        if (file_exists($destination)) {
+        if ($storage->fileExists($destination)) {
             return $destination;
         }
 

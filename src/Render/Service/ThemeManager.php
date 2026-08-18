@@ -7,6 +7,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -72,6 +74,7 @@ class ThemeManager implements EventSubscriberInterface
     protected $twig;
     protected $useFallbackTheme;
     protected $utils;
+    protected Storage $storage;
     protected ContainerInterface $container;
 
     public static function getSubscribedEvents()
@@ -87,7 +90,8 @@ class ThemeManager implements EventSubscriberInterface
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        TemplateHelperService $utils
+        TemplateHelperService $utils,
+        Storage $storage
     ) {
         $this->container = $container;
         $this->errorMessage = '';
@@ -110,6 +114,7 @@ class ThemeManager implements EventSubscriberInterface
         $this->twig = $twig;
         $this->useFallbackTheme = false;
         $this->utils = $utils;
+        $this->storage = $storage;
     }
 
     /* function imported from tooles/templates/libs/templates.functions.php
@@ -142,17 +147,18 @@ class ThemeManager implements EventSubscriberInterface
                     }
                     switch ($val) {
                         case 'theme':
-                            $customThemePath = basename((string)realpath(getcwd() . '/custom/themes/' . $requestVal));
+                            $name = basename($requestVal);
+                            $customThemePath = $this->storage->directoryExists('custom/themes/' . $name) ? $name : '';
                             $classicThemePath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requestVal));
                             $requested[$val] = !empty($customThemePath) ? $customThemePath : $classicThemePath;
                             break;
 
                         case 'squelette':
                             $requestVal = self::normalizeSqueletteName($requestVal);
-                            $customPath = basename((string)realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
+                            $customPath = basename($requestVal);
                             $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $requested[$val] = null;
-                            if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
+                            if ($this->storage->exists('custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
                             } elseif (file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $classicPath)) {
                                 $requested[$val] = $classicPath;
@@ -165,10 +171,10 @@ class ThemeManager implements EventSubscriberInterface
 
                         default:
                             // ugly append of "s" to get the path of styleS, presetS and squeletteS
-                            $customPath = basename((string)realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
+                            $customPath = basename($requestVal);
                             $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
                             $requested[$val] = null;
-                            if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
+                            if ($this->storage->exists('custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
                                 $requested[$val] = $customPath;
                             } elseif (file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $classicPath)) {
                                 $requested[$val] = $classicPath;
@@ -189,12 +195,12 @@ class ThemeManager implements EventSubscriberInterface
                         && (
                             (
                                 ($isCustom = (substr($requested['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
-                                && is_file(self::CUSTOM_CSS_PRESETS_PATH . '/' . substr($requested['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                                && $this->storage->fileExists(self::CUSTOM_CSS_PRESETS_PATH . '/' . substr($requested['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                             )
                             || (
                                 !$isCustom
                                 && (
-                                    is_file('custom/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
+                                    $this->storage->fileExists('custom/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
                                     || is_file(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
                                 )
                             )
@@ -204,7 +210,7 @@ class ThemeManager implements EventSubscriberInterface
                 }
 
                 $bgimg = $request->get('bgimg');
-                if (!empty($bgimg) && is_file('files/backgrounds/' . $bgimg)) {
+                if (!empty($bgimg) && $this->storage->fileExists('files/backgrounds/' . $bgimg)) {
                     $this->setFavorite('background_image', $bgimg);
                 } else {
                     $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
@@ -245,9 +251,9 @@ class ThemeManager implements EventSubscriberInterface
 
         // Test existence du template, on utilise le template par defaut sinon==============================
         if (
-            (!file_exists('custom/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette'])
+            (!$this->storage->exists('custom/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette'])
                 and !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette']))
-            || (!file_exists('custom/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style'])
+            || (!$this->storage->exists('custom/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style'])
                 && !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
         ) {
             if (
@@ -279,7 +285,7 @@ class ThemeManager implements EventSubscriberInterface
         if (!empty($this->favorites['preset'])
                 && (
                     ($isCutom = substr($this->favorites['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
-                    && !file_exists(self::CUSTOM_CSS_PRESETS_PATH . DIRECTORY_SEPARATOR
+                    && !$this->storage->exists(self::CUSTOM_CSS_PRESETS_PATH . '/'
                         . substr($this->favorites['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                 )
         ) {
@@ -293,7 +299,7 @@ class ThemeManager implements EventSubscriberInterface
             $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles(YESWIKI_SOURCE_DIR . '/themes', false));
         }
         // custom themes folder
-        if (is_dir('custom/themes')) {
+        if ($this->storage->directoryExists('custom/themes')) {
             $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes', true));
         }
         ksort($this->templates);
@@ -325,7 +331,7 @@ class ThemeManager implements EventSubscriberInterface
         $themePath = 'themes/' . $this->theme;
         $filePath = $themePath . '/squelettes/' . $this->squelette;
 
-        if (!((!$this->useFallbackTheme && file_exists('custom/' . $themePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $themePath))) {
+        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $themePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $themePath))) {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_THEME_FOLDER') . $this->theme . _t('THEME_MANAGER_NOT_FOUND'),
@@ -334,7 +340,7 @@ class ThemeManager implements EventSubscriberInterface
             return false;
         }
 
-        if (!((!$this->useFallbackTheme && file_exists('custom/' . $filePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $filePath))) {
+        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $filePath))) {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_SQUELETTE_FILE') . $this->squelette . _t('THEME_MANAGER_NOT_FOUND'),
@@ -342,9 +348,10 @@ class ThemeManager implements EventSubscriberInterface
 
             return false;
         }
-        $filePath = (!$this->useFallbackTheme && file_exists('custom/' . $filePath)) ? 'custom/' . $filePath : YESWIKI_SOURCE_DIR . '/' . $filePath;
+        $fromInstance = !$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath);
+        $filePath = $fromInstance ? 'custom/' . $filePath : YESWIKI_SOURCE_DIR . '/' . $filePath;
 
-        $fileContent = file_get_contents($filePath);
+        $fileContent = $fromInstance ? $this->storage->read($filePath) : file_get_contents($filePath);
         if ($fileContent === false) {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
@@ -554,10 +561,9 @@ class ThemeManager implements EventSubscriberInterface
     {
         $path = self::CUSTOM_CSS_PRESETS_PATH;
         $tab = [];
-        $cssFiles = glob($path . DIRECTORY_SEPARATOR . '*.css');
-        foreach ($cssFiles as $filepath) {
+        foreach ($this->storage->glob($path . '/*.css') as $filepath) {
             $filename = pathinfo($filepath)['filename'] . '.css';
-            $css = file_get_contents($filepath);
+            $css = $this->storage->read($filepath);
             if (!empty($css)) {
                 $tab[$filename] = $css;
             }
@@ -580,15 +586,17 @@ class ThemeManager implements EventSubscriberInterface
         if (!$this->container->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'User is not admin'];
         }
-        if (!file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
+        if (!$this->storage->exists($path . '/' . $filename)) {
             return ['status' => false, 'message' => 'File ' . $filename . ' is not existing !'];
         }
-        unlink($path . DIRECTORY_SEPARATOR . $filename);
-        if (!file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
-            return ['status' => true, 'message' => ''];
+
+        try {
+            $this->storage->delete($path . '/' . $filename);
+        } catch (StorageException) {
+            return ['status' => false, 'message' => 'Not possible to delete ' . $filename];
         }
 
-        return ['status' => false, 'message' => 'Not possible to delete ' . $filename];
+        return ['status' => true, 'message' => ''];
     }
 
     /**
@@ -614,17 +622,9 @@ class ThemeManager implements EventSubscriberInterface
         }
 
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        $filePath = $path . DIRECTORY_SEPARATOR . $filename;
-        if (file_exists($filePath) && !$this->container->get(AclService::class)->isAdmin()) {
+        $filePath = $path . '/' . $filename;
+        if ($this->storage->exists($filePath) && !$this->container->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'File already existing but user not admin', 'errorCode' => 2];
-        }
-        if (!is_dir($path) && !mkdir($path) && !is_dir($path)) {
-            return ['status' => false, 'message' => $path . ' not existing and not possible to create it', 'errorCode' => 3];
-        }
-
-        file_put_contents($filePath, $css);
-        if (!file_exists($filePath)) {
-            return ['status' => false, 'message' => $filename . ' not created', 'errorCode' => 4];
         }
 
         $fontCss = '';
@@ -634,8 +634,11 @@ class ThemeManager implements EventSubscriberInterface
                 $fontCss .= "\n$installed";
             }
         }
-        if (!empty($fontCss)) {
-            file_put_contents($filePath, "\n$fontCss\n", FILE_APPEND);
+
+        try {
+            $this->storage->write($filePath, $fontCss === '' ? $css : $css . "\n$fontCss\n");
+        } catch (StorageException) {
+            return ['status' => false, 'message' => $filename . ' not created', 'errorCode' => 4];
         }
 
         return ['status' => true, 'message' => $filename . ' created/updated', 'errorCode' => null];
@@ -748,8 +751,8 @@ class ThemeManager implements EventSubscriberInterface
     public function writeFontFaces(string $family, string $css): void
     {
         $directory = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family));
-        if (is_dir($directory)) {
-            file_put_contents($directory . '/' . self::FONT_FACES_FILE, trim($css) . "\n");
+        if ($this->storage->directoryExists($directory)) {
+            $this->storage->write($directory . '/' . self::FONT_FACES_FILE, trim($css) . "\n");
         }
     }
 
@@ -759,7 +762,7 @@ class ThemeManager implements EventSubscriberInterface
         $file = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family))
             . '/' . self::FONT_FACES_FILE;
 
-        return is_file($file) ? (string)file_get_contents($file) : '';
+        return $this->storage->fileExists($file) ? $this->storage->read($file) : '';
     }
 
     /**
@@ -962,13 +965,16 @@ class ThemeManager implements EventSubscriberInterface
     {
         $folder = sanitizeFilename($family);
         $directory = self::CUSTOM_FONT_PATH . '/' . $folder;
-        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
-            return $url;
-        }
 
         $name = sanitizeFilename($family . '-' . $style . '-' . $weight . '-' . $subset) . '.woff2';
         $bytes = $this->fetch($url, self::BROWSER_USER_AGENT);
-        if ($bytes === null || file_put_contents($directory . '/' . $name, $bytes) === false) {
+        if ($bytes === null) {
+            return $url;
+        }
+
+        try {
+            $this->storage->write($directory . '/' . $name, $bytes);
+        } catch (StorageException) {
             return $url;
         }
 

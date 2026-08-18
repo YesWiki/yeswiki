@@ -4,6 +4,7 @@ namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Import\Service\SyncScheduler;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -102,7 +103,8 @@ class SyncSchedulerTest extends YesWikiTestCase
     {
         return new SyncScheduler(
             new ForcedParameterBag($wiki->services->get(ParameterBagInterface::class), ['dataSources' => $dataSources]),
-            $wiki->services
+            $wiki->services,
+            $wiki->services->get(Storage::class)
         );
     }
 

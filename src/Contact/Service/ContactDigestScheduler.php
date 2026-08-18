@@ -6,6 +6,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Contact\Command\ContactDigestCommand;
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\ConsoleService;
 
@@ -21,11 +23,13 @@ class ContactDigestScheduler implements EventSubscriberInterface
 
     private ParameterBagInterface $params;
     private ContainerInterface $services;
+    private Storage $storage;
 
-    public function __construct(ParameterBagInterface $params, ContainerInterface $services)
+    public function __construct(ParameterBagInterface $params, ContainerInterface $services, Storage $storage)
     {
         $this->params = $params;
         $this->services = $services;
+        $this->storage = $storage;
     }
 
     public static function getSubscribedEvents(): array
@@ -144,9 +148,11 @@ class ContactDigestScheduler implements EventSubscriberInterface
     private function lastRunTime(string $period): int
     {
         $file = $this->stateFile($period);
-        $time = ($file !== null && is_file($file)) ? @filemtime($file) : false;
+        if ($file === null || !$this->storage->fileExists($file)) {
+            return 0;
+        }
 
-        return $time === false ? 0 : $time;
+        return $this->storage->lastModified($file);
     }
 
     /** Stamp the period as taken. */
@@ -156,12 +162,14 @@ class ContactDigestScheduler implements EventSubscriberInterface
         if ($file === null) {
             return false;
         }
-        $directory = dirname($file);
-        if (!is_dir($directory) && !@mkdir($directory, 0o755, true)) {
+
+        try {
+            $this->storage->write($file, (string)time());
+        } catch (StorageException) {
             return false;
         }
 
-        return @file_put_contents($file, (string)time()) !== false;
+        return true;
     }
 
     private function stateFile(string $period): ?string
@@ -170,6 +178,6 @@ class ContactDigestScheduler implements EventSubscriberInterface
             return null;
         }
 
-        return YESWIKI_INSTANCE_DIR . '/private/digests/' . $period . '.last';
+        return 'private/digests/' . $period . '.last';
     }
 }

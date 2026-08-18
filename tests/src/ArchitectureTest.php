@@ -31,6 +31,282 @@ class ArchitectureTest extends TestCase
     ];
 
     /**
+     * Ticket 41: files go through `Storage`, so the functions that address a path directly are banned. These three may keep calling them: two run before, or entirely without, a container, and the third is the implementation.
+     *
+     * @var list<string>
+     */
+    private const FS_ALLOWED = [
+        'bootstrap_paths.php',
+        'ComposerScriptsHelper.php',
+        'Files/Service/Storage',
+    ];
+
+    /**
+     * What each file has yet to convert, counted the day the rule was seeded. A number may only shrink and a new file may not appear -- reads count as much as writes, because on object storage a `file_exists('custom/styles/custom.css')` that answers false makes a stylesheet vanish with nobody told.
+     *
+     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the source tree, and `Admin/Service/ArchiveService.php` addresses a backup folder that `archive[privatePath]` may put outside the instance entirely.
+     *
+     * @var array<string, int>
+     */
+    private const FS_REMAINING = [
+        'Admin/Action/ConfigurationAction.php' => 1,
+        'Admin/Action/EditConfigAction.php' => 1,
+        'Admin/Api/DocumentationApiController.php' => 1,
+        'Admin/Controller/DocumentationController.php' => 2,
+        'Admin/Controller/InstallationController.php' => 10,
+        'Admin/Entity/Package.php' => 5,
+        'Admin/Entity/PackageCore.php' => 8,
+        'Admin/Entity/PackageExt.php' => 8,
+        'Admin/Entity/PackageTool.php' => 2,
+        'Admin/Entity/Repository.php' => 2,
+        'Admin/Service/ArchiveService.php' => 20,
+        'Admin/Service/AutoUpdateService.php' => 2,
+        'Contact/Api/ContactApiController.php' => 2,
+        'Content/Action/EntryListAction.php' => 2,
+        'Content/Action/FiltertagsAction.php' => 1,
+        'Content/Action/SyndicationAction.php' => 3,
+        'Content/Action/ValueAction.php' => 1,
+        'Content/Entity/Files.php' => 27,
+        'Content/Field/TextareaField.php' => 3,
+        'Content/Service/ActionCallRewriter.php' => 1,
+        'Content/Service/ActionsBuilderService.php' => 2,
+        'Content/Service/BazarListService.php' => 1,
+        'Content/Service/DuplicationManager.php' => 9,
+        'Content/Service/FieldFactory.php' => 4,
+        'Content/Service/FormManager.php' => 10,
+        'Content/bazar.functions.php' => 6,
+        'Content/tags.functions.php' => 2,
+        'Files/Service/AttachedFilePaths.php' => 7,
+        'Identity/Service/AvatarService.php' => 2,
+        'Identity/Service/HashCashService.php' => 4,
+        'Import/Action/AdminImportersAction.php' => 1,
+        'Import/Service/ImapImporter.php' => 2,
+        'Import/Service/ImportFilesManager.php' => 6,
+        'Import/Service/ImportService.php' => 8,
+        'Import/Service/ImporterManager.php' => 7,
+        'Kernel/Command/CreateInstanceCommand.php' => 14,
+        'Kernel/Command/DbCommand.php' => 2,
+        'Kernel/Command/GenerateMigrationCommand.php' => 4,
+        'Kernel/Command/ImageOptimizerCommand.php' => 5,
+        'Kernel/Command/TestConsoleServiceCommand.php' => 2,
+        'Kernel/Entity/ConfigurationFile.php' => 2,
+        'Kernel/Service/AssetPublisher.php' => 51,
+        'Kernel/Service/AssetRegistry.php' => 4,
+        'Kernel/Service/ConfigurationFileProvider.php' => 2,
+        'Kernel/Service/ConfigurationService.php' => 1,
+        'Kernel/Service/ConsoleService.php' => 1,
+        'Kernel/Service/HtmlPurifierService.php' => 7,
+        'Kernel/Service/LanguageService.php' => 5,
+        'Kernel/Service/Mailer.php' => 3,
+        'Kernel/Service/MigrationService.php' => 2,
+        'Kernel/Service/Performer.php' => 2,
+        'Kernel/Service/ThrowableFormatter.php' => 1,
+        'Render/Action/FaviconAction.php' => 1,
+        'Render/Action/SetWikiDefaultThemeAction.php' => 1,
+        'Render/Action/TranslationAction.php' => 1,
+        'Render/Service/CoreAssets.php' => 5,
+        'Render/Service/CustomTemplateService.php' => 6,
+        'Render/Service/LayoutService.php' => 1,
+        'Render/Service/PresetService.php' => 7,
+        'Render/Service/TemplateEngine.php' => 8,
+        'Render/Service/TemplateHelperService.php' => 15,
+        'Render/Service/ThemeManager.php' => 16,
+        'Render/Service/ThemeSelectorRenderer.php' => 3,
+        'Search/Command/ReindexCommand.php' => 1,
+        'Social/Service/ReactionsFormatter.php' => 6,
+        'YesWikiInit.php' => 5,
+        'YesWikiKernel.php' => 3,
+        'YesWikiLoader.php' => 6,
+        'YesWikiPlugins.php' => 4,
+        'YesWikiRuntime.php' => 17,
+        'assets/pdf-viewer.php' => 2,
+        'autoload.inc.php' => 4,
+        'build-js-lang-keys.php' => 1,
+        'lang/javascript-keys-builder.php' => 1,
+        'migrations/20260726000000_MigrateAttachmentsToPages.php' => 7,
+        'migrations/20260802130000_RewriteRetiredSearchActions.php' => 2,
+        'migrations/20260811120000_RenameActionsAndParametersInBodies.php' => 5,
+        'migrations/20260816100000_PresetsBecomeTokenSets.php' => 3,
+        'migrations/20260817120000_PresetsLoseTheirDerivedTokens.php' => 3,
+        'migrations/20260817160000_ADarkBarMatchesItsDarkPage.php' => 3,
+    ];
+
+    /** Functions that take a path. Handle-takers (`fwrite`, `fgetcsv`) are not here: the seam is the path, not the stream. */
+    private const FS_FUNCTIONS = [
+        'file_put_contents', 'file_get_contents', 'fopen', 'unlink', 'mkdir', 'rmdir', 'rename',
+        'copy', 'touch', 'move_uploaded_file', 'file_exists', 'is_file', 'is_dir', 'is_readable',
+        'is_writable', 'glob', 'scandir', 'opendir', 'readfile', 'file', 'filesize', 'filemtime',
+        'getimagesize', 'chmod', 'symlink', 'realpath', 'disk_free_space', 'tempnam', 'umask',
+    ];
+
+    /**
+     * Every direct call to a path-taking function in $file, by name.
+     *
+     * `fopen('php://…')` is not one: it addresses no file.
+     */
+    private function rawFileCallsIn(string $file): int
+    {
+        $tokens = token_get_all((string)file_get_contents($file));
+        $count = 0;
+        $total = count($tokens);
+
+        for ($i = 0; $i < $total; $i++) {
+            $token = $tokens[$i];
+            if (!is_array($token) || $token[0] !== T_STRING) {
+                continue;
+            }
+            if (!in_array(strtolower($token[1]), self::FS_FUNCTIONS, true)) {
+                continue;
+            }
+            $before = $this->meaningfulToken($tokens, $i, -1);
+            if (is_array($before) && in_array($before[0], [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_FUNCTION, T_NEW, T_CONST], true)) {
+                continue;
+            }
+            $after = $this->meaningfulToken($tokens, $i, 1);
+            if ($after !== '(') {
+                continue;
+            }
+            if (strtolower($token[1]) === 'fopen') {
+                $argument = $this->meaningfulToken($tokens, $i + 1, 1);
+                if (is_array($argument) && $argument[0] === T_CONSTANT_ENCAPSED_STRING
+                    && str_starts_with(trim($argument[1], '\'"'), 'php://')) {
+                    continue;
+                }
+            }
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * @param list<array{int, string, int}|string> $tokens
+     *
+     * @return array{int, string, int}|string|null
+     */
+    private function meaningfulToken(array $tokens, int $from, int $step)
+    {
+        for ($i = $from + $step; isset($tokens[$i]); $i += $step) {
+            if (is_array($tokens[$i]) && in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                continue;
+            }
+
+            return $tokens[$i];
+        }
+
+        return null;
+    }
+
+    public function testFilesGoThroughStorage(): void
+    {
+        $over = [];
+        $gone = [];
+
+        foreach ($this->phpFilesIn(self::SRC) as $file) {
+            $relative = substr($file, strlen(self::SRC) + 1);
+            foreach (self::FS_ALLOWED as $allowed) {
+                if (str_starts_with($relative, $allowed)) {
+                    continue 2;
+                }
+            }
+            $found = $this->rawFileCallsIn($file);
+            $budget = self::FS_REMAINING[$relative] ?? 0;
+            if ($found > $budget) {
+                $over[] = "$relative: $found raw calls, $budget allowed";
+            }
+            if ($found < $budget) {
+                $gone[] = "$relative: $found raw calls, $budget still budgeted";
+            }
+        }
+
+        $this->assertSame([], $over, "A file must not reach the filesystem directly: use YesWiki\\Files\\Service\\Storage.\n"
+            . 'Reads count as much as writes -- on object storage a read that answers false is a file that silently vanished.');
+        $this->assertSame([], $gone, "The ratchet may only shrink, and these files have: lower their number in FS_        'Admin/Action/ConfigurationAction.php' => 1,
+        'Admin/Action/EditConfigAction.php' => 1,
+        'Admin/Api/DocumentationApiController.php' => 1,
+        'Admin/Controller/DocumentationController.php' => 2,
+        'Admin/Controller/InstallationController.php' => 10,
+        'Admin/Entity/Package.php' => 5,
+        'Admin/Entity/PackageCore.php' => 8,
+        'Admin/Entity/PackageExt.php' => 8,
+        'Admin/Entity/PackageTool.php' => 2,
+        'Admin/Entity/Repository.php' => 2,
+        'Admin/Service/ArchiveService.php' => 20,
+        'Admin/Service/AutoUpdateService.php' => 2,
+        'Contact/Api/ContactApiController.php' => 2,
+        'Content/Action/AttachAction.php' => 3,
+        'Content/Action/EntryListAction.php' => 2,
+        'Content/Action/FiltertagsAction.php' => 1,
+        'Content/Action/SyndicationAction.php' => 3,
+        'Content/Action/ValueAction.php' => 1,
+        'Content/Entity/Files.php' => 27,
+        'Content/Field/TextareaField.php' => 3,
+        'Content/Service/ActionCallRewriter.php' => 1,
+        'Content/Service/ActionsBuilderService.php' => 2,
+        'Content/Service/BazarListService.php' => 1,
+        'Content/Service/DuplicationManager.php' => 9,
+        'Content/Service/FieldFactory.php' => 4,
+        'Content/Service/FormManager.php' => 10,
+        'Content/bazar.functions.php' => 6,
+        'Content/tags.functions.php' => 2,
+        'Files/Service/AttachedFilePaths.php' => 7,
+        'Identity/Service/AvatarService.php' => 2,
+        'Identity/Service/HashCashService.php' => 4,
+        'Import/Action/AdminImportersAction.php' => 1,
+        'Import/Service/ImapImporter.php' => 2,
+        'Import/Service/ImportFilesManager.php' => 6,
+        'Import/Service/ImportService.php' => 8,
+        'Import/Service/ImporterManager.php' => 7,
+        'Kernel/Command/CreateInstanceCommand.php' => 14,
+        'Kernel/Command/DbCommand.php' => 2,
+        'Kernel/Command/GenerateMigrationCommand.php' => 4,
+        'Kernel/Command/ImageOptimizerCommand.php' => 5,
+        'Kernel/Command/TestConsoleServiceCommand.php' => 2,
+        'Kernel/Entity/ConfigurationFile.php' => 2,
+        'Kernel/Service/AssetPublisher.php' => 51,
+        'Kernel/Service/AssetRegistry.php' => 4,
+        'Kernel/Service/ConfigurationFileProvider.php' => 2,
+        'Kernel/Service/ConfigurationService.php' => 1,
+        'Kernel/Service/ConsoleService.php' => 1,
+        'Kernel/Service/HtmlPurifierService.php' => 7,
+        'Kernel/Service/LanguageService.php' => 5,
+        'Kernel/Service/Mailer.php' => 3,
+        'Kernel/Service/MigrationService.php' => 2,
+        'Kernel/Service/Performer.php' => 2,
+        'Kernel/Service/ThrowableFormatter.php' => 1,
+        'Render/Action/FaviconAction.php' => 1,
+        'Render/Action/SectionAction.php' => 1,
+        'Render/Action/SetWikiDefaultThemeAction.php' => 1,
+        'Render/Action/TranslationAction.php' => 1,
+        'Render/Service/CoreAssets.php' => 5,
+        'Render/Service/CustomTemplateService.php' => 6,
+        'Render/Service/LayoutService.php' => 1,
+        'Render/Service/PresetService.php' => 7,
+        'Render/Service/TemplateEngine.php' => 8,
+        'Render/Service/TemplateHelperService.php' => 15,
+        'Render/Service/ThemeManager.php' => 16,
+        'Render/Service/ThemeSelectorRenderer.php' => 3,
+        'Search/Command/ReindexCommand.php' => 1,
+        'Social/Service/ReactionsFormatter.php' => 6,
+        'YesWikiInit.php' => 5,
+        'YesWikiKernel.php' => 3,
+        'YesWikiLoader.php' => 6,
+        'YesWikiPlugins.php' => 4,
+        'YesWikiRuntime.php' => 17,
+        'assets/pdf-viewer.php' => 2,
+        'autoload.inc.php' => 4,
+        'build-js-lang-keys.php' => 1,
+        'lang/javascript-keys-builder.php' => 1,
+        'migrations/20260726000000_MigrateAttachmentsToPages.php' => 7,
+        'migrations/20260802130000_RewriteRetiredSearchActions.php' => 2,
+        'migrations/20260811120000_RenameActionsAndParametersInBodies.php' => 5,
+        'migrations/20260816100000_PresetsBecomeTokenSets.php' => 3,
+        'migrations/20260817120000_PresetsLoseTheirDerivedTokens.php' => 3,
+        'migrations/20260817160000_ADarkBarMatchesItsDarkPage.php' => 3,.\n"
+            . 'A budget nobody spends is a rule nobody enforces.');
+    }
+
+    /**
      * @return list<string>
      */
     private function phpFilesIn(string $dir): array

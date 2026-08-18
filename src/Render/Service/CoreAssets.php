@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -23,6 +24,7 @@ class CoreAssets
         private readonly RuntimeConfig $config,
         private readonly PageContext $pageContext,
         private readonly CsrfTokenManager $csrfTokenManager,
+        private readonly Storage $storage,
     ) {
     }
 
@@ -138,11 +140,12 @@ class CoreAssets
             return;
         }
 
+        $url = $this->storage->url('files/backgrounds/' . $image);
         $extension = strtolower(substr($image, -4, 4));
         if ($extension === '.jpg') {
             $this->assets->addCss(<<<CSS
                 body {
-                    background-image: url("files/backgrounds/$image");
+                    background-image: url("$url");
                     background-repeat:no-repeat;
                     height:100%;
                     -webkit-background-size:cover;
@@ -158,7 +161,7 @@ class CoreAssets
         } elseif ($extension === '.png') {
             $this->assets->addCss(<<<CSS
                 body {
-                    background-image: url("files/backgrounds/$image");
+                    background-image: url("$url");
                 }
                 CSS);
         }

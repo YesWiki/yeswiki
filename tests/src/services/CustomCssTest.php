@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Core\Service;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -124,6 +125,7 @@ class CustomCssTest extends YesWikiTestCase
             $services->get(RuntimeConfig::class),
             $services->get(PageContext::class),
             $services->get(CsrfTokenManager::class),
+            $services->get(Storage::class),
         ))->register();
 
         return $registry->drain()->toHtml();

@@ -391,6 +391,30 @@ Check whether any page or template of yours depends on these, because nothing re
 
 ---
 
+## Storage
+
+**Nothing changes for an existing wiki.** Files stay on the disk they are on, addressed by the
+same paths, and no configuration key is needed to keep them there — `YESWIKI_STORAGE` defaults to
+`local`.
+
+What is new is that a wiki *can* now keep its Public and Protected files in an S3-compatible
+bucket, which is what makes an instance with no writable data volume possible. It is opt-in,
+per instance, in `private/.env`, and configuring it moves nothing until you run
+`./yeswicli storage:sync` — see *Stocker les fichiers dans un bucket S3* in `docs/fr/admin.md`
+for the keys, the bucket policy and the CORS requirement.
+
+Two things stay local whatever you configure, and asking otherwise is refused at boot with the
+offending path named: the SQLite database and the search index, and everything PHP `include`s
+(the compiled container, compiled templates, `custom/extensions/`).
+
+**`archive[privatePath]` is gone.** A wiki's backups are in `private/backups`, which is where
+every wiki already put them, and there is no setting to move them. A migration removes the key
+and writes what it did to the administrative log; if yours pointed somewhere else, the archives
+already there are left alone — move them into `private/backups` if you want them listed. On an
+S3 instance the backups go to the bucket with everything else Protected.
+
+---
+
 ## Passwords
 
 **Passwords stored as md5 no longer sign anyone in.** md5 was listed as a legacy hasher, so an

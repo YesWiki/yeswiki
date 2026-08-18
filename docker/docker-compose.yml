@@ -45,6 +45,22 @@ services:
           POSTGRES_PASSWORD: password
           POSTGRES_DB: yeswiki
 
+    # Ticket 42 puts Public and Protected bytes in an S3-compatible bucket. `weed server -s3`
+    # is master, volume, filer and the S3 gateway in one container, which is what makes an
+    # object store usable as a test service. Where it differs from AWS: addressing is
+    # path-style (YESWIKI_S3_PATH_STYLE=1) and reads are anonymous by the config file below,
+    # which is what lets the public-URL half of the ticket be tested at all. It creates a
+    # bucket on the first write, so nothing has to create one; AWS does not, and that is a
+    # deployment step docs/fr/admin.md carries.
+    yeswiki-s3:
+        image: chrislusf/seaweedfs
+        container_name: yeswiki-s3
+        command: server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64
+        volumes:
+          - ./seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
+        ports:
+          - "8333:8333"
+
     yeswiki-web:
         image: nginx:alpine
         container_name: yeswiki-web

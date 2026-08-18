@@ -64,3 +64,34 @@ and an S3-compatible bucket; Runtime is local by necessity and refuses object st
   shape the phpstan baseline and `KNOWN_VIOLATIONS` already use. The bootstrap, the composer
   scripts and the Storage implementation itself are permanently allowed: they run before, or
   without, a container.
+
+## Amendments
+
+**A bucket that does not exist answers "no", not "boom" (2026-08-18, ticket 42).** The first
+thing a wiki does with object storage is ask whether a file is there — `ThemeManager` asks about
+`custom/themes/…` before anything renders. On a bucket nobody has created yet that is an error
+rather than a "no", and it happens early enough that no command can run to fix it, including the
+one whose job is to create the bucket. So the three existence questions (`exists`,
+`fileExists`, `directoryExists`) treat a missing bucket as an empty one; every read, write, move
+and delete still throws, and the message names the bucket and the command that makes it. A wiki
+pointed at a bucket that is not there therefore boots, serves no files, and says so the moment
+anything is written — rather than refusing to start with no way forward.
+
+**Public objects are written `public-read`, but the bucket policy is what actually decides
+(2026-08-18, ticket 42).** Storage sets the visibility on Public writes, which is what AWS,
+Scaleway and OVH honour. Gateways that ignore per-object ACLs (SeaweedFS among them) need the
+policy instead, and since the tier is in the path, that policy is expressible: allow anonymous
+`GetObject` on `custom/*`, `files/*` and `cache/*`, and nothing else. `docs/fr/admin.md` carries
+it, next to the CORS rule fonts need.
+
+**Backups are Protected, and the folder stopped being a setting (2026-08-18, ticket 42).** The
+open question -- where does an instance with no disk keep its backups -- was answered by looking
+at what wikis actually do: they all use `private/backups`. So `archive[privatePath]` is gone, a
+migration removes it, and `ArchiveService` goes through Storage: an archive is built in a lease
+and stored under `private/backups`, which means the bucket when there is one, and it is streamed
+back through the ACL-checked route rather than given a URL.
+
+What is left local during an archive is Runtime by the same rule as everything else in that tier:
+the progress files a web request polls while a separate process writes them, now in
+`cache/archive/` rather than beside the backups, and the zip being built, which `ZipArchive` can
+only produce as a real file.

@@ -5,6 +5,7 @@ namespace YesWiki\Test\Services;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -26,9 +27,10 @@ class FetchlessRemoteImageCache extends RemoteImageCache
         RuntimeConfig $config,
         UrlFormatter $urlFormatter,
         ImageResizer $resizer,
+        Storage $storage,
         ?string $answer
     ) {
-        parent::__construct($params, $config, $urlFormatter, $resizer);
+        parent::__construct($params, $config, $urlFormatter, $resizer, $storage);
         $this->answer = $answer;
     }
 
@@ -77,6 +79,7 @@ class RemoteImageCacheTest extends YesWikiTestCase
             $services->get(RuntimeConfig::class),
             $services->get(UrlFormatter::class),
             $services->get(ImageResizer::class),
+            $services->get(Storage::class),
             $answer
         );
     }

@@ -2,6 +2,9 @@
 
 namespace YesWiki\Render\Service;
 
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
+
 /** The wiki's own stylesheet: `custom/styles/custom.css` (ticket 30). */
 class CustomCssService
 {
@@ -13,6 +16,13 @@ class CustomCssService
      */
     public const FILENAME = 'custom.css';
 
+    private Storage $storage;
+
+    public function __construct(Storage $storage)
+    {
+        $this->storage = $storage;
+    }
+
     public function path(): string
     {
         return self::DIRECTORY . '/' . self::FILENAME;
@@ -20,7 +30,7 @@ class CustomCssService
 
     public function exists(): bool
     {
-        return is_file($this->path());
+        return $this->storage->fileExists($this->path());
     }
 
     public function read(): string
@@ -29,7 +39,7 @@ class CustomCssService
             return '';
         }
 
-        return (string)file_get_contents($this->path());
+        return $this->storage->read($this->path());
     }
 
     /**
@@ -37,11 +47,7 @@ class CustomCssService
      */
     public function isWritable(): bool
     {
-        if ($this->exists()) {
-            return is_writable($this->path());
-        }
-
-        return is_dir(self::DIRECTORY) ? is_writable(self::DIRECTORY) : $this->parentIsWritable();
+        return $this->storage->isWritable($this->path());
     }
 
     /**
@@ -51,27 +57,22 @@ class CustomCssService
      */
     public function write(string $css): void
     {
-        if (!is_dir(self::DIRECTORY) && !@mkdir(self::DIRECTORY, 0o755, true) && !is_dir(self::DIRECTORY)) {
-            throw new \RuntimeException(sprintf('Cannot create %s', self::DIRECTORY));
-        }
-
         if (trim($css) === '') {
-            if ($this->exists() && !@unlink($this->path())) {
-                throw new \RuntimeException(sprintf('Cannot remove %s', $this->path()));
+            if ($this->exists()) {
+                try {
+                    $this->storage->delete($this->path());
+                } catch (StorageException $exception) {
+                    throw new \RuntimeException(sprintf('Cannot remove %s', $this->path()), 0, $exception);
+                }
             }
 
             return;
         }
 
-        if (@file_put_contents($this->path(), $css) === false) {
-            throw new \RuntimeException(sprintf('Cannot write %s', $this->path()));
+        try {
+            $this->storage->write($this->path(), $css);
+        } catch (StorageException $exception) {
+            throw new \RuntimeException(sprintf('Cannot write %s', $this->path()), 0, $exception);
         }
-    }
-
-    private function parentIsWritable(): bool
-    {
-        $parent = dirname(self::DIRECTORY);
-
-        return is_dir($parent) && is_writable($parent);
     }
 }

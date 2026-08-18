@@ -37,7 +37,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
 
-    private const ARCHIVE_KEYS = ['privatePath', 'call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
+    private const ARCHIVE_KEYS = ['call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
 
     private const META_KEYS = ['robots'];
 

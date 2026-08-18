@@ -10,6 +10,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -332,7 +333,7 @@ class TemplateEngine
             return $this->container->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
-            return $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
+            return $this->container->get(Storage::class)->url(BAZ_CHEMIN_UPLOAD . $fileName);
         });
 
         $this->addTwigHelper('layout_chrome', fn () => $this->renderLayoutChrome());
@@ -408,7 +409,7 @@ class TemplateEngine
 
                 'logo' => ($logo === '' || preg_match('~^([a-z][a-z0-9+.-]*:|//|/)~i', $logo) === 1)
                     ? $logo
-                    : $this->urlFormatter->getBaseUrl() . '/' . $logo,
+                    : $this->container->get(Storage::class)->url($logo),
 
                 'home' => $this->urlFormatter->href('', (string)$this->container->get(RuntimeConfig::class)['root_page'], null, false),
             ]);

@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Asset\AssetEntry;
 use YesWiki\Kernel\Asset\AssetSet;
 
@@ -236,6 +237,11 @@ class AssetRegistry
             return $file;
         }
 
+        $bucket = $this->bucketUrl($file);
+        if ($bucket !== null) {
+            return $bucket === '' ? null : $this->busted($bucket, $file);
+        }
+
         if ($this->publishToCache()) {
             $published = AssetPublisher::publishedUrl($file, $this->assetsVersion());
             if ($published === null) {
@@ -252,6 +258,29 @@ class AssetRegistry
             return null;
         }
 
+        return $this->busted($this->urlFormatter->getBaseUrl() . '/' . $file, $file);
+    }
+
+    /**
+     * The URL a Public path has when this instance keeps its own files in a bucket -- `''` when
+     * it does and the object is not there, and null when this asset is none of Storage's business.
+     */
+    private function bucketUrl(string $file): ?string
+    {
+        if (!str_starts_with($file, 'custom/') || str_starts_with($file, 'custom/extensions/')) {
+            return null;
+        }
+        $storage = $this->container->get(Storage::class);
+        if (!$storage->isRemote($file)) {
+            return null;
+        }
+
+        return $storage->exists($file) ? $storage->url($file) : '';
+    }
+
+    /** The release the instance is on, so a browser stops serving the last one's copy of a file. */
+    private function busted(string $url, string $file): string
+    {
         $config = $this->container->get(RuntimeConfig::class);
         $revision = $config->getValue('yeswiki_release', null);
 
@@ -269,9 +298,9 @@ class AssetRegistry
             }
         }
 
-        $separator = str_contains($file, '?') ? '&' : '?';
+        $separator = str_contains($url, '?') ? '&' : '?';
 
-        return $this->urlFormatter->getBaseUrl() . '/' . $file . ($revision ? $separator . 'v=' . $revision : '');
+        return $url . ($revision ? $separator . 'v=' . $revision : '');
     }
 
     /**

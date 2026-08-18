@@ -62,6 +62,10 @@ jobs:
           - { php-version: '8.5', driver: 'mysql',  db_user: 'root',    db_password: 'root',     db_name: 'yeswiki_test' }
           - { php-version: '8.3', driver: 'sqlite', db_user: '',        db_password: '',         db_name: '' }
           - { php-version: '8.3', driver: 'pgsql',  db_user: 'yeswiki', db_password: 'password', db_name: 'yeswiki_test' }
+          # Ticket 42: storage and the database are orthogonal, so one leg proves the bucket
+          # rather than six. It is the SQLite one because it is the cheapest, and it is the
+          # only leg where StorageContractTest runs its S3 half instead of skipping it.
+          - { php-version: '8.3', driver: 'sqlite', db_user: '',        db_password: '',         db_name: '', s3: true }
 
     # `services` cannot be conditioned on the matrix, so both servers start on every leg and
     # the SQLite ones simply ignore them. The alternative is one job per driver with the steps
@@ -96,6 +100,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      # Not a `services:` entry: SeaweedFS needs its identity file, service containers start
+      # before the checkout, and without credentials it answers 403 to every write. Started
+      # here, after the file exists. It creates its bucket on the first write, which is where
+      # it differs from AWS.
+      - name: Start SeaweedFS
+        if: matrix.s3
+        run: |
+          docker run -d --name yeswiki-s3 -p 8333:8333 \
+            -v ${{ github.workspace }}/docker/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro \
+            chrislusf/seaweedfs server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64
+          for _ in $(seq 1 60); do
+            curl -s -o /dev/null -m 2 http://127.0.0.1:8333 && break
+            sleep 2
+          done
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -160,7 +179,6 @@ jobs:
             "${DB_ARGS[@]}" \
             -F "config[table_prefix]=yeswiki_" \
             -F "config[allow_raw_html]=1" \
-            -F "config[archive][privatePath]=${{ github.workspace }}/private/backups" \
             -F "admin_name=ActionTest" \
             -F "admin_password=ActionTestPassword" \
             -F "admin_password_conf=ActionTestPassword" \
@@ -213,6 +231,10 @@ jobs:
 
       - name: Run test suite
         run: composer test
+        env:
+          # Empty on every other leg, which is how StorageContractTest knows to skip its S3 half.
+          YESWIKI_TEST_S3_ENDPOINT: ${{ matrix.s3 && 'http://127.0.0.1:8333' || '' }}
+          YESWIKI_TEST_S3_PUBLIC_URL: ${{ matrix.s3 && 'http://127.0.0.1:8333/yeswiki-test' || '' }}
 
       - name: Dump server log
         if: failure()

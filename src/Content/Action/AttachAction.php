@@ -6,6 +6,7 @@ use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -198,7 +199,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             ? $this->getService(FileManager::class)->getPhysicalPath($request->fileTag)
             : $this->paths()->fullFilename($request->file);
 
-        if (empty($fullFilename) || !file_exists($fullFilename)) {
+        if (empty($fullFilename) || !$this->getService(Storage::class)->exists($fullFilename)) {
             return '<div class="yw-alert yw-alert--danger">' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . ' (' . htmlspecialchars($request->file) . ')</div>';
         }
 
@@ -310,7 +311,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             return $forceDownload ? $url . '?download=1' : $url;
         }
 
-        return $this->paths()->scriptPath() . $fullFilename;
+        return $this->getService(Storage::class)->url($fullFilename);
     }
 
     /** The same address, asking for a copy no larger than the page can use. */
@@ -340,12 +341,12 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             if (!empty($request->height) && !empty($request->width)) {
                 $resizer = $this->getService(ImageResizer::class);
                 $destination = $resizer->resizedFilename($fullFilename, (string)$request->width, (string)$request->height);
-                if (!file_exists($destination)) {
+                if (!$this->getService(Storage::class)->exists($destination)) {
                     $resizer->resize($fullFilename, $destination, $request->width, $request->height);
                 }
                 $imgName = $destination;
             }
-            $size = getimagesize($imgName);
+            $size = $this->getService(Storage::class)->imageSize($imgName);
             $width = $size === false ? null : $size[0];
             $height = $size === false ? null : $size[1];
         }
@@ -357,7 +358,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
         $imgSrc = $request->fileTag !== ''
             ? $this->sizedFileUrl($request, $this->fileUrl($request, $fullFilename))
-            : ($this->paths()->scriptPath() . $imgName);
+            : $this->getService(Storage::class)->url($imgName);
         $img = '<img loading="lazy" class="img-responsive" src="' . $imgSrc . '" '
             . 'alt="' . $request->desc . ($request->link ? "\nLien vers: $request->link" : '') . '"'
             . (!empty($width) ? ' width="' . $width . '"' : '')

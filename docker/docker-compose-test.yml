@@ -5,3 +5,7 @@ services:
     command: /var/www/html/docker/entrypoint_test.sh
     environment:
       - YESWIKI_CONFIG_FILE=test.config.php
+      # Ticket 42: what StorageContractTest needs to reach the bucket. Nothing else reads
+      # these -- an instance is put on S3 by private/.env, never by the test environment.
+      - YESWIKI_TEST_S3_ENDPOINT=http://yeswiki-s3:8333
+      - YESWIKI_TEST_S3_PUBLIC_URL=http://yeswiki-s3:8333/yeswiki-test

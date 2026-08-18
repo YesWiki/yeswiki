@@ -5,7 +5,6 @@ namespace YesWiki\Files\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
-use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * Where an attached file lives and what its name encodes -- the half of the former `Attach` class that was pure fact about a filename (ticket 24).
@@ -21,18 +20,15 @@ class AttachedFilePaths
     private ParameterBagInterface $params;
     private RuntimeConfig $runtimeConfig;
     private PageContext $pageContext;
-    private UrlFormatter $urlFormatter;
 
     public function __construct(
         ParameterBagInterface $params,
         RuntimeConfig $runtimeConfig,
         PageContext $pageContext,
-        UrlFormatter $urlFormatter
     ) {
         $this->params = $params;
         $this->runtimeConfig = $runtimeConfig;
         $this->pageContext = $pageContext;
-        $this->urlFormatter = $urlFormatter;
 
         $attachConfig = $this->params->get('attach_config');
         if (!is_array($attachConfig)) {
@@ -63,11 +59,6 @@ class AttachedFilePaths
     public function currentPageTag(): string
     {
         return (string)$this->pageContext->getTag();
-    }
-
-    public function scriptPath(): string
-    {
-        return $this->urlFormatter->getBaseUrl() . '/';
     }
 
     /** Upload directory: flat under safe mode, one sub-directory per page otherwise. */

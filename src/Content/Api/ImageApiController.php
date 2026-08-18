@@ -11,6 +11,7 @@ use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 
 class ImageApiController extends YesWikiController
@@ -28,7 +29,7 @@ class ImageApiController extends YesWikiController
             $this->checkParamsGetCacheUrlImageViaPost($filename, $width, $height, $mode);
             $newToken = $this->checkTokenForGetCacheUrlImageViaPost($width, $height, $mode);
 
-            if (!file_exists("files/$filename")) {
+            if (!$this->getService(Storage::class)->exists("files/$filename")) {
                 return new ApiResponse([
                     'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
                     'filename' => $filename,
@@ -123,7 +124,7 @@ class ImageApiController extends YesWikiController
     {
         $resizer = $this->getService(ImageResizer::class);
         $newFileName = $resizer->resizedFilename("files/$filename", (string)$width, (string)$height, $mode);
-        if (file_exists($newFileName)) {
+        if ($this->getService(Storage::class)->exists($newFileName)) {
             return $newFileName;
         }
         $resizer->resize("files/$filename", $newFileName, $width, $height, $mode);

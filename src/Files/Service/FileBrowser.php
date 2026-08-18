@@ -16,19 +16,22 @@ class FileBrowser
     private PageContext $pageContext;
     private TemplateEngine $templateEngine;
     private InputFilter $inputFilter;
+    private Storage $storage;
 
     public function __construct(
         AttachedFilePaths $paths,
         ImageResizer $resizer,
         PageContext $pageContext,
         TemplateEngine $templateEngine,
-        InputFilter $inputFilter
+        InputFilter $inputFilter,
+        Storage $storage
     ) {
         $this->paths = $paths;
         $this->resizer = $resizer;
         $this->pageContext = $pageContext;
         $this->templateEngine = $templateEngine;
         $this->inputFilter = $inputFilter;
+        $this->storage = $storage;
     }
 
     /** Apply the `?do=` operation, then render the resulting listing. */
@@ -109,14 +112,16 @@ class FileBrowser
         }
 
         $filename = $path . '/' . basename($rawFileName);
-        if (!file_exists($filename)) {
+        if (!$this->storage->exists($filename)) {
             return;
         }
 
-        rename($filename, $filename . 'trash' . $this->paths->currentStamp());
+        $this->storage->move($filename, $filename . 'trash' . $this->paths->currentStamp());
 
         foreach ($this->cachedResizePatterns($filename) as $pattern) {
-            array_map('unlink', glob($pattern) ?: []);
+            foreach ($this->storage->glob($pattern) as $cached) {
+                $this->storage->delete($cached);
+            }
         }
     }
 
@@ -155,10 +160,10 @@ class FileBrowser
     /** Delete one trashed file for good. */
     public function erase(): void
     {
-        $filename = $this->paths->uploadPath() . '/' . basename(realpath($_GET['file'] ?? '') ?: '');
+        $filename = $this->paths->uploadPath() . '/' . basename((string)($_GET['file'] ?? ''));
 
-        if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
-            unlink($filename);
+        if (preg_match('/trash\d{14}$/', $filename) && $this->storage->exists($filename)) {
+            $this->storage->delete($filename);
         }
     }
 
@@ -167,8 +172,8 @@ class FileBrowser
     {
         foreach ($this->files(true) as $file) {
             $filename = $file['path'] . '/' . $file['realname'];
-            if (file_exists($filename)) {
-                unlink($filename);
+            if ($this->storage->exists($filename)) {
+                $this->storage->delete($filename);
             }
         }
     }
@@ -176,9 +181,9 @@ class FileBrowser
     /** Take a file back out of the trash. */
     public function restore(): void
     {
-        $filename = $this->paths->uploadPath() . '/' . ($_GET['file'] ?? '');
-        if (file_exists($filename)) {
-            rename($filename, (string)preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename));
+        $filename = $this->paths->uploadPath() . '/' . basename((string)($_GET['file'] ?? ''));
+        if ($this->storage->exists($filename)) {
+            $this->storage->move($filename, (string)preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename));
         }
     }
 

@@ -10,6 +10,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\FileBrowser;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -92,7 +93,7 @@ class FileField extends BazarField
 
         return ($alertMessage ?? '') . $this->render(
             '@core/inputs/file.twig',
-            empty($value) || !file_exists($this->getBasePath() . $value) || $deletedFile
+            empty($value) || !$this->storage()->exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize,
                 'isUrl' => false,
@@ -144,16 +145,18 @@ class FileField extends BazarField
             $extension = strtolower($pathinfo['extension'] ?? '');
             $extension = preg_replace('/_$/', '', $extension);
             if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
-                if (!file_exists($filePath)) {
+                if (!$this->storage()->exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
                     }
-                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
-                    chmod($filePath, 0755);
+                    if (!is_uploaded_file($_FILES[$this->propertyName]['tmp_name'])) {
+                        throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
+                    }
+                    $this->storage()->writeFrom($filePath, $_FILES[$this->propertyName]['tmp_name']);
 
                     if (in_array($extension, ['svg', 'html', 'htm'])) {
                         $purifier = $this->getService(HtmlPurifierService::class);
-                        $purifier->cleanFile($filePath, $extension);
+                        $this->storage()->withLocalTarget($filePath, fn (string $local) => $purifier->cleanFile($local, $extension));
                     }
                 } else {
                     echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
@@ -166,7 +169,7 @@ class FileField extends BazarField
 
             return [$this->propertyName => basename($filePath)];
         } elseif (!empty($value)) {
-            return [$this->propertyName => file_exists($this->getBasePath() . $value) ? $value : ''];
+            return [$this->propertyName => $this->storage()->exists($this->getBasePath() . $value) ? $value : ''];
         }
 
         return [$this->propertyName => ''];
@@ -186,13 +189,13 @@ class FileField extends BazarField
         }
 
         $basePath = $this->getBasePath();
-        if (!empty($value) && file_exists($basePath . $value)) {
+        if (!empty($value) && $this->storage()->exists($basePath . $value)) {
             $shortFileName = $this->getShortFileName($value);
 
             return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
-                    ? $this->getService(UrlFormatter::class)->getBaseUrl() . '/' . $basePath . $value
+                    ? $this->storage()->url($basePath . $value)
                     : $this->getService(UrlFormatter::class)->href('download', $entry['tag'] . '_' . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
                 'isUrl' => false,
@@ -227,7 +230,7 @@ class FileField extends BazarField
     protected function getShortFileName(string $longFileName): string
     {
         $fullFileName = "{$this->getBasePath()}$longFileName";
-        $fileNameInfos = file_exists($fullFileName) ? $this->paths()->decodeLongFilename($fullFileName) : [];
+        $fileNameInfos = $this->storage()->exists($fullFileName) ? $this->paths()->decodeLongFilename($fullFileName) : [];
 
         $shortFileName = (empty($fileNameInfos['name']))
             ? $longFileName
@@ -304,6 +307,11 @@ class FileField extends BazarField
     private function paths(): AttachedFilePaths
     {
         return $this->getService(AttachedFilePaths::class);
+    }
+
+    protected function storage(): Storage
+    {
+        return $this->getService(Storage::class);
     }
 
     protected function updateEntryAfterFileDelete($entry)

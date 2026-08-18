@@ -1764,11 +1764,6 @@ parameters:
 			count: 1
 			path: ../src/Admin/Service/ArchiveService.php
 
-		-
-			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:createFolder\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
 
 		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:createZip\(\) has parameter \$blacklistedRootFolders with no value type specified in iterable type array\.$#'
@@ -14135,12 +14130,6 @@ parameters:
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 1
 			path: ../src/Render/Service/TemplateHelperService.php
-
-		-
-			message: '#^Argument of an invalid type list\<string\>\|false supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: ../src/Render/Service/ThemeManager.php
 
 		-
 			message: '#^Method YesWiki\\Render\\Service\\ThemeManager\:\:deleteCustomCSSPreset\(\) return type has no value type specified in iterable type array\.$#'

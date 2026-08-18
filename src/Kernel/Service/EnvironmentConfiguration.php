@@ -39,7 +39,7 @@ class EnvironmentConfiguration
     ];
 
     /**
-     * Variables that are environment-only and must never leak into the configuration (ADMIN_* hold plain credentials for the automated installation, and would otherwise end up in container parameters and config archives).
+     * Variables that are environment-only and must never leak into the configuration (ADMIN_* hold plain credentials for the automated installation, YESWIKI_S3_* the bucket's, and both would otherwise end up in container parameters and config archives).
      */
     public const NOT_CONFIG = [
         'YESWIKI_CONFIG_FILE',
@@ -47,6 +47,17 @@ class EnvironmentConfiguration
         'ADMIN_NAME',
         'ADMIN_PASSWORD',
         'ADMIN_EMAIL',
+
+        'YESWIKI_STORAGE',
+        'YESWIKI_S3_BUCKET',
+        'YESWIKI_S3_REGION',
+        'YESWIKI_S3_ENDPOINT',
+        'YESWIKI_S3_KEY',
+        'YESWIKI_S3_SECRET',
+        'YESWIKI_S3_PREFIX',
+        'YESWIKI_S3_PATH_STYLE',
+        'YESWIKI_S3_PUBLIC_URL',
+        'YESWIKI_S3_TIERS',
     ];
 
     /**

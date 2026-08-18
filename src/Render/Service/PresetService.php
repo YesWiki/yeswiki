@@ -3,6 +3,8 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -268,6 +270,7 @@ class PresetService
         private readonly ConfigurationService $configurationService,
         private readonly ParameterBagInterface $params,
         private readonly AssetRegistry $assets,
+        private readonly Storage $storage,
     ) {
     }
 
@@ -363,7 +366,7 @@ class PresetService
     {
         $fonts = self::WEBFONTS;
 
-        foreach (glob(ThemeManager::CUSTOM_FONT_PATH . '/*', GLOB_ONLYDIR) ?: [] as $directory) {
+        foreach ($this->storage->directories(ThemeManager::CUSTOM_FONT_PATH) as $directory) {
             $family = ucwords(str_replace(['-', '_'], ' ', basename($directory)));
             if (!isset($fonts[$family])) {
                 $fonts[$family] = "'" . $family . "', sans-serif";
@@ -533,7 +536,7 @@ class PresetService
             return [];
         }
 
-        $css = (string)file_get_contents($preset['path']);
+        $css = $this->cssAt($preset['path']);
         $fonts = [];
         $subset = '';
 
@@ -573,10 +576,10 @@ class PresetService
     {
         $css = [];
 
-        foreach (glob(ThemeManager::CUSTOM_FONT_PATH . '/*', GLOB_ONLYDIR) ?: [] as $directory) {
+        foreach ($this->storage->directories(ThemeManager::CUSTOM_FONT_PATH) as $directory) {
             $stored = $directory . '/' . ThemeManager::FONT_FACES_FILE;
-            $rules = is_file($stored)
-                ? (string)file_get_contents($stored)
+            $rules = $this->storage->fileExists($stored)
+                ? $this->storage->read($stored)
                 : $this->facesFromFileNames($directory);
             if (trim($rules) === '') {
                 continue;
@@ -599,7 +602,7 @@ class PresetService
         $family = ucwords(str_replace(['-', '_'], ' ', $folder));
         $rules = [];
 
-        foreach (glob($directory . '/*.woff2') ?: [] as $file) {
+        foreach ($this->storage->glob($directory . '/*.woff2') as $file) {
             $name = basename($file, '.woff2');
             if (!preg_match('~^' . preg_quote($folder, '~') . '-(normal|italic)-([0-9]+)~', $name, $parts)) {
                 continue;
@@ -616,14 +619,22 @@ class PresetService
         return implode("\n", $rules);
     }
 
-    /** A preset's `../../custom/fonts/…` made absolute, so another wiki can fetch it. */
+    /**
+     * A preset's `../../custom/fonts/…` made absolute, so another wiki can fetch it -- and so a
+     * browser can, when the files are in a bucket and the stylesheet naming them is not.
+     */
     private function absoluteFontUrl(string $url, string $baseUrl): string
     {
-        if ($baseUrl === '' || preg_match('~^(https?:)?//~i', $url)) {
+        if (preg_match('~^(https?:)?//~i', $url)) {
             return $url;
         }
+        $path = ltrim(str_replace('../', '', $url), '/');
 
-        return rtrim($baseUrl, '/') . '/' . ltrim(str_replace('../', '', $url), '/');
+        if (str_starts_with($path, 'custom/') && $this->storage->isRemote($path)) {
+            return $this->storage->url($path);
+        }
+
+        return $baseUrl === '' ? $url : rtrim($baseUrl, '/') . '/' . $path;
     }
 
     public function isConfigWritable(): bool
@@ -633,9 +644,7 @@ class PresetService
 
     public function arePresetsWritable(): bool
     {
-        $path = ThemeManager::CUSTOM_CSS_PRESETS_PATH;
-
-        return is_dir($path) ? is_writable($path) : is_writable(dirname($path));
+        return $this->storage->isWritable(ThemeManager::CUSTOM_CSS_PRESETS_PATH);
     }
 
     /** Make a preset the wiki's, or none of them. */
@@ -665,9 +674,11 @@ class PresetService
         }
 
         $file = $this->freeFileName($source['name']);
-        $this->ensureDirectory();
-        if (!copy($source['path'], ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . $file)) {
-            throw new \RuntimeException('could not copy ' . $id);
+
+        try {
+            $this->storage->write(ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . $file, $this->cssAt($source['path']));
+        } catch (StorageException $exception) {
+            throw new \RuntimeException('could not copy ' . $id, 0, $exception);
         }
 
         return ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . $file;
@@ -711,7 +722,7 @@ class PresetService
             if ($this->default() === $existing['id']) {
                 $this->select($saved);
             }
-            @unlink($existing['path']);
+            $this->storage->delete($existing['path']);
         }
 
         return $saved;
@@ -1061,7 +1072,7 @@ class PresetService
      */
     private function describe(string $id, string $path, bool $custom, string $default): array
     {
-        $values = $this->valuesOf((string)file_get_contents($path));
+        $values = $this->valuesOf($this->cssAt($path));
         $missing = $this->missingIn($values);
 
         return [
@@ -1158,10 +1169,11 @@ class PresetService
     {
         $theme = $this->theme();
         $files = [];
-        foreach ([YESWIKI_SOURCE_DIR . '/themes/' . $theme . '/presets', 'custom/themes/' . $theme . '/presets'] as $directory) {
-            foreach (glob($directory . '/*.css') ?: [] as $path) {
-                $files[basename($path)] = $path;
-            }
+        foreach (glob(YESWIKI_SOURCE_DIR . '/themes/' . $theme . '/presets/*.css') ?: [] as $path) {
+            $files[basename($path)] = $path;
+        }
+        foreach ($this->storage->glob('custom/themes/' . $theme . '/presets/*.css') as $path) {
+            $files[basename($path)] = $path;
         }
         ksort($files);
 
@@ -1174,7 +1186,7 @@ class PresetService
     private function instanceFiles(): array
     {
         $files = [];
-        foreach (glob(ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/*.css') ?: [] as $path) {
+        foreach ($this->storage->glob(ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/*.css') as $path) {
             $files[basename($path)] = $path;
         }
         ksort($files);
@@ -1196,18 +1208,23 @@ class PresetService
         $stem = pathinfo($file, PATHINFO_FILENAME);
 
         $suffix = 1;
-        while (file_exists(ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . $file)) {
+        while ($this->storage->exists(ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . $file)) {
             $file = $stem . '-' . (++$suffix) . '.css';
         }
 
         return $file;
     }
 
-    private function ensureDirectory(): void
+    /** A stylesheet from wherever it is: the source tree ships presets and tokens, the instance stores its own. */
+    private function cssAt(string $path): string
     {
-        $path = ThemeManager::CUSTOM_CSS_PRESETS_PATH;
-        if (!is_dir($path) && !mkdir($path) && !is_dir($path)) {
-            throw new \RuntimeException($path . ' does not exist and cannot be created');
-        }
+        return $this->isSourcePath($path)
+            ? (string)@file_get_contents($path)
+            : $this->storage->read($path);
+    }
+
+    private function isSourcePath(string $path): bool
+    {
+        return defined('YESWIKI_SOURCE_DIR') && str_starts_with($path, YESWIKI_SOURCE_DIR . '/');
     }
 }

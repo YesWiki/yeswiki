@@ -34,6 +34,8 @@
     "ezyang/htmlpurifier": "^4.19",
     "jbroadway/urlify": "^1.2",
     "league/commonmark": "^2.4",
+    "league/flysystem": "^3.0",
+    "league/flysystem-async-aws-s3": "^3.0",
     "league/html-to-markdown": "^5.1",
     "nesbot/carbon": "^2.66.0",
     "phpmailer/phpmailer": "^6.2",
