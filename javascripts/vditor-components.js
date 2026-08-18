@@ -470,7 +470,7 @@ function brace(character) {
   return span
 }
 
-/** Classes a wrapper puts on its CONTENT rather than on its box. */
+/** Classes a wrapper puts on its CONTENT rather than on its box -- the ink it derives from its own background travels the same way. */
 const CONTENT_CLASSES = [
   'text-left',
   'text-center',
@@ -482,16 +482,26 @@ const CONTENT_CLASSES = [
 
 function styleRegionContent(content, regions) {
   const blocks = [...content.children]
-  blocks.forEach((block) => block.classList.remove(...CONTENT_CLASSES))
+  blocks.forEach((block) => {
+    block.classList.remove(...CONTENT_CLASSES)
+    block.style.color = ''
+  })
+  const inherited = getComputedStyle(content).color
 
-  regions.forEach((region) => {
+  ;[...regions].reverse().forEach((region) => {
     const written = /class\s*=\s*["']([^"']*)["']/.exec(region.tag)?.[1] ?? ''
     const classes = written
       .split(/\s+/)
       .filter((token) => CONTENT_CLASSES.includes(token))
-    if (!classes.length) return
+    const ink = region.slot?.firstElementChild?.style.color ?? ''
+    if (!classes.length && !ink) return
+
     for (let i = region.from + 1; i < region.to; i += 1) {
-      blocks[i]?.classList.add(...classes)
+      const block = blocks[i]
+      if (!block) continue
+      block.classList.add(...classes)
+      if (!ink || block.style.color) continue
+      if (getComputedStyle(block).color === inherited) block.style.color = ink
     }
   })
 }
@@ -524,13 +534,13 @@ export function paintWrappers(content) {
     regions.forEach(() => layer.appendChild(document.createElement('div')))
   }
 
-  styleRegionContent(content, regions)
-
   regions.forEach((region, index) => {
     region.slot = layer.children[index] || null
-    reservationOf(region).style.paddingTop = ''
+    clearReservation(region)
     if (region.slot) paintInto(region.slot, region.tag, region.nested, content)
   })
+
+  styleRegionContent(content, regions)
 
   ;[...regions].reverse().forEach(reserveDeclaredHeight)
 
@@ -550,15 +560,17 @@ function spannedHeight(region) {
   return Math.max(0, to.bottom - from.top)
 }
 
-/** Where a band's reserved height is put: the closing chip's own box, which no block margin collapses through. */
-function reservationOf(region) {
-  return (
-    region.closeBlock.querySelector('.vditor-wysiwyg__preview') ??
-    region.closeBlock
-  )
+/** Where a band's reserved height is put: a chip's own box, which no block margin collapses through. */
+function spacerOf(block) {
+  return block.querySelector('.vditor-wysiwyg__preview') ?? block
 }
 
-/** A band asking for more height than its blocks fill gets the rest reserved above its closing chip -- innermost first, so a nested band's reservation is part of what its parent has to hold. */
+function clearReservation(region) {
+  spacerOf(region.block).style.paddingBottom = ''
+  spacerOf(region.closeBlock).style.paddingTop = ''
+}
+
+/** A band asking for more height than its blocks fill gets the rest reserved around them -- innermost first, so a nested band's reservation is part of what its parent has to hold. */
 function reserveDeclaredHeight(region) {
   const paint = region.slot?.firstElementChild
   if (!paint) return
@@ -568,12 +580,19 @@ function reserveDeclaredHeight(region) {
   const wanted = paint.offsetHeight
   if (wanted - spanned <= 1) return
 
-  const spacer = reservationOf(region)
-  spacer.style.paddingTop = `${wanted - spanned}px`
+  reserve(region, paint, wanted - spanned)
   const overshoot = spannedHeight(region) - wanted
   if (overshoot > 1) {
-    spacer.style.paddingTop = `${Math.max(0, wanted - spanned - overshoot)}px`
+    reserve(region, paint, Math.max(0, wanted - spanned - overshoot))
   }
+}
+
+/** Split as the band splits it: half above the blocks when the band centres what it holds, all under them when it does not. */
+function reserve(region, paint, missing) {
+  const above =
+    getComputedStyle(paint).alignItems === 'center' ? missing / 2 : 0
+  spacerOf(region.block).style.paddingBottom = `${above}px`
+  spacerOf(region.closeBlock).style.paddingTop = `${missing - above}px`
 }
 
 /** Put a wrapper's paint in its slot, unless it is already there or already on its way. */
