@@ -524,6 +524,10 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   border-radius: var(--yw-radius-sm) var(--yw-radius-sm) 0 0;
 }
 
+.vditor-wysiwyg__pre {
+  color: var(--yw-text);
+}
+
 .vditor-wysiwyg .vditor-wysiwyg__pre code[class*='language-yeswiki-component'] {
   font-size: 0.85em;
 }
@@ -635,10 +639,10 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 .vditor {
   --border-color: var(--yw-surface-sunken);
   --toolbar-background-color: var(--yw-surface-sunken);
-  --toolbar-icon-color: var(--yw-surface-sunken);
+  --toolbar-icon-color: var(--yw-text-muted);
   --toolbar-icon-hover-color: var(--yw-primary);
   --textarea-background-color: var(--yw-surface-raised);
-  --textarea-text-color: var(--yw-surface-sunken);
+  --textarea-text-color: var(--yw-text);
   --panel-background-color: var(--yw-surface-raised);
 
   border-radius: var(--yw-radius-sm);

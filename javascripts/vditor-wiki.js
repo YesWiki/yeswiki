@@ -308,6 +308,8 @@ function initVditorWiki(textareaParam) {
         .querySelector('.vditor-toolbar button[data-type="yw-save"]')
         ?.classList.add('yw-btn--primary')
       componentEditor.content.addEventListener('click', onContentClick, true)
+      componentEditor.content.addEventListener('keydown', onArrowKeyDown, true)
+      componentEditor.content.addEventListener('keyup', onArrowKeyUp, true)
       componentEditor.content.addEventListener('keyup', (event) => {
         if (event.key === 'Enter' && convertSetextHeadings()) sync()
       })
@@ -441,15 +443,51 @@ function initVditorWiki(textareaParam) {
       return
     }
 
+    showSource(block)
+  }
+
+  /** Put the caret in a widget's wiki code, which is the only text its block holds. */
+  function showSource(block, atEnd = false) {
+    const source = block.querySelector('.vditor-wysiwyg__pre')
     source.style.display = 'block'
     const code = source.firstElementChild
     if (!code.firstChild) code.appendChild(document.createTextNode(''))
     const range = document.createRange()
     range.selectNodeContents(code)
-    range.collapse(true)
+    range.collapse(!atEnd)
     const selection = getSelection()
     selection.removeAllRanges()
     selection.addRange(range)
+  }
+
+  const isComponentBlock = (block) =>
+    Boolean(
+      block?.classList?.contains('vditor-wysiwyg__block') &&
+      block.querySelector('.yw-component'),
+    )
+
+  let arrowFrom = null
+
+  const onArrowKeyDown = (event) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      arrowFrom = componentEditor.blockAtCursor()
+    }
+  }
+
+  /** A widget's block holds no text but its wiki code, which is hidden, so the arrow keys step straight over it. Putting the caret back in that code keeps the component on the keyboard's path -- and, on this same event, makes vditor offer its own move and delete panel. */
+  function onArrowKeyUp(event) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+    const from = arrowFrom
+    arrowFrom = null
+    if (!from) return
+
+    const down = event.key === 'ArrowDown'
+    const skipped = down ? from.nextElementSibling : from.previousElementSibling
+    const landed = componentEditor.blockAtCursor()
+    if (!isComponentBlock(skipped) || !landed) return
+    if (landed === from || landed === skipped) return
+
+    showSource(skipped, !down)
   }
 
   /** A link, and the `{...}` that may follow it. */
