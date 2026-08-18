@@ -521,29 +521,63 @@ export function paintWrappers(content) {
   if (layer.dataset.signature !== signature) {
     layer.dataset.signature = signature
     layer.innerHTML = ''
-    regions.forEach((region) => {
-      const slot = document.createElement('div')
-      layer.appendChild(slot)
-      region.slot = slot
-    })
+    regions.forEach(() => layer.appendChild(document.createElement('div')))
   }
 
   styleRegionContent(content, regions)
 
-  const layerBox = layer.getBoundingClientRect()
   regions.forEach((region, index) => {
-    const slot = region.slot || layer.children[index]
-    if (!slot) return
-    paintInto(slot, region.tag, region.nested)
-    const from = region.block.getBoundingClientRect()
-    const to = region.closeBlock.getBoundingClientRect()
-    slot.style.top = `${from.top - layerBox.top}px`
-    slot.style.height = `${Math.max(0, to.bottom - from.top)}px`
+    region.slot = layer.children[index] || null
+    reservationOf(region).style.paddingTop = ''
+    if (region.slot) paintInto(region.slot, region.tag, region.nested, content)
+  })
+
+  ;[...regions].reverse().forEach(reserveDeclaredHeight)
+
+  const layerBox = layer.getBoundingClientRect()
+  regions.forEach((region) => {
+    if (!region.slot) return
+    region.slot.style.top = `${region.block.getBoundingClientRect().top - layerBox.top}px`
+    region.slot.style.height = `${spannedHeight(region)}px`
   })
 }
 
+/** How much room a wrapper's own blocks take, from the top of its opening chip to the bottom of its closing one. */
+function spannedHeight(region) {
+  const from = region.block.getBoundingClientRect()
+  const to = region.closeBlock.getBoundingClientRect()
+
+  return Math.max(0, to.bottom - from.top)
+}
+
+/** Where a band's reserved height is put: the closing chip's own box, which no block margin collapses through. */
+function reservationOf(region) {
+  return (
+    region.closeBlock.querySelector('.vditor-wysiwyg__preview') ??
+    region.closeBlock
+  )
+}
+
+/** A band asking for more height than its blocks fill gets the rest reserved above its closing chip -- innermost first, so a nested band's reservation is part of what its parent has to hold. */
+function reserveDeclaredHeight(region) {
+  const paint = region.slot?.firstElementChild
+  if (!paint) return
+
+  const spanned = spannedHeight(region)
+  region.slot.style.height = `${spanned}px`
+  const wanted = paint.offsetHeight
+  if (wanted - spanned <= 1) return
+
+  const spacer = reservationOf(region)
+  spacer.style.paddingTop = `${wanted - spanned}px`
+  const overshoot = spannedHeight(region) - wanted
+  if (overshoot > 1) {
+    spacer.style.paddingTop = `${Math.max(0, wanted - spanned - overshoot)}px`
+  }
+}
+
 /** Put a wrapper's paint in its slot, unless it is already there or already on its way. */
-function paintInto(slot, tag, nested = false) {
+function paintInto(slot, tag, nested = false, content = null) {
   if (slot.firstElementChild || slot.dataset.painting === tag) return
   slot.dataset.painting = tag
 
@@ -562,6 +596,7 @@ function paintInto(slot, tag, nested = false) {
         getComputedStyle(clone).paddingLeft,
       )
     }
+    if (content?.isConnected) paintWrappers(content)
   })
 }
 

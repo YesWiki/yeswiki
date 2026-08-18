@@ -491,11 +491,8 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
   box-sizing: border-box !important;
   height: 100% !important;
-  min-height: 0 !important;
   max-height: none !important;
   margin: 0 !important;
-
-  --yw-section-image-attachment: scroll !important;
 }
 
 .vditor-wysiwyg {
