@@ -101,7 +101,7 @@ test('the picker lists the files already uploaded, and filters them', async ({
   const extensions = page.locator(
     '#YesWikiFilePickerPanel [data-yw-file-picker-extensions] option',
   )
-  await expect(extensions).toHaveText(['Toutes les extensions', '.png'])
+  await expect(extensions).toHaveText(['Toutes les extensions', '.webp'])
 
   await families.filter({ hasText: 'Tous' }).click()
   await page.locator('#YesWikiFilePickerPanel input[name="search"]').fill('txt')
@@ -184,7 +184,7 @@ test('picking a file inserts an attach action for it', async ({ page }) => {
 
   await expect
     .poll(() => editorText(page))
-    .toMatch(/\{\{attach file="[^"]+" desc="holiday\.png"/)
+    .toMatch(/\{\{attach file="[^"]+" desc="holiday\.webp"/)
   await expect(componentsNamed(page, 'attach')).toHaveCount(1)
 })
 
@@ -224,7 +224,7 @@ test('the Vditor toolbar opens the same picker and inserts Markdown', async ({
   await page.locator('#YesWikiFilePickerPanel .btn-insert-upload').click()
 
   await expect(page.locator('textarea.vditor-html').first()).toHaveValue(
-    /<img src="[^"]*api\/files\/[^"]+\/download" alt="holiday\.png"/,
+    /<img src="[^"]*api\/files\/[^"]+\/download" alt="holiday\.webp"/,
   )
 })
 
