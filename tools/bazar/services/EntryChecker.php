@@ -9,7 +9,10 @@ use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\LinkField;
 use YesWiki\Bazar\Field\TagsField;
+use YesWiki\Bazar\Field\TextareaField;
+use YesWiki\Bazar\Field\TextField;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -73,6 +76,7 @@ class EntryChecker
 
     protected $entryTags;
     protected $probedUrls;
+    protected $textReplacement;
 
     public function __construct(
         EntryManager $entryManager,
@@ -88,13 +92,15 @@ class EntryChecker
         $this->urlReachability = $urlReachability;
         $this->entryTags = null;
         $this->probedUrls = [];
+        $this->textReplacement = '';
     }
 
     /**
      * Group every problem found in the entries of a form by problem code.
      */
-    public function check(string $formId): array
+    public function check(string $formId, string $textReplacement = ''): array
     {
+        $this->textReplacement = $textReplacement;
         $form = $this->formManager->getOne($formId);
         if (empty($form) || !is_array($form['prepared'] ?? null)) {
             return ['entriesCount' => 0, 'problems' => [], 'unchecked' => []];
@@ -133,14 +139,14 @@ class EntryChecker
     /**
      * Apply the fix of every selected problem, one save per entry.
      */
-    public function repair(string $formId, array $selectedKeys, array $pickedValues = []): array
+    public function repair(string $formId, array $selectedKeys, array $pickedValues = [], string $textReplacement = ''): array
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $rowsByKey = [];
-        foreach ($this->check($formId)['problems'] as $rows) {
+        foreach ($this->check($formId, $textReplacement)['problems'] as $rows) {
             foreach ($rows as $row) {
                 $rowsByKey[$row['key']] = $row;
             }
@@ -178,6 +184,14 @@ class EntryChecker
 
     private function pickedFix(array $row, $picked): ?array
     {
+        if (!empty($row['freeText'])) {
+            $text = is_scalar($picked) ? trim(strval($picked)) : '';
+            if ($text === '' || ($row['freeText'] === 'url' && !StringUtilService::isWebAddress($text))) {
+                return null;
+            }
+
+            return ['set' => $text];
+        }
         if (empty($row['options']) || $picked === null) {
             return null;
         }
@@ -284,9 +298,22 @@ class EntryChecker
             $problem['options'] = $options;
             $problem['multiple'] = $this->holdsSeveralValues($field);
             $problem['suggested'] = array_key_exists($field->getDefault(), $options) ? $field->getDefault() : '';
+        } elseif ($this->textReplacement !== '' && $this->acceptsFreeText($field)) {
+            $problem['freeText'] = 'any';
+            $problem['suggested'] = $this->textReplacement;
         }
 
         return $problem;
+    }
+
+    /**
+     * Only a field meant to hold a sentence takes a stand-in like "NC" ; a date, a number
+     * or an address would just be given a value it cannot represent.
+     */
+    private function acceptsFreeText(BazarField $field): bool
+    {
+        return $field instanceof TextareaField
+            || ($field instanceof TextField && $field->getType() === 'text');
     }
 
     private function pickableOptions(BazarField $field): array
@@ -305,13 +332,22 @@ class EntryChecker
 
     private function checkEmail(EmailField $field, array $entry, $value): array
     {
-        if (!is_string($value) || filter_var($value, FILTER_VALIDATE_EMAIL)) {
+        if (!is_string($value) || $this->isEmailAddress($value)) {
             return [];
         }
         $normalized = strtolower(trim($value));
-        $fix = ['set' => filter_var($normalized, FILTER_VALIDATE_EMAIL) ? $normalized : ''];
+        $fix = ['set' => $this->isEmailAddress($normalized) ? $normalized : ''];
 
         return [$this->problem(self::INVALID_EMAIL, $entry, $field, $value, $fix)];
+    }
+
+    /**
+     * Judge an address on its structure alone, since FILTER_VALIDATE_EMAIL refuses the
+     * accents that a name like josé@exemple.fr legitimately carries.
+     */
+    private function isEmailAddress(string $value): bool
+    {
+        return filter_var(preg_replace('/[^\x20-\x7E]/', 'a', $value), FILTER_VALIDATE_EMAIL) !== false;
     }
 
     private function checkDate(DateField $field, array $entry, $value): array
@@ -325,13 +361,27 @@ class EntryChecker
 
     private function checkUrl(LinkField $field, array $entry, $value): array
     {
-        if (!is_string($value) || filter_var($value, FILTER_VALIDATE_URL)) {
+        if (!is_string($value) || StringUtilService::isWebAddress($value)) {
             return [];
         }
-        $trimmed = trim($value);
-        $fix = ['set' => filter_var($trimmed, FILTER_VALIDATE_URL) ? $trimmed : ''];
 
-        return [$this->problem(self::INVALID_URL, $entry, $field, $value, $fix)];
+        $trimmed = trim($value);
+        if (StringUtilService::isWebAddress($trimmed)) {
+            return [$this->problem(self::INVALID_URL, $entry, $field, $value, ['set' => $trimmed])];
+        }
+        if (preg_match('#^[a-z][a-z0-9+.-]*:/*$#i', $trimmed)) {
+            return [$this->problem(self::INVALID_URL, $entry, $field, $value, ['set' => ''])];
+        }
+
+        return [$this->editable(self::INVALID_URL, $entry, $field, $value, 'url', $trimmed)];
+    }
+
+    private function editable(string $code, array $entry, BazarField $field, string $detail, string $kind, string $suggested): array
+    {
+        return array_replace(
+            $this->problem($code, $entry, $field, $detail, null),
+            ['freeText' => $kind, 'suggested' => $suggested]
+        );
     }
 
     private function remoteFileValues(array $fields, array $entries): array
@@ -476,6 +526,7 @@ class EntryChecker
                 'fixLabel' => 'BAZ_CHECKCONTENT_FIX_MANUAL',
                 'options' => [],
                 'multiple' => false,
+                'freeText' => '',
                 'suggested' => '',
             ];
         }
@@ -534,6 +585,7 @@ class EntryChecker
             'fixLabel' => 'BAZ_CHECKCONTENT_FIX_MANUAL',
             'options' => [],
             'multiple' => false,
+            'freeText' => '',
             'suggested' => '',
         ];
     }

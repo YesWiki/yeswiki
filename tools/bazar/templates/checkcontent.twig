@@ -1,3 +1,4 @@
+{{ include_javascript('tools/bazar/presentation/javascripts/checkcontent.js') }}
 <div class="checkcontent">
   {% if not (forms|length > 0) %}
     <div class="alert alert-danger">{{ _t('BAZ_PAS_DE_FORMULAIRES_TROUVES') }}</div>
@@ -80,7 +81,8 @@
         {{ _t('BAZ_CHECKCONTENT_SUMMARY', {problems: problemsCount, entries: entriesCount}) }}
       </div>
 
-      <form method="post" action="{{ url({params: params}) }}">
+      <form method="post" action="{{ url({params: params}) }}"
+        class="checkcontent-repair-form" data-confirm="{{ _t('BAZ_CHECKCONTENT_CONFIRM') }}">
         {% for code, rows in problems %}
           <div class="panel panel-warning">
             <div class="panel-heading">
@@ -104,7 +106,7 @@
                 {% for row in rows %}
                   <tr>
                     <td>
-                      {% if row.fix or row.options is not empty %}
+                      {% if row.fix or row.options is not empty or row.freeText %}
                         <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}">
                       {% endif %}
                     </td>
@@ -126,6 +128,9 @@
                             <option value="{{ value }}"{% if value == row.suggested %} selected{% endif %}>{{ label }}</option>
                           {% endfor %}
                         </select>
+                      {% elseif row.fix is null and row.freeText %}
+                        <input type="text" class="form-control input-sm"
+                          name="checkcontent-value[{{ row.key }}]" value="{{ row.suggested }}">
                       {% elseif row.fix is null %}
                         <em>{{ _t(row.fixLabel) }}</em>
                       {% elseif row.fix.unset is defined %}
@@ -145,20 +150,10 @@
 
         <input type="hidden" name="id_typeannonce" value="{{ id }}">
         <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
-        <button class="btn btn-primary" type="submit"
-          onclick="return confirm('{{ _t('BAZ_CHECKCONTENT_CONFIRM')|e('js') }}');">
+        <button class="btn btn-primary" type="submit">
           {{ _t('BAZ_CHECKCONTENT_REPAIR') }}
         </button>
       </form>
-
-      <script>
-        document.querySelectorAll('.checkcontent-selectall').forEach(function (master) {
-          master.addEventListener('change', function () {
-            document.querySelectorAll(master.dataset.target + ' input[type=checkbox]')
-              .forEach(function (box) { box.checked = master.checked })
-          })
-        })
-      </script>
     {% endif %}
   {% endif %}
 </div>

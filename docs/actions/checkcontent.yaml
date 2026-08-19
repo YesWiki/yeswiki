@@ -7,3 +7,9 @@ actions:
   checkcontent:
     label: _t(AB_checkcontent_action_label)
     description: _t(AB_checkcontent_action_description)
+    properties:
+      textreplace:
+        label: _t(AB_checkcontent_textreplace_label)
+        hint: _t(AB_checkcontent_textreplace_hint)
+        type: text
+        advanced: true

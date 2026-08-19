@@ -452,4 +452,5 @@ return [
     'BAZ_CHECKCONTENT_UNFETCHED_NOT_HTTPS' => 'http simple, non interrogée',
     'BAZ_CHECKCONTENT_UNFETCHED_BLOCKED' => 'pointe vers le réseau du serveur, non interrogée',
     'BAZ_CHECKCONTENT_UNFETCHED_OVER_LIMIT' => 'au-delà de la limite de 200 adresses par passage',
+    'BAZ_CHECKCONTENT_TEXT_REPLACEMENT' => 'à compléter',
 ];

@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use YesWiki\Core\Service\StringUtilService;
 
 /**
  * Ask a batch of URLs whether they still answer, without downloading what they hold.
@@ -40,32 +41,33 @@ class UrlReachability
             $results[$url] = ['fetched' => false, 'reason' => self::OVER_LIMIT];
         }
 
-        $pins = [];
+        $requests = [];
         foreach (array_slice($urls, 0, self::MAX_URLS) as $url) {
             if (parse_url($url, PHP_URL_SCHEME) !== 'https') {
                 $results[$url] = ['fetched' => false, 'reason' => self::NOT_HTTPS];
                 continue;
             }
+            $encoded = StringUtilService::encodeUrlNonAscii($url);
             try {
-                $pins[$url] = $this->ssrfUrlValidator->resolveSafe($url);
+                $requests[$url] = ['url' => $encoded, 'pin' => $this->ssrfUrlValidator->resolveSafe($encoded)];
             } catch (\Throwable $error) {
                 $results[$url] = ['fetched' => false, 'reason' => self::BLOCKED];
             }
         }
 
-        return $results + $this->head($pins);
+        return $results + $this->head($requests);
     }
 
-    private function head(array $pins): array
+    private function head(array $requests): array
     {
-        if (empty($pins)) {
+        if (empty($requests)) {
             return [];
         }
 
         $client = HttpClient::create();
         $responses = [];
-        foreach ($pins as $url => $pin) {
-            $responses[$url] = $client->request('HEAD', $url, $this->options($pin));
+        foreach ($requests as $url => $request) {
+            $responses[$url] = $client->request('HEAD', $request['url'], $this->options($request['pin']));
         }
 
         $results = [];
@@ -73,7 +75,8 @@ class UrlReachability
             try {
                 $status = $response->getStatusCode();
                 if (in_array($status, [405, 501], true)) {
-                    $status = $client->request('GET', $url, $this->options($pins[$url]))->getStatusCode();
+                    $retry = $client->request('GET', $requests[$url]['url'], $this->options($requests[$url]['pin']));
+                    $status = $retry->getStatusCode();
                 }
                 $results[$url] = ['fetched' => true, 'status' => $status, 'error' => null];
             } catch (ExceptionInterface $error) {

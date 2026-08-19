@@ -449,4 +449,6 @@ return [
     'AB_checkcontent_label' => 'Vérifier les fiches',
     'AB_checkcontent_action_label' => 'Vérifier les fiches d\'un formulaire',
     'AB_checkcontent_action_description' => 'Liste les fiches dont les valeurs ne correspondent plus au formulaire : champs obligatoires vides, valeurs hors liste, liens vers des fiches supprimées, adresses mail, dates et adresses web mal formées, champs que le formulaire ne définit plus. Réservé aux admins.',
+    'AB_checkcontent_textreplace_label' => 'Texte de remplacement pour les champs obligatoires vides',
+    'AB_checkcontent_textreplace_hint' => 'Proposé comme valeur quand un champ texte ou texte long obligatoire est vide. Par défaut, la formulation de la langue du site. Laissez vide pour ne rien proposer et corriger ces fiches à la main.',
 ];

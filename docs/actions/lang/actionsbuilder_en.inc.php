@@ -443,4 +443,6 @@ return [
     'AB_checkcontent_label' => 'Check entries',
     'AB_checkcontent_action_label' => 'Check the entries of a form',
     'AB_checkcontent_action_description' => 'Lists the entries whose values no longer match the form: empty required fields, values outside a list, links to deleted entries, malformed emails, dates and web addresses, fields the form no longer defines. Admins only.',
+    'AB_checkcontent_textreplace_label' => 'Stand-in text for empty required fields',
+    'AB_checkcontent_textreplace_hint' => 'Offered as the value when a required text or long-text field is empty. Defaults to the site language wording. Leave empty to offer nothing and fix those entries by hand.',
 ];

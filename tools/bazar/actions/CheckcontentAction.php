@@ -18,6 +18,9 @@ class CheckcontentAction extends YesWikiAction
             'id' => $request->get('id_typeannonce') ?? $arg['id'] ?? $arg['idtypeannonce'] ?? '',
             'repair' => is_array($selected) ? array_values(array_filter($selected, 'is_string')) : [],
             'pickedValues' => is_array($picked) ? $picked : [],
+            'textreplace' => is_scalar($arg['textreplace'] ?? null)
+                ? strval($arg['textreplace'])
+                : _t('BAZ_CHECKCONTENT_TEXT_REPLACEMENT'),
             'params' => $request->query->has('debug') ? ['debug' => 'yes'] : [],
         ];
     }
@@ -49,10 +52,15 @@ class CheckcontentAction extends YesWikiAction
                 return $this->getMessageWhenHibernated();
             }
             $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
-            $repairResult = $entryChecker->repair($id, $this->arguments['repair'], $this->arguments['pickedValues']);
+            $repairResult = $entryChecker->repair(
+                $id,
+                $this->arguments['repair'],
+                $this->arguments['pickedValues'],
+                $this->arguments['textreplace']
+            );
         }
 
-        $result = $entryChecker->check($id);
+        $result = $entryChecker->check($id, $this->arguments['textreplace']);
 
         return $this->render('@bazar/checkcontent.twig', [
             'forms' => $forms,

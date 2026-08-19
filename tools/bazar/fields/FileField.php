@@ -11,6 +11,7 @@ use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -41,7 +42,7 @@ class FileField extends BazarField
         if (empty($value)) {
             return false;
         }
-        return filter_var($value, FILTER_VALIDATE_URL) !== false;
+        return StringUtilService::isWebAddress($value);
     }
 
     public function __construct(array $values, ContainerInterface $services)

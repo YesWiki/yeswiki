@@ -13,6 +13,7 @@ use YesWiki\Bazar\Field\LinkField;
 use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Bazar\Field\SelectListField;
 use YesWiki\Bazar\Field\TagsField;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\TextField;
 use YesWiki\Bazar\Service\EntryChecker;
 use YesWiki\Bazar\Service\EntryManager;
@@ -210,6 +211,85 @@ class EntryCheckerTest extends TestCase
         $this->assertCount(1, $unchecked[EntryChecker::REMOTE_OPTIONS]);
         $this->assertSame('https://autre.wiki/?api/forms/3/entries', $unchecked[EntryChecker::REMOTE_OPTIONS][0]['source']);
         $this->assertSame('listefiche', $unchecked[EntryChecker::REMOTE_OPTIONS][0]['type']);
+    }
+
+    public function testARequiredTextFieldOffersTheStandInTextAndWritesThePickedOne()
+    {
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1', 'bf_resume' => ''];
+        $this->givenForm(
+            [new TextareaField($this->values([0 => 'textelong', 1 => 'bf_resume', 8 => 1]), $this->services)],
+            ['FicheUne' => $body]
+        );
+        $saved = $this->captureSave($body);
+
+        $rows = $this->checker()->check('1', 'à compléter')['problems'][EntryChecker::REQUIRED_EMPTY];
+        $this->assertSame('any', $rows[0]['freeText']);
+        $this->assertSame('à compléter', $rows[0]['suggested']);
+        $this->assertSame([], $rows[0]['options']);
+
+        $key = $rows[0]['key'];
+        $result = $this->checker()->repair('1', [$key], [$key => 'à compléter'], 'à compléter');
+
+        $this->assertSame(1, $result['repaired']);
+        $this->assertSame('à compléter', $saved->body['bf_resume']);
+    }
+
+    public function testAnAdminCanReplaceTheStandInWithARealValue()
+    {
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1'];
+        $this->givenForm(
+            [$this->textField('bf_note', true)],
+            ['FicheUne' => $body]
+        );
+        $saved = $this->captureSave($body);
+
+        $key = EntryChecker::REQUIRED_EMPTY . '::FicheUne::bf_note';
+        $result = $this->checker()->repair('1', [$key], [$key => '  Atelier du jeudi  '], 'à compléter');
+
+        $this->assertSame(1, $result['repaired']);
+        $this->assertSame('Atelier du jeudi', $saved->body['bf_note']);
+    }
+
+    public function testABlankedStandInWritesNothing()
+    {
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1'];
+        $this->givenForm([$this->textField('bf_note', true)], ['FicheUne' => $body]);
+        $saved = $this->captureSave($body);
+
+        $key = EntryChecker::REQUIRED_EMPTY . '::FicheUne::bf_note';
+        $result = $this->checker()->repair('1', [$key], [$key => '   '], 'à compléter');
+
+        $this->assertSame(0, $result['repaired']);
+        $this->assertSame(0, $saved->calls);
+    }
+
+    public function testAnEmptyTextreplaceOffersNothing()
+    {
+        $this->givenForm(
+            [$this->textField('bf_note', true)],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'bf_note' => '']]
+        );
+
+        $rows = $this->checker()->check('1', '')['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertSame('', $rows[0]['freeText']);
+        $this->assertNull($rows[0]['fix']);
+    }
+
+    public function testATypedTextFieldGetsNoStandInBecauseItCannotHoldASentence()
+    {
+        $email = new TextField($this->values([0 => 'texte', 1 => 'bf_contact', 7 => 'email', 8 => 1]), $this->services);
+        $date = new TextField($this->values([0 => 'texte', 1 => 'bf_quand', 7 => 'date', 8 => 1]), $this->services);
+        $this->givenForm(
+            [$email, $date],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'bf_contact' => '', 'bf_quand' => '']]
+        );
+
+        $rows = $this->checker()->check('1', 'à compléter')['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertCount(2, $rows);
+        $this->assertSame('', $rows[0]['freeText']);
+        $this->assertSame('', $rows[1]['freeText']);
     }
 
     public function testATagsFieldIsLeftAloneRatherThanCheckedAgainstItsOwnValues()
@@ -491,7 +571,7 @@ class EntryCheckerTest extends TestCase
         $this->assertSame(['set' => ''], $rows[0]['fix']);
     }
 
-    public function testPlaceholderUrlIsReportedAndSurroundingSpacesAreTrimmed()
+    public function testPlaceholderUrlIsClearedAndSurroundingSpacesAreTrimmed()
     {
         $this->givenForm(
             [new LinkField($this->values([1 => 'bf_site']), $this->services)],
@@ -507,6 +587,79 @@ class EntryCheckerTest extends TestCase
         $this->assertCount(2, $rows);
         $this->assertSame(['set' => ''], $rows[0]['fix']);
         $this->assertSame(['set' => 'https://example.com'], $rows[1]['fix']);
+    }
+
+    public function testAnAddressCarryingAccentsOrEmojiIsNotMalformed()
+    {
+        $this->givenForm(
+            [new LinkField($this->values([1 => 'bf_url1']), $this->services)],
+            [
+                'FicheUne' => ['id_fiche' => 'FicheUne', 'bf_url1' => 'https://www.linkedin.com/in/géraldine-louis/'],
+                'FicheDeux' => ['id_fiche' => 'FicheDeux', 'bf_url1' => 'https://www.linkedin.com/in/julie-chabaud-💚-b9923126'],
+                'FicheTrois' => ['id_fiche' => 'FicheTrois', 'bf_url1' => 'https://www.linkedin.com/in/laurent-marseault-⚖-114b221b'],
+            ]
+        );
+
+        $this->assertSame([], $this->checker()->check('1')['problems']);
+    }
+
+    public function testAnAddressWithAnAccentedHostIsNotMalformed()
+    {
+        $this->givenForm(
+            [new LinkField($this->values([1 => 'bf_url1']), $this->services)],
+            [
+                'FicheUne' => ['id_fiche' => 'FicheUne', 'bf_url1' => 'https://exämple.com/chemin/café'],
+                'FicheDeux' => ['id_fiche' => 'FicheDeux', 'bf_url1' => 'https://café.fr'],
+            ]
+        );
+
+        $this->assertSame([], $this->checker()->check('1')['problems']);
+    }
+
+    public function testTwoAddressesInOneFieldAreEditedRatherThanDeleted()
+    {
+        $crammed = 'https://www.linkedin.com/in/pwillemarck/ ; https://www.facebook.com/pwillemarck/';
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1', 'bf_url1' => $crammed];
+        $this->givenForm([new LinkField($this->values([1 => 'bf_url1']), $this->services)], ['FicheUne' => $body]);
+        $saved = $this->captureSave($body);
+
+        $rows = $this->checker()->check('1')['problems'][EntryChecker::INVALID_URL];
+        $this->assertNull($rows[0]['fix']);
+        $this->assertSame('url', $rows[0]['freeText']);
+        $this->assertSame($crammed, $rows[0]['suggested']);
+
+        $key = $rows[0]['key'];
+        $this->checker()->repair('1', [$key], [$key => 'https://www.linkedin.com/in/pwillemarck/']);
+        $this->assertSame('https://www.linkedin.com/in/pwillemarck/', $saved->body['bf_url1']);
+    }
+
+    public function testAnEditedAddressThatIsStillNotAnAddressIsRefused()
+    {
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1', 'bf_url1' => 'a ; b'];
+        $this->givenForm([new LinkField($this->values([1 => 'bf_url1']), $this->services)], ['FicheUne' => $body]);
+        $saved = $this->captureSave($body);
+
+        $key = EntryChecker::INVALID_URL . '::FicheUne::bf_url1';
+        $result = $this->checker()->repair('1', [$key], [$key => 'toujours pas une adresse']);
+
+        $this->assertSame(0, $result['repaired']);
+        $this->assertSame(0, $saved->calls);
+    }
+
+    public function testAnEmailWrittenWithAccentsIsNotMalformed()
+    {
+        $this->givenForm(
+            [new EmailField($this->values([1 => 'bf_mail']), $this->services)],
+            [
+                'FicheUne' => ['id_fiche' => 'FicheUne', 'bf_mail' => 'josé@exemple.fr'],
+                'FicheDeux' => ['id_fiche' => 'FicheDeux', 'bf_mail' => 'pas un mail'],
+            ]
+        );
+
+        $rows = $this->checker()->check('1')['problems'][EntryChecker::INVALID_EMAIL];
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('FicheDeux', $rows[0]['entryId']);
     }
 
     public function testReferenceToDeletedEntryIsReported()

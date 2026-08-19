@@ -435,4 +435,5 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_CHECKCONTENT_UNFETCHED_NOT_HTTPS' => 'plain http, not requested',
     'BAZ_CHECKCONTENT_UNFETCHED_BLOCKED' => 'points inside the server network, not requested',
     'BAZ_CHECKCONTENT_UNFETCHED_OVER_LIMIT' => 'past the 200 address limit for one run',
+    'BAZ_CHECKCONTENT_TEXT_REPLACEMENT' => 'to be completed',
 ];
