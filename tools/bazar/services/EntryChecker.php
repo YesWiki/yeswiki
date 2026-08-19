@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Bazar\Field\EnumField;
@@ -254,7 +253,7 @@ class EntryChecker
     {
         $unchecked = array_fill_keys(self::UNCHECKED_REASONS, []);
         foreach ($fields as $field) {
-            if (!($field instanceof EnumField) || $field instanceof TagsField) {
+            if (!($field instanceof EnumField) || !$this->hasCheckableOptions($field)) {
                 continue;
             }
             if (!empty($field->isDistantJson)) {
@@ -283,7 +282,7 @@ class EntryChecker
         $options = $this->pickableOptions($field);
         if (!empty($options)) {
             $problem['options'] = $options;
-            $problem['multiple'] = $field instanceof CheckboxField;
+            $problem['multiple'] = $this->holdsSeveralValues($field);
             $problem['suggested'] = array_key_exists($field->getDefault(), $options) ? $field->getDefault() : '';
         }
 
@@ -292,7 +291,8 @@ class EntryChecker
 
     private function pickableOptions(BazarField $field): array
     {
-        if (!($field instanceof EnumField) || !empty($field->isDistantJson)) {
+        if (!($field instanceof EnumField) || !empty($field->isDistantJson)
+            || !$this->hasCheckableOptions($field)) {
             return [];
         }
         $options = $field->getOptions();
@@ -415,6 +415,9 @@ class EntryChecker
 
     private function checkOptions(EnumField $field, array $entry, $value): array
     {
+        if (!$this->hasCheckableOptions($field)) {
+            return [];
+        }
         $options = $field->getOptions();
         if (!is_string($value) || !is_array($options) || empty($options)) {
             return [];
@@ -427,7 +430,7 @@ class EntryChecker
         }
 
         $kept = array_intersect($values, array_keys($options));
-        $fix = ['set' => $field instanceof CheckboxField ? implode(',', $kept) : ''];
+        $fix = ['set' => $this->holdsSeveralValues($field) ? implode(',', $kept) : ''];
 
         return [$this->problem(self::UNKNOWN_OPTION, $entry, $field, implode(', ', $unknown), $fix)];
     }
@@ -447,7 +450,7 @@ class EntryChecker
         }
 
         $kept = array_values(array_diff($values, $broken));
-        $fix = ['set' => $field instanceof CheckboxField ? implode(',', $kept) : ''];
+        $fix = ['set' => $this->holdsSeveralValues($field) ? implode(',', $kept) : ''];
 
         return [$this->problem(self::BROKEN_ENTRY, $entry, $field, implode(', ', $broken), $fix)];
     }
@@ -494,9 +497,25 @@ class EntryChecker
 
     private function splitValues(EnumField $field, string $value): array
     {
-        $values = $field instanceof CheckboxField ? explode(',', $value) : [$value];
+        $values = $this->holdsSeveralValues($field) ? explode(',', $value) : [$value];
 
         return array_values(array_filter(array_map('trim', $values), 'strlen'));
+    }
+
+    private function holdsSeveralValues(EnumField $field): bool
+    {
+        $structure = $field->getValueStructure()[$field->getPropertyName()] ?? [];
+
+        return ($structure['_mode_'] ?? 'single') === 'multiple';
+    }
+
+    /**
+     * A tags field builds its option list out of the values already stored on entries, so
+     * checking a value against it can only ever confirm itself.
+     */
+    private function hasCheckableOptions(EnumField $field): bool
+    {
+        return !$field instanceof TagsField;
     }
 
     private function problem(string $code, array $entry, BazarField $field, $detail, ?array $fix): array

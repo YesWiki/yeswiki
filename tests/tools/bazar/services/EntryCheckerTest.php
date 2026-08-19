@@ -12,6 +12,7 @@ use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\LinkField;
 use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Bazar\Field\SelectListField;
+use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\TextField;
 use YesWiki\Bazar\Service\EntryChecker;
 use YesWiki\Bazar\Service\EntryManager;
@@ -20,10 +21,12 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Bazar\Service\UrlReachability;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 require_once 'includes/autoload.inc.php';
+require_once 'includes/constants.php';
 require_once 'includes/i18n.inc.php';
 
 class EntryCheckerTest extends TestCase
@@ -121,8 +124,15 @@ class EntryCheckerTest extends TestCase
             };
         });
 
+        $tripleStore = $this->createStub(TripleStore::class);
+        $tripleStore->method('getMatching')->willReturn([
+            ['value' => 'velo'],
+            ['value' => 'atelier'],
+        ]);
+
         $stubs = [
             ListManager::class => $listManager,
+            TripleStore::class => $tripleStore,
             Wiki::class => $wiki,
             ParameterBagInterface::class => $params,
             ExternalBazarService::class => $externalBazarService,
@@ -200,6 +210,35 @@ class EntryCheckerTest extends TestCase
         $this->assertCount(1, $unchecked[EntryChecker::REMOTE_OPTIONS]);
         $this->assertSame('https://autre.wiki/?api/forms/3/entries', $unchecked[EntryChecker::REMOTE_OPTIONS][0]['source']);
         $this->assertSame('listefiche', $unchecked[EntryChecker::REMOTE_OPTIONS][0]['type']);
+    }
+
+    public function testATagsFieldIsLeftAloneRatherThanCheckedAgainstItsOwnValues()
+    {
+        $tags = new TagsField($this->values([0 => 'tags', 1 => 'bf_tags']), $this->services);
+        $this->givenForm(
+            [$tags],
+            [
+                'FicheUne' => ['id_fiche' => 'FicheUne', 'bf_tags' => 'velo,atelier'],
+                'FicheDeux' => ['id_fiche' => 'FicheDeux', 'bf_tags' => 'nouveautag'],
+            ]
+        );
+
+        $result = $this->checker()->check('1');
+
+        $this->assertSame([], $result['problems']);
+        $this->assertSame([], $result['unchecked']);
+    }
+
+    public function testARequiredTagsFieldGetsNoPickerBecauseTagsAreFreeText()
+    {
+        $tags = new TagsField($this->values([0 => 'tags', 1 => 'bf_tags', 8 => 1]), $this->services);
+        $this->givenForm([$tags], ['FicheUne' => ['id_fiche' => 'FicheUne', 'bf_tags' => '']]);
+
+        $rows = $this->checker()->check('1')['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertCount(1, $rows);
+        $this->assertSame([], $rows[0]['options']);
+        $this->assertNull($rows[0]['fix']);
     }
 
     public function testAFieldPointingAtAMissingListIsListedAsUnchecked()
