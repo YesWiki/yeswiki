@@ -96,7 +96,10 @@
                 <tr>
                   <th class="col-sm-1">
                     {% if selectable %}
-                      <input type="checkbox" class="checkcontent-selectall">
+                      <label class="check-all-container" title="{{ _t('BAZ_SELECT_ALL') }}">
+                        <input type="checkbox" class="checkcontent-selectall">
+                        <span></span>
+                      </label>
                     {% endif %}
                   </th>
                   <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_ENTRY') }}</th>
@@ -110,7 +113,10 @@
                   <tr>
                     <td>
                       {% if row.fix or row.options is not empty or row.freeText %}
-                        <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}">
+                        <label title="{{ row.entryTitle }}">
+                          <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}">
+                          <span></span>
+                        </label>
                       {% endif %}
                     </td>
                     <td>
