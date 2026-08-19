@@ -84,17 +84,20 @@
       <form method="post" action="{{ url({params: params}) }}"
         class="checkcontent-repair-form" data-confirm="{{ _t('BAZ_CHECKCONTENT_CONFIRM') }}">
         {% for code, rows in problems %}
+          {% set selectable = rows|filter(row => row.fix or row.options is not empty or row.freeText)|length %}
           <div class="panel panel-warning">
             <div class="panel-heading">
               <strong>{{ _t('BAZ_CHECKCONTENT_' ~ code|upper) }}</strong>
               <span class="badge">{{ rows|length }}</span>
               <div class="help-block">{{ _t('BAZ_CHECKCONTENT_' ~ code|upper ~ '_HINT') }}</div>
             </div>
-            <table class="table table-condensed table-striped" id="checkcontent-{{ code }}">
+            <table class="table table-condensed table-striped">
               <thead>
                 <tr>
                   <th class="col-sm-1">
-                    <input type="checkbox" class="checkcontent-selectall" data-target="#checkcontent-{{ code }} tbody">
+                    {% if selectable %}
+                      <input type="checkbox" class="checkcontent-selectall">
+                    {% endif %}
                   </th>
                   <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_ENTRY') }}</th>
                   <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIELD') }}</th>

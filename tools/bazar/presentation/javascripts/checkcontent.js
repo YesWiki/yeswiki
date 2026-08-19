@@ -3,11 +3,13 @@ document.addEventListener('change', (event) => {
   if (!master) {
     return
   }
-  document
-    .querySelectorAll(`${master.dataset.target} input[type=checkbox]`)
-    .forEach((box) => {
-      box.checked = master.checked
-    })
+  const table = master.closest('table')
+  if (!table) {
+    return
+  }
+  table.querySelectorAll('tbody input[type=checkbox]').forEach((box) => {
+    box.checked = master.checked
+  })
 })
 
 document.addEventListener('submit', (event) => {
