@@ -1,0 +1,164 @@
+<div class="checkcontent">
+  {% if not (forms|length > 0) %}
+    <div class="alert alert-danger">{{ _t('BAZ_PAS_DE_FORMULAIRES_TROUVES') }}</div>
+  {% else %}
+    <form method="post" class="form-horizontal" action="{{ url({params: params}) }}">
+      <div class="control-group form-group">
+        <label class="control-label col-sm-3">{{ _t('BAZ_CHECKCONTENT_FORM_LABEL') }} :</label>
+        <div class="controls col-sm-9">
+          <select class="form-control" name="id_typeannonce" onchange="javascript:this.form.submit();">
+            {% if not id %}
+              <option value="" selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
+            {% endif %}
+            {% for form in forms %}
+              <option value="{{ form.bn_id_nature }}"{% if id == form.bn_id_nature %} selected{% endif %}>
+                {{ form.bn_label_nature }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if repairResult %}
+    <div class="alert alert-success">
+      {{ _t('BAZ_CHECKCONTENT_REPAIRED', {count: repairResult.repaired, entries: repairResult.entries}) }}
+    </div>
+    {% if repairResult.failed|length > 0 %}
+      <div class="alert alert-danger">
+        <strong>{{ _t('BAZ_CHECKCONTENT_REPAIR_FAILED') }}</strong>
+        <ul>
+          {% for entryId, message in repairResult.failed %}
+            <li>{{ entryId }} : {{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if id %}
+    {% for reason, fields in unchecked %}
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <strong>{{ _t('BAZ_CHECKCONTENT_' ~ reason|upper) }}</strong>
+          <span class="badge">{{ fields|length }}</span>
+          <div class="help-block">{{ _t('BAZ_CHECKCONTENT_' ~ reason|upper ~ '_HINT') }}</div>
+        </div>
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIELD') }}</th>
+              <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_TYPE') }}</th>
+              <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_SOURCE') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for field in fields %}
+              <tr>
+                <td>
+                  {{ field.fieldLabel }}
+                  {% if field.propertyName != field.source %}
+                    <small class="text-muted">{{ field.propertyName }}</small>
+                  {% endif %}
+                </td>
+                <td><code>{{ field.type }}</code></td>
+                <td><code>{{ field.source }}</code></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+
+    {% if problemsCount == 0 %}
+      <div class="alert alert-success">
+        {{ _t('BAZ_CHECKCONTENT_NO_PROBLEM', {entries: entriesCount}) }}
+      </div>
+    {% else %}
+      <div class="alert alert-info">
+        {{ _t('BAZ_CHECKCONTENT_SUMMARY', {problems: problemsCount, entries: entriesCount}) }}
+      </div>
+
+      <form method="post" action="{{ url({params: params}) }}">
+        {% for code, rows in problems %}
+          <div class="panel panel-warning">
+            <div class="panel-heading">
+              <strong>{{ _t('BAZ_CHECKCONTENT_' ~ code|upper) }}</strong>
+              <span class="badge">{{ rows|length }}</span>
+              <div class="help-block">{{ _t('BAZ_CHECKCONTENT_' ~ code|upper ~ '_HINT') }}</div>
+            </div>
+            <table class="table table-condensed table-striped" id="checkcontent-{{ code }}">
+              <thead>
+                <tr>
+                  <th class="col-sm-1">
+                    <input type="checkbox" class="checkcontent-selectall" data-target="#checkcontent-{{ code }} tbody">
+                  </th>
+                  <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_ENTRY') }}</th>
+                  <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIELD') }}</th>
+                  <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_VALUE') }}</th>
+                  <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIX') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in rows %}
+                  <tr>
+                    <td>
+                      {% if row.fix or row.options is not empty %}
+                        <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}">
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a href="{{ url({tag: row.entryId, handler: 'edit'}) }}" target="_blank">{{ row.entryTitle }}</a>
+                    </td>
+                    <td>
+                      {{ row.fieldLabel }}
+                      <small class="text-muted">{{ row.propertyName }}</small>
+                    </td>
+                    <td><code>{{ row.detail|slice(0, 120) }}{{ row.detail|length > 120 ? '…' }}</code></td>
+                    <td>
+                      {% if row.fix is null and row.options is not empty %}
+                        <select class="form-control input-sm" name="checkcontent-value[{{ row.key }}]{% if row.multiple %}[]{% endif %}"{% if row.multiple %} multiple size="4"{% endif %}>
+                          {% if not row.multiple %}
+                            <option value="">{{ _t('BAZ_CHOISIR') }}</option>
+                          {% endif %}
+                          {% for value, label in row.options %}
+                            <option value="{{ value }}"{% if value == row.suggested %} selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                      {% elseif row.fix is null %}
+                        <em>{{ _t(row.fixLabel) }}</em>
+                      {% elseif row.fix.unset is defined %}
+                        {{ _t('BAZ_CHECKCONTENT_FIX_REMOVE') }}
+                      {% elseif row.fix.set is empty %}
+                        {{ _t('BAZ_CHECKCONTENT_FIX_CLEAR') }}
+                      {% else %}
+                        {{ _t('BAZ_CHECKCONTENT_FIX_REPLACE', {value: row.fix.set}) }}
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+
+        <input type="hidden" name="id_typeannonce" value="{{ id }}">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+        <button class="btn btn-primary" type="submit"
+          onclick="return confirm('{{ _t('BAZ_CHECKCONTENT_CONFIRM')|e('js') }}');">
+          {{ _t('BAZ_CHECKCONTENT_REPAIR') }}
+        </button>
+      </form>
+
+      <script>
+        document.querySelectorAll('.checkcontent-selectall').forEach(function (master) {
+          master.addEventListener('change', function () {
+            document.querySelectorAll(master.dataset.target + ' input[type=checkbox]')
+              .forEach(function (box) { box.checked = master.checked })
+          })
+        })
+      </script>
+    {% endif %}
+  {% endif %}
+</div>

@@ -12,6 +12,7 @@ use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Wiki;
 
 /**
  * @Field({"fichier"})
@@ -26,6 +27,11 @@ class FileField extends BazarField
     protected $attach;
     protected $maxSize;
     protected $authorizedExts;
+
+    public const FILE_PRESENT = 'present';
+    public const FILE_MISSING = 'missing';
+    public const FILE_UNREADABLE = 'unreadable';
+    public const FILE_REMOTE = 'remote';
 
     /**
      * Check if a value is a URL.
@@ -346,6 +352,37 @@ class FileField extends BazarField
         $sanitizedFilename = $attach->sanitizeFilename($filename);
 
         return $sanitizedFilename;
+    }
+
+    /**
+     * Tell where the value stored on an entry points: a remote URL, a readable file,
+     * a missing one, or one the server refuses to read.
+     */
+    public function locateFile($entry, ?string $value): string
+    {
+        if (empty($value)) {
+            return self::FILE_MISSING;
+        }
+        if ($this->isUrl($value)) {
+            return self::FILE_REMOTE;
+        }
+
+        $path = $this->getUploadDirectory($entry) . $value;
+        if (!file_exists($path)) {
+            return self::FILE_MISSING;
+        }
+
+        return is_readable($path) ? self::FILE_PRESENT : self::FILE_UNREADABLE;
+    }
+
+    private function getUploadDirectory($entry): string
+    {
+        $uploadPath = rtrim($this->getService(ParameterBagInterface::class)->get('attach_config')['upload_path'], '/');
+        if (empty($this->getService(Wiki::class)->GetConfigValue('no_safe_mode'))) {
+            return $uploadPath . '/';
+        }
+
+        return $uploadPath . '/' . ($entry['id_fiche'] ?? '') . '/';
     }
 
     protected function getBasePath(): string

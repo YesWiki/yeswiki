@@ -1,0 +1,9 @@
+label: _t(AB_checkcontent_label)
+position: 2001
+onlyForAdmins: true
+needFormField: true
+previewHeight: 400px
+actions:
+  checkcontent:
+    label: _t(AB_checkcontent_action_label)
+    description: _t(AB_checkcontent_action_description)

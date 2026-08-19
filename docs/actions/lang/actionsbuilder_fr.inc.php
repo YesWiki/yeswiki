@@ -446,4 +446,7 @@ return [
     'AB_bazartableau_columnswidth_width_label' => 'Largeur',
     'AB_bazartableau_exportallcolumns_label' => 'Exporter aussi les colonnes masquées',
     'AB_bazartableau_displayimagesasthumbnails_label' => 'Afficher les images sous forme de vignette',
+    'AB_checkcontent_label' => 'Vérifier les fiches',
+    'AB_checkcontent_action_label' => 'Vérifier les fiches d\'un formulaire',
+    'AB_checkcontent_action_description' => 'Liste les fiches dont les valeurs ne correspondent plus au formulaire : champs obligatoires vides, valeurs hors liste, liens vers des fiches supprimées, adresses mail, dates et adresses web mal formées, champs que le formulaire ne définit plus. Réservé aux admins.',
 ];

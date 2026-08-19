@@ -440,4 +440,7 @@ return [
     'AB_bazar_sort_dynamique' => 'Dynamic sorting',
     'AB_bazar_sort' => 'Sort data',
     'AB_bazar_sort_add_field' => 'Add dynamic sort',
+    'AB_checkcontent_label' => 'Check entries',
+    'AB_checkcontent_action_label' => 'Check the entries of a form',
+    'AB_checkcontent_action_description' => 'Lists the entries whose values no longer match the form: empty required fields, values outside a list, links to deleted entries, malformed emails, dates and web addresses, fields the form no longer defines. Admins only.',
 ];
