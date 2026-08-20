@@ -5,6 +5,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Syndication\Service\SafeFile;
 
 include_once 'tools/syndication/libs/syndication.lib.php';
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -78,9 +79,14 @@ class SyndicationAction extends YesWikiAction
             foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
+                    $feed->get_registry()->register(SimplePie\File::class, SafeFile::class);
                     $feed->set_feed_url($url);
                     $feed->enable_cache(true);
-                    $feed->init();
+                    try {
+                        $feed->init();
+                    } catch (Throwable $error) {
+                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . htmlspecialchars($error->getMessage()) . '</div>' . "\n";
+                    }
                     $feed->handle_content_type();
                     if ($feed->error()) {
                         return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
@@ -233,6 +239,11 @@ class SyndicationAction extends YesWikiAction
         if (empty($sourceUrl)) {
             return '';
         }
+        try {
+            $pin = SafeFile::pin($sourceUrl);
+        } catch (Throwable $error) {
+            return '';
+        }
         $t = explode('/', $sourceUrl);
         $fileName = array_pop($t);
         $destFile = sha1($sourceUrl) . '_' . $fileName;
@@ -240,11 +251,14 @@ class SyndicationAction extends YesWikiAction
         if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
             $fp = fopen($destPath, 'wb');
             $ch = curl_init($sourceUrl);
+            foreach ($pin as $option => $optionValue) {
+                curl_setopt($ch, $option, $optionValue);
+            }
             curl_setopt($ch, CURLOPT_FILE, $fp);
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
             curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             if ($noSSLCheck) {
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             }

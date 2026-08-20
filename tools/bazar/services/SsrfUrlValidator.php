@@ -5,9 +5,9 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 
 /**
- * Validates that a URL is safe to fetch server-side: must be HTTPS and must
- * not resolve to a private, loopback, reserved, or link-local address (SSRF guard).
- * Shared by every service that follows attacker-influenced ActivityPub/WebFinger URLs.
+ * Validates that a URL is safe to fetch server-side: it must use a scheme the caller allows,
+ * and must not resolve to a private, loopback, reserved, or link-local address (SSRF guard).
+ * Shared by every service that follows a URL somebody else chose.
  */
 class SsrfUrlValidator
 {
@@ -19,16 +19,19 @@ class SsrfUrlValidator
      * own, independent DNS lookup at connect time (which would reopen a
      * DNS-rebinding race against this check).
      *
+     * @param string[] $schemes the schemes the caller accepts; plain http only where the
+     *                           content itself is public anyway, such as a syndicated feed
+     *
      * @return array<string,string> suitable for the `resolve` request option
      */
-    public function resolveSafe(string $url): array
+    public function resolveSafe(string $url, array $schemes = ['https']): array
     {
         $parts = parse_url($url);
         if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
             throw new Exception("Invalid URL '{$url}'");
         }
-        if ($parts['scheme'] !== 'https') {
-            throw new Exception("URL '{$url}' must use HTTPS");
+        if (!in_array(strtolower($parts['scheme']), $schemes, true)) {
+            throw new Exception("URL '{$url}' must use " . implode(' or ', array_map('strtoupper', $schemes)));
         }
 
         // Strip IPv6 brackets (e.g. [::1] → ::1)
