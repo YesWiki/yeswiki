@@ -570,7 +570,7 @@ class InstallationController
             ],
             LayoutService::QUICK_MENU => [
                 ['icon' => 'search', 'label' => 'Rechercher', 'link' => 'search'],
-                ['icon' => 'gauge', 'label' => 'Tableau de bord', 'link' => 'dashboard'],
+                ['icon' => 'cog', 'label' => 'Tableau de bord', 'link' => 'dashboard'],
             ],
         ];
     }

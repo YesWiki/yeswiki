@@ -25,3 +25,21 @@ Extension and theme authors have one packaging target instead of two: a zip the 
 Core's dependency install now runs no third-party plugin code at all. `allow-plugins` is `{}` rather than absent, so a future dependency that ships a plugin is skipped with a message instead of prompting for approval — a deliberate posture, not an oversight.
 
 If a Composer route is ever wanted again, the way back is upstream — a PR adding a YesWiki installer to `composer/installers` — not another bridge plugin. Re-adding `extra.installer-paths` alone would do nothing.
+
+## Amendments
+
+**The repository distributes the binary too, and that is why it gets a signing key (2026-08-21,
+ADR-0023).** The self-contained binary replaces itself, so YesWiki now has a distribution channel
+for **core** and not only for extensions and themes. It goes to the same host, for the reason this
+ADR already gives: a second channel is a second thing every wiki trusts, and `yeswiki_repository`
+exists so a private or air-gapped mirror can be that host. GitHub Actions builds the binaries and
+publishes them into `repository.yeswiki.net` rather than serving them from GitHub releases.
+
+Two things change in kind rather than degree. The artefacts are per-platform executables and
+detached signatures, not the zips `PackageTool` and `PackageTheme` unpack, so the repository grows
+an index shape it did not have. And because a binary that rewrites its own executable on the
+strength of an HTTP response is a much larger blast radius than a theme zip, transport trust is no
+longer enough: releases are signed with an ed25519 key whose public half is compiled into the
+binary, verified offline, with no PKI involved. That key is a long-lived operational
+responsibility the project did not have before. Losing it strands every installed binary on its
+current version. Leaking it owns all of them.
