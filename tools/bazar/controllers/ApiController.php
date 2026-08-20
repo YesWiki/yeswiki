@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -132,10 +133,19 @@ class ApiController extends YesWikiController
         $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
 
         if ($activityPubService->isEnabled($form)) {
+            try {
+                $verifiedActor = $httpSignatureService->verifySignature($request);
+            } catch (Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
+            }
+
             $activity = json_decode($request->getContent(), true);
 
-            $httpSignatureService->verifySignature($request);
-            $activityPubService->processActivity($activity, $form);
+            try {
+                $activityPubService->processActivity($activity, $form, $verifiedActor);
+            } catch (Exception $e) {
+                return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
+            }
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
         } else {

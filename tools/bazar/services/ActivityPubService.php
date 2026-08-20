@@ -12,6 +12,7 @@ use YesWiki\Core\Service\TripleStore;
 class ActivityPubService
 {
     public static $AS_PREFIX = 'https://www.w3.org/ns/activitystreams#';
+    public const REMOTE_ACTOR_URI = 'http://outils-reseaux.org/_vocabulary/remoteActor';
 
     protected $params;
     protected $httpClient;
@@ -140,7 +141,22 @@ class ActivityPubService
         }
     }
 
-    public function processActivity($activity, $form) {
+    /**
+     * Act on an activity that arrived in the inbox, on behalf of the actor that signed for it.
+     *
+     * @param string $verifiedActor whom the request was signed by
+     *
+     * @throws Exception when the activity claims to come from someone else, or reaches for an
+     *                   entry that is not the signer's to touch
+     */
+    public function processActivity($activity, $form, string $verifiedActor) {
+        if (!is_array($activity) || empty($activity['type'])) {
+            throw new Exception('Malformed activity');
+        }
+        if (($activity['actor'] ?? null) !== $verifiedActor) {
+            throw new Exception('The activity claims an actor the request was not signed for');
+        }
+
         switch($activity['type']) {
             case 'Accept': {
                 if ($activity['object']['type'] === 'Follow') {
@@ -174,8 +190,12 @@ class ActivityPubService
                 $object = $activity['object'];
                 $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                 $entry['read-only'] = 1; // Prevent modification from the local interface, as the source of truth is the remote actor
+                if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'] ?? '')) {
+                    throw new Exception('An actor can only bring objects from its own host');
+                }
                 $entryManager = $this->container->get(EntryManager::class);
-                $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                $created = $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                $this->rememberOwner($created['id_fiche'] ?? null, $verifiedActor);
                 break;
             }
 
@@ -185,6 +205,7 @@ class ActivityPubService
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
+                        $this->assertOwns($verifiedActor, $tag, $object['id']);
                         $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                         $entryManager = $this->container->get(EntryManager::class);
                         $entryManager->update($tag, $entry, false);
@@ -199,12 +220,46 @@ class ActivityPubService
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
+                        $this->assertOwns($verifiedActor, $tag, $objectId);
                         $entryManager = $this->container->get(EntryManager::class);
                         $entryManager->delete($tag, true);
                     }
                 }
                 break;
             }
+        }
+    }
+
+    /**
+     * Write down which actor a mirrored entry answers to, so a later Update or Delete can be
+     * checked against it.
+     */
+    protected function rememberOwner(?string $tag, ?string $actorUri): void {
+        if (empty($tag) || empty($actorUri)) {
+            return;
+        }
+        $this->tripleStore->create($tag, self::REMOTE_ACTOR_URI, $actorUri, '', '');
+    }
+
+    /**
+     * An entry mirrored from elsewhere belongs to the actor it came from, and to no one else.
+     *
+     * Entries mirrored before the owner was recorded fall back to the host their source address
+     * is on, which is enough to keep one server from reaching into another's entries.
+     *
+     * @throws Exception
+     */
+    protected function assertOwns(string $verifiedActor, string $tag, string $objectId): void {
+        $owner = $this->tripleStore->getOne($tag, self::REMOTE_ACTOR_URI, '', '');
+        if (!empty($owner)) {
+            if ($owner !== $verifiedActor) {
+                throw new Exception('This entry belongs to another actor');
+            }
+
+            return;
+        }
+        if (!$this->httpSignatureService->sameHost($verifiedActor, $objectId)) {
+            throw new Exception('This entry comes from another host');
         }
     }
 
