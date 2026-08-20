@@ -32,7 +32,24 @@ const app = createApp({
       packageName: '',
       showReturn: true,
       warnIfNotStarted: true,
-      callAsync: true
+      callAsync: true,
+      remoteUrl: '',
+      remoteUsername: '',
+      remotePassword: '',
+      remoteRunning: false,
+      remoteCancelling: false,
+      remoteBytes: 0,
+      remoteTotal: 0,
+      remoteMessage: '',
+      remoteMessageClass: {
+        alert: true,
+        'alert-info': true
+      }
+    }
+  },
+  computed: {
+    remotePercent() {
+      return this.remoteTotal > 0 ? Math.min(100, Math.round((this.remoteBytes * 100) / this.remoteTotal)) : 0
     }
   },
   methods: {
@@ -503,6 +520,88 @@ const app = createApp({
           console.log(pError)
         })
     },
+    async resumeRemoteBackup() {
+      return await this.fetch(wiki.url('?api/remotebackup'))
+        .then((data) => {
+          if (!data.running) { return }
+          this.remoteRunning = true
+          this.showRemoteState(data)
+          setTimeout(this.pollRemoteBackup, 1000)
+        }, () => {})
+    },
+    async startRemoteBackup() {
+      if (this.remoteRunning) { return }
+      this.remoteRunning = true
+      this.remoteBytes = 0
+      this.remoteTotal = 0
+      this.setRemoteMessage(_t('ADMIN_BACKUPS_REMOTE_CONNECTING'), 'info')
+      return await this.fetchPost(wiki.url('?api/remotebackup'), {
+        action: 'start',
+        url: this.remoteUrl,
+        username: this.remoteUsername,
+        password: this.remotePassword
+      })
+        .then((data) => {
+          this.remotePassword = ''
+          this.showRemoteState(data)
+          setTimeout(this.pollRemoteBackup, 2000)
+        }, (pError) => {
+          this.endRemoteBackup(pError.message, 'danger')
+        })
+    },
+    async pollRemoteBackup() {
+      if (!this.remoteRunning) { return }
+      return await this.fetch(wiki.url('?api/remotebackup'))
+        .then((data) => {
+          if (data.error) {
+            return this.endRemoteBackup(data.error, 'danger')
+          }
+          if (!data.running) {
+            this.endRemoteBackup(_t('ADMIN_BACKUPS_REMOTE_FINISHED', { filename: data.filename || '' }), 'success')
+            return this.loadArchives()
+              .then(() => {
+                toastMessage(_t('ADMIN_BACKUPS_REMOTE_FINISHED', { filename: data.filename || '' }), 3000, 'alert alert-success')
+              })
+          }
+          this.showRemoteState(data)
+          setTimeout(this.pollRemoteBackup, data.step == 'downloading' ? 1000 : 2000)
+        }, (pError) => {
+          this.endRemoteBackup(pError.message, 'danger')
+        })
+    },
+    showRemoteState(data) {
+      this.remoteBytes = data.bytes || 0
+      this.remoteTotal = data.total || 0
+      let message = _t(`ADMIN_BACKUPS_REMOTE_STEP_${String(data.step).toUpperCase()}`)
+      if (data.step == 'downloading' && this.remoteTotal > 0) {
+        message += ` ${this.formatFileSize(this.remoteBytes)} / ${this.formatFileSize(this.remoteTotal)}`
+      }
+      if (data.warning) {
+        message += `<br>${data.warning}`
+      }
+      if (data.output) {
+        message += `<pre>${data.output.split('\n').slice(-5).join('<br>')}</pre>`
+      }
+      this.setRemoteMessage(message, 'secondary-2')
+    },
+    setRemoteMessage(message, className) {
+      this.remoteMessage = message
+      this.remoteMessageClass = { alert: true, [`alert-${className}`]: true }
+    },
+    endRemoteBackup(message, className) {
+      this.remoteRunning = false
+      this.remoteCancelling = false
+      this.setRemoteMessage(message, className)
+    },
+    async cancelRemoteBackup() {
+      this.remoteCancelling = true
+      return await this.fetchPost(wiki.url('?api/remotebackup'), { action: 'cancel' })
+        .then(() => {
+          this.endRemoteBackup(_t('ADMIN_BACKUPS_REMOTE_CANCELLED'), 'warning')
+        }, (pError) => {
+          this.endRemoteBackup(pError.message, 'danger')
+        })
+    },
     async bypassArchive() {
       if (this.archiving) {
         setTimeout(() => {
@@ -529,6 +628,7 @@ const app = createApp({
       this.startArchive()
     } else {
       this.loadArchives()
+      this.resumeRemoteBackup()
     }
   }
 })

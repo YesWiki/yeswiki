@@ -1148,4 +1148,20 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->manageArchiveAction();
     }
+
+    /**
+     * @Route("/api/remotebackup", methods={"GET"}, options={"acl":{"@admins"}})
+     */
+    public function getRemoteBackupStatus()
+    {
+        return $this->getService(RemoteBackupController::class)->getRemoteBackupStatus();
+    }
+
+    /**
+     * @Route("/api/remotebackup", methods={"POST"}, options={"acl":{"@admins"}})
+     */
+    public function remoteBackupAction()
+    {
+        return $this->getService(RemoteBackupController::class)->manageRemoteBackup();
+    }
 }

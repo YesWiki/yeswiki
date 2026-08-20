@@ -6,6 +6,8 @@ $charset = 'UTF-8';
 if (!defined('YW_CHARSET')) {
     define('YW_CHARSET', $charset);
 }
+$availableBackups = availableBackups($wakkaConfig);
+$setupTitle = empty($availableBackups) ? _t('INSTALLATION_OF_YESWIKI') : _t('RESTORATION_OF_YESWIKI');
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
@@ -14,7 +16,7 @@ ob_start();
 
 <head>
     <meta charset="<?php echo $charset; ?>">
-    <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
+    <title><?php echo $setupTitle; ?></title>
     <link href="<?php echo computeBaseUrl(true); ?>styles/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo computeBaseUrl(true); ?>styles/yeswiki-base.css" rel="stylesheet">
     <link href="<?php echo computeBaseUrl(true); ?>themes/margot/styles/light.css" rel="stylesheet">
@@ -23,7 +25,7 @@ ob_start();
 <body>
     <div class="container" style="padding:1em 0;">
         <div class="well">
-            <h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?>
+            <h1><span id="setup-title" data-install-title="<?php echo htmlspecialchars(_t('INSTALLATION_OF_YESWIKI'), ENT_COMPAT, $charset); ?>" data-restore-title="<?php echo htmlspecialchars(_t('RESTORATION_OF_YESWIKI'), ENT_COMPAT, $charset); ?>"><?php echo $setupTitle; ?></span>
                 <?php
                 $alert = '';
                 if ($wakkaConfig['yeswiki_version'] || $wakkaConfig['wakka_version'] || $wakkaConfig['wikini_version']) {

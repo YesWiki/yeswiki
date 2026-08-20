@@ -52,6 +52,7 @@ class ArchiveController extends YesWikiController
                 $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
                 $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
                 $response->headers->set('Access-Control-Max-Age', '86400');
+                $response->prepare($this->getRequest());
 
                 return $response;
             }

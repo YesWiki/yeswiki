@@ -39,6 +39,57 @@ function test($text, $condition, $errorText = '', $stopOnError = 1)
     }
 }
 
+/**
+ * Where the backup archives are looked for, as read from the configuration being installed.
+ */
+function backupsFolder($config)
+{
+    $folder = $config['archive']['privatePath'] ?? '';
+    if (!is_string($folder) || $folder === '' || $folder === '%TMP') {
+        $folder = 'private/backups';
+    }
+
+    return rtrim($folder, '/\\');
+}
+
+function humanFileSize($bytes)
+{
+    foreach (['', 'K', 'M', 'G'] as $unit) {
+        if ($bytes < 1024 || $unit === 'G') {
+            return round($bytes) . " $unit";
+        }
+        $bytes = $bytes / 1024;
+    }
+}
+
+/**
+ * The archives that can be restored, most recent first.
+ */
+function availableBackups($config)
+{
+    $folder = backupsFolder($config);
+    if (!is_dir($folder)) {
+        return [];
+    }
+
+    $backups = [];
+    foreach (scandir($folder) as $filename) {
+        if (preg_match("/^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})_archive(?:_(only_files|only_db))?\.zip$/", $filename, $matches)) {
+            $backups[] = [
+                'filename' => $filename,
+                'date' => "$matches[1] $matches[2]:$matches[3]",
+                'type' => $matches[5] ?? 'full',
+                'size' => humanFileSize(filesize("$folder/$filename")),
+            ];
+        }
+    }
+    usort($backups, function ($a, $b) {
+        return strcmp($b['filename'], $a['filename']);
+    });
+
+    return $backups;
+}
+
 function myLocation()
 {
     list($url) = explode('?', $_SERVER['REQUEST_URI']);

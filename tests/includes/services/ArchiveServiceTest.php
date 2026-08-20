@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Core\Service\DumpRewriter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -97,7 +98,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testArchiveServiceExisting')]
-    public function testRestoreRefusesAnArchiveTakenUnderAnotherTablePrefix(array $services)
+    public function testAnArchiveIsRenamedToTheTablePrefixOfTheWikiRestoringIt(array $services)
     {
         $output = '';
         $location = $services['archiveService']->archive($output, false, true);
@@ -108,17 +109,17 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->assertTrue($zip->open($location) === true);
             $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
             $info = json_decode($zip->getFromName($entry), true);
-            $this->assertSame(
-                trim($services['wiki']->services->get(ParameterBagInterface::class)->get('table_prefix')),
-                $info['table_prefix']
-            );
-            $info['table_prefix'] = 'anotherprefix_';
-            $zip->addFromString($entry, json_encode($info));
+            $prefix = trim($services['wiki']->services->get(ParameterBagInterface::class)->get('table_prefix'));
+            $this->assertSame($prefix, $info['table_prefix']);
+            $sqlContent = $zip->getFromName(ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
             $zip->close();
 
-            $this->expectException(\Exception::class);
-            $this->expectExceptionMessageMatches('/anotherprefix_/');
-            $services['archiveService']->restoreArchive(basename($location));
+            $this->assertSame($prefix, DumpRewriter::detectPrefix($sqlContent));
+            $renamed = DumpRewriter::rewriteTables($sqlContent, $prefix, 'anotherprefix_');
+            $this->assertNotEmpty(DumpRewriter::tables($renamed));
+            foreach (DumpRewriter::tables($renamed) as $table) {
+                $this->assertStringStartsWith('anotherprefix_', $table);
+            }
         } finally {
             @unlink($location);
         }

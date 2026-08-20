@@ -62,7 +62,7 @@ class ArchiveService
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
-    public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = BaseUrlRewriter::INFO_FILENAME;
+    public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
     public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n" .
         "This folder is **reserved to backups**.\n\n" .
         "It **MUST NOT** be accessible from the internet.\n\n" .
@@ -606,12 +606,14 @@ class ArchiveService
                 if ($sqlContent === false) {
                     throw new \Exception('SQL file not found in archive');
                 }
-                $info = $this->readRestoreInfo($zip);
-                $this->assertSameTablePrefix($info);
-                $substitutions = $rewriteUrls
-                    ? BaseUrlRewriter::substitutions($info['base_url'] ?? '', $this->params->get('base_url'))
-                    : [];
-                $this->restoreDatabase(BaseUrlRewriter::rewrite($sqlContent, $substitutions));
+                $dump = DumpRewriter::prepare(
+                    $sqlContent,
+                    $this->readRestoreInfo($zip),
+                    $this->dbService->prefixTable(''),
+                    $this->params->get('base_url'),
+                    $rewriteUrls
+                );
+                $this->restoreDatabase($dump->sql);
             }
 
             if ($restoreFiles && !$onlyDb) {
@@ -703,23 +705,6 @@ class ArchiveService
                 continue;
             }
             $zip->extractTo($wikiRoot, $name);
-        }
-    }
-
-    /**
-     * A dump names its own tables, so restoring it under another prefix would drop this wiki
-     * and recreate the archive's tables where nothing looks for them.
-     *
-     * @param array<string,mixed> $info
-     *
-     * @throws \Exception
-     */
-    protected function assertSameTablePrefix(array $info): void
-    {
-        $sourcePrefix = $info['table_prefix'] ?? '';
-        $targetPrefix = trim($this->dbService->prefixTable(''));
-        if (is_string($sourcePrefix) && $sourcePrefix !== '' && $sourcePrefix !== $targetPrefix) {
-            throw new \Exception("Archive was taken from tables prefixed '$sourcePrefix' but this wiki uses '$targetPrefix'. " . 'Set table_prefix to the archive value before restoring.');
         }
     }
 
@@ -1107,7 +1092,7 @@ class ArchiveService
         return $outputList;
     }
 
-    private function getPrivateFolder(): string
+    public function getPrivateFolder(): string
     {
         $archiveParams = $this->getArchiveParams();
 

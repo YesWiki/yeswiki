@@ -15,6 +15,7 @@ use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(AuthController::class, 'connectUser')]
 #[CoversMethod(AuthController::class, 'login')]
 #[CoversMethod(AuthController::class, 'logout')]
 #[CoversMethod(AuthController::class, 'checkPassword')]
@@ -195,6 +196,95 @@ class AuthControllerTest extends YesWikiTestCase
             $wiki->services->get(AuthController::class)->logout();
             $userManager->delete($userA);
             $userManager->delete($userB);
+        }
+    }
+
+    /**
+     * The session is what keeps a user connected between two requests; the cookies are the
+     * fallback for when it is gone. Under phpunit there are no cookies at all, so a user who
+     * survives connectUser() can only have been reconnected from the session.
+     */
+    #[Depends('testAuthControllerExisting')]
+    public function testAFreshSessionKeepsTheUserConnected(Wiki $wiki)
+    {
+        $authController = $wiki->services->get(AuthController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        try {
+            $authController->login($user);
+            $authController->connectUser();
+
+            $this->assertSame($user['name'], $authController->getLoggedUserName());
+            $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
+        } finally {
+            $authController->logout();
+            $userManager->delete($user);
+        }
+    }
+
+    #[Depends('testAuthControllerExisting')]
+    public function testASessionOlderThanAnHourFallsBackToTheCookies(Wiki $wiki)
+    {
+        $authController = $wiki->services->get(AuthController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        try {
+            $authController->login($user);
+            $_SESSION['user']['lastConnection'] = time() - 3601;
+
+            $authController->connectUser();
+
+            $this->assertSame('', $authController->getLoggedUser(), 'without cookies to fall back on, the user is disconnected');
+        } finally {
+            $authController->logout();
+            $userManager->delete($user);
+        }
+    }
+
+    #[Depends('testAuthControllerExisting')]
+    public function testReconnectingFromTheSessionKeepsTheRememberChoice(Wiki $wiki)
+    {
+        $authController = $wiki->services->get(AuthController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        try {
+            $authController->login($user, 1);
+            $this->assertTrue($_SESSION['user']['remember'] ?? false);
+
+            $authController->connectUser();
+
+            $this->assertTrue(
+                $_SESSION['user']['remember'] ?? false,
+                'a request served from the session must not downgrade a 90-day cookie to an hour'
+            );
+        } finally {
+            $authController->logout();
+            $userManager->delete($user);
+        }
+    }
+
+    #[Depends('testAuthControllerExisting')]
+    public function testASessionNamingADeletedUserDisconnects(Wiki $wiki)
+    {
+        $authController = $wiki->services->get(AuthController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        ['user' => $user] = $this->createRandomUser($wiki);
+
+        try {
+            $authController->login($user);
+            $userManager->delete($user);
+
+            $authController->connectUser();
+
+            $this->assertSame('', $authController->getLoggedUser());
+        } finally {
+            $authController->logout();
+            if (!empty($userManager->getOneByName($user['name']))) {
+                $userManager->delete($user);
+            }
         }
     }
 

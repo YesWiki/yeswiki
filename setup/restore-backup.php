@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\BaseUrlRewriter;
+use YesWiki\Core\Service\DumpRewriter;
 
 if (empty($_POST['config']) || empty($_POST['backup_file'])) {
     header('Location: ' . myLocation());
@@ -14,10 +14,12 @@ $config['wikini_version'] = WIKINI_VERSION;
 $config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
+$config['table_prefix'] = trim($config['table_prefix']);
 
 $backupFile = basename($_POST['backup_file']); // sanitise: keep filename only
 $restoreFiles = !empty($_POST['restore_files']);
 $rewriteUrls = !isset($_POST['rewrite_urls']) || !empty($_POST['rewrite_urls']);
+$dropExisting = !empty($_POST['drop_existing']);
 
 // --- connect to DB ---
 mysqli_report(MYSQLI_REPORT_OFF);
@@ -48,7 +50,7 @@ mysqli_set_charset($dblink, 'utf8mb4');
 mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
 
 // --- open backup zip ---
-$zipPath = 'private/backups/' . $backupFile;
+$zipPath = backupsFolder($wakkaConfig) . '/' . $backupFile;
 test(
     _t('INSTALL_RESTORE_BACKUP_FILE') . ' ...',
     substr($backupFile, -4) === '.zip' && is_file($zipPath),
@@ -71,45 +73,53 @@ if (!$onlyFiles) {
 
     $sqlContent = $zip->getFromName('private/backups/content.sql');
     test(
-        _t('INSTALL_RESTORE_SQL_NOT_FOUND') . ' ...',
+        _t('INSTALL_RESTORE_SQL') . ' ...',
         $sqlContent !== false,
         _t('INSTALL_RESTORE_SQL_NOT_FOUND'),
         1
     );
 
-    $info = json_decode((string)$zip->getFromName('private/backups/' . BaseUrlRewriter::INFO_FILENAME), true);
-    $sourcePrefix = is_array($info) ? ($info['table_prefix'] ?? '') : '';
-    test(
-        _t('INSTALL_RESTORE_TABLE_PREFIX') . ' ...',
-        !is_string($sourcePrefix) || $sourcePrefix === '' || $sourcePrefix === $config['table_prefix'],
-        _t('INSTALL_RESTORE_TABLE_PREFIX_MISMATCH') . " : '$sourcePrefix' / '{$config['table_prefix']}'",
-        1
-    );
-
-    // drop all tables with the configured prefix before importing
+    $info = json_decode((string)$zip->getFromName('private/backups/' . DumpRewriter::INFO_FILENAME), true);
     $tablesPrefix = $config['table_prefix'];
-    if (!empty($tablesPrefix) && $tables = mysqli_query($dblink, 'show tables')) {
+    $dump = null;
+    $dumpError = '';
+    try {
+        $dump = DumpRewriter::prepare($sqlContent, is_array($info) ? $info : [], $tablesPrefix, $config['base_url'], $rewriteUrls);
+    } catch (Exception $exception) {
+        $dumpError = $exception->getCode() === DumpRewriter::UNKNOWN_SOURCE_PREFIX
+            ? _t('INSTALL_RESTORE_TABLE_PREFIX_UNKNOWN')
+            : _t('INSTALL_RESTORE_TABLE_PREFIX_INVALID') . " : '$tablesPrefix'";
+    }
+    test(_t('INSTALL_RESTORE_TABLE_PREFIX') . ' ...', $dump !== null, $dumpError, 1);
+
+    $existingTables = [];
+    if ($tables = mysqli_query($dblink, 'show tables')) {
         while ($row = mysqli_fetch_array($tables)) {
-            $tableName = $row[0];
-            if (strpos($tableName, $tablesPrefix) === 0) {
-                mysqli_query($dblink, 'DROP TABLE IF EXISTS `' . $tableName . '`');
+            if (strpos($row[0], $tablesPrefix) === 0) {
+                $existingTables[] = $row[0];
             }
         }
     }
-
-    if ($rewriteUrls) {
-        $substitutions = BaseUrlRewriter::substitutions(
-            is_array($info) ? ($info['base_url'] ?? '') : '',
-            $config['base_url']
-        );
-        if (!empty($substitutions)) {
-            echo _t('INSTALL_RESTORE_REWRITE_URLS') . ' ' . htmlspecialchars(array_key_first($substitutions))
-                . ' &rarr; ' . htmlspecialchars(reset($substitutions)) . "<br>\n";
-            $sqlContent = BaseUrlRewriter::rewrite($sqlContent, $substitutions);
-        }
+    test(
+        _t('CHECK_EXISTING_TABLE_PREFIX') . ' ...',
+        empty($existingTables) || $dropExisting,
+        _t('TABLE_PREFIX_ALREADY_USED') . ' (' . implode(', ', array_slice($existingTables, 0, 5)) . ')',
+        1
+    );
+    foreach ($existingTables as $tableName) {
+        mysqli_query($dblink, 'DROP TABLE IF EXISTS `' . $tableName . '`');
     }
 
-    $ok = mysqli_multi_query($dblink, $sqlContent);
+    if ($dump->renamedTables()) {
+        echo _t('INSTALL_RESTORE_REWRITE_TABLE_PREFIX') . ' ' . htmlspecialchars($dump->prefixFrom)
+            . ' &rarr; ' . htmlspecialchars($dump->prefixTo) . "<br>\n";
+    }
+    if ($dump->rewroteUrls()) {
+        echo _t('INSTALL_RESTORE_REWRITE_URLS') . ' ' . htmlspecialchars($dump->urlFrom)
+            . ' &rarr; ' . htmlspecialchars($dump->urlTo) . "<br>\n";
+    }
+
+    $ok = mysqli_multi_query($dblink, $dump->sql);
     do {
         if ($result = mysqli_store_result($dblink)) {
             mysqli_free_result($result);

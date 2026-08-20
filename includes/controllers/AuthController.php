@@ -140,10 +140,10 @@ class AuthController extends YesWikiController
         $this->cleanOldFormatCookie();
         try {
             try {
-                // faster to connect from session
                 $data = $this->connectUserFromSession();
-                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
-                    throw new BadUserConnectException('Not connected via session');
+                $sessionExpiresAt = $this->getExpirationTimeStamp($data['lastConnectionDate'], false);
+                if ($sessionExpiresAt < time()) {
+                    throw new BadUserConnectException('Session older than an hour, checking the cookies again');
                 }
             } catch (BadUserConnectException $th) {
                 // otherwise use cookies
@@ -222,6 +222,7 @@ class AuthController extends YesWikiController
             : [
                 'name' => $user['name'],
                 'lastConnection' => $currentDateTime->getTimestamp(),
+                'remember' => $remember,
             ];
 
         if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->wiki->isCli()) {
@@ -374,22 +375,22 @@ class AuthController extends YesWikiController
      */
     protected function connectUserFromSession(): array
     {
-        $userFromSession = $this->getLoggedUser();
-        if (empty($userFromSession['name'])) {
-            throw new BadUserConnectException('No use in session');
+        $sessionData = $_SESSION['user'] ?? [];
+        if (!is_array($sessionData) || empty($sessionData['name'])) {
+            throw new BadUserConnectException('No user in session');
         }
 
         // check if user ever existing
-        $user = $this->userManager->getOneByName($userFromSession['name']);
+        $user = $this->userManager->getOneByName($sessionData['name']);
 
         if (empty($user)) {
             throw new BadUserConnectException('Unknown name');
         }
-        if (empty($userFromSession['lastConnection'])) {
+        if (empty($sessionData['lastConnection'])) {
             throw new BadUserConnectException('No last connection date');
         }
 
-        $lastConnectionDate = DateTime::createFromFormat('U', $userFromSession['lastConnection']);
+        $lastConnectionDate = DateTime::createFromFormat('U', (string)$sessionData['lastConnection']);
 
         if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
             throw new BadUserConnectException('Last connection date badly formatted');
@@ -397,7 +398,7 @@ class AuthController extends YesWikiController
 
         return [
             'user' => $user,
-            'remember' => false, // force usage of cookies if more than 1 hour
+            'remember' => !empty($sessionData['remember']),
             'lastConnectionDate' => $lastConnectionDate,
         ];
     }
