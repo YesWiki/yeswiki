@@ -14,7 +14,22 @@ class DumpRewrite
         public readonly string $urlFrom,
         public readonly string $urlTo,
         public readonly array $substitutions = [],
+        public readonly array $skip = [],
     ) {
+    }
+
+    /**
+     * Statements about tables that belong to another wiki sharing the database.
+     */
+    public function skips(string $statement): bool
+    {
+        foreach ($this->skip as $table) {
+            if (strpos($statement, $table) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -22,7 +37,7 @@ class DumpRewrite
      */
     public function withSql(string $sql): self
     {
-        return new self($sql, $this->prefixFrom, $this->prefixTo, $this->urlFrom, $this->urlTo, $this->substitutions);
+        return new self($sql, $this->prefixFrom, $this->prefixTo, $this->urlFrom, $this->urlTo, $this->substitutions, $this->skip);
     }
 
     public function apply(string $statement): string

@@ -51,6 +51,47 @@ class DumpRewriterTest extends TestCase
         $this->assertSame('yeswiki_', DumpRewriter::detectPrefix($sql));
     }
 
+    public function testAnotherWikiUnderALongerPrefixIsRecognised()
+    {
+        $tables = [
+            'yeswiki_pages', 'yeswiki_acls', 'yeswiki_users',
+            'yeswiki_ecto__pages', 'yeswiki_ecto__acls', 'yeswiki_ecto__users',
+        ];
+
+        $this->assertSame(['yeswiki_ecto__'], DumpRewriter::otherWikiPrefixes($tables, 'yeswiki_'));
+        $this->assertSame(['yeswiki_pages', 'yeswiki_acls', 'yeswiki_users'], DumpRewriter::ownTables($tables, 'yeswiki_'));
+    }
+
+    public function testAnExtensionTableIsNotAnotherWiki()
+    {
+        $tables = ['yeswiki_pages', 'yeswiki_acls', 'yeswiki_users', 'yeswiki_myextension_pages'];
+
+        $this->assertSame([], DumpRewriter::otherWikiPrefixes($tables, 'yeswiki_'));
+        $this->assertSame($tables, DumpRewriter::ownTables($tables, 'yeswiki_'));
+    }
+
+    public function testTablesOfAnotherDatabaseAreNotOurs()
+    {
+        $tables = ['yeswiki_pages', 'wp_posts', 'other_pages'];
+
+        $this->assertSame(['yeswiki_pages'], DumpRewriter::ownTables($tables, 'yeswiki_'));
+    }
+
+    public function testAPlanRenamesOurTablesAndSkipsTheOtherWiki()
+    {
+        $tables = [
+            'yeswiki_pages', 'yeswiki_acls', 'yeswiki_users',
+            'yeswiki_ecto__pages', 'yeswiki_ecto__acls', 'yeswiki_ecto__users',
+        ];
+
+        $plan = DumpRewriter::plan($tables, ['table_prefix' => 'yeswiki_'], 'staging_', '', false);
+
+        $this->assertSame('`staging_pages`', $plan->substitutions['`yeswiki_pages`'] ?? null);
+        $this->assertArrayNotHasKey('`yeswiki_ecto__pages`', $plan->substitutions);
+        $this->assertTrue($plan->skips('INSERT INTO `yeswiki_ecto__pages` VALUES (1)'));
+        $this->assertFalse($plan->skips('INSERT INTO `yeswiki_pages` VALUES (1)'));
+    }
+
     public function testDetectFindsNothingInAForeignDump()
     {
         $this->assertSame('', DumpRewriter::detectPrefix(self::dump(['wp_posts', 'wp_options'])));

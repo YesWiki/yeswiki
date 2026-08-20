@@ -672,6 +672,7 @@ class ArchiveService
             'entriesDone' => 0,
             'entries' => $entries,
             'substitutions' => [],
+            'skip' => [],
             'livePrefix' => '',
             'stagingPrefix' => '',
             'replacedPrefix' => '',
@@ -799,7 +800,7 @@ class ArchiveService
                 if ($done++ < $job['statementsDone']) {
                     continue;
                 }
-                if (SqlScript::isSessionPlumbing($statement)) {
+                if (SqlScript::isSessionPlumbing($statement) || $this->skipsForeignTable($job, $statement)) {
                     $job['statementsDone'] = $done;
                     continue;
                 }
@@ -819,6 +820,23 @@ class ArchiveService
         $job['step'] = self::RESTORE_SWAPPING;
 
         return $job;
+    }
+
+    /**
+     * Another wiki sharing the database may be in an old backup: its tables are not restored,
+     * and above all not swapped away from under it.
+     *
+     * @param array<string,mixed> $job
+     */
+    protected function skipsForeignTable(array $job, string $statement): bool
+    {
+        foreach ($job['skip'] ?? [] as $table) {
+            if (strpos($statement, $table) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -847,6 +865,7 @@ class ArchiveService
             $job['rewriteUrls']
         );
         $job['substitutions'] = $plan->substitutions;
+        $job['skip'] = $plan->skip;
 
         $this->dropTables($job['stagingPrefix']);
         $this->dropTables($job['replacedPrefix']);
@@ -1085,16 +1104,13 @@ class ArchiveService
      */
     protected function tablesWithPrefix(string $prefix): array
     {
-        $found = [];
+        $names = [];
         $tables = $this->dbService->loadAll('show tables');
         foreach (is_array($tables) ? $tables : [] as $tableInfo) {
-            $tableName = array_values($tableInfo)[0];
-            if (strpos($tableName, $prefix) === 0) {
-                $found[] = $tableName;
-            }
+            $names[] = array_values($tableInfo)[0];
         }
 
-        return $found;
+        return DumpRewriter::ownTables($names, $prefix);
     }
 
     /**

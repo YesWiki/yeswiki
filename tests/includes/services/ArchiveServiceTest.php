@@ -10,6 +10,7 @@ use YesWiki\Core\Service\ArchiveFilename;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DumpRewriter;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -96,6 +97,167 @@ class ArchiveServiceTest extends YesWikiTestCase
                 null,
             ],
         ];
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testADumpKeepsNullsAndQuotesEveryOtherValue(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $table = trim($db->prefixTable('testdumpvalues'));
+        $db->query("CREATE TABLE `$table` (`id` int NOT NULL, `text` mediumtext, `number` decimal(10,2) DEFAULT NULL)");
+        $db->query("INSERT INTO `$table` (`id`, `text`, `number`) VALUES (1, 'kept', 12.34), (2, NULL, NULL)");
+
+        try {
+            $sql = $services['wiki']->services->get(DbService::class)->getSQLContentBackupMethod()['sql'] ?? '';
+
+            $this->assertStringContainsString("('1', 'kept', '12.34')", $sql, 'every value is quoted, whatever its type');
+            $this->assertStringContainsString("('2', NULL, NULL)", $sql, 'a NULL stays a NULL');
+        } finally {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+        }
+    }
+
+    /**
+     * Two other wikis sharing the database, as they are found in the wild: one with the core
+     * tables under a longer prefix, one whose tables a newer YesWiki names differently.
+     *
+     * @return array<string,string> the statement that creates each, keyed by table name
+     */
+    private static function neighbourTables(string $prefix): array
+    {
+        $tables = [];
+        foreach (['pages', 'acls', 'links', 'nature', 'referrers', 'triples', 'users'] as $coreTable) {
+            $tables["{$prefix}youpi__$coreTable"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+        }
+        $tables["{$prefix}ecto__pages"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL, `metadata` longtext DEFAULT NULL CHECK (json_valid(`metadata`)))';
+        $tables["{$prefix}ecto__triples"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+        $tables["{$prefix}ecto__search_index"] = 'CREATE TABLE `%s` (`id` int NOT NULL, `tag` varchar(191) NOT NULL)';
+
+        return $tables;
+    }
+
+    /**
+     * @param array<string,string> $tables
+     */
+    private static function createNeighbours(DbService $db, array $tables): void
+    {
+        foreach ($tables as $table => $creation) {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+            $db->query(sprintf($creation, $table));
+            $db->query("INSERT INTO `$table` (`id`, `tag`) VALUES (1, 'THE NEIGHBOUR')");
+        }
+    }
+
+    /**
+     * @param array<string,string> $tables
+     */
+    private static function dropNeighbours(DbService $db, array $tables): void
+    {
+        foreach (array_keys($tables) as $table) {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testADumpHoldsThisWikisTablesAndNoOther(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+        $extension = "{$prefix}myextension";
+
+        try {
+            self::createNeighbours($db, $neighbours);
+            $db->query("DROP TABLE IF EXISTS `$extension`");
+            $db->query("CREATE TABLE `$extension` (`id` int NOT NULL)");
+
+            $sql = $db->getSQLContentBackupMethod()['sql'] ?? '';
+            preg_match_all('/^CREATE TABLE `([^`]+)`/m', $sql, $matches);
+            $dumped = $matches[1];
+
+            foreach (DumpRewriter::CORE_TABLES as $coreTable) {
+                $this->assertContains("$prefix$coreTable", $dumped, "the wiki's own $coreTable has to be in its backup");
+            }
+            $this->assertContains($extension, $dumped, 'a table of an extension of this wiki belongs to it');
+            foreach (array_keys($neighbours) as $table) {
+                $this->assertNotContains($table, $dumped, "$table belongs to another wiki");
+            }
+            $this->assertCount(count(DumpRewriter::CORE_TABLES) + 1, $dumped, 'nothing else was swept in');
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            $db->query("DROP TABLE IF EXISTS `$extension`");
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringABackupLeavesTheOtherWikisOfTheDatabaseAlone(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+        $countPages = fn () => $db->loadSingle('SELECT COUNT(*) AS n FROM ' . $db->prefixTable('pages'))['n'];
+        $countTriples = fn () => $db->loadSingle('SELECT COUNT(*) AS n FROM ' . $db->prefixTable('triples'))['n'];
+
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+        $pagesBefore = $countPages();
+        $triplesBefore = $countTriples();
+
+        try {
+            self::createNeighbours($db, $neighbours);
+            $services['archiveService']->restoreArchive(basename($location), false, true, false);
+
+            $this->assertSame($pagesBefore, $countPages(), 'the wiki got its own pages back');
+            $this->assertSame($triplesBefore, $countTriples());
+            foreach (array_keys($neighbours) as $table) {
+                $rows = $db->loadAll("SELECT `tag` FROM `$table`");
+                $this->assertCount(1, $rows, "$table still stands, with its row");
+                $this->assertSame('THE NEIGHBOUR', $rows[0]['tag']);
+            }
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            @unlink($location);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringAnOlderBackupDoesNotBringBackAnotherWikisTables(array $services)
+    {
+        $db = $services['wiki']->services->get(DbService::class);
+        $prefix = trim($db->prefixTable(''));
+        $neighbours = self::neighbourTables($prefix);
+
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            self::createNeighbours($db, $neighbours);
+
+            // an archive as older versions took them: the neighbours' tables swept in
+            $zip = new \ZipArchive();
+            $this->assertTrue($zip->open($location) === true);
+            $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+            $swept = $zip->getFromName($entry);
+            foreach ($neighbours as $table => $creation) {
+                $swept .= "\n" . sprintf($creation, $table) . ";\n"
+                    . "INSERT INTO `$table` (`id`, `tag`) VALUES (2, 'FROM THE OLD BACKUP');\n";
+            }
+            $zip->addFromString($entry, $swept);
+            $zip->close();
+
+            $services['archiveService']->restoreArchive(basename($location), false, true, false);
+
+            foreach (array_keys($neighbours) as $table) {
+                $rows = $db->loadAll("SELECT `tag` FROM `$table`");
+                $this->assertCount(1, $rows, "$table was not restored over");
+                $this->assertSame('THE NEIGHBOUR', $rows[0]['tag'], 'the live row of the other wiki stands');
+            }
+        } finally {
+            self::dropNeighbours($db, $neighbours);
+            @unlink($location);
+        }
     }
 
     #[Depends('testArchiveServiceExisting')]

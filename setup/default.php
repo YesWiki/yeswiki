@@ -14,7 +14,7 @@ $backupTypes = [
       <div class="radio">
         <label>
           <input type="radio" name="install_mode" value="restore" checked />
-          <strong><?php echo _t('INSTALL_MODE_RESTORE'); ?></strong>
+          <span><strong><?php echo _t('INSTALL_MODE_RESTORE'); ?></strong></span>
         </label>
       </div>
 
@@ -62,7 +62,7 @@ $backupTypes = [
       <div class="radio">
         <label>
           <input type="radio" name="install_mode" value="install" />
-          <strong><?php echo _t('INSTALL_MODE_NEW'); ?></strong>
+          <span><strong><?php echo _t('INSTALL_MODE_NEW'); ?></strong></span>
         </label>
       </div>
     </div>

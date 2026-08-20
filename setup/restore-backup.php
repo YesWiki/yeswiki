@@ -50,29 +50,38 @@ if ($testdb == 1) {
 mysqli_set_charset($dblink, 'utf8mb4');
 mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
 
-// --- open backup zip ---
-$zipPath = backupsFolder($wakkaConfig) . '/' . $backupFile;
+// --- open the backup, an archive or a dump left in the folder on its own ---
+$backupsFolder = backupsFolder($wakkaConfig);
+$backupPath = "$backupsFolder/$backupFile";
+$isRawDump = $backupFile === RAW_DUMP_FILENAME;
 test(
     _t('INSTALL_RESTORE_BACKUP_FILE') . ' ...',
-    substr($backupFile, -4) === '.zip' && is_file($zipPath),
+    ($isRawDump || substr($backupFile, -4) === '.zip') && is_file($backupPath),
     _t('INSTALL_RESTORE_ZIP_NOT_FOUND'),
     1
 );
 
-$zip = new ZipArchive();
-test(
-    _t('INSTALL_RESTORE_FROM_BACKUP') . ' ...',
-    $zip->open($zipPath) === true,
-    _t('INSTALL_RESTORE_ZIP_CANNOT_OPEN'),
-    1
-);
+$zip = null;
+if (!$isRawDump) {
+    $zip = new ZipArchive();
+    test(
+        _t('INSTALL_RESTORE_FROM_BACKUP') . ' ...',
+        $zip->open($backupPath) === true,
+        _t('INSTALL_RESTORE_ZIP_CANNOT_OPEN'),
+        1
+    );
+}
+
+$openDump = function () use ($isRawDump, $zip, $backupPath) {
+    return $isRawDump ? fopen($backupPath, 'r') : $zip->getStream('private/backups/' . RAW_DUMP_FILENAME);
+};
 
 // --- restore database ---
 $onlyFiles = str_ends_with($backupFile, '_archive_only_files.zip');
 if (!$onlyFiles) {
     echo '<br /><b>' . _t('INSTALL_RESTORE_DB') . "</b><br>\n";
 
-    $dumpStream = $zip->getStream('private/backups/content.sql');
+    $dumpStream = $openDump();
     test(
         _t('INSTALL_RESTORE_SQL') . ' ...',
         $dumpStream !== false,
@@ -88,7 +97,9 @@ if (!$onlyFiles) {
     }
     fclose($dumpStream);
 
-    $info = json_decode((string)$zip->getFromName('private/backups/' . DumpRewriter::INFO_FILENAME), true);
+    $info = $isRawDump
+        ? rawDumpInfo($backupsFolder)
+        : json_decode((string)$zip->getFromName('private/backups/' . DumpRewriter::INFO_FILENAME), true);
     $tablesPrefix = $config['table_prefix'];
     $dump = null;
     $dumpError = '';
@@ -101,14 +112,13 @@ if (!$onlyFiles) {
     }
     test(_t('INSTALL_RESTORE_TABLE_PREFIX') . ' ...', $dump !== null, $dumpError, 1);
 
-    $existingTables = [];
+    $tableNames = [];
     if ($tables = mysqli_query($dblink, 'show tables')) {
         while ($row = mysqli_fetch_array($tables)) {
-            if (strpos($row[0], $tablesPrefix) === 0) {
-                $existingTables[] = $row[0];
-            }
+            $tableNames[] = $row[0];
         }
     }
+    $existingTables = DumpRewriter::ownTables($tableNames, $tablesPrefix);
     test(
         _t('CHECK_EXISTING_TABLE_PREFIX') . ' ...',
         empty($existingTables) || $dropExisting,
@@ -129,11 +139,13 @@ if (!$onlyFiles) {
     }
 
     $importError = '';
-    $dumpStream = $zip->getStream('private/backups/content.sql');
+    $dumpStream = $openDump();
     try {
         SqlScript::runStatements($dblink, (function () use ($dumpStream, $dump) {
             foreach (SqlScript::statementsFromStream($dumpStream) as $statement) {
-                yield $dump->apply($statement);
+                if (!$dump->skips($statement)) {
+                    yield $dump->apply($statement);
+                }
             }
         })());
     } catch (Exception $exception) {
@@ -149,7 +161,7 @@ if (!$onlyFiles) {
 }
 
 // --- restore files ---
-$onlyDb = str_ends_with($backupFile, '_archive_only_db.zip');
+$onlyDb = $isRawDump || str_ends_with($backupFile, '_archive_only_db.zip');
 if ($restoreFiles && !$onlyDb) {
     echo '<br /><b>' . _t('INSTALL_RESTORE_DB_AND_FILES') . "</b><br>\n";
     $wikiRoot = realpath(getcwd());
@@ -182,7 +194,9 @@ if ($restoreFiles && !$onlyDb) {
     );
 }
 
-$zip->close();
+if (!is_null($zip)) {
+    $zip->close();
+}
 
 // --- write config ---
 echo '<br />';

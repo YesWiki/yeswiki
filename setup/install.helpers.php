@@ -1,6 +1,9 @@
 <?php
 
 use YesWiki\Core\Service\ArchiveFilename;
+use YesWiki\Core\Service\DumpRewriter;
+
+const RAW_DUMP_FILENAME = 'content.sql';
 
 /**
  * Communique le resultat d'un test :
@@ -65,7 +68,7 @@ function humanFileSize($bytes)
 }
 
 /**
- * The archives that can be restored, most recent first.
+ * What can be restored: the archives, most recent first, and a dump left in the folder on its own.
  */
 function availableBackups($config)
 {
@@ -75,6 +78,15 @@ function availableBackups($config)
     }
 
     $backups = [];
+    if (is_file("$folder/" . RAW_DUMP_FILENAME)) {
+        $backups[] = [
+            'filename' => RAW_DUMP_FILENAME,
+            'date' => date('Y-m-d H:i', filemtime("$folder/" . RAW_DUMP_FILENAME)),
+            'type' => 'only_db',
+            'source' => rawDumpSource($folder),
+            'size' => humanFileSize(filesize("$folder/" . RAW_DUMP_FILENAME)),
+        ];
+    }
     foreach (scandir($folder) as $filename) {
         $parts = ArchiveFilename::parse($filename);
         if (!empty($parts)) {
@@ -89,10 +101,37 @@ function availableBackups($config)
         }
     }
     usort($backups, function ($a, $b) {
+        if ($a['filename'] === RAW_DUMP_FILENAME || $b['filename'] === RAW_DUMP_FILENAME) {
+            return $a['filename'] === RAW_DUMP_FILENAME ? -1 : 1;
+        }
+
         return strcmp($b['filename'], $a['filename']);
     });
 
     return $backups;
+}
+
+/**
+ * A dump on its own may still have the file describing the wiki it came from beside it.
+ *
+ * @return array<string,mixed>
+ */
+function rawDumpInfo($folder)
+{
+    $path = "$folder/" . DumpRewriter::INFO_FILENAME;
+    if (!is_file($path)) {
+        return [];
+    }
+    $info = json_decode((string)file_get_contents($path), true);
+
+    return is_array($info) ? $info : [];
+}
+
+function rawDumpSource($folder)
+{
+    $info = rawDumpInfo($folder);
+
+    return empty($info['base_url']) ? '' : ArchiveFilename::slug($info['base_url']);
 }
 
 function myLocation()

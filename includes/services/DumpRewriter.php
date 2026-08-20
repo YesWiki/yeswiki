@@ -11,6 +11,7 @@ class DumpRewriter
 {
     public const INFO_FILENAME = 'restore.json';
     public const CORE_TABLES = ['acls', 'links', 'nature', 'pages', 'referrers', 'triples', 'users'];
+    public const TABLES_THAT_MAKE_A_WIKI = 2;
     public const UNKNOWN_SOURCE_PREFIX = 1;
     public const INVALID_TARGET_PREFIX = 2;
 
@@ -65,9 +66,15 @@ class DumpRewriter
         $sourceBaseUrl = is_string($info['base_url'] ?? null) ? $info['base_url'] : '';
         $urls = $rewriteUrls ? self::substitutions($sourceBaseUrl, $targetBaseUrl) : [];
 
+        $own = self::ownTables($tables, $sourcePrefix);
         $substitutions = $urls;
-        foreach (self::renamesFor($tables, $sourcePrefix, $targetPrefix) as $table => $renamed) {
+        foreach (self::renamesFor($own, $sourcePrefix, $targetPrefix) as $table => $renamed) {
             $substitutions["`$table`"] = "`$renamed`";
+        }
+
+        $skip = [];
+        foreach (array_diff($tables, $own) as $foreign) {
+            $skip[] = "`$foreign`";
         }
 
         return new DumpRewrite(
@@ -77,6 +84,7 @@ class DumpRewriter
             empty($urls) ? '' : self::root($sourceBaseUrl),
             empty($urls) ? '' : self::root($targetBaseUrl),
             $substitutions,
+            $skip,
         );
     }
 
@@ -109,6 +117,68 @@ class DumpRewriter
     public static function detectPrefix(string $sqlContent): string
     {
         return self::detectPrefixFromTables(self::tables($sqlContent));
+    }
+
+    /**
+     * The prefixes of other wikis living in the same database under a longer prefix.
+     *
+     * A wiki gives itself away by having several of the core tables under a name of its own:
+     * `yeswiki_ecto__pages` and `yeswiki_ecto__users` next to `yeswiki_pages` are not this
+     * wiki's tables, and neither backing them up nor replacing them is any of its business.
+     *
+     * @param string[] $tables
+     *
+     * @return string[]
+     */
+    public static function otherWikiPrefixes(array $tables, string $prefix): array
+    {
+        $counts = [];
+        foreach ($tables as $table) {
+            if ($prefix !== '' && strpos($table, $prefix) !== 0) {
+                continue;
+            }
+            foreach (self::CORE_TABLES as $coreTable) {
+                if (strlen($table) > strlen($prefix) + strlen($coreTable) && str_ends_with($table, $coreTable)) {
+                    $candidate = substr($table, 0, -strlen($coreTable));
+                    $counts[$candidate] = ($counts[$candidate] ?? 0) + 1;
+                }
+            }
+        }
+
+        $others = [];
+        foreach ($counts as $candidate => $count) {
+            if ($candidate !== $prefix && $count >= self::TABLES_THAT_MAKE_A_WIKI) {
+                $others[] = $candidate;
+            }
+        }
+
+        return $others;
+    }
+
+    /**
+     * The tables of this wiki alone, among those of the database or of a dump.
+     *
+     * @param string[] $tables
+     *
+     * @return string[]
+     */
+    public static function ownTables(array $tables, string $prefix): array
+    {
+        $others = self::otherWikiPrefixes($tables, $prefix);
+        $own = [];
+        foreach ($tables as $table) {
+            if ($prefix !== '' && strpos($table, $prefix) !== 0) {
+                continue;
+            }
+            foreach ($others as $other) {
+                if (strpos($table, $other) === 0) {
+                    continue 2;
+                }
+            }
+            $own[] = $table;
+        }
+
+        return $own;
     }
 
     /**

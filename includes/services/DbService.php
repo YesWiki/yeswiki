@@ -3,24 +3,12 @@
 namespace YesWiki\Core\Service;
 
 use DateInterval;
-use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
 {
     /** an INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet */
     protected const MAX_INSERT_LENGTH = 1048576;
-    /** field types a dumped value has to be quoted for, cf mysqli_result::fetch_field_direct */
-    protected const QUOTED_FIELD_TYPES = [
-        252, // text or blob
-        253, // varchar
-        254, // char
-        10,  // date
-        11,  // time
-        12,  // datetime
-        13,  // year
-    ];
-
     protected $params;
 
     protected $link;
@@ -246,15 +234,14 @@ class DbService
                 throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
             }
 
+            $tableNames = [];
             foreach ($tables as $tableInfo) {
                 if (!is_array($tableInfo)) {
                     throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
                 }
-                $tableName = array_values($tableInfo)[0];
-                if (strpos($tableName, $tablesPrefix) === 0) {
-                    $tablesPostfix[] = $tableName;
-                }
+                $tableNames[] = array_values($tableInfo)[0];
             }
+            $tablesPostfix = DumpRewriter::ownTables($tableNames, $tablesPrefix);
 
             // generate file
             $date = (new \DateTime())->format('c');
@@ -321,11 +308,8 @@ class DbService
                 $rawData = $this->query('select * from ' . $tableName);
 
                 $columns = [];
-                $quoted = [];
                 for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
-                    $field = mysqli_fetch_field_direct($rawData, $i);
-                    $columns[] = '`' . $field->name . '`';
-                    $quoted[] = in_array($field->type, self::QUOTED_FIELD_TYPES, true);
+                    $columns[] = '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
                 }
                 $insertHeader = "INSERT INTO `$tableName` (" . implode(', ', $columns) . ") VALUES\n";
 
@@ -333,8 +317,9 @@ class DbService
                 while ($row = mysqli_fetch_array($rawData)) {
                     $values = [];
                     foreach ($columns as $i => $column) {
-                        $quote = $quoted[$i] ? "'" : '';
-                        $values[] = $quote . $this->escape($row[$i] ?? '') . $quote;
+                        // everything but NULL is quoted: the server casts what belongs to a number
+                        // column, while a type left unquoted (json, decimal, enum) breaks the dump
+                        $values[] = is_null($row[$i]) ? 'NULL' : "'" . $this->escape($row[$i]) . "'";
                     }
                     $line = '(' . implode(', ', $values) . ')';
 
