@@ -56,6 +56,12 @@ class CommentService implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Post a comment, or rewrite one that is already there.
+     *
+     * An edit is authorized against the comment being rewritten, and its parent is read back from
+     * it, so no other page can be reached through the parent named in the request.
+     */
     public function addCommentIfAuthorized($content, $idComment = '')
     {
         if (!$this->wiki->getUser()) {
@@ -64,6 +70,23 @@ class CommentService implements EventSubscriberInterface
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         } else {
+            $content['pagetag'] = $content['pagetag'] ?? '';
+            if (!empty($idComment)) {
+                $edited = $this->pageManager->getOne($idComment, null, true, true);
+                if (empty($edited) || empty($edited['comment_on'])) {
+                    return [
+                        'code' => 404,
+                        'error' => _t('COMMENT_NOT_FOUND'),
+                    ];
+                }
+                if (!$this->aclService->hasAccess('write', $idComment)) {
+                    return [
+                        'code' => 403,
+                        'error' => _t('NOT_AUTORIZED_TO_EDIT_COMMENT'),
+                    ];
+                }
+                $content['pagetag'] = $edited['comment_on'];
+            }
             if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
                 if ($this->params->get('use_hashcash')) {
                     require_once 'tools/security/secret/wp-hashcash.lib';

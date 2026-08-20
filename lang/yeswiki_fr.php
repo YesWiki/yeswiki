@@ -566,6 +566,8 @@ return [
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
+    'NOT_AUTORIZED_TO_EDIT_COMMENT' => 'Vous n\'êtes pas autorisé à modifier ce commentaire.',
+    'COMMENT_NOT_FOUND' => 'Ce commentaire n\'existe pas.',
     'COMMENT_TAG' => 'Page',
     'COMMENT_DATE' => 'Date',
     'COMMENT_USER' => 'Auteur·ice',

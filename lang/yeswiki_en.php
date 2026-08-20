@@ -492,6 +492,8 @@ return [
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'You must log in to post a comment.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'You are not in a group that is allowed to leave comments.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'You are not allowed to delete this comment.',
+    'NOT_AUTORIZED_TO_EDIT_COMMENT' => 'You are not allowed to edit this comment.',
+    'COMMENT_NOT_FOUND' => 'This comment does not exist.',
     'COMMENT_TAG' => 'Page',
     'COMMENT_DATE' => 'Date',
     'COMMENT_USER' => 'Author',
