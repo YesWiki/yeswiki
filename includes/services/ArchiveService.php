@@ -61,6 +61,24 @@ class ArchiveService
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
+    /**
+     * Configuration entries that belong to this installation, not to the wiki that was backed up:
+     * where its database, its address, its mail server and its backups folder are.
+     */
+    public const CONFIG_KEYS_KEPT_ON_RESTORE = [
+        'mysql_host',
+        'mysql_database',
+        'mysql_user',
+        'mysql_password',
+        'table_prefix',
+        'db_charset',
+        'base_url',
+        'contact_smtp_host',
+        'contact_smtp_user',
+        'contact_smtp_pass',
+        'api_allowed_keys',
+        'archive',
+    ];
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
     public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
     public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n" .
@@ -193,7 +211,10 @@ class ArchiveService
         }
         // prepare location of zip file
 
-        $archiveFileName = (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip";
+        $archiveFileName = ArchiveFilename::withSource(
+            (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip",
+            $this->params->get('base_url')
+        );
         $location = $privatePath . DIRECTORY_SEPARATOR . $archiveFileName;
         if (file_exists($location)) {
             throw new \Exception('Zip file already existing !');
@@ -531,21 +552,24 @@ class ArchiveService
         $privatePath = $this->getPrivateFolder();
         $files = scandir($privatePath);
         foreach ($files as $filename) {
-            if (preg_match("/^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})_archive(?:_(only_files|only_db))?\.zip$/", $filename, $matches)) {
-                list(, $year, $month, $day, $hours, $minutes, $seconds) = $matches;
+            $parts = ArchiveFilename::parse($filename);
+            if (!empty($parts)) {
+                list($year, $month, $day) = explode('-', $parts['date']);
+                list($hours, $minutes, $seconds) = explode('-', $parts['time']);
                 $archives[] = [
                     'filename' => $filename,
-                    'date' => "$year-$month-{$day}T$hours-$minutes-$seconds",
+                    'date' => "{$parts['date']}T{$parts['time']}",
                     'year' => $year,
                     'month' => $month,
                     'day' => $day,
                     'hours' => $hours,
                     'minutes' => $minutes,
                     'seconds' => $seconds,
-                    'type' => $matches[7] ?? 'full',
+                    'type' => $parts['type'],
+                    'source' => $parts['source'],
                     'size' => filesize("$privatePath/$filename"),
                     'link' => $this->wiki->Href('', "api/archives/$filename"),
-                    'sourceBaseUrl' => ($withSourceBaseUrl && ($matches[7] ?? 'full') !== 'only_files')
+                    'sourceBaseUrl' => ($withSourceBaseUrl && $parts['type'] !== 'only_files')
                         ? $this->getArchiveSourceBaseUrl($filename)
                         : '',
                 ];
@@ -618,6 +642,10 @@ class ArchiveService
 
             if ($restoreFiles && !$onlyDb) {
                 $this->restoreFilesFromZip($zip);
+                $this->restoreConfiguration($zip, ConfigurationFileProvider::getConfigFileFromEnv());
+                if (!$onlyFiles) {
+                    $this->removeFilesAbsentFromArchive($zip, realpath(getcwd()));
+                }
             }
         } finally {
             $zip->close();
@@ -680,6 +708,97 @@ class ArchiveService
             }
         } finally {
             mysqli_close($conn);
+        }
+    }
+
+    /**
+     * The settings of the wiki come back from the backup; what ties this installation to its
+     * database, its address and its mail server does not.
+     */
+    protected function restoreConfiguration(\ZipArchive $zip, string $configFile): void
+    {
+        $archivedContent = $zip->getFromName(basename($configFile));
+        if ($archivedContent === false) {
+            return;
+        }
+
+        $temporaryFile = tempnam(sys_get_temp_dir(), 'yeswiki_config');
+        if ($temporaryFile === false || file_put_contents($temporaryFile, $archivedContent) === false) {
+            throw new \Exception('Cannot read the configuration file of the archive');
+        }
+        $archived = $this->configurationService->getConfiguration($temporaryFile);
+        $archived->load();
+        @unlink($temporaryFile);
+        // ConfigurationFile serves _parameters through __get, which empty() and ?? cannot see
+        $archivedParameters = $archived->_parameters;
+        if (empty($archivedParameters)) {
+            return;
+        }
+
+        $config = $this->configurationService->getConfiguration($configFile);
+        $config->load();
+        $currentParameters = $config->_parameters;
+        $kept = array_intersect_key($currentParameters, array_flip(self::CONFIG_KEYS_KEPT_ON_RESTORE));
+        foreach (array_keys($currentParameters) as $key) {
+            unset($config[$key]);
+        }
+        foreach (array_merge($archivedParameters, $kept) as $key => $value) {
+            $config[$key] = $value;
+        }
+        if (!$config->write()) {
+            throw new \Exception('Cannot write the configuration file');
+        }
+    }
+
+    /**
+     * A full backup is the whole wiki, so what it does not contain has no place in the tree
+     * either. Deleting comes after extracting, so the wiki is never left without its own code.
+     */
+    protected function removeFilesAbsentFromArchive(\ZipArchive $zip, string $wikiRoot): void
+    {
+        if (!is_dir($wikiRoot)) {
+            throw new \Exception("'$wikiRoot' is not a directory to restore into");
+        }
+        $keep = [ConfigurationFileProvider::getConfigFileFromEnv() => true];
+        $folders = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = rtrim($zip->getNameIndex($i), '/');
+            if ($name === '' || strpos($name, '..') !== false) {
+                continue;
+            }
+            $keep[$name] = true;
+            if (strpos($name, '/') !== false) {
+                $folders[strtok($name, '/')] = true;
+            }
+        }
+
+        foreach (array_keys($folders) as $folder) {
+            $this->removeAbsentFiles("$wikiRoot/$folder", $folder, $keep);
+        }
+    }
+
+    /**
+     * @param array<string,bool> $keep
+     */
+    private function removeAbsentFiles(string $path, string $relativePath, array $keep): void
+    {
+        if (!is_dir($path) || is_link($path) || $relativePath === self::PRIVATE_FOLDER_NAME_IN_ZIP) {
+            return;
+        }
+        foreach (scandir($path) as $name) {
+            if ($name === '.' || $name === '..') {
+                continue;
+            }
+            $childPath = "$path/$name";
+            $childRelativePath = "$relativePath/$name";
+            if (is_dir($childPath) && !is_link($childPath)) {
+                $this->removeAbsentFiles($childPath, $childRelativePath, $keep);
+                if (!isset($keep[$childRelativePath])) {
+                    @rmdir($childPath);
+                }
+            } elseif (!isset($keep[$childRelativePath])) {
+                @unlink($childPath);
+            }
         }
     }
 
@@ -1432,11 +1551,17 @@ class ArchiveService
     /**
      * extract list of archives to delete.
      *
+     * Only this wiki's own backups are rotated: one fetched from another wiki was asked for
+     * by hand and is not this wiki's to throw away.
+     *
      * @return array $files
      */
     public function archivesToDelete(bool $beforeArchive = false): array
     {
-        $archives = $this->getArchives();
+        $ownSource = ArchiveFilename::slug($this->params->get('base_url'));
+        $archives = array_values(array_filter($this->getArchives(), function ($archive) use ($ownSource) {
+            return empty($archive['source']) || $archive['source'] === $ownSource;
+        }));
         $maxNBFiles = $this->getMaxNbFiles();
         $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {

@@ -195,7 +195,8 @@ const app = createApp({
       return typeof url === 'string' ? url.replace(/\?+$/, '').replace(/\/+$/, '') : ''
     },
     async restoreArchive(archive) {
-      if (!confirm(_t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }))) { return }
+      const confirmKey = `ADMIN_BACKUPS_RESTORE_CONFIRM_${String(archive.type || 'full').toUpperCase()}`
+      if (!confirm(_t(confirmKey, { filename: archive.filename }))) { return }
       const from = this.urlRoot(archive.sourceBaseUrl)
       const to = this.urlRoot(wiki.baseUrl)
       let rewriteUrls = false

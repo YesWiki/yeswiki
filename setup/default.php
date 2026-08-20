@@ -24,7 +24,9 @@ $backupTypes = [
           <div class="col-sm-9">
             <select class="form-control" name="backup_file" required>
               <?php foreach ($backups as $backup) {
-                  $label = $backup['date'] . ' — ' . $backupTypes[$backup['type']] . ' — ' . $backup['size'];
+                  $label = $backup['date']
+                      . (empty($backup['source']) ? '' : ' — ' . $backup['source'])
+                      . ' — ' . $backupTypes[$backup['type']] . ' — ' . $backup['size'];
                   echo '<option value="' . htmlspecialchars($backup['filename'], ENT_COMPAT, YW_CHARSET) . '" data-type="' . $backup['type'] . '">'
                       . htmlspecialchars($label, ENT_COMPAT, YW_CHARSET) . "</option>\n";
               } ?>

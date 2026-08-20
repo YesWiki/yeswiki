@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\ArchiveFilename;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
@@ -95,6 +96,145 @@ class ArchiveServiceTest extends YesWikiTestCase
                 null,
             ],
         ];
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringAFullBackupRemovesWhatItDoesNotContain(array $services)
+    {
+        $root = $this->makeTemporaryTree([
+            'custom/kept.txt' => 'in the backup',
+            'custom/gone.txt' => 'added since',
+            'custom/gonedir/deep.txt' => 'added since',
+            'untouched/keep.txt' => 'a folder the backup knows nothing about',
+        ]);
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('custom/kept.txt', 'in the backup');
+        $zip->close();
+
+        try {
+            $zip->open($zipPath);
+            $this->callProtected($services['archiveService'], 'removeFilesAbsentFromArchive', [$zip, $root]);
+            $zip->close();
+
+            $this->assertFileExists("$root/custom/kept.txt");
+            $this->assertFileDoesNotExist("$root/custom/gone.txt");
+            $this->assertDirectoryDoesNotExist("$root/custom/gonedir");
+            $this->assertFileExists("$root/untouched/keep.txt", 'a folder the backup does not contain is left alone');
+        } finally {
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoringABackupKeepsWhatTiesThisInstallationToItsServer(array $services)
+    {
+        $root = $this->makeTemporaryTree([]);
+        $configFile = "$root/wakka.config.php";
+        file_put_contents($configFile, "<?php\n\n\$wakkaConfig = " . var_export([
+            'wakka_name' => 'this wiki',
+            'mysql_database' => 'mine',
+            'base_url' => 'https://mine.example/?',
+            'table_prefix' => 'mine_',
+            'archive' => ['privatePath' => '/here/private/backups'],
+            'timezone' => 'Europe/Paris',
+        ], true) . ";\n");
+
+        $zipPath = "$root/backup.zip";
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('wakka.config.php', "<?php\n\n\$wakkaConfig = " . var_export([
+            'wakka_name' => 'the backed up wiki',
+            'mysql_database' => '',
+            'base_url' => 'https://theirs.example/?',
+            'table_prefix' => 'theirs_',
+            'archive' => ['privatePath' => '/there/private/backups'],
+            'default_language' => 'en',
+        ], true) . ";\n");
+        $zip->close();
+
+        try {
+            $zip->open($zipPath);
+            $this->callProtected($services['archiveService'], 'restoreConfiguration', [$zip, $configFile]);
+            $zip->close();
+
+            $restored = [];
+            eval(str_replace(['<?php', '$wakkaConfig'], ['', '$restored'], file_get_contents($configFile)));
+
+            $this->assertSame('the backed up wiki', $restored['wakka_name'], 'settings come back from the backup');
+            $this->assertSame('en', $restored['default_language'], 'settings only the backup has come back too');
+            $this->assertArrayNotHasKey('timezone', $restored, 'settings the backup does not have are dropped');
+            $this->assertSame('mine', $restored['mysql_database'], 'the database of this installation is kept');
+            $this->assertSame('https://mine.example/?', $restored['base_url'], 'the address of this installation is kept');
+            $this->assertSame('mine_', $restored['table_prefix']);
+            $this->assertSame(['privatePath' => '/here/private/backups'], $restored['archive'], 'the backups folder of this installation is kept');
+        } finally {
+            $this->removeTemporaryTree($root);
+        }
+    }
+
+    /**
+     * @param array<string,string> $files
+     */
+    private function makeTemporaryTree(array $files): string
+    {
+        $root = sys_get_temp_dir() . '/yeswiki_restore_test_' . bin2hex(random_bytes(6));
+        mkdir($root, 0o777, true);
+        foreach ($files as $path => $content) {
+            $full = "$root/$path";
+            if (!is_dir(dirname($full))) {
+                mkdir(dirname($full), 0o777, true);
+            }
+            file_put_contents($full, $content);
+        }
+
+        return $root;
+    }
+
+    private function removeTemporaryTree(string $root): void
+    {
+        if (!is_dir($root)) {
+            return;
+        }
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($items as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        }
+        rmdir($root);
+    }
+
+    /**
+     * @param array<int,mixed> $arguments
+     */
+    private function callProtected(object $target, string $method, array $arguments): mixed
+    {
+        $reflection = new \ReflectionMethod($target, $method);
+
+        return $reflection->invokeArgs($target, $arguments);
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testAnArchiveIsNamedAfterTheWikiThatMadeIt(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            $parts = ArchiveFilename::parse(basename($location));
+            $this->assertNotEmpty($parts, "'" . basename($location) . "' is not a readable backup name");
+            $this->assertSame(
+                ArchiveFilename::slug($services['wiki']->services->get(ParameterBagInterface::class)->get('base_url')),
+                $parts['source']
+            );
+            $this->assertSame('only_db', $parts['type']);
+        } finally {
+            @unlink($location);
+        }
     }
 
     #[Depends('testArchiveServiceExisting')]

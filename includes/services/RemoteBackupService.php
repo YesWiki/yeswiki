@@ -226,7 +226,7 @@ class RemoteBackupService
             throw new \Exception("Not enough free space to download this backup ($size bytes needed).");
         }
 
-        $job['filename'] = $this->freeLocalName($candidate['filename']);
+        $job['filename'] = $this->freeLocalName($this->nameForSource($candidate['filename'], $job['baseUrl']));
         $job['remoteFilename'] = $candidate['filename'];
         $job['total'] = $size;
         $job['step'] = self::STEP_DOWNLOADING;
@@ -504,6 +504,17 @@ class RemoteBackupService
     protected function localPath(string $filename): string
     {
         return $this->archiveService->getPrivateFolder() . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    /**
+     * A wiki names its backups after itself; an older one that does not gets named after the
+     * address it was fetched from.
+     */
+    protected function nameForSource(string $filename, string $baseUrl): string
+    {
+        $parts = ArchiveFilename::parse($filename);
+
+        return empty($parts['source']) ? ArchiveFilename::withSource($filename, $baseUrl) : $filename;
     }
 
     /**

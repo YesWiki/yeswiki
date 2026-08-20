@@ -50,7 +50,16 @@ return [
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'Une erreur pourrait avoir eu lieu en restaurant {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => 'Restauration réussie de {filename}. Redirection…',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Restauration impossible de {filename}',
-    'ADMIN_BACKUPS_RESTORE_CONFIRM' => "Restaurer la sauvegarde {filename} ?\n\nAttention : cela va écraser la base de données et les fichiers actuels. Cette action est irréversible.",
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restaurer la sauvegarde complète {filename} ?\n\n" .
+        "La base de données et les fichiers sont remplacés par ceux de la sauvegarde, et les fichiers ajoutés depuis sont supprimés.\n" .
+        "Les réglages reviennent à ceux de la sauvegarde, sauf la connexion à la base, l'adresse du site, le serveur d'envoi de courriel et le dossier des sauvegardes.\n\n" .
+        'Cette action est irréversible.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restaurer la base de données de {filename} ?\n\n" .
+        "La base de données actuelle est remplacée par celle de la sauvegarde. Les fichiers ne sont pas touchés.\n\n" .
+        'Cette action est irréversible.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restaurer les fichiers de {filename} ?\n\n" .
+        "Les fichiers de la sauvegarde écrasent ceux de même nom ; les autres ne sont pas touchés. La base de données n'est pas touchée.\n\n" .
+        'Cette action est irréversible.',
     'ADMIN_BACKUPS_RESTORE_REWRITE_URLS_CONFIRM' => "Cette sauvegarde a été prise sur {from}, et ce wiki est sur {to}.\n\nOK : réécrire les liens qu'elle contient vers {to}.\n" . 'Annuler : les restaurer tels quels.',
     'ADMIN_BACKUPS_START_BACKUP' => "Lancement d'une sauvegarde",
     'ADMIN_BACKUPS_START_BACKUP_SYNC' => "Lancement d'une sauvegarde en direct (moins stable)\n" .

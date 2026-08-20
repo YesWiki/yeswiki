@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\ArchiveFilename;
+
 /**
  * Communique le resultat d'un test :
  * -- affiche OK si elle l'est
@@ -74,11 +76,14 @@ function availableBackups($config)
 
     $backups = [];
     foreach (scandir($folder) as $filename) {
-        if (preg_match("/^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})_archive(?:_(only_files|only_db))?\.zip$/", $filename, $matches)) {
+        $parts = ArchiveFilename::parse($filename);
+        if (!empty($parts)) {
+            list($hours, $minutes) = explode('-', $parts['time']);
             $backups[] = [
                 'filename' => $filename,
-                'date' => "$matches[1] $matches[2]:$matches[3]",
-                'type' => $matches[5] ?? 'full',
+                'date' => "{$parts['date']} $hours:$minutes",
+                'type' => $parts['type'],
+                'source' => $parts['source'],
                 'size' => humanFileSize(filesize("$folder/$filename")),
             ];
         }

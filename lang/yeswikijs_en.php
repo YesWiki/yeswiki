@@ -47,7 +47,16 @@ return [
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'An error could occur when restoring {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => '{filename} successfully restored',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Not possible to restore {filename}',
-    'ADMIN_BACKUPS_RESTORE_CONFIRM' => "Restore the backup {filename} ?\n\n" . 'Warning: this overwrites the current database and files. This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_FULL' => "Restore the full backup {filename} ?\n\n" .
+        "The database and the files are replaced by those of the backup, and files added since are deleted.\n" .
+        "Settings come back from the backup, except the database connection, the address of the site, the mail server and the backups folder.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_DB' => "Restore the database of {filename} ?\n\n" .
+        "The current database is replaced by the one in the backup. Files are left alone.\n\n" .
+        'This cannot be undone.',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM_ONLY_FILES' => "Restore the files of {filename} ?\n\n" .
+        "Files in the backup overwrite those of the same name; the others are left alone. The database is left alone.\n\n" .
+        'This cannot be undone.',
     'ADMIN_BACKUPS_RESTORE_REWRITE_URLS_CONFIRM' => "This backup was taken on {from}, and this wiki is at {to}.\n\nOK: rewrite the links it contains to point at {to}.\n" . 'Cancel: restore them unchanged.',
     'ADMIN_BACKUPS_START_BACKUP' => 'Start a backup',
     'ADMIN_BACKUPS_STARTED' => 'Backup started',
