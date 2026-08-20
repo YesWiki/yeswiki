@@ -177,8 +177,8 @@ class AclService
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && (
-            $acl['list'] === 'comments-closed' ||
-                (
+            $acl['list'] === 'comments-closed'
+                || (
                     $acl['list'] === '*' && $privilege === 'comment' && empty($user)
                 )
         )) {
@@ -316,6 +316,49 @@ class AclService
     /** create request for ACL.
      * @return string $request request to append to request
      */
+    /**
+     * SQL fragment restricting a column holding page tags to what the current user can read.
+     *
+     * Self-contained, so it works on an alias, a join or another table's column.
+     * Append it before any ORDER BY: MySQL parses `ORDER BY tag AND (...)` as a sort
+     * expression rather than an error, and the filter would silently do nothing.
+     * Set $keepUnknownTags on a column that also holds tags with no page, to drop
+     * the unreadable ones without dropping those.
+     */
+    public function readableFilterSql(string $column = 'tag', bool $keepUnknownTags = false): string
+    {
+        $subquery = $this->readableTagsSubquery();
+        if (empty($subquery)) {
+            return '';
+        }
+        if (!$keepUnknownTags) {
+            return " AND $column IN $subquery";
+        }
+        $pages = $this->dbService->prefixTable('pages');
+
+        return " AND ($column NOT IN (SELECT tag FROM $pages WHERE latest = 'Y') OR $column IN $subquery)";
+    }
+
+    /**
+     * Subquery yielding the tags the current user can read, empty for an admin.
+     *
+     * Compose it directly when a plain `IN` would change more than the ACL, for instance
+     * on an outer join where a missing page must stay listed.
+     */
+    public function readableTagsSubquery(): string
+    {
+        if ($this->wiki->UserIsAdmin()) {
+            return '';
+        }
+        $aclRequest = $this->updateRequestWithACL();
+        if (empty($aclRequest)) {
+            return '';
+        }
+        $pages = $this->dbService->prefixTable('pages');
+
+        return "(SELECT tag FROM $pages WHERE latest = 'Y' AND ($aclRequest))";
+    }
+
     public function updateRequestWithACL(): string
     {
         // needed ACL

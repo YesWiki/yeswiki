@@ -2,6 +2,7 @@
 
 namespace YesWiki\Tags;
 
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\YesWikiAction;
 
@@ -18,7 +19,7 @@ class NuageTagAction extends YesWikiAction
         return [
             'class' => empty($class) ? '' : ' ' . $class,
             'tags' => empty($tags) ? [] : array_filter(array_map('trim', explode(' ', $tags)), 'strlen'),
-            'nbclasses' => empty($nbclasses) ? 6 : (int) $nbclasses,
+            'nbclasses' => empty($nbclasses) ? 6 : (int)$nbclasses,
             'tri' => $args['tri'] ?? '',
         ];
     }
@@ -29,9 +30,10 @@ class NuageTagAction extends YesWikiAction
 
         $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
         $tablePrefix = $this->wiki->config['table_prefix'];
+        $aclFilter = $this->getService(AclService::class)->readableFilterSql('resource', true);
 
         // on récupère le nb maximum et le nb minimum d'occurences
-        $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' GROUP BY value';
+        $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . $aclFilter . ' GROUP BY value';
         $min_max = $this->wiki->LoadAll($sql);
         $min = 100000000;
         $max = 0;
@@ -49,7 +51,7 @@ class NuageTagAction extends YesWikiAction
         }
 
         // on récupère tous les tags existants
-        $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' ORDER BY value ASC, resource ASC';
+        $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . $aclFilter . ' ORDER BY value ASC, resource ASC';
         $tab_tous_les_tags = $this->wiki->LoadAll($sql);
 
         $output = '';
@@ -59,7 +61,7 @@ class NuageTagAction extends YesWikiAction
             $liste_page = '';
             $tag_precedent = '';
             $tab_tag = [];
-            $tab_tous_les_tags['dummy']['value'] = 'fin'; //on ajoute un element au tableau pour boucler une derniere fois
+            $tab_tous_les_tags['dummy']['value'] = 'fin'; // on ajoute un element au tableau pour boucler une derniere fois
             $tab_tous_les_tags['dummy']['resource'] = 'fin';
             foreach ($tab_tous_les_tags as $tab_les_tags) {
                 $tagstripped = _convert(stripslashes($tab_les_tags['value']), 'ISO-8859-1');

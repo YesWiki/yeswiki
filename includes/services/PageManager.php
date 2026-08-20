@@ -190,27 +190,23 @@ class PageManager
         return $this->dbService->loadAll('select from_tag as tag from' . $this->dbService->prefixTable('links') . "where to_tag = '" . $this->dbService->escape($tag) . "' order by tag");
     }
 
+    /**
+     * Latest revisions the current user is allowed to read.
+     */
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
+        $select = 'select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages')
+            . "where latest = 'Y' and comment_on = ''" . $this->aclService->readableFilterSql();
+
         if (!empty($minDate)) {
-            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '" . $this->dbService->escape($minDate) . "' order by time desc")) {
-                //foreach ($pages as $page) {
-                //    $this->cache($page);
-                //}
-                return $pages;
-            }
+            $sql = $select . " and time >= '" . $this->dbService->escape($minDate) . "' order by time desc";
         } else {
             $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
-            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
-                //foreach ($pages as $page) {
-                //    $this->cache($page);
-                //}
-                return $pages;
-            }
+            $sql = $select . " order by time desc limit $limit";
         }
 
-        return null;
+        return $this->dbService->loadAll($sql) ?: null;
     }
 
     public function getAll(): array
@@ -293,9 +289,7 @@ class PageManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->ownersCache[$tag]);
-        if (in_array($tag, $this->pageCache)) {
-            unset($this->pageCache[$tag]);
-        }
+        unset($this->pageCache[$tag]);
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
@@ -347,13 +341,13 @@ class PageManager
                 $defaultComment = $this->aclService->load($tag, 'comment', true)['list'];
 
                 // create default write acl. store empty write ACL for comments.
-                $this->aclService->save($tag, 'write', ($comment_on ? $user : $defaultWrite));
+                $this->aclService->save($tag, 'write', $comment_on ? $user : $defaultWrite);
 
                 // create default read acl
                 $this->aclService->save($tag, 'read', $defaultRead);
 
                 // create default comment acl.
-                $this->aclService->save($tag, 'comment', ($comment_on ? '' : $defaultComment));
+                $this->aclService->save($tag, 'comment', $comment_on ? '' : $defaultComment);
 
                 // current user is owner; if user is logged in! otherwise, no owner.
                 if ($this->authController->getLoggedUser()) {
@@ -386,7 +380,7 @@ class PageManager
             }
 
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = ' . $time . ', ' . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = ' . $time . ', ' . "owner = '" . $this->dbService->escape($owner) . "', user = '" . $this->dbService->escape($user) . "', latest = 'Y', body = '" . $this->dbService->escape(chop($body)) . "', body_r = ''");
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
@@ -403,9 +397,9 @@ class PageManager
             ]);
 
             return 0;
-        } else {
-            return 1;
         }
+
+        return 1;
     }
 
     public function getOwner($tag = '', $time = '')
@@ -512,8 +506,8 @@ class PageManager
             return $pages;
         }
         $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
-            return (isset($page['tag']) &&
-                in_array($page['tag'], $allEntriesTags)
+            return (isset($page['tag'])
+                && in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
                 : $page;
         }, $pages);

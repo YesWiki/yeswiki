@@ -11,7 +11,6 @@ use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use ZipArchive;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -85,16 +84,44 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only root files with database' => [
                 true, true, [], $defaultFoldersToInclude,
                 'ARCHIVE_SUFFIX', -1,
-                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only database' => [
                 false, true, [], [],
-                'ARCHIVE_ONLY_DATABASE_SUFFIX', 5,
-                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                'ARCHIVE_ONLY_DATABASE_SUFFIX', 6,
+                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 null,
             ],
         ];
+    }
+
+    #[Depends('testArchiveServiceExisting')]
+    public function testRestoreRefusesAnArchiveTakenUnderAnotherTablePrefix(array $services)
+    {
+        $output = '';
+        $location = $services['archiveService']->archive($output, false, true);
+        $this->assertFileExists($location);
+
+        try {
+            $zip = new \ZipArchive();
+            $this->assertTrue($zip->open($location) === true);
+            $entry = ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . ArchiveService::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+            $info = json_decode($zip->getFromName($entry), true);
+            $this->assertSame(
+                trim($services['wiki']->services->get(ParameterBagInterface::class)->get('table_prefix')),
+                $info['table_prefix']
+            );
+            $info['table_prefix'] = 'anotherprefix_';
+            $zip->addFromString($entry, json_encode($info));
+            $zip->close();
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessageMatches('/anotherprefix_/');
+            $services['archiveService']->restoreArchive(basename($location));
+        } finally {
+            @unlink($location);
+        }
     }
 
     /**
@@ -110,7 +137,7 @@ class ArchiveServiceTest extends YesWikiTestCase
             if (!preg_match("/^.*\.zip$/", $location)) {
                 $data['error'] = "\"\$location\" (\"$location\") is not a zip file !";
             } else {
-                $zip = new ZipArchive();
+                $zip = new \ZipArchive();
                 if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
@@ -188,10 +215,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @param mixed $contentDefinition
-     * @param mixed $contentToCheck
-     */
     private function checkWakkaContent($contentDefinition, $contentToCheck)
     {
         if (is_array($contentDefinition)) {

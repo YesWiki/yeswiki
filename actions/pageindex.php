@@ -1,6 +1,8 @@
 <?php
 
-if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' ORDER BY tag')) {
+$aclFilter = $this->services->get(YesWiki\Core\Service\AclService::class)->readableFilterSql();
+
+if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\'' . $aclFilter . ' ORDER BY tag')) {
     foreach ($pages as $page) {
         // XXX: strtoupper is locale dependent
         $firstChar = strtoupper($page['tag'][0]);

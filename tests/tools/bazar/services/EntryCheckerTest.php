@@ -100,7 +100,7 @@ class EntryCheckerTest extends TestCase
         $listManager = $this->createStub(ListManager::class);
         $listManager->method('getOne')->willReturn(['nodes' => $nodes]);
 
-        $wiki = new class {
+        $wiki = new class() {
             public $config = [
                 'BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER' => false,
                 'BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL' => false,
@@ -161,7 +161,7 @@ class EntryCheckerTest extends TestCase
     private function captureSave(array $body): object
     {
         $this->pageManager->method('getOne')->willReturn(['tag' => $body['id_fiche'], 'body' => json_encode($body)]);
-        $saved = new class {
+        $saved = new class() {
             public $body = [];
             public $calls = 0;
         };
@@ -550,7 +550,7 @@ class EntryCheckerTest extends TestCase
 
         $this->assertArrayNotHasKey(EntryChecker::UNREACHABLE_URL, $problems);
         $row = $problems[EntryChecker::UNFETCHED_URL][0];
-        $this->assertStringContainsString('BAZ_CHECKCONTENT_UNFETCHED_NOT_HTTPS', $row['detail']);
+        $this->assertStringContainsString(_t('BAZ_CHECKCONTENT_UNFETCHED_NOT_HTTPS'), $row['detail']);
         $this->assertSame('BAZ_CHECKCONTENT_FIX_NOTHING', $row['fixLabel']);
     }
 

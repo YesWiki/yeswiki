@@ -13,7 +13,13 @@ if ($this->GetMethod() != 'xml') {
     return;
 }
 
-if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as body from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+$readableFilter = '';
+if (!$this->UserIsAdmin()) {
+    $aclRequest = $this->services->get(YesWiki\Core\Service\AclService::class)->updateRequestWithACL();
+    $readableFilter = empty($aclRequest) ? '' : ' and (' . $aclRequest . ')';
+}
+
+if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as body from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = ''" . $readableFilter . ' order by time desc limit ' . $max)) {
     if (!($link = $this->GetParameter('link'))) {
         $link = $this->config['root_page'];
     }
@@ -28,16 +34,13 @@ if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as bo
 
     $items = '';
     foreach ($pages as $i => $page) {
-        $readAcl = $this->HasAccess('read', $page['tag']);
-        $tag = $readAcl ? $page['tag'] : substr($page['tag'], 0, 3) . '___';
+        $tag = $page['tag'];
 
         list($day, $time) = explode(' ', $page['time']);
         $day = preg_replace('/-/', ' ', $day);
         list($hh, $mm, $ss) = explode(':', $time);
 
-        $body = $readAcl
-            ? htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET)
-            : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>';
+        $body = htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET);
 
         $items .= "<item>\n";
         $items .= '<title>' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";

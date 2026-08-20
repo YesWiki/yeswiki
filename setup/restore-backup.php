@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\BaseUrlRewriter;
+
 if (empty($_POST['config']) || empty($_POST['backup_file'])) {
     header('Location: ' . myLocation());
     exit(_t('PROBLEM_WHILE_INSTALLING'));
@@ -15,6 +17,7 @@ $config['yeswiki_release'] = YESWIKI_RELEASE;
 
 $backupFile = basename($_POST['backup_file']); // sanitise: keep filename only
 $restoreFiles = !empty($_POST['restore_files']);
+$rewriteUrls = !isset($_POST['rewrite_urls']) || !empty($_POST['rewrite_urls']);
 
 // --- connect to DB ---
 mysqli_report(MYSQLI_REPORT_OFF);
@@ -74,6 +77,15 @@ if (!$onlyFiles) {
         1
     );
 
+    $info = json_decode((string)$zip->getFromName('private/backups/' . BaseUrlRewriter::INFO_FILENAME), true);
+    $sourcePrefix = is_array($info) ? ($info['table_prefix'] ?? '') : '';
+    test(
+        _t('INSTALL_RESTORE_TABLE_PREFIX') . ' ...',
+        !is_string($sourcePrefix) || $sourcePrefix === '' || $sourcePrefix === $config['table_prefix'],
+        _t('INSTALL_RESTORE_TABLE_PREFIX_MISMATCH') . " : '$sourcePrefix' / '{$config['table_prefix']}'",
+        1
+    );
+
     // drop all tables with the configured prefix before importing
     $tablesPrefix = $config['table_prefix'];
     if (!empty($tablesPrefix) && $tables = mysqli_query($dblink, 'show tables')) {
@@ -82,6 +94,18 @@ if (!$onlyFiles) {
             if (strpos($tableName, $tablesPrefix) === 0) {
                 mysqli_query($dblink, 'DROP TABLE IF EXISTS `' . $tableName . '`');
             }
+        }
+    }
+
+    if ($rewriteUrls) {
+        $substitutions = BaseUrlRewriter::substitutions(
+            is_array($info) ? ($info['base_url'] ?? '') : '',
+            $config['base_url']
+        );
+        if (!empty($substitutions)) {
+            echo _t('INSTALL_RESTORE_REWRITE_URLS') . ' ' . htmlspecialchars(array_key_first($substitutions))
+                . ' &rarr; ' . htmlspecialchars(reset($substitutions)) . "<br>\n";
+            $sqlContent = BaseUrlRewriter::rewrite($sqlContent, $substitutions);
         }
     }
 

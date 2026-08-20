@@ -62,6 +62,7 @@ class ArchiveService
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
+    public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = BaseUrlRewriter::INFO_FILENAME;
     public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n" .
         "This folder is **reserved to backups**.\n\n" .
         "It **MUST NOT** be accessible from the internet.\n\n" .
@@ -521,8 +522,10 @@ class ArchiveService
 
     /**
      * get the list of archives in a array with information for each one.
+     *
+     * Reading the source address opens each archive, so only the screens offering a restore ask for it.
      */
-    public function getArchives(): array
+    public function getArchives(bool $withSourceBaseUrl = false): array
     {
         $archives = [];
         $privatePath = $this->getPrivateFolder();
@@ -542,6 +545,9 @@ class ArchiveService
                     'type' => $matches[7] ?? 'full',
                     'size' => filesize("$privatePath/$filename"),
                     'link' => $this->wiki->Href('', "api/archives/$filename"),
+                    'sourceBaseUrl' => ($withSourceBaseUrl && ($matches[7] ?? 'full') !== 'only_files')
+                        ? $this->getArchiveSourceBaseUrl($filename)
+                        : '',
                 ];
             }
         }
@@ -575,8 +581,12 @@ class ArchiveService
      *
      * @throws \Exception
      */
-    public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true): void
-    {
+    public function restoreArchive(
+        string $filename,
+        bool $restoreFiles = true,
+        bool $restoreDatabase = true,
+        bool $rewriteUrls = true
+    ): void {
         $filePath = $this->getFilePath($filename);
         if (empty($filePath)) {
             throw new \Exception("Archive not found: $filename");
@@ -596,7 +606,12 @@ class ArchiveService
                 if ($sqlContent === false) {
                     throw new \Exception('SQL file not found in archive');
                 }
-                $this->restoreDatabase($sqlContent);
+                $info = $this->readRestoreInfo($zip);
+                $this->assertSameTablePrefix($info);
+                $substitutions = $rewriteUrls
+                    ? BaseUrlRewriter::substitutions($info['base_url'] ?? '', $this->params->get('base_url'))
+                    : [];
+                $this->restoreDatabase(BaseUrlRewriter::rewrite($sqlContent, $substitutions));
             }
 
             if ($restoreFiles && !$onlyDb) {
@@ -688,6 +703,73 @@ class ArchiveService
                 continue;
             }
             $zip->extractTo($wikiRoot, $name);
+        }
+    }
+
+    /**
+     * A dump names its own tables, so restoring it under another prefix would drop this wiki
+     * and recreate the archive's tables where nothing looks for them.
+     *
+     * @param array<string,mixed> $info
+     *
+     * @throws \Exception
+     */
+    protected function assertSameTablePrefix(array $info): void
+    {
+        $sourcePrefix = $info['table_prefix'] ?? '';
+        $targetPrefix = trim($this->dbService->prefixTable(''));
+        if (is_string($sourcePrefix) && $sourcePrefix !== '' && $sourcePrefix !== $targetPrefix) {
+            throw new \Exception("Archive was taken from tables prefixed '$sourcePrefix' but this wiki uses '$targetPrefix'. " . 'Set table_prefix to the archive value before restoring.');
+        }
+    }
+
+    /**
+     * Describe the wiki the archive was taken from, so a restore can adapt links to another address.
+     */
+    protected function buildRestoreInfo(): string
+    {
+        return json_encode([
+            'base_url' => $this->params->get('base_url'),
+            'table_prefix' => $this->params->get('table_prefix'),
+            'yeswiki_version' => $this->params->get('yeswiki_version'),
+            'yeswiki_release' => $this->params->get('yeswiki_release'),
+            'date' => (new \DateTime())->format('c'),
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function readRestoreInfo(\ZipArchive $zip): array
+    {
+        $content = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        if ($content === false) {
+            return [];
+        }
+        $info = json_decode($content, true);
+
+        return is_array($info) ? $info : [];
+    }
+
+    /**
+     * base_url of the wiki an archive was taken from, empty when the archive predates the restore info file.
+     */
+    public function getArchiveSourceBaseUrl(string $filename): string
+    {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            return '';
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return '';
+        }
+        try {
+            $baseUrl = $this->readRestoreInfo($zip)['base_url'] ?? '';
+
+            return is_string($baseUrl) ? $baseUrl : '';
+        } finally {
+            $zip->close();
         }
     }
 
@@ -928,8 +1010,14 @@ class ArchiveService
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
                 $sqlContent
             );
-            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
 
+            $this->writeOutput($output, 'Adding restore info file', true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $this->buildRestoreInfo()
+            );
+
+            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
             $zip->addFromString(
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
                 "DENY FROM ALL\n"

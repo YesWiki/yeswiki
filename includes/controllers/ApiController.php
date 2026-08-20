@@ -1128,7 +1128,7 @@ class ApiController extends YesWikiController
         $archiveService = $this->getService(ArchiveService::class);
 
         return new ApiResponse(
-            $archiveService->getArchives(),
+            $archiveService->getArchives(true),
             Response::HTTP_OK
         );
     }

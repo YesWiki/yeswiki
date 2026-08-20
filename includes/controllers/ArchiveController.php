@@ -145,7 +145,8 @@ class ArchiveController extends YesWikiController
                         $post = $this->getRequest()->request;
                         $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
                         $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
-                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase);
+                        $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
+                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase, $rewriteUrls);
                         return new ApiResponse(['success' => true], Response::HTTP_OK);
                     } catch (\Throwable $th) {
                         return new ApiResponse(

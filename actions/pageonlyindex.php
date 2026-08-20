@@ -1,11 +1,14 @@
 <?php
+
 /*
 pageonlyindex.php
 lists all the pages of the wiki BUT bazar records.
 
 @licence: AGPL
 */
-if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body not LIKE \'{"%\' ORDER BY tag')) {
+$aclFilter = $this->services->get(YesWiki\Core\Service\AclService::class)->readableFilterSql();
+
+if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body not LIKE \'{"%\'' . $aclFilter . ' ORDER BY tag')) {
     foreach ($pages as $page) {
         // XXX: strtoupper is locale dependent
         $firstChar = strtoupper($page['tag'][0]);

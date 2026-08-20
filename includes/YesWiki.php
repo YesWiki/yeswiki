@@ -920,7 +920,24 @@ class Wiki
         }
 
         // Query
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+        $comments = $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+
+        return $this->keepReadableComments($comments);
+    }
+
+    /**
+     * A comment names the page it hangs on, so it is only listable when that page is readable.
+     */
+    private function keepReadableComments($comments)
+    {
+        if (empty($comments) || !is_array($comments)) {
+            return $comments;
+        }
+        $aclService = $this->services->get(AclService::class);
+
+        return array_values(array_filter($comments, function ($comment) use ($aclService) {
+            return empty($comment['comment_on']) || $aclService->hasAccess('read', $comment['comment_on']);
+        }));
     }
 
     public function LoadRecentlyCommented($limit = 50)
@@ -937,7 +954,10 @@ class Wiki
             $comments = [];
             foreach ($ids as $id) {
                 $comment = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . $id['id'] . "' limit 1");
-                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
+                if (!isset($comments[$comment['comment_on']])
+                    && $num < $limit
+                    && $this->services->get(AclService::class)->hasAccess('read', $comment['comment_on'])
+                ) {
                     $comments[$comment['comment_on']] = $comment;
                     $num++;
                 }

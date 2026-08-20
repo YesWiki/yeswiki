@@ -174,12 +174,21 @@ const app = createApp({
         this.selectedArchivesToDelete.push(filename)
       }
     },
+    urlRoot(url) {
+      return typeof url === 'string' ? url.replace(/\?+$/, '').replace(/\/+$/, '') : ''
+    },
     async restoreArchive(archive) {
       if (!confirm(_t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }))) { return }
+      const from = this.urlRoot(archive.sourceBaseUrl)
+      const to = this.urlRoot(wiki.baseUrl)
+      let rewriteUrls = false
+      if (from.length > 0 && from !== to) {
+        rewriteUrls = confirm(_t('ADMIN_BACKUPS_RESTORE_REWRITE_URLS_CONFIRM', { from: `${from}/`, to: `${to}/` }))
+      }
       this.updating = true
       this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE', { filename: archive.filename })
       this.messageClass = { alert: true, 'alert-info': true }
-      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore' })
+      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore', rewriteUrls: rewriteUrls ? '1' : '0' })
         .then(() => {
           this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename })
           this.messageClass = { alert: true, 'alert-success': true }

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Rss;
 
-use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -27,7 +26,6 @@ class RecentChangesRssAction extends YesWikiAction
             $max = $user['changescount'];
         }
 
-        $aclService = $this->getService(AclService::class);
         $pageManager = $this->getService(PageManager::class);
 
         $pagesList = $pageManager->getRecentlyChanged($max);
@@ -70,7 +68,6 @@ class RecentChangesRssAction extends YesWikiAction
         $items = [];
         for ($i = 0; $i < sizeof($pages); $i++) {
             $page = $pages[$i];
-            $readAcl = $aclService->hasAccess('read', $page['tag']);
             $firstpage = $page;
             $lastpage = $page;
             $break_on_tag = $page['tag'];
@@ -90,7 +87,6 @@ class RecentChangesRssAction extends YesWikiAction
             if ($i < sizeof($pages)) {
                 $page = $firstpage;
                 $tag = htmlspecialchars($page['tag'], ENT_COMPAT, YW_CHARSET);
-                $tag = $readAcl ? $tag : substr($tag, 0, 3) . '___';
                 $user = htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
                 $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
                 $rawTime = htmlspecialchars(
@@ -100,9 +96,9 @@ class RecentChangesRssAction extends YesWikiAction
                 );
                 $itemurl = $this->wiki->href(false, $tag, ['time' => $rawTime] + $langParam);
                 $description = htmlspecialchars(
-                    _t('RSS_CHANGE_OF') . ' ' . ($readAcl ? $this->wiki->ComposeLinkToPage($page['tag']) : $tag)
-                    . ($readAcl ? ' (' . $this->wiki->ComposeLinkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')' : '')
-                    . ' --- ' . _t('BY') . " $user" . ($readAcl ? rssdiff($page['tag'], $firstpage['id'], $lastpage['id']) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>')
+                    _t('RSS_CHANGE_OF') . ' ' . $this->wiki->ComposeLinkToPage($page['tag'])
+                    . ' (' . $this->wiki->ComposeLinkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')'
+                    . ' --- ' . _t('BY') . " $user" . rssdiff($page['tag'], $firstpage['id'], $lastpage['id'])
                 );
                 $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);
             }
