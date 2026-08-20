@@ -30,6 +30,7 @@ const app = createApp({
       canForceDelete: false,
       askConfirmationToDelete: false,
       packageName: '',
+      csrfToken: '',
       showReturn: true,
       warnIfNotStarted: true,
       callAsync: true,
@@ -532,6 +533,18 @@ const app = createApp({
         this.savedatabase = false
       }
     },
+    postTo(url) {
+      const form = document.createElement('form')
+      form.method = 'post'
+      form.action = url
+      const token = document.createElement('input')
+      token.type = 'hidden'
+      token.name = 'csrf-token'
+      token.value = this.csrfToken
+      form.appendChild(token)
+      document.body.appendChild(form)
+      form.submit()
+    },
     async forceUpdate() {
       return await this.fetch(wiki.url('?api/archives/forcedUpdateToken/'))
         .then((data) => {
@@ -545,11 +558,11 @@ const app = createApp({
             this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
             this.canForceUpdate = false
           } else {
-            window.location = wiki.url(wiki.pageTag, {
+            this.postTo(wiki.url(wiki.pageTag, {
               action: 'upgrade',
               package: this.packageName,
               forcedUpdateToken: data.token
-            })
+            }))
           }
         }, (pError) => {
           this.endStartingUpdateErrorWithT(`ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
@@ -661,6 +674,7 @@ const app = createApp({
     this.isPreupdate = container.classList.contains('preupdate-backups-container')
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
+      this.csrfToken = container.dataset.csrfToken || ''
       this.startArchive()
     } else {
       this.loadArchives()
