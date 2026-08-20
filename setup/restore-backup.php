@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\DumpRewriter;
+use YesWiki\Core\Service\SqlScript;
 
 if (empty($_POST['config']) || empty($_POST['backup_file'])) {
     header('Location: ' . myLocation());
@@ -71,20 +72,28 @@ $onlyFiles = str_ends_with($backupFile, '_archive_only_files.zip');
 if (!$onlyFiles) {
     echo '<br /><b>' . _t('INSTALL_RESTORE_DB') . "</b><br>\n";
 
-    $sqlContent = $zip->getFromName('private/backups/content.sql');
+    $dumpStream = $zip->getStream('private/backups/content.sql');
     test(
         _t('INSTALL_RESTORE_SQL') . ' ...',
-        $sqlContent !== false,
+        $dumpStream !== false,
         _t('INSTALL_RESTORE_SQL_NOT_FOUND'),
         1
     );
+
+    $dumpTables = [];
+    foreach (SqlScript::statementsFromStream($dumpStream) as $statement) {
+        foreach (DumpRewriter::tables($statement) as $table) {
+            $dumpTables[$table] = true;
+        }
+    }
+    fclose($dumpStream);
 
     $info = json_decode((string)$zip->getFromName('private/backups/' . DumpRewriter::INFO_FILENAME), true);
     $tablesPrefix = $config['table_prefix'];
     $dump = null;
     $dumpError = '';
     try {
-        $dump = DumpRewriter::prepare($sqlContent, is_array($info) ? $info : [], $tablesPrefix, $config['base_url'], $rewriteUrls);
+        $dump = DumpRewriter::plan(array_keys($dumpTables), is_array($info) ? $info : [], $tablesPrefix, $config['base_url'], $rewriteUrls);
     } catch (Exception $exception) {
         $dumpError = $exception->getCode() === DumpRewriter::UNKNOWN_SOURCE_PREFIX
             ? _t('INSTALL_RESTORE_TABLE_PREFIX_UNKNOWN')
@@ -119,18 +128,22 @@ if (!$onlyFiles) {
             . ' &rarr; ' . htmlspecialchars($dump->urlTo) . "<br>\n";
     }
 
-    $ok = mysqli_multi_query($dblink, $dump->sql);
-    do {
-        if ($result = mysqli_store_result($dblink)) {
-            mysqli_free_result($result);
-        }
-    } while (mysqli_more_results($dblink) && mysqli_next_result($dblink));
-
-    $errno = mysqli_errno($dblink);
+    $importError = '';
+    $dumpStream = $zip->getStream('private/backups/content.sql');
+    try {
+        SqlScript::runStatements($dblink, (function () use ($dumpStream, $dump) {
+            foreach (SqlScript::statementsFromStream($dumpStream) as $statement) {
+                yield $dump->apply($statement);
+            }
+        })());
+    } catch (Exception $exception) {
+        $importError = $exception->getMessage();
+    }
+    fclose($dumpStream);
     test(
         _t('INSTALL_RESTORE_DB') . ' ...',
-        $ok && $errno === 0,
-        _t('INSTALL_RESTORE_ERROR') . ' (errno ' . $errno . '): ' . mysqli_error($dblink),
+        $importError === '',
+        _t('INSTALL_RESTORE_ERROR') . ' : ' . htmlspecialchars($importError),
         1
     );
 }

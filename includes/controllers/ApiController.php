@@ -1096,6 +1096,14 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * @Route("/api/archives/restorestatus/", methods={"GET"}, options={"acl":{"@admins"}})
+     */
+    public function getRestoreStatus()
+    {
+        return $this->getService(ArchiveController::class)->getRestoreStatus();
+    }
+
+    /**
      * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchivingStatus()

@@ -61,6 +61,17 @@ class ArchiveService
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
+    public const RESTORE_JOB_FILENAME = 'restore-job.json';
+    protected const SLICE_MIN_SECONDS = 3;
+    protected const SLICE_MAX_SECONDS = 20;
+    public const RESTORE_DUMP_FILENAME = 'restore-dump.sql';
+    public const RESTORE_IDLE = 'idle';
+    public const RESTORE_IMPORTING = 'importing';
+    public const RESTORE_SWAPPING = 'swapping';
+    public const RESTORE_FILES = 'files';
+    public const RESTORE_CONFIG = 'config';
+    public const RESTORE_SWEEPING = 'sweeping';
+    public const RESTORE_DONE = 'done';
     /**
      * Configuration entries that belong to this installation, not to the wiki that was backed up:
      * where its database, its address, its mail server and its backups folder are.
@@ -601,7 +612,7 @@ class ArchiveService
     }
 
     /**
-     * Restore a backup archive (database and/or files).
+     * Restore a backup archive, from start to finish.
      *
      * @throws \Exception
      */
@@ -611,112 +622,502 @@ class ArchiveService
         bool $restoreDatabase = true,
         bool $rewriteUrls = true
     ): void {
-        $filePath = $this->getFilePath($filename);
-        if (empty($filePath)) {
-            throw new \Exception("Archive not found: $filename");
+        $state = $this->startRestore($filename, $restoreFiles, $restoreDatabase, $rewriteUrls);
+        while (!empty($state['running'])) {
+            $state = $this->advanceRestore();
         }
-
-        $zip = new \ZipArchive();
-        if ($zip->open($filePath) !== true) {
-            throw new \Exception("Cannot open archive: $filename");
-        }
-
-        try {
-            $onlyFiles = str_ends_with($filename, '_archive_only_files.zip');
-            $onlyDb = str_ends_with($filename, '_archive_only_db.zip');
-
-            if ($restoreDatabase && !$onlyFiles) {
-                $sqlContent = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
-                if ($sqlContent === false) {
-                    throw new \Exception('SQL file not found in archive');
-                }
-                $dump = DumpRewriter::prepare(
-                    $sqlContent,
-                    $this->readRestoreInfo($zip),
-                    $this->dbService->prefixTable(''),
-                    $this->params->get('base_url'),
-                    $rewriteUrls
-                );
-                $this->restoreDatabase($dump->sql);
-            }
-
-            if ($restoreFiles && !$onlyDb) {
-                $this->restoreFilesFromZip($zip);
-                $this->restoreConfiguration($zip, ConfigurationFileProvider::getConfigFileFromEnv());
-                if (!$onlyFiles) {
-                    $this->removeFilesAbsentFromArchive($zip, realpath(getcwd()));
-                }
-            }
-        } finally {
-            $zip->close();
+        if (!empty($state['error'])) {
+            throw new \Exception($state['error']);
         }
     }
 
     /**
-     * Replace the content of the database by the dump.
+     * Begin a restore, without doing any of it yet.
      *
-     * The tables have to go before the dump can create them again, which is the one moment where
-     * the wiki has no data at all: a dump of what is being replaced is kept aside, and put back
-     * if the new one does not import, so a failed restore never leaves an empty wiki.
+     * A restore is cut into slices short enough for one request on a shared host: the state of
+     * what is left to do lives in a file, and advanceRestore() takes it further each time.
+     *
+     * @return array<string,mixed>
      *
      * @throws \Exception
      */
-    protected function restoreDatabase(string $sqlContent): void
+    public function startRestore(
+        string $filename,
+        bool $restoreFiles = true,
+        bool $restoreDatabase = true,
+        bool $rewriteUrls = true
+    ): array {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            throw new \Exception("Archive not found: $filename");
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \Exception("Cannot open archive: $filename");
+        }
+        $entries = $zip->numFiles;
+        $zip->close();
+
+        $onlyFiles = str_ends_with($filename, self::ARCHIVE_ONLY_FILES_SUFFIX . '.zip');
+        $onlyDb = str_ends_with($filename, self::ARCHIVE_ONLY_DATABASE_SUFFIX . '.zip');
+
+        $job = [
+            'filename' => $filename,
+            'restoreFiles' => $restoreFiles && !$onlyDb,
+            'restoreDatabase' => $restoreDatabase && !$onlyFiles,
+            'rewriteUrls' => $rewriteUrls,
+            'sweep' => $restoreFiles && !$onlyDb && !$onlyFiles,
+            'step' => ($restoreDatabase && !$onlyFiles) ? self::RESTORE_IMPORTING : self::RESTORE_FILES,
+            'statementsDone' => 0,
+            'entriesDone' => 0,
+            'entries' => $entries,
+            'substitutions' => [],
+            'livePrefix' => '',
+            'stagingPrefix' => '',
+            'replacedPrefix' => '',
+        ];
+        $this->writeRestoreJob($job);
+
+        return $this->restoreState($job);
+    }
+
+    /**
+     * Take the running restore as far as one request can, and say where it got to.
+     *
+     * @return array<string,mixed>
+     */
+    public function advanceRestore(): array
     {
-        $tablesPrefix = trim($this->dbService->prefixTable(''));
-        if (empty($tablesPrefix)) {
-            throw new \Exception('Table prefix is empty — refusing to drop all tables');
+        $job = $this->readRestoreJob();
+        if (empty($job)) {
+            return ['step' => self::RESTORE_IDLE, 'running' => false];
         }
 
-        $replaced = $this->dbService->getSQLContentBackupMethod();
-        $replacedContent = is_array($replaced) ? ($replaced['sql'] ?? '') : '';
+        $zip = new \ZipArchive();
+        $filePath = $this->getFilePath($job['filename']);
+        if (empty($filePath) || $zip->open($filePath) !== true) {
+            $this->cancelRestore();
 
+            return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => "Cannot open archive: {$job['filename']}"];
+        }
+
+        $deadline = $this->sliceDeadline();
         try {
-            $this->dropTables($tablesPrefix);
-            $this->importSql($sqlContent);
+            while (microtime(true) < $deadline && $job['step'] !== self::RESTORE_DONE) {
+                $job = $this->advanceRestoreStep($zip, $job, $deadline);
+            }
         } catch (\Throwable $throwable) {
-            $putBack = $this->putDatabaseBack($tablesPrefix, $replacedContent);
+            $zip->close();
+            $this->giveUpRestore($job);
 
-            throw new \Exception($throwable->getMessage() . ' ' . $putBack);
+            return ['step' => self::RESTORE_IDLE, 'running' => false, 'error' => $throwable->getMessage()];
+        }
+        $zip->close();
+
+        if ($job['step'] === self::RESTORE_DONE) {
+            $this->finishRestore($job);
+        } else {
+            $this->writeRestoreJob($job);
+        }
+
+        return $this->restoreState($job);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function cancelRestore(): array
+    {
+        $job = $this->readRestoreJob();
+        if (!empty($job)) {
+            $this->giveUpRestore($job);
+        }
+
+        return ['step' => self::RESTORE_IDLE, 'running' => false];
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function advanceRestoreStep(\ZipArchive $zip, array $job, float $deadline): array
+    {
+        switch ($job['step']) {
+            case self::RESTORE_IMPORTING:
+                return $this->importSlice($zip, $job, $deadline);
+            case self::RESTORE_SWAPPING:
+                $this->swapTables($job['livePrefix'], $job['stagingPrefix'], $job['replacedPrefix']);
+                $job['step'] = $job['restoreFiles'] ? self::RESTORE_FILES : self::RESTORE_DONE;
+
+                return $job;
+            case self::RESTORE_FILES:
+                return $this->filesSlice($zip, $job, $deadline);
+            case self::RESTORE_CONFIG:
+                $this->restoreConfiguration($zip, ConfigurationFileProvider::getConfigFileFromEnv());
+                $job['step'] = $job['sweep'] ? self::RESTORE_SWEEPING : self::RESTORE_DONE;
+
+                return $job;
+            case self::RESTORE_SWEEPING:
+                $finished = $this->removeFilesAbsentFromArchive($zip, realpath(getcwd()), $deadline);
+                $job['step'] = $finished ? self::RESTORE_DONE : self::RESTORE_SWEEPING;
+
+                return $job;
+            default:
+                $job['step'] = self::RESTORE_DONE;
+
+                return $job;
         }
     }
 
-    protected function putDatabaseBack(string $tablesPrefix, string $replacedContent): string
+    /**
+     * Import as many statements of the dump as the slice allows, remembering how far it got.
+     *
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function importSlice(\ZipArchive $zip, array $job, float $deadline): array
     {
-        if (empty($replacedContent)) {
-            return 'The database it replaced could not be dumped beforehand, so it could not be put back.';
+        if ($job['statementsDone'] === 0) {
+            $job = $this->prepareImport($zip, $job);
         }
+
+        $handle = fopen($this->dumpCopyPath(), 'r');
+        if ($handle === false) {
+            throw new \Exception('Cannot read the dump taken out of the archive');
+        }
+        $conn = $this->openRestoreConnection();
+        $maxPacket = SqlScript::maxAllowedPacket($conn);
+        $done = 0;
         try {
-            $this->dropTables($tablesPrefix);
-            $this->importSql($replacedContent);
-        } catch (\Throwable $throwable) {
-            return 'Putting the database back failed too: ' . $throwable->getMessage();
-        }
-
-        return 'The database was put back as it was.';
-    }
-
-    protected function dropTables(string $tablesPrefix): void
-    {
-        $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
-        $tables = $this->dbService->loadAll('show tables');
-        if (is_array($tables)) {
-            foreach ($tables as $tableInfo) {
-                $tableName = array_values($tableInfo)[0];
-                if (strpos($tableName, $tablesPrefix) === 0) {
-                    $this->dbService->query('DROP TABLE IF EXISTS `' . $tableName . '`');
+            foreach (SqlScript::statementsFromStream($handle) as $statement) {
+                if ($done++ < $job['statementsDone']) {
+                    continue;
+                }
+                if (SqlScript::isSessionPlumbing($statement)) {
+                    $job['statementsDone'] = $done;
+                    continue;
+                }
+                $statement = strtr($statement, $job['substitutions']);
+                if (!mysqli_query($conn, $statement)) {
+                    throw new \Exception(SqlScript::errorMessage(mysqli_error($conn), $statement, $maxPacket));
+                }
+                $job['statementsDone'] = $done;
+                if (microtime(true) > $deadline) {
+                    return $job;
                 }
             }
+        } finally {
+            fclose($handle);
+            mysqli_close($conn);
+        }
+        $job['step'] = self::RESTORE_SWAPPING;
+
+        return $job;
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     *
+     * @throws \Exception
+     */
+    protected function prepareImport(\ZipArchive $zip, array $job): array
+    {
+        $livePrefix = trim($this->dbService->prefixTable(''));
+        if (empty($livePrefix)) {
+            throw new \Exception('Table prefix is empty — refusing to restore');
+        }
+        $job['livePrefix'] = $livePrefix;
+        $job['stagingPrefix'] = $this->isolatedPrefix($livePrefix, 'staging');
+        $job['replacedPrefix'] = $this->isolatedPrefix($livePrefix, 'replaced');
+
+        $this->copyDumpOutOfArchive($zip);
+        $plan = DumpRewriter::plan(
+            $this->tablesOfDump(),
+            $this->readRestoreInfo($zip),
+            $job['stagingPrefix'],
+            $this->params->get('base_url'),
+            $job['rewriteUrls']
+        );
+        $job['substitutions'] = $plan->substitutions;
+
+        $this->dropTables($job['stagingPrefix']);
+        $this->dropTables($job['replacedPrefix']);
+
+        return $job;
+    }
+
+    /**
+     * Extract as many files as the slice allows, remembering how far it got.
+     *
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function filesSlice(\ZipArchive $zip, array $job, float $deadline): array
+    {
+        $wikiRoot = realpath(getcwd());
+        $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
+        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
+        for ($i = $job['entriesDone']; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            $job['entriesDone'] = $i + 1;
+            if ($name === false || strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
+                continue;
+            }
+            if (str_ends_with($name, '/')) {
+                $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                continue;
+            }
+            $zip->extractTo($wikiRoot, $name);
+            if (microtime(true) > $deadline) {
+                return $job;
+            }
+        }
+        $job['step'] = self::RESTORE_CONFIG;
+
+        return $job;
+    }
+
+    /**
+     * How long a slice may take: half of what the host allows a request, and never all of it,
+     * since the answer still has to be written after the last statement.
+     */
+    protected function sliceDeadline(): float
+    {
+        $limit = (int)ini_get('max_execution_time');
+        $budget = $limit > 0 ? min(self::SLICE_MAX_SECONDS, max(self::SLICE_MIN_SECONDS, (int)($limit / 2))) : self::SLICE_MAX_SECONDS;
+
+        return microtime(true) + $budget;
+    }
+
+    protected function dumpCopyPath(): string
+    {
+        return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_DUMP_FILENAME;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function copyDumpOutOfArchive(\ZipArchive $zip): void
+    {
+        $from = $this->openDump($zip);
+        $to = fopen($this->dumpCopyPath(), 'w');
+        if ($to === false) {
+            fclose($from);
+
+            throw new \Exception('Cannot write the dump into the backups folder');
+        }
+        stream_copy_to_stream($from, $to);
+        fclose($from);
+        fclose($to);
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function giveUpRestore(array $job): void
+    {
+        if (!empty($job['stagingPrefix'])) {
+            try {
+                $this->dropTables($job['stagingPrefix']);
+            } catch (\Throwable $throwable) {
+            }
+        }
+        $this->finishRestore($job);
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function finishRestore(array $job): void
+    {
+        if (!empty($job['replacedPrefix'])) {
+            try {
+                $this->dropTables($job['replacedPrefix']);
+            } catch (\Throwable $throwable) {
+            }
+        }
+        if (file_exists($this->dumpCopyPath())) {
+            @unlink($this->dumpCopyPath());
+        }
+        $path = $this->restoreJobPath();
+        if (file_exists($path)) {
+            @unlink($path);
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     *
+     * @return array<string,mixed>
+     */
+    protected function restoreState(array $job): array
+    {
+        return [
+            'step' => $job['step'],
+            'running' => $job['step'] !== self::RESTORE_DONE,
+            'filename' => $job['filename'],
+            'statementsDone' => $job['statementsDone'],
+            'entriesDone' => $job['entriesDone'],
+            'entries' => $job['entries'],
+        ];
+    }
+
+    protected function restoreJobPath(): string
+    {
+        return $this->getPrivateFolder() . DIRECTORY_SEPARATOR . self::RESTORE_JOB_FILENAME;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function readRestoreJob(): array
+    {
+        $path = $this->restoreJobPath();
+        if (!file_exists($path)) {
+            return [];
+        }
+        $job = json_decode((string)file_get_contents($path), true);
+
+        return is_array($job) ? $job : [];
+    }
+
+    /**
+     * @param array<string,mixed> $job
+     */
+    protected function writeRestoreJob(array $job): void
+    {
+        file_put_contents($this->restoreJobPath(), json_encode($job));
+    }
+
+    /**
+     * A prefix of its own, that no prefix-wide operation can confuse with the wiki's own tables.
+     */
+    protected function isolatedPrefix(string $livePrefix, string $tag): string
+    {
+        $prefix = 'yw' . $tag . substr(sha1($livePrefix), 0, 6) . '_';
+        while (str_starts_with($prefix, $livePrefix) || str_starts_with($livePrefix, $prefix)) {
+            $prefix = "x$prefix";
+        }
+
+        return $prefix;
+    }
+
+    /**
+     * The tables the dump creates, read without holding the dump in memory.
+     *
+     * @return string[]
+     *
+     * @throws \Exception
+     */
+    protected function tablesOfDump(): array
+    {
+        $handle = fopen($this->dumpCopyPath(), 'r');
+        if ($handle === false) {
+            throw new \Exception('Cannot read the dump taken out of the archive');
+        }
+        $tables = [];
+        try {
+            foreach (SqlScript::statementsFromStream($handle) as $statement) {
+                foreach (DumpRewriter::tables($statement) as $table) {
+                    $tables[$table] = true;
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return array_keys($tables);
+    }
+
+    /**
+     * Put the tables just imported in place of the wiki's own, all at once.
+     *
+     * @throws \Exception
+     */
+    protected function swapTables(string $livePrefix, string $stagingPrefix, string $replacedPrefix): void
+    {
+        $staged = $this->tablesWithPrefix($stagingPrefix);
+        if (empty($staged)) {
+            throw new \Exception('The backup created no table.');
+        }
+
+        $renames = [];
+        foreach ($this->tablesWithPrefix($livePrefix) as $table) {
+            $renames[] = "`$table` TO `" . $replacedPrefix . substr($table, strlen($livePrefix)) . '`';
+        }
+        foreach ($staged as $table) {
+            $renames[] = "`$table` TO `" . $livePrefix . substr($table, strlen($stagingPrefix)) . '`';
+        }
+
+        $this->dbService->query('RENAME TABLE ' . implode(', ', $renames));
+    }
+
+    /**
+     * @return resource
+     *
+     * @throws \Exception
+     */
+    protected function openDump(\ZipArchive $zip)
+    {
+        $handle = $zip->getStream(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        if ($handle === false) {
+            throw new \Exception('SQL file not found in archive');
+        }
+
+        return $handle;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function tablesWithPrefix(string $prefix): array
+    {
+        $found = [];
+        $tables = $this->dbService->loadAll('show tables');
+        foreach (is_array($tables) ? $tables : [] as $tableInfo) {
+            $tableName = array_values($tableInfo)[0];
+            if (strpos($tableName, $prefix) === 0) {
+                $found[] = $tableName;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function dropTables(string $tablesPrefix): void
+    {
+        if (trim($tablesPrefix) === '') {
+            throw new \Exception('Refusing to drop tables of no prefix at all');
+        }
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
+        foreach ($this->tablesWithPrefix($tablesPrefix) as $tableName) {
+            $this->dbService->query('DROP TABLE IF EXISTS `' . $tableName . '`');
         }
         $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
     }
 
     /**
-     * A dedicated connection, so multi_query does not leave the shared one with unread results.
+     * A connection of its own, so the restore does not disturb the one the wiki is using.
      *
      * @throws \Exception
      */
-    protected function importSql(string $sqlContent): void
+    protected function openRestoreConnection(): \mysqli
     {
         $conn = mysqli_connect(
             $this->params->get('mysql_host'),
@@ -728,26 +1129,9 @@ class ArchiveService
             throw new \Exception('Cannot open database connection for restore');
         }
         mysqli_set_charset($conn, 'utf8mb4');
+        SqlScript::prepareSession($conn);
 
-        // Strip bare semicolons (empty statements from empty tables in old backups).
-        $sqlContent = trim(preg_replace('/^\s*;\s*$/m', '', $sqlContent));
-
-        try {
-            if (!mysqli_multi_query($conn, $sqlContent)) {
-                throw new \Exception('SQL restore failed: ' . mysqli_error($conn));
-            }
-            do {
-                if ($r = mysqli_store_result($conn)) {
-                    mysqli_free_result($r);
-                }
-            } while (mysqli_more_results($conn) && mysqli_next_result($conn));
-
-            if ($errno = mysqli_errno($conn)) {
-                throw new \Exception("SQL restore error (errno $errno): " . mysqli_error($conn));
-            }
-        } finally {
-            mysqli_close($conn);
-        }
+        return $conn;
     }
 
     /**
@@ -793,7 +1177,7 @@ class ArchiveService
      * A full backup is the whole wiki, so what it does not contain has no place in the tree
      * either. Deleting comes after extracting, so the wiki is never left without its own code.
      */
-    protected function removeFilesAbsentFromArchive(\ZipArchive $zip, string $wikiRoot): void
+    protected function removeFilesAbsentFromArchive(\ZipArchive $zip, string $wikiRoot, float $deadline): bool
     {
         if (!is_dir($wikiRoot)) {
             throw new \Exception("'$wikiRoot' is not a directory to restore into");
@@ -812,17 +1196,21 @@ class ArchiveService
         }
 
         foreach (array_keys($folders) as $folder) {
-            $this->removeAbsentFiles("$wikiRoot/$folder", $folder, $keep);
+            if (!$this->removeAbsentFiles("$wikiRoot/$folder", $folder, $keep, $deadline)) {
+                return false;
+            }
         }
+
+        return true;
     }
 
     /**
      * @param array<string,bool> $keep
      */
-    private function removeAbsentFiles(string $path, string $relativePath, array $keep): void
+    private function removeAbsentFiles(string $path, string $relativePath, array $keep, float $deadline): bool
     {
         if (!is_dir($path) || is_link($path) || $relativePath === self::PRIVATE_FOLDER_NAME_IN_ZIP) {
-            return;
+            return true;
         }
         foreach (scandir($path) as $name) {
             if ($name === '.' || $name === '..') {
@@ -831,39 +1219,21 @@ class ArchiveService
             $childPath = "$path/$name";
             $childRelativePath = "$relativePath/$name";
             if (is_dir($childPath) && !is_link($childPath)) {
-                $this->removeAbsentFiles($childPath, $childRelativePath, $keep);
+                if (!$this->removeAbsentFiles($childPath, $childRelativePath, $keep, $deadline)) {
+                    return false;
+                }
                 if (!isset($keep[$childRelativePath])) {
                     @rmdir($childPath);
                 }
             } elseif (!isset($keep[$childRelativePath])) {
                 @unlink($childPath);
             }
-        }
-    }
-
-    /**
-     * Extract wiki files from zip, skipping private/backups/ and wakka.config.php.
-     */
-    protected function restoreFilesFromZip(\ZipArchive $zip): void
-    {
-        $wikiRoot = realpath(getcwd());
-        $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
-        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
-
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $name = $zip->getNameIndex($i);
-            if (strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
-                continue;
+            if (microtime(true) > $deadline) {
+                return false;
             }
-            if (str_ends_with($name, '/')) {
-                $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0755, true);
-                }
-                continue;
-            }
-            $zip->extractTo($wikiRoot, $name);
         }
+
+        return true;
     }
 
     /**

@@ -147,14 +147,20 @@ class ArchiveController extends YesWikiController
                         $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
                         $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
                         $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
-                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase, $rewriteUrls);
-                        return new ApiResponse(['success' => true], Response::HTTP_OK);
+
+                        return new ApiResponse(
+                            $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls),
+                            Response::HTTP_OK
+                        );
                     } catch (\Throwable $th) {
                         return new ApiResponse(
                             ['error' => 'Restore failed: ' . $this->wiki->dumpThrowable($th)],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
+                    break;
+                case 'cancelRestore':
+                    return new ApiResponse($this->archiveService->cancelRestore(), Response::HTTP_OK);
                     break;
 
                 case 'futureDeletedArchives':
@@ -176,6 +182,25 @@ class ArchiveController extends YesWikiController
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
                 ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
+     * Advancing a restore holds the request for a while, so the session lock is released first.
+     */
+    public function getRestoreStatus()
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        try {
+            return new ApiResponse($this->archiveService->advanceRestore(), Response::HTTP_OK);
+        } catch (\Throwable $throwable) {
+            return new ApiResponse(
+                ['error' => $throwable->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

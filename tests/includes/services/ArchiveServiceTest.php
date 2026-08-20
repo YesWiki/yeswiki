@@ -115,7 +115,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
         try {
             $zip->open($zipPath);
-            $this->callProtected($services['archiveService'], 'removeFilesAbsentFromArchive', [$zip, $root]);
+            $this->callProtected($services['archiveService'], 'removeFilesAbsentFromArchive', [$zip, $root, microtime(true) + 30]);
             $zip->close();
 
             $this->assertFileExists("$root/custom/kept.txt");

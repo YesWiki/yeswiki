@@ -26,7 +26,30 @@ class DumpRewriter
         string $targetBaseUrl,
         bool $rewriteUrls = true
     ): DumpRewrite {
-        $sourcePrefix = self::detectPrefix($sqlContent);
+        $plan = self::plan(self::tables($sqlContent), $info, $targetPrefix, $targetBaseUrl, $rewriteUrls);
+
+        return $plan->withSql(strtr($sqlContent, $plan->substitutions));
+    }
+
+    /**
+     * What a dump has to be rewritten into, worked out from the tables it creates.
+     *
+     * The rewriting itself is a substitution map, so it can be applied statement by statement
+     * and a dump never has to be held in memory whole.
+     *
+     * @param string[]            $tables
+     * @param array<string,mixed> $info   contents of the restore info file, empty for an older archive
+     *
+     * @throws \Exception when the dump names no known table, or the target prefix is unusable
+     */
+    public static function plan(
+        array $tables,
+        array $info,
+        string $targetPrefix,
+        string $targetBaseUrl,
+        bool $rewriteUrls = true
+    ): DumpRewrite {
+        $sourcePrefix = self::detectPrefixFromTables($tables);
         if ($sourcePrefix === '' && is_string($info['table_prefix'] ?? null)) {
             $sourcePrefix = $info['table_prefix'];
         }
@@ -40,14 +63,20 @@ class DumpRewriter
         }
 
         $sourceBaseUrl = is_string($info['base_url'] ?? null) ? $info['base_url'] : '';
-        $substitutions = $rewriteUrls ? self::substitutions($sourceBaseUrl, $targetBaseUrl) : [];
+        $urls = $rewriteUrls ? self::substitutions($sourceBaseUrl, $targetBaseUrl) : [];
+
+        $substitutions = $urls;
+        foreach (self::renamesFor($tables, $sourcePrefix, $targetPrefix) as $table => $renamed) {
+            $substitutions["`$table`"] = "`$renamed`";
+        }
 
         return new DumpRewrite(
-            self::rewriteUrls(self::rewriteTables($sqlContent, $sourcePrefix, $targetPrefix), $substitutions),
+            '',
             $sourcePrefix,
             $targetPrefix,
-            empty($substitutions) ? '' : self::root($sourceBaseUrl),
-            empty($substitutions) ? '' : self::root($targetBaseUrl),
+            empty($urls) ? '' : self::root($sourceBaseUrl),
+            empty($urls) ? '' : self::root($targetBaseUrl),
+            $substitutions,
         );
     }
 
@@ -79,7 +108,14 @@ class DumpRewriter
      */
     public static function detectPrefix(string $sqlContent): string
     {
-        $tables = self::tables($sqlContent);
+        return self::detectPrefixFromTables(self::tables($sqlContent));
+    }
+
+    /**
+     * @param string[] $tables
+     */
+    public static function detectPrefixFromTables(array $tables): string
+    {
         $candidates = [];
         foreach ($tables as $table) {
             foreach (self::CORE_TABLES as $coreTable) {
@@ -114,12 +150,22 @@ class DumpRewriter
      */
     public static function renames(string $sqlContent, string $from, string $to): array
     {
+        return self::renamesFor(self::tables($sqlContent), $from, $to);
+    }
+
+    /**
+     * @param string[] $tables
+     *
+     * @return array<string,string>
+     */
+    public static function renamesFor(array $tables, string $from, string $to): array
+    {
         if ($from === '' || $from === $to || !self::isValidPrefix($to)) {
             return [];
         }
 
         $renames = [];
-        foreach (self::tables($sqlContent) as $table) {
+        foreach ($tables as $table) {
             if (str_starts_with($table, $from)) {
                 $renames[$table] = $to . substr($table, strlen($from));
             }

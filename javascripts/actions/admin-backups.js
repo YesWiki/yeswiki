@@ -33,6 +33,7 @@ const app = createApp({
       showReturn: true,
       warnIfNotStarted: true,
       callAsync: true,
+      restoring: '',
       remoteUrl: '',
       remoteUsername: '',
       remotePassword: '',
@@ -204,20 +205,57 @@ const app = createApp({
         rewriteUrls = confirm(_t('ADMIN_BACKUPS_RESTORE_REWRITE_URLS_CONFIRM', { from: `${from}/`, to: `${to}/` }))
       }
       this.updating = true
+      this.restoring = archive.filename
       this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE', { filename: archive.filename })
       this.messageClass = { alert: true, 'alert-info': true }
       return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore', rewriteUrls: rewriteUrls ? '1' : '0' })
         .then(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename })
-          this.messageClass = { alert: true, 'alert-success': true }
-          toastMessage(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename }), 3000, 'alert alert-success')
-          setTimeout(() => { window.location.href = wiki.url(wiki.pageTag) }, 2000)
+          setTimeout(this.advanceRestore, 500)
         })
-        .catch(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: archive.filename })
-          this.messageClass = { alert: true, 'alert-danger': true }
-          this.updating = false
+        .catch((pError) => {
+          this.endRestore(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: archive.filename }) + (pError.message ? ` : ${pError.message}` : ''))
         })
+    },
+    async resumeRestore() {
+      return await this.fetch(wiki.url('?api/archives/restorestatus/'))
+        .then((data) => {
+          if (!data.running) { return }
+          this.updating = true
+          this.restoring = data.filename || '?'
+          setTimeout(this.advanceRestore, 500)
+        }, () => {})
+    },
+    async advanceRestore() {
+      if (this.restoring.length == 0) { return }
+      return await this.fetch(wiki.url('?api/archives/restorestatus/'))
+        .then((data) => {
+          if (data.error) {
+            return this.endRestore(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: this.restoring }) + ` : ${data.error}`)
+          }
+          if (!data.running) {
+            this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: this.restoring })
+            this.messageClass = { alert: true, 'alert-success': true }
+            this.restoring = ''
+            setTimeout(() => { window.location.href = wiki.url(wiki.pageTag) }, 2000)
+            return
+          }
+          this.message = _t(`ADMIN_BACKUPS_RESTORE_STEP_${String(data.step).toUpperCase()}`, {
+            filename: this.restoring,
+            done: data.entriesDone || data.statementsDone || 0,
+            total: data.entries || 0
+          })
+          this.messageClass = { alert: true, 'alert-info': true }
+          setTimeout(this.advanceRestore, 500)
+        })
+        .catch((pError) => {
+          this.endRestore(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: this.restoring }) + (pError.message ? ` : ${pError.message}` : ''))
+        })
+    },
+    endRestore(message) {
+      this.message = message
+      this.messageClass = { alert: true, 'alert-danger': true }
+      this.restoring = ''
+      this.updating = false
     },
     async startArchive() {
       this.updating = true
@@ -627,6 +665,7 @@ const app = createApp({
     } else {
       this.loadArchives()
       this.resumeRemoteBackup()
+      this.resumeRestore()
     }
   }
 })
