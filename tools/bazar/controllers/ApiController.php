@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
@@ -448,10 +449,14 @@ class ApiController extends YesWikiController
         }
         $postData['antispam'] = 1;
 
-        if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
-            $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
-        } else {
-            $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+        try {
+            if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
+                $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
+            } else {
+                $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+            }
+        } catch (TagAlreadyUsedException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
 
         if (!$entry) {

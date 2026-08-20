@@ -8,6 +8,7 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ConditionsCheckingField;
@@ -291,7 +292,9 @@ class EntryController extends YesWikiController
             $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('bf_titre')) {
-                    $entry = $this->entryManager->create($formId, $post->all());
+                    $postedData = $post->all();
+                    unset($postedData['id_fiche']);
+                    $entry = $this->entryManager->create($formId, $postedData);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['id_fiche'],
                         'data' => $entry,
@@ -317,7 +320,7 @@ class EntryController extends YesWikiController
                     header('Location: ' . $redirectUrl);
                     $this->wiki->exit();
                 }
-            } catch (UserFieldException $e) {
+            } catch (UserFieldException|TagAlreadyUsedException $e) {
                 $error .= $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
                     'message' => $e->getMessage(),

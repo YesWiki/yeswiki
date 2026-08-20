@@ -98,6 +98,7 @@ return [
     'BAZ_ERROR_EDIT_UNAUTHORIZED' => 'Vous n\'avez pas les permissions pour éditer ce fichier',
     'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'Vous n\'avez pas les permissions pour supprimer ce fichier',
     'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'La fiche n\'a pas pu être sauvée car elle ne possède pas de titre.',
+    'BAZ_ENTRY_TAG_ALREADY_USED' => 'La page %{tag} existe déjà, la fiche n\'a pas été créée.',
     'BAZ_FLUX_RSS_GENERAL' => 'Flux RSS de toutes les fiches',
     'BAZ_MOT_CLE' => 'mots recherchés',
     'BAZ_DATE_CREATION' => 'créée le',

@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
+use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TitleField;
@@ -326,6 +327,8 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
+        $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
+
         // We need to check antispam before if it is removed from data
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
@@ -337,6 +340,8 @@ class EntryManager
 
         // Let's format the data
         $data = $this->formatDataBeforeSave($data);
+
+        $this->refuseTagOfAnExistingPage($data['id_fiche'] ?? null);
 
         // We need to check bf_titre and id_typeannonce once the data are formated
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
@@ -416,6 +421,16 @@ class EntryManager
         }
 
         return $data;
+    }
+
+    /**
+     * Creating an entry never writes over a page that is already there, whoever asks.
+     */
+    private function refuseTagOfAnExistingPage(?string $tag): void
+    {
+        if (!empty($tag) && $this->pageManager->getOne($tag, null, true, true)) {
+            throw new TagAlreadyUsedException(_t('BAZ_ENTRY_TAG_ALREADY_USED', ['tag' => $tag]));
+        }
     }
 
     /**

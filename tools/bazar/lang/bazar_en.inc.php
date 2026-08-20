@@ -42,6 +42,7 @@ return [
     'BAZ_RECHERCHER_2POINTS' => 'Search : ',
     'BAZ_TOUS_TYPES_FICHES' => 'All types of entries',
     'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'The entry was not saved because there was no title.',
+    'BAZ_ENTRY_TAG_ALREADY_USED' => 'The page %{tag} already exists, the entry was not created.',
     'BAZ_FLUX_RSS_GENERAL' => 'RSS feed for all the entries',
     'BAZ_MOT_CLE' => 'search terms',
     'BAZ_DATE_CREATION' => 'create on',
