@@ -653,7 +653,11 @@ class ArchiveService
     }
 
     /**
-     * Drop prefixed tables and re-import SQL dump via a dedicated connection.
+     * Replace the content of the database by the dump.
+     *
+     * The tables have to go before the dump can create them again, which is the one moment where
+     * the wiki has no data at all: a dump of what is being replaced is kept aside, and put back
+     * if the new one does not import, so a failed restore never leaves an empty wiki.
      *
      * @throws \Exception
      */
@@ -664,6 +668,36 @@ class ArchiveService
             throw new \Exception('Table prefix is empty — refusing to drop all tables');
         }
 
+        $replaced = $this->dbService->getSQLContentBackupMethod();
+        $replacedContent = is_array($replaced) ? ($replaced['sql'] ?? '') : '';
+
+        try {
+            $this->dropTables($tablesPrefix);
+            $this->importSql($sqlContent);
+        } catch (\Throwable $throwable) {
+            $putBack = $this->putDatabaseBack($tablesPrefix, $replacedContent);
+
+            throw new \Exception($throwable->getMessage() . ' ' . $putBack);
+        }
+    }
+
+    protected function putDatabaseBack(string $tablesPrefix, string $replacedContent): string
+    {
+        if (empty($replacedContent)) {
+            return 'The database it replaced could not be dumped beforehand, so it could not be put back.';
+        }
+        try {
+            $this->dropTables($tablesPrefix);
+            $this->importSql($replacedContent);
+        } catch (\Throwable $throwable) {
+            return 'Putting the database back failed too: ' . $throwable->getMessage();
+        }
+
+        return 'The database was put back as it was.';
+    }
+
+    protected function dropTables(string $tablesPrefix): void
+    {
         $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
         $tables = $this->dbService->loadAll('show tables');
         if (is_array($tables)) {
@@ -675,9 +709,15 @@ class ArchiveService
             }
         }
         $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
+    }
 
-        // Dedicated connection for multi_query to avoid leaving the shared DbService
-        // link with unread result sets.
+    /**
+     * A dedicated connection, so multi_query does not leave the shared one with unread results.
+     *
+     * @throws \Exception
+     */
+    protected function importSql(string $sqlContent): void
+    {
         $conn = mysqli_connect(
             $this->params->get('mysql_host'),
             $this->params->get('mysql_user'),
@@ -690,8 +730,7 @@ class ArchiveService
         mysqli_set_charset($conn, 'utf8mb4');
 
         // Strip bare semicolons (empty statements from empty tables in old backups).
-        $sqlContent = preg_replace('/^\s*;\s*$/m', '', $sqlContent);
-        $sqlContent = trim($sqlContent);
+        $sqlContent = trim(preg_replace('/^\s*;\s*$/m', '', $sqlContent));
 
         try {
             if (!mysqli_multi_query($conn, $sqlContent)) {
@@ -1059,6 +1098,32 @@ class ArchiveService
             });
         }
 
+        if (!$vCanceled && !empty($sqlContent)) {
+            $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
+            $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $sqlContent
+            );
+
+            $this->writeOutput($output, 'Adding restore info file', true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $this->buildRestoreInfo()
+            );
+
+            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
+                "DENY FROM ALL\n"
+            );
+
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/README.md',
+                self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
+            );
+        }
+
         if (!$vCanceled && !$onlyDb) {
             // add empty cache folder
             $zip->addEmptyDir('cache');
@@ -1105,32 +1170,6 @@ class ArchiveService
 
                 array_shift($dirs);
             }
-        }
-
-        if (!$vCanceled && !empty($sqlContent)) {
-            $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
-            $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
-                $sqlContent
-            );
-
-            $this->writeOutput($output, 'Adding restore info file', true, $outputFile);
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
-                $this->buildRestoreInfo()
-            );
-
-            $this->writeOutput($output, 'Adding .htaccess file in folder ' . self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/.htaccess',
-                "DENY FROM ALL\n"
-            );
-
-            $zip->addFromString(
-                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/README.md',
-                self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
-            );
         }
 
         $vClosed = false;

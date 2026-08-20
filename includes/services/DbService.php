@@ -8,6 +8,19 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
 {
+    /** an INSERT has to reach the server in a single packet, so it stays well under any max_allowed_packet */
+    protected const MAX_INSERT_LENGTH = 1048576;
+    /** field types a dumped value has to be quoted for, cf mysqli_result::fetch_field_direct */
+    protected const QUOTED_FIELD_TYPES = [
+        252, // text or blob
+        253, // varchar
+        254, // char
+        10,  // date
+        11,  // time
+        12,  // datetime
+        13,  // year
+    ];
+
     protected $params;
 
     protected $link;
@@ -307,45 +320,39 @@ class DbService
 
                 $rawData = $this->query('select * from ' . $tableName);
 
-                $firstRow = true;
+                $columns = [];
+                $quoted = [];
+                for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
+                    $field = mysqli_fetch_field_direct($rawData, $i);
+                    $columns[] = '`' . $field->name . '`';
+                    $quoted[] = in_array($field->type, self::QUOTED_FIELD_TYPES, true);
+                }
+                $insertHeader = "INSERT INTO `$tableName` (" . implode(', ', $columns) . ") VALUES\n";
+
+                $statementLength = 0;
                 while ($row = mysqli_fetch_array($rawData)) {
-                    if ($firstRow) {
-                        $sql .= "INSERT INTO `$tableName` ";
-                        $sql .= '(';
-                        for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
-                            if ($i != 0) {
-                                $sql .= ', ';
-                            }
-                            $sql .= '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
-                        }
-                        $sql .= ") VALUES\n";
-                        $firstRow = false;
+                    $values = [];
+                    foreach ($columns as $i => $column) {
+                        $quote = $quoted[$i] ? "'" : '';
+                        $values[] = $quote . $this->escape($row[$i] ?? '') . $quote;
+                    }
+                    $line = '(' . implode(', ', $values) . ')';
+
+                    if ($statementLength === 0) {
+                        $sql .= $insertHeader;
                     } else {
                         $sql .= ",\n";
                     }
-                    $sql .= '(';
-                    for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
-                        if ($i != 0) {
-                            $sql .= ', ';
-                        }
-                        $strAdd = '';
-                        $field = mysqli_fetch_field_direct($rawData, $i);
-                        if (
-                            $field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
-                            || $field->type == 253 // varchar
-                            || $field->type == 254 // char
-                            || $field->type == 10 // date
-                            || $field->type == 11 // time
-                            || $field->type == 12 // datetime
-                            || $field->type == 13 // year
-                        ) {
-                            $strAdd = "'";
-                        }
-                        $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;
+                    $sql .= $line;
+                    $statementLength += strlen($line) + 2;
+
+                    // a single INSERT has to travel in one packet, and max_allowed_packet is small
+                    if ($statementLength > self::MAX_INSERT_LENGTH) {
+                        $sql .= ";\n";
+                        $statementLength = 0;
                     }
-                    $sql .= ')';
                 }
-                if (!$firstRow) {
+                if ($statementLength > 0) {
                     $sql .= ";\n";
                 }
                 $sql .=

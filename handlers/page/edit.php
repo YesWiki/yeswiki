@@ -65,8 +65,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 $this->SavePage($this->tag, $body, !empty($this->page['comment_on']) ? $this->page['comment_on'] : '');
 
                 // now we render it internally so we can write the updated link table.
-                $page = $this->services->get(PageManager::class)->getOne($this->tag);
-                $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
+                $page = $this->services->get(PageManager::class)->getOne($this->tag, null, true, true);
+                if (!empty($page)) {
+                    $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
+                }
 
                 // forward
                 if ($this->page['comment_on']) {
