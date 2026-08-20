@@ -623,9 +623,6 @@ const app = createApp({
     this.isPreupdate = container.classList.contains('preupdate-backups-container')
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
-    }
-    container.addEventListener('dblclick', (e) => false)
-    if (this.isPreupdate) {
       this.startArchive()
     } else {
       this.loadArchives()
