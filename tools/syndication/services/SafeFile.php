@@ -30,15 +30,6 @@ class SafeFile extends File
      */
     public static function pin(string $url): array
     {
-        $resolved = (self::$validator ?? new SsrfUrlValidator())->resolveSafe($url, self::SCHEMES);
-        $host = array_key_first($resolved);
-        $parts = parse_url($url);
-        $port = $parts['port'] ?? (strtolower($parts['scheme']) === 'https' ? 443 : 80);
-
-        return [
-            CURLOPT_RESOLVE => ["{$host}:{$port}:{$resolved[$host]}"],
-            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
-            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
-        ];
+        return (self::$validator ?? new SsrfUrlValidator())->curlPin($url, self::SCHEMES);
     }
 }

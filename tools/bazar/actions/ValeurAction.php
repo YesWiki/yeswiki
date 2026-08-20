@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\YesWikiAction;
 
@@ -31,10 +32,6 @@ class ValeurAction extends YesWikiAction
             return $this->renderError(_t('BAZAR_PARAM_URL_REQUIRED'));
         }
 
-        if (!$this->isUrlSafeToFetch($url)) {
-            return $this->renderError(_t('BAZAR_URL_ERROR') . ' : ' . htmlspecialchars($url) . '.');
-        }
-
         $champ = $this->arguments['champ'];
         if (empty($champ)) {
             return $this->renderError(_t('BAZAR_PARAM_CHAMP_REQUIRED'));
@@ -44,7 +41,7 @@ class ValeurAction extends YesWikiAction
 
         // on garde en variable globale pour le cas ou l'action est appelée plusieurs fois
         if (!isset($GLOBALS['externalpage'][$url])) {
-            $GLOBALS['externalpage'][$url] = @file_get_contents($url . '/html');
+            $GLOBALS['externalpage'][$url] = $this->fetch($url . '/html');
         }
         $remotePage = $GLOBALS['externalpage'][$url];
 
@@ -102,52 +99,34 @@ class ValeurAction extends YesWikiAction
     }
 
     /**
-     * SSRF guard: only allow fetching http(s) URLs that resolve to public,
-     * non-loopback/private/link-local/reserved addresses (mirrors HttpSignatureService::validateKeyIdUrl).
+     * Reads a remote page, once its address has been checked and pinned.
+     *
+     * A redirect is not followed: curl cannot re-run the check on the new address, and a public
+     * page redirecting to an internal one is the usual way past a check made only on the first
+     * URL.
+     *
+     * @return string|false
      */
-    private function isUrlSafeToFetch(string $url): bool
+    private function fetch(string $url)
     {
-        $parts = parse_url($url);
-        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+        try {
+            $pin = $this->getService(SsrfUrlValidator::class)->curlPin($url, ['http', 'https']);
+        } catch (Throwable $error) {
             return false;
         }
-        if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
-            return false;
+
+        $curl = curl_init($url);
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($curl, $option, $optionValue);
         }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+        $content = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
 
-        // Strip IPv6 brackets (e.g. [::1] → ::1)
-        $host = trim($parts['host'], '[]');
-
-        // Collect all IPs the host resolves to so every address family is checked.
-        if (filter_var($host, FILTER_VALIDATE_IP)) {
-            $ips = [$host];
-        } else {
-            $ips = [];
-            $ipv4 = gethostbyname($host);
-            if ($ipv4 !== $host) {
-                $ips[] = $ipv4;
-            }
-            foreach (dns_get_record($host, DNS_AAAA) ?: [] as $record) {
-                if (!empty($record['ipv6'])) {
-                    $ips[] = $record['ipv6'];
-                }
-            }
-            if (empty($ips)) {
-                return false;
-            }
-        }
-
-        foreach ($ips as $ip) {
-            // Rejects 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
-            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                return false;
-            }
-            // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
-                return false;
-            }
-        }
-
-        return true;
+        return ($content === false || $status < 200 || $status >= 300) ? false : $content;
     }
 }

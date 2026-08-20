@@ -12,6 +12,17 @@ use Exception;
 class SsrfUrlValidator
 {
     /**
+     * Ranges PHP's own filters let through, but that a server must not be talked into reaching.
+     */
+    private const RESERVED_IPV4 = [
+        '100.64.0.0/10',  // carrier-grade NAT, routable inside many hosting networks
+        '192.0.0.0/24',   // IETF protocol assignments
+        '192.88.99.0/24', // 6to4 relay anycast
+        '198.18.0.0/15',  // network benchmarking
+        '224.0.0.0/3',    // multicast and everything reserved above it
+    ];
+
+    /**
      * Resolves the host exactly once, validates every address it returned, and
      * hands back a Symfony HttpClient `resolve` map ([host => ip]) pinning the
      * connection to the very address that was checked - the caller must pass
@@ -58,7 +69,8 @@ class SsrfUrlValidator
 
         foreach ($ips as $ip) {
             // Rejects 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
-            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+                || $this->isReservedIPv4($ip)) {
                 throw new Exception("URL '{$url}' resolves to a private or reserved address");
             }
             // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
@@ -69,12 +81,57 @@ class SsrfUrlValidator
             // filter_var() classifies as an ordinary global IPv6 address; unwrap and re-check it.
             $embeddedIPv4 = $this->extractEmbeddedIPv4($ip);
             if ($embeddedIPv4 !== null
-                && !filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                && (!filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+                    || $this->isReservedIPv4($embeddedIPv4))) {
                 throw new Exception("URL '{$url}' resolves to a private or reserved address");
             }
         }
 
         return [$host => $ips[0]];
+    }
+
+    /**
+     * The same check, expressed as the curl options that tie a request to the checked address.
+     *
+     * Redirects are left to the caller: curl cannot run this check again on a new hop, so a
+     * caller that follows one must validate it itself.
+     *
+     * @param string[] $schemes
+     *
+     * @return array<int,mixed>
+     */
+    public function curlPin(string $url, array $schemes = ['https']): array
+    {
+        $resolved = $this->resolveSafe($url, $schemes);
+        $host = array_key_first($resolved);
+        $parts = parse_url($url);
+        $port = $parts['port'] ?? (strtolower($parts['scheme']) === 'https' ? 443 : 80);
+
+        return [
+            CURLOPT_RESOLVE => ["{$host}:{$port}:{$resolved[$host]}"],
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+        ];
+    }
+
+    /**
+     * Whether the address sits in one of the special-use ranges PHP's filters do not cover.
+     */
+    private function isReservedIPv4(string $ip): bool
+    {
+        $address = ip2long($ip);
+        if ($address === false) {
+            return false;
+        }
+        foreach (self::RESERVED_IPV4 as $range) {
+            [$network, $bits] = explode('/', $range);
+            $mask = 0xFFFFFFFF << (32 - (int) $bits) & 0xFFFFFFFF;
+            if ((ip2long($network) & $mask) === ($address & $mask)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
