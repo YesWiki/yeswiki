@@ -45,6 +45,8 @@ class ExternalBazarService
 
     private const UPDATING_SUFFIX = '_updating';
 
+    public const SCHEMES = ['http', 'https'];
+
     protected $debug;
     protected $timeCacheToCheckChanges;
     protected $timeCacheToRefreshForms;
@@ -54,6 +56,7 @@ class ExternalBazarService
     protected $entryManager;
     protected $importService;
     protected $params;
+    protected $ssrfUrlValidator;
     protected $wiki;
 
     private $aURLDetailsCache;
@@ -65,13 +68,15 @@ class ExternalBazarService
         ParameterBagInterface $params,
         FormManager $formManager,
         EntryManager $entryManager,
-        ImportService $importService
+        ImportService $importService,
+        SsrfUrlValidator $ssrfUrlValidator
     ) {
         $this->wiki = $wiki;
         $this->params = $params;
         $this->formManager = $formManager;
         $this->importService = $importService;
         $this->entryManager = $entryManager;
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
         $this->debug = ($this->params->has('debug') && $this->params->get('debug') == 'yes');
         $externalBazarServiceParameters = $this->params->get('baz_external_service');
         $this->timeCacheToCheckChanges = (int)($externalBazarServiceParameters['cache_time_to_check_changes'] ?? 90); // seconds
@@ -593,14 +598,25 @@ class ExternalBazarService
      */
     private function loadURLContent($pURL): string
     {
+        try {
+            $pin = $this->ssrfUrlValidator->curlPin($pURL, self::SCHEMES);
+        } catch (\Throwable $error) {
+            throw new ExternalBazarServiceException("Refusing to get content from $pURL");
+        }
+
         $vDestPath = tempnam('cache', 'tmp_to_delete_');
 
         $vFile = fopen($vDestPath, 'wb');
 
         $vCurl = curl_init($pURL);
 
+        foreach ($pin as $option => $optionValue) {
+            curl_setopt($vCurl, $option, $optionValue);
+        }
         curl_setopt($vCurl, CURLOPT_FILE, $vFile);
         curl_setopt($vCurl, CURLOPT_HEADER, 0);
+        // a public address redirecting to an internal one is the usual way past a check
+        curl_setopt($vCurl, CURLOPT_FOLLOWLOCATION, 0);
         curl_setopt($vCurl, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
         curl_setopt($vCurl, CURLOPT_TIMEOUT, 30); // total timeout in seconds
 

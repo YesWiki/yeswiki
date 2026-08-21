@@ -8,10 +8,13 @@ use YesWiki\Wiki;
 
 class BazarListService
 {
+    public const EXTERNAL_SCHEMES = ['http', 'https'];
+
     protected $entryManager;
     protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
+    protected $ssrfUrlValidator;
     protected $wiki;
 
     public function __construct(
@@ -20,12 +23,14 @@ class BazarListService
         EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
         FormManager $formManager,
+        SsrfUrlValidator $ssrfUrlValidator,
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     public function getForms($pOptions = []): array
@@ -503,7 +508,13 @@ class BazarListService
 
     protected function isValidURL($pURL)
     {
-        return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+        try {
+            $this->ssrfUrlValidator->resolveSafe($pURL, self::EXTERNAL_SCHEMES);
+        } catch (\Throwable $error) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function parseIDs($pIDs)
