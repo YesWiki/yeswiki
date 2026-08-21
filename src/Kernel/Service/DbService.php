@@ -150,6 +150,8 @@ class DbService
             case 'sqlite':
                 // Enable foreign keys for SQLite
                 $this->link->exec('PRAGMA foreign_keys = ON');
+                $this->link->exec('PRAGMA journal_mode = WAL');
+                $this->link->exec('PRAGMA busy_timeout = 5000');
                 // Add REGEXP function for SQLite (not built-in)
                 $regexp = function ($pattern, $value) {
                     if ($pattern === null || $value === null) {

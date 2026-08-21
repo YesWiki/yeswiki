@@ -1,0 +1,3 @@
+The Program tree is assembled here by build-program.sh and embedded into the binary.
+It is deliberately not committed: it is a copy of the repository, minus what an
+Instance owns and minus what only a developer needs.

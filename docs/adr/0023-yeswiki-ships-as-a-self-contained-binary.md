@@ -71,9 +71,15 @@ as `program-<version>/`. `YESWIKI_SOURCE_DIR` is renamed `YESWIKI_PROGRAM_DIR` t
   afterwards, ever, so the cost of leaving one out is that the feature is permanently gone on this
   deployment. Everything used ships: the `composer.json` list, plus `ext-openssl`, which
   `HttpSignatureService` and `KeyPairGenerator` have always used and which nothing declares, plus
-  `pdo_sqlite`, `pdo_mysql` and `pdo_pgsql`, plus opcache, plus `ext-imap` for ticket 28's
-  importer. The undeclared `openssl` is the argument in miniature: `composer.json` was never a
-  trustworthy manifest, so the list comes from an audit.
+  `pdo_sqlite`, `pdo_mysql` and `pdo_pgsql`, plus opcache. The undeclared `openssl` is the argument
+  in miniature: `composer.json` was never a trustworthy manifest, so the list comes from an audit.
+
+  **`ext-imap` is the one exception, and it is not a choice** (2026-08-21, single-binary 02). It is
+  not thread safe, static-php-cli refuses to build it against a ZTS PHP, and FrankenPHP is ZTS by
+  construction -- that is what worker mode is. So ticket 28's IMAP importer does not exist on this
+  deployment. It keeps working on php-fpm and shared hosting, where the extension can be loaded; a
+  wiki that imports a mailbox cannot move to the binary until that importer stops needing
+  `ext-imap`. Accepted rather than worked around, because the alternative is giving up worker mode.
 
 ## Consequences
 

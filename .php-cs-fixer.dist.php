@@ -7,6 +7,7 @@ $finder = PhpCsFixer\Finder::create()
     ->exclude('cache')
     ->exclude('files')
     ->exclude('node_modules')
+    ->exclude('binary')
     // The instance's own config, not source: `yeswiki.config.php` is written by the installer
     // and rewritten by every screen that saves a setting (ConfigurationService), and
     // `test.config.php` is its equivalent for the test wiki. Both are gitignored. Without

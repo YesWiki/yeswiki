@@ -65,3 +65,53 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.tag || github.event.release.tag_name }}
           files: ${{ env.ARCHIVE_NAME }}
+
+  binary:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x86_64, runner: ubuntu-26.04 }
+          - { arch: aarch64, runner: ubuntu-24.04-arm }
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install JS dependencies
+        run: yarn install
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the static binary
+        env:
+          TARGETARCH: ${{ matrix.arch }}
+          COMPRESS: '1'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./binary/build-static.sh
+
+      - name: Check the binary carries what the manifest names
+        run: ./binary/check-binary.sh "binary/dist/yeswiki-linux-${{ matrix.arch }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yeswiki-linux-${{ matrix.arch }}
+          path: binary/dist/yeswiki-linux-${{ matrix.arch }}
+          retention-days: 7

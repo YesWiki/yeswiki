@@ -252,6 +252,47 @@ class ExtensionManifestTest extends TestCase
         $this->assertSame($required, $documented, 'INSTALL.md and composer.json disagree about what a server needs');
     }
 
+    /** The static binary compiles in everything the manifest requires: it can never load one later. */
+    public function testTheStaticBuildCompilesInWhatTheManifestRequires(): void
+    {
+        $script = self::ROOT . '/binary/build-static.sh';
+        $this->assertFileExists($script);
+
+        $output = [];
+        $status = 0;
+        exec(
+            'cd ' . escapeshellarg(self::ROOT . '/binary')
+            . ' && bash -c ' . escapeshellarg('source ./build-static.sh >/dev/null 2>&1 || true; php_extensions')
+            . ' 2>/dev/null',
+            $output,
+            $status
+        );
+        $compiledIn = array_filter(explode(',', trim(implode('', $output))));
+        $this->assertNotEmpty($compiledIn, 'build-static.sh named no extension at all');
+
+        $alwaysCompiledIn = ['hash', 'json', 'pcre'];
+        $notInAThreadedBinary = ['imap'];
+        $missing = [];
+        foreach (array_keys($this->manifest()['require']) as $package) {
+            if (!str_starts_with($package, 'ext-')) {
+                continue;
+            }
+            $extension = substr($package, strlen('ext-'));
+            if (in_array($extension, $alwaysCompiledIn, true) || in_array($extension, $notInAThreadedBinary, true)) {
+                continue;
+            }
+            if (!in_array($extension, $compiledIn, true)) {
+                $missing[] = $extension;
+            }
+        }
+
+        $this->assertSame([], $missing, 'the static binary would ship without these, permanently');
+
+        foreach (['opcache', 'pdo_mysql', 'pdo_pgsql', 'pdo_sqlite'] as $expected) {
+            $this->assertContains($expected, $compiledIn, "the binary must carry $expected whatever the manifest calls optional");
+        }
+    }
+
     /** Nothing is declared twice, and nothing sits in both lists saying two different things. */
     public function testNoExtensionIsBothRequiredAndSuggested(): void
     {
