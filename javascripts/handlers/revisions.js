@@ -34,7 +34,6 @@ const app = createApp({
       return this.selectedRevision && this.lastRevision &&
         Vue.toRaw(this.selectedRevision) === Vue.toRaw(this.lastRevision)
     },
-    restoreUrl() { return wiki.url(`${wiki.pageTag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
     previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
   },
   mounted() {

@@ -152,9 +152,11 @@ class PageManager
     public function getById($id): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
-        $page = $this->checkEntriesACL([$page], $page['tag'])[0];
+        if (empty($page)) {
+            return null;
+        }
 
-        return $page;
+        return $this->checkEntriesACL([$page], $page['tag'])[0];
     }
 
     public function getRevisions($pageTag, $limit = 10000)

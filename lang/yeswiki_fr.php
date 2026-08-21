@@ -539,6 +539,7 @@ return [
     'REFERRERS_SITES_24_HOURS' => '24 heures',
     'REFERRERS_SITES_X_DAYS' => '{nb} jours',
     'SUCCESS_RESTORE_REVISION' => 'La version a bien été restaurée',
+    'REVISION_NOT_FOUND' => 'Cette version n\'appartient pas à cette page',
     'TITLE_PAGE_HISTORY' => 'Historique de la page',
     'TITLE_ENTRY_HISTORY' => 'Historique de la fiche',
     'REVISION_VERSION' => 'Version N°',

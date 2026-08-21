@@ -468,6 +468,7 @@ return [
     'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
     'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
     'SUCCESS_RESTORE_REVISION' => 'The version was restored',
+    'REVISION_NOT_FOUND' => 'This version does not belong to this page',
     'TITLE_PAGE_HISTORY' => 'Page history',
     'TITLE_ENTRY_HISTORY' => 'Entry history',
     'REVISION_VERSION' => 'Revision N°',
