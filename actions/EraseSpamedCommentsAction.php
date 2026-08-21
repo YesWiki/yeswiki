@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Action permettant d'effacer facilement les spams de commentaires
  * (pour WikiNi 0.5 et supérieurs).
@@ -17,7 +18,7 @@
  * -- test pour savoir si quelque chose a bien été effacé
  * -- la présentation (style, paramétrage de limite du nombre de commentaires affichés,
  *    paramétrage de la longueur des contenus affichés, etc.)
-*/
+ */
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Core\YesWikiAction;
 
@@ -118,7 +119,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
                 $wiki->LogAdministrativeAction(
                     $wiki->GetUserName(),
                     _t('ERASED_COMMENTS') .
-                    /*" [" .*/ /*$_POST['comment'] .*/ /* "]".*/
+                    /* " [" . */ /* $_POST['comment'] . */ /* "]". */
                     '&nbsp;: ' .
                     '""' .
                     $deletedPages .

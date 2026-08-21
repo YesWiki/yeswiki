@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use YesWiki\Bazar\Service\SsrfUrlValidator;
 use YesWiki\Core\Exception\CurlTimeoutException;
 
@@ -19,7 +18,7 @@ class ImportService
 
     protected $ssrfUrlValidator;
 
-    public function __construct(SsrfUrlValidator $ssrfUrlValidator/*, Wiki $wiki, ParameterBagInterface $params*/)
+    public function __construct(SsrfUrlValidator $ssrfUrlValidator/* , Wiki $wiki, ParameterBagInterface $params */)
     {
         $this->ssrfUrlValidator = $ssrfUrlValidator;
         // $this->wiki = $wiki;
@@ -88,9 +87,9 @@ class ImportService
         }
         if (empty($baseUrl) || is_null($rewriteModeEnabled) || empty($tag)) {
             return [];
-        } else {
-            return [$baseUrl, $rewriteModeEnabled, $tag];
         }
+
+        return [$baseUrl, $rewriteModeEnabled, $tag];
     }
 
     /**
@@ -158,7 +157,7 @@ class ImportService
      *
      * @return string
      *
-     * @throws Exception
+     * @throws \Exception
      * @throws CurlTimeoutException
      */
     private function getHeaders($url): array
@@ -193,9 +192,8 @@ class ImportService
             $errorStr = curl_strerror($error);
             if (in_array($error, [12, 28])) {
                 throw new CurlTimeoutException("Error getting content from $url ($errorStr)");
-            } else {
-                throw new Exception("Error getting content from $url ($errorStr)");
             }
+            throw new \Exception("Error getting content from $url ($errorStr)");
         }
         $intermediate = empty($content) ? [] : array_filter(array_map('trim', explode("\n", $content)));
         $output = [];

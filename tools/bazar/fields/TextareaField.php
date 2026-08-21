@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use DateTime;
-use DateTimeZone;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
@@ -305,7 +303,7 @@ class TextareaField extends BazarField
             ? $entry['date_creation_fiche']
             : (
                 !empty($dbTz)
-                ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
+                ? (new \DateTime())->setTimezone(new \DateTimeZone($dbTz))->format($sqlTimeFormat)
                 : date($sqlTimeFormat)
             );
 

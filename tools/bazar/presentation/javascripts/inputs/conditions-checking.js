@@ -6,12 +6,28 @@ const ConditionsChecking = {
   boolList: ['false', 'true'],
   operationsList: ['!(', 'not(', 'not (', '(', ')'],
   operationsListIncludInSpaceParenthesis: ['and', 'or'],
-  conditionsList: ['match', '==', '!=', ' in', '|length ==', '|length !=', '|length <', '|length <=', '|length >=', '|length >', ' is empty', ' is not empty'],
+  conditionsList: [
+    'match',
+    '==',
+    '!=',
+    ' in',
+    '|length ==',
+    '|length !=',
+    '|length <',
+    '|length <=',
+    '|length >=',
+    '|length >',
+    ' is empty',
+    ' is not empty',
+  ],
   pregQuote(input) {
-    return (`${input}`).replace(new RegExp('[.\\[\\]\\^(){}!=\\\\+*?$<>|:]', 'g'), '\\$&')
+    return `${input}`.replace(
+      new RegExp('[.\\[\\]\\^(){}!=\\\\+*?$<>|:]', 'g'),
+      '\\$&',
+    )
   },
   updateOperationData(data, rest, condition, element) {
-    const newIndex = (rest == undefined) ? -1 : condition.length - rest[0].length
+    const newIndex = rest == undefined ? -1 : condition.length - rest[0].length
     if (Object.keys(data).length == 0 || data.indexOf == undefined) {
       data.indexOf = -1
     }
@@ -30,7 +46,9 @@ const ConditionsChecking = {
     } else {
       result[names.current] = condition.substr(0, data.indexOf).trim()
       result[names.element] = data.element
-      result[names.rest] = condition.substr(data.indexOf + data.fullRest.length).trim()
+      result[names.rest] = condition
+        .substr(data.indexOf + data.fullRest.length)
+        .trim()
     }
     return result
   },
@@ -39,41 +57,63 @@ const ConditionsChecking = {
     const data = {}
     for (let index = 0; index < this.operationsList.length; index++) {
       const element = this.operationsList[index]
-      const rest = condition.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = condition.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, condition, element)
     }
-    for (let index = 0; index < this.operationsListIncludInSpaceParenthesis.length; index++) {
+    for (
+      let index = 0;
+      index < this.operationsListIncludInSpaceParenthesis.length;
+      index++
+    ) {
       const element = this.operationsListIncludInSpaceParenthesis[index]
-      const rest = condition.match(new RegExp(`((?<= |\\)|^)${element}(?= |\\)))(.*)$`, 'i'))
+      const rest = condition.match(
+        new RegExp(`((?<= |\\)|^)${element}(?= |\\)))(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, condition, element)
     }
-    return this.updateObject(data, condition, { current: 'currentCondition', rest: 'restOfCondition', element: 'operation' })
+    return this.updateObject(data, condition, {
+      current: 'currentCondition',
+      rest: 'restOfCondition',
+      element: 'operation',
+    })
   },
   addCondition(condition) {
     const conditionLocal = condition.trim()
     const data = {}
     for (let index = 0; index < this.conditionsList.length; index++) {
       const element = this.conditionsList[index]
-      const rest = conditionLocal.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = conditionLocal.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, conditionLocal, element)
     }
     for (let index = 0; index < this.boolList.length; index++) {
       const element = this.boolList[index]
-      const rest = conditionLocal.match(new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'))
+      const rest = conditionLocal.match(
+        new RegExp(`(${this.pregQuote(element)})(.*)$`, 'i'),
+      )
       this.updateOperationData(data, rest, conditionLocal, element)
     }
-    return this.updateObject(data, conditionLocal, { current: 'leftPart', rest: 'rightPart', element: 'typeOfCondition' })
+    return this.updateObject(data, conditionLocal, {
+      current: 'leftPart',
+      rest: 'rightPart',
+      element: 'typeOfCondition',
+    })
   },
   getCheckboxValues(field) {
     const result = []
-    $(field).find('input[type=checkbox]').each(function() {
-      if ($(this).prop('checked') == true) {
-        const name = $(this).attr('name')
-        let value = name.match(/\[[A-Za-z0-9_-]+\]/)[0]
-        value = value.substr(1, value.length - 2)
-        result.push(value)
-      }
-    })
+    $(field)
+      .find('input[type=checkbox]')
+      .each(function () {
+        if ($(this).prop('checked') == true) {
+          const name = $(this).attr('name')
+          let value = name.match(/\[[A-Za-z0-9_-]+\]/)[0]
+          value = value.substr(1, value.length - 2)
+          result.push(value)
+        }
+      })
     return result
   },
   getCheckboxTagValues(field) {
@@ -86,7 +126,7 @@ const ConditionsChecking = {
   },
   getRadioValues(inputs) {
     const result = []
-    $(inputs).each(function() {
+    $(inputs).each(function () {
       if ($(this).prop('checked') == true) {
         result.push($(this).attr('value'))
       }
@@ -229,7 +269,7 @@ const ConditionsChecking = {
   match(fieldName, values) {
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
 
     this.commonForOperations(fieldName, values, extract)
@@ -244,7 +284,11 @@ const ConditionsChecking = {
 
     let result = true
     for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
-      if (!uniqueValuesRE.some((regex) => regex.test(extract.uniqueFieldValues[index]))) {
+      if (
+        !uniqueValuesRE.some((regex) =>
+          regex.test(extract.uniqueFieldValues[index]),
+        )
+      ) {
         result = false
       }
     }
@@ -259,7 +303,7 @@ const ConditionsChecking = {
     }
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
     if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
@@ -267,7 +311,9 @@ const ConditionsChecking = {
     }
     let result = true
     for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
-      if (extract.uniqueValues.indexOf(extract.uniqueFieldValues[index]) == -1) {
+      if (
+        extract.uniqueValues.indexOf(extract.uniqueFieldValues[index]) == -1
+      ) {
         result = false
       }
     }
@@ -285,7 +331,7 @@ const ConditionsChecking = {
     }
     const extract = {
       uniqueValues: [],
-      uniqueFieldValues: []
+      uniqueFieldValues: [],
     }
     this.commonForOperations(fieldName, values, extract)
     if (extract.uniqueFieldValues.length == 0) {
@@ -306,13 +352,15 @@ const ConditionsChecking = {
     return this.isUnEqual(fieldName, '')
   },
   renderCondition(structuredCondition) {
-    if (typeof structuredCondition.leftPart !== 'undefined'
-            && typeof structuredCondition.rightPart !== 'undefined'
-            && typeof structuredCondition.typeOfCondition !== 'undefined') {
+    if (
+      typeof structuredCondition.leftPart !== 'undefined' &&
+      typeof structuredCondition.rightPart !== 'undefined' &&
+      typeof structuredCondition.typeOfCondition !== 'undefined'
+    ) {
       return this.renderConditionSecured(
         structuredCondition.leftPart.trim(),
         structuredCondition.typeOfCondition.trim(),
-        structuredCondition.rightPart.trim()
+        structuredCondition.rightPart.trim(),
       )
     }
 
@@ -351,96 +399,125 @@ const ConditionsChecking = {
     return ' false '
   },
   renderBadFormatingError(structuredCondition, conditionData) {
-    if (typeof structuredCondition.leftPart !== 'undefined' && structuredCondition.leftPart.length != 0) {
-      console.warn(`Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`)
+    if (
+      typeof structuredCondition.leftPart !== 'undefined' &&
+      structuredCondition.leftPart.length != 0
+    ) {
+      console.warn(
+        `Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`,
+      )
       return true
     }
     return false
   },
   emptyCheckbox(element) {
-    $(element).find('input[type=checkbox]').each(function() {
-      $(this).prop('checked', false)
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('input[type=checkbox]')
+      .each(function () {
+        $(this).prop('checked', false)
+        $(this).trigger('change')
+      })
   },
   setDefaultCheckbox(element) {
-    $(element).find('input[type=checkbox]:not([data-default])').each(function() {
-      $(this).prop('checked', false)
-      $(this).trigger('change')
-    })
-    $(element).find('input[type=checkbox][data-default]').each(function() {
-      const defaultVal = $(this).data('default')
-      if (defaultVal == 'checked') {
-        $(this).prop('checked', true)
+    $(element)
+      .find('input[type=checkbox]:not([data-default])')
+      .each(function () {
+        $(this).prop('checked', false)
         $(this).trigger('change')
-      }
-    })
+      })
+    $(element)
+      .find('input[type=checkbox][data-default]')
+      .each(function () {
+        const defaultVal = $(this).data('default')
+        if (defaultVal == 'checked') {
+          $(this).prop('checked', true)
+          $(this).trigger('change')
+        }
+      })
   },
   emptySelect(element) {
-    $(element).find('select').each(function() {
-      $(this).val('')
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('select')
+      .each(function () {
+        $(this).val('')
+        $(this).trigger('change')
+      })
   },
   setDefaultSelect(element) {
-    $(element).find('select[data-default]').each(function() {
-      const defaultVal = $(this).data('default')
-      const val = $(this).val()
-      if (defaultVal != undefined) {
-        $(this).val(defaultVal)
-        $(this).trigger('change')
-      }
-    })
+    $(element)
+      .find('select[data-default]')
+      .each(function () {
+        const defaultVal = $(this).data('default')
+        const val = $(this).val()
+        if (defaultVal != undefined) {
+          $(this).val(defaultVal)
+          $(this).trigger('change')
+        }
+      })
   },
   emptyTextarea(element) {
-    $(element).find('textarea').each(function() {
-      $(this).val('')
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('textarea')
+      .each(function () {
+        $(this).val('')
+        $(this).trigger('change')
+      })
   },
   emptyRadio(element) {
     // warning it unselect the radio button but this will not erase previous saved value
     // it is needed to have a new value to erase it
-    $(element).find('input[type=radio]').each(function() {
-      $(this).prop('checked', false)
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('input[type=radio]')
+      .each(function () {
+        $(this).prop('checked', false)
+        $(this).trigger('change')
+      })
   },
   setDefaultRadio(element) {
-    $(element).find('input[type=radio]:not([data-default])').each(function() {
-      $(this).prop('checked', false)
-      $(this).trigger('change')
-    })
-    $(element).find('input[type=radio][data-default]').each(function() {
-      const defaultVal = $(this).data('default')
-      if (defaultVal == 'checked') {
-        $(this).prop('checked', true)
+    $(element)
+      .find('input[type=radio]:not([data-default])')
+      .each(function () {
+        $(this).prop('checked', false)
         $(this).trigger('change')
-      }
-    })
+      })
+    $(element)
+      .find('input[type=radio][data-default]')
+      .each(function () {
+        const defaultVal = $(this).data('default')
+        if (defaultVal == 'checked') {
+          $(this).prop('checked', true)
+          $(this).trigger('change')
+        }
+      })
   },
   emptyTextarea(element) {
-    $(element).find('textarea').each(function() {
-      $(this).val('')
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('textarea')
+      .each(function () {
+        $(this).val('')
+        $(this).trigger('change')
+      })
   },
   emptyGeocode(element) {
-    $(element).find('div[class*="geocode-input"] input[type=hidden]').each(function() {
-      $(this).val('')
-      $(this).trigger('change')
-    })
+    $(element)
+      .find('div[class*="geocode-input"] input[type=hidden]')
+      .each(function () {
+        $(this).val('')
+        $(this).trigger('change')
+      })
   },
   emptyImage(element) {
-    $(element).find('div[class*="bazar-entry-edit-image"]').each(() => {
-      // currently not activated because ImageField is not safe
-      // TODO activate and TEST (prefer usage of ajax)
-      // $(this).find('output').html("");
-      // $(this).find('input[id^=data-][type=hidden]').val("");
-      // $(this).find('input[id^=filename-][type=hidden]').val("");
-      // $(this).find('input[id^=oldimage-][type=hidden]').val("");
-      // $(this).find('input[type=file]').val(" "); // works only if after this.emptyOthersInputs
-    })
+    $(element)
+      .find('div[class*="bazar-entry-edit-image"]')
+      .each(() => {
+        // currently not activated because ImageField is not safe
+        // TODO activate and TEST (prefer usage of ajax)
+        // $(this).find('output').html("");
+        // $(this).find('input[id^=data-][type=hidden]').val("");
+        // $(this).find('input[id^=filename-][type=hidden]').val("");
+        // $(this).find('input[id^=oldimage-][type=hidden]').val("");
+        // $(this).find('input[type=file]').val(" "); // works only if after this.emptyOthersInputs
+      })
   },
   hasTagsInput(element) {
     let result = false
@@ -452,37 +529,49 @@ const ConditionsChecking = {
     return result
   },
   emptyByTags(element) {
-    $(element).find('input.yeswiki-input-entries').each(function() {
-      if (ConditionsChecking.hasTagsInput(this)) {
-        $(this).tagsinput('removeAll')
-      }
-    })
+    $(element)
+      .find('input.yeswiki-input-entries')
+      .each(function () {
+        if (ConditionsChecking.hasTagsInput(this)) {
+          $(this).tagsinput('removeAll')
+        }
+      })
   },
   setDefaultByTags(element) {
-    $(element).find('input.yeswiki-input-entries').each(function() {
-      const propertyName = $(this).prop('name')
-      const val = $(this).val()
-      if (val.length == 0 && propertyName.length > 0
-                && typeof bazarlistTagsInputsData !== 'undefined'
-                && bazarlistTagsInputsData[propertyName] != undefined
-                && ConditionsChecking.hasTagsInput(this)
-      ) {
-        const selectedOptions = bazarlistTagsInputsData[propertyName].selectedOptions || []
-        const existingTags = bazarlistTagsInputsData[propertyName].existingTags || []
-        $(this).tagsinput('removeAll')
-        selectedOptions.forEach((tag) => {
-          if (existingTags[tag] != undefined) {
-            $(this).tagsinput('add', existingTags[tag])
-          }
-        })
-      }
-    })
+    $(element)
+      .find('input.yeswiki-input-entries')
+      .each(function () {
+        const propertyName = $(this).prop('name')
+        const val = $(this).val()
+        if (
+          val.length == 0 &&
+          propertyName.length > 0 &&
+          typeof bazarlistTagsInputsData !== 'undefined' &&
+          bazarlistTagsInputsData[propertyName] != undefined &&
+          ConditionsChecking.hasTagsInput(this)
+        ) {
+          const selectedOptions =
+            bazarlistTagsInputsData[propertyName].selectedOptions || []
+          const existingTags =
+            bazarlistTagsInputsData[propertyName].existingTags || []
+          $(this).tagsinput('removeAll')
+          selectedOptions.forEach((tag) => {
+            if (existingTags[tag] != undefined) {
+              $(this).tagsinput('add', existingTags[tag])
+            }
+          })
+        }
+      })
   },
   emptyOthersInputs(element) {
-    $(element).find('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not(.yeswiki-input-entries)').each(function() {
-      $(this).val('')
-      $(this).trigger('change')
-    })
+    $(element)
+      .find(
+        'input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not(.yeswiki-input-entries)',
+      )
+      .each(function () {
+        $(this).val('')
+        $(this).trigger('change')
+      })
   },
   emptyChildren(element) {
     this.emptyCheckbox(element)
@@ -516,7 +605,9 @@ const ConditionsChecking = {
         switch (structuredCondition.operation) {
           case '(':
           case '!(':
-            if (this.renderBadFormatingError(structuredCondition, conditionData)) {
+            if (
+              this.renderBadFormatingError(structuredCondition, conditionData)
+            ) {
               errorFound = true
             } else {
               stringToEval += structuredCondition.operation
@@ -524,14 +615,19 @@ const ConditionsChecking = {
             break
           case 'not(':
           case 'not (':
-            if (this.renderBadFormatingError(structuredCondition, conditionData)) {
+            if (
+              this.renderBadFormatingError(structuredCondition, conditionData)
+            ) {
               errorFound = true
             } else {
               stringToEval = `${stringToEval}!(`
             }
             break
           case ')':
-            stringToEval = stringToEval + this.renderCondition(structuredCondition) + structuredCondition.operation
+            stringToEval =
+              stringToEval +
+              this.renderCondition(structuredCondition) +
+              structuredCondition.operation
             break
           case 'and':
             stringToEval = `${stringToEval + this.renderCondition(structuredCondition)}&&`
@@ -542,7 +638,9 @@ const ConditionsChecking = {
           default:
             if (stack.length > 0) {
               errorFound = true
-              console.warn(`Unknown operation '${structuredCondition.operation}' in '${conditionData.condition}'`)
+              console.warn(
+                `Unknown operation '${structuredCondition.operation}' in '${conditionData.condition}'`,
+              )
             }
             stringToEval += this.renderCondition(structuredCondition)
             break
@@ -559,7 +657,8 @@ const ConditionsChecking = {
       // extract no clean param
       const clean = $(conditionData.node).data('noclean') != true
       if (display) {
-        const previousStateVisible = ($(conditionData.node).filter(':visible').length > 0)
+        const previousStateVisible =
+          $(conditionData.node).filter(':visible').length > 0
         $(conditionData.node).show()
         window.dispatchEvent(new Event('resize')) // needed to refresh map for geolocalization
         if (clean && !previousStateVisible) {
@@ -589,7 +688,11 @@ const ConditionsChecking = {
         const fieldName = fieldsNames[index]
         if (typeof this.fieldNamesCache[fieldName] !== 'undefined') {
           const fieldData = this.fieldNamesCache[fieldName]
-          for (let indexCondition = 0; indexCondition < fieldData.conditionIds.length; indexCondition++) {
+          for (
+            let indexCondition = 0;
+            indexCondition < fieldData.conditionIds.length;
+            indexCondition++
+          ) {
             const id = fieldData.conditionIds[indexCondition]
             if (conditionsIds.indexOf(id) < 0) {
               conditionsIds.push(id)
@@ -619,19 +722,23 @@ const ConditionsChecking = {
     if (result.type != '') {
       return result
     }
-    const node = $(`div[class*="group-checkbox-"][class*="${fieldName}"],ul[class*="group-checkbox-"][class*="${fieldName}"]`).filter(
-      function(index) {
-        const classes = $(this).attr('class').split(' ')
-        return classes.filter((className) => className.slice(-fieldName.length) == fieldName).length > 0
-      }
-    )
+    const node = $(
+      `div[class*="group-checkbox-"][class*="${fieldName}"],ul[class*="group-checkbox-"][class*="${fieldName}"]`,
+    ).filter(function (index) {
+      const classes = $(this).attr('class').split(' ')
+      return (
+        classes.filter(
+          (className) => className.slice(-fieldName.length) == fieldName,
+        ).length > 0
+      )
+    })
     if (node.length > 0) {
       const inputs = $(node).find('input[type=checkbox]')
       if (inputs.length > 0) {
         result.type = 'checkbox'
         result.node = node
         // register triggers
-        $(inputs).each(function() {
+        $(inputs).each(function () {
           ConditionsChecking.registerTrigger(this, fieldName)
         })
       }
@@ -673,7 +780,7 @@ const ConditionsChecking = {
       result.type = 'radio'
       result.node = inputs
       // register triggers
-      $(inputs).each(function() {
+      $(inputs).each(function () {
         ConditionsChecking.registerTrigger(this, fieldName)
       })
     }
@@ -689,7 +796,7 @@ const ConditionsChecking = {
       result.isArray = false
       result.node = inputs
       // register triggers
-      $(inputs).each(function() {
+      $(inputs).each(function () {
         ConditionsChecking.registerTrigger(this, fieldName)
       })
     }
@@ -705,12 +812,15 @@ const ConditionsChecking = {
       result.isArray = false
       result.node = inputs
       // register triggers
-      $(inputs).each(function() {
+      $(inputs).each(function () {
         // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
         const vTextArea = $(this)
 
-        if (vTextArea.hasClass('aceditor-textarea') || vTextArea.hasClass('summernote')) {
-          const launchUpdateHandler = function() {
+        if (
+          vTextArea.hasClass('aceditor-textarea') ||
+          vTextArea.hasClass('summernote')
+        ) {
+          const launchUpdateHandler = function () {
             let vLastValue = vTextArea.val()
 
             setInterval(() => {
@@ -741,12 +851,14 @@ const ConditionsChecking = {
       result.isArray = false
       if (uploadDiv.length) {
         result.node = uploadDiv.parent()
-        $(uploadDiv).find('input').each(function() {
-          ConditionsChecking.registerTrigger(this, fieldName)
-        })
+        $(uploadDiv)
+          .find('input')
+          .each(function () {
+            ConditionsChecking.registerTrigger(this, fieldName)
+          })
       } else {
         result.node = imageOutput
-        $(imageOutput).each(function() {
+        $(imageOutput).each(function () {
           ConditionsChecking.registerTrigger(this, fieldName)
         })
       }
@@ -764,12 +876,14 @@ const ConditionsChecking = {
       result.isArray = false
       if (uploadDiv.length) {
         result.node = uploadDiv.parent()
-        $(result.node).find('input').each(function() {
-          ConditionsChecking.registerTrigger(this, fieldName)
-        })
+        $(result.node)
+          .find('input')
+          .each(function () {
+            ConditionsChecking.registerTrigger(this, fieldName)
+          })
       } else {
         result.node = imageLink
-        $(imageLink).each(function() {
+        $(imageLink).each(function () {
           ConditionsChecking.registerTrigger(this, fieldName)
         })
       }
@@ -781,7 +895,7 @@ const ConditionsChecking = {
       type: '',
       isArray: true,
       node: {},
-      conditionIds: []
+      conditionIds: [],
     }
     result = this.findCheckbox(fieldName, result)
     result = this.findCheckboxTag(fieldName, result)
@@ -810,43 +924,53 @@ const ConditionsChecking = {
     this.conditionsCache.push({
       condition,
       node: element,
-      structuredConditions: {}
+      structuredConditions: {},
     })
 
     let parsingObject = {
       restOfCondition: condition,
       currentCondition: '',
-      operation: ''
+      operation: '',
     }
     while (parsingObject.restOfCondition.length > 0) {
       parsingObject = this.getFirstOperation(parsingObject)
       // check condition
-      const indexForStructuredCondition = Object.keys(this.conditionsCache[id].structuredConditions).length
+      const indexForStructuredCondition = Object.keys(
+        this.conditionsCache[id].structuredConditions,
+      ).length
       // save in cache
-      this.conditionsCache[id].structuredConditions[indexForStructuredCondition] = { operation: parsingObject.operation }
-      let structuredCondition = this.conditionsCache[id].structuredConditions[indexForStructuredCondition]
+      this.conditionsCache[id].structuredConditions[
+        indexForStructuredCondition
+      ] = { operation: parsingObject.operation }
+      let structuredCondition =
+        this.conditionsCache[id].structuredConditions[
+          indexForStructuredCondition
+        ]
       if (parsingObject.currentCondition.length > 0) {
-        structuredCondition = this.addCondition(
-          parsingObject.currentCondition
-        )
+        structuredCondition = this.addCondition(parsingObject.currentCondition)
       } else {
         structuredCondition.leftPart = ''
         structuredCondition.rightPart = ''
         structuredCondition.typeOfCondition = ''
       }
       // activate trigger
-      if (typeof structuredCondition.leftPart !== 'undefined' && structuredCondition.leftPart.length > 0) {
+      if (
+        typeof structuredCondition.leftPart !== 'undefined' &&
+        structuredCondition.leftPart.length > 0
+      ) {
         const fieldName = structuredCondition.leftPart.trim()
         this.registerFieldName(fieldName, id)
       }
       for (const key in structuredCondition) {
-        this.conditionsCache[id].structuredConditions[indexForStructuredCondition][key] = structuredCondition[key]
+        this.conditionsCache[id].structuredConditions[
+          indexForStructuredCondition
+        ][key] = structuredCondition[key]
       }
     }
   },
   init() {
     const conditionschecking = this
-    $('div[data-conditionschecking]').each(function() {
+    $('div[data-conditionschecking]').each(function () {
       const element = $(this)
       conditionschecking.parseCondition(element)
     })
@@ -861,7 +985,7 @@ const ConditionsChecking = {
         this.emptyChildren(conditionData.node)
       }
     }
-  }
+  },
 }
 
 ConditionsChecking.init()

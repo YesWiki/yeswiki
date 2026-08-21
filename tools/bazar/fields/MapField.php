@@ -200,13 +200,13 @@ class MapField extends BazarField
                     'geometries' => $vGeometries,
                 ],
             ];
-        } else {
-            return [
-                'fields-to-remove' => [
-                    $this->getPropertyName(),
-                ],
-            ];
         }
+
+        return [
+            'fields-to-remove' => [
+                $this->getPropertyName(),
+            ],
+        ];
     }
 
     protected function renderStatic($entry)
@@ -243,7 +243,7 @@ class MapField extends BazarField
             || $showMapInListView
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
-            if ((!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries']))) {
+            if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries'])) {
                 $output .= $this->render('@bazar/fields/map.twig', [
                     'tag' => $entry['id_fiche'],
                     'mapFieldData' => $mapFieldData,

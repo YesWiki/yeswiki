@@ -41,7 +41,6 @@ class ConditionsCheckingField extends LabelField
     }
 
     /**
-     * @param array $entry
      * @param array $fieldsByPropertyName BazarField instances of the form, indexed by propertyName
      */
     public function evaluate(array $entry, array $fieldsByPropertyName = []): bool
@@ -195,7 +194,7 @@ class ConditionsCheckingField extends LabelField
     private function getEntryFieldValues(string $fieldName, array $entry, array $fieldsByPropertyName): array
     {
         $raw = $entry[$fieldName] ?? '';
-        $raw = is_array($raw) ? implode(',', $raw) : (string) $raw;
+        $raw = is_array($raw) ? implode(',', $raw) : (string)$raw;
         $trimmed = trim($raw);
         if ($trimmed === '') {
             return [];
@@ -259,7 +258,7 @@ class ConditionsCheckingField extends LabelField
             return false;
         }
         $length = count($this->getEntryFieldValues($fieldName, $entry, $fieldsByPropertyName));
-        $number = (float) $values;
+        $number = (float)$values;
         switch (trim($operation)) {
             case '==':
                 return $length == $number;
@@ -314,7 +313,7 @@ class ConditionsCheckingField extends LabelField
     {
         $result = $this->evalAnd($tokens, $pos);
         while ($pos < count($tokens) && $tokens[$pos]['type'] === 'OR') {
-            ++$pos;
+            $pos++;
             $right = $this->evalAnd($tokens, $pos);
             $result = $result || $right;
         }
@@ -326,7 +325,7 @@ class ConditionsCheckingField extends LabelField
     {
         $result = $this->evalUnary($tokens, $pos);
         while ($pos < count($tokens) && $tokens[$pos]['type'] === 'AND') {
-            ++$pos;
+            $pos++;
             $right = $this->evalUnary($tokens, $pos);
             $result = $result && $right;
         }
@@ -337,7 +336,7 @@ class ConditionsCheckingField extends LabelField
     private function evalUnary(array $tokens, int &$pos): bool
     {
         if ($pos < count($tokens) && $tokens[$pos]['type'] === 'NOT') {
-            ++$pos;
+            $pos++;
 
             return !$this->evalUnary($tokens, $pos);
         }
@@ -352,20 +351,20 @@ class ConditionsCheckingField extends LabelField
         }
         $token = $tokens[$pos];
         if ($token['type'] === 'OPEN') {
-            ++$pos;
+            $pos++;
             $result = $this->evalOr($tokens, $pos);
             if ($pos < count($tokens) && $tokens[$pos]['type'] === 'CLOSE') {
-                ++$pos;
+                $pos++;
             }
 
             return $result;
         }
         if ($token['type'] === 'BOOL') {
-            ++$pos;
+            $pos++;
 
             return $token['value'];
         }
-        ++$pos;
+        $pos++;
 
         return false;
     }

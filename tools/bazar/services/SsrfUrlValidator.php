@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Exception;
-
 /**
  * Validates that a URL is safe to fetch server-side: it must use a scheme the caller allows,
  * and must not resolve to a private, loopback, reserved, or link-local address (SSRF guard).
@@ -31,7 +29,7 @@ class SsrfUrlValidator
      * DNS-rebinding race against this check).
      *
      * @param string[] $schemes the schemes the caller accepts; plain http only where the
-     *                           content itself is public anyway, such as a syndicated feed
+     *                          content itself is public anyway, such as a syndicated feed
      *
      * @return array<string,string> suitable for the `resolve` request option
      */
@@ -39,10 +37,10 @@ class SsrfUrlValidator
     {
         $parts = parse_url($url);
         if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
-            throw new Exception("Invalid URL '{$url}'");
+            throw new \Exception("Invalid URL '{$url}'");
         }
         if (!in_array(strtolower($parts['scheme']), $schemes, true)) {
-            throw new Exception("URL '{$url}' must use " . implode(' or ', array_map('strtoupper', $schemes)));
+            throw new \Exception("URL '{$url}' must use " . implode(' or ', array_map('strtoupper', $schemes)));
         }
 
         // Strip IPv6 brackets (e.g. [::1] → ::1)
@@ -63,7 +61,7 @@ class SsrfUrlValidator
                 }
             }
             if (empty($ips)) {
-                throw new Exception("Cannot resolve hostname of URL '{$url}'");
+                throw new \Exception("Cannot resolve hostname of URL '{$url}'");
             }
         }
 
@@ -71,11 +69,11 @@ class SsrfUrlValidator
             // Rejects 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
             if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
                 || $this->isReservedIPv4($ip)) {
-                throw new Exception("URL '{$url}' resolves to a private or reserved address");
+                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
             }
             // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
             if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
-                throw new Exception("URL '{$url}' resolves to a private or reserved address");
+                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
             }
             // IPv6 transition forms (6to4, NAT64, IPv4-compatible) embed an IPv4 address that
             // filter_var() classifies as an ordinary global IPv6 address; unwrap and re-check it.
@@ -83,7 +81,7 @@ class SsrfUrlValidator
             if ($embeddedIPv4 !== null
                 && (!filter_var($embeddedIPv4, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
                     || $this->isReservedIPv4($embeddedIPv4))) {
-                throw new Exception("URL '{$url}' resolves to a private or reserved address");
+                throw new \Exception("URL '{$url}' resolves to a private or reserved address");
             }
         }
 
@@ -125,7 +123,7 @@ class SsrfUrlValidator
         }
         foreach (self::RESERVED_IPV4 as $range) {
             [$network, $bits] = explode('/', $range);
-            $mask = 0xFFFFFFFF << (32 - (int) $bits) & 0xFFFFFFFF;
+            $mask = 0xFFFFFFFF << (32 - (int)$bits) & 0xFFFFFFFF;
             if ((ip2long($network) & $mask) === ($address & $mask)) {
                 return true;
             }
@@ -153,7 +151,7 @@ class SsrfUrlValidator
         }
 
         // NAT64 well-known prefix 64:ff9b::/96, IPv4 address in the last 32 bits
-        if ($bytes[0] === 0x00 && $bytes[1] === 0x64 && $bytes[2] === 0xff && $bytes[3] === 0x9b
+        if ($bytes[0] === 0x00 && $bytes[1] === 0x64 && $bytes[2] === 0xFF && $bytes[3] === 0x9B
             && array_sum(array_slice($bytes, 4, 8)) === 0) {
             return sprintf('%d.%d.%d.%d', $bytes[12], $bytes[13], $bytes[14], $bytes[15]);
         }

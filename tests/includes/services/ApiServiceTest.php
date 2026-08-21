@@ -4,7 +4,6 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
@@ -67,7 +66,7 @@ class ApiServiceTest extends TestCase
         // Wiki declares a legacy Method() function, which collides case-insensitively with
         // PHPUnit's own mock-builder method() and makes it undoublable ; build a real,
         // constructor-free instance instead and set only the property ApiService reads.
-        $wiki = (new ReflectionClass(Wiki::class))->newInstanceWithoutConstructor();
+        $wiki = (new \ReflectionClass(Wiki::class))->newInstanceWithoutConstructor();
         $wiki->request = empty($bearerToken)
             ? Request::create('/')
             : Request::create('/', 'GET', [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $bearerToken]);

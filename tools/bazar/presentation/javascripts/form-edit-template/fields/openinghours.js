@@ -5,7 +5,7 @@ export default {
     label: "Horaires d'ouverture",
     name: 'openinghours',
     attrs: { type: 'openinghours' },
-    icon: '<i class="far fa-calendar-alt"></i>'
+    icon: '<i class="far fa-calendar-alt"></i>',
   },
   defaultIdentifier: 'horaires_ouverture',
   attributes: {
@@ -16,5 +16,5 @@ export default {
   advancedAttributes: ['read', 'write'],
   renderInput(fieldData) {
     return { field: '<input type="date"/>' }
-  }
+  },
 }

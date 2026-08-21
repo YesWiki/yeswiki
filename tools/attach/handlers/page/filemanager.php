@@ -18,7 +18,7 @@ ob_start();
     } else {
         echo $this->Format('//' . _t('FILEMANAGER_ACTION_NEED_ACCESS') . '//');
     }
-    ?>
+?>
 </div>
 <?php
 $output = ob_get_contents();

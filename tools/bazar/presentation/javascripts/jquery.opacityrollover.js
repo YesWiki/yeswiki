@@ -5,15 +5,15 @@
  * Licensed under the MIT License:
  *   http://www.opensource.org/licenses/mit-license.php
  */
-(function($) {
+;(function ($) {
   const defaults = {
     mouseOutOpacity: 0.67,
     mouseOverOpacity: 1.0,
     fadeSpeed: 'fast',
-    exemptionSelector: '.selected'
+    exemptionSelector: '.selected',
   }
 
-  $.fn.opacityrollover = function(settings) {
+  $.fn.opacityrollover = function (settings) {
     // Initialize the effect
     $.extend(this, defaults, settings)
 
@@ -22,21 +22,21 @@
     function fadeTo(element, opacity) {
       let $target = $(element)
 
-      if (config.exemptionSelector) $target = $target.not(config.exemptionSelector)
+      if (config.exemptionSelector)
+        $target = $target.not(config.exemptionSelector)
 
       $target.fadeTo(config.fadeSpeed, opacity)
     }
 
-    this.css('opacity', this.mouseOutOpacity)
-      .hover(
-        function() {
-          fadeTo(this, config.mouseOverOpacity)
-        },
-        function() {
-          fadeTo(this, config.mouseOutOpacity)
-        }
-      )
+    this.css('opacity', this.mouseOutOpacity).hover(
+      function () {
+        fadeTo(this, config.mouseOverOpacity)
+      },
+      function () {
+        fadeTo(this, config.mouseOutOpacity)
+      },
+    )
 
     return this
   }
-}(jQuery))
+})(jQuery)

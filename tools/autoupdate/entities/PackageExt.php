@@ -6,7 +6,7 @@ abstract class PackageExt extends Package
 {
     public const INFOS_FILENAME = 'infos.json';
 
-    protected $infos = null;
+    protected $infos;
 
     public $deleteLink;
 
@@ -65,6 +65,7 @@ abstract class PackageExt extends Package
         ];
         $json = json_encode($infos);
         file_put_contents($this->infosFilePath(), $json);
+
         // TODO Vérifier que l'action a bien été éxécutée.
         return true;
     }
@@ -78,9 +79,9 @@ abstract class PackageExt extends Package
 
             if ($vDeleteStatus === true) {
                 return true;
-            } else {
-                return $vDeleteStatus;
             }
+
+            return $vDeleteStatus;
         }
 
         return true;

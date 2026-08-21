@@ -6,9 +6,6 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use DateInterval;
-use DateTimeImmutable;
-use DateTimeZone;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
@@ -43,8 +40,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * format api response.
-     *
-     * @param mixed $formId
      */
     public function apiResponse(array $entries, $formId = null, ?array $get = null, string $filename = ''): Response
     {
@@ -73,39 +68,35 @@ class IcalFormatter extends YesWikiController
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
 
                 return new Response($obContent, $code);
-            } else {
-                $code = Response::HTTP_OK;
-
-                return new Response('', $code);
             }
-        } else {
             $code = Response::HTTP_OK;
-            if (empty($filename)) {
-                $filename = 'calendar';
-            }
-            if (!empty($obContent)) {
-                $comment = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'X-COMMENT:' . str_replace(["\n", "\r"], ['\\n', '\\r'], $obContent) . "\r\n");
-                $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n" . $comment, $fileData);
-            }
-            $headers = [
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Credentials' => 'true',
-                'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
-                'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
-                'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-                'Access-Control-Max-Age' => '86400',
-                'Content-Type' => 'text/Calendar',
-                'Content-Disposition' => 'inline; filename=' . $filename . '.ics',
-            ];
 
-            return new Response($fileData, $code, $headers);
+            return new Response('', $code);
         }
+        $code = Response::HTTP_OK;
+        if (empty($filename)) {
+            $filename = 'calendar';
+        }
+        if (!empty($obContent)) {
+            $comment = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'X-COMMENT:' . str_replace(["\n", "\r"], ['\\n', '\\r'], $obContent) . "\r\n");
+            $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n" . $comment, $fileData);
+        }
+        $headers = [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
+            'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
+            'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
+            'Access-Control-Max-Age' => '86400',
+            'Content-Type' => 'text/Calendar',
+            'Content-Disposition' => 'inline; filename=' . $filename . '.ics',
+        ];
+
+        return new Response($fileData, $code, $headers);
     }
 
     /**
      * get data grom entries in GeoJSON format.
-     *
-     * @param mixed $formId
      *
      * @return string $fileData
      */
@@ -121,12 +112,12 @@ class IcalFormatter extends YesWikiController
             $ical = $this->getICALData($entry);
             if (empty($ical)) {
                 return [];
-            } else {
-                return [
-                    'entry' => $entry,
-                    'ical' => $ical,
-                ];
             }
+
+            return [
+                'entry' => $entry,
+                'ical' => $ical,
+            ];
         }, $entries), function ($entry) {
             return !empty($entry);
         });
@@ -164,11 +155,11 @@ class IcalFormatter extends YesWikiController
             }
             // 24 h for end date if all day
             if ($this->isAllDay(strval($entry['bf_date_fin_evenement']))) {
-                $endDate = $endDate->add(new DateInterval('P1D'));
+                $endDate = $endDate->add(new \DateInterval('P1D'));
             }
             if ($startDate->diff($endDate)->invert > 0) {
                 // end date before start date not possible in ical : use start time + 1 hour
-                $endDate = $startDate->add(new DateInterval('PT1H'));
+                $endDate = $startDate->add(new \DateInterval('PT1H'));
             }
 
             return [
@@ -190,8 +181,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * add header and footer.
-     *
-     * @param mixed $formId
      *
      * @return string $fileData
      */
@@ -217,8 +206,6 @@ class IcalFormatter extends YesWikiController
 
     /**
      * get formatted event.
-     *
-     * @param array &$cache
      */
     private function formatEvent(array $entry, array $icalData, array &$cache): string
     {
@@ -279,8 +266,8 @@ class IcalFormatter extends YesWikiController
      */
     private function formatDateValue(string $date): string
     {
-        $dateObject = empty($date) ? new DateTimeImmutable() : new DateTimeImmutable($date);
-        $dateObject = $dateObject->setTimezone(new DateTimeZone('UTC'));
+        $dateObject = empty($date) ? new \DateTimeImmutable() : new \DateTimeImmutable($date);
+        $dateObject = $dateObject->setTimezone(new \DateTimeZone('UTC'));
         $localFormattedDate = $dateObject->format('Ymd');
         $localFormattedTime = $dateObject->format('His');
 
@@ -425,7 +412,6 @@ class IcalFormatter extends YesWikiController
     }
 
     /** test if form is ICAL.
-     * @param array $form
      */
     public function isICALForm(?array $form = null): bool
     {

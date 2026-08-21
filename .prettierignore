@@ -1,1 +1,4 @@
 **/vendor/**
+
+# vendored ACE build, kept as shipped
+tools/aceditor/presentation/javascripts/ext-searchbox.js

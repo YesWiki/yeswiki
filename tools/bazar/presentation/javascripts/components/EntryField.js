@@ -6,7 +6,12 @@ export default {
   computed: {
     value() {
       const raw = this.entry[this.prop]
-      const value = (raw !== undefined && raw !== null ? raw : (this.fallbackProp ? (this.entry[this.fallbackProp] ?? '') : ''))
+      const value =
+        raw !== undefined && raw !== null
+          ? raw
+          : this.fallbackProp
+            ? (this.entry[this.fallbackProp] ?? '')
+            : ''
       switch (this.type) {
         case 'listedatedeb':
           if (!value) return ''
@@ -31,12 +36,13 @@ export default {
     },
     field() {
       const f = this.$root.fieldInfo(this.prop)
-      if (!f.id && this.fallbackProp) return this.$root.fieldInfo(this.fallbackProp)
+      if (!f.id && this.fallbackProp)
+        return this.$root.fieldInfo(this.fallbackProp)
       return f
     },
     type() {
       return this.field.type
-    }
+    },
   },
   template: `
     <div v-bind="$attrs" v-if="value">
@@ -57,5 +63,5 @@ export default {
       </div>
       <div v-else v-html="value" class="field field-default"></div>
     </div>
-  `
+  `,
 }

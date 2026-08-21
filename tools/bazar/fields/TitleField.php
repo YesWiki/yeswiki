@@ -35,7 +35,7 @@ class TitleField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $dirtyHtml = $this->titleTemplate; //$this->getValue($entry);
+        $dirtyHtml = $this->titleTemplate; // $this->getValue($entry);
 
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
         $formManager = $this->getService(FormManager::class);

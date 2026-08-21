@@ -1,6 +1,6 @@
 $(document).ready(() => {
   // Handle chevron click (only expand/collapse)
-  $('.checkbox-node .checkbox-label').on('click', function(event) {
+  $('.checkbox-node .checkbox-label').on('click', function (event) {
     const nodeContainer = $(this).closest('.node-container')
     const childrenContainer = nodeContainer.find('> .node-children')
 
@@ -19,15 +19,17 @@ $(document).ready(() => {
   })
 
   // Handle checkbox clicks - expand/collapse & check parent uncheck children
-  $('.checkbox-node input[type=checkbox]').on('change', function() {
+  $('.checkbox-node input[type=checkbox]').on('change', function () {
     const nodeContainer = $(this).closest('.node-container')
     const childrenContainer = nodeContainer.find('> .node-children')
 
     if ($(this).is(':checked')) {
       childrenContainer.slideDown(300)
       nodeContainer.addClass('expanded')
-      nodeContainer.parents('.node-container').each(function() {
-        $(this).find('> .checkbox-node input[type=checkbox]').prop('checked', true)
+      nodeContainer.parents('.node-container').each(function () {
+        $(this)
+          .find('> .checkbox-node input[type=checkbox]')
+          .prop('checked', true)
       })
     } else {
       childrenContainer.slideUp(200)
@@ -38,10 +40,16 @@ $(document).ready(() => {
     }
   })
 
-  $('.check-all').on('change', function() {
+  $('.check-all').on('change', function () {
     const checked = $(this).is(':checked')
-    $(this).closest('.check-all-container').siblings('.node-container').each(function() {
-      $(this).find('> .checkbox-node input[type=checkbox]').prop('checked', checked).trigger('change')
-    })
+    $(this)
+      .closest('.check-all-container')
+      .siblings('.node-container')
+      .each(function () {
+        $(this)
+          .find('> .checkbox-node input[type=checkbox]')
+          .prop('checked', checked)
+          .trigger('change')
+      })
   })
 })

@@ -58,12 +58,12 @@ class ApiController extends YesWikiController
         $loggedUser = $this->wiki->services->get(AuthController::class)->getLoggedUser();
         if (!$loggedUser) {
             return new ApiResponse(['error' => _t('LOGIN_NO_CONNECTED_USER')], Response::HTTP_UNAUTHORIZED);
-        } else {
-            return new ApiResponse([
-                'user' => $loggedUser['name'],
-                'isAdmin' => $this->wiki->UserIsAdmin(),
-            ]);
         }
+
+        return new ApiResponse([
+            'user' => $loggedUser['name'],
+            'isAdmin' => $this->wiki->UserIsAdmin(),
+        ]);
     }
 
     /**

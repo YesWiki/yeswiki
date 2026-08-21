@@ -40,6 +40,7 @@ class BookmarkletField extends BazarField
                     'action' => BAZ_ACTION_NOUVEAU,
                     'id' => $entry['id_typeannonce'] ?? (function () {
                         $id = $this->getRequest()->query->get('id');
+
                         return (!empty($id) && is_scalar($id) && strval($id) == strval(intval($id))) ? strval($id) : '';
                     })(),
                 ],

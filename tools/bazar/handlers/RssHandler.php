@@ -135,7 +135,7 @@ class RssHandler extends YesWikiHandler
                     $xml .= XML_Util::createEndElement('item');
                 }
             } else {
-                //pas d'annonces
+                // pas d'annonces
                 $xml .= "\r\n      ";
                 $xml .= XML_Util::createStartElement('item');
                 $xml .= "\r\n          ";

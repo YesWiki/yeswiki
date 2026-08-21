@@ -114,8 +114,8 @@ $backupTypes = [
             foreach ($GLOBALS['available_languages'] as $value) {
                 echo '<option value="' . $value . '"' . (($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '') . '>' . ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')) . "</option>\n";
             }
-            echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
-            ?>
+echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
+?>
           </select>
         </div>
       </div>
@@ -262,7 +262,7 @@ $backupTypes = [
         </div>
       <?php
       }
-      ?>
+?>
 
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
@@ -318,7 +318,7 @@ $backupTypes = [
             <label>
               <input type="hidden" name="config[rewrite_mode]" value="0" />
               <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
-                                                                            echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : ''; ?> />
+                                                                      echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI'); ?>.</p>
@@ -327,7 +327,7 @@ $backupTypes = [
           <div class="checkbox">
             <label>
               <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
-                                                                              echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : ''; ?> />
+                                                                        echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('HTML_INSERTION_HELP_TEXT'); ?>.</p>
@@ -336,7 +336,7 @@ $backupTypes = [
           <div class="checkbox">
             <label>
               <input type="checkbox" name="config[allow_robots]" value="1" <?php
-                                                                            echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : ''; ?> />
+                                                                      echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : ''; ?> />
               <span>&nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?></span>
             </label>
             <p class="help-block"><?php echo _t('INDEX_HELP_TEXT'); ?>.</p>

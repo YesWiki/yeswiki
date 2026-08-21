@@ -1,4 +1,5 @@
 <?php
+
 /** afficher_image_attach() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut.
  * @param   string  nom du fichier image
  * @param   string  label pour l'image
@@ -66,46 +67,45 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
         return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_NO_FILTERS') . '</div>' . "\n";
     } elseif (empty($filter)) {
         return $tab;
-    } else {
-        if (!isset($tab['tags'])) {
-            $tab['tags'] = '';
-        } else {
-            $tab['tags'] .= ',';
-        }
-        $explodelabel = explode(':', $filter);
-
-        // on decoupe le choix pour recuperer le titre
-        if (count($explodelabel) > 2) {
-            return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_ONLY_ONE_DOUBLEPOINT') . '</div>' . "\n";
-        } elseif (count($explodelabel) == 2) {
-            $tab[$nb]['title'] = '<strong>' . $explodelabel[0] . ' : </strong>' . "\n";
-            $tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
-        } else {
-            $tab[$nb]['title'] = '';
-            $tab[$nb]['arraytags'] = explode(',', $explodelabel[0]);
-        }
-        $toggle = $GLOBALS['wiki']->GetParameter('select' . $nb);
-        if (!empty($toggle) && $toggle == 'checkbox') {
-            $tab[$nb]['toggle'] = $toggle;
-        } else {
-            $tab[$nb]['toggle'] = 'radio';
-        }
-        $class = $GLOBALS['wiki']->GetParameter('class' . $nb);
-        if (!empty($class)) {
-            $tab[$nb]['class'] = $class;
-        } else {
-            $tab[$nb]['class'] = 'filter-inline';
-        }
-        $dbService = $GLOBALS['wiki']->services->get(\YesWiki\Core\Service\DbService::class);
-        $escapedTags = array_map(function ($tagname) use ($dbService) {
-            return $dbService->escape($tagname);
-        }, $tab[$nb]['arraytags']);
-        $tab['tags'] .= '"' . implode('","', $escapedTags) . '"';
-        $nb++;
-        $tab = get_filtertags_parameters_recursive($nb, $tab);
-
-        return $tab;
     }
+    if (!isset($tab['tags'])) {
+        $tab['tags'] = '';
+    } else {
+        $tab['tags'] .= ',';
+    }
+    $explodelabel = explode(':', $filter);
+
+    // on decoupe le choix pour recuperer le titre
+    if (count($explodelabel) > 2) {
+        return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_ONLY_ONE_DOUBLEPOINT') . '</div>' . "\n";
+    } elseif (count($explodelabel) == 2) {
+        $tab[$nb]['title'] = '<strong>' . $explodelabel[0] . ' : </strong>' . "\n";
+        $tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
+    } else {
+        $tab[$nb]['title'] = '';
+        $tab[$nb]['arraytags'] = explode(',', $explodelabel[0]);
+    }
+    $toggle = $GLOBALS['wiki']->GetParameter('select' . $nb);
+    if (!empty($toggle) && $toggle == 'checkbox') {
+        $tab[$nb]['toggle'] = $toggle;
+    } else {
+        $tab[$nb]['toggle'] = 'radio';
+    }
+    $class = $GLOBALS['wiki']->GetParameter('class' . $nb);
+    if (!empty($class)) {
+        $tab[$nb]['class'] = $class;
+    } else {
+        $tab[$nb]['class'] = 'filter-inline';
+    }
+    $dbService = $GLOBALS['wiki']->services->get(YesWiki\Core\Service\DbService::class);
+    $escapedTags = array_map(function ($tagname) use ($dbService) {
+        return $dbService->escape($tagname);
+    }, $tab[$nb]['arraytags']);
+    $tab['tags'] .= '"' . implode('","', $escapedTags) . '"';
+    $nb++;
+    $tab = get_filtertags_parameters_recursive($nb, $tab);
+
+    return $tab;
 }
 
 function array_non_empty($array)
@@ -144,7 +144,7 @@ function get_title_from_body($page)
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = _convert(preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]), 'UTF-8');
-    //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+    // preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
@@ -249,12 +249,11 @@ function generatePageName($nom, $occurence = 1)
     // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
     if (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
         return $nom;
-    } else {
-        // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
-        $occurence++;
-
-        return genere_nom_wiki($nom, $occurence);
     }
+    // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
+    $occurence++;
+
+    return genere_nom_wiki($nom, $occurence);
 }
 
 /*

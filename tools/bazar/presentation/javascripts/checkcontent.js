@@ -17,7 +17,9 @@ document.addEventListener('submit', (event) => {
   if (!form) {
     return
   }
-  const selected = form.querySelectorAll('input[name="checkcontent-repair[]"]:checked')
+  const selected = form.querySelectorAll(
+    'input[name="checkcontent-repair[]"]:checked',
+  )
   if (selected.length > 0 && !window.confirm(form.dataset.confirm)) {
     event.preventDefault()
   }

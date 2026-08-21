@@ -33,32 +33,31 @@ class ArchiveController extends YesWikiController
                     ['error' => 'Not existing file ' . htmlspecialchars($id)],
                     Response::HTTP_BAD_REQUEST
                 );
-            } else {
-                // to prevent existing headers because of handlers /show or others
-                $nbObLevels = ob_get_level();
-                for ($i = 1; $i < $nbObLevels; $i++) {
-                    ob_end_clean();
-                }
-                for ($i = 1; $i < $nbObLevels; $i++) {
-                    ob_start();
-                }
-
-                $response = new BinaryFileResponse($filePath);
-                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
-                $response->headers->set('Content-Type', 'application/zip');
-                $response->headers->set('Access-Control-Allow-Origin', '*');
-                $response->headers->set('Access-Control-Allow-Credentials', 'true');
-                $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Location, Slug, Accept, Content-Type');
-                $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
-                $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
-                $response->headers->set('Access-Control-Max-Age', '86400');
-                $response->prepare($this->getRequest());
-
-                return $response;
             }
+            // to prevent existing headers because of handlers /show or others
+            $nbObLevels = ob_get_level();
+            for ($i = 1; $i < $nbObLevels; $i++) {
+                ob_end_clean();
+            }
+            for ($i = 1; $i < $nbObLevels; $i++) {
+                ob_start();
+            }
+
+            $response = new BinaryFileResponse($filePath);
+            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
+            $response->headers->set('Content-Type', 'application/zip');
+            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Location, Slug, Accept, Content-Type');
+            $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
+            $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
+            $response->headers->set('Access-Control-Max-Age', '86400');
+            $response->prepare($this->getRequest());
+
+            return $response;
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -114,7 +113,7 @@ class ArchiveController extends YesWikiController
                         );
                     } catch (\Throwable $pThrowable) {
                         return new ApiResponse(
-                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
@@ -181,7 +180,7 @@ class ArchiveController extends YesWikiController
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -222,7 +221,7 @@ class ArchiveController extends YesWikiController
             );
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable($pThrowable)],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

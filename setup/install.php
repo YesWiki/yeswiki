@@ -146,7 +146,7 @@ if (!$result) {
             ) { /* empty table */
                 mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
         }
     }
 } else {

@@ -2,7 +2,12 @@ $(document).ready(() => {
   // on annule les changements de look
   $('#graphical_options a.button_cancel').on('click', () => {
     $('#graphical_options form')[0].reset()
-    if (($('[name=theme_select]').first().val() !== $('#hiddentheme').val()) || ($('#hiddensquelette').val() !== $('[name=squelette_select]').first().val()) || ($('#hiddenstyle').val() !== $('[name=style_select]').first().val())) {
+    if (
+      $('[name=theme_select]').first().val() !== $('#hiddentheme').val() ||
+      $('#hiddensquelette').val() !==
+        $('[name=squelette_select]').first().val() ||
+      $('#hiddenstyle').val() !== $('[name=style_select]').first().val()
+    ) {
       // on charge le theme et on remet les valeurs
       let newstyle = $('#mainstyle').attr('href')
       if (newstyle) {
@@ -30,7 +35,7 @@ $(document).ready(() => {
           'background-attachment': 'fixed',
           'background-clip': 'border-box',
           'background-origin': 'padding-box',
-          'background-position': 'center center'
+          'background-position': 'center center',
         })
       }
       // pour le png
@@ -48,7 +53,7 @@ $(document).ready(() => {
           'background-attachment': 'scroll',
           'background-clip': 'border-box',
           'background-origin': 'padding-box',
-          'background-position': 'top left'
+          'background-position': 'top left',
         })
       }
     } else {
@@ -65,7 +70,7 @@ $(document).ready(() => {
         'background-attachment': 'scroll',
         'background-clip': 'border-box',
         'background-origin': 'padding-box',
-        'background-position': 'top left'
+        'background-position': 'top left',
       })
     }
 
@@ -88,10 +93,16 @@ $(document).ready(() => {
     const imgsrc = $('.choosen').attr('src')
 
     if (!(typeof bgimg === 'undefined') && bgimg != 'none') {
-      bgimg = bgimg.substr(bgimg.lastIndexOf('/') + 1, bgimg.length - bgimg.lastIndexOf('/'))
+      bgimg = bgimg.substr(
+        bgimg.lastIndexOf('/') + 1,
+        bgimg.length - bgimg.lastIndexOf('/'),
+      )
       bgimg = bgimg.replace('"', '').replace(')', '')
     } else if (typeof imgsrc === 'string') {
-      bgimg = imgsrc.substr(imgsrc.lastIndexOf('/') + 1, imgsrc.length - imgsrc.lastIndexOf('/'))
+      bgimg = imgsrc.substr(
+        imgsrc.lastIndexOf('/') + 1,
+        imgsrc.length - imgsrc.lastIndexOf('/'),
+      )
     } else {
       bgimg = ''
     }
@@ -101,7 +112,7 @@ $(document).ready(() => {
     const o = {}
     const a = $('#form_graphical_options').serializeArray()
 
-    $.each(a, function() {
+    $.each(a, function () {
       if (this.name.slice(-'_select'.length) != '_select') {
         if (o[this.name] !== undefined) {
           if (!o[this.name].push) {
@@ -118,26 +129,32 @@ $(document).ready(() => {
     const data = {
       metadatas: $.extend({}, o, {
         theme,
-        squelette: squelette + (squelette.slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'),
+        squelette:
+          squelette +
+          (squelette.slice(-'.tpl.html'.length) === '.tpl.html'
+            ? ''
+            : '.tpl.html'),
         style: style + (style.slice(-'.css'.length) === '.css' ? '' : '.css'),
-        bgimg
-      })
+        bgimg,
+      }),
     }
     if (preset != undefined) {
-      data.metadatas.favorite_preset = preset + (preset.length == 0 || preset.slice(-'.css'.length) === '.css' ? '' : '.css')
+      data.metadatas.favorite_preset =
+        preset +
+        (preset.length == 0 || preset.slice(-'.css'.length) === '.css'
+          ? ''
+          : '.css')
     }
 
-    $.post(url, data, (data) => {
-
-    })
+    $.post(url, data, (data) => {})
   })
 
   // changement de fond d ecran
-  $('#bgCarousel img.bgimg').on('click', function() {
+  $('#bgCarousel img.bgimg').on('click', function () {
     // Au cas ou le template ne le prend pas en compte, on met html à 100%
     $('html').css({
       width: '100%',
-      height: '100%'
+      height: '100%',
     })
 
     // desactivation de la meme image de fond
@@ -154,7 +171,7 @@ $(document).ready(() => {
         'background-attachment': 'scroll',
         'background-clip': 'border-box',
         'background-origin': 'padding-box',
-        'background-position': 'top left'
+        'background-position': 'top left',
       })
       $(this).removeClass('choosen')
     } else {
@@ -174,13 +191,13 @@ $(document).ready(() => {
         'background-attachment': 'fixed',
         'background-clip': 'border-box',
         'background-origin': 'padding-box',
-        'background-position': 'center center'
+        'background-position': 'center center',
       })
     }
   })
 
   // changement de fond d ecran en mosaique
-  $('#bgCarousel div.mozaicimg').on('click', function() {
+  $('#bgCarousel div.mozaicimg').on('click', function () {
     // desactivation de la meme image de fond
     if ($(this).hasClass('choosen')) {
       $('body').css({
@@ -195,7 +212,7 @@ $(document).ready(() => {
         'background-attachment': 'scroll',
         'background-clip': 'border-box',
         'background-origin': 'padding-box',
-        'background-position': 'top left'
+        'background-position': 'top left',
       })
       $(this).removeClass('choosen')
     } else {
@@ -211,7 +228,7 @@ $(document).ready(() => {
         'background-attachment': 'scroll',
         'background-clip': 'border-box',
         'background-origin': 'padding-box',
-        'background-position': 'top left'
+        'background-position': 'top left',
       })
       $('#bgCarousel .choosen').removeClass('choosen')
       $(this).addClass('choosen')

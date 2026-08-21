@@ -1,4 +1,4 @@
-export default function(title, url) {
+export default function (title, url) {
   const $modal = $(`
     <div class="modal fade">
       <div class="modal-dialog modal-lg">
@@ -18,10 +18,12 @@ export default function(title, url) {
 
   $('body').append($modal)
   $modal.find('.modal-body').load(`${url} .page`, () => false)
-  $modal.modal({
-    show: true,
-    keyboard: false
-  }).on('hidden hidden.bs.modal', () => {
-    $modal.remove()
-  })
+  $modal
+    .modal({
+      show: true,
+      keyboard: false,
+    })
+    .on('hidden hidden.bs.modal', () => {
+      $modal.remove()
+    })
 }

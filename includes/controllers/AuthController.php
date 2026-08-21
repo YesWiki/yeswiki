@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Controller;
 
 use DateTime;
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
@@ -22,9 +21,6 @@ trait LimitationsTrait
 {
     /**
      * init and store limitations in limitations array.
-     *
-     * @param mixed $type
-     * @param mixed $default
      */
     private function initLimitationHelper(string $parameterName, string $limitationKey, $type, $default, string $errorMessageKey)
     {
@@ -53,7 +49,7 @@ class AuthController extends YesWikiController
     protected $passwordHasherFactory;
     protected $securityController;
     protected $userManager;
-    private $loggedUserCache = null;
+    private $loggedUserCache;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -157,10 +153,10 @@ class AuthController extends YesWikiController
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
             if (
-                empty($_SESSION['user']['name']) ||
-                empty($data['user']['name']) ||
-                $data['user']['name'] != $_SESSION['user']['name'] ||
-                !$this->wiki->UserIsAdmin($data['user']['name'])
+                empty($_SESSION['user']['name'])
+                || empty($data['user']['name'])
+                || $data['user']['name'] != $_SESSION['user']['name']
+                || !$this->wiki->UserIsAdmin($data['user']['name'])
             ) {
                 // do not disconnect admin during update
                 $this->logout();
@@ -201,7 +197,7 @@ class AuthController extends YesWikiController
         return $name;
     }
 
-    public function getExpirationTimeStamp(DateTime $startTime, bool $remember): int
+    public function getExpirationTimeStamp(\DateTime $startTime, bool $remember): int
     {
         // 90 days if remember otherwise 1 hour
         return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
@@ -215,7 +211,7 @@ class AuthController extends YesWikiController
         }
         $remember = filter_var($remember, FILTER_VALIDATE_BOOL);
 
-        $currentDateTime = new DateTime();
+        $currentDateTime = new \DateTime();
         $_SESSION['user'] =
             empty($user['name'])
             ? []
@@ -234,11 +230,11 @@ class AuthController extends YesWikiController
         }
 
         if (!$this->wiki->isCli()) {
-            if (!($user instanceof User)) {
+            if (!$user instanceof User) {
                 if (!empty($user['name'])) {
                     $user = $this->userManager->getOneByName($user['name']);
                 } else {
-                    throw new Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
+                    throw new \Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
                 }
             }
             // prevent setting cookies in CLI (could be errors)
@@ -390,9 +386,9 @@ class AuthController extends YesWikiController
             throw new BadUserConnectException('No last connection date');
         }
 
-        $lastConnectionDate = DateTime::createFromFormat('U', (string)$sessionData['lastConnection']);
+        $lastConnectionDate = \DateTime::createFromFormat('U', (string)$sessionData['lastConnection']);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
             throw new BadUserConnectException('Last connection date badly formatted');
         }
 
@@ -425,9 +421,9 @@ class AuthController extends YesWikiController
         }
 
         $lastConnectionDateStr = substr($token, 0, self::DATE_LENGTH_IN_TOKEN);
-        $lastConnectionDate = DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
+        $lastConnectionDate = \DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
             throw new BadUserConnectException('cookie \'token\' does not begin by a date');
         }
 
@@ -441,7 +437,7 @@ class AuthController extends YesWikiController
     /**
      * prepare raw data from $lastConnectionDate, $remember, $hashedPassword.
      */
-    protected function prepareRawData(DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
+    protected function prepareRawData(\DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
     {
         return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0');
     }

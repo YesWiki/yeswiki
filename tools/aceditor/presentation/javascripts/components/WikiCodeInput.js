@@ -16,7 +16,7 @@ export default {
       } else {
         this.editor.insert(this.wikiCode)
       }
-    }
+    },
   },
   template: `
     <div class="input-group">
@@ -26,5 +26,5 @@ export default {
       <input type="text" class="result form-control" @click="selectFullText" :value="wikiCode" ref="input">
       <div class="input-group-addon btn btn-default" @click="copyContent">${wiki.lang.ACTION_BUILDER_COPY}</div>
     </div>
-  `
+  `,
 }

@@ -30,43 +30,43 @@ texte texte texte texte texte texte texte texte texte texte texte texte
 
 */
 
-//echo $this->Format("===Action Trail===");
+// echo $this->Format("===Action Trail===");
 $sommaire = $this->GetParameter('toc');
 if (!$sommaire) {
     echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('INDICATE_THE_PARAMETER_TOC') . '.</div>' . "\n";
 } else {
-    //chargement de la page sommaire
+    // chargement de la page sommaire
     $tocPage = $this->LoadPage($sommaire);
     if (!$tocPage) {
         echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('THE_PAGE') . ' ', $this->Link($sommaire), ' ' . _t('DOESNT_EXIST') . ' !</div>' . "\n";
 
         return;
     }
-    //analyse de la page sommaire pour récupérer la liste des pages
-    //recuperation de la liste
+    // analyse de la page sommaire pour récupérer la liste des pages
+    // recuperation de la liste
     if (preg_match_all("/\n[\t ]+(.*)/", $tocPage['body'], $tocListe)) {
-        //analyse de chaque ligne de la liste pour recupérer la page cible
+        // analyse de chaque ligne de la liste pour recupérer la page cible
         $currentPageIndex = null;
         foreach ($tocListe[1] as $line) {
-            //suppression d'un signe de liste eventuel
+            // suppression d'un signe de liste eventuel
             $line = trim(preg_replace("/^([[:alnum:]]+\)|-)/", '', $line));
-            //recuperation du 1er mot
+            // recuperation du 1er mot
             $line = preg_replace("/^(\[\[.*\]\]|" . WN_CHAR . "+)\s*(.*)$/", '$1', $line);
-            //ajout a la liste des pages si le 1er mot est un lien force ou un mot wiki
+            // ajout a la liste des pages si le 1er mot est un lien force ou un mot wiki
             if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->IsWikiName($line)) {
                 $pages[] = $line;
-                //regarde si la page ajoute a la liste est la page courante
+                // regarde si la page ajoute a la liste est la page courante
                 if (strcasecmp($this->GetPageTag(), $line) == 0) {
                     $currentPageIndex = count($pages) - 1;
-                } else {  //traite le cas des lien force
+                } else {  // traite le cas des lien force
                     if (preg_match("/\[\[(.*:)?" . $this->GetPageTag() . "(\s.*)?\]\]$/", $line)) {
                         $currentPageIndex = count($pages) - 1;
                     }
                 }
             }
-        }//foreach
+        }// foreach
     }
-    //ecriture des liens Page Précedente/sommaire/page suivante
+    // ecriture des liens Page Précedente/sommaire/page suivante
     if ($currentPageIndex > 0) {
         $PrevPage = $pages[$currentPageIndex - 1];
         $btnPrev = '<li class="previous"><span class="trail_button">' . $this->Format("&larr; $PrevPage") . "</span></li>\n";

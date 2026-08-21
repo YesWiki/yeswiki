@@ -8,7 +8,7 @@ export default {
     if (!this.formFields.hasOwnProperty(fieldId)) {
       const formField = $(`.field-${fieldId}`).closest('li.form-field')
       const newFormField = {}
-      newFormField[fieldId] = (formField.length == 0) ? false : formField
+      newFormField[fieldId] = formField.length == 0 ? false : formField
       this.formFields = { ...this.formFields, ...newFormField }
     }
     return this.formFields[fieldId]
@@ -33,8 +33,7 @@ export default {
       if (formField) {
         id = $(formField).attr('id')
         const anchor = $(`#${id}-holder`)
-        if (typeof anchor === 'undefined'
-              || anchor.length == 0) {
+        if (typeof anchor === 'undefined' || anchor.length == 0) {
           newHolder[fieldId] = false
           newId[fieldId] = false
         } else {
@@ -58,11 +57,13 @@ export default {
     return this.ids[fieldId]
   },
   initializeField(field) {
-    if (!field.hasClass('initialized')
-      || field.data('savedId') != field.prop('id')) {
+    if (
+      !field.hasClass('initialized') ||
+      field.data('savedId') != field.prop('id')
+    ) {
       field.addClass('initialized')
       field.data('savedId', field.prop('id'))
-      field.find('.initialized').each(function() {
+      field.find('.initialized').each(function () {
         $(this).removeClass('initialized')
       })
     }
@@ -72,9 +73,7 @@ export default {
     if (holder) {
       if (!holder.hasClass('hint-already-defined')) {
         const formElements = holder.find('.form-elements').first()
-        const helpMsg = $('<div/>')
-          .addClass('custom-hint')
-          .append(message)
+        const helpMsg = $('<div/>').addClass('custom-hint').append(message)
         formElements.prepend(helpMsg)
         holder.addClass('hint-already-defined')
       }
@@ -95,12 +94,14 @@ export default {
       const label = formGroup.find('label').first()
       if (!label.hasClass('label-hint-already-defined')) {
         label.append(' ')
-        label.append($('<i/>')
-          .addClass('fa fa-question-circle')
-          .attr('title', message)
-          .tooltip())
+        label.append(
+          $('<i/>')
+            .addClass('fa fa-question-circle')
+            .attr('title', message)
+            .tooltip(),
+        )
         label.addClass('label-hint-already-defined')
       }
     }
-  }
+  },
 }

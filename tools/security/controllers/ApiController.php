@@ -2,7 +2,6 @@
 
 namespace YesWiki\Security\Controller;
 
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,7 +14,7 @@ class ApiController extends YesWikiController
      *
      * @param string $hashb64
      *
-     * @throws Exception if error
+     * @throws \Exception if error
      */
     public function getCaptcha($hashb64): StreamedResponse
     {

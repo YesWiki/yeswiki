@@ -300,7 +300,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
         $this->report($vUpdatedForms . ' updated forms , ' . $vUpdatedEntries . ' updated entries');
 
-        //print_r ($this->aReport);
-        //throw new Exception ("done");
+        // print_r ($this->aReport);
+        // throw new Exception ("done");
     }
 }

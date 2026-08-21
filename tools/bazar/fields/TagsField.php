@@ -115,9 +115,9 @@ class TagsField extends EnumField
             return $this->render('@bazar/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function getName()

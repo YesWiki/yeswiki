@@ -16,48 +16,48 @@ const DATATABLE_OPTIONS = {
       sFirst: _t('FIRST'),
       sPrevious: _t('PREVIOUS'),
       sNext: _t('NEXT'),
-      sLast: _t('LAST')
+      sLast: _t('LAST'),
     },
     oAria: {
       sSortAscending: _t('DATATABLES_SORTASCENDING'),
-      sSortDescending: _t('DATATABLES_SORTDESCENDING')
-    }
+      sSortDescending: _t('DATATABLES_SORTDESCENDING'),
+    },
   },
   fixedHeader: {
     header: true,
-    footer: false
+    footer: false,
   },
   dom:
-    "<'row'<'col-sm-6'l><'col-sm-6'f>>"
-    + "<'row'<'col-sm-12'tr>>"
-    + "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
+    "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+    "<'row'<'col-sm-12'tr>>" +
+    "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
   buttons: [
     {
       extend: 'copy',
       className: 'btn btn-default',
-      text: `<i class="far fa-copy"></i> ${_t('COPY')}`
+      text: `<i class="far fa-copy"></i> ${_t('COPY')}`,
     },
     {
       extend: 'csv',
       className: 'btn btn-default',
-      text: '<i class="fas fa-file-csv"></i> CSV'
+      text: '<i class="fas fa-file-csv"></i> CSV',
     },
     {
       extend: 'print',
       className: 'btn btn-default',
-      text: `<i class="fas fa-print"></i> ${_t('PRINT')}`
-    }
+      text: `<i class="fas fa-print"></i> ${_t('PRINT')}`,
+    },
     // {
     //   extend: 'colvis',
     //   text: _t('DATATABLES_COLS_TO_DISPLAY')
     // },
-  ]
+  ],
 }
 
 function toastMessage(
   message,
   duration = 3000,
-  toastClass = 'alert alert-secondary-1'
+  toastClass = 'alert alert-secondary-1',
 ) {
   const innerEl = document.createElement('div')
   innerEl.className = toastClass
@@ -78,35 +78,38 @@ function toastMessage(
   $toast.addClass('visible')
 }
 // polyfill placeholder
-(function($) {
-  $('input[type=password]')
-    .each(function() {
-      const vMe = $(this)
+;(function ($) {
+  $('input[type=password]').each(function () {
+    const vMe = $(this)
 
-      $('<div>')
-        .addClass('far fa-eye')
-        .attr('title', _t('SHOW_PASSWORD'))
-        .css(
-          {
-            position: 'absolute',
-            right: '0%',
-            top: '50%',
-            transform: 'translate(0px, -50%)',
-            paddingRight: '1em',
-            fontSize: '1em'
-          }
-        )
-        .on('click', function() {
-          if (vMe.attr('type') == 'password') {
-            vMe.attr('type', 'text')
-            $(this).removeClass('fa-eye').attr('title', _t('HIDE_PASSWORD')).addClass('fa-eye-slash')
-          } else {
-            vMe.attr('type', 'password')
-            $(this).addClass('fa-eye').removeClass('fa-eye-slash').attr('title', _t('SHOW_PASSWORD'))
-          }
-        })
-        .insertAfter($(this))
-    })
+    $('<div>')
+      .addClass('far fa-eye')
+      .attr('title', _t('SHOW_PASSWORD'))
+      .css({
+        position: 'absolute',
+        right: '0%',
+        top: '50%',
+        transform: 'translate(0px, -50%)',
+        paddingRight: '1em',
+        fontSize: '1em',
+      })
+      .on('click', function () {
+        if (vMe.attr('type') == 'password') {
+          vMe.attr('type', 'text')
+          $(this)
+            .removeClass('fa-eye')
+            .attr('title', _t('HIDE_PASSWORD'))
+            .addClass('fa-eye-slash')
+        } else {
+          vMe.attr('type', 'password')
+          $(this)
+            .addClass('fa-eye')
+            .removeClass('fa-eye-slash')
+            .attr('title', _t('SHOW_PASSWORD'))
+        }
+      })
+      .insertAfter($(this))
+  })
 
   // gestion des classes actives pour les menus
   $('a.active-link')
@@ -123,7 +126,8 @@ function toastMessage(
     const regexOnDomain = new RegExp(`^${wiki.baseUrl}`)
     if (regexHasHandler.test(url)) {
       return url
-    } if (regexOnDomain.test(url)) {
+    }
+    if (regexOnDomain.test(url)) {
       return `${url}/iframe`
     }
     return url
@@ -153,7 +157,7 @@ function toastMessage(
 
     if ($modal.length === 0) {
       $('body').append(
-        `<div class="modal fade" id="YesWikiModal">${yesWikiModalHtml}</div>`
+        `<div class="modal fade" id="YesWikiModal">${yesWikiModalHtml}</div>`,
       )
       $modal = $('#YesWikiModal')
     } else {
@@ -168,20 +172,25 @@ function toastMessage(
       $modal
         .find('.modal-body')
         .html(
-          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="" />`
+          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="" />`,
         )
     } else if (iframe === 1) {
       const modalTitle = $modal.find('.modal-header h3')
       if (modalTitle.length > 0) {
-        const anchorText = modalTitle[0].innerText === 0 ? link.substr(0, 128) : modalTitle[0].innerText
-        $(modalTitle[0]).empty().append($('<a>').attr('href', link).text(anchorText))
+        const anchorText =
+          modalTitle[0].innerText === 0
+            ? link.substr(0, 128)
+            : modalTitle[0].innerText
+        $(modalTitle[0])
+          .empty()
+          .append($('<a>').attr('href', link).text(anchorText))
       }
       link = addIframeHandlerTo(link)
       $modal
         .find('.modal-body')
         .html(
-          '<span id="yw-modal-loading" class="throbber"></span>'
-          + `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`
+          '<span id="yw-modal-loading" class="throbber"></span>' +
+            `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`,
         )
       $('#yw-modal-iframe').on('load', () => {
         $('#yw-modal-loading').hide()
@@ -199,14 +208,14 @@ function toastMessage(
           separator = '&'
         }
         link += `${separator}incomingurl=${encodeURIComponent(
-          window.location.toString()
+          window.location.toString(),
         )}`
       } catch (er) {
         console.error(er)
       }
       // AJAX Request for javascripts
       const xhttp = new XMLHttpRequest()
-      xhttp.onreadystatechange = function() {
+      xhttp.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
           const xmlString = this.responseText
           const doc = new DOMParser().parseFromString(xmlString, 'text/html')
@@ -238,8 +247,8 @@ function toastMessage(
               var j
               for (j = 0; j < selLenght; j++) {
                 if (
-                  !selection[j].hasAttribute('src')
-                  && script != selection[j].innerHTML
+                  !selection[j].hasAttribute('src') &&
+                  script != selection[j].innerHTML
                 ) {
                   const newScript = document.importNode(res[i])
                   document.body.appendChild(newScript)
@@ -281,13 +290,13 @@ function toastMessage(
   }
   $(document).on('click', 'a.modalbox, a.modal, .modalbox a', openModal)
 
-  $(document).on('click', 'a.newtab', function(e) {
+  $(document).on('click', 'a.newtab', function (e) {
     e.preventDefault()
     window.open($(this).attr('href'), '_blank')
   })
 
   // on change l'icone de l'accordeon
-  $('.accordion-trigger').on('click', function() {
+  $('.accordion-trigger').on('click', function () {
     if ($(this).next().find('.collapse').hasClass('in')) {
       $(this).find('.arrow').html('&#9658;')
     } else {
@@ -298,7 +307,7 @@ function toastMessage(
   // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   $('.no-dblclick, form, .page a, button, .dropdown-menu').on(
     'dblclick',
-    (e) => false
+    (e) => false,
   )
 
   // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
@@ -312,49 +321,49 @@ function toastMessage(
   $("[data-tooltip='tooltip']").tooltip()
 
   // moteur de recherche utilisé dans un template
-  $('a[href="#search"]').on('click', function(e) {
+  $('a[href="#search"]').on('click', function (e) {
     e.preventDefault()
     $(this).siblings('#search').addClass('open')
     $(this).siblings('#search').find('.search-query').focus()
   })
 
-  $('#search, #search button.close-search').on('click keyup', function(e) {
+  $('#search, #search button.close-search').on('click keyup', function (e) {
     if (
-      e.target == this
-      || $(e.target).hasClass('close-search')
-      || e.keyCode == 27
+      e.target == this ||
+      $(e.target).hasClass('close-search') ||
+      e.keyCode == 27
     ) {
       $(this).removeClass('open')
     }
   })
 
   // se souvenir des tabs navigués
-  $.fn.historyTabs = function() {
+  $.fn.historyTabs = function () {
     const that = this
     window.addEventListener('popstate', (event) => {
       if (event.state) {
         $(that).filter(`[href="${event.state.url}"]`).tab('show')
       }
     })
-    return this.each(function(index, element) {
-      $(element).on('show.bs.tab', function() {
+    return this.each(function (index, element) {
+      $(element).on('show.bs.tab', function () {
         const stateObject = { url: $(this).attr('href') }
 
         if (window.location.hash && stateObject.url !== window.location.hash) {
           window.history.pushState(
             stateObject,
             document.title,
-            window.location.pathname
-            + window.location.search
-            + $(this).attr('href')
+            window.location.pathname +
+              window.location.search +
+              $(this).attr('href'),
           )
         } else {
           window.history.replaceState(
             stateObject,
             document.title,
-            window.location.pathname
-            + window.location.search
-            + $(this).attr('href')
+            window.location.pathname +
+              window.location.search +
+              $(this).attr('href'),
           )
         }
       })
@@ -369,27 +378,27 @@ function toastMessage(
   $('a[data-toggle="tab"]').historyTabs()
 
   // double clic
-  $('.navbar').on('dblclick', function(e) {
+  $('.navbar').on('dblclick', function (e) {
     e.stopPropagation()
     $('body').append(
-      '<div class="modal fade" id="YesWikiModal">'
-      + '<div class="modal-dialog">'
-      + '<div class="modal-content">'
-      + '<div class="modal-header">'
-      + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
-      + `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>`
-      + '</div>'
-      + '<div class="modal-body">'
-      + '</div>'
-      + '</div>'
-      + '</div>'
-      + '</div>'
+      '<div class="modal fade" id="YesWikiModal">' +
+        '<div class="modal-dialog">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+        `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>` +
+        '</div>' +
+        '<div class="modal-body">' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>',
     )
 
     const $editmodal = $('#YesWikiModal')
     $(this)
       .find('.include')
-      .each(function() {
+      .each(function () {
         const href = $(this)
           .attr('ondblclick')
           .replace("document.location='", '')
@@ -400,10 +409,10 @@ function toastMessage(
         $editmodal
           .find('.modal-body')
           .append(
-            `<a href="${href}" class="btn btn-default btn-block">`
-            + `<i class="fa fa-pencil-alt"></i> ${_t(
-              'YESWIKIMODAL_EDIT_MSG'
-            )} ${pagewiki}</a>`
+            `<a href="${href}" class="btn btn-default btn-block">` +
+              `<i class="fa fa-pencil-alt"></i> ${_t(
+                'YESWIKIMODAL_EDIT_MSG',
+              )} ${pagewiki}</a>`,
           )
       })
 
@@ -411,8 +420,8 @@ function toastMessage(
       .find('.modal-body')
       .append(
         `<a href="#" data-dismiss="modal" class="btn btn-warning btn-xs btn-block">${+_t(
-          'EDIT_OUPS_MSG'
-        )}</a>`
+          'EDIT_OUPS_MSG',
+        )}</a>`,
       )
 
     $editmodal
@@ -435,7 +444,7 @@ function toastMessage(
       .fail((jqxhr, settings, exception) => {
         console.log(
           'Error getting script javascripts/vendor/iframe-resizer/iframeResizer.min.js',
-          exception
+          exception,
         )
       })
   }
@@ -450,13 +459,13 @@ function toastMessage(
     })
   }
 
-  $('.modalbox-hover').each(function() {
+  $('.modalbox-hover').each(function () {
     getText(`${$(this).attr('href')}/html`, $(this))
   })
   $('.modalbox-hover').popover({
     trigger: 'hover',
     html: true, // permet d'utiliser du html
-    placement: 'right' // position de la popover (top ou bottom ou left ou right)
+    placement: 'right', // position de la popover (top ou bottom ou left ou right)
   })
 
   // ouvrir les liens dans une nouvelle fenetre
@@ -467,13 +476,13 @@ function toastMessage(
 
   // acl switch
   $('#acl-switch-mode')
-    .change(function() {
+    .change(function () {
       if ($(this).prop('checked')) {
         // show advanced
         $('.acl-simple').hide().val(null)
         $('.acl-advanced').slideDown()
       } else {
-        $('.acl-single-container label').each(function() {
+        $('.acl-single-container label').each(function () {
           $(this).after($(`select[name=${$(this).data('input')}]`))
         })
         $('.acl-simple').show()
@@ -496,7 +505,7 @@ function toastMessage(
       .attr('class', '')
       .attr(
         'action',
-        form.attr('action').replace(/api\/comments(\/.*)/gm, 'api/comments')
+        form.attr('action').replace(/api\/comments(\/.*)/gm, 'api/comments'),
       )
       .appendTo($('.yeswiki-page-comments').parent())
       .find('label')
@@ -507,7 +516,7 @@ function toastMessage(
   }
 
   // ajax post comment
-  $comments.on('click', '.btn-post-comment', function(e) {
+  $comments.on('click', '.btn-post-comment', function (e) {
     e.preventDefault()
     const form = $(this).parent('form')
     const urlpost = form.attr('action')
@@ -536,13 +545,13 @@ function toastMessage(
       },
       error(e) {
         toastMessage(e.responseJSON.error, 3000, 'alert alert-danger')
-      }
+      },
     })
     return false
   })
 
   // ajax answer comment
-  $comments.on('click', '.btn-answer-comment', function(e) {
+  $comments.on('click', '.btn-answer-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent()
     $('.temporary-form')
@@ -570,7 +579,7 @@ function toastMessage(
     formAnswer
       .find('form')
       .append(
-        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t('CANCEL')}</button>`
+        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t('CANCEL')}</button>`,
       )
     com.find('.comment-links').addClass('hide')
     com.find('label').addClass('hide')
@@ -579,7 +588,7 @@ function toastMessage(
   })
 
   // ajax edit comment
-  $comments.on('click', '.btn-edit-comment', function(e) {
+  $comments.on('click', '.btn-edit-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent()
 
@@ -608,7 +617,7 @@ function toastMessage(
       .attr('id', `form-comment-${com.data('tag')}`)
       .attr(
         'action',
-        `${formcom.find('form').attr('action')}/${com.data('tag')}`
+        `${formcom.find('form').attr('action')}/${com.data('tag')}`,
       )
       .removeClass('hide')
       .addClass('temporary-form')
@@ -620,7 +629,7 @@ function toastMessage(
     formcom
       .find('form')
       .append(
-        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t('CANCEL')}</button>`
+        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t('CANCEL')}</button>`,
       )
     com.parents('.yw-comment').find('.comment-links').addClass('hide')
 
@@ -628,7 +637,7 @@ function toastMessage(
   })
 
   // cancel comment edit
-  $comments.on('click', '.btn-cancel-comment', function(e) {
+  $comments.on('click', '.btn-cancel-comment', function (e) {
     e.preventDefault()
     const com = $(this).parent().parent().parent()
     // restore html comment and links
@@ -640,7 +649,7 @@ function toastMessage(
   })
 
   // ajax delete comment
-  $comments.on('click', '.btn-delete-comment', function(e) {
+  $comments.on('click', '.btn-delete-comment', function (e) {
     if (confirm(_t('DELETE_COMMENT_AND_ANSWERS'))) {
       e.preventDefault()
       const link = $(this)
@@ -649,14 +658,14 @@ function toastMessage(
         url: link.attr('href'),
         dataType: 'json',
         success(e) {
-          link.closest('.yw-comment').slideUp(250, function() {
+          link.closest('.yw-comment').slideUp(250, function () {
             $(this).remove()
           })
           toastMessage(e.success, 3000, 'alert alert-success')
         },
         error(e) {
           toastMessage(e.responseJSON.error, 3000, 'alert alert-danger')
-        }
+        },
       })
     }
     return false
@@ -675,7 +684,9 @@ function toastMessage(
   // Reaction Management Helper
   const reactionManagementHelper = {
     renderAjaxError(translation, jqXHR, textStatus, errorThrown) {
-      const message = _t(translation, { error: `${textStatus} / ${errorThrown}${jqXHR.responseJSON.error != undefined ? `:${jqXHR.responseJSON.error}` : ''}` })
+      const message = _t(translation, {
+        error: `${textStatus} / ${errorThrown}${jqXHR.responseJSON.error != undefined ? `:${jqXHR.responseJSON.error}` : ''}`,
+      })
       if (typeof toastMessage == 'function') {
         toastMessage(message, 3000, 'alert alert-danger')
       } else {
@@ -702,9 +713,9 @@ function toastMessage(
             'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',
             jqXHR,
             textStatus,
-            errorThrown
+            errorThrown,
           )
-        }
+        },
       })
     },
     deleteTags(headElem) {
@@ -712,15 +723,15 @@ function toastMessage(
       if (table.length != 0) {
         $(table)
           .find('.btn-delete-reaction:not(.btn-delete-all)')
-          .each(function() {
+          .each(function () {
             reactionManagementHelper.deleteATag($(this))
           })
       }
-    }
+    },
   }
 
   // handler reaction click
-  $('.link-reaction').click(function(event) {
+  $('.link-reaction').click(function (event) {
     event.preventDefault()
     event.stopPropagation()
     const extractData = (item) => {
@@ -729,11 +740,11 @@ function toastMessage(
         url: $(item).attr('href'),
         data: $(item).data(),
         nb,
-        nbInit: parseInt(nb.text())
+        nbInit: parseInt(nb.text()),
       }
     }
     const { url, data, nb, nbInit } = extractData(this)
-    const deleteUserReaction = async(url, data, nb, nbInit, link) => {
+    const deleteUserReaction = async (url, data, nb, nbInit, link) => {
       const p = new Promise((resolve, reject) => {
         let currentReactionId = data.reactionid
         if ('oldId' in data && (data.oldId === true || data.oldId === 'true')) {
@@ -749,7 +760,7 @@ function toastMessage(
               $(link)
                 .parents('.reactions-container')
                 .find('.max-reaction')
-                .text()
+                .text(),
             )
             $(link)
               .parents('.reactions-container')
@@ -762,10 +773,10 @@ function toastMessage(
               'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',
               jqXHR,
               textStatus,
-              errorThrown
+              errorThrown,
             )
             reject()
-          }
+          },
         })
       })
       return await p.then((...args) => Promise.resolve(...args))
@@ -779,7 +790,7 @@ function toastMessage(
               toastMessage(
                 blockReactionRemoveMessage,
                 3000,
-                'alert alert-warning'
+                'alert alert-warning',
               )
             } else {
               alert(blockReactionRemoveMessage)
@@ -795,28 +806,28 @@ function toastMessage(
       }
       // on ajoute la reaction si le max n'est pas dépassé
       const nbReactionLeft = parseFloat(
-        $(this).parents('.reactions-container').find('.max-reaction').text()
+        $(this).parents('.reactions-container').find('.max-reaction').text(),
       )
       if (
-        url !== '#'
-        && nbReactionLeft == 0
-        && typeof blockReactionRemove !== 'undefined'
-        && blockReactionRemove === true
+        url !== '#' &&
+        nbReactionLeft == 0 &&
+        typeof blockReactionRemove !== 'undefined' &&
+        blockReactionRemove === true
       ) {
         const previous = $(this)
           .closest('.reactions-flex')
           .find('.user-reaction')
           .first()
         if (
-          typeof previous === 'object'
-          && 'length' in previous
-          && previous.length > 0
+          typeof previous === 'object' &&
+          'length' in previous &&
+          previous.length > 0
         ) {
           const {
             url: previousUrl,
             data: previousData,
             nb: previousNb,
-            nbInit: previousNbInit
+            nbInit: previousNbInit,
           } = extractData(previous)
           if (previousUrl !== '#') {
             deleteUserReaction(
@@ -824,7 +835,7 @@ function toastMessage(
               previousData,
               previousNb,
               previousNbInit,
-              $(previous)
+              $(previous),
             )
               .then(() => {
                 $(this).click()
@@ -859,12 +870,13 @@ function toastMessage(
               'REACTION_NOT_POSSIBLE_TO_ADD_REACTION',
               jqXHR,
               textStatus,
-              errorThrown
+              errorThrown,
             )
-          }
+          },
         })
       } else {
-        const message = "Vous n'avez plus de choix possibles, vous pouvez retirer un choix existant pour changer"
+        const message =
+          "Vous n'avez plus de choix possibles, vous pouvez retirer un choix existant pour changer"
         if (typeof toastMessage == 'function') {
           toastMessage(message, 3000, 'alert alert-warning')
         } else {
@@ -875,7 +887,7 @@ function toastMessage(
     }
   })
 
-  $('.btn-delete-reaction').on('click', function(e) {
+  $('.btn-delete-reaction').on('click', function (e) {
     e.preventDefault()
     if (!$(this).hasClass('btn-delete-all')) {
       if (confirm(_t('REACTION_CONFIRM_DELETE'))) {
@@ -885,10 +897,10 @@ function toastMessage(
       reactionManagementHelper.deleteTags($(this))
     }
   })
-}(jQuery))
+})(jQuery)
 
 // fot comments table
-$('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
+$('#commentsTableDeleteModal.modal').on('shown.bs.modal', function (event) {
   multiDeleteService.initProgressBar($(this))
   $(this).find('.modal-body .multi-delete-results').html('')
   const deleteButton = $(this).find('button.start-btn-delete-comment')
@@ -906,7 +918,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
   $(deleteButton).data('modal', this)
   if (!$(deleteButton).hasClass('eventSet')) {
     $(deleteButton).addClass('eventSet')
-    $(deleteButton).on('click', function() {
+    $(deleteButton).on('click', function () {
       $(this).attr('disabled', 'disabled')
       $(this).tooltip('hide')
       const name = $(this).data('name')
@@ -920,14 +932,15 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
         error(e) {
           multiDeleteService.addErrorMessage(
             $(modal),
-            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
-            }`
+            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${
+              e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
+            }`,
           )
         },
         success() {
           multiDeleteService.removeLine(
             $(targetNode).closest('.dataTables_wrapper').prop('id'),
-            name
+            name,
           )
           $(modal)
             .find('.modal-body .multi-delete-results')
@@ -936,7 +949,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
         },
         complete() {
           multiDeleteService.updateProgressBar($(modal), ['test'], 0)
-        }
+        },
       })
     })
   }
@@ -955,7 +968,7 @@ function checkAll(state) {
 
 // tabs
 // hack for next and previous buttons
-$('.tab-content [data-toggle="tab"]').on('click', function() {
+$('.tab-content [data-toggle="tab"]').on('click', function () {
   const base = $(this).closest('.tab-content').prev()
   $(base).find('.active').removeClass('active')
   $(base)

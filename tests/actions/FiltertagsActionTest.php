@@ -58,12 +58,12 @@ class FiltertagsActionTest extends YesWikiTestCase
             // post-fix: "x\\","evil" -> the backslash is escaped (doubled), so it
             // neutralizes itself and the following quote closes the string normally.
             $this->assertStringNotContainsString(
-                "x\\\",",
+                'x\\",',
                 $taglist,
                 'a lone backslash reaches the SQL string unescaped: quote-parity flip / SQL injection'
             );
             $this->assertStringContainsString(
-                "x\\\\\",",
+                'x\\\\",',
                 $taglist,
                 'the backslash should be escaped (doubled) before being wrapped into the SQL string'
             );

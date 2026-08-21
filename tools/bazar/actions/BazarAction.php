@@ -114,6 +114,7 @@ class BazarAction extends YesWikiAction
     protected function sanitizedGet(string $key, $callback)
     {
         $val = $this->getRequest()->query->get($key);
+
         return (isset($val) && is_scalar($val))
             ? $val
             : (is_callable($callback) ? $callback() : null);
@@ -162,12 +163,12 @@ class BazarAction extends YesWikiAction
                         if (!empty($this->arguments['idtypeannonce']['locals'])) {
                             if (count($this->arguments['idtypeannonce']['locals']) > 1) {
                                 return $entryController->selectForm($this->arguments['idtypeannonce']['locals']);
-                            } else {
-                                return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                             }
-                        } else {
-                            return $entryController->selectForm();
+
+                            return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                         }
+
+                        return $entryController->selectForm();
                 }
                 // no break
             case self::VOIR_FORMULAIRE:
@@ -227,10 +228,10 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ABONNEMENT_REMOVE:
                         if ($req->query->get('type') === 'followers') {
                             return $formController->removeFollower($req->query->get('idformulaire'), $req->query->get('actor'));
-                        } else {
-                            return $formController->removeFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
-                        // no break
+
+                        return $formController->removeFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
+
                     case self::ACTION_ABONNEMENT_SYNC:
                         return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
                     default:

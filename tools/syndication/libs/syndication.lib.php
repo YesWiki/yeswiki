@@ -1,6 +1,6 @@
 <?php
 
-//function pour troquer une chaine sans casser les balises
+// function pour troquer une chaine sans casser les balises
 /**
  * Truncates text.
  *
@@ -9,7 +9,6 @@
  *
  * @param string $text   string to truncate
  * @param int    $length length of returned string, including ellipsis
- * @param string $ending ending to be appended to the trimmed string
  *
  * @return string trimmed string
  */
@@ -61,7 +60,7 @@ function getRelativeDate($date)
         } elseif ($time >= $before) {
             $relative = date('l', $time) . ' dernier';
         }
-        // sinon on retourne une date complète.
+    // sinon on retourne une date complète.
     } else {
         $relative = 'Le ' . date('j.n.Y', $time);
     }

@@ -1,4 +1,4 @@
-export default function(title, url) {
+export default function (title, url) {
   const $modal = $(`
     <div class="modal fade">
       <div class="modal-dialog modal-lg">
@@ -21,7 +21,7 @@ export default function(title, url) {
   const $iframe = $modal.find('iframe')
   const iframe = $iframe[0]
   let timer = null
-  iframe.onload = function() {
+  iframe.onload = function () {
     // remove favorite button
     $iframe.contents().find('.btn.favorites').remove()
     // remove "back/cancel" button in list view
@@ -33,17 +33,19 @@ export default function(title, url) {
     }, 200)
   }
 
-  $modal.modal({
-    show: true,
-    keyboard: false
-  }).on('hidden hidden.bs.modal', () => {
-    $modal.remove()
-  })
+  $modal
+    .modal({
+      show: true,
+      keyboard: false,
+    })
+    .on('hidden hidden.bs.modal', () => {
+      $modal.remove()
+    })
 
   return {
     close() {
       $modal.modal('hide')
       clearInterval(timer)
-    }
+    },
   }
 }

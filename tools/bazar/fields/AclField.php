@@ -60,9 +60,9 @@ class AclField extends BazarField
     protected function filterNotEmptyString(array $data, string $key, ?string $default): ?string
     {
         return (
-            isset($data[$key]) &&
-            is_string($data[$key]) &&
-            !empty(trim($data[$key]))
+            isset($data[$key])
+            && is_string($data[$key])
+            && !empty(trim($data[$key]))
         )
             ? trim($data[$key])
             : $default;
@@ -81,8 +81,8 @@ class AclField extends BazarField
             ? $this->render('@bazar/inputs/comments.twig', [
                 'value' => $commentsAlreadyClosed ? self::OPTION_NO : $this->getValue($entry),
                 'options' => $this->getOptions(),
-                'showAlertForCommentsNotActivated' => $isYesWikiType &&
-                    $this->params->get('comments_activated') !== true,
+                'showAlertForCommentsNotActivated' => $isYesWikiType
+                    && $this->params->get('comments_activated') !== true,
             ])
             : '';
     }
@@ -124,19 +124,18 @@ class AclField extends BazarField
             }
 
             return parent::formatValuesBeforeSave($entry);
-        } else {
-            if (empty($this->aclService->load($entry['id_fiche'], 'comment', false)['list'])) {
-                $this->aclService->save($entry['id_fiche'], 'comment', $this->replaceWithCreator($this->entryCommentRight, $entry));
-            }
-
-            return (!empty($this->propertyName))
-            ? [
-                'fields-to-remove' => [
-                    $this->propertyName,
-                ],
-            ]
-            : [];
         }
+        if (empty($this->aclService->load($entry['id_fiche'], 'comment', false)['list'])) {
+            $this->aclService->save($entry['id_fiche'], 'comment', $this->replaceWithCreator($this->entryCommentRight, $entry));
+        }
+
+        return (!empty($this->propertyName))
+        ? [
+            'fields-to-remove' => [
+                $this->propertyName,
+            ],
+        ]
+        : [];
     }
 
     protected function renderStatic($entry)
@@ -166,8 +165,8 @@ class AclField extends BazarField
         $commentsType = $this->params->get('comments_handler');
 
         return (
-            empty($commentsType) ||
-            !is_string($commentsType)
+            empty($commentsType)
+            || !is_string($commentsType)
         )
         ? ''
         : $commentsType;
@@ -190,20 +189,20 @@ class AclField extends BazarField
 
     protected function closeComments($entry)
     {
-        if (!empty($entry['id_fiche']) &&
-                is_string($entry['id_fiche']) &&
-                !empty(trim($entry['id_fiche']))) {
+        if (!empty($entry['id_fiche'])
+                && is_string($entry['id_fiche'])
+                && !empty(trim($entry['id_fiche']))) {
             $this->aclService->save($entry['id_fiche'], 'comment', 'comments-closed');
         }
     }
 
     protected function openComments($entry)
     {
-        if (!empty($entry['id_fiche']) &&
-                is_string($entry['id_fiche']) &&
-                !empty(trim($entry['id_fiche']))) {
+        if (!empty($entry['id_fiche'])
+                && is_string($entry['id_fiche'])
+                && !empty(trim($entry['id_fiche']))) {
             $defaultRights = (empty($this->entryCommentRight) || $this->entryCommentRight === 'comments-closed')
-                    ? '+' //backup
+                    ? '+' // backup
                     : $this->entryCommentRight;
             $this->aclService->save($entry['id_fiche'], 'comment', $defaultRights);
         }

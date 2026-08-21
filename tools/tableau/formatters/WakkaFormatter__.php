@@ -48,7 +48,7 @@ class WakkaFormatter__ extends YesWikiFormatter
         // recuperation de chaque portion commencant par | et finissant par |
         preg_match_all('/(^(?:!([^\|]*)!)?\|.*\|$)/Ums', $thing, $rows);
 
-        //analyse de chaque ligne
+        // analyse de chaque ligne
         $tablecontent = '';
         foreach ($rows[0] as $row) {
             $tablecontent .= $this->parsetablerow($row);
@@ -78,8 +78,8 @@ class WakkaFormatter__ extends YesWikiFormatter
         $row = preg_replace("/^\|/", '', trim($row));
         $row = preg_replace("/\|$/", '', $row);
 
-        //recuperation de chaque cellule
-        $cells = explode('|', $row);    //nb : seule les indices impaire sont significatif
+        // recuperation de chaque cellule
+        $cells = explode('|', $row);    // nb : seule les indices impaire sont significatif
         $i = 0;
         foreach ($cells as $cell) {
             $result .= $this->parsetablecell($cell);
@@ -90,7 +90,7 @@ class WakkaFormatter__ extends YesWikiFormatter
         return $result;
     }
 
-    //parse la definition d'une cellule
+    // parse la definition d'une cellule
     private function parsetablecell($cell)
     {
         $cellattr = '';
@@ -99,9 +99,9 @@ class WakkaFormatter__ extends YesWikiFormatter
             $cellattr = $match[1];
         }
         $cell = preg_replace('/^!(.*)!/', '', $cell);
-        //si espace au debut => align=right
-        //si espace a la fin => align=left
-        //si espace debut et fin => align=center
+        // si espace au debut => align=right
+        // si espace a la fin => align=left
+        // si espace debut et fin => align=center
         if (preg_match("/^\s(.*)/", $cell)) {
             $align = 'right';
         }

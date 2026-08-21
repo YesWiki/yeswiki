@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
 
@@ -126,7 +125,7 @@ class DateService implements EventSubscriberInterface
                 foreach ($entriesToDelete as $entryToDelete) {
                     try {
                         $this->entryManager->delete($entryToDelete['id_fiche'], true); // $forceEvenIfNotOwner = true
-                    } catch (Throwable $th) {
+                    } catch (\Throwable $th) {
                         // do nothing
                     }
                 }

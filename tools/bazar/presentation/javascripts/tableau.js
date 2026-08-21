@@ -5,7 +5,7 @@ $.fn.dataTable.ext.search.push(
     const row = table.rows(index)
     const node = row.nodes().to$().first()
     return TableHelper.checkDataForNode(table, node)
-  }
+  },
 )
 
 const TableHelper = {
@@ -24,7 +24,10 @@ const TableHelper = {
     if (!$(bazarlistContainer).parent().hasClass('results-col')) {
       return { length: 0 }
     }
-    return $(bazarlistContainer).parent().siblings('.filters-col').find('.filters')
+    return $(bazarlistContainer)
+      .parent()
+      .siblings('.filters-col')
+      .find('.filters')
   },
   updateNBResults(table) {
     const filterContainer = this.findBazarListFiltersContainer(table)
@@ -56,17 +59,17 @@ const TableHelper = {
       // because if orthogonal data is defined, valu is an object
       sanitizedValue = val.display || ''
     }
-    return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue)
+    return isNaN(sanitizedValue) ? 1 : Number(sanitizedValue)
   },
   updateFooter(index) {
     const table = TableHelper.tables[index]
     if (typeof table !== 'undefined') {
       const activatedRows = []
-      table.rows({ search: 'applied' }).every(function() {
+      table.rows({ search: 'applied' }).every(function () {
         activatedRows.push(this.index())
       })
       const activatedCols = []
-      table.columns('.sum-activated').every(function() {
+      table.columns('.sum-activated').every(function () {
         activatedCols.push(this.index())
       })
       activatedCols.forEach((indexCol) => {
@@ -81,7 +84,7 @@ const TableHelper = {
   },
   initTables() {
     TableHelper.updateCheckedFilters()
-    $('.table.prevent-auto-init.in-tableau-template').each(function() {
+    $('.table.prevent-auto-init.in-tableau-template').each(function () {
       const index = Object.keys(TableHelper.tables).length
       const buttons = []
       DATATABLE_OPTIONS.buttons.forEach((option) => {
@@ -89,23 +92,24 @@ const TableHelper = {
           ...option,
           ...{ footer: true },
           ...{
-            exportOptions: (
+            exportOptions:
               option.extend != 'print'
                 ? {
-                  orthogonal: 'sort', // use sort data for export
-                  columns(idx, data, node) {
-                    return !$(node).hasClass('not-export-this-col')
+                    orthogonal: 'sort', // use sort data for export
+                    columns(idx, data, node) {
+                      return !$(node).hasClass('not-export-this-col')
+                    },
                   }
-                }
                 : {
-                  columns(idx, data, node) {
-                    const isVisible = $(node).data('visible')
-                    return !$(node).hasClass('not-export-this-col') && (
-                      isVisible == undefined || isVisible != false
-                    )
-                  }
-                })
-          }
+                    columns(idx, data, node) {
+                      const isVisible = $(node).data('visible')
+                      return (
+                        !$(node).hasClass('not-export-this-col') &&
+                        (isVisible == undefined || isVisible != false)
+                      )
+                    },
+                  },
+          },
         })
       })
       const table = $(this).DataTable({
@@ -114,18 +118,21 @@ const TableHelper = {
           footerCallback(row, data, start, end, display) {
             TableHelper.updateFooter(index)
           },
-          buttons
-        }
+          buttons,
+        },
       })
       TableHelper.tables[index] = table
       TableHelper.tablesByIds[$(table.table(0).node()).prop('id')] = index
       table.on('draw', () => {
         TableHelper.updateNBResults(table)
       })
-      $(`#${$(table.table(0).node()).prop('id')}_wrapper`).on('dblclick', (e) => {
-        e.preventDefault()
-        return false
-      })
+      $(`#${$(table.table(0).node()).prop('id')}_wrapper`).on(
+        'dblclick',
+        (e) => {
+          e.preventDefault()
+          return false
+        },
+      )
     })
     TableHelper.updateTables()
   },
@@ -170,7 +177,10 @@ const TableHelper = {
       return true
     }
     const tableId = $(table.table(0).node()).prop('id')
-    if (tableId.length == 0 || !TableHelper.tablesByIds.hasOwnProperty(tableId)) {
+    if (
+      tableId.length == 0 ||
+      !TableHelper.tablesByIds.hasOwnProperty(tableId)
+    ) {
       return true
     }
     const indexTable = TableHelper.tablesByIds[tableId]
@@ -191,7 +201,10 @@ const TableHelper = {
 
         let resultForThisname = false
         for (let index = 0; index < checkedFilters[name].length; index++) {
-          if (!resultForThisname && values.indexOf(checkedFilters[name][index]) > -1) {
+          if (
+            !resultForThisname &&
+            values.indexOf(checkedFilters[name][index]) > -1
+          ) {
             resultForThisname = true
           }
         }
@@ -201,7 +214,7 @@ const TableHelper = {
       }
     }
     return true
-  }
+  },
 }
 $(document).ready(() => {
   TableHelper.init()

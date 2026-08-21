@@ -2,7 +2,7 @@
 
 $content = $this->getParameter('content');
 switch ($content) {
-        // todo finish the cases
+    // todo finish the cases
     case 'title':
         echo 'title';
         break;

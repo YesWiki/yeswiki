@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -72,9 +71,8 @@ class ApiController extends YesWikiController
             $actor = $activityPubService->getActor($form);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -90,17 +88,16 @@ class ApiController extends YesWikiController
             $followers = $activityPubService->getFollowers($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
                 'items' => $followers,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
-        /**
+    /**
      * @Route("/api/forms/{formId}/actor/following", methods={"GET"}, options={"acl":{"public"}})
      */
     public function getFormActorFollowing($formId, Request $request)
@@ -113,14 +110,13 @@ class ApiController extends YesWikiController
             $following = $activityPubService->getFollowing($form);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'Collection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'items' => $following,
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -136,7 +132,7 @@ class ApiController extends YesWikiController
         if ($activityPubService->isEnabled($form)) {
             try {
                 $verifiedActor = $httpSignatureService->verifySignature($request);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/activity+json']);
             }
 
@@ -144,14 +140,13 @@ class ApiController extends YesWikiController
 
             try {
                 $activityPubService->processActivity($activity, $form, $verifiedActor);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN, ['Content-Type' => 'application/activity+json']);
             }
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -170,11 +165,11 @@ class ApiController extends YesWikiController
                 'ordre' => 'asc',
                 'queries' => '',
                 // TODO Handle pagination
-                // 'nb' => 100 
+                // 'nb' => 100
             ]);
 
             return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
+                '@context' => 'https://www.w3.org/ns/activitystreams',
                 'type' => 'OrderedCollection',
                 'id' => $activityPubService->getFormCollectionUri($form, 'following'),
                 'totalItems' => count($entries),
@@ -182,6 +177,7 @@ class ApiController extends YesWikiController
                     $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     unset($object['@context']);
                     $published = new \DateTime($entry['date_creation_fiche']);
+
                     return [
                         'type' => 'Create',
                         'actor' => $activityPubService->getFormActorUri($form),
@@ -193,9 +189,8 @@ class ApiController extends YesWikiController
             ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -217,9 +212,8 @@ class ApiController extends YesWikiController
             $actor = $webfingerService->formatLocalActor($handle, $actorUri);
 
             return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-        } else {
-            throw new NotFoundHttpException();
         }
+        throw new NotFoundHttpException();
     }
 
     /**
@@ -496,7 +490,7 @@ class ApiController extends YesWikiController
         $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
-        /*             Format Params            */
+        /*             Format Params */
         /* ------------------------------------ */
 
         $queryAll = $this->getRequest()->query->all();
@@ -516,7 +510,7 @@ class ApiController extends YesWikiController
         $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
 
         /* ------------------------------------ */
-        /*               Get Data               */
+        /*               Get Data */
         /* ------------------------------------ */
         // All forms
         $refreshVal = $get->get('refresh');
@@ -529,7 +523,7 @@ class ApiController extends YesWikiController
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
-        /*            Transform Data            */
+        /*            Transform Data */
         /* ------------------------------------ */
 
         // Associated Forms

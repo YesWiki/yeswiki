@@ -1,10 +1,10 @@
 <?php
 
-//chemin relatif d'acces au bazar
+// chemin relatif d'acces au bazar
 define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 
-//principales fonctions de bazar
+// principales fonctions de bazar
 require_once BAZ_CHEMIN . 'libs/bazar.fonct.php';
 require_once BAZ_CHEMIN . 'libs/bazar.fonct.misc.php';
 require_once BAZ_CHEMIN . 'libs/bazar.fonct.retrocompatibility.php';

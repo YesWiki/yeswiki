@@ -30,13 +30,13 @@ class PasswordField extends BazarField
                 $this->propertyName => md5($value),
                 'fields-to-remove' => [$this->propertyName . '-previous'],
             ];
-        } else {
-            // If no new password was set, keep the old encoded one
-            return [
-                $this->propertyName => $entry[$this->propertyName . '-previous'] ?? null,
-                'fields-to-remove' => [$this->propertyName . '-previous'],
-            ];
         }
+
+        // If no new password was set, keep the old encoded one
+        return [
+            $this->propertyName => $entry[$this->propertyName . '-previous'] ?? null,
+            'fields-to-remove' => [$this->propertyName . '-previous'],
+        ];
     }
 
     protected function renderStatic($entry)

@@ -1,84 +1,75 @@
 import { defineConfig, globalIgnores } from 'eslint/config'
-import globals from 'globals'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import js from '@eslint/js'
-import { FlatCompat } from '@eslint/eslintrc'
+import globals from 'globals'
+import prettier from 'eslint-config-prettier'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
+export default defineConfig([
+  globalIgnores([
+    '**/vendor/',
+    '**/custom/',
+    'tools/aceditor/presentation/javascripts/ext-searchbox.js',
+  ]),
+  {
+    extends: [js.configs.recommended, prettier],
 
-export default defineConfig([globalIgnores([
-  '**/vendor/',
-  '**/custom/',
-  '!javascripts',
-  'javascripts/vendor',
-  '!styles',
-  '!tools',
-  'tools/*',
-  '!tools/autoupdate',
-  '!tools/aceditor',
-  '!tools/attach',
-  '!tools/bazar',
-  '!tools/contact',
-  '!tools/helloworld',
-  '!tools/lang',
-  '!tools/login',
-  '!tools/progressbar',
-  '!tools/rss',
-  '!tools/security',
-  '!tools/syndication',
-  '!tools/tableau',
-  '!tools/tags',
-  '!tools/templates',
-  '!tools/toc',
-  'tools/aceditor/presentation/javascripts/ext-searchbox.js'
-]), {
-  extends: compat.extends('airbnb-base'),
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jquery,
+        wiki: 'writable',
+        Vue: 'readable',
+        _t: 'readable',
+        ace: 'writable',
+        toastMessage: 'readable',
+        multiDeleteService: 'readable',
+        usersTableService: 'readable',
+        // Leaflet global (javascripts/vendor/leaflet)
+        L: 'readable',
+        // page-level config globals injected by forms_form.twig (form designer)
+        groupsList: 'readable',
+        formAndListIds: 'readable',
+        // page-level config globals injected by theme-selector-with-form.twig
+        themeSelectorTranslation: 'readable',
+        customCSSPresetsPrefix: 'readable',
+        geolocationHelper: 'readable',
+        // page-level config global injected by aceditor.twig (the actions palette)
+        actionsBuilderData: 'readable',
+        // page-level config globals injected by doc.twig
+        locale: 'readable',
+        baseUrl: 'readable',
+        i18n: 'readable',
+        extensions: 'readable',
+        // page-level config globals injected by bazar templates
+        yesWikiTypes: 'readable',
+        bazarlistTagsInputsData: 'readable',
+        autocompleteFieldnames: 'readable',
+        pageTags: 'readable',
+        DATATABLE_OPTIONS: 'readable',
+        // page-level config globals injected by reactions templates
+        blockReactionRemove: 'readable',
+        blockReactionRemoveMessage: 'readable',
+        // vendored libraries with a global entry point (javascripts/vendor/)
+        FullCalendar: 'readable',
+        opening_hours: 'readable',
+        formBuilder: 'readable',
+        formBuilderFields: 'readable',
+        Modernizr: 'readable',
+        module: 'writable',
+        define: 'readable',
+        require: 'readable',
+      },
 
-  languageOptions: {
-    globals: {
-      ...globals.browser,
-      ...globals.jquery,
-      wiki: 'writable',
-      Vue: 'readable',
-      _t: 'readable',
-      ace: 'writable',
-      toastMessage: 'readable'
+      ecmaVersion: 13,
+      sourceType: 'module',
     },
 
-    ecmaVersion: 13,
-    sourceType: 'module'
+    rules: {
+      eqeqeq: ['error', 'smart'],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-param-reassign': 'error',
+      'no-restricted-globals': ['error', 'event', 'isNaN', 'isFinite'],
+      'no-eval': 'error',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
-
-  rules: {
-    semi: ['error', 'never'],
-
-    'max-len': ['error', { code: 104 }],
-
-    'vars-on-top': 'off',
-    'class-methods-use-this': 'off',
-    'import/no-unresolved': 'off',
-    'import/extensions': ['error', 'always'],
-    'import/prefer-default-export': ['off'],
-    'no-use-before-define': ['off'],
-    eqeqeq: ['error', 'smart'],
-    'comma-dangle': ['error', 'never'],
-
-    'object-curly-newline': ['error', { multiline: true }],
-
-    'func-names': ['error', 'never'],
-    'space-before-function-paren': ['error', 'never'],
-
-    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
-
-    'no-new': 'off',
-    'no-restricted-syntax': 'off',
-    'guard-for-in': 'off'
-  }
-}])
+])

@@ -40,6 +40,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
         if (str_contains($serialized, '&lt;')) {
             return 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;';
         }
+
         return 'This is a dirty iframe :<br />.';
     }
 

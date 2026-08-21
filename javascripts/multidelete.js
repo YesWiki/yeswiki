@@ -3,7 +3,7 @@ function checkAllFirstCol(elem) {
   $(elem)
     .closest('.dataTables_wrapper')
     .find('tr > td:first-child input.selectline[type=checkbox]:visible')
-    .each(function() {
+    .each(function () {
       $(this).prop('checked', newState)
       $(this).trigger('change')
     })
@@ -19,8 +19,10 @@ const multiDeleteService = {
   refreshOnModalClosing: {},
   modalClosing(modalContainer) {
     const id = $(modalContainer).prop('id')
-    if (this.refreshOnModalClosing.hasOwnProperty(id)
-      && this.refreshOnModalClosing[id] === true) {
+    if (
+      this.refreshOnModalClosing.hasOwnProperty(id) &&
+      this.refreshOnModalClosing[id] === true
+    ) {
       window.location.reload()
     }
   },
@@ -28,50 +30,66 @@ const multiDeleteService = {
     this.updateProgressBar(modal, ['test'], -1)
   },
   updateProgressBar(modal, items, currentIndex) {
-    const value = (items.length == 0) ? 100 : Math.min(100, Math.round((currentIndex + 1) / items.length * 100))
-    $(modal).find('.modal-footer .progress-bar').each(function() {
-      $(this).attr('style', `width: ${value}%;`)
-      $(this).attr('aria-valuenow', value)
-    })
+    const value =
+      items.length == 0
+        ? 100
+        : Math.min(100, Math.round(((currentIndex + 1) / items.length) * 100))
+    $(modal)
+      .find('.modal-footer .progress-bar')
+      .each(function () {
+        $(this).attr('style', `width: ${value}%;`)
+        $(this).attr('aria-valuenow', value)
+      })
   },
   modalIsClosed(modal) {
-    return ($(modal).filter(':visible').length == 0)
+    return $(modal).filter(':visible').length == 0
   },
   addErrorMessage(modal, message) {
-    $(modal).find('.modal-body .multi-delete-results').first().append(
-      $('<div>').addClass('alert alert-danger')
-        .text(message)
-    )
+    $(modal)
+      .find('.modal-body .multi-delete-results')
+      .first()
+      .append($('<div>').addClass('alert alert-danger').text(message))
   },
   removeLine(target, itemId) {
     const table = $(`#${target} .dataTable[id]`)
     if (table.length == 0) {
       return false
     }
-    table.DataTable().row($(`#${target} [data-itemid="${itemId}"]`).parents('tr')).remove().draw()
+    table
+      .DataTable()
+      .row($(`#${target} [data-itemid="${itemId}"]`).parents('tr'))
+      .remove()
+      .draw()
     return true
   },
   deleteNextItem(modal, items, type, currentIndex, target) {
     this.updateProgressBar(modal, items, currentIndex)
-    if ((currentIndex + 1) < items.length) {
+    if (currentIndex + 1 < items.length) {
       this.deleteOneItem(modal, items, type, currentIndex + 1, target)
     } else {
       this.isRunning = false
-      $(modal).find('.modal-body .multi-delete-results').first().append(
-        $('<div>').text(_t('MULTIDELETE_END'))
-      )
+      $(modal)
+        .find('.modal-body .multi-delete-results')
+        .first()
+        .append($('<div>').text(_t('MULTIDELETE_END')))
     }
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
     if (['pages', 'comments', 'users'].indexOf(type) == -1) {
-      this.addErrorMessage(modal, "Unknown type ! Should be 'pages' or 'users' or 'comments'!")
+      this.addErrorMessage(
+        modal,
+        "Unknown type ! Should be 'pages' or 'users' or 'comments'!",
+      )
       return
     }
     const item = items[currentIndex] ?? {}
-    const itemId = (item.id != undefined) ? item.id : ''
-    const csrfToken = ('antiCsrfToken' in wiki)
-      ? wiki.antiCsrfToken
-      : ((item.token != undefined) ? item.token : '')
+    const itemId = item.id != undefined ? item.id : ''
+    const csrfToken =
+      'antiCsrfToken' in wiki
+        ? wiki.antiCsrfToken
+        : item.token != undefined
+          ? item.token
+          : ''
     if (itemId.length == 0 || csrfToken.length == 0) {
       this.deleteNextItem(modal, items, type, currentIndex, target)
       return
@@ -81,8 +99,8 @@ const multiDeleteService = {
       {
         method: 'POST',
         timeout: 30000, // 30 seconds,
-        data: { csrfToken }
-      }
+        data: { csrfToken },
+      },
     )
       .then(() => {
         if (!this.removeLine(target, itemId)) {
@@ -90,18 +108,20 @@ const multiDeleteService = {
         }
       })
       .catch((error) => {
-      // do nothing on error
+        // do nothing on error
         this.addErrorMessage(
           modal,
           _t('MULTIDELETE_ERROR')
             .replace('{itemId}', itemId)
-            .replace('{error}', error)
+            .replace('{error}', error),
         )
         // if error force reload
         this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
       })
       .finally(() => {
-        setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
+        setTimeout(() => {
+          this.deleteNextItem(modal, items, type, currentIndex, target)
+        }, 0)
       })
   },
   deleteItems(elem) {
@@ -109,21 +129,28 @@ const multiDeleteService = {
     const type = $(elem).data('type')
     // get selected item
     if (target.length > 0) {
-      const inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked')
+      const inputs = $(`#${target}`).find(
+        'tr > td:first-child input.selectline[type=checkbox]:visible:checked',
+      )
       const modal = $(elem).closest('.modal-dialog')
 
       const items = []
       for (let index = 0; index < inputs.length; index++) {
         const itemId = $(inputs[index]).data('itemid')
         const csrfToken = $(inputs[index]).data('csrftoken')
-        if (itemId.length > 0 && (csrfToken == undefined || csrfToken.length == 0)) {
+        if (
+          itemId.length > 0 &&
+          (csrfToken == undefined || csrfToken.length == 0)
+        ) {
           items.push({ id: itemId })
         } else if (itemId.length > 0 && csrfToken.length > 0) {
           items.push({ id: itemId, token: csrfToken })
         }
       }
       if (items.length > 0) {
-        setTimeout(() => { this.deleteOneItem(modal, items, type, 0, target) }, 0)
+        setTimeout(() => {
+          this.deleteOneItem(modal, items, type, 0, target)
+        }, 0)
       }
     }
   },
@@ -132,13 +159,21 @@ const multiDeleteService = {
     let resetTimeoutId = null
     if ('timeout' in options && Number(options.timeout) > 0) {
       const abortController = new AbortController()
-      resetTimeoutId = setTimeout(() => abortController.abort(), options.timeout)
+      resetTimeoutId = setTimeout(
+        () => abortController.abort(),
+        options.timeout,
+      )
       internalOptions.signal = abortController.signal
     }
     if ('method' in options && options.method === 'POST') {
       internalOptions.method = 'POST'
-      internalOptions.body = new URLSearchParams(this.prepareFormData(options.data ?? {}))
-      internalOptions.headers = (new Headers()).append('Content-Type', 'application/x-www-form-urlencoded')
+      internalOptions.body = new URLSearchParams(
+        this.prepareFormData(options.data ?? {}),
+      )
+      internalOptions.headers = new Headers().append(
+        'Content-Type',
+        'application/x-www-form-urlencoded',
+      )
     }
     return await fetch(url, internalOptions)
       .then(async (response) => {
@@ -151,8 +186,12 @@ const multiDeleteService = {
           if (body && body.error) {
             errorDetail = ': ' + body.error
           }
-        } catch (e) { /* ignore parse errors */ }
-        throw new Error(`Response is not ok (code ${response.status})${errorDetail}`)
+        } catch (e) {
+          /* ignore parse errors */
+        }
+        throw new Error(
+          `Response is not ok (code ${response.status})${errorDetail}`,
+        )
       })
       .finally(() => {
         if (resetTimeoutId !== null) {
@@ -171,15 +210,19 @@ const multiDeleteService = {
   },
   updateNbSelected(modalId) {
     const button = $(`#${modalId} .modal-body > button.start-btn-delete-all`)
-    const text = $(`#${modalId} .modal-body > .alert.alert-info > span.nb-elem-selected`)
+    const text = $(
+      `#${modalId} .modal-body > .alert.alert-info > span.nb-elem-selected`,
+    )
     const target = $(button).data('target')
     if (target.length > 0) {
-      const inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked')
+      const inputs = $(`#${target}`).find(
+        'tr > td:first-child input.selectline[type=checkbox]:visible:checked',
+      )
       $(text).html(inputs.length)
     } else {
       $(text).html('error')
     }
-  }
+  },
 }
 
 $('button.start-btn-delete-all').on('click', () => {
@@ -193,13 +236,12 @@ $('button.start-btn-delete-all').on('click', () => {
   }
 })
 
-$('.modal.multidelete').on('shown.bs.modal', function() {
+$('.modal.multidelete').on('shown.bs.modal', function () {
   multiDeleteService.initProgressBar($(this))
   $(this).find('.modal-body .multi-delete-results').html('')
   $(this).find('button.start-btn-delete-all').removeAttr('disabled')
 })
 
-$('.modal.multidelete').on('hidden.bs.modal', function() {
+$('.modal.multidelete').on('hidden.bs.modal', function () {
   multiDeleteService.modalClosing($(this))
 })
-

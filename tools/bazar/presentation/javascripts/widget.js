@@ -17,39 +17,46 @@ const widgetapp = createApp({
       this.checkedfacette.forEach((element, index) => {
         facettelabel[index] = facettetext.facettetext[element]
       })
-      return `${this.iframeurl
-      }&template=${encodeURIComponent(this.templatemodel)
-      }&width=${encodeURIComponent(this.widthmodel)
-      }&height=${encodeURIComponent(this.heightmodel)
-      }&lat=${encodeURIComponent(this.latmodel)
-      }&lon=${encodeURIComponent(this.lonmodel)
-      }&markersize=${encodeURIComponent(this.markersizemodel)
-      }&provider=${encodeURIComponent(this.providermodel)
-      }&zoom=${encodeURIComponent(this.zoommodel)
-      }&groups=${encodeURIComponent(this.checkedfacette.join(','))
-      }&titles=${encodeURIComponent(facettelabel.join(','))
-      }&groupsexpanded=${encodeURIComponent(this.groupsexpandedmodel)}`
+      return `${this.iframeurl}&template=${encodeURIComponent(
+        this.templatemodel,
+      )}&width=${encodeURIComponent(
+        this.widthmodel,
+      )}&height=${encodeURIComponent(
+        this.heightmodel,
+      )}&lat=${encodeURIComponent(this.latmodel)}&lon=${encodeURIComponent(
+        this.lonmodel,
+      )}&markersize=${encodeURIComponent(
+        this.markersizemodel,
+      )}&provider=${encodeURIComponent(
+        this.providermodel,
+      )}&zoom=${encodeURIComponent(this.zoommodel)}&groups=${encodeURIComponent(
+        this.checkedfacette.join(','),
+      )}&titles=${encodeURIComponent(
+        facettelabel.join(','),
+      )}&groupsexpanded=${encodeURIComponent(this.groupsexpandedmodel)}`
     },
     wikiquery() {
       const facettelabel = []
       this.checkedfacette.forEach((element, index) => {
         facettelabel[index] = facettetext.facettetext[element]
       })
-      return '{{bazarliste'
-        + ` id="${this.formid}"`
-        + ` template="${this.templatemodel}"`
-        + ` width="${this.widthmodel}"`
-        + ` height="${this.heightmodel}"`
-        + ` lat="${this.latmodel}"`
-        + ` lon="${this.lonmodel}"`
-        + ` markersize="${this.markersizemodel}"`
-        + ` provider="${this.providermodel}"`
-        + ` zoom="${this.zoommodel}"`
-        + ` groups="${this.checkedfacette.join(',')}"`
-        + ` titles="${facettelabel.join(',')}"`
-        + ` groupsexpanded="${this.groupsexpandedmodel}"`
-        + '}}'
-    }
+      return (
+        '{{bazarliste' +
+        ` id="${this.formid}"` +
+        ` template="${this.templatemodel}"` +
+        ` width="${this.widthmodel}"` +
+        ` height="${this.heightmodel}"` +
+        ` lat="${this.latmodel}"` +
+        ` lon="${this.lonmodel}"` +
+        ` markersize="${this.markersizemodel}"` +
+        ` provider="${this.providermodel}"` +
+        ` zoom="${this.zoommodel}"` +
+        ` groups="${this.checkedfacette.join(',')}"` +
+        ` titles="${facettelabel.join(',')}"` +
+        ` groupsexpanded="${this.groupsexpandedmodel}"` +
+        '}}'
+      )
+    },
   },
   methods: {
     hideTooltip() {
@@ -60,8 +67,8 @@ const widgetapp = createApp({
     },
     showTooltip(id) {
       this.show_tooltip[id] = true
-    }
-  }
+    },
+  },
 })
 
 widgetapp.mount('#widgetapp')

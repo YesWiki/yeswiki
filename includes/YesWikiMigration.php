@@ -32,8 +32,6 @@ abstract class YesWikiMigration
 
     /**
      * give service from name.
-     *
-     * @return mixed
      */
     protected function getService(string $className)
     {

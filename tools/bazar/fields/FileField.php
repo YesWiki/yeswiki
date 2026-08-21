@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use attach;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\DateService;
@@ -42,6 +41,7 @@ class FileField extends BazarField
         if (empty($value)) {
             return false;
         }
+
         return StringUtilService::isWebAddress($value);
     }
 
@@ -106,14 +106,14 @@ class FileField extends BazarField
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
+
                     // Return empty input after deletion
                     return $this->render('@bazar/inputs/file.twig', [
                         'maxSize' => $this->maxSize,
                         'isUrl' => false,
                     ]);
-                } else {
-                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
+                $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
             }
 
             return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', [
@@ -127,7 +127,8 @@ class FileField extends BazarField
             ]);
         }
 
-        return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
+        return ($alertMessage ?? '') . $this->render(
+            '@bazar/inputs/file.twig',
             empty($value) || !file_exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize,
@@ -142,7 +143,7 @@ class FileField extends BazarField
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
-        ));
+        );
     }
 
     /*
@@ -208,9 +209,9 @@ class FileField extends BazarField
             return [$this->propertyName => basename($filePath)];
         } elseif (!empty($value)) {
             return [$this->propertyName => file_exists($this->getBasePath() . $value) ? $value : ''];
-        } else {
-            return [$this->propertyName => ''];
         }
+
+        return [$this->propertyName => ''];
     }
 
     protected function renderStatic($entry)
@@ -394,7 +395,7 @@ class FileField extends BazarField
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
-    protected function getAttach(): attach
+    protected function getAttach(): \attach
     {
         if (is_null($this->attach)) {
             if (!class_exists('attach')) {
@@ -403,7 +404,7 @@ class FileField extends BazarField
 
             $wiki = $this->getWiki();
 
-            $this->attach = new attach($wiki);
+            $this->attach = new \attach($wiki);
         }
 
         return $this->attach;

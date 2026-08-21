@@ -51,10 +51,10 @@ class SelectEntryField extends EnumField
             if ($this->isDistantJson) {
                 // TODO display the entry in an iframe ?
                 return '';
-            } else {
-                // TODO add documentation
-                return $this->getService(EntryController::class)->view($value);
             }
+
+            // TODO add documentation
+            return $this->getService(EntryController::class)->view($value);
         }
 
         if ($this->isDistantJson) {

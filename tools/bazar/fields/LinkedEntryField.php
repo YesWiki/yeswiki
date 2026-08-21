@@ -59,9 +59,9 @@ class LinkedEntryField extends BazarField
                 '@bazar/fields/linked-entry.twig',
                 $this->getTwigOptions($entry)
             );
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     protected function getTwigOptions($entry)
@@ -109,9 +109,9 @@ class LinkedEntryField extends BazarField
                 . $this->otherParams . '}}';
 
             return $action;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     protected function getQueryForLinkedLabels($entry): ?string

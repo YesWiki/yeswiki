@@ -1,6 +1,7 @@
 <?php
 
 use function Symfony\Component\String\u;
+
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EnumField;
@@ -227,12 +228,11 @@ function genere_nom_wiki($nom, $occurence = 1)
     } elseif (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
         // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
         return $nom;
-    } else {
-        // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
-        $occurence++;
-
-        return genere_nom_wiki($nom, $occurence);
     }
+    // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
+    $occurence++;
+
+    return genere_nom_wiki($nom, $occurence);
 }
 
 function startsWith($haystack, $needle)
@@ -269,18 +269,18 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
 
                 // on n a pas trouve de valeur, on renvoie la valeur par defaut
                 return $default;
-            } else {
-                return isset($parameter[$entry[$field]]) ?
-                    $parameter[$entry[$field]] : $default;
             }
-        } else {
-            // si la valeur n existe pas, on met l icone par defaut
-            return $default;
+
+            return isset($parameter[$entry[$field]]) ?
+                $parameter[$entry[$field]] : $default;
         }
-    } else {
-        // si le parametre n'est pas un tableau, il contient la valeur par defaut
+
+        // si la valeur n existe pas, on met l icone par defaut
         return $default;
     }
+
+    // si le parametre n'est pas un tableau, il contient la valeur par defaut
+    return $default;
 }
 
 // tri par ordre desire
@@ -288,9 +288,9 @@ function champCompare($a, $b)
 {
     if ($GLOBALS['ordre'] == 'desc') {
         return strcoll(mb_strtolower($b[$GLOBALS['champ']]), mb_strtolower($a[$GLOBALS['champ']]));
-    } else {
-        return strcoll(mb_strtolower($a[$GLOBALS['champ']]), mb_strtolower($b[$GLOBALS['champ']]));
     }
+
+    return strcoll(mb_strtolower($a[$GLOBALS['champ']]), mb_strtolower($b[$GLOBALS['champ']]));
 }
 
 /**

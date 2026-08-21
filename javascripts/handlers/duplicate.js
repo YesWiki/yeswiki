@@ -10,13 +10,13 @@ function isValidUrl(string) {
 }
 
 function arrayIncludesAllRequiredFields(arr, fields) {
-  return fields.every((v) => arr.some((i) => i.id === v.id && i.type === v.type))
+  return fields.every((v) =>
+    arr.some((i) => i.id === v.id && i.type === v.type),
+  )
 }
 
 function blockDuplicationName(tag) {
-  $('[name=duplicate-action]')
-    .attr('disabled', 'disabled')
-    .addClass('disabled')
+  $('[name=duplicate-action]').attr('disabled', 'disabled').addClass('disabled')
   $('#newTag')
     .parents('.form-group')
     .removeClass('has-success')
@@ -36,7 +36,7 @@ function validateDuplicationName(tag) {
 function checkPageExistence(url) {
   $.ajax({
     method: 'GET',
-    url
+    url,
   })
     .done(() => {
       blockDuplicationName(url.replace(`${shortUrl}/?api/pages/`, ''))
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     (e) => {
       e.stopPropagation()
       return false
-    }
+    },
   )
   $('#url-wiki').on('change', () => {
     $('.login-fields, .duplication-fields').addClass('hide')
@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
       url: `${shortUrl}/?api/login`,
       data: {
         username: $('#username').val(),
-        password: $('#password').val()
-      }
+        password: $('#password').val(),
+      },
     })
       .done((data) => {
         handleLoginResponse(data)
@@ -99,9 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
       .fail((jqXHR) => {
         toastMessage(jqXHR.responseJSON.error, 3000, 'alert alert-danger')
         if (jqXHR.status === 401) {
-          $('#login-message').empty().append(
-            $('<div>').addClass('text-danger').text(_t('NOT_CONNECTED'))
-          )
+          $('#login-message')
+            .empty()
+            .append(
+              $('<div>').addClass('text-danger').text(_t('NOT_CONNECTED')),
+            )
           $('.login-fields').removeClass('hide')
         }
       })
@@ -118,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
       method: 'POST',
       headers: {
         accept: 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
       },
-      data: $('#form-duplication').serialize()
+      data: $('#form-duplication').serialize(),
     }
     $.ajax(settings)
       .done((d) => {
@@ -137,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toastMessage(
           `${_t('ERROR')} ${jqXHR.status}`,
           3000,
-          'alert alert-danger'
+          'alert alert-danger',
         )
       })
     return false
@@ -162,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       url = `${shortUrl}/?api/auth/me`
       $.ajax({
         method: 'GET',
-        url
+        url,
       })
         .done((data) => {
           handleLoginResponse(data)
@@ -174,17 +176,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const formUrl = `${shortUrl}/?api/forms/${formId}`
             $.ajax({
               method: 'GET',
-              url: formUrl
+              url: formUrl,
             })
               .done((form) => {
                 const requiredFields = form.prepared.filter(
-                  (field) => field.required === true
+                  (field) => field.required === true,
                 )
                 // we check if the found formId is compatible
                 if (
                   arrayIncludesAllRequiredFields(
                     window.sourceForm.prepared,
-                    requiredFields
+                    requiredFields,
                   )
                 ) {
                   $('#form-message')
@@ -215,14 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
         .fail((jqXHR) => {
           if (jqXHR.status === 401) {
             $('#login-message').html(
-              `<div class="text-danger">${_t('NOT_CONNECTED')}</div>`
+              `<div class="text-danger">${_t('NOT_CONNECTED')}</div>`,
             )
             $('.login-fields').removeClass('hide')
           } else {
             toastMessage(
               _t('NOT_WIKI_OR_OLD_WIKI', { url }),
               3000,
-              'alert alert-danger'
+              'alert alert-danger',
             )
           }
         })

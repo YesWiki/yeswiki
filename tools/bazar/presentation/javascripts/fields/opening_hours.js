@@ -5,9 +5,10 @@ const createOpeningHoursComponent = (openingHoursData) => ({
     return {
       intervals: [],
       today: [],
-      locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
+      locale:
+        new URLSearchParams(document.URL).get('lang') || navigator.language,
       todayName: '',
-      openingHoursData
+      openingHoursData,
     }
   },
   mounted() {
@@ -15,16 +16,25 @@ const createOpeningHoursComponent = (openingHoursData) => ({
     const currentDay = new Date(now.toDateString())
     const endWeek = new Date(currentDay)
     endWeek.setDate(currentDay.getDate() + 7)
-    const oh = new opening_hours(this.openingHoursData, {}, { locale: this.locale })
+    const oh = new opening_hours(
+      this.openingHoursData,
+      {},
+      { locale: this.locale },
+    )
     this.intervals = this.groupBy(oh.getOpenIntervals(currentDay, endWeek))
-    this.todayName = new Date().toLocaleDateString(this.locale, { weekday: 'long' })
+    this.todayName = new Date().toLocaleDateString(this.locale, {
+      weekday: 'long',
+    })
     this.today = this.intervals[now.getDay()] || []
-    if (this.intervals[0] && this.intervals[0][0] && this.intervals[0][0].day_id === 0) {
+    if (
+      this.intervals[0] &&
+      this.intervals[0][0] &&
+      this.intervals[0][0].day_id === 0
+    ) {
       this.intervals.push(this.intervals.shift())
     }
   },
   methods: {
-
     groupBy(tableauObjets) {
       return tableauObjets.reduce((acc, obj) => {
         const cle = obj[0].getDay()
@@ -36,17 +46,16 @@ const createOpeningHoursComponent = (openingHoursData) => ({
           day: obj[0].toLocaleDateString(this.locale, { weekday: 'long' }),
           start: obj[0].toLocaleTimeString(this.locale, {
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
           }),
           end: obj[1].toLocaleTimeString(this.locale, {
             hour: '2-digit',
-            minute: '2-digit'
-          })
+            minute: '2-digit',
+          }),
         })
         return acc
       }, [])
-    }
-
+    },
   },
   template: `
   <div>
@@ -75,7 +84,7 @@ const createOpeningHoursComponent = (openingHoursData) => ({
           </table>
         </div>
     </details>
-  </div>`
+  </div>`,
 })
 
 const elements = document.getElementsByTagName('opening-hours')

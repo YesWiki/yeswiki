@@ -5,7 +5,6 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Throwable;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Controller\UserController;
@@ -187,7 +186,7 @@ class UserControllerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -195,7 +194,7 @@ class UserControllerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -406,7 +405,7 @@ class UserControllerTest extends YesWikiTestCase
                 'password' => $password,
             ]);
             $user = $userManager->getOneByName($name);
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -414,7 +413,7 @@ class UserControllerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($otherException) {

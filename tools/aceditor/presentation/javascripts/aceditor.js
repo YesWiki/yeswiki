@@ -34,7 +34,9 @@ class Aceditor {
 
   initialize() {
     // Init Components
-    this.editor = new AceWrapper(this.$aceBody[0], { rows: this.$textarea.attr('rows') })
+    this.editor = new AceWrapper(this.$aceBody[0], {
+      rows: this.$textarea.attr('rows'),
+    })
     this.linkModal = new LinkModal()
     this.fileUplodModal = new FileUploadModal()
     this.actionsBuilder = new ActionsBuilder()
@@ -53,7 +55,9 @@ class Aceditor {
     setupAceditorKeyBindings(this.$aceContainer, this.$toolbar)
     this.initToolbar()
     this.initEditionHelpers()
-    this.editor.ace.setOptions({ placeholder: this.$textarea.attr('placeholder') })
+    this.editor.ace.setOptions({
+      placeholder: this.$textarea.attr('placeholder'),
+    })
     this.editor.on('blur', () => {
       this.flyingButton.hide()
     })
@@ -64,7 +68,7 @@ class Aceditor {
       this.$toolbar.find('.attach-file-uploader'),
       (result) => {
         this.editor.replaceSelectionBy(result)
-      }
+      },
     )
     this.$toolbar.find('.aceditor-btn').on('click', (e) => {
       const $btn = $(e.currentTarget)
@@ -80,7 +84,7 @@ class Aceditor {
           text: this.editor.getSelectedText(),
           onComplete: (result) => {
             this.editor.replaceSelectionBy(result)
-          }
+          },
         })
       } else if ($btn.hasClass('aceditor-btn-newpage')) {
         // New Page Button
@@ -88,7 +92,7 @@ class Aceditor {
           action: 'newpage',
           onComplete: (result) => {
             this.editor.insert(result)
-          }
+          },
         })
       } else {
         // Other Buttons
@@ -96,10 +100,14 @@ class Aceditor {
       }
     })
     this.$toolbar.find('.open-actions-builder-btn').click((event) => {
-      this.actionsBuilder.open(this.editor, { groupName: $(event.target).data('group-name') })
+      this.actionsBuilder.open(this.editor, {
+        groupName: $(event.target).data('group-name'),
+      })
     })
     this.$toolbar.find('.open-existing-action').click(() => {
-      this.actionsBuilder.open(this.editor, { action: this.editor.currentGroupTextwithoutMarkup })
+      this.actionsBuilder.open(this.editor, {
+        action: this.editor.currentGroupTextwithoutMarkup,
+      })
     })
   }
 
@@ -116,16 +124,23 @@ class Aceditor {
       switch (cursor.groupType) {
         case 'yw-action': {
           const actionName = cursor.groupData['action-name']
-          if (this.actionsBuilder.allAvailableActionsWithBackward.includes(actionName)) {
-            if (this.actionsBuilder.getActionConfiguration(actionName).onlyAdd) return
+          if (
+            this.actionsBuilder.allAvailableActionsWithBackward.includes(
+              actionName,
+            )
+          ) {
+            if (this.actionsBuilder.getActionConfiguration(actionName).onlyAdd)
+              return
             this.$toolbar.find('.component-action-list').addClass('only-edit')
             this.flyingButton.show().onClick(() => {
-              this.actionsBuilder.open(this.editor, { action: cursor.groupTextWithoutMarkup })
+              this.actionsBuilder.open(this.editor, {
+                action: cursor.groupTextWithoutMarkup,
+              })
             })
           }
           if (cursor.nodeType && cursor.nodeType.includes('action-name')) {
             this.editor.setAutocompletionList(
-              this.actionsBuilder.allAvailableActions
+              this.actionsBuilder.allAvailableActions,
             )
           }
           break
@@ -136,7 +151,7 @@ class Aceditor {
             'link-url': link,
             'link-text': text,
             'link-title': title,
-            'md-extra': extra
+            'md-extra': extra,
           } = cursor.groupData
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
@@ -147,7 +162,7 @@ class Aceditor {
               extra,
               onComplete: (result) => {
                 this.editor.replaceCurrentGroupBy(result)
-              }
+              },
             })
           })
           if (cursor.nodeType && cursor.nodeType.includes('link-url')) {
@@ -163,13 +178,13 @@ class Aceditor {
 }
 
 jQuery(() => {
-  $('.aceditor-container').each(function() {
+  $('.aceditor-container').each(function () {
     const name = $(this).data('name')
     window[`aceditor-${name}`] = new Aceditor($(this))
   })
 
   // hack to put toolbar over label
-  $('.wiki-textarea .scroll-container-toolbar').each(function() {
+  $('.wiki-textarea .scroll-container-toolbar').each(function () {
     $(this).prependTo($(this).parents('.wiki-textarea'))
   })
 })

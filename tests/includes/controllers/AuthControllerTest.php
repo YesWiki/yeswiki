@@ -153,7 +153,7 @@ class AuthControllerTest extends YesWikiTestCase
         ['user' => $userA] = $this->createRandomUser($wiki);
         ['user' => $userB] = $this->createRandomUser($wiki);
 
-        $nonCliWiki = new class extends Wiki {
+        $nonCliWiki = new class() extends Wiki {
             public function __construct()
             {
                 // deliberately skip the real bootstrap: this stand-in is only

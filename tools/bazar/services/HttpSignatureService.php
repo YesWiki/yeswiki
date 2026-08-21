@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Exception;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -27,16 +26,18 @@ class HttpSignatureService
         openssl_pkey_export($result, $privKey);
 
         $pubKey = openssl_pkey_get_details($result);
-        $pubKey = $pubKey["key"];
+        $pubKey = $pubKey['key'];
 
         return [$privKey, $pubKey];
     }
 
-    public function getDigest($message) {
+    public function getDigest($message)
+    {
         return 'SHA-256=' . base64_encode(hash('sha256', $message, true));
     }
-    
-    public function generateSignature($activity, $url, $form) {
+
+    public function generateSignature($activity, $url, $form)
+    {
         $privateKey = $form['bn_activitypub_private_key'];
 
         $message = json_encode($activity, JSON_UNESCAPED_SLASHES);
@@ -56,7 +57,7 @@ class HttpSignatureService
         ];
 
         $sigSrc = join("\n", array_map(
-            fn($k, $v) => "{$k}: {$v}",
+            fn ($k, $v) => "{$k}: {$v}",
             array_keys($sigParts),
             array_values($sigParts)
         ));
@@ -75,13 +76,12 @@ class HttpSignatureService
             'Content-Type' => $contentType,
             'Digest' => $digest,
             'Signature' => join(',', array_map(
-                    fn($k, $v) => "{$k}=\"{$v}\"",
-                    array_keys($sigHeaderParts),
-                    array_values($sigHeaderParts)
-                )),
+                fn ($k, $v) => "{$k}=\"{$v}\"",
+                array_keys($sigHeaderParts),
+                array_values($sigHeaderParts)
+            )),
         ];
     }
-
 
     /**
      * Check the request really was signed by the key it names, and say whose key it was.
@@ -91,42 +91,43 @@ class HttpSignatureService
      *
      * @return string the actor the verified key belongs to
      *
-     * @throws Exception when anything about the signature does not hold
+     * @throws \Exception when anything about the signature does not hold
      */
-    public function verifySignature(Request $request): string {
+    public function verifySignature(Request $request): string
+    {
         if (!$request->headers->has('Signature')) {
-            throw new Exception('No signature');
+            throw new \Exception('No signature');
         }
 
         $sigConf = parse_ini_string(
-            strtr($request->headers->get('Signature'), ["," => "\n"])
+            strtr($request->headers->get('Signature'), [',' => "\n"])
         );
 
         if (!isset($sigConf['keyId'],$sigConf['algorithm'],$sigConf['headers'],$sigConf['signature'])) {
-            throw new Exception('Malformed signature');
+            throw new \Exception('Malformed signature');
         }
 
         $resolve = $this->ssrfUrlValidator->resolveSafe($sigConf['keyId']);
 
         $response = $this->httpClient->request('GET', $sigConf['keyId'], [
-            'headers' => [ 'Accept' => 'application/ld+json'],
+            'headers' => ['Accept' => 'application/ld+json'],
             'max_redirects' => 0,
             'resolve' => $resolve,
         ]);
 
         $actor = json_decode($response->getContent(), true);
-        
+
         if (!isset($actor['publicKey'],$actor['publicKey']['id'],$actor['publicKey']['publicKeyPem'])) {
-            throw new Exception('Missing public key');
+            throw new \Exception('Missing public key');
         }
 
         if ($sigConf['keyId'] !== $actor['publicKey']['id']) {
-            throw new Exception('Signature keyId does not match actor public key id');
+            throw new \Exception('Signature keyId does not match actor public key id');
         }
 
         $actorPublicKey = openssl_get_publickey($actor['publicKey']['publicKeyPem']);
         if (!$actorPublicKey) {
-            throw new Exception('Malformed public key');
+            throw new \Exception('Malformed public key');
         }
 
         // We cannot use getRequestUri() because it returns the real URI, eg. /?api/forms/2/actor
@@ -138,18 +139,18 @@ class HttpSignatureService
                 $sigParts[] = sprintf('%s: %s %s', $headerKey, strtolower($request->getMethod()), $requestUri);
             } else {
                 if (!$request->headers->has($headerKey)) {
-                    throw new Exception('Missing signature part: ' . $headerKey);
+                    throw new \Exception('Missing signature part: ' . $headerKey);
                 }
                 $sigParts[] = sprintf('%s: %s', $headerKey, $request->headers->get($headerKey));
             }
         }
 
         if (openssl_verify(join("\n", $sigParts), base64_decode($sigConf['signature']), $actorPublicKey, strtoupper($sigConf['algorithm'])) !== 1) {
-            throw new Exception('Signature verification failed');
+            throw new \Exception('Signature verification failed');
         }
 
         if ($request->headers->get('Digest') !== $this->getDigest($request->getContent())) {
-            throw new Exception('Digest mismatch');
+            throw new \Exception('Digest mismatch');
         }
 
         return $this->keyOwner($sigConf['keyId'], $actor);
@@ -163,24 +164,26 @@ class HttpSignatureService
      *
      * @param array<string,mixed> $actor
      *
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function keyOwner(string $keyId, array $actor): string {
+    protected function keyOwner(string $keyId, array $actor): string
+    {
         $owner = $actor['publicKey']['owner'] ?? ($actor['id'] ?? null);
         if (empty($owner) || !is_string($owner)) {
-            throw new Exception('The signing key names no owner');
+            throw new \Exception('The signing key names no owner');
         }
         if (isset($actor['id'], $actor['publicKey']['owner']) && $actor['id'] !== $actor['publicKey']['owner']) {
-            throw new Exception('The actor and its key disagree on who owns the key');
+            throw new \Exception('The actor and its key disagree on who owns the key');
         }
         if (!$this->sameHost($keyId, $owner)) {
-            throw new Exception('The signing key and the actor it claims are not on the same host');
+            throw new \Exception('The signing key and the actor it claims are not on the same host');
         }
 
         return $owner;
     }
 
-    public function sameHost(string $first, string $second): bool {
+    public function sameHost(string $first, string $second): bool
+    {
         $firstParts = parse_url($first);
         $secondParts = parse_url($second);
         if (empty($firstParts['host']) || empty($secondParts['host'])) {

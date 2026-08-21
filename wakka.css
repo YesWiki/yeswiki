@@ -10,8 +10,8 @@ li,
 input,
 select,
 textarea {
-  font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica,
-    sans-serif;
+  font-family:
+    'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif;
   font-size: 13px;
   line-height: 1.3;
 }

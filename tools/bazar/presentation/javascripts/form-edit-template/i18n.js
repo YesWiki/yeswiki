@@ -26,5 +26,5 @@ export default {
   th: 'th-TH',
   uk: 'uk-UA',
   vi: 'vi-VN',
-  zh: 'zh-CN'
+  zh: 'zh-CN',
 }

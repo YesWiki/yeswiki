@@ -29,6 +29,7 @@ class BazarImportAction extends YesWikiAction
         $vServer = $request->get('server') ?? $arg['server'] ?? null;
 
         $post = $request->request;
+
         return [
             'id' => $vIDs,
             'server' => $vServer,

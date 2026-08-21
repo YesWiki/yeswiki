@@ -333,7 +333,7 @@ class SearchManager
      * Build the SQL fields conditions for queries.
      *
      * @param $pQueries : <array> of <query>
-     *			   <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     *                  <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
      *
      * @return = <string> fields conditions for queries
      */
@@ -435,10 +435,10 @@ class SearchManager
                             else {
                                 if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
-                                        if (!is_numeric(trim($vValue)) || !is_finite((float) trim($vValue))) {
+                                        if (!is_numeric(trim($vValue)) || !is_finite((float)trim($vValue))) {
                                             $vValueConditions[] = 'FALSE';
                                         } else {
-                                            $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float) trim($vValue);
+                                            $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . (float)trim($vValue);
                                         }
                                     } else {
                                         $vValueConditions[] = '(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
@@ -567,9 +567,9 @@ class SearchManager
 
                         if (strval($vID) == strval($vIntValue)) {
                             return $vIntValue;
-                        } else {
-                            return null;
                         }
+
+                        return null;
                     }
 
                     return null;
@@ -1139,14 +1139,14 @@ class SearchManager
      * Parse a query string.
      *
      * @param $pQuery
-     *		<string> : the query string
-     *		<array> : the already parsed array
+     *                <string> : the query string
+     *                <array> : the already parsed array
      *
      * @return <array> of [
-                            "name" => <string>,
-                            "operator" => <string>,
-                            "values" => [ <string> ... ]
-                        ];
+     * "name" => <string>,
+     * "operator" => <string>,
+     * "values" => [ <string> ... ]
+     * ];
      */
     public function parseQuery($pQuery)
     {
@@ -1320,13 +1320,13 @@ class SearchManager
      * Transform a query to a string.
      *
      * @param $pQuery array|string|null the query in different format :
-     * 		new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
-     *			OR
-     *   	old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
-     *			OR
-     *		new string format : bf_field == toto1 | bf_field2 <= tata
-     *			OR
-     *		old string format bf_field=toto1|bf_field2!=tata
+     *                new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
+     *                OR
+     *                old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
+     *                OR
+     *                new string format : bf_field == toto1 | bf_field2 <= tata
+     *                OR
+     *                old string format bf_field=toto1|bf_field2!=tata
      *
      * @return the string representing the query
      */
@@ -1349,11 +1349,10 @@ class SearchManager
                             // format [ [ "name" => "bf_field", "operator" => "==" , values => "toto, tata" ] ]
 
                             return $pQuery[$pKey]['name'] . $pQuery[$pKey]['operator'] . (is_array($pQuery[$pKey]['values']) ? implode(',', $pQuery[$pKey]['values']) : $pQuery[$pKey]['values']);
-                        } else {
-                            // format [ "bf_field" => "toto", "bf_field2!" => "tata" ]
-
-                            return $pKey . '=' . $pQuery[$pKey];
                         }
+                        // format [ "bf_field" => "toto", "bf_field2!" => "tata" ]
+
+                        return $pKey . '=' . $pQuery[$pKey];
                     },
                     array_keys($pQuery),
                 ),
@@ -1395,10 +1394,10 @@ class SearchManager
      * Aggregate keywords.
      *
      * @param $pArguments : list of <argument>
-     *		<argument> as
-     *     		<string> keywords specification
-     *				OR
-     *			null
+     *                    <argument> as
+     *                    <string> keywords specification
+     *                    OR
+     *                    null
      *
      * @return <string> aggregated keywords
      */
@@ -1428,19 +1427,19 @@ class SearchManager
 
         if (isset($vResult)) {
             return $vResult;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
      * Aggregate queries.
      *
      * @param $pArguments : list of <argument>
-     *		<argument> as
-     *			<array> argument array containing "query"
-     *			<string> a query string
-     *			null
+     *                    <argument> as
+     *                    <array> argument array containing "query"
+     *                    <string> a query string
+     *                    null
      *
      * @return <string> aggregated queries
      */
@@ -1476,9 +1475,9 @@ class SearchManager
 
         if (isset($vResult)) {
             return $vResult;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
@@ -1548,13 +1547,13 @@ class SearchManager
      */
     private function isRegExp($pString) // return true is $pString is a regular expression
     {
-        if ((mb_substr($pString, 0, 1) == '/' && mb_substr($pString, -1, 1) == '/')) {
+        if (mb_substr($pString, 0, 1) == '/' && mb_substr($pString, -1, 1) == '/') {
             return 2;
         } elseif (preg_match('/\.\*/', $pString) == 1) {
             return 1;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -1622,12 +1621,13 @@ class SearchManager
      *
      * @param pStructure <array> : the structure as
      * 	[
-         ]
+     * ]
+     *
      * @return <string> : the hash
      */
     private function buildFieldDescriptorHash($pStructure)
     {
-        return $pStructure['_mode_'] ?? '#' . '|' . $pStructure['_type_'] ?? '#';
+        return $pStructure['_mode_'] ?? '#|' . $pStructure['_type_'] ?? '#';
     }
 
     /**

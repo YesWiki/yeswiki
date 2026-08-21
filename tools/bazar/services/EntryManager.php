@@ -287,20 +287,20 @@ class EntryManager
     {
         if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
             if (!isset($data['antispam']) || !$data['antispam'] == 1) {
-                throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+                throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
             }
         }
 
         if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
             if (empty($data['bf_titre'] ?? null)) {
-                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
 
         if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE) {
             // form metadata
             if (!isset($data['id_typeannonce'])) {
-                throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
+                throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
             }
         }
     }
@@ -416,8 +416,8 @@ class EntryManager
         }
 
         if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
-             // Notify followers about the new object
-             $this->activityPubService->notifyFollowers($form, $data, 'Create');
+            // Notify followers about the new object
+            $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }
 
         return $data;
@@ -499,8 +499,8 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the updated object (skip if external)
-             $this->activityPubService->notifyFollowers($form, $data, 'Update');
+            // Notify followers about the updated object (skip if external)
+            $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
         return $data;
@@ -627,8 +627,8 @@ class EntryManager
             'Suppression de la page ->""' . $tag . '""'
         );
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the deleted object
-             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
+            // Notify followers about the deleted object
+            $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }
 
         unset($this->cachedEntriestags[$tag]);
@@ -668,16 +668,16 @@ class EntryManager
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
-            throw new Exception('No form with id: ' . $data['id_typeannonce']);
+            throw new \Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
         // We first need to ensure default values for uneditable fields are set
         // so we can use it later to build the automatic title if necessary
 
         foreach ($form['prepared'] as $bazarField) {
-            if ($bazarField instanceof BazarField &&
-                !($bazarField instanceof TitleField) &&
-                !($bazarField->requireIDFiche()) // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
+            if ($bazarField instanceof BazarField
+                && !($bazarField instanceof TitleField)
+                && !$bazarField->requireIDFiche() // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
@@ -709,16 +709,16 @@ class EntryManager
 
         if (!isset($data['id_fiche'])) {
             if (empty($data['bf_titre'] ?? null)) {
-                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
+                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
             }
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
+                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
             }
-            // TODO see if we can remove this
-            //$_POST['id_fiche'] = $data['id_fiche'];
+        // TODO see if we can remove this
+        // $_POST['id_fiche'] = $data['id_fiche'];
         } elseif (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
+            throw new \Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
         // We can now handle fields like ImageField and File Field that require id_fiche in order to format their values
@@ -755,12 +755,12 @@ class EntryManager
 
         // Let's ensure $data['id_typeannonce'] is not empty
         if (empty($data['id_typeannonce'])) {
-            throw new Exception('$data[\'id_typeannonce\'] is empty !');
+            throw new \Exception('$data[\'id_typeannonce\'] is empty !');
         }
 
         // Let's ensure $data['id_fiche'] is not empty
         if (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is empty !');
+            throw new \Exception('$data[\'id_fiche\'] is empty !');
         }
 
         $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
@@ -797,7 +797,7 @@ class EntryManager
                 $vPropertyName = $vBazarField->getPropertyName();
 
                 if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
+                    throw new \Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
                 }
             }
         }
@@ -905,25 +905,22 @@ class EntryManager
         // check if first and second separators are at least somewhere
         if (strpos($param, $secondseparator) === false) {
             throw new ParsingMultipleException("Not able to parse multiple parameters because '$secondseparator' is not included in furnished param.");
-        } else {
-            $params = explode($firstseparator, $param);
-            $params = array_map('trim', $params);
-            if (count($params) == 0) {
-                throw new ParsingMultipleException('There is no parameter to parse !');
+        }
+        $params = explode($firstseparator, $param);
+        $params = array_map('trim', $params);
+        if (count($params) == 0) {
+            throw new ParsingMultipleException('There is no parameter to parse !');
+        }
+        foreach ($params as $value) {
+            if (empty($value)) {
+                throw new ParsingMultipleException('One parameter should not be empty !');
+            }
+            $tab = explode($secondseparator, $value);
+            $tab = array_map('trim', $tab);
+            if (count($tab) > 1) {
+                $tabparam[$tab[0]] = $tab[1];
             } else {
-                foreach ($params as $value) {
-                    if (empty($value)) {
-                        throw new ParsingMultipleException('One parameter should not be empty !');
-                    } else {
-                        $tab = explode($secondseparator, $value);
-                        $tab = array_map('trim', $tab);
-                        if (count($tab) > 1) {
-                            $tabparam[$tab[0]] = $tab[1];
-                        } else {
-                            throw new ParsingMultipleException("One parameter does not contain '$secondseparator'!");
-                        }
-                    }
-                }
+                throw new ParsingMultipleException("One parameter does not contain '$secondseparator'!");
             }
         }
 
@@ -975,9 +972,9 @@ class EntryManager
         }
         if (!empty($formsIds)) {
             return $formManager->getMany($formsIds);
-        } else {
-            return $formManager->getAll();
         }
+
+        return $formManager->getAll();
     }
 
     /**

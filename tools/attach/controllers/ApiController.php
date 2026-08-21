@@ -2,8 +2,6 @@
 
 namespace YesWiki\Attach\Controller;
 
-use Attach;
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
@@ -39,7 +37,7 @@ class ApiController extends YesWikiController
             // process new file
             try {
                 $cachefilename = $this->getCacheFileName($filename, $width, $height, $mode);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return new ApiResponse([
                     'error' => $e->getMessage(),
                     'cachefilename' => '',
@@ -65,7 +63,7 @@ class ApiController extends YesWikiController
             return new ApiResponse([
                 'error' => $errorMessage,
             ], Response::HTTP_UNAUTHORIZED);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return new ApiResponse([
                 'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
@@ -75,24 +73,24 @@ class ApiController extends YesWikiController
     private function checkParamsgetCacheUrlImageViaPost(string $filename, string &$width, string &$height, string $mode)
     {
         if (strval($width) != strval(intval($width))) {
-            throw new Exception('width should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception('width should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $width = intval($width);
         if (empty($width)) {
-            throw new Exception('width should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception('width should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (strval($height) != strval(intval($height))) {
-            throw new Exception('height should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception('height should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $height = intval($height);
         if (empty($height)) {
-            throw new Exception('height should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception('height should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (!in_array($mode, ['fit', 'crop'], true)) {
-            throw new Exception("mode should be in ['fit','mode'] for " . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception("mode should be in ['fit','mode'] for " . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (empty(trim($filename))) {
-            throw new Exception('filename should not be empty for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new \Exception('filename should not be empty for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
     }
 
@@ -125,18 +123,17 @@ class ApiController extends YesWikiController
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
-        $attach = new attach($this->wiki);
+        $attach = new \Attach($this->wiki);
         $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);
         if (file_exists($newFileName)) {
             return $newFileName;
-        } else {
-            $returnedFileName = $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
-            if ($returnedFileName != $newFileName) {
-                // TODO see what to do with error
-            }
-
-            return $newFileName;
         }
+        $returnedFileName = $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
+        if ($returnedFileName != $newFileName) {
+            // TODO see what to do with error
+        }
+
+        return $newFileName;
     }
 
     /**

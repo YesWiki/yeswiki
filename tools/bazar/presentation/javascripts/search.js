@@ -23,8 +23,11 @@ export function parseCondition(pValue) {
   // Transformer la liste en tableau avec valeurs uniques
   const vUniqueValues = Array.from(
     new Set(
-		    rawValues.split(',').map((v) => v.trim()).filter((v) => v !== '')
-    )
+      rawValues
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v) => v !== ''),
+    ),
   )
 
   // Retourner la structure
@@ -32,7 +35,7 @@ export function parseCondition(pValue) {
   const vResult = {
     name: vName,
     operator: vOperator,
-    values: vUniqueValues
+    values: vUniqueValues,
   }
 
   return vResult
@@ -66,35 +69,35 @@ export function parseKeywords(pKeywords) {
 
   // Vérification de validité
   if (
-	    typeof pKeywords !== 'string'
-	    || pKeywords.trim() === ''
-	    || pKeywords === _t('BAZ_MOT_CLE')
+    typeof pKeywords !== 'string' ||
+    pKeywords.trim() === '' ||
+    pKeywords === _t('BAZ_MOT_CLE')
   ) {
-	    return results
+    return results
   }
 
   // Séparation des clauses AND par "|"
   const andClauses = pKeywords.split('|').map((clause) => clause.trim())
 
   for (const andClause of andClauses) {
-	    // Extraction des tokens via RegEx
-	    const regex = /(-)?("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\S+)/gu
-	    let match
-	    const ors = []
+    // Extraction des tokens via RegEx
+    const regex = /(-)?("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\S+)/gu
+    let match
+    const ors = []
 
-	    while ((match = regex.exec(andClause)) !== null) {
-	        const isExcluded = match[1] === '-'
-	        const rawToken = match[2]
-	        const cleanedToken = rawToken.replace(/^["']|["']$/g, '') // Supprime les guillemets
+    while ((match = regex.exec(andClause)) !== null) {
+      const isExcluded = match[1] === '-'
+      const rawToken = match[2]
+      const cleanedToken = rawToken.replace(/^["']|["']$/g, '') // Supprime les guillemets
 
-	        if (isExcluded) {
-	            results.excludeds.push(cleanedToken)
-	        } else {
-	            ors.push(cleanedToken)
-	        }
-	    }
+      if (isExcluded) {
+        results.excludeds.push(cleanedToken)
+      } else {
+        ors.push(cleanedToken)
+      }
+    }
 
-	    results.CNF.push(ors)
+    results.CNF.push(ors)
   }
 
   return results
@@ -109,11 +112,17 @@ export function parseKeywords(pKeywords) {
  */
 
 export function isRegExp(str) {
-  return (typeof str === 'string' && (str.includes('.*') || (str.startsWith('/') && str.endsWith('/'))))
+  return (
+    typeof str === 'string' &&
+    (str.includes('.*') || (str.startsWith('/') && str.endsWith('/')))
+  )
 }
 
 export function removeDiacritics(str) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
 }
 
 /**
@@ -134,12 +143,12 @@ export function toLowerCaseWithoutAccent(str) {
 
   // 2. Remplacer les ligatures
   const replacements = {
-	    œ: 'oe',
-	    æ: 'ae',
-	    ß: 'ss',
-	    ø: 'o',
-	    ð: 'd',
-	    þ: 'th'
+    œ: 'oe',
+    æ: 'ae',
+    ß: 'ss',
+    ø: 'o',
+    ð: 'd',
+    þ: 'th',
   }
 
   str = str.replace(/œ|æ|ß|ø|ð|þ/g, (match) => replacements[match])
@@ -167,22 +176,22 @@ export function extractRegExp(pString, accentInsensitive = true) {
   let vString
 
   if (pString.startsWith('/') && pString.endsWith('/')) {
-	    vString = pString.slice(1, -1)
+    vString = pString.slice(1, -1)
   } else {
-	    vString = pString
+    vString = pString
   }
 
   if (accentInsensitive) {
-	    vString = toLowerCaseWithoutAccent(vString)
+    vString = toLowerCaseWithoutAccent(vString)
 
-	    vString = vString.replace(/a/g, '(a|à|á|â|ã|ä|A|À|Á|Â|Ã|Ä)')
-	    vString = vString.replace(/c/g, '(c|ç|C|Ç)')
-	    vString = vString.replace(/e/g, '(e|è|é|ê|ë|E|È|É|Ê|Ë)')
-	    vString = vString.replace(/i/g, '(i|ì|í|î|ï|I|Ì|Í|Î|Ï)')
-	    vString = vString.replace(/n/g, '(n|ñ|N|Ñ)')
-	    vString = vString.replace(/o/g, '(o|ò|ó|ô|õ|ö|O|Ò|Ó|Ô|Õ|Ö)')
-	    vString = vString.replace(/u/g, '(u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)')
-	    vString = vString.replace(/y/g, '(y|ý|ÿ|Y|Ý)')
+    vString = vString.replace(/a/g, '(a|à|á|â|ã|ä|A|À|Á|Â|Ã|Ä)')
+    vString = vString.replace(/c/g, '(c|ç|C|Ç)')
+    vString = vString.replace(/e/g, '(e|è|é|ê|ë|E|È|É|Ê|Ë)')
+    vString = vString.replace(/i/g, '(i|ì|í|î|ï|I|Ì|Í|Î|Ï)')
+    vString = vString.replace(/n/g, '(n|ñ|N|Ñ)')
+    vString = vString.replace(/o/g, '(o|ò|ó|ô|õ|ö|O|Ò|Ó|Ô|Õ|Ö)')
+    vString = vString.replace(/u/g, '(u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)')
+    vString = vString.replace(/y/g, '(y|ý|ÿ|Y|Ý)')
   }
 
   return vString

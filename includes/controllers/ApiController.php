@@ -488,9 +488,9 @@ class ApiController extends YesWikiController
             $errors = $commentService->delete($tag);
 
             return new ApiResponse(['success' => _t('COMMENT_REMOVED')] + $errors, 200);
-        } else {
-            return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
         }
+
+        return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
     }
 
     /**
@@ -743,24 +743,24 @@ class ApiController extends YesWikiController
                         ],
                         Response::HTTP_OK
                     );
-                } else {
-                    return new ApiResponse(
-                        ['error' => 'reaction not deleted'],
-                        Response::HTTP_INTERNAL_SERVER_ERROR
-                    );
                 }
-            } else {
+
                 return new ApiResponse(
-                    ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent supprimer les réactions.'],
-                    Response::HTTP_UNAUTHORIZED
+                    ['error' => 'reaction not deleted'],
+                    Response::HTTP_INTERNAL_SERVER_ERROR
                 );
             }
-        } else {
+
             return new ApiResponse(
-                ['error' => 'Vous devez être connecté pour supprimer les réactions.'],
+                ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent supprimer les réactions.'],
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        return new ApiResponse(
+            ['error' => 'Vous devez être connecté pour supprimer les réactions.'],
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -796,60 +796,59 @@ class ApiController extends YesWikiController
                                         ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
                                         Response::HTTP_UNAUTHORIZED
                                     );
-                                } else {
-                                    $reactionValues = [
-                                        'userName' => $user['name'],
-                                        'reactionId' => $reactionid,
-                                        'id' => $reactionIdValue,
-                                        'date' => date('Y-m-d H:i:s'),
-                                    ];
-                                    $this->getService(ReactionManager::class)->addUserReaction(
-                                        $pagetag,
-                                        $reactionValues
-                                    );
-
-                                    // hurra, the reaction is saved!
-                                    return new ApiResponse(
-                                        $reactionValues,
-                                        Response::HTTP_OK
-                                    );
                                 }
-                            } else {
+                                $reactionValues = [
+                                    'userName' => $user['name'],
+                                    'reactionId' => $reactionid,
+                                    'id' => $reactionIdValue,
+                                    'date' => date('Y-m-d H:i:s'),
+                                ];
+                                $this->getService(ReactionManager::class)->addUserReaction(
+                                    $pagetag,
+                                    $reactionValues
+                                );
+
+                                // hurra, the reaction is saved!
                                 return new ApiResponse(
-                                    ['error' => 'Il faut renseigner une valeur de reaction (id).'],
-                                    Response::HTTP_BAD_REQUEST
+                                    $reactionValues,
+                                    Response::HTTP_OK
                                 );
                             }
+
+                            return new ApiResponse(
+                                ['error' => 'Il faut renseigner une valeur de reaction (id).'],
+                                Response::HTTP_BAD_REQUEST
+                            );
                         }
 
                         return new ApiResponse(
                             ['error' => "'" . strval($reactionid) . "' n'est pas une réaction déclarée sur la page '" . strval($pagetag) . "'"],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
-                    } else {
-                        return new ApiResponse(
-                            ['error' => 'Il faut renseigner une page wiki contenant la réaction.'],
-                            Response::HTTP_BAD_REQUEST
-                        );
                     }
-                } else {
+
                     return new ApiResponse(
-                        ['error' => 'Il faut renseigner un id de la réaction.'],
+                        ['error' => 'Il faut renseigner une page wiki contenant la réaction.'],
                         Response::HTTP_BAD_REQUEST
                     );
                 }
-            } else {
+
                 return new ApiResponse(
-                    ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent réagir.'],
-                    Response::HTTP_UNAUTHORIZED
+                    ['error' => 'Il faut renseigner un id de la réaction.'],
+                    Response::HTTP_BAD_REQUEST
                 );
             }
-        } else {
+
             return new ApiResponse(
-                json_encode(['error' => 'Vous devez être connecté pour réagir.']),
+                ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent réagir.'],
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        return new ApiResponse(
+            json_encode(['error' => 'Vous devez être connecté pour réagir.']),
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -1015,15 +1014,15 @@ class ApiController extends YesWikiController
                 $triples,
                 Response::HTTP_OK
             );
-        } else {
-            return new ApiResponse(
-                [
-                    'triples' => $triples,
-                    'notDeletedTriples' => $notDeletedTriples,
-                ],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
         }
+
+        return new ApiResponse(
+            [
+                'triples' => $triples,
+                'notDeletedTriples' => $notDeletedTriples,
+            ],
+            Response::HTTP_INTERNAL_SERVER_ERROR
+        );
     }
 
     /**
@@ -1057,7 +1056,7 @@ class ApiController extends YesWikiController
                 return false;
             }
             foreach ($filters as $key => $expected) {
-                if (!isset($value[$key]) || !is_scalar($value[$key]) || (string) $value[$key] !== (string) $expected) {
+                if (!isset($value[$key]) || !is_scalar($value[$key]) || (string)$value[$key] !== (string)$expected) {
                     return false;
                 }
             }
@@ -1119,6 +1118,7 @@ class ApiController extends YesWikiController
     public function getArchiveStatus($uid)
     {
         $forceStarted = $this->getRequest()->query->get('forceStarted');
+
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
             !empty($forceStarted) && in_array($forceStarted, [1, true, '1', 'true'], true)

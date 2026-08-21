@@ -2,11 +2,9 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Exception;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\EntryManager;
+use Symfony\Component\HttpClient\HttpClient;
 use YesWiki\Core\Service\TripleStore;
 
 class ActivityPubService
@@ -39,46 +37,52 @@ class ActivityPubService
     {
         return isset($form['bn_activitypub_enable']) && $form['bn_activitypub_enable'] === '1';
     }
-    
-    public function getFormActorUri($form) {
+
+    public function getFormActorUri($form)
+    {
         $parsed = parse_url($this->params->get('base_url'));
-        return $parsed['scheme'] . '://' . $parsed['host'] . "/actors/" . $form['bn_id_nature'];
+
+        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'];
     }
 
-    public function getFormCollectionUri($form, $collectionType) {
+    public function getFormCollectionUri($form, $collectionType)
+    {
         $parsed = parse_url($this->params->get('base_url'));
-        return $parsed['scheme'] . '://' . $parsed['host'] . "/actors/" . $form['bn_id_nature'] . "/" . $collectionType;
+
+        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'] . '/' . $collectionType;
     }
 
-    public function getActor($form) {
+    public function getActor($form)
+    {
         $actorUrl = $this->getFormActorUri($form);
 
         $actor = [
-            "@context" => "https://www.w3.org/ns/activitystreams",
-            "id" => $actorUrl ,
-            "type" => "Application",
-            "name" => $form['bn_label_nature'],
-            "preferredUsername" => $form['bn_activitypub_username'],
-            "inbox" => $actorUrl . "/inbox",
-            "outbox" => $actorUrl . "/outbox",
-            "followers" => $actorUrl . "/followers",
-            "following" => $actorUrl . "/following",
-            "publicKey" => [
-                "id" => $actorUrl . "#main-key",
-                "owner" => $actorUrl,
-                "publicKeyPem" => $form['bn_activitypub_public_key']
-            ]
+            '@context' => 'https://www.w3.org/ns/activitystreams',
+            'id' => $actorUrl,
+            'type' => 'Application',
+            'name' => $form['bn_label_nature'],
+            'preferredUsername' => $form['bn_activitypub_username'],
+            'inbox' => $actorUrl . '/inbox',
+            'outbox' => $actorUrl . '/outbox',
+            'followers' => $actorUrl . '/followers',
+            'following' => $actorUrl . '/following',
+            'publicKey' => [
+                'id' => $actorUrl . '#main-key',
+                'owner' => $actorUrl,
+                'publicKeyPem' => $form['bn_activitypub_public_key'],
+            ],
         ];
 
         return $actor;
     }
 
-    public function getActorInbox(string $actorUri) : string {
+    public function getActorInbox(string $actorUri): string
+    {
         $resolve = $this->ssrfUrlValidator->resolveSafe($actorUri);
 
         $response = $this->httpClient->request('GET', $actorUri, [
             'headers' => [
-                'Accept' => 'application/ld+json'
+                'Accept' => 'application/ld+json',
             ],
             'max_redirects' => 0,
             'resolve' => $resolve,
@@ -89,7 +93,8 @@ class ActivityPubService
         return $actor['inbox'];
     }
 
-    protected function getRecipients($form, $activity) {
+    protected function getRecipients($form, $activity)
+    {
         if (\is_array($activity['to'])) {
             $recipients = $activity['to'];
         } else {
@@ -100,7 +105,7 @@ class ActivityPubService
 
         foreach ($recipients as $recipient) {
             if ($recipient === 'https://www.w3.org/ns/activitystreams#Public') {
-              // Ignore
+                // Ignore
             } elseif ($recipient === $this->getFormCollectionUri($form, 'followers')) {
                 $newRecipients = array_merge($newRecipients, $this->getFollowers($form));
             } else {
@@ -111,8 +116,9 @@ class ActivityPubService
         return $newRecipients;
     }
 
-    public function postActivity($activity, $form) {
-        $activity['@context'] = "https://www.w3.org/ns/activitystreams";
+    public function postActivity($activity, $form)
+    {
+        $activity['@context'] = 'https://www.w3.org/ns/activitystreams';
         $activity['actor'] = $this->getFormActorUri($form);
         $activity['id'] = $activity['actor'] . '#' . strtolower($activity['type']); // Transient URI, allowed by ActivityPub specs
 
@@ -135,9 +141,8 @@ class ActivityPubService
             $statusCode = $response->getStatusCode();
 
             if ($statusCode < 200 || $statusCode >= 300) {
-                throw new Exception("Failed to send activity to $inboxUri (HTTP $statusCode): $body");
+                throw new \Exception("Failed to send activity to $inboxUri (HTTP $statusCode): $body");
             }
-            
         }
     }
 
@@ -146,60 +151,57 @@ class ActivityPubService
      *
      * @param string $verifiedActor whom the request was signed by
      *
-     * @throws Exception when the activity claims to come from someone else, or reaches for an
-     *                   entry that is not the signer's to touch
+     * @throws \Exception when the activity claims to come from someone else, or reaches for an
+     *                    entry that is not the signer's to touch
      */
-    public function processActivity($activity, $form, string $verifiedActor) {
+    public function processActivity($activity, $form, string $verifiedActor)
+    {
         if (!is_array($activity) || empty($activity['type'])) {
-            throw new Exception('Malformed activity');
+            throw new \Exception('Malformed activity');
         }
         if (($activity['actor'] ?? null) !== $verifiedActor) {
-            throw new Exception('The activity claims an actor the request was not signed for');
+            throw new \Exception('The activity claims an actor the request was not signed for');
         }
 
-        switch($activity['type']) {
-            case 'Accept': {
+        switch ($activity['type']) {
+            case 'Accept':
                 if ($activity['object']['type'] === 'Follow') {
                     $this->addFollowing($form, $activity['actor']);
                 }
                 break;
-            }
 
-            case 'Follow': {
+            case 'Follow':
                 $this->addFollower($form, $activity['actor']);
 
                 // Send back an Accept activity
                 $this->postActivity([
-                    "type" => "Accept",
-                    "object" => $activity,
-                    "to" => $activity['actor'],
+                    'type' => 'Accept',
+                    'object' => $activity,
+                    'to' => $activity['actor'],
                 ], $form);
 
                 break;
-            }
 
-            case 'Undo': {
+            case 'Undo':
                 if ($activity['object']['type'] === 'Follow') {
                     $this->removeFollower($form, $activity['actor']);
                 }
 
                 break;
-            }
-            
-            case 'Create': {
+
+            case 'Create':
                 $object = $activity['object'];
                 $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                 $entry['read-only'] = 1; // Prevent modification from the local interface, as the source of truth is the remote actor
                 if (!$this->httpSignatureService->sameHost($verifiedActor, $object['id'] ?? '')) {
-                    throw new Exception('An actor can only bring objects from its own host');
+                    throw new \Exception('An actor can only bring objects from its own host');
                 }
                 $entryManager = $this->container->get(EntryManager::class);
                 $created = $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
                 $this->rememberOwner($created['id_fiche'] ?? null, $verifiedActor);
                 break;
-            }
 
-            case 'Update': {
+            case 'Update':
                 $object = $activity['object'];
                 if ($object['id']) {
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
@@ -212,9 +214,8 @@ class ActivityPubService
                     }
                 }
                 break;
-            }
 
-            case 'Delete': {
+            case 'Delete':
                 $objectId = \is_array($activity['object']) ? ($activity['object']['id'] ?? null) : $activity['object'];
                 if ($objectId) {
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
@@ -226,7 +227,6 @@ class ActivityPubService
                     }
                 }
                 break;
-            }
         }
     }
 
@@ -234,7 +234,8 @@ class ActivityPubService
      * Write down which actor a mirrored entry answers to, so a later Update or Delete can be
      * checked against it.
      */
-    protected function rememberOwner(?string $tag, ?string $actorUri): void {
+    protected function rememberOwner(?string $tag, ?string $actorUri): void
+    {
         if (empty($tag) || empty($actorUri)) {
             return;
         }
@@ -247,51 +248,59 @@ class ActivityPubService
      * Entries mirrored before the owner was recorded fall back to the host their source address
      * is on, which is enough to keep one server from reaching into another's entries.
      *
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function assertOwns(string $verifiedActor, string $tag, string $objectId): void {
+    protected function assertOwns(string $verifiedActor, string $tag, string $objectId): void
+    {
         $owner = $this->tripleStore->getOne($tag, self::REMOTE_ACTOR_URI, '', '');
         if (!empty($owner)) {
             if ($owner !== $verifiedActor) {
-                throw new Exception('This entry belongs to another actor');
+                throw new \Exception('This entry belongs to another actor');
             }
 
             return;
         }
         if (!$this->httpSignatureService->sameHost($verifiedActor, $objectId)) {
-            throw new Exception('This entry comes from another host');
+            throw new \Exception('This entry comes from another host');
         }
     }
 
-    public function getFollowers($form) {
+    public function getFollowers($form)
+    {
         $followers = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', null, '', '');
 
-        return array_map(fn($f) => $f['value'], $followers);
+        return array_map(fn ($f) => $f['value'], $followers);
     }
 
-    public function getFollowing($form) {
+    public function getFollowing($form)
+    {
         $following = $this->tripleStore->getMatching($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', null, '', '');
 
-        return array_map(fn($f) => $f['value'], $following);
+        return array_map(fn ($f) => $f['value'], $following);
     }
 
-    public function addFollowing($form, $actorUri) {
+    public function addFollowing($form, $actorUri)
+    {
         $this->tripleStore->create($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function addFollower($form, $actorUri) {
+    public function addFollower($form, $actorUri)
+    {
         $this->tripleStore->create($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function removeFollowing($form, $actorUri) {
+    public function removeFollowing($form, $actorUri)
+    {
         $this->tripleStore->delete($this->getFormCollectionUri($form, 'following'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function removeFollower($form, $actorUri) {
+    public function removeFollower($form, $actorUri)
+    {
         $this->tripleStore->delete($this->getFormCollectionUri($form, 'followers'), self::$AS_PREFIX . 'items', $actorUri, '', '');
     }
 
-    public function notifyFollowers($form, $entry, $activityType) {
+    public function notifyFollowers($form, $entry, $activityType)
+    {
         $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
         unset($object['@context']);
 

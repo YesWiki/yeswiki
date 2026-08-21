@@ -1,31 +1,30 @@
 <?php
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Templates\Service\Utils;
 
 class PanelAction extends YesWikiAction
 {
     public function run()
     {
-       ob_start();
-       // Titre du panel
-       $title = $this->arguments['title'] ?? '';
+        ob_start();
+        // Titre du panel
+        $title = $this->arguments['title'] ?? '';
 
-       // classe css pour la couleur du panel ou autre
-       $class = $this->arguments['class'] ?? 'panel-default';
+        // classe css pour la couleur du panel ou autre
+        $class = $this->arguments['class'] ?? 'panel-default';
 
-       // collapsed: initial state is collapsed, and the panel is collapsible
-       // collapsible: initial state is displayed, and the panel is collapsible
-       // empty: initial state is displayed, and the panel is not collapsible
-       $type = $this->arguments['type'] ?? '';
-       $pagetag = $this->wiki->GetPageTag();
+        // collapsed: initial state is collapsed, and the panel is collapsible
+        // collapsible: initial state is displayed, and the panel is collapsible
+        // empty: initial state is displayed, and the panel is not collapsible
+        $type = $this->arguments['type'] ?? '';
+        $pagetag = $this->wiki->GetPageTag();
 
         if ($this->check_end_elem('panel')) {
             $headingID = uniqid('heading');
             $collapseID = uniqid('collapse');
 
             $collapsed = ($type == 'collapsed');
-            $collapsible = ($type == 'collapsible') ||$collapsed ;
+            $collapsible = ($type == 'collapsible') || $collapsed;
 
             if (isset($GLOBALS['check_' . $pagetag]['accordion_uniqueID'])) {
                 $accordionID = $GLOBALS['check_' . $pagetag]['accordion_uniqueID'];
@@ -37,7 +36,6 @@ class PanelAction extends YesWikiAction
                 $collapsible = true;
             } else {
                 $accordionID = '';
-
             }
 
             $headerTagName = $collapsible ? 'button' : 'div';
@@ -66,13 +64,14 @@ class PanelAction extends YesWikiAction
         } else {
             echo $this->generate_error_msg('panel');
         }
-       $panel = ob_get_contents();
-       ob_end_clean();
-       return $panel;
+        $panel = ob_get_contents();
+        ob_end_clean();
+
+        return $panel;
     }
 
-
-   public function end(): string {
-       return "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
-   }
+    public function end(): string
+    {
+        return "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
+    }
 }

@@ -6,7 +6,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),
     name: 'conditionschecking',
     attrs: { type: 'conditionschecking' },
-    icon: '<i class="fas fa-project-diagram"></i>'
+    icon: '<i class="fas fa-project-diagram"></i>',
   },
   // Define an entire group of fields to be added to the stage at a time.
   set: {
@@ -16,31 +16,29 @@ export default {
     fields: [
       {
         type: 'conditionschecking',
-        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL')
+        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),
       },
       {
         type: 'labelhtml',
         label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END'),
-        content_saisie: `</div><!-- ${_t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')}-->`
-      }
-    ]
+        content_saisie: `</div><!-- ${_t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')}-->`,
+      },
+    ],
   },
   attributes: {
     condition: {
       label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),
-      value: ''
+      value: '',
     },
     clean: {
       label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL'),
       options: {
         ' ': _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION'),
-        noclean: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION')
-      }
-    }
+        noclean: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION'),
+      },
+    },
   },
-  disabledAttributes: [
-    'required', 'value', 'name', 'label'
-  ],
+  disabledAttributes: ['required', 'value', 'name', 'label'],
   attributesMapping: {
     ...defaultMapping,
     ...{
@@ -48,16 +46,23 @@ export default {
       2: 'clean',
       5: '',
       8: '',
-      9: ''
-    }
+      9: '',
+    },
   },
   renderInput(data) {
     return {
       field: '',
       onRender() {
-        renderHelper.prependHint(data, _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' }))
-        renderHelper.defineLabelHintForGroup(data, 'noclean', _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT'))
-      }
+        renderHelper.prependHint(
+          data,
+          _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' }),
+        )
+        renderHelper.defineLabelHintForGroup(
+          data,
+          'noclean',
+          _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT'),
+        )
+      },
     }
-  }
+  },
 }

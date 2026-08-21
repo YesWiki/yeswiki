@@ -249,7 +249,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         foreach ($this->tripleStore->getMatching(null, self::KEY_VOCABULARY, null) as $triple) {
             $parts = explode(self::KEY_VALUE_SEPARATOR, $triple['value']);
-            $issuedAt = count($parts) === 2 ? (int) $parts[1] : 0;
+            $issuedAt = count($parts) === 2 ? (int)$parts[1] : 0;
             if (time() - $issuedAt > self::KEY_TTL) {
                 $this->tripleStore->delete($triple['resource'], self::KEY_VOCABULARY, $triple['value'], '', '');
             }
