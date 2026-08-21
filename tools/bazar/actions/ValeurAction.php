@@ -59,9 +59,9 @@ class ValeurAction extends YesWikiAction
             return htmlspecialchars(preg_replace('/(.*?)wiki=(.*?)/Ui', '$2', $urlparsed['query'] ?? ''));
         } elseif (!empty($image) && in_array($image, ['lien', '1'], true)) {
             // cas des images
-            $regexp = '/<a data-id="' . $champ . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
+            $regexp = '/<a data-id="' . preg_quote($champ, '/') . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
         } else {
-            $regexp = '/<div.*data-id="' . $champ . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
+            $regexp = '/<div.*data-id="' . preg_quote($champ, '/') . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
         }
 
         preg_match_all($regexp, $remotePage, $matches);
