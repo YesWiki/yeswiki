@@ -37,7 +37,7 @@ $(document).ready(() => {
     const i = $(this).attr('rel')
 
     // this next line closes all open infowindows before opening the selected one
-    for (x = 0; x < arrInfoWindows.length; x++) {
+    for (let x = 0; x < arrInfoWindows.length; x++) {
       arrInfoWindows[x].close()
     }
 
@@ -65,7 +65,7 @@ $(document).ready(() => {
   })
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
-  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (e) => false)
+  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (_e) => false)
 
   function emptyChildren(element) {
     if (typeof ConditionsChecking === 'undefined') {
@@ -362,7 +362,7 @@ $(document).ready(() => {
     },
     emailChecking(input) {
       const reg =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
       }
@@ -374,7 +374,7 @@ $(document).ready(() => {
     },
     urlChecking(input) {
       const reg =
-        /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+        /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
       if ($(input).prop('required') && !this.defaultChecking(input)) {
         return false
       }
@@ -588,7 +588,7 @@ $(document).ready(() => {
     wikitextareaInitlistener(input) {
       const reqChecking = this
       const aceditor = $(input)
-      aceditor.on('change', (event) => {
+      aceditor.on('change', (_event) => {
         reqChecking.runWhenUpdated(input, reqChecking)
       })
     },
@@ -843,7 +843,7 @@ $(document).ready(() => {
 
   // cocher / decocher tous
   const checkboxselectall = $('.selectall')
-  checkboxselectall.click(function (event) {
+  checkboxselectall.click(function (_event) {
     const $this = $(this)
     let target = $this.parents('.controls').find('.yeswiki-checkbox')
     if ($this.data('target')) {
@@ -872,7 +872,7 @@ $(document).ready(() => {
       decodeURIComponent(
         (new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(
           location.search,
-        ) || [, ''])[1].replace(/\+/g, '%20'),
+        ) || ['', ''])[1].replace(/\+/g, '%20'),
       ) || null
     )
   }
@@ -901,10 +901,9 @@ $(document).ready(() => {
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
     } else {
-      var s = location.search
+      s = location.search
       // console.log('s', s, s !== '', decodeURIComponent(s));
       // console.log('value', value);
-      var urlquery
       if (value !== '') {
         if (s !== '') {
           // console.log(s);
@@ -928,9 +927,7 @@ $(document).ready(() => {
 
       // pour les url dans une iframe
       if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
-        var iframeurlquery = decodeURIComponent(
-          window.top.location.search,
-        ).replace(
+        iframeurlquery = decodeURIComponent(window.top.location.search).replace(
           new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
           `&${name}=${value}`,
         )
@@ -1053,10 +1050,9 @@ $(document).ready(() => {
     const vSortOrder = vParam.get('ordre')
 
     const vFacette = getURLParameter('facette')
-    let vQueries
     let vFilters = []
     if (vFacette) {
-      vQueries = getURLParameter('facette')
+      getURLParameter('facette')
         .split('|')
         .map(parseCondition)
         .forEach((pCondition) => {
@@ -1092,7 +1088,6 @@ $(document).ready(() => {
   window.onpopstate = function (e) {
     if (e.state && e.state.filter) {
       $('.facette-container').each(function () {
-        const $this = $(this)
         $(this).find('input:checkbox').prop('checked', false)
         const urlparamfacette = getURLParameter('facette')
 
@@ -1100,7 +1095,7 @@ $(document).ready(() => {
         for (let i = 0; i < tabfacette.length; i++) {
           const tabfilter = tabfacette[i].split('=')
           if (tabfilter[1] !== '') {
-            tabvalues = tabfilter[1].split(',')
+            const tabvalues = tabfilter[1].split(',')
             for (let j = 0; j < tabvalues.length; j++) {
               $(`#${tabfilter[0]}${tabvalues[j]}`).prop('checked', true)
             }
@@ -1108,7 +1103,6 @@ $(document).ready(() => {
         }
 
         const $container = $(this)
-        const $filters = $('.filter-checkbox', $container)
         const data = {
           $nbresults: $('.nb-results', $container),
           $filterboxes: $('.filter-box', $container),
@@ -1150,39 +1144,43 @@ $(document).ready(() => {
   })
 
   const bazarList = []
-  $('.facette-container:not(.dynamic) .filter-bazar').on('keyup', function (e) {
-    const target = $(this).data('target')
-    let searchstring = $(this).val()
-    if (searchstring) {
-      searchstring = searchstring.toLowerCase()
-    }
-    if (bazarList[target] === undefined) {
-      bazarList[target] = []
-      $(`#${target} .bazar-entry`).each(function () {
-        bazarList[target][$(this).data('id_fiche')] = $(this)
-          .find(':visible')
-          .text()
-          .toLowerCase()
-      })
-    }
-    $(`#${target} .bazar-entry`).hide()
-    $(`#${target} .bazar-entry`)
-      .filter(function (i) {
-        return (
-          bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1
-        )
-      })
-      .show()
-    const nbresults = $(`#${target} .bazar-entry:visible`).length
-    $(this).parents('.facette-container').find('.nb-results').html(nbresults)
-    if (nbresults > 1) {
-      $(this).parents('.facette-container').find('.result-label').hide()
-      $(this).parents('.facette-container').find('.results-label').show()
-    } else {
-      $(this).parents('.facette-container').find('.result-label').show()
-      $(this).parents('.facette-container').find('.results-label').hide()
-    }
-  })
+  $('.facette-container:not(.dynamic) .filter-bazar').on(
+    'keyup',
+    function (_e) {
+      const target = $(this).data('target')
+      let searchstring = $(this).val()
+      if (searchstring) {
+        searchstring = searchstring.toLowerCase()
+      }
+      if (bazarList[target] === undefined) {
+        bazarList[target] = []
+        $(`#${target} .bazar-entry`).each(function () {
+          bazarList[target][$(this).data('id_fiche')] = $(this)
+            .find(':visible')
+            .text()
+            .toLowerCase()
+        })
+      }
+      $(`#${target} .bazar-entry`).hide()
+      $(`#${target} .bazar-entry`)
+        .filter(function (_i) {
+          return (
+            bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) >
+            -1
+          )
+        })
+        .show()
+      const nbresults = $(`#${target} .bazar-entry:visible`).length
+      $(this).parents('.facette-container').find('.nb-results').html(nbresults)
+      if (nbresults > 1) {
+        $(this).parents('.facette-container').find('.result-label').hide()
+        $(this).parents('.facette-container').find('.results-label').show()
+      } else {
+        $(this).parents('.facette-container').find('.result-label').show()
+        $(this).parents('.facette-container').find('.results-label').hide()
+      }
+    },
+  )
 
   // gestion du bouton de réinitialisation des filtres
   $('.facette-container:not(.dynamic) .filters .reset-filters').on(
@@ -1256,3 +1254,5 @@ $(document).ready(() => {
     input.addEventListener('input', handleInputChange)
   })
 })
+
+window.exportTableToCSV = exportTableToCSV

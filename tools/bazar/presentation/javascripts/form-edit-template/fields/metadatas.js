@@ -40,7 +40,7 @@ export default {
     4: 'image',
     5: 'preset',
   },
-  renderInput(field) {
+  renderInput(_field) {
     return { field: '' }
   },
 }

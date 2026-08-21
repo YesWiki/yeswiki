@@ -10,7 +10,7 @@ export default {
       })
   },
   watch: {
-    value(newVal) {
+    value(_newVal) {
       $(this.$refs.input).data('iconpicker').setValue(this.value)
       $(this.$refs.input).data('iconpicker').update()
     },

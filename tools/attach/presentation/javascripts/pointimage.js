@@ -10,7 +10,7 @@ $(document).ready(() => {
   const $pointimagecontainers = $('.pointimage-container')
   const $popovers = $('.img-marker')
 
-  $pointimagecontainers.each(function (index) {
+  $pointimagecontainers.each(function (_index) {
     if ($(this).data('readonly') === false) {
       $(this)
         .find('.pointimage-image')
@@ -35,7 +35,7 @@ $(document).ready(() => {
     const $links = $popup.next('.popover').find('.popover-content a')
     $links.each(function () {
       $(this).off('mousedown') // remove previous onmousedown events ;
-      $(this).on('mousedown', function (event) {
+      $(this).on('mousedown', function (_event) {
         const target = $(this).attr('target')
         if (
           (!target || target.length == 0) &&
@@ -129,7 +129,7 @@ $(document).ready(() => {
         return false
       }
     })
-  $('.modal-pointimage').on('hide.bs.modal', function (e) {
+  $('.modal-pointimage').on('hide.bs.modal', function (_e) {
     $(this).find('.markers-choice').empty()
     $('.form-pointimage')[0].reset()
   })

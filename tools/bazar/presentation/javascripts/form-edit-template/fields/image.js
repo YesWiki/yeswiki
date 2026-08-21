@@ -59,7 +59,7 @@ export default {
       14: 'maxsize',
     },
   },
-  renderInput(fieldData) {
+  renderInput(_fieldData) {
     return { field: '<input type="file"/>' }
   },
 }

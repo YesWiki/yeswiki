@@ -141,7 +141,7 @@ export function mergeSearchParams(
     vKeywords = vParamsObject2.keywords
   }
 
-  if (vKeywords != undefined && vKeywords.trim() != '') {
+  if (vKeywords != null && vKeywords.trim() != '') {
     // URI encode the keywords
 
     // Remove duplicates and rebuild the query string
@@ -172,7 +172,7 @@ export function updateHash(
   const vCurrentParams = {}
   let vMergedParams
 
-  let vSearch = pKeywords != undefined ? pKeywords.trim() : ''
+  let vSearch = pKeywords != null ? pKeywords.trim() : ''
 
   if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 

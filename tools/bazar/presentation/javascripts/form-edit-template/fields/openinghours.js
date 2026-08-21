@@ -1,4 +1,4 @@
-import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -14,7 +14,7 @@ export default {
     write: writeconf,
   },
   advancedAttributes: ['read', 'write'],
-  renderInput(fieldData) {
+  renderInput(_fieldData) {
     return { field: '<input type="date"/>' }
   },
 }

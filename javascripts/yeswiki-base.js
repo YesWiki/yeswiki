@@ -122,7 +122,7 @@ function toastMessage(
     .addClass('active-list')
 
   function addIframeHandlerTo(url) {
-    const regexHasHandler = new RegExp(/\??.*\/(edit)?iframe(\&.*)?/g)
+    const regexHasHandler = new RegExp(/\??.*\/(edit)?iframe(&.*)?/g)
     const regexOnDomain = new RegExp(`^${wiki.baseUrl}`)
     if (regexHasHandler.test(url)) {
       return url
@@ -242,13 +242,13 @@ function toastMessage(
             } else {
               const script = res[i].innerHTML
               // select all script of current page without src
-              var selection = document.scripts
-              const selLenght = selection.length
+              const pageScripts = document.scripts
+              const selLenght = pageScripts.length
               var j
               for (j = 0; j < selLenght; j++) {
                 if (
-                  !selection[j].hasAttribute('src') &&
-                  script != selection[j].innerHTML
+                  !pageScripts[j].hasAttribute('src') &&
+                  script != pageScripts[j].innerHTML
                 ) {
                   const newScript = document.importNode(res[i])
                   document.body.appendChild(newScript)
@@ -262,8 +262,10 @@ function toastMessage(
           for (i = 0; i < le; i++) {
             const href = importedCSS[i].getAttribute('href')
             if (href) {
-              var selection = document.querySelector(`link[href="${href}"]`)
-              if (!selection || selection.length === 0) {
+              const existingLink = document.querySelector(
+                `link[href="${href}"]`,
+              )
+              if (!existingLink || existingLink.length === 0) {
                 // append link
                 document.body.appendChild(document.importNode(importedCSS[i]))
               }
@@ -307,7 +309,7 @@ function toastMessage(
   // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   $('.no-dblclick, form, .page a, button, .dropdown-menu').on(
     'dblclick',
-    (e) => false,
+    (_e) => false,
   )
 
   // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
@@ -438,7 +440,7 @@ function toastMessage(
   const iframes = $('iframe.auto-resize')
   if (iframes.length > 0) {
     $.getScript('javascripts/vendor/iframe-resizer/iframeResizer.min.js')
-      .done((script, textStatus) => {
+      .done((_script, _textStatus) => {
         iframes.iFrameResize()
       })
       .fail((jqxhr, settings, exception) => {
@@ -685,14 +687,14 @@ function toastMessage(
   const reactionManagementHelper = {
     renderAjaxError(translation, jqXHR, textStatus, errorThrown) {
       const message = _t(translation, {
-        error: `${textStatus} / ${errorThrown}${jqXHR.responseJSON.error != undefined ? `:${jqXHR.responseJSON.error}` : ''}`,
+        error: `${textStatus} / ${errorThrown}${jqXHR.responseJSON.error != null ? `:${jqXHR.responseJSON.error}` : ''}`,
       })
       if (typeof toastMessage == 'function') {
         toastMessage(message, 3000, 'alert alert-danger')
       } else {
         alert(message)
       }
-      if (jqXHR.responseJSON.exceptionMessage != undefined) {
+      if (jqXHR.responseJSON.exceptionMessage != null) {
         console.warn(jqXHR.responseJSON.exceptionMessage)
       }
     },
@@ -799,7 +801,7 @@ function toastMessage(
           return false
         }
         const link = $(this)
-        deleteUserReaction(url, data, nb, nbInit, link).catch((e) => {
+        deleteUserReaction(url, data, nb, nbInit, link).catch((_e) => {
           /* do nothing */
         })
         return false
@@ -840,7 +842,7 @@ function toastMessage(
               .then(() => {
                 $(this).click()
               })
-              .catch((e) => {
+              .catch((_e) => {
                 /* do nothing */
               })
             return false
@@ -907,11 +909,6 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function (event) {
   $(deleteButton).removeAttr('disabled')
   const button = $(event.relatedTarget) // Button that triggered the modal
   const name = $(button).data('name')
-  const csrfToken = $(button)
-    .closest('tr')
-    .find(`td > label > input[data-itemId="${name}"][data-csrfToken]`)
-    .first()
-    .data('csrftoken')
   $(this).find('#commentToDelete').text(name)
   $(deleteButton).data('name', name)
   $(deleteButton).data('targetNode', button)
@@ -999,3 +996,5 @@ $('#yw-a11y-jump-content').click(() => {
     $('body').removeClass('nav-down').addClass('nav-up')
   }, 300)
 })
+
+window.checkAll = checkAll

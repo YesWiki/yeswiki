@@ -11,7 +11,7 @@ ace.define(
     'ace/mode/text_highlight_rules',
     'ace/mode/html_highlight_rules',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const { TextHighlightRules } = require('./text_highlight_rules')
     const { HtmlHighlightRules } = require('./html_highlight_rules')
@@ -48,7 +48,7 @@ ace.define(
           },
           {
             token: 'constant.language.escape',
-            regex: /\\[\\`*_{}\[\]()#+\-.!]/,
+            regex: /\\[\\`*_{}[\]()#+\-.!]/,
           },
           {
             // pre //
@@ -122,7 +122,7 @@ ace.define(
           {
             // italic markdown *
             token: 'italic',
-            regex: '\\*([^\\*]+)\\*(?!\w)',
+            regex: '\\*([^\\*]+)\\*(?!w)',
           },
           {
             // underline __
@@ -240,7 +240,7 @@ ace.define(
     'ace/mode/text_highlight_rules',
     'ace/mode/html_highlight_rules',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const { CstyleBehaviour } = require('./behaviour/cstyle')
     const { TokenIterator } = require('../token_iterator')
@@ -297,7 +297,7 @@ ace.define(
       }
     }
 
-    const YesWikiBehaviour = function (options) {
+    const YesWikiBehaviour = function (_options) {
       this.add(
         'braces2',
         'insertion',
@@ -566,7 +566,10 @@ ace.define(
           const quotes = session.$mode.$quotes || defaultQuotes
 
           const selected = session.doc.getTextRange(range)
-          if (!range.isMultiLine() && quotes.hasOwnProperty(selected)) {
+          if (
+            !range.isMultiLine() &&
+            Object.prototype.hasOwnProperty.call(quotes, selected)
+          ) {
             initContext(editor)
             const line = session.doc.getLine(range.start.row)
             const rightChar = line.substring(
@@ -703,7 +706,7 @@ ace.define(
     'ace/mode/yeswiki_highlight_rules',
     'ace/mode/yeswiki_behaviour',
   ],
-  (require, exports, module) => {
+  (require, exports, _module) => {
     const oop = require('../lib/oop')
     const TextMode = require('./text').Mode
     const { YesWikiHighlightRules } = require('./yeswiki_highlight_rules')
@@ -719,7 +722,7 @@ ace.define(
       this.blockComment = { start: '""<!--', end: '-->""' }
       this.$quotes = { '"': '"', '`': '`' }
 
-      this.getNextLineIndent = function (state, line, tab) {
+      this.getNextLineIndent = function (state, line, _tab) {
         const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
         // For lists, add the - on next line, or increment the number for ordered list 1. 2.
         if (match && match.length > 4) {

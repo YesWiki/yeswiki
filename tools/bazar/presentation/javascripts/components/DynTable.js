@@ -98,7 +98,7 @@ export default {
                       const isVisible = $(node).data('visible')
                       return (
                         !$(node).hasClass('not-export-this-col') &&
-                        (isVisible == undefined || isVisible != false) &&
+                        (isVisible == null || isVisible != false) &&
                         !$(node).hasClass('not-printable')
                       )
                     },
@@ -229,7 +229,7 @@ export default {
       })
       dataTable
         .rows(
-          (idx, data, node) =>
+          (idx, data, _node) =>
             data?.id === undefined || entryIdsToRemove.includes(data?.id),
         )
         .remove()
@@ -250,7 +250,7 @@ export default {
         // because if orthogonal data is defined, value is an object
         sanitizedValue = val.display || ''
       }
-      return isNaN(sanitizedValue) ? 1 : Number(sanitizedValue)
+      return Number.isNaN(Number(sanitizedValue)) ? 1 : Number(sanitizedValue)
     },
     async updateRows(newVal) {
       const newIds = Object.keys(newVal)
@@ -287,7 +287,7 @@ export default {
     },
   },
   mounted() {
-    $(this.element).on('dblclick', (e) => false)
+    $(this.element).on('dblclick', (_e) => false)
   },
   watch: {
     rows: {

@@ -42,7 +42,7 @@ export default {
     14: 'param14',
     15: 'param15',
   },
-  renderInput(field) {
+  renderInput(_field) {
     return { field: '' }
   },
 }

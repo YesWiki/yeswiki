@@ -2,7 +2,7 @@ export function mapFieldsConf(callback) {
   return Object.fromEntries(
     Object.entries(window.formBuilderFields)
       .map(([name, conf]) => [name, callback(conf)])
-      .filter(([name, conf]) => !!conf),
+      .filter(([_name, conf]) => !!conf),
   )
 }
 
@@ -29,16 +29,19 @@ export function copyMultipleSelectValues(currentField) {
 }
 
 export function adjustDefaultAcls(field) {
-  if (!field.hasOwnProperty('read')) {
+  if (!Object.prototype.hasOwnProperty.call(field, 'read')) {
     field.read = [' * '] // everyone by default
   }
-  if (!field.hasOwnProperty('write')) {
+  if (!Object.prototype.hasOwnProperty.call(field, 'write')) {
     field.write =
       field.type === 'champs_mail'
         ? [' % '] // owner and @admins by default for e-mail
         : [' * '] // everyone by default
   }
-  if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
+  if (
+    field.type === 'acls' &&
+    !Object.prototype.hasOwnProperty.call(field, 'comment')
+  ) {
     field.comment = ['comments-closed'] // comments-closed by default
   }
   if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {

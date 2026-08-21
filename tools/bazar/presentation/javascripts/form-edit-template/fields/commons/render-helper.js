@@ -5,7 +5,7 @@ export default {
   ids: {},
   formFields: {},
   getFormField(fieldId) {
-    if (!this.formFields.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.formFields, fieldId)) {
       const formField = $(`.field-${fieldId}`).closest('li.form-field')
       const newFormField = {}
       newFormField[fieldId] = formField.length == 0 ? false : formField
@@ -17,7 +17,7 @@ export default {
     const holder = this.getHolder(field)
     if (holder) {
       const formGroup = holder.find(`.${formGroupName}-wrap`)
-      if (typeof formGroup !== undefined && formGroup.length > 0) {
+      if (formGroup.length > 0) {
         return formGroup
       }
     }
@@ -25,7 +25,7 @@ export default {
   },
   getHolder(field) {
     const fieldId = field.id
-    if (!this.holders.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.holders, fieldId)) {
       const formField = this.getFormField(fieldId)
       const newHolder = {}
       const newId = {}
@@ -51,7 +51,7 @@ export default {
   },
   getId(field) {
     const fieldId = field.id
-    if (!this.ids.hasOwnProperty(fieldId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.ids, fieldId)) {
       this.getHolder(field)
     }
     return this.ids[fieldId]

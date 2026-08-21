@@ -17,15 +17,12 @@ $(document).ready(() => {
 
     // expression réguliere pour trouver une url valide
     const rgHttpUrl =
-      /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?(\#([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?)?$/
+      /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?(#([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?)?$/
 
     if (rgHttpUrl.test(url)) {
       // on formate l url pour acceder au service json de yeswiki
-      if (url.search('wakka.php') > -1) {
-        var taburl = url.split('wakka.php')
-      } else {
-        var taburl = url.split('?')
-      }
+      const taburl =
+        url.search('wakka.php') > -1 ? url.split('wakka.php') : url.split('?')
       url = `${taburl[0].replace(/\/+$/g, '')}/wakka.php?wiki=BazaR/json&demand=forms`
       resultforms.html(
         `<div class="alert alert-info"><span class="throbber">${formtranslations.loading}...</span> ${formtranslations.recuperation} ${url}</div>`,
@@ -38,7 +35,7 @@ $(document).ready(() => {
           resultforms.html('')
           let count = 0
           for (var idform in data) {
-            if (data.hasOwnProperty(idform)) {
+            if (Object.prototype.hasOwnProperty.call(data, idform)) {
               count++
               let trclass = ''
               let existingmessage = ''
@@ -80,7 +77,7 @@ $(document).ready(() => {
             `<div class="alert alert-success">${formtranslations.nbformsfound} : ${count}</div>`,
           )
         })
-        .fail((jqXHR, textStatus, errorThrown) => {
+        .fail((_jqXHR, _textStatus, _errorThrown) => {
           resultforms.html(
             `<div class="alert alert-danger">${formtranslations.noanswers}.</div>`,
           )

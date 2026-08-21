@@ -1,6 +1,6 @@
 /* Custom filtering function which will search data in column four between two values */
 $.fn.dataTable.ext.search.push(
-  (settings, searchData, index, rowData, counter) => {
+  (settings, searchData, index, _rowData, _counter) => {
     const table = $(settings.nTable).DataTable()
     const row = table.rows(index)
     const node = row.nodes().to$().first()
@@ -59,7 +59,7 @@ const TableHelper = {
       // because if orthogonal data is defined, valu is an object
       sanitizedValue = val.display || ''
     }
-    return isNaN(sanitizedValue) ? 1 : Number(sanitizedValue)
+    return Number.isNaN(Number(sanitizedValue)) ? 1 : Number(sanitizedValue)
   },
   updateFooter(index) {
     const table = TableHelper.tables[index]
@@ -105,7 +105,7 @@ const TableHelper = {
                       const isVisible = $(node).data('visible')
                       return (
                         !$(node).hasClass('not-export-this-col') &&
-                        (isVisible == undefined || isVisible != false)
+                        (isVisible == null || isVisible != false)
                       )
                     },
                   },
@@ -115,7 +115,7 @@ const TableHelper = {
       const table = $(this).DataTable({
         ...DATATABLE_OPTIONS,
         ...{
-          footerCallback(row, data, start, end, display) {
+          footerCallback(_row, _data, _start, _end, _display) {
             TableHelper.updateFooter(index)
           },
           buttons,
@@ -160,7 +160,7 @@ const TableHelper = {
             const input = inputs[index]
             const name = $(input).attr('name')
             const value = $(input).attr('value')
-            if (tableRes.hasOwnProperty(name)) {
+            if (Object.prototype.hasOwnProperty.call(tableRes, name)) {
               tableRes[name].push(value)
             } else {
               tableRes[name] = [value]
@@ -179,12 +179,17 @@ const TableHelper = {
     const tableId = $(table.table(0).node()).prop('id')
     if (
       tableId.length == 0 ||
-      !TableHelper.tablesByIds.hasOwnProperty(tableId)
+      !Object.prototype.hasOwnProperty.call(TableHelper.tablesByIds, tableId)
     ) {
       return true
     }
     const indexTable = TableHelper.tablesByIds[tableId]
-    if (!TableHelper.checkedFilters.hasOwnProperty(indexTable)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        TableHelper.checkedFilters,
+        indexTable,
+      )
+    ) {
       return true
     }
     const checkedFilters = TableHelper.checkedFilters[indexTable]

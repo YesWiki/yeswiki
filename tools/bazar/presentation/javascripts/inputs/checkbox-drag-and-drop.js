@@ -9,7 +9,7 @@ $(document).ready(() => {
     const text_id = `ul.list-entries-to-export.group-${$(this).data('group')}`
     $(this).sortable({
       connectWith: text_id,
-      receive(event, ui) {
+      receive(_event, _ui) {
         $(this)
           .find('.select-page-item')
           .each(function () {
@@ -25,7 +25,7 @@ $(document).ready(() => {
     const text_id = `ul.checkbox-selection-container.group-${$(this).data('group')}`
     $(this).sortable({
       connectWith: text_id,
-      receive(event, ui) {
+      receive(_event, _ui) {
         $(this)
           .find('.remove-page-item')
           .each(function () {
@@ -205,7 +205,6 @@ $(document).ready(() => {
         })
 
       // Update the count
-      const numberItems = count
       $(this)
         .parents('.export-table-container')
         .find('.checkbox-filter-count')

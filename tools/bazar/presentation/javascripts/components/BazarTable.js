@@ -137,7 +137,7 @@ const componentParams = {
       b.sort()
       return a.every((val, idx) => a[idx] === b[idx])
     },
-    deleteAllSelected(event) {
+    deleteAllSelected(_event) {
       const uuid = this.getUuid()
       multiDeleteService.updateNbSelected(`MultiDeleteModal${uuid}`)
       // if something to do before showing modal
@@ -765,7 +765,7 @@ const componentParams = {
         case 'displayadmincol':
         case 'displaycreationdate':
         case 'displaylastchangedate':
-        case 'displayowner':
+        case 'displayowner': {
           const paramValue =
             name in params &&
             typeof params[name] === 'string' &&
@@ -781,6 +781,7 @@ const componentParams = {
             default:
               return false
           }
+        }
         case 'checkboxfieldsincolumns':
           // default true
           return name in params
@@ -799,7 +800,7 @@ const componentParams = {
           return name in params && typeof params[name] === 'string'
             ? params[name].split(',').map((v) => v.trim())
             : []
-        case 'columntitles':
+        case 'columntitles': {
           const columntitlesastab =
             name in params && typeof params[name] === 'string'
               ? params[name].split(',').map((v) => v.trim())
@@ -815,11 +816,8 @@ const componentParams = {
             }
           })
           return columntitles
-        case 'sumfieldsids':
-          return name in params && typeof params[name] === 'string'
-            ? params[name].split(',').map((v) => v.trim())
-            : []
-        case 'columnswidth':
+        }
+        case 'columnswidth': {
           const columnswidth = {}
           if (name in params && typeof params[name] === 'string') {
             params[name].split(',').forEach((extract) => {
@@ -830,6 +828,7 @@ const componentParams = {
             })
           }
           return columnswidth
+        }
         case 'defaultcolumnwidth':
           return name in params ? String(params[name]) : ''
         default:
@@ -860,7 +859,7 @@ const componentParams = {
     },
   },
   mounted() {
-    $(this.$el.parentNode).on('dblclick', (e) => false)
+    $(this.$el.parentNode).on('dblclick', (_e) => false)
     Waiter.resolve('params')
     this.updateFieldsFromRoot()
     window.urlImageResizedOnError = this.$root.urlImageResizedOnError

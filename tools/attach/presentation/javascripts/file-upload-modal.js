@@ -44,7 +44,7 @@ export default class {
     this.$btnContainer = $btnContainer
     this.onComplete = onComplete
 
-    const uploader = new qq.FileUploader({
+    new qq.FileUploader({
       element: $btnContainer[0],
       action: this.$uploadUrl,
       params: this.tempTag ? { tempTag: this.tempTag } : {},

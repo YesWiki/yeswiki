@@ -73,7 +73,7 @@ const BazarCalendar = {
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay == undefined ||
+        this.params.entrydisplay == null ||
         this.params.entrydisplay.length == 0 ||
         this.params.entrydisplay == 'modal' ||
         ['modal', 'newtab', 'direct', 'sidebar'].indexOf(
@@ -83,14 +83,12 @@ const BazarCalendar = {
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
       )
     },
     formatEndDate(entry) {
@@ -98,16 +96,16 @@ const BazarCalendar = {
       // it end one day earlier
       const startDate = this.retrieveTimeZone(entry.bf_date_debut_evenement)
       let endDate = null
-      if (entry.bf_date_fin_evenement != undefined) {
+      if (entry.bf_date_fin_evenement != null) {
         endDate = this.retrieveTimeZone(entry.bf_date_fin_evenement)
         try {
           endDate = new Date(endDate)
-        } catch (error) {
+        } catch (_error) {
           endDate = null
         }
       }
       if (
-        entry.bf_date_fin_evenement == undefined ||
+        entry.bf_date_fin_evenement == null ||
         endDate == null ||
         endDate == 'Invalid Date'
       ) {
@@ -149,7 +147,7 @@ const BazarCalendar = {
         if (this.params.minical) {
           $(this.$el).addClass('minical')
         }
-        const calendarEl = $('<div>').on('dblclick', (e) => false)
+        const calendarEl = $('<div>').on('dblclick', (_e) => false)
         $(this.$el).prepend(calendarEl)
         this.calendar = new FullCalendar.Calendar(
           calendarEl.get(0),
@@ -165,7 +163,7 @@ const BazarCalendar = {
     },
     buildEventObject(entry, id, start, end) {
       const backgroundColor =
-        entry.color == undefined || entry.color.length == 0 ? '' : entry.color
+        entry.color == null || entry.color.length == 0 ? '' : entry.color
       return {
         id,
         groupId: entry.id_fiche,
@@ -179,11 +177,11 @@ const BazarCalendar = {
         borderColor: backgroundColor,
         extendedProps: {
           icon:
-            entry.icon == undefined || entry.icon.length == 0
+            entry.icon == null || entry.icon.length == 0
               ? ''
               : `<i class="${entry.icon}">&nbsp;</i>`,
           htmlattributes: `${
-            (entry.html_data != undefined ? entry.html_data : '') +
+            (entry.html_data != null ? entry.html_data : '') +
             (this.isModalDisplay() ? ' data-iframe="1"' : '')
           } data-size="modal-lg"`,
         },
@@ -326,8 +324,8 @@ const BazarCalendar = {
         case 'list':
           if (extendedList.length > 0) {
             initialView = extendedList.slice(1) // remove first char
-            break
           }
+          break
         case 'dayGridMonth':
         default:
           break
@@ -378,7 +376,7 @@ const BazarCalendar = {
     this.mountCalendar()
   },
   watch: {
-    selectedEntry(newVal, oldVal) {
+    selectedEntry(_newVal, _oldVal) {
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'sidebar')
           this.$root.getEntryRender(this.selectedEntry)

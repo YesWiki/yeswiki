@@ -1,11 +1,6 @@
 // TODO better list and translatable
-import {
-  parseCondition,
-  parseKeywords,
-  removeDiacritics,
-  extractRegExp,
-} from '../search.js'
-import { parseSearchParams, mergeSearchParams } from '../url.js'
+import { parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
+import { mergeSearchParams } from '../url.js'
 
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
@@ -157,8 +152,6 @@ export default {
             vFieldValue = removeDiacritics(vFieldValue)
 
             vFieldValue = vFieldValue.trim()
-
-            const vRegExp = extractRegExp(pExcluded)
 
             if (vFieldValue) {
               const vMatches = vFieldValue.match(new RegExp(pExcluded, 'g'))

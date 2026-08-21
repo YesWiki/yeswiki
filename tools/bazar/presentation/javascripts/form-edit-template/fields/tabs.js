@@ -116,9 +116,9 @@ export default {
         const holder = renderHelper.getHolder(field)
         if (holder) {
           const formGroup = holder.find('.formTitles-wrap')
-          if (typeof formGroup !== undefined && formGroup.length > 0) {
+          if (formGroup.length > 0) {
             const input = formGroup.find('input').first()
-            if (typeof input !== undefined && input.length > 0) {
+            if (input.length > 0) {
               $(input).val($(input).val().replace(/\|/g, ','))
             }
           }

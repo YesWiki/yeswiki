@@ -4,7 +4,7 @@ function isValidUrl(string) {
   try {
     const url = new URL(string)
     return url
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 }

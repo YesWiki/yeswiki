@@ -1,4 +1,3 @@
-import renderHelper from './commons/render-helper.js'
 import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {

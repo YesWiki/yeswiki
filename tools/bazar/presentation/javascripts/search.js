@@ -62,7 +62,7 @@ export function parseCondition(pValue) {
  */
 
 export function parseKeywords(pKeywords) {
-  const _t = (key) => 'BAZ_MOT_CLE' // Remplace ça par ton système de traduction si besoin
+  const _t = (_key) => 'BAZ_MOT_CLE' // Remplace ça par ton système de traduction si besoin
 
   // Résultat par défaut
   const results = { CNF: [], excludeds: [] }

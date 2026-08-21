@@ -24,9 +24,9 @@ const FavoritesHelper = {
         $(elem).each(function () {
           if (!$(this).hasClass('user-favorite')) {
             const linkedFavoriteId = $(this).attr('data-linkedFavoriteid')
-            if (linkedFavoriteId != undefined && linkedFavoriteId.length > 0) {
+            if (linkedFavoriteId != null && linkedFavoriteId.length > 0) {
               const linkedFavorite = $(`#${linkedFavoriteId}`)
-              if (linkedFavorite != undefined && linkedFavorite.length > 0) {
+              if (linkedFavorite != null && linkedFavorite.length > 0) {
                 $(linkedFavorite).remove()
                 $(this).remove()
               } else {

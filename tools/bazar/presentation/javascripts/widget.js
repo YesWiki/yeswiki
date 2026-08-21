@@ -61,7 +61,7 @@ const widgetapp = createApp({
   methods: {
     hideTooltip() {
       const iterator = Object.keys(this.show_tooltip)
-      for (i = 0; i < iterator.length; ++i) {
+      for (let i = 0; i < iterator.length; ++i) {
         this.show_tooltip[iterator[i]] = false
       }
     },

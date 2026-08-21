@@ -7,8 +7,7 @@ import FilterNode from './components/FilterNode.js'
 import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
-import { updateExportLinks } from './export.js'
-import { updateHash, parseSearchParams, mergeSearchParams } from './url.js'
+import { updateHash, parseSearchParams } from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -150,7 +149,7 @@ const load = (domElement) => {
 
         if (vSearch && vSearch.length >= wiki.minSearchKeywordLength) {
           result = this.searchEntries(result, vSearch)
-          if (result == undefined) {
+          if (result == null) {
             result = this.entries
           }
         }
@@ -325,7 +324,7 @@ const load = (domElement) => {
           const vQueryEntries = Object.entries(vParams.query)
 
           if (vQueryEntries.length > 0) {
-            vQueryEntries.forEach(([pKey, pCondition]) => {
+            vQueryEntries.forEach(([_pKey, pCondition]) => {
               const cFilter = vThis.filters.find(
                 (pF) => pF.propName == pCondition.name,
               )
@@ -490,7 +489,7 @@ const load = (domElement) => {
       },
     },
     mounted() {
-      $(this.$el).on('dblclick', (e) => false)
+      $(this.$el).on('dblclick', (_e) => false)
       this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
       // params already set from elementDataset in data()
 

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : existingTags
   inputTags.tagsinput({
     typeahead: {
-      afterSelect(val) {
+      afterSelect(_val) {
         inputTags.tagsinput('input').val('')
       },
       source: existingTagsInternal,

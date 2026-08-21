@@ -167,3 +167,5 @@ document.addEventListener('DOMContentLoaded', () => {
     return false
   })
 })
+
+window.createEntry = createEntry

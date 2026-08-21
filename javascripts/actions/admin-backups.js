@@ -192,8 +192,6 @@ const app = createApp({
       }
     },
     async fetch(url, options = {}) {
-      const cThis = this
-
       return await fetch(url, options).then(async (pResponse) => {
         if (!pResponse.ok) {
           const cJSON = await pResponse.json()
@@ -348,10 +346,16 @@ const app = createApp({
       return await this.fetch(wiki.url('?api/archives/archivingStatus/'))
         .then(
           (data) => {
-            if (typeof data != 'object' || !data.hasOwnProperty('canArchive')) {
+            if (
+              typeof data != 'object' ||
+              !Object.prototype.hasOwnProperty.call(data, 'canArchive')
+            ) {
               this.endStartingUpdateError()
             } else if (data.canArchive) {
-              if (data.hasOwnProperty('dB') && !data.dB) {
+              if (
+                Object.prototype.hasOwnProperty.call(data, 'dB') &&
+                !data.dB
+              ) {
                 console.log(
                   _t('ADMIN_BACKUPS_START_BACKUP_NOT_DB', {
                     helpBaseUrl: wiki.url('doc'),
@@ -359,33 +363,49 @@ const app = createApp({
                 )
               }
               this.callAsync =
-                !data.hasOwnProperty('callAsync') || data.callAsync
+                !Object.prototype.hasOwnProperty.call(data, 'callAsync') ||
+                data.callAsync
               return this.startArchiveNextStep()
-            } else if (data.hasOwnProperty('archiving') && data.archiving) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'archiving') &&
+              data.archiving
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING',
                 'info',
               )
-            } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'hibernated') &&
+              data.hibernated
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE',
                 'info',
               )
             } else if (
-              data.hasOwnProperty('privatePathWritable') &&
+              Object.prototype.hasOwnProperty.call(
+                data,
+                'privatePathWritable',
+              ) &&
               !data.privatePathWritable
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',
                 'danger',
               )
-            } else if (data.hasOwnProperty('canExec') && !data.canExec) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'canExec') &&
+              !data.canExec
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',
                 'info',
               )
             } else if (
-              data.hasOwnProperty('notAvailableOnTheInternet') &&
+              Object.prototype.hasOwnProperty.call(
+                data,
+                'notAvailableOnTheInternet',
+              ) &&
               !data.notAvailableOnTheInternet
             ) {
               this.endStartingUpdateErrorWithT(
@@ -393,14 +413,17 @@ const app = createApp({
                 'danger',
               )
             } else if (
-              data.hasOwnProperty('enoughSpace') &&
+              Object.prototype.hasOwnProperty.call(data, 'enoughSpace') &&
               !data.enoughSpace
             ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE',
                 'warning',
               )
-            } else if (data.hasOwnProperty('canArchive') && !data.canArchive) {
+            } else if (
+              Object.prototype.hasOwnProperty.call(data, 'canArchive') &&
+              !data.canArchive
+            ) {
               this.endStartingUpdateErrorWithT(
                 'ADMIN_BACKUPS_CANNOT_ARCHIVE',
                 'danger',
@@ -522,7 +545,7 @@ const app = createApp({
           }).replace('\n', '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         },
-        (error) => {
+        (_error) => {
           // if error
           this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR')
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
@@ -547,7 +570,7 @@ const app = createApp({
         uid: this.currentArchiveUid,
       })
         .then(
-          (data) => {
+          (_data) => {
             this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
             this.archiveMessageClass = { alert: true, 'alert-warning': true }
             setTimeout(this.checkStopped, 500)
@@ -743,7 +766,7 @@ const app = createApp({
               typeof this.packageName != 'string' ||
               this.packageName.length == 0 ||
               typeof data != 'object' ||
-              !data.hasOwnProperty('token') ||
+              !Object.prototype.hasOwnProperty.call(data, 'token') ||
               typeof data.token != 'string' ||
               data.token.length == 0
             ) {

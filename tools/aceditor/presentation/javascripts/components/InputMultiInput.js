@@ -45,7 +45,7 @@ export default {
     resetValues() {
       this.elements = []
     },
-    parseNewValues(newValues) {
+    parseNewValues(_newValues) {
       console.warn('parseNewValues Method should be implement in sub component')
     },
     getValues() {

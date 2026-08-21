@@ -27,8 +27,8 @@ const ConditionsChecking = {
     )
   },
   updateOperationData(data, rest, condition, element) {
-    const newIndex = rest == undefined ? -1 : condition.length - rest[0].length
-    if (Object.keys(data).length == 0 || data.indexOf == undefined) {
+    const newIndex = rest == null ? -1 : condition.length - rest[0].length
+    if (Object.keys(data).length == 0 || data.indexOf == null) {
       data.indexOf = -1
     }
     if (newIndex > -1 && (newIndex < data.indexOf || data.indexOf < 0)) {
@@ -252,7 +252,7 @@ const ConditionsChecking = {
     }
   },
   isLength(fieldName, values, operation) {
-    if (isNaN(values)) {
+    if (Number.isNaN(Number(values))) {
       return false
     }
     const fieldValues = this.getFieldNameValues(fieldName)
@@ -264,7 +264,22 @@ const ConditionsChecking = {
     }
     const { length } = fieldValues
     const number = Number(values)
-    return eval(`${length} ${operation} ${number}`)
+    switch (operation) {
+      case '==':
+        return length === number
+      case '!=':
+        return length !== number
+      case '<':
+        return length < number
+      case '<=':
+        return length <= number
+      case '>':
+        return length > number
+      case '>=':
+        return length >= number
+      default:
+        return false
+    }
   },
   match(fieldName, values) {
     const extract = {
@@ -448,19 +463,10 @@ const ConditionsChecking = {
       .find('select[data-default]')
       .each(function () {
         const defaultVal = $(this).data('default')
-        const val = $(this).val()
-        if (defaultVal != undefined) {
+        if (defaultVal != null) {
           $(this).val(defaultVal)
           $(this).trigger('change')
         }
-      })
-  },
-  emptyTextarea(element) {
-    $(element)
-      .find('textarea')
-      .each(function () {
-        $(this).val('')
-        $(this).trigger('change')
       })
   },
   emptyRadio(element) {
@@ -547,7 +553,7 @@ const ConditionsChecking = {
           val.length == 0 &&
           propertyName.length > 0 &&
           typeof bazarlistTagsInputsData !== 'undefined' &&
-          bazarlistTagsInputsData[propertyName] != undefined &&
+          bazarlistTagsInputsData[propertyName] != null &&
           ConditionsChecking.hasTagsInput(this)
         ) {
           const selectedOptions =
@@ -556,7 +562,7 @@ const ConditionsChecking = {
             bazarlistTagsInputsData[propertyName].existingTags || []
           $(this).tagsinput('removeAll')
           selectedOptions.forEach((tag) => {
-            if (existingTags[tag] != undefined) {
+            if (existingTags[tag] != null) {
               $(this).tagsinput('add', existingTags[tag])
             }
           })
@@ -724,7 +730,7 @@ const ConditionsChecking = {
     }
     const node = $(
       `div[class*="group-checkbox-"][class*="${fieldName}"],ul[class*="group-checkbox-"][class*="${fieldName}"]`,
-    ).filter(function (index) {
+    ).filter(function (_index) {
       const classes = $(this).attr('class').split(' ')
       return (
         classes.filter(

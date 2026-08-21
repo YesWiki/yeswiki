@@ -117,7 +117,6 @@ document.addEventListener(
           font = font.split(':')
 
           const fontFamily = font[0]
-          const fontWeight = font[1] || 400
 
           document.documentElement.style.setProperty(
             `--${$(this).attr('name')}`,
@@ -219,19 +218,19 @@ $('.css-preset').click(function () {
   return false
 })
 function deleteCSSPreset(elem, text, url) {
-  event.preventDefault()
+  window.event.preventDefault()
   const key = $(elem).data('key')
   const confirmResult = confirm(text)
   if (confirmResult) {
     $.ajax({
       url,
-      success(data, textStatus, jqXHR) {
+      success(_data, _textStatus, _jqXHR) {
         console.log(`${key} deleted !`)
         $(elem).parent().remove()
       },
       method: 'DELETE',
       cache: false,
-      error(jqXHR, textStatus, errorThrown) {
+      error(jqXHR, _textStatus, _errorThrown) {
         const message = key + themeSelectorTranslation.TEMPLATE_FILE_NOT_DELETED
         console.log(`${message} Message :${jqXHR.responseText}`)
         if (typeof toastMessage == 'function') {
@@ -266,7 +265,7 @@ function getStyleValueEvenIfNotInitialized(prop) {
   return value
 }
 function saveCSSPreset(elem, url, rewriteMode) {
-  event.preventDefault()
+  window.event.preventDefault()
   let fileName = $(elem).prev().find('input[name=filename]').val()
   fileName = fileName.replace('.css', '')
   const fullFileName = `${fileName}.css`
@@ -301,17 +300,17 @@ function saveCSSPreset(elem, url, rewriteMode) {
   )
   if (mainTextFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
     mainTextFontfamily = `'${mainTextFontfamily}', sans-serif`
-  } else if (mainTextFontfamily.search(/^\'[A-Za-z0-9 ]*\'$/) != -1) {
+  } else if (mainTextFontfamily.search(/^'[A-Za-z0-9 ]*'$/) != -1) {
     mainTextFontfamily = `${mainTextFontfamily}, sans-serif`
   }
   if (mainTitleFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
     mainTitleFontfamily = `'${mainTitleFontfamily}', sans-serif`
-  } else if (mainTitleFontfamily.search(/^\'[A-Za-z0-9 ]*\'$/) != -1) {
+  } else if (mainTitleFontfamily.search(/^'[A-Za-z0-9 ]*'$/) != -1) {
     mainTitleFontfamily = `${mainTitleFontfamily}, sans-serif`
   }
   $.ajax({
     url,
-    success(data, textStatus, jqXHR) {
+    success(_data, _textStatus, _jqXHR) {
       console.log(`${fullFileName} added !`)
       const urlwindow = window.location.toString()
       const urlAux = urlwindow.split(`${rewriteMode ? '?' : '&'}theme=`)
@@ -345,13 +344,14 @@ function saveCSSPreset(elem, url, rewriteMode) {
       'main-title-fontfamily': mainTitleFontfamily,
     },
     cache: false,
-    error(jqXHR, textStatus, errorThrown) {
+    error(jqXHR, _textStatus, _errorThrown) {
+      let data = null
+      let dataMessage
       try {
-        var data = JSON.parse(jqXHR.responseText)
-        var dataMessage = data.message
-      } catch (error) {
-        var data = null
-        var dataMessage = JSON.stringify(jqXHR.responseText)
+        data = JSON.parse(jqXHR.responseText)
+        dataMessage = data.message
+      } catch (_error) {
+        dataMessage = JSON.stringify(jqXHR.responseText)
       }
       let message =
         fullFileName + themeSelectorTranslation.TEMPLATE_FILE_NOT_ADDED
@@ -448,3 +448,8 @@ function saveTheme(event, url) {
   }
   return false
 }
+
+window.openNav = openNav
+window.deleteCSSPreset = deleteCSSPreset
+window.saveCSSPreset = saveCSSPreset
+window.saveTheme = saveTheme

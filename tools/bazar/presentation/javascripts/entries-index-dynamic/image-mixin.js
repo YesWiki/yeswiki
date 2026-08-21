@@ -8,7 +8,7 @@ export default {
   },
   methods: {
     urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
-      const node = event.target
+      const node = window.event.target
       $(node).removeAttr('onerror')
       if (entry[fieldName]) {
         const fileName = entry[fieldName]
@@ -112,10 +112,7 @@ export default {
             })
           },
           complete: (e) => {
-            if (
-              e.responseJSON != undefined &&
-              e.responseJSON.newToken != undefined
-            ) {
+            if (e.responseJSON != null && e.responseJSON.newToken != null) {
               this.tokenForImages = e.responseJSON.newToken
             }
             this.processingImage = false

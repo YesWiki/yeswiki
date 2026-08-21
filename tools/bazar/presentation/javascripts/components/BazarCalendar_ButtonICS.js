@@ -4,14 +4,14 @@ export default {
     return { href: '' }
   },
   methods: {
-    updateHref(e) {
+    updateHref(_e) {
       const { params } = this.bazarcalendar
       const baseUrlPath = 'api/entries/ical'
       const formId = params.id
       const formIdParams = params.id.indexOf(',') > -1 ? {} : { id: formId }
 
       const dateFilterParams =
-        params.datefilter != undefined ? { datefilter: params.datefilter } : {}
+        params.datefilter != null ? { datefilter: params.datefilter } : {}
 
       let entriesParams = {}
       const filters = this.bazarcalendar.$root.computedFilters

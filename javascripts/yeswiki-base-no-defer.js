@@ -25,7 +25,7 @@ var wiki = {
     url(url, params = {}) {
       let result = wiki.baseUrl + url
       result = result.replace('??', '?')
-      stringParams = []
+      const stringParams = []
       for (const key in params) {
         stringParams.push(`${key}=${encodeURIComponent(params[key])}`)
       }
@@ -42,3 +42,5 @@ var wiki = {
     },
   },
 }
+
+window._t = _t

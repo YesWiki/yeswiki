@@ -95,7 +95,7 @@ export default {
       })
   },
   watch: {
-    value(newVal) {
+    value(_newVal) {
       $(this.$refs.input).spectrum('set', this.value)
     },
   },

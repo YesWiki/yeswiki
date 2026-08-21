@@ -327,7 +327,7 @@ export const appConfig = {
       if (!this.selectedFormsIds) return
       if (
         this.selectedFormsIds.every((fid) =>
-          this.loadedForms.hasOwnProperty(fid),
+          Object.prototype.hasOwnProperty.call(this.loadedForms, fid),
         )
       ) {
         this.selectedForms = {}
@@ -341,7 +341,7 @@ export const appConfig = {
       } else {
         const idsToSearch = this.selectedFormsIds.filter(
           (fid) =>
-            !this.loadedForms.hasOwnProperty(fid) &&
+            !Object.prototype.hasOwnProperty.call(this.loadedForms, fid) &&
             !this.loadingForms.includes(fid),
         )
         if (idsToSearch.length > 0) {
@@ -359,11 +359,11 @@ export const appConfig = {
               (e) => !idsToSearch.includes(e),
             )
             // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-            if (Array.isArray(data) && data[0] != undefined) {
+            if (Array.isArray(data) && data[0] != null) {
               // copy forms
               data.forEach((form) => {
                 if (
-                  form.bn_id_nature != undefined &&
+                  form.bn_id_nature != null &&
                   idsToSearch.includes(form.bn_id_nature)
                 ) {
                   this.loadedForms[form.bn_id_nature] = form
@@ -373,7 +373,9 @@ export const appConfig = {
             // default forms for missing
             idsToSearch.forEach((fid) => {
               // fake empty form
-              if (!this.loadedForms.hasOwnProperty(fid)) {
+              if (
+                !Object.prototype.hasOwnProperty.call(this.loadedForms, fid)
+              ) {
                 this.loadedForms[fid] = { prepared: {} }
               }
             })
@@ -438,7 +440,7 @@ export const appConfig = {
         const config = this.selectedActionAllConfigs[key]
         const value = this.values[key]
         if (
-          result.hasOwnProperty(key) ||
+          Object.prototype.hasOwnProperty.call(result, key) ||
           value === undefined ||
           (config && config.default && `${value}` == `${config.default}`) ||
           typeof value == 'object' ||

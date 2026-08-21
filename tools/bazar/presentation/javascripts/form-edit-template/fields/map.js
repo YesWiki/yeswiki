@@ -92,21 +92,6 @@ export default {
     return {
       field: _t('BAZ_FORM_EDIT_MAP_FIELD'),
       onRender() {
-        const toggleState = function (name, state) {
-          const formGroup = renderHelper.getFormGroup(fieldData, name)
-          if (formGroup !== null) {
-            if (state === 'show') {
-              formGroup.show()
-            } else {
-              formGroup.hide()
-            }
-          }
-        }
-        const toggleStates = function (state) {
-          ;['autocomplete_street1', 'autocomplete_street2'].forEach((name) =>
-            toggleState(name, state),
-          )
-        }
         // initMapAutocompleteUpdate()
         $('.map-field.form-field')
           .find(

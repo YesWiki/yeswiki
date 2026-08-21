@@ -93,7 +93,7 @@ $(() => {
       return (h / 2) * (Math.sqrt(1 - (f -= 2) * f) + 1) + a
     },
     easeInElastic(f, h, e, l, k) {
-      var i = 1.70158
+      let i = 1.70158
       let j = 0
       let g = l
       if (h == 0) {
@@ -107,9 +107,9 @@ $(() => {
       }
       if (g < Math.abs(l)) {
         g = l
-        var i = j / 4
+        i = j / 4
       } else {
-        var i = (j / (2 * Math.PI)) * Math.asin(l / g)
+        i = (j / (2 * Math.PI)) * Math.asin(l / g)
       }
       return (
         -(
@@ -120,7 +120,7 @@ $(() => {
       )
     },
     easeOutElastic(f, h, e, l, k) {
-      var i = 1.70158
+      let i = 1.70158
       let j = 0
       let g = l
       if (h == 0) {
@@ -134,16 +134,16 @@ $(() => {
       }
       if (g < Math.abs(l)) {
         g = l
-        var i = j / 4
+        i = j / 4
       } else {
-        var i = (j / (2 * Math.PI)) * Math.asin(l / g)
+        i = (j / (2 * Math.PI)) * Math.asin(l / g)
       }
       return (
         g * 2 ** (-10 * h) * Math.sin(((h * k - i) * (2 * Math.PI)) / j) + l + e
       )
     },
     easeInOutElastic(f, h, e, l, k) {
-      var i = 1.70158
+      let i = 1.70158
       let j = 0
       let g = l
       if (h == 0) {
@@ -157,9 +157,9 @@ $(() => {
       }
       if (g < Math.abs(l)) {
         g = l
-        var i = j / 4
+        i = j / 4
       } else {
-        var i = (j / (2 * Math.PI)) * Math.asin(l / g)
+        i = (j / (2 * Math.PI)) * Math.asin(l / g)
       }
       if (h < 1) {
         return (
@@ -180,19 +180,19 @@ $(() => {
       )
     },
     easeInBack(e, f, a, i, h, g) {
-      if (g == undefined) {
+      if (g == null) {
         g = 1.70158
       }
       return i * (f /= h) * f * ((g + 1) * f - g) + a
     },
     easeOutBack(e, f, a, i, h, g) {
-      if (g == undefined) {
+      if (g == null) {
         g = 1.70158
       }
       return i * ((f = f / h - 1) * f * ((g + 1) * f + g) + 1) + a
     },
     easeInOutBack(e, f, a, i, h, g) {
-      if (g == undefined) {
+      if (g == null) {
         g = 1.70158
       }
       if ((f /= h / 2) < 1) {
@@ -298,7 +298,7 @@ $(() => {
     var initEvents = function () {
       // navigation menu links.
       // scroll to the respective section.
-      $links.on('click.Scrolling', function (event) {
+      $links.on('click.Scrolling', function (_event) {
         // scroll to the element that has id = menu's href
         $('html, body')
           .stop()
@@ -313,7 +313,7 @@ $(() => {
 
       $(window).on({
         // on window resize we need to redefine which rows are initially visible (this ones we will not animate).
-        'resize.Scrolling': function (event) {
+        'resize.Scrolling': function (_event) {
           // get the window sizes again
           getWinSize()
           // redefine which rows are initially visible (:inviewport)
@@ -334,7 +334,7 @@ $(() => {
           })
         },
         // when scrolling the page change the position of each row
-        'scroll.Scrolling': function (event) {
+        'scroll.Scrolling': function (_event) {
           // set a timeout to avoid that the
           // placeRows function gets called on every scroll trigger
           if (anim) return false
@@ -357,7 +357,7 @@ $(() => {
       const winCenter = winSize.height / 2 + winscroll
 
       // for every row that is not inviewport
-      $rowsOutViewport.each(function (i) {
+      $rowsOutViewport.each(function (_i) {
         const $row = $(this)
         // the left side element
         const $rowL = $row.find('div.ss-left')

@@ -27,7 +27,7 @@ export default {
     3: 'email_field_id',
     4: 'mailing_list_tool',
   },
-  renderInput(field) {
+  renderInput(_field) {
     return { field: '<input type="checkbox"/>' }
   },
 }

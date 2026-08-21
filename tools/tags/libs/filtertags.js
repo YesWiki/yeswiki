@@ -3,8 +3,7 @@ $(document).ready(() => {
   const filterresults = []
   // var mixitupoptions = Array();
   const wookmarkoptions = []
-  let results
-  $('.filter-container').each(function (index, value) {
+  $('.filter-container').each(function (index, _value) {
     const $this = $(this)
     filterelements[index] = $this.find('.filtered-element')
     filterelements[index].css('width', $this.data('element-width'))
@@ -52,7 +51,6 @@ $(document).ready(() => {
         // }
         const filtercontrols = $filter.parents('.controls')
         const selectedfilters = filtercontrols.find('.active')
-        filterString = ''
         const activeFilters = []
         $.each(selectedfilters, function () {
           /* filterString = filterString+' '+$(this).data('filter'); */

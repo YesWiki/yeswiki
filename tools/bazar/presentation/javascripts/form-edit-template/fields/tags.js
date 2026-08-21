@@ -13,7 +13,7 @@ export default {
     write: writeconf,
   },
   // disabledAttributes: [],
-  renderInput(fieldData) {
+  renderInput(_fieldData) {
     return { field: '<input/>' }
   },
 }

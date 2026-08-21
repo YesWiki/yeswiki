@@ -217,11 +217,11 @@ $(document).ready(() => {
           cGeometries.val(JSON.stringify(drawnItemsToGeoJSON(vDrawnItems)))
         })
 
-        cMap.on('draw:edited', (e) => {
+        cMap.on('draw:edited', (_e) => {
           cGeometries.val(JSON.stringify(drawnItemsToGeoJSON(vDrawnItems)))
         })
 
-        cMap.on(L.Draw.Event.DELETED, (e) => {
+        cMap.on(L.Draw.Event.DELETED, (_e) => {
           cGeometries.val(JSON.stringify(drawnItemsToGeoJSON(vDrawnItems)))
         })
 
@@ -464,7 +464,7 @@ $(document).ready(() => {
 
       function showAddressError(pMessage) {
         // console.log("showAddressError: " + pMessage);
-        if (msg == 'not found') {
+        if (pMessage == 'not found') {
           alert(_t('BAZ_GEOLOC_NOT_FOUND'))
           geocodedmarkerRefresh()
         } else {
@@ -476,9 +476,9 @@ $(document).ready(() => {
         return `
           <div id="${cName}_geolocation_popup" class="input-group" style="margin-bottom: 10px">
             <span class="input-group-addon">Lat</span>
-            <input id="${cName}_latitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lat}" />
+            <input id="${cName}_latitude_popup" type="text" class="form-control" pattern="-?\\d{1,3}\\.\\d+" value="${pPoint.lat}" />
             <span class="input-group-addon">Lon</span>
-            <input id="${cName}_longitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lng}" />
+            <input id="${cName}_longitude_popup" type="text" class="form-control" pattern="-?\\d{1,3}\\.\\d+" value="${pPoint.lng}" />
           </div>
           <div class="text-center">${_t('BAZ_ADJUST_MARKER_POSITION')}</div>
         `
@@ -588,7 +588,7 @@ $(document).ready(() => {
         showAddress()
       })
 
-      $('body').on('change', `#${cName}_geolocation_popup`, function (e) {
+      $('body').on('change', `#${cName}_geolocation_popup`, function (_e) {
         if ($(this).is(':invalid')) {
           cLatitude.val('')
           cLongitude.val('')

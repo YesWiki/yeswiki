@@ -22,3 +22,5 @@ function reloadGererDroits(elem) {
   }
   window.location = baseUrl + (params.length > 0 ? `?${params}` : '')
 }
+
+window.reloadGererDroits = reloadGererDroits

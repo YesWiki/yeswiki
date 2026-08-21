@@ -51,7 +51,6 @@ $(document).ready(() => {
     })
 
     // Update the count
-    const numberItems = count
     filtercount.text(_t('TAGS_NUMBER_OF_PAGES'), { nb: count })
   })
 })

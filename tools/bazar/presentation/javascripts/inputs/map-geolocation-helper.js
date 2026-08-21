@@ -30,7 +30,7 @@ const geolocationHelper = (function () {
           this.eventsListeners[eventName].forEach((eventData, idx) => {
             if (!eventData.once || !eventData.triggered) {
               this.eventsListeners[eventName][idx].triggered = true
-              if (param != undefined) {
+              if (param != null) {
                 if (Array.isArray(param)) {
                   eventData.listener(...param)
                 } else {
@@ -392,8 +392,10 @@ const geolocationHelper = (function () {
         point2 = { latitude: '', longitude: '' },
       }) {
         // sanitize
-        ;['point1', 'point2'].forEach((name) => {
-          const val = eval(name)
+        ;[
+          ['point1', point1],
+          ['point2', point2],
+        ].forEach(([name, val]) => {
           if (typeof val !== 'object' || val === null) {
             throw new Error(`${name} should be an object`)
           }
@@ -418,7 +420,8 @@ const geolocationHelper = (function () {
 
         // Radian difference (longitudes)
         const lngDiff =
-          (Number(point1.longitude) - Number(point1.longitude)) * (pi() / 180)
+          (Number(point2.longitude) - Number(point1.longitude)) *
+          (Math.PI / 180)
 
         return (
           2 *
@@ -564,13 +567,15 @@ const geolocationHelper = (function () {
                       : {}),
                   })
                 }
+                break
               default:
-                return this.toGeolocationData({
-                  country: infos[infos.length - 1],
-                  latitude,
-                  longitude,
-                })
+                break
             }
+            return this.toGeolocationData({
+              country: infos[infos.length - 1],
+              latitude,
+              longitude,
+            })
           })
       },
       async geolocate(address) {
@@ -693,7 +698,7 @@ const geolocationHelper = (function () {
         let countryCode = ''
         try {
           countryCode = this.getCountryCode(country)
-        } catch (error) {
+        } catch (_error) {
           // unknown country
           return []
         }
@@ -835,7 +840,7 @@ const geolocationHelper = (function () {
           .toLowerCase()
       },
       sanitizeAddress(address) {
-        return address.replace(/\\("|\'|\\)/g, ' ').trim()
+        return address.replace(/\\("|'|\\)/g, ' ').trim()
       },
       toGeolocationData(data) {
         const sanitizedData = typeof data === 'object' ? data : {}
@@ -955,3 +960,5 @@ const geolocationHelper = (function () {
     },
   }
 })()
+
+window.geolocationHelper = geolocationHelper

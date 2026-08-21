@@ -138,7 +138,7 @@ $(document).ready(() => {
         bgimg,
       }),
     }
-    if (preset != undefined) {
+    if (preset != null) {
       data.metadatas.favorite_preset =
         preset +
         (preset.length == 0 || preset.slice(-'.css'.length) === '.css'
@@ -146,7 +146,7 @@ $(document).ready(() => {
           : '.css')
     }
 
-    $.post(url, data, (data) => {})
+    $.post(url, data, (_data) => {})
   })
 
   // changement de fond d ecran

@@ -25,7 +25,7 @@ $(document).ready(() => {
             itemValue: 'id',
             itemText: 'title',
             typeahead: {
-              afterSelect(val) {
+              afterSelect(_val) {
                 anchor.tagsinput('input').val('')
               },
               source: existingTagsArray,

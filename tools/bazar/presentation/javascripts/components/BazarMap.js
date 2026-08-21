@@ -39,7 +39,6 @@ const BazarMapComponent = {
         zoomControl: this.params.navigation,
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
-          forceSeparateButton: true,
           title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
           titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
@@ -110,7 +109,7 @@ const BazarMapComponent = {
             break
           case 'geojson':
             this.layers[label] = L.geoJson.ajax(url, {
-              style(feature, latlng) {
+              style(feature, _latlng) {
                 if (feature.geometry.type == 'Point') return
                 const props = feature.properties || {}
                 options.split(';').forEach((o) => {
@@ -215,18 +214,18 @@ const BazarMapComponent = {
           )
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', () => {
-              event.preventDefault()
+              window.event.preventDefault()
               window.location =
                 entry.url + (this.$root.isInIframe() ? '/iframe' : '')
             })
           } else if (this.isNewTabDisplay()) {
             entry.marker.on('click', function () {
-              event.preventDefault()
+              window.event.preventDefault()
               window.open(entry.url)
               this.selectedEntry = entry
             })
           } else if (!isLink) {
-            entry.marker.on('click', (ev) => {
+            entry.marker.on('click', (_ev) => {
               this.selectedEntry = entry
             })
           }
@@ -243,30 +242,27 @@ const BazarMapComponent = {
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'modal'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'modal'
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != null && this.params.entrydisplay == 'direct'
       )
     },
     openPopup(entry) {
-      if (entry.marker == undefined) {
+      if (entry.marker == null) {
         return false
       }
       // Vue 3: use $slots instead of $scopedSlots
       const slots = this.$slots
-      if (slots.popupentrywithhtmlrender != undefined) {
-        if (entry.html_render == undefined) {
+      if (slots.popupentrywithhtmlrender != null) {
+        if (entry.html_render == null) {
           let url = ''
           let excludeFields = ''
           if (
@@ -317,7 +313,7 @@ const BazarMapComponent = {
           // Triggers when the component is ready
           this.$nextTick(() => this.definePopupContent(entry))
         }
-      } else if (slots.popupentry != undefined) {
+      } else if (slots.popupentry != null) {
         // Triggers when the component is ready
         this.$nextTick(() => this.definePopupContent(entry))
       }
@@ -325,14 +321,14 @@ const BazarMapComponent = {
     definePopupContent(entry) {
       const slots = this.$slots
       const renderedHtml =
-        slots.popupentrywithhtml != undefined
+        slots.popupentrywithhtml != null
           ? $(this.$el)
               .find('.popupentry-container.with-html-render > div')
               .first()
               .html()
           : $(this.$el).find('.popupentry-container > div').first().html()
-      if (entry.marker.popup == undefined) {
-        if (renderedHtml != undefined && renderedHtml.length != 0) {
+      if (entry.marker.popup == null) {
+        if (renderedHtml != null && renderedHtml.length != 0) {
           entry.marker
             .bindPopup(renderedHtml, { keepInView: true })
             .on('popupopen', () => {

@@ -90,7 +90,7 @@ export default class {
     const isUrl = /^https?:\/\//.test(link)
     // We do not allow "." on purpose, even if it's part of WN_PAGE_TAG regular expression
     // because we want inputs like "yeswiki.net" to be interpreted as URL and not page names
-    const haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(link)
+    const haveSpecialChars = /[{}|.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(link)
     const validLink = link && (isUrl || !haveSpecialChars)
     if (!validLink) {
       event.stopImmediatePropagation()

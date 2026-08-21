@@ -148,7 +148,7 @@ const app = createApp({
         this.revisions
           .slice()
           .reverse()
-          .forEach((rev, index) => {
+          .forEach((rev, _index) => {
             if (prevRevision) {
               const minGap = this.minGapBetween(rev, prevRevision)
               rev.placeInTimeLine = Math.max(

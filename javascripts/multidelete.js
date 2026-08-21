@@ -20,7 +20,7 @@ const multiDeleteService = {
   modalClosing(modalContainer) {
     const id = $(modalContainer).prop('id')
     if (
-      this.refreshOnModalClosing.hasOwnProperty(id) &&
+      Object.prototype.hasOwnProperty.call(this.refreshOnModalClosing, id) &&
       this.refreshOnModalClosing[id] === true
     ) {
       window.location.reload()
@@ -83,11 +83,11 @@ const multiDeleteService = {
       return
     }
     const item = items[currentIndex] ?? {}
-    const itemId = item.id != undefined ? item.id : ''
+    const itemId = item.id != null ? item.id : ''
     const csrfToken =
       'antiCsrfToken' in wiki
         ? wiki.antiCsrfToken
-        : item.token != undefined
+        : item.token != null
           ? item.token
           : ''
     if (itemId.length == 0 || csrfToken.length == 0) {
@@ -138,10 +138,7 @@ const multiDeleteService = {
       for (let index = 0; index < inputs.length; index++) {
         const itemId = $(inputs[index]).data('itemid')
         const csrfToken = $(inputs[index]).data('csrftoken')
-        if (
-          itemId.length > 0 &&
-          (csrfToken == undefined || csrfToken.length == 0)
-        ) {
+        if (itemId.length > 0 && (csrfToken == null || csrfToken.length == 0)) {
           items.push({ id: itemId })
         } else if (itemId.length > 0 && csrfToken.length > 0) {
           items.push({ id: itemId, token: csrfToken })
@@ -186,7 +183,7 @@ const multiDeleteService = {
           if (body && body.error) {
             errorDetail = ': ' + body.error
           }
-        } catch (e) {
+        } catch (_e) {
           /* ignore parse errors */
         }
         throw new Error(
@@ -225,7 +222,7 @@ const multiDeleteService = {
   },
 }
 
-$('button.start-btn-delete-all').on('click', () => {
+$('button.start-btn-delete-all').on('click', (event) => {
   if (!multiDeleteService.isRunning) {
     multiDeleteService.isRunning = true
     const elem = event.target
@@ -245,3 +242,5 @@ $('.modal.multidelete').on('shown.bs.modal', function () {
 $('.modal.multidelete').on('hidden.bs.modal', function () {
   multiDeleteService.modalClosing($(this))
 })
+
+window.checkAllFirstCol = checkAllFirstCol

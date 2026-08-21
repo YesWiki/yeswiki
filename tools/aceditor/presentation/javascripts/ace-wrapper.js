@@ -1,7 +1,7 @@
-import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
+import '../../../../javascripts/vendor/ace/ace.js'
 // Loads html rules cause it's used inside yeswiki mode
-import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
-import * as language_tools from '../../../../javascripts/vendor/ace/ext-language_tools.js'
+import '../../../../javascripts/vendor/ace/mode-html.js'
+import '../../../../javascripts/vendor/ace/ext-language_tools.js'
 
 export default class {
   ace = null

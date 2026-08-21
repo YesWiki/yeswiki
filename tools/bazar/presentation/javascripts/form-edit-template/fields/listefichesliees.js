@@ -68,7 +68,7 @@ export default {
       10: 'addEntryBtnLabel',
     },
   },
-  renderInput(field) {
+  renderInput(_field) {
     return { field: '' }
   },
 }
