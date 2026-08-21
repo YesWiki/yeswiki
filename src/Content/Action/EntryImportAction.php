@@ -19,21 +19,12 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
         return 'entryimport';
     }
 
-    private $CSVManager;
-    private $formManager;
-    private $entryController;
-    private $bazarListService;
-
     public function formatArguments($arg)
     {
         $request = $this->getRequest();
         $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['id'] ?? $arg['id'] ?? '';
 
-        if (!$this->bazarListService) {
-            $this->bazarListService = $this->getService(BazarListService::class);
-        }
-
-        $vIDs = $this->bazarListService->getIDs($vIDs);
+        $vIDs = $this->getService(BazarListService::class)->getIDs($vIDs);
 
         $vServer = $request->get('server') ?? $arg['server'] ?? null;
 
@@ -55,6 +46,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /** @return string */
     public function run()
     {
         if (!empty($aclMessage = $this->checkSecuredACL())) {
@@ -65,36 +57,35 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             return $this->getMessageWhenHibernated();
         }
 
-        $this->CSVManager = $this->getService(CSVManager::class);
-        $this->formManager = $this->getService(FormManager::class);
-        $this->entryController = $this->getService(EntryController::class);
-        if (!$this->bazarListService) {
-            $this->bazarListService = $this->getService(BazarListService::class);
-        }
+        // these were four lazily-filled properties, which said "this state outlives the call"
+        // about four container lookups that do not
+        $csvManager = $this->getService(CSVManager::class);
+        $entryController = $this->getService(EntryController::class);
+        $bazarListService = $this->getService(BazarListService::class);
 
         $vRefresh = $this->arguments['refresh'] ?? $this->getRequest()->query->get('refresh', 'false');
         $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
-        $vForms = $this->formManager->getAll();
+        $vForms = $this->getService(FormManager::class)->getAll();
 
         switch ($this->arguments['mode']) {
             case 'submitfile':
-                $vID = $this->bazarListService->getTheID($this->arguments['id']);
+                $vID = $bazarListService->getTheID($this->arguments['id']);
 
-                if ($vID['isExternal']) {
+                if (empty($vID) || !empty($vID['isExternal'])) {
                     throw new \Exception('The specified ID for import should be local');
                 }
 
                 $vForm = $vForms[$vID['key']];
 
-                if ($extracted = $this->CSVManager->extractCSVfromCSVFile(
+                if ($extracted = $csvManager->extractCSVfromCSVFile(
                     $this->arguments['id'],
                     $this->arguments['filesData'],
                     $this->arguments['bazar-import-option-detect-columns-on-headers'],
                     $vForm
                 )) {
-                    $extracted = array_map(function ($extract) use ($vForm) {
-                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, null, $vForm);
+                    $extracted = array_map(function ($extract) use ($vForm, $entryController) {
+                        $extract['displayData'] = $entryController->view($extract['entry'], '', false, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
 
                         return $extract;
@@ -105,29 +96,29 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
 
             case 'importentries':
                 $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
-                $vID = $this->bazarListService->getTheID($this->arguments['id']);
+                $vID = $bazarListService->getTheID($this->arguments['id']);
 
-                if ($vID['isExternal']) {
+                if (empty($vID) || !empty($vID['isExternal'])) {
                     throw new \Exception('The specified ID for import should be local');
                 }
 
-                $importedEntries = $this->CSVManager->importEntry($this->arguments['importentries'], $vID['id']);
+                $importedEntries = $csvManager->importEntry($this->arguments['importentries'], $vID['id']);
                 break;
 
             case 'default':
             default:
-                $vID = $this->bazarListService->getTheID($this->arguments['id'], false);
+                $vID = $bazarListService->getTheID($this->arguments['id'], false);
 
                 if (!empty($vID)) {
                     $vForm = $vForms[$vID['key']];
 
-                    $csv_template = $this->CSVManager->getCSVfromFormId($vID['id'], [], ['fakeMode' => true]);
+                    $csv_template = $csvManager->getCSVfromFormId($vID['id'], [], ['fakeMode' => true]);
                 }
                 break;
         }
 
         if (!empty($vID)) {
-            $vFilename = $this->CSVManager->buildExportFilename($vID);
+            $vFilename = $csvManager->buildExportFilename($vID);
         }
 
         return $this->render('@core/bazar-import.twig', [
@@ -136,7 +127,7 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             'forms' => $vForms,
             'params' => $this->arguments['params'],
             'filename' => $vFilename ?? '',
-            'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSVToDisplay($csv_template) : null,
+            'csv' => isset($csv_template) ? $csvManager->arrayToCSVToDisplay($csv_template) : null,
             'selectedForm' => $vForm ?? null,
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,

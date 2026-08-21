@@ -409,7 +409,8 @@ class YesWikiRuntime
         // TODO properly use the Symfony HttpFoundation component to avoid this
         if ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH') {
             if (empty($_POST)) {
-                $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+                $rawBody = file_get_contents('php://input');
+                $_POST = ($rawBody === false ? null : json_decode($rawBody, true)) ?? [];
             }
         }
         $context = new RequestContext();
@@ -461,23 +462,37 @@ class YesWikiRuntime
         $rawOutput = ob_get_contents();
         ob_end_clean();
         if (!empty($rawOutput)) {
-            if ($response instanceof JsonResponse) {
-                $previousContent = json_decode($response->getContent(), true);
-                $newContent = is_array($previousContent)
-                    ? ['rawOutput' => $rawOutput] + $previousContent
-                    : (
-                        is_string($previousContent)
-                        ? $previousContent . $rawOutput
-                        : $rawOutput
-                    );
-                $response->setData($newContent);
-            } else {
-                $previousContent = $response->getContent();
-                $newContent = $previousContent . $rawOutput;
-                $response->setContent($newContent);
-            }
+            $this->foldRawOutputInto($response, $rawOutput);
         }
         $response->send();
+    }
+
+    /**
+     * Fold whatever a controller echoed straight to the output buffer into the response body.
+     *
+     * A JSON response keeps its shape: the stray output becomes a `rawOutput` key rather than
+     * being concatenated onto the JSON text, which would make it unparseable.
+     */
+    private function foldRawOutputInto(Response $response, string $rawOutput): void
+    {
+        if ($response instanceof JsonResponse) {
+            $json = $response->getContent();
+            $previousContent = $json === false ? null : json_decode($json, true);
+            $response->setData(
+                is_array($previousContent)
+                ? ['rawOutput' => $rawOutput] + $previousContent
+                : (
+                    is_string($previousContent)
+                    ? $previousContent . $rawOutput
+                    : $rawOutput
+                )
+            );
+
+            return;
+        }
+
+        $previousContent = $response->getContent();
+        $response->setContent(($previousContent === false ? '' : $previousContent) . $rawOutput);
     }
 
     /**
@@ -558,7 +573,10 @@ class YesWikiRuntime
         }
 
         foreach ($controllersDirs as $dir) {
-            $routes->addCollection($loader->load($dir));
+            $loaded = $loader->load($dir);
+            if ($loaded !== null) {
+                $routes->addCollection($loaded);
+            }
             $resources[] = new FileResource($dir);
             foreach (glob($dir . '/*.php') ?: [] as $controllerFile) {
                 $resources[] = new FileResource($controllerFile);
@@ -697,13 +715,13 @@ class YesWikiRuntime
      */
     private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
     {
-        // absolute paths: shared extensions come from the source tree (farm-wide, an
+        // absolute paths: shared extensions come from the Program tree (farm-wide, an
         // instance cannot write there), custom/extensions/ belongs to the instance -
         // everything downstream ($pluginBase . 'file' concatenations) works unchanged.
         // Loaded shared-first so an instance-local custom/extensions/{ext} shadows the
         // shared extensions/{ext} in the array_merge (ticket 25, formerly tools/ and
         // custom/tools/ with the exact same precedence).
-        $this->loadExtensionsFromDir(YESWIKI_SOURCE_DIR . '/extensions/');
+        $this->loadExtensionsFromDir(YESWIKI_PROGRAM_DIR . '/extensions/');
         $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/extensions/');
         // TODO refactor as custom is not an extension
         $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/'; // Will load custom/actions, custom/handlers etc...

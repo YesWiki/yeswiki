@@ -14,7 +14,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
     private const TAG = 'PageManagerRevertToRevisionRegressionPage';
     private const OTHER_TAG = 'PageManagerRevertToRevisionRegressionOtherPage';
 
-    public function testDefaultRevertDoesNotReopenAnAclTightenedAfterTheRevertedContentEdit()
+    public function testDefaultRevertDoesNotReopenAnAclTightenedAfterTheRevertedContentEdit(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -43,7 +43,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
         }
     }
 
-    public function testFullRevertRestoresMetadataToo()
+    public function testFullRevertRestoresMetadataToo(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -72,7 +72,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
         }
     }
 
-    public function testFullRevertDoesNotCreateASecondRevision()
+    public function testFullRevertDoesNotCreateASecondRevision(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -92,7 +92,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
         }
     }
 
-    public function testCannotRevertAPageUsingAnotherPagesRevisionId()
+    public function testCannotRevertAPageUsingAnotherPagesRevisionId(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

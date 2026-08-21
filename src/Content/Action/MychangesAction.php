@@ -88,13 +88,10 @@ class MychangesAction extends YesWikiAction implements RegisteredAction, Provide
                         }
 
                         echo "&nbsp;&nbsp;&nbsp;($time) (",$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history'),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', ''),"<br />\n";
-
-                        $my_edits_count++;
                     }
-
-                    if ($my_edits_count == 0) {
-                        echo '<i>' . _t('YOU_DIDNT_MODIFY_ANY_PAGE') . '.</i>';
-                    }
+                // no "you modified nothing" test here: this branch prints one line per row
+                // of a result set the `if` above already found non-empty, so the count it
+                // used to keep could never be 0. The empty case is the `else` below.
                 } else {
                     echo '<i>' . _t('NO_PAGE_FOUND') . '.</i>';
                 }

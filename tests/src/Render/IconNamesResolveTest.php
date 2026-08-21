@@ -12,7 +12,7 @@ class IconNamesResolveTest extends TestCase
      */
     private function spriteSymbols(): array
     {
-        $sprite = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/assets/icons.svg');
+        $sprite = (string)file_get_contents(YESWIKI_PROGRAM_DIR . '/src/assets/icons.svg');
         preg_match_all('/symbol id="([a-z0-9-]+)"/', $sprite, $matches);
 
         return $matches[1];
@@ -25,7 +25,7 @@ class IconNamesResolveTest extends TestCase
     {
         $calls = [];
         foreach (['templates', 'themes', 'extensions'] as $directory) {
-            $path = YESWIKI_SOURCE_DIR . '/' . $directory;
+            $path = YESWIKI_PROGRAM_DIR . '/' . $directory;
             if (!is_dir($path)) {
                 continue;
             }

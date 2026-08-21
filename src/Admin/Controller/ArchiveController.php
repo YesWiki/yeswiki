@@ -15,8 +15,8 @@ use YesWiki\Kernel\Service\ThrowableFormatter;
 
 class ArchiveController extends YesWikiController
 {
-    protected $archiveService;
-    protected $params;
+    protected ArchiveService $archiveService;
+    protected ParameterBagInterface $params;
     protected Storage $storage;
 
     public function __construct(
@@ -29,7 +29,8 @@ class ArchiveController extends YesWikiController
         $this->storage = $storage;
     }
 
-    public function getArchive(string $id)
+    /** @return Response the archive as a download, or an ApiResponse carrying the reason it could not be served */
+    public function getArchive(string $id): Response
     {
         try {
             $filePath = $this->archiveService->getFilePath($id);
@@ -76,7 +77,7 @@ class ArchiveController extends YesWikiController
         }
     }
 
-    public function manageArchiveAction(?string $id = null)
+    public function manageArchiveAction(?string $id = null): ApiResponse
     {
         try {
             $action = $this->getService(InputFilter::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
@@ -189,7 +190,7 @@ class ArchiveController extends YesWikiController
         }
     }
 
-    public function getArchiveStatus(string $uid, bool $forceStarted)
+    public function getArchiveStatus(string $uid, bool $forceStarted): ApiResponse
     {
         try {
             if (empty($uid)) {
@@ -213,6 +214,8 @@ class ArchiveController extends YesWikiController
 
     /**
      * start archive async or async via CLI.
+     *
+     * @param array<string, mixed> $params
      *
      * @return string uid
      */

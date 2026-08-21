@@ -32,6 +32,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /** @return string */
     public function run()
     {
         $vSecurityController = $this->getService(InputFilter::class);

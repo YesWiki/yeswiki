@@ -6,10 +6,12 @@ use YesWiki\Kernel\Database\SqlFragment;
 
 class TripleStore
 {
-    protected $dbService;
-    protected $hibernationService;
+    protected DbService $dbService;
+    protected HibernationService $hibernationService;
 
+    /** @var array<string, array<string, list<array{id: mixed, value: mixed, resource: mixed}>>> */
     protected $cacheByResource;
+    /** @var array<string, list<array<string, mixed>>> */
     protected array $matchingCache = [];
 
     public const TYPE_URI = 'http://outils-reseaux.org/_vocabulary/type';
@@ -124,12 +126,12 @@ class TripleStore
      * @param string $prop_prefix
      *                            The prefix to add to $property (defaults to WIKINI_VOC_PREFIX)
      *
-     * @return array An array of the retrieved values, in the form
-     *               array(
-     *               0 => array(id = 7 , 'value' => $value1),
-     *               1 => array(id = 34, 'value' => $value2),
-     *               ...
-     *               )
+     * @return list<array{id: mixed, value: mixed, resource: mixed}> An array of the retrieved values, in the form
+     *                                                               array(
+     *                                                               0 => array(id = 7 , 'value' => $value1),
+     *                                                               1 => array(id = 34, 'value' => $value2),
+     *                                                               ...
+     *                                                               )
      */
     public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): array
     {
@@ -231,7 +233,11 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        return $this->dbService->query($sql, [$res]) !== false;
+        // DbService::query() throws on failure rather than returning false, so reaching the
+        // next line means the DELETE ran.
+        $this->dbService->query($sql, [$res]);
+
+        return true;
     }
 
     /**
@@ -268,7 +274,10 @@ class TripleStore
 
         $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value) VALUES (?, ?, ?)';
 
-        return $this->dbService->query($sql, [$res, $prop_prefix . $property, $value]) ? 0 : 1;
+        // DbService::query() throws on failure, so there is no failure code to return here.
+        $this->dbService->query($sql, [$res, $prop_prefix . $property, $value]);
+
+        return 0;
     }
 
     /**
@@ -314,7 +323,10 @@ class TripleStore
 
         $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = ? WHERE id = ?';
 
-        return $this->dbService->query($sql, [$newvalue, $id]) ? 0 : 1;
+        // DbService::query() throws on failure, so there is no failure code to return here.
+        $this->dbService->query($sql, [$newvalue, $id]);
+
+        return 0;
     }
 
     /**
@@ -366,9 +378,7 @@ class TripleStore
         $this->matchingCache = [];
 
         try {
-            if ($this->dbService->query($sql, $params) === false) {
-                return false;
-            }
+            $this->dbService->query($sql, $params);
             $sql = <<<SQL
             SELECT id FROM {$this->dbService->prefixTable('triples')}
               WHERE resource = ?

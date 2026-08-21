@@ -17,7 +17,7 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
         return 'entryfollow';
     }
 
-    public function run()
+    public function run(): string
     {
         $activityPubService = $this->getService(ActivityPubService::class);
         $webfingerService = $this->getService(WebfingerService::class);
@@ -37,12 +37,14 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
             return $this->getService(Redirector::class)->redirect($interactionUrl);
         }
 
-        $activityPubEnabled = $activityPubService->isEnabled($form);
-
-        if ($activityPubEnabled) {
-            return $this->render('@core/follow.twig', [
-                'form' => $form,
-            ]);
+        // a form that does not federate has nothing to follow: the action renders nothing
+        // rather than falling off the end and handing Performer an implicit null
+        if (!$activityPubService->isEnabled($form)) {
+            return '';
         }
+
+        return $this->render('@core/follow.twig', [
+            'form' => $form,
+        ]);
     }
 }

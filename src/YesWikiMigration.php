@@ -16,8 +16,8 @@ abstract class YesWikiMigration
     abstract public function run();
 
     protected ContainerInterface $services;
-    protected $params;
-    protected $dbService;
+    protected ParameterBagInterface $params;
+    protected DbService $dbService;
 
     public function setServices(ContainerInterface $services): void
     {
@@ -35,7 +35,15 @@ abstract class YesWikiMigration
         $this->dbService = $dbService;
     }
 
-    /** give service from name. */
+    /**
+     * give service from name.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className
+     *
+     * @return T
+     */
     protected function getService(string $className)
     {
         return $this->services->get($className);

@@ -11,7 +11,7 @@ use YesWiki\Content\Field\BazarField;
 #[\Field(['alerte'])]
 class AlertField extends BazarField
 {
-    protected $alertText;
+    protected string $alertText;
 
     protected const FIELD_ALERT_TEXT = 1;
 
@@ -19,7 +19,7 @@ class AlertField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->alertText = $values[self::FIELD_ALERT_TEXT];
+        $this->alertText = (string)($values[self::FIELD_ALERT_TEXT] ?? '');
     }
 
     protected function renderInput($entry)

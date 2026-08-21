@@ -20,7 +20,7 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
             'cd %s && %s %s %s 2>&1',
             escapeshellarg($workingDirectory),
             escapeshellarg(PHP_BINARY),
-            escapeshellarg(\YESWIKI_SOURCE_DIR . '/src/commands/console'),
+            escapeshellarg(\YESWIKI_PROGRAM_DIR . '/src/commands/console'),
             $arguments
         );
         exec($command, $lines, $status);
@@ -103,9 +103,9 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
             $this->assertFileExists($instance . '/index.php');
             $this->assertFileExists($instance . '/yeswicli', 'each wiki gets a console of its own');
             $this->assertStringContainsString(
-                \YESWIKI_SOURCE_DIR,
+                \YESWIKI_PROGRAM_DIR,
                 (string)file_get_contents($instance . '/index.php'),
-                'and it loads this source tree'
+                'and it loads this program tree'
             );
             foreach (['cache', 'custom', 'files', 'private'] as $dataFolder) {
                 $this->assertDirectoryExists($instance . '/' . $dataFolder);

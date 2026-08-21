@@ -192,6 +192,9 @@ class EnvValuesHashResource implements \Symfony\Component\Config\Resource\SelfCh
         return 'envvalueshash.' . md5(implode("\0", $this->names)) . '.' . $this->hash;
     }
 
+    /**
+     * @param string[] $names
+     */
     private static function valuesHash(array $names): string
     {
         $values = [];

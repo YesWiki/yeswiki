@@ -28,10 +28,13 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
         return 'duplicate';
     }
 
-    protected $authenticationService;
-    protected $entryController;
-    protected $duplicationManager;
+    protected AuthenticationService $authenticationService;
+    protected EntryController $entryController;
+    protected DuplicationManager $duplicationManager;
 
+    /**
+     * @return string
+     */
     public function run()
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);

@@ -22,7 +22,7 @@ class TocActionTest extends YesWikiTestCase
         }
     }
 
-    public function testTocLinksMatchAssignedHeadingIdsAndUsesNoBootstrapOrJquery()
+    public function testTocLinksMatchAssignedHeadingIdsAndUsesNoBootstrapOrJquery(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

@@ -13,7 +13,7 @@ require_once 'tests/YesWikiTestCase.php';
 class WakkaFormatterTest extends YesWikiTestCase
 {
     #[DataProvider('dataProviderTestMarkdownImageIsSafe')]
-    public function testMarkdownImageIsSafe(string $markdown, ?string $expectedSrc)
+    public function testMarkdownImageIsSafe(string $markdown, ?string $expectedSrc): void
     {
         $wiki = $this->getWiki();
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($markdown);
@@ -34,6 +34,9 @@ class WakkaFormatterTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * @return array<string, array{string, string|null}>
+     */
     public static function dataProviderTestMarkdownImageIsSafe(): array
     {
         return [
@@ -67,7 +70,7 @@ class WakkaFormatterTest extends YesWikiTestCase
     /**
      * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at every `[` in the input, making a run of N `[` characters cost O(N^2).
      */
-    public function testMarkdownLinkBracketRunIsNotQuadratic()
+    public function testMarkdownLinkBracketRunIsNotQuadratic(): void
     {
         $wiki = $this->getWiki();
         $payload = str_repeat('[', 60000);

@@ -87,6 +87,7 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         ];
     }
 
+    /** @return string */
     public function run()
     {
         if (

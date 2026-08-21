@@ -26,10 +26,13 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     protected AssetRegistry $assetRegistry;
-    protected $authenticationService;
-    protected $entryController;
-    protected $favoritesManager;
+    protected AuthenticationService $authenticationService;
+    protected EntryController $entryController;
+    protected FavoritesManager $favoritesManager;
 
+    /**
+     * @return string a full HTML document for the iframe
+     */
     public function run()
     {
         $this->assetRegistry = $this->getService(AssetRegistry::class);
@@ -102,7 +105,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
             }, $tab_valeurs);
         }
-        $entry = $this->entryController->view($this->getService(PageContext::class)->getTag(), 0, true);
+        $entry = $this->entryController->view($this->getService(PageContext::class)->getTag(), '', true);
         if (!empty($entry)) {
             $output .= $this->replaceLinksWithIframeIfNeeded($entry);
         }

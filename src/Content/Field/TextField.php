@@ -8,8 +8,11 @@ use YesWiki\Kernel\Service\HtmlPurifierService;
 #[\Field(['texte'])]
 class TextField extends BazarField
 {
+    /** @var string|null */
     protected $pattern;
+    /** @var string|null */
     protected $subType;
+    /** @var string|null */
     protected $placeholder;
 
     protected const FIELD_PATTERN = 6;
@@ -18,6 +21,9 @@ class TextField extends BazarField
 
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -85,17 +91,17 @@ class TextField extends BazarField
         return [$this->propertyName => $cleanHTML];
     }
 
-    public function getPattern()
+    public function getPattern(): ?string
     {
         return $this->pattern;
     }
 
-    public function getSubType()
+    public function getSubType(): ?string
     {
         return $this->subType;
     }
 
-    public function getPlaceholder()
+    public function getPlaceholder(): ?string
     {
         return $this->placeholder;
     }

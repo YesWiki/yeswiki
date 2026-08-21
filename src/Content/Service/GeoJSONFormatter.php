@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiController;
 
 class GeoJSONFormatter extends YesWikiController
 {
-    protected $formManager;
+    protected FormManager $formManager;
     protected FieldRoleResolver $fieldRoles;
 
     public function __construct(
@@ -21,12 +21,15 @@ class GeoJSONFormatter extends YesWikiController
     /**
      * get data grom entries in GeoJSON format.
      *
-     * @return array data
+     * @param array<int|string, array<string, mixed>> $entries
+     *
+     * @return array<string, mixed> data
      */
     public function formatToGeoJSON(array $entries): array
     {
+        /** @var array<int, string|null> $cache */
         $cache = [];
-        $entriesWithGeo = array_filter(array_map(function ($entry) use ($cache) {
+        $entriesWithGeo = array_filter(array_map(function ($entry) use (&$cache) {
             $geo = $this->getGeoData($entry, $cache);
             if (empty($geo)) {
                 return [];
@@ -66,7 +69,10 @@ class GeoJSONFormatter extends YesWikiController
     /**
      * extract geoData.
      *
-     * @return array ['latitude'=>000,'longitude'=>00] or []
+     * @param array<string, mixed>    $entry
+     * @param array<int, string|null> $cache per-form-id memo
+     *
+     * @return array<string, mixed> ['latitude'=>000,'longitude'=>00] or []
      */
     public function getGeoData(array $entry, array &$cache): array
     {

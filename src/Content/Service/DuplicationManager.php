@@ -334,7 +334,7 @@ class DuplicationManager
         $req = $request->request->all();
         foreach (['originalContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
             if (empty($req[$key])) {
-                throw new \Exception(_t('NOT_FOUND_IN_REQUEST', $key));
+                throw new \Exception(_t('NOT_FOUND_IN_REQUEST', ['key' => $key]));
             }
         }
         foreach ($req['files'] as $fileUrl) {
@@ -373,7 +373,7 @@ class DuplicationManager
         }
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HEADER, false);
 
         curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);

@@ -21,26 +21,21 @@ class NuagetagActionTest extends YesWikiTestCase
     private const SECRET_VALUE = 'SECRET_LEAK_MARKER_VALUE';
     private const SECRET_RESOURCE = 'SECRET_LEAK_MARKER_RESOURCE';
 
-    private static ?TripleStore $tripleStore = null;
-
     public static function setUpBeforeClass(): void
     {
-        $wiki = self::getWiki();
-        self::$tripleStore = $wiki->services->get(TripleStore::class);
+        self::tripleStore()->create(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
 
-        self::$tripleStore->create(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
-
-        self::$tripleStore->create(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
+        self::tripleStore()->create(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
     }
 
     public static function tearDownAfterClass(): void
     {
-        self::$tripleStore->delete(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
-        self::$tripleStore->delete(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
+        self::tripleStore()->delete(self::LEGIT_RESOURCE, '', self::LEGIT_TAG_VALUE, '', self::TAG_PROPERTY);
+        self::tripleStore()->delete(self::SECRET_RESOURCE, '', self::SECRET_VALUE, '', self::SECRET_PROPERTY);
     }
 
     #[DataProvider('dataProviderTestInjectionPayloadsDoNotLeakData')]
-    public function testInjectionPayloadsDoNotLeakData(string $payload)
+    public function testInjectionPayloadsDoNotLeakData(string $payload): void
     {
         $wiki = $this->getWiki();
         $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', ['tags' => $payload]);
@@ -49,6 +44,9 @@ class NuagetagActionTest extends YesWikiTestCase
         $this->assertStringNotContainsString(self::SECRET_RESOURCE, $html, "payload leaked secret data: $payload");
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
     public static function dataProviderTestInjectionPayloadsDoNotLeakData(): array
     {
         $tablePrefix = self::getWiki()->config['table_prefix'];
@@ -69,7 +67,7 @@ class NuagetagActionTest extends YesWikiTestCase
         ];
     }
 
-    public function testLegitimateTagStillWorks()
+    public function testLegitimateTagStillWorks(): void
     {
         $wiki = $this->getWiki();
         $html = $wiki->services->get(ActionRunner::class)->action('tagcloud', ['tags' => self::LEGIT_TAG_VALUE]);
@@ -77,7 +75,7 @@ class NuagetagActionTest extends YesWikiTestCase
         $this->assertStringContainsString(self::LEGIT_RESOURCE, $html);
     }
 
-    public function testTagValueAndResourceAreEscapedInOutput()
+    public function testTagValueAndResourceAreEscapedInOutput(): void
     {
         $xssTagValue = '<script>alert(document.domain)</script>';
         $xssResource = '"><img src=x onerror=alert(document.domain)>';
@@ -108,5 +106,10 @@ class NuagetagActionTest extends YesWikiTestCase
         } finally {
             $tripleStore->delete($xssResource, '', $xssTagValue, '', self::TAG_PROPERTY);
         }
+    }
+
+    private static function tripleStore(): TripleStore
+    {
+        return self::getWiki()->services->get(TripleStore::class);
     }
 }

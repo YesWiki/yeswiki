@@ -14,10 +14,11 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
         return 'buttondropdown';
     }
 
+    /**
+     * @return string opening markup for the dropdown, or the unclosed-element error message
+     */
     public function run()
     {
-        ob_start();
-
         $text = $this->arguments['text'] ?? '';
 
         $title = $this->arguments['title'] ?? '';
@@ -42,19 +43,16 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
             $btnclass = str_replace('yw-btn ', '', $btnclass);
         }
 
-        if ($this->check_end_elem('buttondropdown')) {
-            $encodedtitle = htmlentities($title, ENT_COMPAT, YW_CHARSET);
-            echo '<div class="yw-dropdown' . (!empty($class) ? ' ' . $class : '') . '"> <!-- start of buttondropdown -->
+        if (!$this->check_end_elem('buttondropdown')) {
+            return $this->generate_error_msg('buttondropdown');
+        }
+
+        $encodedtitle = htmlentities($title, ENT_COMPAT, YW_CHARSET);
+
+        return '<div class="yw-dropdown' . (!empty($class) ? ' ' . $class : '') . '"> <!-- start of buttondropdown -->
             <button class="' . $btnclass . ' yw-collapse-toggle" data-yw-dropdown-toggle aria-label="' . $encodedtitle . '" title="' . $encodedtitle . '">
             ' . $icon . $text . (($caret == '1') ? ' <span class="yw-dropdown__caret"></span>' : '') . '
             </button>' . "\n";
-        } else {
-            echo $this->generate_error_msg('buttondropdown');
-        }
-        $buttondropdown = ob_get_contents();
-        ob_end_clean();
-
-        return $buttondropdown;
     }
 
     public function end(): string

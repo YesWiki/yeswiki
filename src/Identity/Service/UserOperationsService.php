@@ -71,14 +71,12 @@ class UserOperationsService extends YesWikiController
         $this->initLimitationHelper(
             'user_name_max_length',
             'nameMaxLength',
-            FILTER_VALIDATE_INT,
             self::DEFAULT_NAME_MAX_LENGTH,
             'USER_NAME_MAX_LENGTH_NOT_INT'
         );
         $this->initLimitationHelper(
             'user_email_max_length',
             'emailMaxLength',
-            FILTER_VALIDATE_INT,
             self::DEFAULT_EMAIL_MAX_LENGTH,
             'USER_EMAIL_MAX_LENGTH_NOT_INT'
         );
@@ -278,7 +276,7 @@ class UserOperationsService extends YesWikiController
             $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
             if ($newValue != $group['value']) {
                 $groupName = substr($group['resource'], $prefixLen);
-                $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
+                $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue) ?: []));
                 if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
                     $this->groupOperationsService->delete($groupName);
                 } elseif (!in_array($this->tripleStore->update(
@@ -378,14 +376,13 @@ class UserOperationsService extends YesWikiController
      */
     private function sanitizeName($value): string
     {
-        $value = trim($value);
-        if (empty($value)) {
-            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
-        }
         if (!is_scalar($value)) {
             throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'name']));
         }
-        $value = strval($value);
+        $value = trim(strval($value));
+        if (empty($value)) {
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
+        }
         if (strlen($value) > $this->limitations['nameMaxLength']) {
             throw new \Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['nameMaxLength']}.");
         }

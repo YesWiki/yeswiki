@@ -63,7 +63,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         if (empty($this->arguments['mail'])) {
             return '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';

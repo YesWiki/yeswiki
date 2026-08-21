@@ -9,10 +9,10 @@ use YesWiki\Identity\Service\AuthenticationService;
 
 class PageOperationsService extends YesWikiController
 {
-    protected $authenticationService;
-    protected $entryController;
-    protected $entryManager;
-    protected $pageManager;
+    protected AuthenticationService $authenticationService;
+    protected EntryController $entryController;
+    protected EntryManager $entryManager;
+    protected PageManager $pageManager;
     protected AdministrativeLogService $administrativeLogService;
 
     public function __construct(
@@ -50,7 +50,7 @@ class PageOperationsService extends YesWikiController
     public function duplicate(string $sourceTag, string $destinationTag = ''): bool
     {
         if ($this->entryManager->isEntry($sourceTag)) {
-            return $this->entryController->duplicate($sourceTag, $destinationTag);
+            return $this->entryManager->duplicate($sourceTag, $destinationTag);
         }
 
         return $this->pageManager->duplicate($sourceTag, $destinationTag);

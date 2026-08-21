@@ -11,7 +11,7 @@ use YesWiki\Admin\Service\ArchiveService;
 
 class ArchiveCommand extends Command
 {
-    protected $archiveService;
+    protected ArchiveService $archiveService;
     protected ContainerInterface $services;
 
     public function __construct(ContainerInterface $services)
@@ -74,14 +74,17 @@ class ArchiveCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @param mixed $list the raw option value: a comma-separated list, or null when unset
+     *
+     * @return list<string>
+     */
     private function prepareFileList($list): array
     {
-        if (empty($list)) {
-            $list = [];
-        } else {
-            $list = array_filter(array_map('trim', explode(',', $list)));
+        if (!is_string($list) || trim($list) === '') {
+            return [];
         }
 
-        return $list;
+        return array_values(array_filter(array_map('trim', explode(',', $list))));
     }
 }

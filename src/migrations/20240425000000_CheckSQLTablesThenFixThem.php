@@ -22,7 +22,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
         string $tableName,
         string $columnName,
         string $SQL_columnDef
-    ) {
+    ): void {
         try {
             $data = $this->getColumnInfo($tableName, $columnName);
         } catch (Exception $ex) {
@@ -52,7 +52,10 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
         }
     }
 
-    private function checkThenUpdateColumnPrimary(string $tableName, string $columnName, array $newKeys)
+    /**
+     * @param list<string> $newKeys the columns the primary key should be made of
+     */
+    private function checkThenUpdateColumnPrimary(string $tableName, string $columnName, array $newKeys): void
     {
         $data = $this->getColumnInfo($tableName, $columnName);
         if (empty($data['Key']) || $data['Key'] !== 'PRI') {
@@ -83,23 +86,22 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
         }
     }
 
+    /**
+     * @return array<array-key, mixed> one SHOW COLUMNS row, or every SHOW INDEX row when
+     *                                 $columnName is the pseudo-name 'index'
+     */
     private function getColumnInfo(string $tableName, string $columnName): array
     {
+        // DbService::query() throws on a failed statement rather than returning false, so the
+        // `if (!$result)` fallbacks this used to carry could never run
         if ($columnName == 'index') {
             $result = $this->dbService->query("SHOW INDEX FROM {$this->dbService->prefixTable($tableName)};");
-            if (!$result) {
-                return [];
-            }
-            $data = $result->fetchAll(PDO::FETCH_ASSOC);
-            if ($data === false) {
-                return [];
-            }
 
-            return $data;
+            return $result->fetchAll(PDO::FETCH_ASSOC);
         }
         $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable($tableName)} LIKE '$columnName';");
-        $data = $result ? $result->fetch(PDO::FETCH_ASSOC) : false;
-        if ($data === false) {
+        $data = $result->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($data)) {
             throw new Exception("tables `$tableName` not verified because error while getting `$columnName` column !", 1);
         }
 

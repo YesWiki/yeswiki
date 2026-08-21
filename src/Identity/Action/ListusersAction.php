@@ -44,7 +44,7 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         $request = $this->getRequest();
 
@@ -82,7 +82,7 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                         if ($curday) {
                             $output .= "<br>\n";
                         }
-                        $output .= '<strong>' . date('d.m.Y', strtotime($day)) . '&nbsp;:</strong><br>' . "\n";
+                        $output .= '<strong>' . $this->formatDay($day) . '&nbsp;:</strong><br>' . "\n";
                         $curday = $day;
                     }
                     $output .= '<small>' . $time . '</small> ' . $user['name'] . "<br>\n";
@@ -95,7 +95,7 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
                 $output .= '<ol class="list-users">';
                 foreach ($users as $user) {
                     list($day, $time) = explode(' ', $user['signuptime']);
-                    $output .= '<li>' . $user['name'] . ' - <small>' . date('d.m.Y', strtotime($day)) . ' ' . $time . '</small> ' . "</li>\n";
+                    $output .= '<li>' . $user['name'] . ' - <small>' . $this->formatDay($day) . ' ' . $time . '</small> ' . "</li>\n";
                 }
                 $output .= '</ol>';
             } else {
@@ -104,5 +104,13 @@ class ListusersAction extends YesWikiAction implements RegisteredAction, Provide
         }
 
         return $output;
+    }
+
+    /** The day part of a signup time, as a date -- or verbatim, when it does not parse as one. */
+    private function formatDay(string $day): string
+    {
+        $timestamp = strtotime($day);
+
+        return $timestamp === false ? $day : date('d.m.Y', $timestamp);
     }
 }

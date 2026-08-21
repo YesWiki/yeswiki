@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Provision a new farm instance folder: an index.php pointing at this YesWiki source tree, plus the instance data folders.
+ * Provision a new farm Instance folder: an index.php pointing at this YesWiki Prorce tree, plus the instance data folders.
  */
 class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 {
@@ -25,9 +25,9 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
     {
         $this
             ->setName('core:create-instance')
-            ->setDescription('Create a new wiki instance folder sharing this YesWiki as source.')
+            ->setDescription('Create a new wiki instance folder sharing this YesWiki program.')
             ->setHelp("Creates <path> (relative to the current directory, or absolute) containing:\n" .
-                "- index.php loading YesWiki from this source tree\n" .
+                "- index.php loading YesWiki from this Program tree\n" .
                 "- yeswicli, this wiki's own console\n" .
                 "- the instance data folders (cache/, custom/, files/, private/)\n\n" .
                 "Point a vhost docroot at the folder (with the standard rewrite fallback\n" .
@@ -55,7 +55,7 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 
             return Command::FAILURE;
         }
-        if (realpath($path) === realpath(YESWIKI_SOURCE_DIR)) {
+        if (realpath($path) === realpath(YESWIKI_PROGRAM_DIR)) {
             $output->writeln('<error>Refusing to create an instance inside the YesWiki source folder itself.</error>');
 
             return Command::FAILURE;
@@ -69,13 +69,13 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 
         $path = realpath($path) ?: $path;
 
-        $sourceDir = var_export(YESWIKI_SOURCE_DIR, true);
+        $programDir = var_export(YESWIKI_PROGRAM_DIR, true);
         $indexContent = <<<PHP
             <?php
 
-            define('YESWIKI_SOURCE_DIR', $sourceDir);
+            define('YESWIKI_PROGRAM_DIR', $programDir);
             putenv('YESWIKI_CONFIG_FILE=' . __DIR__ . '/yeswiki.config.php');
-            require YESWIKI_SOURCE_DIR . '/index.php';
+            require YESWIKI_PROGRAM_DIR . '/index.php';
 
             PHP;
 
@@ -90,8 +90,8 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
                 @mkdir($path . '/' . $dataFolder, 0755, true);
             }
         }
-        if (!is_file($path . '/private/.htaccess') && is_file(YESWIKI_SOURCE_DIR . '/private/.htaccess')) {
-            @copy(YESWIKI_SOURCE_DIR . '/private/.htaccess', $path . '/private/.htaccess');
+        if (!is_file($path . '/private/.htaccess') && is_file(YESWIKI_PROGRAM_DIR . '/private/.htaccess')) {
+            @copy(YESWIKI_PROGRAM_DIR . '/private/.htaccess', $path . '/private/.htaccess');
         }
 
         $this->writeConsoleWrapper($path);
@@ -110,7 +110,7 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
     /** A `yeswicli` of its own in the new folder. */
     private function writeConsoleWrapper(string $path): void
     {
-        $console = YESWIKI_SOURCE_DIR . '/src/commands/console';
+        $console = YESWIKI_PROGRAM_DIR . '/src/commands/console';
         $wrapper = <<<SH
             #!/usr/bin/env bash
             # This wiki's console: the shared YesWiki source, run from this folder -- which is

@@ -128,7 +128,7 @@ class CaptchaController extends YesWikiController
         $this->words = self::DEFAULT_TEXTS;
         $this->updateWordsFromConfig();
         $this->imageWidth = $this->getImageWidth();
-        $this->fontFile = YESWIKI_SOURCE_DIR . '/src/assets/fonts/agenda__.ttf';
+        $this->fontFile = YESWIKI_PROGRAM_DIR . '/src/assets/fonts/agenda__.ttf';
     }
 
     /**
@@ -136,7 +136,7 @@ class CaptchaController extends YesWikiController
      *
      * @throws \Exception on errors
      */
-    public function printImage(string $hash)
+    public function printImage(string $hash): void
     {
         /**
          * @var \GdImage $image manipulated image
@@ -174,7 +174,7 @@ class CaptchaController extends YesWikiController
      *
      * @param string $mode 'page' or 'entry'
      *
-     * @return array [bool $state,string $error]
+     * @return array{bool, string|null} the verdict, and the message to show when it is false -- null when no captcha was due
      */
     public function checkCaptchaBeforeSave(string $mode = 'page'): array
     {
@@ -182,9 +182,6 @@ class CaptchaController extends YesWikiController
             $post = $this->getRequest()->request;
             if (($mode != 'entry' && $post->get('submit') == InputFilter::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
-                /**
-                 * @var string $error message if error
-                 */
                 $error = '';
                 if (empty($post->get('captcha'))) {
                     $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
@@ -212,7 +209,7 @@ class CaptchaController extends YesWikiController
     /**
      * render captcha if needed.
      */
-    public function renderCaptcha(string &$output)
+    public function renderCaptcha(string &$output): void
     {
         if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
             $captchaField = $this->renderCaptchaField();
@@ -254,21 +251,13 @@ class CaptchaController extends YesWikiController
     /**
      * check if word is the rigth one.
      *
-     * @param string $word
-     * @param string $hash
-     *
      * @return bool $isValidated
      */
-    public function check($word, $hash): bool
+    public function check(string $word, string $hash): bool
     {
-        if (is_string($word)
-            && is_string($hash)
-            && !empty($word)
+        if (!empty($word)
             && !empty($hash)
             && in_array($word, $this->words, true)) {
-            /**
-             * @var array $options extracted from $hash
-             */
             $options = password_get_info($hash);
 
             return isset($options['algo'])
@@ -287,9 +276,6 @@ class CaptchaController extends YesWikiController
     protected function getTextFromHash(string $hash): string
     {
         if (!empty($hash)) {
-            /**
-             * @var int $idx
-             */
             for ($idx = 0; $idx < count($this->words); $idx++) {
                 /**
                  * @var string $word
@@ -328,16 +314,10 @@ class CaptchaController extends YesWikiController
      */
     protected function getColorFromName($image, string $name): int
     {
-        if (
-            !array_key_exists($name, self::COLOURS)
-            && !array_key_exists($name, self::TONES)
-        ) {
+        $colorSet = self::COLOURS[$name] ?? self::TONES[$name] ?? null;
+        if ($colorSet === null) {
             throw new \Exception('Not existing color\'s name !');
         }
-        /**
-         * @var int[] $colorSet extracted color set
-         */
-        $colorSet = array_key_exists($name, self::COLOURS) ? self::COLOURS[$name] : self::TONES[$name];
         // clamped for the analyser, which sees the two palettes' union as plain `int`. Every
         // declared value is already in range, so this is a no-op on the palettes as they stand
         // and a correction rather than a TypeError if one ever is not (ticket 40).
@@ -416,12 +396,9 @@ class CaptchaController extends YesWikiController
     /**
      * update $words from params.
      */
-    protected function updateWordsFromConfig()
+    protected function updateWordsFromConfig(): void
     {
         if ($this->params->has('captcha_words')) {
-            /**
-             * @var string[] $wantedWords
-             */
             $wantedWords = $this->params->get('captcha_words');
             if (is_array($wantedWords)) {
                 $wantedWords = array_values(array_filter(
@@ -446,15 +423,12 @@ class CaptchaController extends YesWikiController
      *
      * @throws \Exception on errors
      */
-    protected function drawSomeElipses($image, int $imageWidth)
+    protected function drawSomeElipses($image, int $imageWidth): void
     {
         /**
          * @var int $grey
          */
         $grey = $this->getColorFromName($image, 'grey');
-        /**
-         * @var int $idx index
-         */
         for ($idx = 0; $idx < 22; $idx++) {
             imageellipse(
                 $image,
@@ -484,7 +458,7 @@ class CaptchaController extends YesWikiController
      *
      * @throws \Exception on errors
      */
-    protected function drawtext($image, int $imageWidth, string $text)
+    protected function drawtext($image, int $imageWidth, string $text): void
     {
         /**
          * @var int $black color
@@ -498,9 +472,6 @@ class CaptchaController extends YesWikiController
          * @var int $pos where text is written init, to center text
          */
         $pos = intval(floor(($imageWidth - count($chars) * self::CHAR_WIDTH) / 2));
-        /**
-         * @var int $idx
-         */
         for ($idx = 0; $idx < count($chars); $idx++) {
             /**
              * @var int $randomSlope

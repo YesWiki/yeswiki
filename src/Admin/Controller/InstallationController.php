@@ -143,7 +143,7 @@ class InstallationController
             echo $this->render('installation-database.twig', [
                 'messages' => $this->messages,
                 'error' => $ex->getMessage(),
-                'configPosted' => htmlspecialchars(json_encode($this->configPosted), ENT_COMPAT, 'UTF-8'),
+                'configPosted' => htmlspecialchars(json_encode($this->configPosted) ?: '{}', ENT_COMPAT, 'UTF-8'),
             ]);
         }
     }
@@ -296,7 +296,7 @@ class InstallationController
                     'SELECT 1 FROM pg_database WHERE datname = ' . $this->db()->quote($this->config['db_database'])
                 );
 
-                return $stmt->fetchColumn() !== false;
+                return $stmt !== false && $stmt->fetchColumn() !== false;
             }
             $this->db()->exec('USE `' . $this->config['db_database'] . '`');
 
@@ -319,7 +319,8 @@ class InstallationController
         }
 
         try {
-            $existingTables = $this->db()->query($query)->fetchAll(\PDO::FETCH_COLUMN);
+            $stmt = $this->db()->query($query);
+            $existingTables = ($stmt === false) ? [] : $stmt->fetchAll(\PDO::FETCH_COLUMN);
         } catch (\PDOException $th) {
             $existingTables = [];
         }
@@ -444,6 +445,9 @@ class InstallationController
     protected function importBackup(): void
     {
         $sql = file_get_contents(self::BACKUP_SQL_FILE);
+        if ($sql === false) {
+            throw new \Exception(_t('IMPORT_DB_BACKUP') . ' :<br />' . _t('NOT_POSSIBLE_TO_IMPORT_BACKUP_SQL'));
+        }
 
         preg_match('/`(.*)pages`/m', $sql, $matches);
         $backupPrefix = $matches[1] ?? null;
@@ -483,7 +487,7 @@ class InstallationController
             $quotedName = $driver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\"";
             try {
                 $countStmt = $this->db()->query("SELECT COUNT(*) FROM $quotedName");
-                if ((int)$countStmt->fetchColumn() === 0) {
+                if ($countStmt !== false && (int)$countStmt->fetchColumn() === 0) {
                     $this->db()->exec("DROP TABLE IF EXISTS $quotedName");
                 }
             } catch (\Throwable $th) {
@@ -496,11 +500,12 @@ class InstallationController
         $allowRobots = isset($this->config['allow_robots']) && $this->config['allow_robots'] == '1';
         $rule = $allowRobots ? 'Allow' : 'Disallow';
 
-        if (file_exists('robots.txt')) {
-            $robotFile = file_get_contents('robots.txt');
+        $existing = file_exists('robots.txt') ? file_get_contents('robots.txt') : false;
+        if ($existing !== false) {
+            $robotFile = $existing;
             $agentPattern = "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/";
             if (preg_match($agentPattern, $robotFile)) {
-                $robotFile = preg_replace($agentPattern, 'User-agent: *$1' . $rule . ': /$1', $robotFile);
+                $robotFile = preg_replace($agentPattern, 'User-agent: *$1' . $rule . ': /$1', $robotFile) ?? $robotFile;
             } else {
                 $robotFile .= "\nUser-agent: *\n$rule: /\n";
             }
@@ -656,7 +661,7 @@ class InstallationController
     private function execSqlTemplate(string $templateName, array $replacements): bool
     {
         $sql = self::renderSqlTemplate(
-            YESWIKI_SOURCE_DIR . '/templates/' . $templateName,
+            YESWIKI_PROGRAM_DIR . '/templates/' . $templateName,
             [
                 'driver' => $this->dbDriver(),
 
@@ -774,7 +779,7 @@ class InstallationController
 
     private function setupTwig(): \Twig\Environment
     {
-        $twigLoader = new \Twig\Loader\FilesystemLoader(YESWIKI_SOURCE_DIR . '/templates');
+        $twigLoader = new \Twig\Loader\FilesystemLoader(YESWIKI_PROGRAM_DIR . '/templates');
         $twig = new \Twig\Environment($twigLoader, [
             'debug' => (bool)($this->config['debug'] ?? false),
             'cache' => 'cache/templates/',

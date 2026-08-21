@@ -14,7 +14,7 @@ class PageManagerGetReadablePageTagsTest extends YesWikiTestCase
 {
     private const RESTRICTED_TAG = 'PageManagerAclBypassRestrictedPage';
 
-    public function testAnonymousDoesNotSeeReadRestrictedPageTag()
+    public function testAnonymousDoesNotSeeReadRestrictedPageTag(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

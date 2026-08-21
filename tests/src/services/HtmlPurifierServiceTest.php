@@ -22,29 +22,22 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
         return $wiki->services->get(HtmlPurifierService::class);
     }
 
+    /**
+     * @param string|list<string> $waitedCleanedHtml one expected output, or every output a supported libxml version may produce
+     */
     #[Depends('testHtmlPurifierServiceExisting')]
     #[DataProvider('dataProviderTestCleanHTML')]
-    public function testCleanHTML(string $dirtyHtml, $waitedCleanedHtml, HtmlPurifierService $htmlPurifierService)
+    public function testCleanHTML(string $dirtyHtml, string|array $waitedCleanedHtml, HtmlPurifierService $htmlPurifierService): void
     {
         $cleanedHtml = $htmlPurifierService->cleanHTML($dirtyHtml);
         $expected = is_array($waitedCleanedHtml) ? $waitedCleanedHtml : [$waitedCleanedHtml];
         $this->assertContains($cleanedHtml, $expected, "'$dirtyHtml' was waited to be cleaned as one of [" . implode(', ', array_map(fn ($s) => "'$s'", $expected)) . "], but '$cleanedHtml' obtained");
     }
 
-    private static function getExpectedDirtyIframeOutput(): string
-    {
-        $dom = new \DOMDocument();
-        @$dom->loadHTML('<div><iframe src="x">.</div>');
-        $serialized = $dom->saveHTML();
-
-        if (str_contains($serialized, '&lt;')) {
-            return 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;';
-        }
-
-        return 'This is a dirty iframe :<br />.';
-    }
-
-    public static function dataProviderTestCleanHTML()
+    /**
+     * @return array<string, array{string, string|list<string>}>
+     */
+    public static function dataProviderTestCleanHTML(): array
     {
         return [
             'Only text' => ['This is a test.', 'This is a test.'],

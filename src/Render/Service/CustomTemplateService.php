@@ -63,7 +63,7 @@ class CustomTemplateService
      */
     public function shipped(): array
     {
-        $root = YESWIKI_SOURCE_DIR . '/templates';
+        $root = YESWIKI_PROGRAM_DIR . '/templates';
         $names = [];
         foreach ($this->twigFilesIn($root) as $path) {
             $names[] = substr($path, strlen($root) + 1);
@@ -208,7 +208,7 @@ class CustomTemplateService
     /** The shipped file behind a `core/` override, or null. */
     private function shippedPath(string $target): ?string
     {
-        $root = YESWIKI_SOURCE_DIR . '/templates';
+        $root = YESWIKI_PROGRAM_DIR . '/templates';
         $path = $root . '/' . $target;
         $real = realpath($path);
 

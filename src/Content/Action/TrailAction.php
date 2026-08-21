@@ -121,9 +121,9 @@ class TrailAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                 // analyse de chaque ligne de la liste pour recupérer la page cible
                 foreach ($tocListe[1] as $line) {
                     // suppression d'un signe de liste eventuel
-                    $line = trim(preg_replace("/^([[:alnum:]]+\)|-)/", '', $line));
+                    $line = trim((string)preg_replace("/^([[:alnum:]]+\)|-)/", '', $line));
                     // recuperation du 1er mot
-                    $line = preg_replace("/^(\[\[.*\]\]|" . WN_CHAR . "+)\s*(.*)$/", '$1', $line);
+                    $line = (string)preg_replace("/^(\[\[.*\]\]|" . WN_CHAR . "+)\s*(.*)$/", '$1', $line);
                     // ajout a la liste des pages si le 1er mot est un lien force ou un mot wiki
                     if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->getService(UrlFormatter::class)->isWikiName($line)) {
                         $pages[] = $line;

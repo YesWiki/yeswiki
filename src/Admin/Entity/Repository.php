@@ -9,10 +9,13 @@ class Repository extends PackageCollection
 {
     public const INDEX_FILENAME = 'packages.json';
 
+    /** @var string base URL of the repository, with a trailing slash */
     private $address;
+
+    /** @var Files */
     private $fileHandler;
 
-    public function __construct($address, string $requestedVersion = '', ?ConfigurationService $configurationService = null)
+    public function __construct(string $address, string $requestedVersion = '', ?ConfigurationService $configurationService = null)
     {
         $this->address = $address . '/';
         $this->fileHandler = new Files();
@@ -20,7 +23,8 @@ class Repository extends PackageCollection
         $this->configurationService = $configurationService;
     }
 
-    public function load()
+    /** @return bool false when the index could not be reached or did not read as a package list */
+    public function load(): bool
     {
         $this->list = [];
 
@@ -29,11 +33,15 @@ class Repository extends PackageCollection
         }
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
         $file = $this->fileHandler->download($repoInfosFile);
-        $data = json_decode(file_get_contents($file), true);
+        $json = file_get_contents($file);
 
         unlink($file);
 
-        if (is_null($data)) {
+        if ($json === false) {
+            return false;
+        }
+        $data = json_decode($json, true);
+        if (!is_array($data)) {
             return false;
         }
 

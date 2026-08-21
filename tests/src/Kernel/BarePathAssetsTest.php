@@ -14,10 +14,10 @@ class BarePathAssetsTest extends YesWikiTestCase
         $this->getWiki();
 
         $script = sprintf(
-            "<?php\ndefine('YESWIKI_SOURCE_DIR', %s);\ndefine('YESWIKI_INSTANCE_DIR', %s);\nrequire %s;\necho 'ok';\n",
-            var_export(\YESWIKI_SOURCE_DIR, true),
+            "<?php\ndefine('YESWIKI_PROGRAM_DIR', %s);\ndefine('YESWIKI_INSTANCE_DIR', %s);\nrequire %s;\necho 'ok';\n",
+            var_export(\YESWIKI_PROGRAM_DIR, true),
             var_export($instanceDir, true),
-            var_export(\YESWIKI_SOURCE_DIR . '/src/bootstrap_paths.php', true)
+            var_export(\YESWIKI_PROGRAM_DIR . '/src/bootstrap_paths.php', true)
         );
         $file = $instanceDir . '/bootstrap-probe.php';
         file_put_contents($file, $script);
@@ -39,12 +39,12 @@ class BarePathAssetsTest extends YesWikiTestCase
             $sprite = $instance . '/src/assets/icons.svg';
             $this->assertFileExists($sprite, 'the sprite every icon points at');
             $this->assertSame(
-                (string)file_get_contents(\YESWIKI_SOURCE_DIR . '/src/assets/icons.svg'),
+                (string)file_get_contents(\YESWIKI_PROGRAM_DIR . '/src/assets/icons.svg'),
                 (string)file_get_contents($sprite)
             );
 
             file_put_contents($sprite, '<svg><symbol id="stale"/></svg>');
-            touch($sprite, filemtime(\YESWIKI_SOURCE_DIR . '/src/assets/icons.svg') - 60);
+            touch($sprite, filemtime(\YESWIKI_PROGRAM_DIR . '/src/assets/icons.svg') - 60);
             $this->bootstrapIn($instance);
 
             $this->assertStringNotContainsString(
@@ -64,10 +64,10 @@ class BarePathAssetsTest extends YesWikiTestCase
     /** A standalone install is its own source: nothing to copy, and nothing to overwrite. */
     public function testAStandaloneInstallIsLeftAlone(): void
     {
-        $sprite = \YESWIKI_SOURCE_DIR . '/src/assets/icons.svg';
+        $sprite = \YESWIKI_PROGRAM_DIR . '/src/assets/icons.svg';
         $before = filemtime($sprite);
 
-        $this->assertSame(\YESWIKI_SOURCE_DIR, \YESWIKI_INSTANCE_DIR, 'this repo is a standalone install');
+        $this->assertSame(\YESWIKI_PROGRAM_DIR, \YESWIKI_INSTANCE_DIR, 'this repo is a standalone install');
         $this->assertSame($before, filemtime($sprite));
     }
 }

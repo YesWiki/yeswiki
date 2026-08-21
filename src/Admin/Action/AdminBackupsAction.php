@@ -30,6 +30,7 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction, Prov
         ];
     }
 
+    /** @return string */
     public function run()
     {
         if (!$this->getService(AclService::class)->isAdmin()) {

@@ -20,7 +20,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
     private const PUBLIC_MARKER = 'RECENTCHANGESRSSPLUS_PUBLIC_MARKER';
     private const RESTRICTED_SECRET = 'RECENTCHANGESRSSPLUS_RESTRICTED_SECRET_MARKER';
 
-    public function testFeedListsAllPagesButRedactsUnreadableOnes()
+    public function testFeedListsAllPagesButRedactsUnreadableOnes(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

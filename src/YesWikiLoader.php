@@ -63,6 +63,8 @@ class YesWikiLoader
      * Used by EnvironmentConfiguration: config overrides distinguish file-authored
      * values (any config key allowed) from process environment values (known
      * variables only), which getenv() alone cannot tell apart.
+     *
+     * @return array<string, string>
      */
     public static function envFileValues(): array
     {
@@ -83,10 +85,10 @@ class YesWikiLoader
             require_once __DIR__ . '/bootstrap_paths.php';
             require_once __DIR__ . '/autoload.inc.php';
             try {
-                if (!file_exists(YESWIKI_SOURCE_DIR . '/vendor/autoload.php')) {
+                if (!file_exists(YESWIKI_PROGRAM_DIR . '/vendor/autoload.php')) {
                     throw new \Exception('ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>');
                 }
-                $loader = require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
+                $loader = require_once YESWIKI_PROGRAM_DIR . '/vendor/autoload.php';
                 self::checkAutoloaderIsCurrent();
             } catch (\Throwable $th) {
                 $message = $th->getMessage();
@@ -135,8 +137,8 @@ class YesWikiLoader
      */
     private static function checkAutoloaderIsCurrent(): void
     {
-        $generated = YESWIKI_SOURCE_DIR . '/vendor/composer/autoload_psr4.php';
-        $manifest = YESWIKI_SOURCE_DIR . '/composer.json';
+        $generated = YESWIKI_PROGRAM_DIR . '/vendor/composer/autoload_psr4.php';
+        $manifest = YESWIKI_PROGRAM_DIR . '/composer.json';
         if (!is_file($generated) || !is_file($manifest)) {
             return;
         }
@@ -154,6 +156,6 @@ class YesWikiLoader
             return;
         }
 
-        throw new \Exception('ERROR ! : the autoloader in <code>vendor/</code> is older than this code. It does not know ' . implode(', ', array_map(static fn (string $prefix): string => '<code>' . htmlspecialchars($prefix) . '</code>', $missing)) . ', so most of YesWiki cannot be loaded.<br/><br/><strong>Run <code>composer install</code> in ' . htmlspecialchars(YESWIKI_SOURCE_DIR) . '</strong> (or <code>composer dump-autoload</code> if <code>vendor/</code> is already up to date), then reload. If you have an opcode cache, restart PHP too.');
+        throw new \Exception('ERROR ! : the autoloader in <code>vendor/</code> is older than this code. It does not know ' . implode(', ', array_map(static fn (string $prefix): string => '<code>' . htmlspecialchars($prefix) . '</code>', $missing)) . ', so most of YesWiki cannot be loaded.<br/><br/><strong>Run <code>composer install</code> in ' . htmlspecialchars(YESWIKI_PROGRAM_DIR) . '</strong> (or <code>composer dump-autoload</code> if <code>vendor/</code> is already up to date), then reload. If you have an opcode cache, restart PHP too.');
     }
 }

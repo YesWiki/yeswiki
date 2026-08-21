@@ -20,12 +20,9 @@ class TagsManagerAndApiTest extends YesWikiTestCase
     private const TAG_A = 'TagsManagerRegressionPageA';
     private const TAG_B = 'TagsManagerRegressionPageB';
 
-    private static ?TripleStore $tripleStore = null;
-
     public static function setUpBeforeClass(): void
     {
         $wiki = self::getWiki();
-        self::$tripleStore = $wiki->services->get(TripleStore::class);
 
         $pageManager = $wiki->services->get(PageManager::class);
         $tagsManager = $wiki->services->get(TagsManager::class);
@@ -37,8 +34,8 @@ class TagsManagerAndApiTest extends YesWikiTestCase
 
     public static function tearDownAfterClass(): void
     {
-        self::$tripleStore->delete(self::TAG_A, TagsManager::TAG_PROPERTY, null, '', '');
-        self::$tripleStore->delete(self::TAG_B, TagsManager::TAG_PROPERTY, null, '', '');
+        self::tripleStore()->delete(self::TAG_A, TagsManager::TAG_PROPERTY, null, '', '');
+        self::tripleStore()->delete(self::TAG_B, TagsManager::TAG_PROPERTY, null, '', '');
         $pageManager = self::getWiki()->services->get(PageManager::class);
         $pageManager->deleteOrphaned(self::TAG_A);
         $pageManager->deleteOrphaned(self::TAG_B);
@@ -85,9 +82,16 @@ class TagsManagerAndApiTest extends YesWikiTestCase
         $request = Request::create('/api/tags', 'GET', ['search' => 'regressionban']);
 
         $response = $controller->getTags($request);
-        $data = json_decode($response->getContent(), true);
+        $content = $response->getContent();
+        $this->assertIsString($content);
+        $data = json_decode($content, true);
 
         $this->assertSame(['regressionbanana'], $data['tags']);
         $this->assertSame(1, $data['total']);
+    }
+
+    private static function tripleStore(): TripleStore
+    {
+        return self::getWiki()->services->get(TripleStore::class);
     }
 }

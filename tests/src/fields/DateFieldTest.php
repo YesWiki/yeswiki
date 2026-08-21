@@ -36,7 +36,7 @@ class DateFieldTest extends YesWikiTestCase
         return new DateField($values, $wiki->services);
     }
 
-    public function testEntryDateServiceHasTheMethodsDateFieldAndFileFieldCall()
+    public function testEntryDateServiceHasTheMethodsDateFieldAndFileFieldCall(): void
     {
         $entryDateService = $this->getWiki()->services->get(EntryDateService::class);
         $this->assertInstanceOf(EntryDateService::class, $entryDateService);
@@ -47,7 +47,7 @@ class DateFieldTest extends YesWikiTestCase
         $this->assertTrue($reflection->hasMethod('isLegacyRecurrenceChild'));
     }
 
-    public function testFormatValuesBeforeSaveOnEndDatePropertyDoesNotFatal()
+    public function testFormatValuesBeforeSaveOnEndDatePropertyDoesNotFatal(): void
     {
         $field = $this->buildDateField('bf_date_fin_evenement');
 
@@ -61,7 +61,7 @@ class DateFieldTest extends YesWikiTestCase
         $this->assertArrayHasKey('bf_date_fin_evenement', $result);
     }
 
-    public function testRenderStaticWithRecurrenceDataDoesNotFatal()
+    public function testRenderStaticWithRecurrenceDataDoesNotFatal(): void
     {
         $field = $this->buildDateField('bf_date_fin_evenement');
 

@@ -3,7 +3,8 @@
 namespace YesWiki\Admin\Service;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Admin\Entity\PackageCollection;
+use YesWiki\Admin\Entity\PackageCore;
+use YesWiki\Admin\Entity\PackageExt;
 use YesWiki\Admin\Entity\Repository;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -12,6 +13,7 @@ class AutoUpdateService
 {
     public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
     public const DEFAULT_VERS = 'Cercopitheque';
+    /** @var Repository the package index, set by initRepository() before anything else reads it */
     public $repository;
 
     private ContainerInterface $container;
@@ -23,28 +25,30 @@ class AutoUpdateService
     }
 
     /** Whether this is the instance allowed to trigger a farm-wide update (ADR-0007). */
-    public function isDesignatedUpdateInstance(?string $instanceDir = null, ?string $sourceDir = null): bool
+    public function isDesignatedUpdateInstance(?string $instanceDir = null, ?string $programDir = null): bool
     {
-        return realpath($instanceDir ?? YESWIKI_INSTANCE_DIR) === realpath($sourceDir ?? YESWIKI_SOURCE_DIR);
+        return realpath($instanceDir ?? YESWIKI_INSTANCE_DIR) === realpath($programDir ?? YESWIKI_PROGRAM_DIR);
     }
 
-    public function initRepository($requestedVersion = '')
+    /** @return bool false when the repository index could not be read */
+    public function initRepository(string $requestedVersion = ''): bool
     {
         $this->repository = new Repository(
             $this->repositoryAddress($requestedVersion),
-            (string)$requestedVersion,
+            $requestedVersion,
             $this->container->get(ConfigurationService::class)
         );
 
         return $this->repository->load();
     }
 
-    private function repositoryAddress($requestedVersion = '')
+    private function repositoryAddress(string $requestedVersion = ''): string
     {
         $repositoryAddress = $this::DEFAULT_REPO;
 
-        if (isset($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'])) {
-            $repositoryAddress = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'];
+        $configured = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'] ?? null;
+        if (is_string($configured) && $configured !== '') {
+            $repositoryAddress = $configured;
         }
 
         if (substr($repositoryAddress, -1, 1) !== '/') {
@@ -60,20 +64,28 @@ class AutoUpdateService
         return $repositoryAddress;
     }
 
-    private function getYesWikiVersion()
+    private function getYesWikiVersion(): string
     {
         $version = $this::DEFAULT_VERS;
-        if (isset($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'])) {
-            $version = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'];
+        $configured = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'] ?? null;
+        if (is_string($configured) && $configured !== '') {
+            $version = $configured;
         }
 
         return strtolower($version);
     }
 
-    public function delete($packageName)
+    public function delete(string $packageName): Messages
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
+
+        // the core is not a package anybody can delete, and an unknown name names none at all
+        if (!$package instanceof PackageExt) {
+            $messages->add('AU_DELETE', 'AU_ERROR');
+
+            return $messages;
+        }
 
         $vDeleteStatus = $package->deletePackage();
 
@@ -87,20 +99,20 @@ class AutoUpdateService
         return $messages;
     }
 
-    public function upgrade($packageName)
+    public function upgrade(string $packageName): Messages
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
 
         $file = $package ? $package->getFile() : false;
-        if (false === $file) {
+        if ($package === null || false === $file) {
             $messages->add('AU_DOWNLOAD', 'AU_ERROR');
 
             return $messages;
         }
         $messages->add('AU_DOWNLOAD', 'AU_OK');
 
-        if (!$package->checkIntegrity($file)) {
+        if (!$package->checkIntegrity()) {
             $messages->add('AU_INTEGRITY', 'AU_ERROR');
             $package->cleanTempFiles();
 
@@ -142,7 +154,7 @@ class AutoUpdateService
         }
         $messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
 
-        if (get_class($package) === PackageCollection::CORE_CLASS) {
+        if ($package instanceof PackageCore) {
             if (!$package->upgradeDefaultTheme()) {
                 $messages->add('AU_UPDATE_THEME', 'AU_ERROR');
                 $package->cleanTempFiles();

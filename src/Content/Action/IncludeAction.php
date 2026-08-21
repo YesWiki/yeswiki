@@ -166,7 +166,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
             if (YW_CHARSET != 'ISO-8859-1' && YW_CHARSET != 'ISO-8859-15') {
                 $plugin_output_new = (string)preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
                     $char = current($m);
-                    $utf = iconv('UTF-8', 'UCS-4', $char);
+                    $utf = (string)iconv('UTF-8', 'UCS-4', $char);
 
                     return sprintf('&#x%s;', ltrim(strtoupper(bin2hex($utf)), '0'));
                 }, $plugin_output_new);

@@ -29,7 +29,7 @@ class InputFilter extends YesWikiController
      * supported format string, int, bool
      * if the format is not specified, the function return the original $pRawInputFiltered
      */
-    private function sanitize($pRawInputFiltered, $pSanitizedFormat, $pEmulateFilterSanitizeString)
+    private function sanitize(mixed $pRawInputFiltered, string $pSanitizedFormat, bool $pEmulateFilterSanitizeString): mixed
     {
         $result = null;
         switch ($pSanitizedFormat) {
@@ -74,9 +74,12 @@ class InputFilter extends YesWikiController
      * retrieve input using filter to prevent injection from other php script
      * emulate $filter = FILTER_SANITIZE_STRING because deprecated since php8.1.
      *
-     * @param int       $filter  same as filter_input
-     * @param string    $format  'string', 'int', 'bool', 'array', '' (empty = not formatted)
-     * @param array|int $options same as filter_input
+     * @param INPUT_GET|INPUT_POST|INPUT_COOKIE|INPUT_SERVER|INPUT_ENV $type    same as filter_input
+     * @param int                                                      $filter  same as filter_input
+     * @param string                                                   $format  'string', 'int', 'bool', 'array', '' (empty = not formatted)
+     * @param array<string, mixed>|int                                 $options same as filter_input
+     *
+     * @return mixed the sanitized value, or null when an array was required and nothing came in
      */
     public function filterInput(
         int $type,
@@ -86,24 +89,20 @@ class InputFilter extends YesWikiController
         string $format = '',
         $options = 0
     ) {
-        /**
-         * @var int $sanitizedFilter
-         */
+        // emulating FILTER_SANITIZE_STRING means reading the value raw and sanitizing it
+        // here, so the caller's filter is deliberately not the one handed to filter_input()
         $sanitizedFilter = $emulateFilterSanitizeString ? FILTER_UNSAFE_RAW : $filter;
-        /**
-         * @var string $sanitizedFormat
-         */
         $sanitizedFormat = $emulateFilterSanitizeString ? 'string' : $format;
 
-        $rawInputFiltered = filter_input($type, $varName, $filter, $options);
+        $rawInputFiltered = filter_input($type, $varName, $sanitizedFilter, $options);
 
-        if (is_array($options) && ($options['flags'] & FILTER_REQUIRE_ARRAY || $options['flags'] & FILTER_FORCE_ARRAY)) {
-            $vSanitizedArray = [];
-
-            if ($rawInputFiltered === false || $rawInputFiltered === null) {
+        $flags = is_array($options) ? intval($options['flags'] ?? 0) : 0;
+        if (($flags & FILTER_REQUIRE_ARRAY) !== 0 || ($flags & FILTER_FORCE_ARRAY) !== 0) {
+            if (!is_array($rawInputFiltered)) {
                 return null;
             }
 
+            $vSanitizedArray = [];
             foreach ($rawInputFiltered as $vKey => $vValue) {
                 $vSanitizedArray[$vKey] = $this->sanitize($vValue, $sanitizedFormat, $emulateFilterSanitizeString);
             }

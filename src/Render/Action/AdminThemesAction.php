@@ -32,10 +32,13 @@ class AdminThemesAction extends YesWikiAction implements RegisteredAction, Provi
         ];
     }
 
-    protected $pageManager;
-    protected $themeSelectorRenderer;
-    protected $themeManager;
+    protected PageManager $pageManager;
+    protected ThemeSelectorRenderer $themeSelectorRenderer;
+    protected ThemeManager $themeManager;
 
+    /**
+     * @return string the theme administration screen, or an admins-only message
+     */
     public function run()
     {
         if (!$this->getService(AclService::class)->isAdmin()) {
@@ -87,15 +90,13 @@ class AdminThemesAction extends YesWikiAction implements RegisteredAction, Provi
     }
 
     /**
-     * @throws Exception with code 1
+     * @throws \Exception with code 1 when no page was selected
      */
-    protected function modifyTheme()
+    protected function modifyTheme(): void
     {
         $post = $this->getRequest()->request;
         if (!$post->has('selectpage')) {
             throw new \Exception(_t('ACLS_NO_SELECTED_PAGE'), 1);
-        } elseif (!is_array($post->all('selectpage'))) {
-            throw new \Exception('select page should be an array', 1);
         }
         $pagesTags = array_filter($post->all('selectpage'), 'is_string');
         foreach ($pagesTags as $pageTag) {
@@ -108,7 +109,7 @@ class AdminThemesAction extends YesWikiAction implements RegisteredAction, Provi
                 ]);
             } else {
                 $theme = $this->sanitizePost('theme_select');
-                $style = $this->sanitizePost('style_select');
+                $style = $this->sanitizePost('style_select') ?? '';
                 $squelette = $this->sanitizePost('squelette_select');
                 $presets = $this->sanitizePost('preset_select');
                 $themes = $this->themeManager->getTemplates();

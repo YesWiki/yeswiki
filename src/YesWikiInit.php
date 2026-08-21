@@ -65,8 +65,9 @@ class Init
             $protocol = 'https://';
         }
         $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
-        $uri = str_replace($scriptlocation, '', $_SERVER['REQUEST_URI']);
-        $uri = preg_replace('~^/\??~', '', $uri);
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+        $uri = is_string($requestUri) ? str_replace($scriptlocation, '', $requestUri) : '';
+        $uri = preg_replace('~^/\??~', '', $uri) ?? '';
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
         $args = explode('/', rawurldecode($uri[0]));
@@ -106,7 +107,8 @@ class Init
                 $requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
 
                 if (empty($_POST) && ($requestMethod == 'POST' || $requestMethod == 'PUT' || $requestMethod == 'PATCH')) {
-                    $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+                    $rawBody = file_get_contents('php://input');
+                    $_POST = ($rawBody === false ? null : json_decode($rawBody, true)) ?? [];
                 }
 
                 header('Access-Control-Allow-Origin: *');
@@ -543,8 +545,8 @@ class Init
         }
 
         if (file_exists('locked')) {
-            $lines = file('locked');
-            $lockpw = trim($lines[0]);
+            $lines = file('locked') ?: [];
+            $lockpw = trim($lines[0] ?? '');
 
             $ask = 0;
             if (isset($_SERVER['PHP_AUTH_USER'])) {
@@ -588,8 +590,8 @@ class Init
      */
     public function initCookies()
     {
-        $urlParsed = parse_url($this->config['base_url']);
-        $CookiePath = $urlParsed['path'];
+        $urlParsed = parse_url(is_string($this->config['base_url'] ?? null) ? $this->config['base_url'] : '');
+        $CookiePath = is_array($urlParsed) ? ($urlParsed['path'] ?? '') : '';
 
         $CookiePath = str_replace('\\', '/', $CookiePath);
 

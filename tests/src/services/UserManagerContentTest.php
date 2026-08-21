@@ -56,7 +56,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testPasswordIsNeverExposedViaGenericPageReadNotEvenToTheOwner()
+    public function testPasswordIsNeverExposedViaGenericPageReadNotEvenToTheOwner(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -69,6 +69,7 @@ class UserManagerContentTest extends YesWikiTestCase
             $userManager->create($name, 'umct-password@example.tld', 'Aa1!aaaaRegression');
 
             $internal = $userManager->getOneByName($name);
+            $this->assertNotNull($internal, 'the freshly created user must be readable back');
             $this->assertNotEmpty($internal['password']);
 
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
@@ -85,7 +86,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testEmailAndPreferencesHiddenFromOthersButVisibleToOwnerAndAdmin()
+    public function testEmailAndPreferencesHiddenFromOthersButVisibleToOwnerAndAdmin(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -115,7 +116,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testFieldAclAppliesUniformlyToHistoricalRevisions()
+    public function testFieldAclAppliesUniformlyToHistoricalRevisions(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -145,7 +146,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testRevertingAUserPageDoesNotCorruptThePasswordHash()
+    public function testRevertingAUserPageDoesNotCorruptThePasswordHash(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -170,13 +171,14 @@ class UserManagerContentTest extends YesWikiTestCase
             $pageManager->revertToRevision($name, $firstRevisionId);
 
             $afterRevert = $userManager->getOneByName($name);
+            $this->assertNotNull($afterRevert, 'reverting must not make the user unreadable');
             $this->assertSame($originalHash, $afterRevert['password'], 'reverting must not erase the real password hash');
         } finally {
             $this->cleanupUser($userManager, $name);
         }
     }
 
-    public function testCreatingWithANameCollidingWithExistingContentUsesSuggestFreeTag()
+    public function testCreatingWithANameCollidingWithExistingContentUsesSuggestFreeTag(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -199,7 +201,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testCreatingWithAnExistingUsersNameStillThrows()
+    public function testCreatingWithAnExistingUsersNameStillThrows(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -217,7 +219,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testOnlyOwnerAndAdminCanWriteToAUsersPage()
+    public function testOnlyOwnerAndAdminCanWriteToAUsersPage(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -250,7 +252,7 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testGetAllReturnsRealUsersOnly()
+    public function testGetAllReturnsRealUsersOnly(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);

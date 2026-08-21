@@ -9,8 +9,8 @@
  *
  * `src/constants.php` is pure `define()` calls and is loaded as-is.
  */
-if (!defined('YESWIKI_SOURCE_DIR')) {
-    define('YESWIKI_SOURCE_DIR', \dirname(__DIR__));
+if (!defined('YESWIKI_PROGRAM_DIR')) {
+    define('YESWIKI_PROGRAM_DIR', \dirname(__DIR__));
 }
 if (!defined('YESWIKI_INSTANCE_DIR')) {
     define('YESWIKI_INSTANCE_DIR', \dirname(__DIR__));

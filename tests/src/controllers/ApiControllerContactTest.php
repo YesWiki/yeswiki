@@ -55,7 +55,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testMissingPageTagIsRejected(YesWikiRuntime $wiki)
+    public function testMissingPageTagIsRejected(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(ContactApiController::class);
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', []));
@@ -64,7 +64,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testValidationFailureDoesNotAttemptToSend(YesWikiRuntime $wiki)
+    public function testValidationFailureDoesNotAttemptToSend(YesWikiRuntime $wiki): void
     {
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
@@ -77,13 +77,15 @@ class ApiControllerContactTest extends YesWikiTestCase
             'subject' => 'Hello',
         ]));
 
-        $body = json_decode($response->getContent(), true);
+        $content = $response->getContent();
+        $this->assertIsString($content);
+        $body = json_decode($content, true);
         $this->assertSame('danger', $body['type']);
         $this->assertStringContainsString(_t('CONTACT_ENTER_SENDER_MAIL'), $body['message']);
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testReadAclDeniedPreventsSending(YesWikiRuntime $wiki)
+    public function testReadAclDeniedPreventsSending(YesWikiRuntime $wiki): void
     {
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
@@ -98,18 +100,26 @@ class ApiControllerContactTest extends YesWikiTestCase
             'message' => 'This is a long enough test message.',
         ]));
 
-        $body = json_decode($response->getContent(), true);
+        $content = $response->getContent();
+        $this->assertIsString($content);
+        $body = json_decode($content, true);
         $this->assertSame('danger', $body['type']);
         $this->assertStringContainsString(_t('LOGIN_NOT_AUTORIZED'), $body['message']);
     }
 
-    public function testMailerSendIsReachableAndReturnsBoolWithoutThrowing()
+    public function testMailerSendIsReachableAndReturnsBoolWithoutThrowing(): void
     {
         $wiki = $this->getWiki();
         $GLOBALS['yeswikiServices'] = $wiki->services;
         $mailer = $wiki->services->get(Mailer::class);
 
-        $result = $mailer->send('sender@example.com', 'Sender', 'receiver@example.com', 'Subject', 'Body');
-        $this->assertIsBool($result);
+        $threw = false;
+        try {
+            $mailer->send('sender@example.com', 'Sender', 'receiver@example.com', 'Subject', 'Body');
+        } catch (\Throwable $e) {
+            $threw = true;
+        }
+
+        $this->assertFalse($threw, 'Mailer::send() must report a transport failure by returning false, not by throwing');
     }
 }

@@ -10,30 +10,36 @@ class ContentAssetScanner
     /**
      * marker => assets to register when the marker appears in rendered output.
      *
-     * @var array<string, array{css?: list<string>, js?: list<string>, jsInline?: string}>
+     * A method rather than a `const` because a constant is read as its literal value: while no
+     * rule happens to carry a `js` key, scan()'s `js` branch would be taken for dead code.
+     *
+     * @return array<string, array{css?: list<string>, js?: list<string>, jsInline?: string}>
      */
-    private const RULES = [
-        'mermaid' => [
-            'jsInline' => <<<'JS'
-                import mermaid from "./javascripts/vendor/mermaid/mermaid.esm.min.mjs";
-                // ticket 16: ywInitEach, not DOMContentLoaded -- a diagram on a page reached
-                // by an htmx navigation would otherwise never be rendered. startOnLoad is off
-                // because this decides when to run, once per diagram.
-                ywInitEach(".mermaid", function(element) {
-                    mermaid.initialize({
-                        startOnLoad: false,
-                        fontFamily: 'inherit',
-                        theme: "base",
-                        themeCSS: ':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}'
-                    });
-                    mermaid.run({ nodes: [element] });
-                })
-                JS,
-        ],
-        'c4-izmir' => [
-            'css' => ['styles/vendor/izmir/izmir.min.css'],
-        ],
-    ];
+    private static function rules(): array
+    {
+        return [
+            'mermaid' => [
+                'jsInline' => <<<'JS'
+                    import mermaid from "./javascripts/vendor/mermaid/mermaid.esm.min.mjs";
+                    // ticket 16: ywInitEach, not DOMContentLoaded -- a diagram on a page reached
+                    // by an htmx navigation would otherwise never be rendered. startOnLoad is off
+                    // because this decides when to run, once per diagram.
+                    ywInitEach(".mermaid", function(element) {
+                        mermaid.initialize({
+                            startOnLoad: false,
+                            fontFamily: 'inherit',
+                            theme: "base",
+                            themeCSS: ':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}'
+                        });
+                        mermaid.run({ nodes: [element] });
+                    })
+                    JS,
+            ],
+            'c4-izmir' => [
+                'css' => ['styles/vendor/izmir/izmir.min.css'],
+            ],
+        ];
+    }
 
     private AssetRegistry $assets;
 
@@ -50,7 +56,7 @@ class ContentAssetScanner
     /** Inspect $html and register whatever it needs. */
     public function scan(string $html): string
     {
-        foreach (self::RULES as $marker => $assets) {
+        foreach (self::rules() as $marker => $assets) {
             if (in_array($marker, $this->seen, true)) {
                 continue;
             }
@@ -88,6 +94,6 @@ class ContentAssetScanner
      */
     public static function markers(): array
     {
-        return array_keys(self::RULES);
+        return array_keys(self::rules());
     }
 }

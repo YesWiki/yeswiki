@@ -31,6 +31,9 @@ class CommentsAction extends YesWikiAction implements RegisteredAction, Provides
         ];
     }
 
+    /**
+     * @return string the comment thread of the current page
+     */
     public function run()
     {
         return $this->getService(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());

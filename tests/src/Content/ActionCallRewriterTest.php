@@ -104,7 +104,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
     {
         $rewriter = $this->rewriter();
 
-        $names = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/docs/action-name-renames.json'), true);
+        $names = json_decode((string)file_get_contents(YESWIKI_PROGRAM_DIR . '/docs/action-name-renames.json'), true);
         foreach ($names['renames'] as $rename) {
             $this->assertSame(
                 '{{' . $rename['new'] . '}}',
@@ -113,7 +113,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
             );
         }
 
-        $params = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/docs/action-parameter-renames.json'), true);
+        $params = json_decode((string)file_get_contents(YESWIKI_PROGRAM_DIR . '/docs/action-parameter-renames.json'), true);
         foreach ($params['renames'] as $rename) {
             if (!isset($rename['action']) || empty($rename['userTyped'])) {
                 continue;
@@ -189,7 +189,7 @@ class ActionCallRewriterTest extends YesWikiTestCase
             $this->assertContains($old, $needles, "action {$old} would never be found by the sweep");
         }
 
-        $params = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/docs/action-parameter-renames.json'), true);
+        $params = json_decode((string)file_get_contents(YESWIKI_PROGRAM_DIR . '/docs/action-parameter-renames.json'), true);
         foreach ($params['renames'] as $rename) {
             if (!isset($rename['action']) || empty($rename['userTyped'])) {
                 continue;

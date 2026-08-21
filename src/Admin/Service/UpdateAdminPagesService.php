@@ -12,8 +12,8 @@ use YesWiki\Kernel\Entity\Messages;
 class UpdateAdminPagesService
 {
     private ContainerInterface $container;
-    private $pageManager;
-    private $params;
+    private PageManager $pageManager;
+    private ParameterBagInterface $params;
 
     public function __construct(
         ContainerInterface $container,
@@ -33,7 +33,7 @@ class UpdateAdminPagesService
     /**
      * method to update admin pages.
      *
-     * @param array $adminPagesToUpdate ['BazaR',GererSite', ...]
+     * @param list<string> $adminPagesToUpdate ['BazaR', 'GererSite', ...]
      *
      * @return Messages messages
      */
@@ -41,7 +41,7 @@ class UpdateAdminPagesService
     {
         $messages = new Messages();
         $defaultSQL = ltrim(InstallationController::renderSqlTemplate(
-            YESWIKI_SOURCE_DIR . '/templates/installation-default-content.sql.twig',
+            YESWIKI_PROGRAM_DIR . '/templates/installation-default-content.sql.twig',
             ['driver' => 'mysql']
         ));
         $defaultSQLSplittedByBlock = explode('INSERT INTO', $defaultSQL);
@@ -74,14 +74,19 @@ class UpdateAdminPagesService
                 $defaultSQLSplitted[$tag] = $extract;
             }
         }
+        $rootPage = $this->params->get('root_page');
+        $rootPage = is_scalar($rootPage) ? (string)$rootPage : '';
+        $baseUrl = $this->params->get('base_url');
+        $baseUrl = is_scalar($baseUrl) ? (string)$baseUrl : '';
+
         $output = '';
         foreach ($adminPagesToUpdate as $page) {
             if (isset($defaultSQLSplitted[$page])) {
                 if (preg_match('/' . $page . '\',\s*(?:now\(\))?\s*,\s*\'([\S\s]*)\',\s*\'\'\s*,\s*\'{{WikiName}}\',\s*\'{{WikiName}}\', \'(?:Y|N)\', \'page\', \'\'/U', $defaultSQLSplitted[$page], $matches)) {
                     $pageContent = str_replace('\\"', '"', $matches[1]);
                     $pageContent = str_replace('\\\'', '\'', $pageContent);
-                    $pageContent = str_replace('{{rootPage}}', $this->params->get('root_page'), $pageContent);
-                    $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
+                    $pageContent = str_replace('{{rootPage}}', $rootPage, $pageContent);
+                    $pageContent = str_replace('{{url}}', $baseUrl, $pageContent);
                     if ($this->pageManager->save($page, [PageBody::CONTENT => $pageContent]) !== 0) {
                         $output .= (!empty($output) ? ', ' : '') . _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE') . $page;
                     }

@@ -136,7 +136,7 @@ class CustomTemplateServiceTest extends YesWikiTestCase
             $service->copyFromShipped($target);
 
             $this->assertSame(
-                file_get_contents(YESWIKI_SOURCE_DIR . '/templates/' . $target),
+                file_get_contents(YESWIKI_PROGRAM_DIR . '/templates/' . $target),
                 $service->read($relative),
                 'byte-identical: an override that starts different starts by changing something'
             );

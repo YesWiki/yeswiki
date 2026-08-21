@@ -34,7 +34,7 @@ class ClassDirectoryScanner
     {
         $found = [];
 
-        foreach (glob(YESWIKI_SOURCE_DIR . '/src/*/' . $moduleSubdirectory, GLOB_ONLYDIR) ?: [] as $dir) {
+        foreach (glob(YESWIKI_PROGRAM_DIR . '/src/*/' . $moduleSubdirectory, GLOB_ONLYDIR) ?: [] as $dir) {
             $module = basename(dirname($dir));
             $found['YesWiki\\' . $module . '\\' . $moduleSubdirectory . '\\'] = $dir;
         }

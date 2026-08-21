@@ -144,9 +144,10 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
         $nobtn = $this->getService(PerformableArguments::class)->get('nobtn');
         if (!empty($nobtn) && $nobtn == '1') {
-            $class = preg_replace('/\byw-btn(?:--\w+)?\b/i', '', $class);
-
-            $class = preg_replace('/(^\s*)|(\s*$)/', '', preg_replace('/\s{2,}/', ' ', $class));
+            // cast because preg_replace() returns null on error, and a null class would then
+            // be handed back to preg_replace() as its subject
+            $class = (string)preg_replace('/\byw-btn(?:--\w+)?\b/i', '', $class);
+            $class = trim((string)preg_replace('/\s{2,}/', ' ', $class));
         }
 
         $hideIfNoAccess = $this->getService(PerformableArguments::class)->get('hideifnoaccess');
@@ -156,7 +157,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_BUTTON') . '</strong> : ' . _t('TEMPLATE_LINK_PARAMETER_REQUIRED') . '.</div>' . "\n";
         } else {
             $btn = '<a'
-                . (!empty($link) ? ' href="' . $link . '"' : '')
+                . ' href="' . $link . '"'
                 . (!empty($class) ? ' class="' . $class . '"' : '')
                 . (!empty($datasize) ? ' data-size="' . $datasize . '"' : '')
                 . ((!empty($datasize) && empty($linkParts)) ? ' data-iframe="1"' : '')

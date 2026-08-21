@@ -9,6 +9,7 @@ use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
@@ -20,7 +21,7 @@ require_once 'tests/ForcedParameterBag.php';
 #[CoversMethod(HibernationNotice::class, 'getMessageWhenHibernated')]
 class HibernationServiceTest extends YesWikiTestCase
 {
-    private function buildService($wiki, string $wikiStatus): HibernationService
+    private function buildService(YesWikiRuntime $wiki, string $wikiStatus): HibernationService
     {
         $realParams = $wiki->services->get(ParameterBagInterface::class);
         $forcedParams = new ForcedParameterBag($realParams, ['wiki_status' => $wikiStatus]);
@@ -28,7 +29,7 @@ class HibernationServiceTest extends YesWikiTestCase
         return new HibernationService($forcedParams);
     }
 
-    public function testIsWikiHibernatedForEachStatus()
+    public function testIsWikiHibernatedForEachStatus(): void
     {
         $wiki = $this->getWiki();
 

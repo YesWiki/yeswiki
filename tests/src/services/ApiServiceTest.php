@@ -24,6 +24,9 @@ class ApiServiceTest extends TestCase
 {
     private const REQUEST_PARAMS = ['_route' => 'test_route', '_controller' => 'x::y'];
 
+    /**
+     * @param list<string> $acl
+     */
     private function routesFor(array $acl): RouteCollection
     {
         $routes = new RouteCollection();
@@ -70,37 +73,37 @@ class ApiServiceTest extends TestCase
         return new ApiService($authenticationService, $params, $aclService, $userManager, $currentRequest);
     }
 
-    public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode()
+    public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode(): void
     {
         $service = $this->buildService(true, false);
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
-    public function testGroupRestrictedRouteIsGrantedWhenAclActuallySatisfied()
+    public function testGroupRestrictedRouteIsGrantedWhenAclActuallySatisfied(): void
     {
         $service = $this->buildService(true, true);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
-    public function testGroupRestrictedRouteIsNotGrantedToNonAdminBearerToken()
+    public function testGroupRestrictedRouteIsNotGrantedToNonAdminBearerToken(): void
     {
         $service = $this->buildService(false, false, 'sometoken', 'someuser');
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['@admins'])));
     }
 
-    public function testNonGroupRouteIsStillOpenedByPublicApiMode()
+    public function testNonGroupRouteIsStillOpenedByPublicApiMode(): void
     {
         $service = $this->buildService(true, false);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['+'])));
     }
 
-    public function testNonGroupRouteIsClosedWithoutApiMode()
+    public function testNonGroupRouteIsClosedWithoutApiMode(): void
     {
         $service = $this->buildService(false, false);
         $this->assertFalse($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['+'])));
     }
 
-    public function testPublicAclRouteIsAlwaysOpen()
+    public function testPublicAclRouteIsAlwaysOpen(): void
     {
         $service = $this->buildService(false, false);
         $this->assertTrue($service->isAuthorized(self::REQUEST_PARAMS, $this->routesFor(['public'])));

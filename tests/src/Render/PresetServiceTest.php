@@ -423,7 +423,7 @@ class PresetServiceTest extends YesWikiTestCase
     /** The mono face is fetched and declared like the other two. */
     public function testTheMonospaceFontIsInstalledLikeTheOthers(): void
     {
-        $source = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/Render/Service/PresetService.php');
+        $source = (string)file_get_contents(YESWIKI_PROGRAM_DIR . '/src/Render/Service/PresetService.php');
         $call = substr($source, (int)strpos($source, 'writeCustomCSSPreset'), 300);
 
         foreach (['yw-font-body', 'yw-font-heading', 'yw-font-mono'] as $token) {
@@ -647,7 +647,7 @@ class PresetServiceTest extends YesWikiTestCase
     /** A derived colour is written once and re-resolves per scheme -- that is what it buys. */
     public function testTheDarkSchemeRestatesOnlyWhatItAuthors(): void
     {
-        $css = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/styles/yw-core.css');
+        $css = (string)file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/yw-core.css');
         $dark = $this->service()->valuesOf($css)['dark'];
 
         foreach (self::DERIVED as $property) {
@@ -716,7 +716,7 @@ class PresetServiceTest extends YesWikiTestCase
      */
     private function declaredByCore(): array
     {
-        $css = (string)file_get_contents(YESWIKI_SOURCE_DIR . '/styles/yw-core.css');
+        $css = (string)file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/yw-core.css');
         preg_match_all('/^\s*--(yw-[a-z0-9-]+)\s*:/m', $css, $matches);
 
         return array_values(array_unique($matches[1]));

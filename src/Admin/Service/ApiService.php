@@ -11,10 +11,10 @@ use YesWiki\Kernel\Service\CurrentRequest;
 
 class ApiService
 {
-    protected $authenticationService;
-    protected $params;
-    protected $aclService;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected ParameterBagInterface $params;
+    protected AclService $aclService;
+    protected UserManager $userManager;
 
     protected CurrentRequest $currentRequest;
 
@@ -27,7 +27,8 @@ class ApiService
         $this->userManager = $userManager;
     }
 
-    public function isAuthorized(array $requestParams, RouteCollection $routes)
+    /** @param array<string, mixed> $requestParams the matched route's parameters */
+    public function isAuthorized(array $requestParams, RouteCollection $routes): bool
     {
         $bearerToken = $this->getBearerToken();
 
@@ -46,34 +47,25 @@ class ApiService
             return $publicMode || $hasAcl;
         }
 
-        return
-            $publicMode
-            || $hasAcl
-            || (
-                $this->params->has('api_allowed_keys')
-                && (
-                    $bearerIsConnected
-                    || (
-                        isset($this->params->get('api_allowed_keys')['public'])
-                        && $this->params->get('api_allowed_keys')['public'] === true
-                    )
-                )
-            )
-        ;
+        if (!$this->params->has('api_allowed_keys')) {
+            return $publicMode || $hasAcl;
+        }
+        $allowedKeys = $this->params->get('api_allowed_keys');
+        $anyKeyIsPublic = is_array($allowedKeys) && ($allowedKeys['public'] ?? null) === true;
+
+        return $publicMode || $hasAcl || $bearerIsConnected || $anyKeyIsPublic;
     }
 
     /** Get header Authorization. */
-    private function getAuthorizationHeader()
+    private function getAuthorizationHeader(): ?string
     {
-        $headers = $this->currentRequest->get()->headers->get('authorization')
-            ? trim($this->currentRequest->get()->headers->get('authorization'))
-            : null;
+        $header = $this->currentRequest->get()->headers->get('authorization');
 
-        return $headers;
+        return empty($header) ? null : trim($header);
     }
 
     /** get access token from header. */
-    private function getBearerToken()
+    private function getBearerToken(): ?string
     {
         $headers = $this->getAuthorizationHeader();
 
@@ -86,7 +78,12 @@ class ApiService
         return null;
     }
 
-    private function loadACL(array $requestParams = [], ?RouteCollection $routes = null): array
+    /**
+     * @param array<string, mixed> $requestParams the matched route's parameters
+     *
+     * @return array<mixed> what the route declares under the `acl` option, empty when it declares none
+     */
+    private function loadACL(array $requestParams, RouteCollection $routes): array
     {
         $routeName = $requestParams['_route'] ?? null;
         if (empty($routeName)
@@ -95,8 +92,10 @@ class ApiService
             return [];
         }
         $route = $routes->all()[$routeName];
+        $acl = $route->hasOption('acl') ? $route->getOption('acl') : [];
 
-        return $route->hasOption('acl') ? $route->getOption('acl') : [];
+        // a route declaring `acl` as anything but a list is not something this can read
+        return is_array($acl) ? $acl : [];
     }
 
     /** connect user from bearer token. */
@@ -110,8 +109,10 @@ class ApiService
         if (!is_array($apiAllowedKeys)) {
             return false;
         }
+        $user = null;
+        // a list of keys rather than a name => key map answers an int here, which names no user
         $userName = array_search($bearerToken, $apiAllowedKeys);
-        if (!empty($userName)) {
+        if (is_string($userName) && $userName !== '') {
             $user = $this->userManager->getOneByName($userName);
         }
 

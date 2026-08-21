@@ -38,7 +38,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         $pageManager->save($name, $body, '', true);
     }
 
-    public function testNewUserStartsNotActivated()
+    public function testNewUserStartsNotActivated(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -55,7 +55,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testActivateWithCorrectKeySucceedsAndClearsTheKey()
+    public function testActivateWithCorrectKeySucceedsAndClearsTheKey(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -77,7 +77,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testActivateWithWrongKeyThrows()
+    public function testActivateWithWrongKeyThrows(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -98,7 +98,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testActivateWithExpiredKeyThrows()
+    public function testActivateWithExpiredKeyThrows(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -120,7 +120,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testForceActivateBypassesKeyCheck()
+    public function testForceActivateBypassesKeyCheck(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -140,7 +140,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testInactivateResetsStatus()
+    public function testInactivateResetsStatus(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -162,7 +162,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testActivateOnNonExistentUserThrows()
+    public function testActivateOnNonExistentUserThrows(): void
     {
         $wiki = $this->getWiki();
         $accountActivationService = $wiki->services->get(AccountActivationService::class);
@@ -171,7 +171,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         $accountActivationService->activate('AccountActivationServiceTestNoSuchUser', '', true);
     }
 
-    public function testActivationFieldsAreHiddenFromGenericPageReadEvenForTheOwner()
+    public function testActivationFieldsAreHiddenFromGenericPageReadEvenForTheOwner(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -202,7 +202,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testPurgeExpiredActivationKeysClearsOnlyExpiredOnes()
+    public function testPurgeExpiredActivationKeysClearsOnlyExpiredOnes(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);

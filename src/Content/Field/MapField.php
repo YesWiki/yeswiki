@@ -113,7 +113,7 @@ class MapField extends BazarField
         ];
     }
 
-    public function isEmpty($pValue): bool
+    public function isEmpty(mixed $pValue): bool
     {
         if (empty($pValue) || !is_array($pValue)) {
             return true;

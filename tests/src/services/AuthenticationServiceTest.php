@@ -69,7 +69,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testCheckPassword(YesWikiRuntime $wiki)
+    public function testCheckPassword(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -180,7 +180,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginSetsSessionAndLogoutClearsIt(YesWikiRuntime $wiki)
+    public function testLoginSetsSessionAndLogoutClearsIt(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -207,7 +207,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(YesWikiRuntime $wiki)
+    public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -234,7 +234,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
      * Regression test for the session-fixation fix: the session ID must be regenerated whenever the authenticated identity actually changes (anonymous -> user, or user A -> user B), but must stay stable across repeated calls for the same already-logged-in user, as happens on every request via AuthenticationService::connectUser().
      */
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(YesWikiRuntime $wiki)
+    public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(YesWikiRuntime $wiki): void
     {
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $userA] = $this->createRandomUser($wiki);
@@ -270,7 +270,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginDoesNotTouchSessionIdInCliMode(YesWikiRuntime $wiki)
+    public function testLoginDoesNotTouchSessionIdInCliMode(YesWikiRuntime $wiki): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -293,7 +293,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
      * Regression test for ticket 07 (accountactivationbyemail absorbed into core): login() must block an unactivated user's login when signup_email_activation is on, and let an activated one through.
      */
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginIsBlockedForAnUnactivatedUserWhenActivationIsOn(YesWikiRuntime $wiki)
+    public function testLoginIsBlockedForAnUnactivatedUserWhenActivationIsOn(YesWikiRuntime $wiki): void
     {
         $userManager = $wiki->services->get(UserManager::class);
         $accountActivationService = $wiki->services->get(AccountActivationService::class);

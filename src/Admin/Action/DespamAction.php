@@ -71,11 +71,11 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
               _t('DESPAM_ALL_CHANGES_FROM') . ' ' .
               "<select name=\"from\">\n" .
               '<option selected="selected" value="1">' . _t('DESPAM_FOR_ONE_HOUR') . "</option>\n" .
-              '<option value="3">' . str_replace('{x}', 3, _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
-              '<option value="6">' . str_replace('{x}', 6, _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
-              '<option value="12">' . str_replace('{x}', 12, _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
-              '<option value="24">' . str_replace('{x}', 24, _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
-              '<option value="48">' . str_replace('{x}', 48, _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
+              '<option value="3">' . str_replace('{x}', '3', _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
+              '<option value="6">' . str_replace('{x}', '6', _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
+              '<option value="12">' . str_replace('{x}', '12', _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
+              '<option value="24">' . str_replace('{x}', '24', _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
+              '<option value="48">' . str_replace('{x}', '48', _t('DESPAM_FOR_X_HOURS')) . "</option>\n" .
               '<option value="168">' . _t('DESPAM_FOR_ONE_WEEK') . "</option>\n" .
               '<option value="336">' . _t('DESPAM_FOR_TWO_WEEKS') . "</option>\n" .
               '<option value="744">' . _t('DESPAM_FOR_ONE_MONTH') . "</option>\n" .
@@ -155,7 +155,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction, ProvidesCo
               "</p>\n";
                 echo "</form>\n";
                 echo "</div>\n\n";
-            } elseif (isset($_POST['clean'])) {
+            } else {
                 if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                     throw new \Exception(_t('WIKI_IN_HIBERNATION'));
                 }

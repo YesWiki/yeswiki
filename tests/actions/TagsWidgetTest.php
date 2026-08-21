@@ -30,7 +30,7 @@ class TagsWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testEditWidgetShowsExistingTagsWithoutDumpingWholeVocabulary(YesWikiRuntime $wiki)
+    public function testEditWidgetShowsExistingTagsWithoutDumpingWholeVocabulary(YesWikiRuntime $wiki): void
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $tripleStore = $wiki->services->get(TripleStore::class);

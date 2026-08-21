@@ -127,13 +127,10 @@ class Files
         }
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
-        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
-            curl_close($ch);
-        }
         fclose($fp);
 
         return $destPath;

@@ -14,7 +14,7 @@ class FormManagerTest extends YesWikiTestCase
 {
     private const NONEXISTENT_FORM_ID = '999904';
 
-    public function testGetManyWithNonExistentIdDoesNotPoisonGetAll()
+    public function testGetManyWithNonExistentIdDoesNotPoisonGetAll(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);

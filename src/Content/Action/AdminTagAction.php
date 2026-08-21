@@ -31,6 +31,7 @@ class AdminTagAction extends YesWikiAction implements RegisteredAction, Provides
         ];
     }
 
+    /** @return string */
     public function run()
     {
         $isAdmin = $this->getService(AclService::class)->isAdmin();
@@ -40,7 +41,7 @@ class AdminTagAction extends YesWikiAction implements RegisteredAction, Provides
             if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                 throw new \Exception(_t('WIKI_IN_HIBERNATION'));
             }
-            $tagsManager->removeByIds(explode(',', $this->getRequest()->query->get('delete_tag')));
+            $tagsManager->removeByIds(explode(',', $this->getRequest()->query->getString('delete_tag')));
         }
 
         $rows = $tagsManager->getAllTriples();

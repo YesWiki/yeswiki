@@ -11,8 +11,8 @@ use YesWiki\Kernel\Entity\Messages;
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
-    private $dbService;
-    private $params;
+    private DbService $dbService;
+    private ParameterBagInterface $params;
 
     protected ContainerInterface $container;
 
@@ -23,7 +23,10 @@ class MigrationService
         $this->params = $params;
     }
 
-    public function getCompletedMigrations()
+    /**
+     * @return array<array-key, mixed> the migration ids already recorded as run
+     */
+    public function getCompletedMigrations(): array
     {
         $tripleStore = $this->container->get(TripleStore::class);
 
@@ -32,7 +35,7 @@ class MigrationService
         }, $tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID));
     }
 
-    public function run()
+    public function run(): Messages
     {
         if ($this->container->get(HibernationService::class)->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -44,7 +47,7 @@ class MigrationService
 
         // Get all Php files in migrations folder (in root or in any extension)
         // Run the file if it was not already run in the past
-        $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->container->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
+        $folders = array_merge([YESWIKI_PROGRAM_DIR . '/src/'], $this->container->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
@@ -77,7 +80,7 @@ class MigrationService
                     preg_match("/^([\d]*)/", $vFile, $vMatches);
                     $vDate = $vMatches[1] ?? 'unknow date';
 
-                    $className = preg_replace('/^[\d_]*/', '', $vFile); // TestMigration
+                    $className = preg_replace('/^[\d_]*/', '', $vFile) ?? ''; // TestMigration
                     if (!class_exists($className)) {
                         throw new \Exception("Error while loading $filePath. The class inside should be $className");
                     }

@@ -32,9 +32,9 @@ class ImageOptimizerCommand extends Command
     {
         $optimizerChain = OptimizerChainFactory::create();
         $toWebp = $input->getOption('forcewebp');
-        $images = glob('files/*.{jpg,jpeg,png,gif,webp,bmp,svg}', GLOB_BRACE);
+        $images = glob('files/*.{jpg,jpeg,png,gif,webp,bmp,svg}', GLOB_BRACE) ?: [];
         foreach ($images as $image) {
-            $beforeSize = $this->humanFilesize(filesize($image));
+            $beforeSize = $this->humanFilesize(filesize($image) ?: 0);
             echo "Image $image initial size: $beforeSize\n";
             if ($toWebp) {
                 $destImage = str_replace('.' . pathinfo($image, PATHINFO_EXTENSION), '.webp', $image);
@@ -46,10 +46,10 @@ class ImageOptimizerCommand extends Command
                     $optimizerChain->optimize($image, $destImage);
                     unlink($image);
                 }
-                $afterSize = $this->humanFilesize(filesize($destImage));
+                $afterSize = $this->humanFilesize(filesize($destImage) ?: 0);
             } else {
                 $optimizerChain->optimize($image);
-                $afterSize = $this->humanFilesize(filesize($image));
+                $afterSize = $this->humanFilesize(filesize($image) ?: 0);
             }
             echo "Image size after optimisation: $afterSize\n---\n";
         }
@@ -57,7 +57,11 @@ class ImageOptimizerCommand extends Command
         return Command::SUCCESS;
     }
 
-    public function humanFilesize($bytes, $decimals = 2)
+    /**
+     * @param int|float $bytes
+     * @param int       $decimals
+     */
+    public function humanFilesize($bytes, $decimals = 2): string
     {
         $units = ['', 'K', 'M', 'G', 'T'];
         $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);

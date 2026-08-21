@@ -20,6 +20,9 @@ class TabAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /**
+     * @return string the opening markup for one tab pane
+     */
     public function run()
     {
         return $this->getService(TabsRenderer::class)->openATab();

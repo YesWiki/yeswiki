@@ -282,8 +282,14 @@ abstract class Package extends Files
     private function getMD5()
     {
         $this->md5File = $this->download($this->address . '.md5');
+        $checksum = file_get_contents($this->md5File);
 
-        return explode(' ', file_get_contents($this->md5File))[0];
+        // an unreadable checksum file must fail the integrity check, not abort the update
+        if ($checksum === false) {
+            return '';
+        }
+
+        return explode(' ', $checksum)[0];
     }
 
     /**

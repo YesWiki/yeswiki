@@ -73,13 +73,13 @@ class AssetsUnderAUrlPrefixTest extends YesWikiTestCase
         }
 
         file_put_contents($instance . '/index.php', sprintf(
-            "<?php\ndefine('YESWIKI_SOURCE_DIR', %s);\nputenv('YESWIKI_CONFIG_FILE=' . __DIR__ . '/yeswiki.config.php');\nrequire YESWIKI_SOURCE_DIR . '/index.php';\n",
-            var_export(\YESWIKI_SOURCE_DIR, true)
+            "<?php\ndefine('YESWIKI_PROGRAM_DIR', %s);\nputenv('YESWIKI_CONFIG_FILE=' . __DIR__ . '/yeswiki.config.php');\nrequire YESWIKI_PROGRAM_DIR . '/index.php';\n",
+            var_export(\YESWIKI_PROGRAM_DIR, true)
         ));
 
         file_put_contents($root . '/router.php', sprintf(
             "<?php\nif (is_file(__DIR__ . parse_url(\$_SERVER['REQUEST_URI'], PHP_URL_PATH))) { return false; }\nchdir(__DIR__);\nrequire %s;\n",
-            var_export(\YESWIKI_SOURCE_DIR . '/index.php', true)
+            var_export(\YESWIKI_PROGRAM_DIR . '/index.php', true)
         ));
 
         $this->serverLog = $root . '/server.log';

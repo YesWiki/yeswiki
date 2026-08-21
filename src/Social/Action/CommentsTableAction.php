@@ -29,8 +29,11 @@ class CommentsTableAction extends YesWikiAction implements RegisteredAction, Pro
         ];
     }
 
-    protected $commentsService;
+    protected CommentService $commentsService;
 
+    /**
+     * @return string the table of every comment on the wiki
+     */
     public function run()
     {
         $this->commentsService = $this->getService(CommentService::class);

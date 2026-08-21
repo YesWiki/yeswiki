@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 /** Is the wiki hibernated? */
 class HibernationService
 {
-    protected $params;
+    protected ParameterBagInterface $params;
 
     public function __construct(ParameterBagInterface $params)
     {

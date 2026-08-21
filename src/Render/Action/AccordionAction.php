@@ -38,25 +38,23 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
         ];
     }
 
+    /**
+     * @return string opening markup for the accordion, or the unclosed-element error message
+     */
     public function run()
     {
-        ob_start();
         $class = $this->arguments['class'] ?? '';
         $pagetag = $this->getService(PageContext::class)->getTag();
 
-        if ($this->check_end_elem('accordion')) {
-            $accordionID = uniqid('accordion_');
-            $this->getService(GraphicalElementState::class)->openAccordion($pagetag, $accordionID);
-
-            echo '<!-- start of accordion -->' . "\n" .
-            "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
-        } else {
-            echo $this->generate_error_msg('accordion');
+        if (!$this->check_end_elem('accordion')) {
+            return $this->generate_error_msg('accordion');
         }
-        $accordion = ob_get_contents();
-        ob_end_clean();
 
-        return $accordion;
+        $accordionID = uniqid('accordion_');
+        $this->getService(GraphicalElementState::class)->openAccordion($pagetag, $accordionID);
+
+        return '<!-- start of accordion -->' . "\n"
+            . '<div class="yw-accordion ' . $class . '" id="' . $accordionID . '">';
     }
 
     public function end(): string

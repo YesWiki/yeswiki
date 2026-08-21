@@ -279,6 +279,10 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         return array_map(static fn (string $key) => _t($key), self::ANIMATION_LABELS);
     }
 
+    /**
+     * @return string the section's opening markup, or an error message when the background
+     *                file is not an image or the closing `{{end elem="section"}}` is missing
+     */
     public function run()
     {
         $bgcolor = $this->arguments['bgcolor'] ?? '';
@@ -411,10 +415,10 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                     (string)($entry['original_filename'] ?? '')
                 );
                 if ($family !== 'image') {
-                    echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
-                        . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
+                    ob_end_clean();
 
-                    return;
+                    return '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
+                        . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
                 }
 
                 $config = $this->getService(RuntimeConfig::class);
@@ -427,10 +431,10 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 $paths = $this->getService(AttachedFilePaths::class);
 
                 if (!$paths->isPicture($file)) {
-                    echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
-                        . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
+                    ob_end_clean();
 
-                    return;
+                    return '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
+                        . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
                 }
                 $fullFilename = $paths->fullFilename($file);
                 $imageUrl = $fullFilename === '' ? null : $this->getService(Storage::class)->url($fullFilename);
@@ -520,10 +524,8 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         } else {
             echo $this->generate_error_msg('section');
         }
-        $section = ob_get_contents();
-        ob_end_clean();
 
-        return $section;
+        return ob_get_clean() ?: '';
     }
 
     public function end(): string

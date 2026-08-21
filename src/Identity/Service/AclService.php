@@ -364,8 +364,12 @@ class AclService
     /**
      * Checks if some $user satisfies the given $acl.
      *
-     * @param string       $acl
-     *                                   The acl to check, in the same format than for pages ACL's
+     * @param mixed        $acl
+     *                                   The acl to check, in the same format than for pages ACL's.
+     *                                   Typed loosely on purpose: the `hasAcl` Twig helper and
+     *                                   getPageACL() both hand over whatever the caller holds, and
+     *                                   anything that is not a string is treated as an empty acl,
+     *                                   which denies access rather than granting it.
      * @param string       $user
      *                                   The name of the user that must satisfy the ACL. By default
      *                                   the current remote user.

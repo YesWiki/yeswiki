@@ -7,7 +7,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 
 class ReactionsFormatter extends YesWikiController
 {
-    protected $reactionManager;
+    protected ReactionManager $reactionManager;
 
     protected UrlFormatter $urlFormatter;
 
@@ -22,7 +22,11 @@ class ReactionsFormatter extends YesWikiController
     /**
      * format Reactions Labels.
      *
-     * @return array ['labels'=>string[],'ids'=>string[]]]
+     * @param array<array-key, string>|null $ids           the reaction ids to label, or null to derive
+     *                                                     them from the labels themselves
+     * @param array<array-key, string>      $defaultLabels label to fall back to, per reaction id
+     *
+     * @return array{labels: array<array-key, string>, ids: array<array-key, string>}
      */
     public function formatReactionsLabels(string $labelsComaSeparated, ?array $ids = null, array $defaultLabels = []): array
     {
@@ -50,7 +54,10 @@ class ReactionsFormatter extends YesWikiController
     /**
      * format Reactions Labels.
      *
-     * @return string[]
+     * @param array<array-key, string> $ids           the reaction ids to find an image for
+     * @param array<array-key, string> $defaultImages image path to fall back to, per reaction id
+     *
+     * @return array<array-key, string> image URL per reaction id
      */
     public function formatImages(array $ids, string $imagesComaSeparated, array $defaultImages = []): array
     {
@@ -89,14 +96,14 @@ class ReactionsFormatter extends YesWikiController
                                 file_exists("files/{$rawImages[$k]}")
                                 ? "$baseUrl/files/{$rawImages[$k]}"
                                 : (
-                                    file_exists(YESWIKI_SOURCE_DIR . "/styles/images/{$rawImages[$k]}")
+                                    file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/{$rawImages[$k]}")
                                     ? "$baseUrl/styles/images/{$rawImages[$k]}"
                                     : ''
                                 )
                             )
                         )
                         : (
-                            file_exists(YESWIKI_SOURCE_DIR . "/styles/images/mikone-{$rawImages[$k]}.svg")
+                            file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/mikone-{$rawImages[$k]}.svg")
                             ? "$baseUrl/styles/mikone-{$rawImages[$k]}.svg"
                             : $rawImages[$k]
                         )
@@ -108,20 +115,15 @@ class ReactionsFormatter extends YesWikiController
     }
 
     /**
-     * @param bool $isDefaultReactionFied = false
+     * @param array<array-key, string> $ids    the reaction ids offered by this reaction field
+     * @param array<array-key, string> $labels label per reaction, in the same order as $ids
+     * @param array<array-key, string> $images image URL per reaction, in the same order as $ids
      *
-     * @return array [
-     *               'reactions' => [
-     *               (string $id) => [
-     *               'id'=>string,
-     *               'label'=>string,
-     *               'image'=>string,
-     *               'nbReactions'=>integer
-     *               ]
-     *               ],
-     *               'userReactions' = >string[] $ids
-     *               'oldIdsUserReactions' = >string[] $ids
-     *               ]
+     * @return array{
+     *     reactions: array<string, array{id: string, label: string, image: string, nbReactions: int}>,
+     *     userReactions: list<string>,
+     *     oldIdsUserReactions: list<string>
+     * }
      */
     public function getReactionItems(string $pageTag, string $userName, string $reactionId, array $ids, array $labels, array $images, bool $isDefaultReactionFied = false): array
     {

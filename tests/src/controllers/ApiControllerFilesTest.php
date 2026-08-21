@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Content\Api\FileApiController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
@@ -49,7 +50,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testUploadThenDownloadEnforcesOwningPageAclByDefault(YesWikiRuntime $wiki)
+    public function testUploadThenDownloadEnforcesOwningPageAclByDefault(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -70,7 +71,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
             $response = $controller->uploadFile($request);
-            $entry = json_decode($response->getContent(), true);
+            $entry = json_decode($this->jsonBody($response), true);
             $tag = $entry['tag'];
 
             $this->assertSame(201, $response->getStatusCode());
@@ -92,7 +93,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testPublicOptOutAllowsAnonymousDownload(YesWikiRuntime $wiki)
+    public function testPublicOptOutAllowsAnonymousDownload(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -113,7 +114,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
             $response = $controller->uploadFile($request);
-            $entry = json_decode($response->getContent(), true);
+            $entry = json_decode($this->jsonBody($response), true);
             $tag = $entry['tag'];
 
             $aclService->save($tag, 'read', '*');
@@ -133,7 +134,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testGetFilesOnlyListsFilesTheRequesterCanRead(YesWikiRuntime $wiki)
+    public function testGetFilesOnlyListsFilesTheRequesterCanRead(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -152,15 +153,15 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
             $response = $controller->uploadFile($request);
-            $tag = json_decode($response->getContent(), true)['tag'];
+            $tag = json_decode($this->jsonBody($response), true)['tag'];
 
             $listResponse = $controller->getFiles(Request::create('/api/files', 'GET', ['search' => 'unique-listing-marker']));
-            $asAdmin = json_decode($listResponse->getContent(), true);
+            $asAdmin = json_decode($this->jsonBody($listResponse), true);
             $this->assertNotEmpty($asAdmin, 'the admin who uploaded it must see it in the search results');
 
             $authenticationService->logout();
             $listResponseAnon = $controller->getFiles(Request::create('/api/files', 'GET', ['search' => 'unique-listing-marker']));
-            $asAnon = json_decode($listResponseAnon->getContent(), true);
+            $asAnon = json_decode($this->jsonBody($listResponseAnon), true);
             $this->assertEmpty($asAnon, 'an anonymous requester must not see a file from a private page');
         } finally {
             $authenticationService->logout();
@@ -214,7 +215,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
                 file_put_contents($tmpPath, 'family filter test');
                 $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
                 $request->files->set('upFile', new UploadedFile($tmpPath, $filename, $mimeType, null, true));
-                $uploaded = json_decode($controller->uploadFile($request)->getContent(), true);
+                $uploaded = json_decode($this->jsonBody($controller->uploadFile($request)), true);
                 $tags[] = $uploaded['tag'];
                 $tmpPaths[] = $tmpPath;
 
@@ -255,6 +256,18 @@ class ApiControllerFilesTest extends YesWikiTestCase
      */
     private function listFiles(FileApiController $controller, array $query): array
     {
-        return json_decode($controller->getFiles(Request::create('/api/files', 'GET', $query))->getContent(), true);
+        return json_decode($this->jsonBody($controller->getFiles(Request::create('/api/files', 'GET', $query))), true);
+    }
+
+    /**
+     * A route that failed answers with no body, and json_decode(false) is null -- which every
+     * caller here would read as an empty result rather than as the failure it is.
+     */
+    private function jsonBody(Response $response): string
+    {
+        $content = $response->getContent();
+        $this->assertIsString($content, 'the route must answer with a body');
+
+        return $content;
     }
 }

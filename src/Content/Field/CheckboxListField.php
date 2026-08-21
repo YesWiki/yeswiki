@@ -7,6 +7,9 @@ use Psr\Container\ContainerInterface;
 #[\Field(['checkbox'])]
 class CheckboxListField extends CheckboxField
 {
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -48,7 +51,13 @@ class CheckboxListField extends CheckboxField
         ]);
     }
 
-    private function filterTree($tree, $checkedValues)
+    /**
+     * @param array<int|string, mixed> $tree
+     * @param array<int|string, mixed> $checkedValues
+     *
+     * @return list<mixed>
+     */
+    private function filterTree($tree, $checkedValues): array
     {
         $filteredTree = [];
 

@@ -8,7 +8,7 @@ class GreetingService
     {
     }
 
-    public function getUserName()
+    public function getUserName(): string
     {
         return 'Bibi';
     }

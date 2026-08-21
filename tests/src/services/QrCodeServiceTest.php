@@ -14,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(QrCodeService::class, 'generateToFile')]
 class QrCodeServiceTest extends YesWikiTestCase
 {
-    public function testGenerateToFileWritesAValidSvg()
+    public function testGenerateToFileWritesAValidSvg(): void
     {
         $service = $this->getWiki()->services->get(QrCodeService::class);
         $path = sys_get_temp_dir() . '/QrCodeServiceTest-' . uniqid() . '.svg';
@@ -24,6 +24,7 @@ class QrCodeServiceTest extends YesWikiTestCase
 
             $this->assertFileExists($path);
             $content = file_get_contents($path);
+            $this->assertNotFalse($content, "the QR code written to $path could not be read back");
             $this->assertStringContainsString('<svg', $content);
             $this->assertGreaterThan(0, filesize($path));
         } finally {

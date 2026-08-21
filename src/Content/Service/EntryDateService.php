@@ -10,9 +10,10 @@ use YesWiki\Search\Service\SearchManager;
 class EntryDateService implements EventSubscriberInterface
 {
     protected ContainerInterface $container;
-    protected $entryManager;
-    protected $formManager;
-    protected $followedIds;
+    protected EntryManager $entryManager;
+    protected FormManager $formManager;
+    /** @var list<string> */
+    protected array $followedIds;
 
     public static function getSubscribedEvents()
     {
@@ -45,7 +46,7 @@ class EntryDateService implements EventSubscriberInterface
     /**
      * @param Event $event
      */
-    public function followEntryChange($event)
+    public function followEntryChange($event): void
     {
         $entry = $this->getEntry($event);
         if ($this->shouldFollowEntry($entry)) {
@@ -56,7 +57,7 @@ class EntryDateService implements EventSubscriberInterface
     /**
      * @param Event $event
      */
-    public function followEntryDeletion($event)
+    public function followEntryDeletion($event): void
     {
         $entryBeforeDeletion = $this->getEntry($event);
         if (!empty($entryBeforeDeletion)) {
@@ -64,7 +65,7 @@ class EntryDateService implements EventSubscriberInterface
         }
     }
 
-    public function followId(string $entryId)
+    public function followId(string $entryId): void
     {
         if (!in_array($entryId, $this->followedIds)) {
             $this->followedIds[] = $entryId;
@@ -72,7 +73,7 @@ class EntryDateService implements EventSubscriberInterface
     }
 
     /**
-     * @return array $entry
+     * @return array<string, mixed> $entry
      */
     protected function getEntry(Event $event): array
     {
@@ -82,14 +83,21 @@ class EntryDateService implements EventSubscriberInterface
         return is_array($entry) ? $entry : [];
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     protected function shouldFollowEntry(array $entry): bool
     {
         return !empty($entry['tag'])
             && in_array($entry['tag'], $this->followedIds);
     }
 
-    /** remove linked entries. */
-    protected function deleteLinkedEntries(array $entry)
+    /**
+     * remove linked entries.
+     *
+     * @param array<string, mixed> $entry
+     */
+    protected function deleteLinkedEntries(array $entry): void
     {
         $vSearchManager = $this->container->get(SearchManager::class);
 
@@ -108,7 +116,7 @@ class EntryDateService implements EventSubscriberInterface
                 false,
                 false
             );
-            if (is_iterable($entriesToDelete)) {
+            if (is_array($entriesToDelete)) {
                 $entriesToDelete = array_filter(
                     $entriesToDelete,
                     function ($entryToFilter) use ($entryId) {
@@ -126,7 +134,11 @@ class EntryDateService implements EventSubscriberInterface
         }
     }
 
-    /** check if associated form is restricted for only one entry by user. */
+    /**
+     * check if associated form is restricted for only one entry by user.
+     *
+     * @param array<string, mixed>|null $entry
+     */
     public function canRegisterMultipleEntries(?array $entry): bool
     {
         $canRegisterMultipleEntries = true;

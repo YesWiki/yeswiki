@@ -56,8 +56,13 @@ abstract class PackageExt extends Package
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
 
-        $dirs = array_filter(glob($this->extractionPath . '/*'), 'is_dir');
-        $extractionPath = $dirs[0] . '/';
+        $entries = glob($this->extractionPath . '/*');
+        $dirs = ($entries === false) ? [] : array_filter($entries, 'is_dir');
+        if ($dirs === []) {
+            throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
+        }
+        // array_filter keeps the original keys, so the first directory is rarely at offset 0
+        $extractionPath = reset($dirs) . '/';
 
         $this->copy(
             $extractionPath,

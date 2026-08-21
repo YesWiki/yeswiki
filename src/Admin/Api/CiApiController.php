@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\ConfigurationService;
 class CiApiController extends YesWikiController
 {
     #[Route('/api/ci/update_config', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function updateConfig()
+    public function updateConfig(): ApiResponse
     {
         $configurationService = $this->getService(ConfigurationService::class);
         $config = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
@@ -25,7 +25,8 @@ class CiApiController extends YesWikiController
         return new ApiResponse();
     }
 
-    private function updateConfigFieldByField(ConfigurationFile $configurationFile, array $newConfig)
+    /** @param array<string, mixed> $newConfig */
+    private function updateConfigFieldByField(ConfigurationFile $configurationFile, array $newConfig): void
     {
         foreach ($newConfig as $key => $value) {
             $configurationFile[$key] = $value;

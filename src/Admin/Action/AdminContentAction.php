@@ -19,6 +19,7 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
         return 'admincontent';
     }
 
+    /** @return string */
     public function run()
     {
         if (!$this->getService(AclService::class)->isAdmin()) {
@@ -43,7 +44,7 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
             "SELECT DISTINCT owner FROM {$dbService->prefixTable('pages')}"
             . " WHERE latest='Y' AND parent='' AND owner != '' ORDER BY owner ASC"
         );
-        $owners = array_column($ownersRows ?? [], 'owner');
+        $owners = array_column($ownersRows, 'owner');
 
         $groups = $groupOperationsService->getAll();
 

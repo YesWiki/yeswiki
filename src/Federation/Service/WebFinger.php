@@ -7,25 +7,19 @@ namespace YesWiki\Federation\Service;
  */
 class WebFinger
 {
-    /**
-     * @var string
-     */
-    protected $subject;
+    /** Never set until a response supplies one, which getSubject() has always admitted. */
+    protected ?string $subject = null;
 
-    /**
-     * @var string[]
-     */
-    protected $aliases = [];
+    /** @var list<string> */
+    protected array $aliases = [];
 
-    /**
-     * @var array
-     */
-    protected $links = [];
+    /** @var list<array<string, mixed>> */
+    protected array $links = [];
 
     /**
      * Construct WebFinger instance.
      *
-     * @param array $data A WebFinger response
+     * @param array<string, mixed>|null $data A WebFinger response
      */
     public function __construct(?array $data = null)
     {
@@ -41,9 +35,10 @@ class WebFinger
     /**
      * Set subject property.
      *
-     * @param string $subject
+     * `mixed`, not `string`: this is handed a value decoded straight out of a remote
+     * server's JSON, and the guard below is the only thing that says so.
      */
-    public function setSubject($subject)
+    public function setSubject(mixed $subject): void
     {
         if (!is_string($subject)) {
             throw new \Exception('WebFinger subject must be a string');
@@ -54,8 +49,10 @@ class WebFinger
 
     /**
      * Set aliases property.
+     *
+     * @param array<mixed> $aliases as decoded from a remote response, hence unvalidated
      */
-    public function setAliases(array $aliases)
+    public function setAliases(array $aliases): void
     {
         foreach ($aliases as $alias) {
             if (!is_string($alias)) {
@@ -68,8 +65,10 @@ class WebFinger
 
     /**
      * Set links property.
+     *
+     * @param array<mixed> $links as decoded from a remote response, hence unvalidated
      */
-    public function setLinks(array $links)
+    public function setLinks(array $links): void
     {
         foreach ($links as $link) {
             if (!is_array($link)) {
@@ -131,9 +130,9 @@ class WebFinger
     /**
      * Get WebFinger response as an array.
      *
-     * @return array
+     * @return array{subject: string|null, aliases: list<string>, links: list<array<string, mixed>>}
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'subject' => $this->subject,
@@ -145,9 +144,9 @@ class WebFinger
     /**
      * Get aliases.
      *
-     * @return array
+     * @return list<string>
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         return $this->aliases;
     }
@@ -155,30 +154,27 @@ class WebFinger
     /**
      * Get links.
      *
-     * @return array
+     * @return list<array<string, mixed>>
      */
-    public function getLinks()
+    public function getLinks(): array
     {
         return $this->links;
     }
 
     /**
      * Get subject fetched from profile.
-     *
-     * @return string|null Subject
      */
-    public function getSubject()
+    public function getSubject(): ?string
     {
         return $this->subject;
     }
 
     /**
-     * Get subject handle fetched from profile.
-     *
-     * @return string|null
+     * Get subject handle fetched from profile, i.e. the subject with its `acct:` scheme
+     * stripped -- null when no response ever supplied a subject.
      */
-    public function getHandle()
+    public function getHandle(): ?string
     {
-        return substr($this->subject, 5);
+        return $this->subject === null ? null : substr($this->subject, 5);
     }
 }

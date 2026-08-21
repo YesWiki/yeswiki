@@ -20,6 +20,9 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
         return 'revisions';
     }
 
+    /**
+     * @return string
+     */
     public function run()
     {
         $this->denyAccessUnlessGranted('read');
@@ -41,7 +44,11 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
         }
         $revisionsCount = $pageManager->countRevisions($this->getService(PageContext::class)->getTag());
 
-        $revisions = $pageManager->getRevisions($this->getService(PageContext::class)->getTag(), $this->params->get('revisionscount'));
+        $revisionsLimit = $this->params->get('revisionscount');
+        $revisions = $pageManager->getRevisions(
+            $this->getService(PageContext::class)->getTag(),
+            is_numeric($revisionsLimit) ? (int)$revisionsLimit : 30
+        );
         $entryManager = $this->getService(EntryManager::class);
 
         return $this->renderFullPage('@core/handlers/revisions.twig', [

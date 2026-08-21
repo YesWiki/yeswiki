@@ -78,8 +78,10 @@ class ImageField extends FileField
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
+        $supprImage = $this->getRequest()->query->get('suppr_image');
+
         if ($isUrl) {
-            if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
+            if ($supprImage !== null && urldecode($supprImage) === $value) {
                 if ($this->isAllowedToDeleteFile($entry ?? [], $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@core/alert-message.twig', [
@@ -111,7 +113,7 @@ class ImageField extends FileField
             !empty($value)
             || (!empty($imgDefault) && $this->storage()->exists($this->getBasePath() . $imgDefault))
         ) {
-            if ($this->getRequest()->query->has('suppr_image') && $this->getRequest()->query->get('suppr_image') === $value) {
+            if ($supprImage !== null && $supprImage === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 

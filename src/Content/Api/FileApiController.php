@@ -25,7 +25,7 @@ class FileApiController extends YesWikiController
      * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php page-handler AND the AJAX qqFileUploader path -- both funneled into the same underlying attach code already, this is the one real validated path they become).
      */
     #[Route('/api/files', methods: ['POST'], options: ['acl' => ['public']])]
-    public function uploadFile(Request $request)
+    public function uploadFile(Request $request): ApiResponse
     {
         $pageTag = (string)$request->request->get('pageTag', '');
         if (empty($pageTag)) {
@@ -76,7 +76,7 @@ class FileApiController extends YesWikiController
      * Consolidated download route (ticket 17, replaces tools/attach's DownloadHandler/ doDownload(), which performed NO ownership ACL check at all -- the only external gate was AclService::hasAccess('read') with no tag argument, checking whatever page the current URL happened to resolve to instead of the file's own ACL).
      */
     #[Route('/api/files/{tag}/download', methods: ['GET'], options: ['acl' => ['public']])]
-    public function downloadFile(Request $request, string $tag)
+    public function downloadFile(Request $request, string $tag): Response
     {
         $this->denyAccessUnlessGranted('read', $tag);
 
@@ -158,7 +158,7 @@ class FileApiController extends YesWikiController
 
     /** List file entries the requester can read, for the file-picker UI (ticket 17). */
     #[Route('/api/files', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getFiles(Request $request)
+    public function getFiles(Request $request): ApiResponse
     {
         $search = strtolower((string)$request->query->get('search', ''));
         $family = (string)$request->query->get('family', '');

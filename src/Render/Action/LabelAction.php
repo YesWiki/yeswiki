@@ -45,23 +45,20 @@ class LabelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         ];
     }
 
+    /**
+     * @return string opening markup for the label, or the unclosed-element error message
+     */
     public function run()
     {
-        ob_start();
         $id = $this->arguments['id'] ?? '';
 
         $class = $this->arguments['class'] ?? 'label-default';
-        if ($this->check_end_elem('label')) {
-            echo '<!-- start of label -->' . "\n" .
-            '<span' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="yw-label ' . $class
-                . '">';
-        } else {
-            echo $this->generate_error_msg('label');
+        if (!$this->check_end_elem('label')) {
+            return $this->generate_error_msg('label');
         }
-        $label = ob_get_contents();
-        ob_end_clean();
 
-        return $label;
+        return '<!-- start of label -->' . "\n"
+            . '<span' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="yw-label ' . $class . '">';
     }
 
     public function end(): string

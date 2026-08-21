@@ -24,17 +24,16 @@ class PerformerTest extends YesWikiTestCase
 
     #[Depends('testPerformerExisting')]
     #[DataProvider('listProvider')]
-    public function testList(string $objectType, Performer $performer)
+    public function testList(string $objectType, Performer $performer): void
     {
         $list = $performer->list($objectType);
-        $this->assertTrue(is_array($list));
-        $this->assertGreaterThan(0, count($list));
-        foreach ($list as $elem) {
-            $this->assertIsString($elem);
-        }
+        $this->assertGreaterThan(0, count($list), "Performer::list() found no {$objectType}");
     }
 
-    public static function listProvider()
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function listProvider(): array
     {
         return [
             'actions' => ['action'],

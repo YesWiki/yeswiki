@@ -16,7 +16,7 @@ class FiltertagsActionTest extends YesWikiTestCase
     private const PAGE_TAG = 'FiltertagsSqliRegressionPage';
     private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
 
-    public function testTrailingBackslashInFilterValueIsEscapedBeforeReachingSql()
+    public function testTrailingBackslashInFilterValueIsEscapedBeforeReachingSql(): void
     {
         $wiki = $this->getWiki();
         $dbService = $wiki->services->get(DbService::class);

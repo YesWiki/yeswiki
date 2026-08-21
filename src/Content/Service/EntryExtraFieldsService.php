@@ -12,7 +12,7 @@ class EntryExtraFieldsService
     public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples', 'linked_data'];
 
     protected ContainerInterface $container;
-    protected $entryId;
+    protected string $entryId = '';
 
     /**
      * @var iterable<ContributesEntryFields> tagged `yeswiki.entry_fields`
@@ -28,12 +28,12 @@ class EntryExtraFieldsService
         $this->contributors = $contributors;
     }
 
-    public function setEntryId($entryId)
+    public function setEntryId(string $entryId): void
     {
         $this->entryId = $entryId;
     }
 
-    public function get($prop)
+    public function get(string $prop): mixed
     {
         $methodName = 'get' . $this->snakeToPascal($prop);
         if (method_exists($this, $methodName)) {
@@ -42,7 +42,7 @@ class EntryExtraFieldsService
 
         foreach ($this->contributors as $contributor) {
             if (in_array($prop, $contributor->contributedFieldNames(), true)) {
-                return $contributor->contributedField($prop, (string)$this->entryId);
+                return $contributor->contributedField($prop, $this->entryId);
             }
         }
 
@@ -54,11 +54,17 @@ class EntryExtraFieldsService
         return str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
     }
 
-    public function getTriples()
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getTriples(): array
     {
         return $this->container->get(TripleStore::class)->getMatching($this->entryId, null, null, '=');
     }
 
+    /**
+     * @return array<string, array<string, array<string, mixed>|null>>
+     */
     public function getLinkedData(): array
     {
         $fields = [];
@@ -86,12 +92,19 @@ class EntryExtraFieldsService
         return $fields;
     }
 
+    /**
+     * @param array<string, array<string, array<string, mixed>|null>> $linkedData
+     */
     public function appendHtmlData(array $linkedData): string
     {
         $sep = '_-_';
         $htmlData = '';
         foreach ($linkedData as $fieldName => $entries) {
             foreach ($entries as $entry) {
+                if ($entry === null) {
+                    // the linked entry no longer exists: nothing to hang data attributes on
+                    continue;
+                }
                 $htmlData .= str_replace(
                     'data-',
                     'data-' . $fieldName . $sep . $entry['tag'] . $sep,

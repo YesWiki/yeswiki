@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class EntryFastAccessService
 {
+    /**
+     * @param array<string, mixed> $get
+     */
     public function isFastAccess(mixed $output, mixed $selectedEntries, array $get): bool
     {
         return $output == 'html'

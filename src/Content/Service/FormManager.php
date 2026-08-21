@@ -134,6 +134,9 @@ class FormManager
                 rename($tmpFile, $tempFile);
                 try {
                     $ifp = fopen($tempFile, 'wb');
+                    if ($ifp === false) {
+                        throw new \RuntimeException("could not open $tempFile for writing");
+                    }
                     fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                     fclose($ifp);
                     $this->resizer->resize($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
@@ -1358,6 +1361,9 @@ class FormManager
         }
 
         foreach ($form['prepared'] as $field) {
+            if (!$field instanceof BazarField) {
+                continue;
+            }
             $class = get_class($field);
             $class = explode('\\', $class);
             $class = array_pop($class);

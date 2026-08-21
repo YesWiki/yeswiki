@@ -80,7 +80,7 @@ class AdminPagesApiController extends YesWikiController
             LIMIT ? OFFSET ?
         SQL;
 
-        $rows = $dbService->loadAll($sql, [...$whereParams, ...$havingParams, $perpage, $offset]) ?? [];
+        $rows = $dbService->loadAll($sql, [...$whereParams, ...$havingParams, $perpage, $offset]);
 
         $countSql = <<<SQL
             SELECT COUNT(DISTINCT p.tag) AS total
@@ -203,6 +203,11 @@ class AdminPagesApiController extends YesWikiController
         ]);
     }
 
+    /**
+     * @param list<string> $pageTags
+     * @param list<string> $success  the tags this ran through, appended to
+     * @param list<string> $errors   one line per tag it could not run through, appended to
+     */
     private function bulkDelete(array $pageTags, array &$success, array &$errors): void
     {
         $pageManager = $this->getService(PageManager::class);
@@ -224,6 +229,11 @@ class AdminPagesApiController extends YesWikiController
         }
     }
 
+    /**
+     * @param list<string> $pageTags
+     * @param list<string> $success  the tags this ran through, appended to
+     * @param list<string> $errors   one line per tag it could not run through, appended to
+     */
     private function bulkChangeAcls(Request $request, array $pageTags, array &$success, array &$errors): void
     {
         $mode = $request->request->get('acl_mode', 'replace');
@@ -254,13 +264,18 @@ class AdminPagesApiController extends YesWikiController
         }
     }
 
+    /**
+     * @param list<string> $pageTags
+     * @param list<string> $success  the tags this ran through, appended to
+     * @param list<string> $errors   one line per tag it could not run through, appended to
+     */
     private function bulkChangeTheme(Request $request, array $pageTags, array &$success, array &$errors): void
     {
         $pageManager = $this->getService(PageManager::class);
-        $theme = $request->request->get('theme', '');
-        $squelette = $request->request->get('squelette', '');
-        $style = $request->request->get('style', '');
-        $preset = $request->request->get('preset', '');
+        $theme = (string)$request->request->get('theme', '');
+        $squelette = (string)$request->request->get('squelette', '');
+        $style = (string)$request->request->get('style', '');
+        $preset = (string)$request->request->get('preset', '');
 
         $metadata = [];
         if (!empty($theme)) {
@@ -269,7 +284,7 @@ class AdminPagesApiController extends YesWikiController
         if (!empty($style)) {
             $metadata['style'] = $style . (substr($style, -4) === '.css' ? '' : '.css');
         }
-        if (!empty($squelette) && is_string($squelette)) {
+        if (!empty($squelette)) {
             $metadata['squelette'] = ThemeManager::squeletteFileName($squelette);
         }
         if (!empty($preset)) {
@@ -293,17 +308,23 @@ class AdminPagesApiController extends YesWikiController
         }
     }
 
+    /**
+     * The list screen's query string, read into the values the query builder wants.
+     *
+     * @return array{int, int, string, string, string, string, string, string, string, string}
+     *                                                                                         [page, perpage, sort, dir, search, type, owner, tag, acl, theme]
+     */
     private function extractListParams(Request $request): array
     {
         $page = max(1, (int)$request->query->get('page', 1));
         $pp = (int)$request->query->get('perpage', 50);
         $perpage = in_array($pp, self::ALLOWED_PERPAGES, true) ? $pp : 50;
-        $sortRaw = $request->query->get('sort', 'tag');
+        $sortRaw = (string)$request->query->get('sort', 'tag');
         $sort = in_array($sortRaw, self::ALLOWED_SORTS, true) ? $sortRaw : 'tag';
         $dir = $request->query->get('dir', 'asc') === 'desc' ? 'desc' : 'asc';
         $search = trim((string)$request->query->get('search', ''));
-        $typeRaw = $request->query->get('type', 'all');
-        $type = (in_array($typeRaw, self::ALLOWED_TYPES, true) || (ctype_digit((string)$typeRaw) && (int)$typeRaw > 0))
+        $typeRaw = (string)$request->query->get('type', 'all');
+        $type = (in_array($typeRaw, self::ALLOWED_TYPES, true) || (ctype_digit($typeRaw) && (int)$typeRaw > 0))
             ? $typeRaw : 'all';
         $ownerFilter = trim((string)$request->query->get('owner', ''));
         $tagFilter = trim((string)$request->query->get('tag_filter', ''));
@@ -433,6 +454,7 @@ class AdminPagesApiController extends YesWikiController
         return $filtered === '' ? 'comments-closed' : $filtered;
     }
 
+    /** @return array<int, string> form id => label, empty when the forms cannot be read */
     private function getForms(): array
     {
         try {

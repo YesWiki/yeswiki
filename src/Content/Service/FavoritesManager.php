@@ -9,8 +9,8 @@ class FavoritesManager
 {
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/favorite';
 
-    protected $params;
-    protected $tripleStore;
+    protected ParameterBagInterface $params;
+    protected TripleStore $tripleStore;
 
     public function __construct(ParameterBagInterface $params, TripleStore $tripleStore)
     {
@@ -36,9 +36,12 @@ class FavoritesManager
             'LIKE'
         );
 
-        return is_array($triples) && count($triples) > 0;
+        return count($triples) > 0;
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function getUserFavorites(string $userName): array
     {
         if (empty($userName)) {
@@ -54,11 +57,11 @@ class FavoritesManager
             'LIKE'
         );
 
-        return is_array($triples) && count($triples) > 0 ? $triples : [];
+        return $triples;
     }
 
     public function areFavoritesActivated(): bool
     {
-        return $this->params->get('favorites_activated');
+        return (bool)$this->params->get('favorites_activated');
     }
 }

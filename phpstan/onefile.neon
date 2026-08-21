@@ -1,7 +1,69 @@
-includes:
-    - phpstan.neon
-
+# Analysing a handful of files at a time, for a burn-down pass.
+#
+# Deliberately does NOT include phpstan.neon: that pulls in baseline.neon, which suppresses
+# exactly the errors such a pass exists to remove -- point it at a file and it reports "no
+# errors" before any work has been done. Every parameter below is a copy of phpstan.neon's
+# except the baseline include; keep the two in step.
 parameters:
+    level: 8
+
     # analysing a handful of files leaves every other baseline entry unmatched, which is noise
     # rather than signal when you are working on one file
     reportUnmatchedIgnoredErrors: false
+
+    dynamicConstantNames:
+        - YW_CHARSET
+        # The Program and the Instance are the same directory in a standalone install and
+        # different ones on a farm or under the binary (ticket 43, ADR-0023). The analyser has to
+        # define them as something, and whatever it picks makes every
+        # `YESWIKI_PROGRAM_DIR !== YESWIKI_INSTANCE_DIR` in the codebase fold to a constant --
+        # which is exactly the farm branch that has to keep being analysed.
+        - YESWIKI_PROGRAM_DIR
+        - YESWIKI_INSTANCE_DIR
+
+    ignoreErrors:
+        -
+            message: '#PhpImap\\Exceptions\\ConnectionException#'
+            path: ../src/Import/Service/ImapImporter.php
+        -
+            message: '#Composer\\Script\\Event#'
+            path: ../src/ComposerScriptsHelper.php
+        -
+            message: '#Spatie\\ImageOptimizer#'
+            path: ../src/Kernel/Command/ImageOptimizerCommand.php
+        -
+            message: '#Variable \$yeswikiConfig in empty\(\) always exists and is always falsy#'
+            path: ../src/Kernel/Entity/ConfigurationFile.php
+        -
+            message: '#assertNotNull\(\) with null and non-falsy-string will always evaluate to false#'
+            paths:
+                - ../tests/src/services/AuthenticationServiceTest.php
+                - ../tests/src/services/UserManagerTest.php
+        -
+            message: '#method_exists\(\) with ZipArchive and .register(Cancel|Progress)Cal#'
+            path: ../src/Admin/Service/ArchiveService.php
+            reportUnmatched: false
+
+    # Paths named on the command line replace `paths`, but not `scanDirectories` -- without
+    # these, one file is analysed against nothing and every class and function in the project
+    # reads as undefined.
+    paths:
+        - ../src
+        - ../extensions/helloworld
+        - ../tests
+
+    scanDirectories:
+        - ../src
+        - ../extensions/helloworld
+        - ../tests
+
+    excludePaths:
+        analyseAndScan:
+            - ../tests/e2e
+            - ../extensions/*/node_modules
+
+    bootstrapFiles:
+        - bootstrap.php
+
+    stubFiles:
+        - symfony-container.stub

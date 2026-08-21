@@ -66,7 +66,7 @@ class TestConsoleServiceCommand extends Command
         exit;
     }
 
-    private function writeToFile(string $file, string $content)
+    private function writeToFile(string $file, string $content): void
     {
         file_put_contents($file, $content, FILE_APPEND);
     }

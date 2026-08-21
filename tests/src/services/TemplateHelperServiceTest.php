@@ -14,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(TemplateHelperService::class, 'checkGraphicalElements')]
 class TemplateHelperServiceTest extends YesWikiTestCase
 {
-    public function testCheckGraphicalElementsMatchesOpenAndCloseCounts()
+    public function testCheckGraphicalElementsMatchesOpenAndCloseCounts(): void
     {
         $service = $this->getWiki()->services->get(TemplateHelperService::class);
 

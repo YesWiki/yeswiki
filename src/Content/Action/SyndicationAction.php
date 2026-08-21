@@ -337,8 +337,13 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                         &$feedTitle,
                         &$feedLink
                     ): ?string {
-                        if ($feed->error()) {
-                            return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
+                        $feedError = $feed->error();
+                        if (!empty($feedError)) {
+                            // a multifeed reports one error per source, as an array: concatenating
+                            // that straight into the message printed the word "Array" instead
+                            $feedError = is_array($feedError) ? implode(' ', $feedError) : $feedError;
+
+                            return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feedError . '</div>' . "\n";
                         }
                         $feedTitle = (string)$feed->get_title();
                         $feedLink = (string)$feed->get_link();
@@ -439,7 +444,8 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
-    protected function downloadFile($sourceUrl, $noSSLCheck = false, $timeoutInSec = 10, $replaceExisting = false)
+    /** @return string the name of the downloaded file inside files/, or '' when nothing was downloaded */
+    protected function downloadFile(string $sourceUrl, bool $noSSLCheck = false, int $timeoutInSec = 10, bool $replaceExisting = false)
     {
         if (empty($sourceUrl)) {
             return '';
@@ -448,7 +454,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         $fileName = array_pop($t);
         $destFile = sha1($sourceUrl) . '_' . $fileName;
         $destPath = 'files/' . $destFile;
-        if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
+        if (!file_exists($destPath) || $replaceExisting) {
             $fp = fopen($destPath, 'wb');
             $ch = curl_init($sourceUrl);
             if ($fp === false || $ch === false) {

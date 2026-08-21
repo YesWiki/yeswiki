@@ -23,15 +23,15 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         return 'lostpassword';
     }
 
-    protected $authenticationService;
-    protected $errorType;
-    protected $typeOfRendering;
-    protected $inputFilter;
-    protected $hibernationService;
-    protected $tripleStore;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected ?string $errorType = null;
+    protected string $typeOfRendering = 'emailForm';
+    protected InputFilter $inputFilter;
+    protected HibernationService $hibernationService;
+    protected TripleStore $tripleStore;
+    protected UserManager $userManager;
 
-    public function run()
+    public function run(): string
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->inputFilter = $this->getService(InputFilter::class);
@@ -41,6 +41,10 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
 
         $this->errorType = null;
         $this->typeOfRendering = 'emailForm';
+
+        // both are read unconditionally by the switch below, whichever branch got us there
+        $message = '';
+        $user = null;
 
         $request = $this->getRequest();
         if ($request->request->has('subStep') && !$request->query->has('a')) {
@@ -99,7 +103,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 return $this->render('@core/lost-password-recover-form.twig', [
                     'errorType' => $this->errorType,
                     'user' => $user,
-                    'message' => $message ?? '',
+                    'message' => $message,
                     'key' => $hash ?? $key,
                     'inIframe' => (WikiUrls::iframeSuffixFor() == 'iframe'),
                 ]);
@@ -150,7 +154,14 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 $userName = $this->inputFilter->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
-                if (empty($post->get('pw0')) || empty($post->get('pw1')) || (strcmp($post->get('pw0'), $post->get('pw1')) != 0) || (trim($post->get('pw0')) == '')) {
+                $submittedPassword = $post->get('pw0');
+                $submittedConfirmation = $post->get('pw1');
+                if (
+                    empty($submittedPassword)
+                    || empty($submittedConfirmation)
+                    || strcmp(strval($submittedPassword), strval($submittedConfirmation)) != 0
+                    || trim(strval($submittedPassword)) == ''
+                ) {
                     $this->errorType = 'differentPasswords';
                 } else {
                     if (!empty($user)) {
@@ -170,7 +181,9 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                         $this->typeOfRendering = 'recoverSuccess';
 
                         $user = $this->userManager->getOneByName($userName);
-                        $this->authenticationService->login($user);
+                        if ($user !== null) {
+                            $this->authenticationService->login($user);
+                        }
                     } else {
                         $this->errorType = 'userNotFound';
                     }

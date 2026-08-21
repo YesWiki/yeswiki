@@ -7,6 +7,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use YesWiki\Identity\Exception\UserNotAuthorizedToSetOffset;
 use YesWiki\Identity\Exception\UserNotExistingOffset;
 
+/**
+ * @implements \ArrayAccess<string, mixed>
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayAccess
 {
     public const PROPS_LIST = [
@@ -19,8 +22,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         'revisioncount',
         'show_comments',
         'signuptime', ];
-    protected $properties;
+    /** @var array<string, mixed> */
+    protected array $properties = [];
 
+    /** @param array<string, mixed> $properties */
     public function __construct(array $properties)
     {
         foreach (self::PROPS_LIST as $key) {
@@ -31,6 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
         }
     }
 
+    /** @return array<string, mixed> */
     public function getArrayCopy(): array
     {
         return $this->properties;
@@ -38,21 +44,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
 
     public function getName(): string
     {
-        return $this->properties['name'];
+        $name = $this->properties['name'];
+
+        return is_string($name) ? $name : '';
     }
 
     public function getEmail(): string
     {
-        return $this->properties['email'];
+        $email = $this->properties['email'];
+
+        return is_string($email) ? $email : '';
     }
 
     /** Returns the hashed password used to authenticate the user. */
     public function getPassword(): ?string
     {
-        return $this->properties['password'];
+        $password = $this->properties['password'];
+
+        return is_string($password) ? $password : null;
     }
 
-    public function setPassword(string $hashedPassword)
+    public function setPassword(string $hashedPassword): void
     {
         $this->properties['password'] = $hashedPassword;
     }
@@ -73,7 +85,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
 
     public function offsetSet($offset, $value): void
     {
-        if (!$this->offsetExists($offset)) {
+        // $offset is null for `$user[] = ...`, which a User has no room for either
+        if ($offset === null || !$this->offsetExists($offset)) {
             throw new UserNotAuthorizedToSetOffset();
         }
         $this->properties[$offset] = $value;

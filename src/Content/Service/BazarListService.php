@@ -432,10 +432,10 @@ class BazarListService
     /**
      * @return array<string, mixed>
      */
-    private function createFilterNode($value, $label)
+    private function createFilterNode(mixed $value, mixed $label)
     {
         return [
-            'value' => htmlspecialchars($value),
+            'value' => htmlspecialchars((string)$value),
             'label' => $label,
             'children' => [],
         ];
@@ -483,7 +483,7 @@ class BazarListService
     /**
      * @param string|null $key a key, or a dotted path into nested arrays
      */
-    private function getValueForArray($array, $key, $default = null)
+    private function getValueForArray(mixed $array, $key, mixed $default = null): mixed
     {
         if (!is_array($array)) {
             return $default;
@@ -509,7 +509,8 @@ class BazarListService
     }
 
     /**
-     * @param bool $pThrowException
+     * @param mixed $pIDs            a form id, a list of them, or the `locals`/`externals` shape parseIDs() returns
+     * @param bool  $pThrowException
      *
      * @return array<string, mixed>|null null when the ids do not name exactly one local form
      */
@@ -539,6 +540,8 @@ class BazarListService
     }
 
     /**
+     * @param mixed $pIDs a form id, a list of them, or the `locals`/`externals` shape parseIDs() returns
+     *
      * @return array<string, mixed> `locals` and `externals`, each a list
      */
     public function getIDs($pIDs)
@@ -575,7 +578,7 @@ class BazarListService
         ];
     }
 
-    protected function isValidID($pID): bool
+    protected function isValidID(mixed $pID): bool
     {
         if (!is_string($pID)) {
             return false;
@@ -594,12 +597,14 @@ class BazarListService
         return true;
     }
 
-    protected function isValidURL($pURL): bool
+    protected function isValidURL(mixed $pURL): bool
     {
         return true;
     }
 
     /**
+     * @param mixed $pIDs a form id, a list of them, or the `locals`/`externals` shape this returns
+     *
      * @return array<string, mixed> `locals` and `externals`, each a list
      */
     protected function parseIDs($pIDs)
@@ -611,7 +616,7 @@ class BazarListService
             $pIDs = implode(',', $pIDs);
         }
 
-        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs)) ?? '';
+        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags((string)$pIDs)) ?? '';
 
         $vLines = str_getcsv($pIDs, ',', '"', '\\');
 
@@ -712,7 +717,7 @@ class BazarListService
         };
     }
 
-    private function sanitizeStringForCompare($value): string
+    private function sanitizeStringForCompare(mixed $value): string
     {
         if ($value === null) {
             $value = '';

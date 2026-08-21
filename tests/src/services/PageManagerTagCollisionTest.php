@@ -20,7 +20,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
     private const BAZAR_FORM_ID = '999905';
     private const BAZAR_ENTRY_TAG = 'PageManagerTagCollisionRegressionEntry';
 
-    public function testFreeTagIsReturnedUnchanged()
+    public function testFreeTagIsReturnedUnchanged(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -29,7 +29,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         $this->assertSame(self::FREE_TAG, $pageManager->suggestFreeTag(self::FREE_TAG));
     }
 
-    public function testCollidingWithAnExistingPageSuggestsAFreeAlternative()
+    public function testCollidingWithAnExistingPageSuggestsAFreeAlternative(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -48,7 +48,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         }
     }
 
-    public function testSuggestedAlternativeSkipsAlreadyTakenSuffixes()
+    public function testSuggestedAlternativeSkipsAlreadyTakenSuffixes(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -67,7 +67,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         }
     }
 
-    public function testCollisionCheckIsTypeAgnostic()
+    public function testCollisionCheckIsTypeAgnostic(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

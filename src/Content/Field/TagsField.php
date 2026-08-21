@@ -82,7 +82,7 @@ class TagsField extends EnumField
 
         $tags = explode(',', (string)$value);
         foreach ($tags as $tag) {
-            trim($tag);
+            $tag = trim($tag);
             if ($tag != '') {
                 $tripleStore->create($entry['tag'] ?? '', 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
@@ -97,14 +97,14 @@ class TagsField extends EnumField
 
         $tags = explode(',', (string)$value);
 
-        if (count($tags) > 0 && !empty($tags[0])) {
+        if (!empty($tags[0])) {
             sort($tags);
             $tags = array_map(function ($tag) {
                 return '<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [
-                'value' => join(' ', $tags) ?? '',
+                'value' => join(' ', $tags),
             ]);
         }
 
@@ -125,7 +125,7 @@ class TagsField extends EnumField
         return parent::getOptions();
     }
 
-    private function loadOptionsFromTags()
+    private function loadOptionsFromTags(): void
     {
         $tripleStore = $this->getService(TripleStore::class);
 

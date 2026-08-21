@@ -8,11 +8,16 @@ use YesWiki\Kernel\Service\AssetRegistry;
 
 abstract class RadioField extends EnumField
 {
+    /** @var mixed the form definition's rendering choice, 'tags' or anything else */
     protected $displayMethod;
+    /** @var int|false the option count above which the input gains a filter box, false when unconfigured */
     protected $displayFilterLimit;
 
     protected const FIELD_DISPLAY_METHOD = 7;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -44,7 +49,12 @@ abstract class RadioField extends EnumField
         }
     }
 
-    private function generateTagsData($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return array<string, mixed>
+     */
+    private function generateTagsData($entry): array
     {
         $existingTags = [];
         foreach ($this->getOptions() as $key => $label) {

@@ -21,9 +21,9 @@ class AccountActivationService
     public const ACTIVATED = 'Y';
     public const NOT_ACTIVATED = 'N';
 
-    protected $params;
-    protected $templateEngine;
-    protected $userManager;
+    protected ParameterBagInterface $params;
+    protected TemplateEngine $templateEngine;
+    protected UserManager $userManager;
     protected ContainerInterface $container;
 
     protected UrlFormatter $urlFormatter;
@@ -177,7 +177,7 @@ class AccountActivationService
     }
 
     /**
-     * @return array|null the decoded body, or null if $tag isn't a real, existing page
+     * @return array<string, mixed>|null the decoded body, or null if $tag isn't a real, existing page
      */
     private function readBody(string $tag): ?array
     {
@@ -194,11 +194,14 @@ class AccountActivationService
     protected function readActivationField(string $tag, string $field): ?string
     {
         $body = $this->readBody($tag);
+        $value = $body[$field] ?? null;
 
-        return $body !== null ? ($body[$field] ?? null) : null;
+        return is_string($value) ? $value : null;
     }
 
     /**
+     * @param array<string, mixed> $fields activation fields to merge into the user's body
+     *
      * @throws \Exception
      */
     protected function writeActivationFields(string $tag, array $fields): void
@@ -215,6 +218,9 @@ class AccountActivationService
 
     private function getBaseUrl(): string
     {
-        return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));
+        $baseUrl = $this->params->get('base_url');
+        $baseUrl = is_string($baseUrl) ? $baseUrl : '';
+
+        return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $baseUrl) ?? $baseUrl;
     }
 }

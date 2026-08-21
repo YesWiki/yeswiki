@@ -25,6 +25,15 @@ abstract class YesWikiController
         return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
+    /**
+     * Shortcut to render a twig template.
+     *
+     * @param string               $templatePath
+     * @param array<string, mixed> $data
+     * @param string               $method       the TemplateEngine method to render with
+     *
+     * @return string HTML
+     */
     protected function render($templatePath, $data = [], $method = 'render')
     {
         return $this->services->get(TemplateEngine::class)->$method($templatePath, $data);
@@ -38,13 +47,24 @@ abstract class YesWikiController
         return $this->render($templatePath, $data, 'renderFullPage');
     }
 
+    /**
+     * @param string      $role
+     * @param string|null $tag
+     *
+     * @return void
+     */
     protected function denyAccessUnlessGranted($role, $tag)
     {
-        if (!$this->getService(AclService::class)->hasAccess($role, $tag)) {
+        // hasAccess() reads '' as "the current page", which is what a caller that names no
+        // tag means; it is declared string, so null cannot be handed over as-is
+        if (!$this->getService(AclService::class)->hasAccess($role, $tag ?? '')) {
             throw new AccessDeniedHttpException();
         }
     }
 
+    /**
+     * @return void
+     */
     protected function denyAccessUnlessAdmin()
     {
         if (!$this->getService(AclService::class)->isAdmin()) {

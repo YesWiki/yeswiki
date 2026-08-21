@@ -17,7 +17,7 @@ class EmailActivationHandler extends YesWikiHandler implements RegisteredHandler
         return 'emailactivation';
     }
 
-    public function run()
+    public function run(): string
     {
         $accountActivationService = $this->getService(AccountActivationService::class);
         $userManager = $this->getService(UserManager::class);

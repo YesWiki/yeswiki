@@ -16,6 +16,9 @@ class FormPropertiesTest extends YesWikiTestCase
 {
     private const FORM_ID = '999909';
 
+    /**
+     * @param array<string, mixed> $extra
+     */
     private function makeForm(FormManager $formManager, array $extra = []): void
     {
         $formManager->create($extra + [
@@ -26,6 +29,9 @@ class FormPropertiesTest extends YesWikiTestCase
         ]);
     }
 
+    /**
+     * @param list<string> $entryTags
+     */
     private function cleanup(FormManager $formManager, EntryManager $entryManager, array $entryTags = []): void
     {
         foreach ($entryTags as $tag) {
@@ -38,7 +44,7 @@ class FormPropertiesTest extends YesWikiTestCase
         }
     }
 
-    public function testEntryGetsComputedTitleAndSluggedTag()
+    public function testEntryGetsComputedTitleAndSluggedTag(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -74,7 +80,7 @@ class FormPropertiesTest extends YesWikiTestCase
         }
     }
 
-    public function testCompositeTitleTemplate()
+    public function testCompositeTitleTemplate(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -105,7 +111,7 @@ class FormPropertiesTest extends YesWikiTestCase
         }
     }
 
-    public function testEntryAclsStampedFromFormProperties()
+    public function testEntryAclsStampedFromFormProperties(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -135,7 +141,7 @@ class FormPropertiesTest extends YesWikiTestCase
         }
     }
 
-    public function testLegacyEntryBodyKeysAreAliasedOnRead()
+    public function testLegacyEntryBodyKeysAreAliasedOnRead(): void
     {
         $wiki = $this->getWiki();
         $entryManager = $wiki->services->get(EntryManager::class);

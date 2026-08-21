@@ -29,6 +29,9 @@ class UserReactionsAction extends YesWikiAction implements RegisteredAction, Pro
         ];
     }
 
+    /**
+     * @return string the logged-in user's reactions, or an invitation to log in
+     */
     public function run()
     {
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {

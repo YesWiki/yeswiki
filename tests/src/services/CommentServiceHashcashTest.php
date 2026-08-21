@@ -52,7 +52,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testAddCommentIfAuthorizedRejectsWithoutFatalingWhenHashcashEnabledAndValueMissing(YesWikiRuntime $wiki)
+    public function testAddCommentIfAuthorizedRejectsWithoutFatalingWhenHashcashEnabledAndValueMissing(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
@@ -78,7 +78,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testAddCommentIfAuthorizedAcceptsWhenHashcashDisabled(YesWikiRuntime $wiki)
+    public function testAddCommentIfAuthorizedAcceptsWhenHashcashDisabled(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');

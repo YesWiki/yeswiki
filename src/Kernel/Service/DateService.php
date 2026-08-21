@@ -10,15 +10,13 @@ class DateService
 
     public function getDateTimeWithRightTimeZone(string $date): \DateTimeImmutable
     {
-        $dateObj = new \DateTimeImmutable($date);
-        if (!$dateObj) {
-            throw new \Exception("date '$date' can not be converted to DateImmutable !");
+        try {
+            $dateObj = new \DateTimeImmutable($date);
+        } catch (\Exception $e) {
+            throw new \Exception("date '$date' can not be converted to DateImmutable !", 0, $e);
         }
 
         $defaultTimeZone = new \DateTimeZone(date_default_timezone_get());
-        if (!$defaultTimeZone) {
-            $defaultTimeZone = new \DateTimeZone('GMT');
-        }
         $newDate = $dateObj->setTimeZone($defaultTimeZone);
         $anchor = '+00:00';
         if (substr($date, -strlen($anchor)) == $anchor) {

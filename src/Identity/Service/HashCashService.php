@@ -88,7 +88,7 @@ class HashCashService
         return isset($value) && $value == $this->secretValue();
     }
 
-    public function getJavascriptCode($formId = 'ACEditor')
+    public function getJavascriptCode(string $formId = 'ACEditor'): string
     {
         if (!$this->hasSecret()) {
             return '';
@@ -218,7 +218,7 @@ class HashCashService
                 $expired[] = $ecx;
 
                 $val = intval($this->secretValue());
-                $binval = strrev(base_convert($val, 10, 2));
+                $binval = strrev(base_convert(strval($val), 10, 2));
                 $js .= "var $eax = \"$binval\"; ";
                 $js .= "var $ebx = 0; ";
                 $js .= "var $ecx = 0; ";
@@ -291,11 +291,12 @@ class HashCashService
         return $libs;
     }
 
-    private static function strToLongs($s)
+    /** @return array<int, int> the string, four characters to a 32-bit word */
+    private static function strToLongs(string $s): array
     {
         $l = [];
 
-        $s = preg_split('//', $s, -1, PREG_SPLIT_NO_EMPTY);
+        $s = preg_split('//', $s, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         while (count($s) % 4 != 0) {
             $s[] = ' ';

@@ -22,7 +22,7 @@ use YesWiki\Kernel\Service\StringUtilService;
 class UserApiController extends YesWikiController
 {
     #[Route('/api/users/{userId}', methods: ['GET'])]
-    public function getUser($userId)
+    public function getUser(string $userId): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
 
@@ -30,7 +30,7 @@ class UserApiController extends YesWikiController
     }
 
     #[Route('/api/users/{userId}/delete', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function deleteUser($userId)
+    public function deleteUser(string $userId): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $userOperationsService = $this->getService(UserOperationsService::class);
@@ -78,7 +78,7 @@ class UserApiController extends YesWikiController
     }
 
     #[Route('/api/users', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function createUser()
+    public function createUser(): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $userOperationsService = $this->getService(UserOperationsService::class);
@@ -156,8 +156,9 @@ class UserApiController extends YesWikiController
         return new ApiResponse($result, $code);
     }
 
+    /** @param string[] $userFields the user properties to expose */
     #[Route('/api/users', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllUsers($userFields = ['name', 'email', 'signuptime'])
+    public function getAllUsers(array $userFields = ['name', 'email', 'signuptime']): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
 

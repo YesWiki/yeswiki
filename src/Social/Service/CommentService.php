@@ -474,7 +474,7 @@ class CommentService implements EventSubscriberInterface
         $hash = md5($text);
         $colors = [];
         for ($i = 0; $i < 3; $i++) {
-            $colors[$i] = max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
+            $colors[$i] = (int)max([round((hexdec(substr($hash, $spec * $i, $spec)) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
         }
 
         if ($min_brightness > 0) {
@@ -488,7 +488,7 @@ class CommentService implements EventSubscriberInterface
         $output = '';
 
         for ($i = 0; $i < 3; $i++) {
-            $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
+            $output .= str_pad(dechex($colors[$i]), 2, '0', STR_PAD_LEFT);
         }
 
         return '#' . $output;
@@ -576,7 +576,7 @@ class CommentService implements EventSubscriberInterface
             if (preg_match_all("/\B@([^\s!#@<>\\\\\/][^\s<>\\\\\/]{2,})(?=\s|$)/i", $comment['rawbody'], $matches)) {
                 foreach ($matches[0] as $idx => $value) {
                     $userName = $matches[1][$idx];
-                    if (!empty($userName) && !in_array($userName, array_keys($users))) {
+                    if (!in_array($userName, array_keys($users))) {
                         $user = $this->userManager->getOneByName($userName);
                         if (!empty($user)) {
                             $users[$userName] = $user;

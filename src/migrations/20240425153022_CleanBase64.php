@@ -15,6 +15,9 @@ class CleanBase64 extends YesWikiMigration
         }
     }
 
+    /**
+     * @return list<array<string, mixed>> every entry revision whose body embeds a data: image
+     */
     private function searchPagesWithBase64(): array
     {
         $anchor = '%src=\\\\\\\\\\"data:image\\\\\\\\/%;base64,%';
@@ -28,14 +31,24 @@ class CleanBase64 extends YesWikiMigration
         return empty($pages) ? [] : $pages;
     }
 
+    /**
+     * @param array<string, mixed> $page one row of the pages table
+     */
     private function extractImages(array $page): bool
     {
+        $body = $page['body'];
+        if (!is_string($body)) {
+            return false;
+        }
         $entryManager = $this->getService(EntryManager::class);
         $entry = $entryManager->getOne($page['tag'], false, $page['time']);
         if (empty($entry)) {
             return false;
         }
-        $formId = $entry['id_typeannonce'] ?? null;
+        // EntryManager::decode() renames `id_typeannonce` to `form_id` and unsets the old key
+        // (ADR-0010), so reading only the old one made this migration a no-op on every wiki:
+        // the base64 images it exists to extract stayed in the body
+        $formId = $entry['form_id'] ?? $entry['id_typeannonce'] ?? null;
         if (empty($formId)) {
             return false;
         }
@@ -46,13 +59,18 @@ class CleanBase64 extends YesWikiMigration
             return false;
         }
         $updated = false;
-        foreach ($form['prepared'] as $field) {
+        foreach ($form['prepared'] ?? [] as $field) {
             if ($field instanceof TextareaField && !empty($entry[$field->getPropertyName()])) {
-                $newValue = $field->formatValuesBeforeSaveIfEditable($entry);
-                if (isset($newValue[$field->getPropertyName()])) {
+                $formatted = $field->formatValuesBeforeSaveIfEditable($entry);
+                if (isset($formatted[$field->getPropertyName()])) {
                     $oldValue = json_encode($entry[$field->getPropertyName()]);
-                    $newValue = json_encode($newValue[$field->getPropertyName()]);
-                    $page['body'] = str_replace($oldValue, $newValue, $page['body']);
+                    $newValue = json_encode($formatted[$field->getPropertyName()]);
+                    // false when the value does not survive encoding; replacing on an empty
+                    // needle would splice the replacement between every character of the body
+                    if ($oldValue === false || $newValue === false) {
+                        continue;
+                    }
+                    $body = str_replace($oldValue, $newValue, $body);
                     $updated = true;
                 }
             }
@@ -60,7 +78,7 @@ class CleanBase64 extends YesWikiMigration
         if ($updated) {
             $this->dbService->query(
                 "UPDATE {$this->dbService->prefixTable('pages')} " .
-                "SET body = '{$this->dbService->escape(chop($page['body']))}' " .
+                "SET body = '{$this->dbService->escape(chop($body))}' " .
                 "WHERE tag = '{$this->dbService->escape($page['tag'])}' " .
                 "AND time = '{$this->dbService->escape($page['time'])}'"
             );

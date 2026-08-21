@@ -17,7 +17,7 @@ abstract class YesWikiAction extends YesWikiPerformable
      *
      * @return string|null null is all is right otherwise returns the error message
      */
-    protected function checkSecuredACL($adminOnly = true): ?string
+    protected function checkSecuredACL(bool $adminOnly = true): ?string
     {
         // A registered action states its name; deriving it from get_class() only worked
         // while these classes had no namespace, because the FQCN would otherwise leak into

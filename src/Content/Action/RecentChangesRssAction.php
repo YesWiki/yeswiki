@@ -26,6 +26,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /** @return string */
     public function run()
     {
         if ($this->getService(PageContext::class)->getMethod() != 'xml') {
@@ -40,10 +41,11 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         $aclService = $this->getService(AclService::class);
         $pageManager = $this->getService(PageManager::class);
 
-        $pagesList = $pageManager->getRecentlyChanged($max);
-        if (empty($pagesList)) {
-            return;
-        }
+        // A wiki with nothing recently changed still owes its readers a feed: the bare
+        // `return;` that used to stand here handed back null, which reached the caller as an
+        // empty body under an XML content type -- a parse error in every feed reader. Falling
+        // through renders the same feed with no items in it.
+        $pagesList = $pageManager->getRecentlyChanged($max) ?? [];
         $pages = [];
         foreach ($pagesList as $page) {
             $revisions = $pageManager->getRevisions($page['tag'], $max);
@@ -71,8 +73,9 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         }
         $link = $this->getService(UrlFormatter::class)->href(false, $this->arguments['link'], $langParam, false);
         $xmlUrl = $this->getService(UrlFormatter::class)->href('xml', '', $langParam, false);
+        $configuredName = $this->params->get('yeswiki_name');
         $yeswikiName = htmlspecialchars(
-            $this->params->get('yeswiki_name'),
+            is_string($configuredName) ? $configuredName : '',
             ENT_COMPAT,
             YW_CHARSET
         );
@@ -117,7 +120,9 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
             }
         }
 
-        $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
+        $version = $this->params->get('yeswiki_version');
+        $release = $this->params->get('yeswiki_release');
+        $yesWikiRevision = trim((is_string($version) ? $version : '') . ' ' . (is_string($release) ? $release : ''));
         $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : '';
         // was `empty($decription)`, a typo that made this always true, so the configured
         // meta_description never reached the feed and every wiki's RSS described itself by name

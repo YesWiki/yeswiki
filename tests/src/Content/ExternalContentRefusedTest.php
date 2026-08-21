@@ -97,7 +97,7 @@ class ExternalContentRefusedTest extends YesWikiTestCase
     {
         $offenders = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(YESWIKI_SOURCE_DIR . '/src/Content/Field')
+            new \RecursiveDirectoryIterator(YESWIKI_PROGRAM_DIR . '/src/Content/Field')
         );
         foreach ($iterator as $file) {
             if (!$file->isFile() || $file->getExtension() !== 'php') {

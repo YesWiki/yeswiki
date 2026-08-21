@@ -83,7 +83,9 @@ class PageApiController extends YesWikiController
             $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
             $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
 
-            $lastVersion = $pageManager->getOne($page['tag']);
+            // same fallback as $prevVersion above: a page whose only revision is this one has
+            // nothing later to diff against, and getOne() answers null for it
+            $lastVersion = $pageManager->getOne($page['tag']) ?? ['tag' => $tag, 'body' => [], 'time' => null];
             $page['diff_html'] = $diffService->getPageDiff($lastVersion, $page, true);
             $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
         }

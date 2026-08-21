@@ -24,7 +24,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testAceditorTagRendersWithoutError(YesWikiRuntime $wiki)
+    public function testAceditorTagRendersWithoutError(YesWikiRuntime $wiki): void
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $this->assertStringContainsString('aceditor-container', $output);
@@ -32,7 +32,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testWidgetDoesNotDependOnBootstrapJsComponents(YesWikiRuntime $wiki)
+    public function testWidgetDoesNotDependOnBootstrapJsComponents(YesWikiRuntime $wiki): void
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
 
@@ -44,7 +44,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testGlobalAssetsIncludeRebuiltWidget(YesWikiRuntime $wiki)
+    public function testGlobalAssetsIncludeRebuiltWidget(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $js = $wiki->services->get(\YesWiki\Kernel\Service\AssetRegistry::class)->drain()->toHtml();

@@ -123,7 +123,10 @@ jobs:
           # and the installer request run against the same extension set. All three PDO
           # drivers, so the same image serves every leg of the matrix -- the installer only
           # offers a driver whose extension is loaded (InstallationController::availableDrivers).
-          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, zip
+          # ExtensionManifestTest asserts this line and composer.json's `require` still agree:
+          # the list drifted once already, which is how ext-openssl went four years undeclared
+          # while every leg happened to have it (ticket 47).
+          extensions: ctype, curl, dom, fileinfo, filter, gd, hash, iconv, json, libxml, mbstring, openssl, pcre, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, xml, xmlreader, zip
           tools: composer:v2
 
       - run: php -v

@@ -53,7 +53,7 @@ class GroupManagerTest extends YesWikiTestCase
     }
 
     #[Depends('testGroupManagerExisting')]
-    public function testCreate(GroupManager $groupManager)
+    public function testCreate(GroupManager $groupManager): string
     {
         $group_name = self::groupName();
         $groupManager->create($group_name, []);
@@ -64,7 +64,7 @@ class GroupManagerTest extends YesWikiTestCase
 
     #[Depends('testGroupManagerExisting')]
     #[Depends('testCreate')]
-    public function testaddMember(GroupManager $groupManager, string $group_name)
+    public function testaddMember(GroupManager $groupManager, string $group_name): string
     {
         $user_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $groupManager->addMembers($group_name, [$user_name]);
@@ -79,14 +79,14 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     #[Depends('testCreate')]
     #[Depends('testaddMember')]
-    public function testDeleteMember(GroupManager $groupManager, string $group_name, string $user_name)
+    public function testDeleteMember(GroupManager $groupManager, string $group_name, string $user_name): void
     {
         $groupManager->removeMembers($group_name, [$user_name]);
         $this->assertNotContains($user_name, $groupManager->getMembers($group_name));
     }
 
     #[Depends('testGroupManagerExisting')]
-    public function testUpdateMember(GroupManager $groupManager)
+    public function testUpdateMember(GroupManager $groupManager): void
     {
         $group_name = self::groupName();
         $users = [];

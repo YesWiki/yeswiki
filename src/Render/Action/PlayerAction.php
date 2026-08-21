@@ -44,7 +44,9 @@ class PlayerAction extends YesWikiAction implements RegisteredAction
                 $width = '400px';
             }
 
-            $extension = strtolower(substr(strrchr($url, '.'), 1));
+            // strrchr() gives false for a URL with no dot in it at all
+            $lastDot = strrchr($url, '.');
+            $extension = $lastDot === false ? '' : strtolower(substr($lastDot, 1));
             if ($type == 'audio' || $extension == 'mp3' || $extension == 'm4a') {
                 echo '<audio controls style="width:100%;" src="' . htmlspecialchars($url) . '">'
                     . '<a href="' . htmlspecialchars($url) . '">' . htmlspecialchars($url) . '</a>'

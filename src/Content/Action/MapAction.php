@@ -13,6 +13,7 @@ class MapAction extends YesWikiAction implements RegisteredAction
         return 'map';
     }
 
+    /** @return string */
     public function run()
     {
         return $this->callAction('entrymap', $this->arguments);

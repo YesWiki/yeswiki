@@ -83,7 +83,9 @@ class BreadcrumbAction extends YesWikiAction implements RegisteredAction
                 $temp[$count] = $crumbs[$count];
                 $temp = array_unique($temp);
                 $target = $target + $temp;
-                $temp = '';
+                // reset to an array, not to '': the next round then assigned into a string
+                // offset and array_unique() fataled on it
+                $temp = [];
                 $count++;
             }
             $crumbs = $target;

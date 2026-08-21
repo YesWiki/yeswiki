@@ -118,7 +118,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         preg_match_all('/"imagebf_image":"(.*)"/U', $body, $image);
         if (isset($image[1][0]) && $image[1][0] != '') {
             $imagefile = mb_convert_encoding(
-                preg_replace_callback(
+                (string)preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
                     // was the global `encodingFromUTF8()`, reached by name through a string
                     // callback -- which is why no grep for its name found a caller (ticket 50)
@@ -132,7 +132,8 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             return $imagefile;
         }
         preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $body, $image);
-        if (isset($image[1][0]) && $image[1][0] != '') {
+        // no `!= ''` here, unlike the other branches: this pattern cannot match an empty string
+        if (isset($image[1][0])) {
             return $image[1][0];
         }
         preg_match_all("/\<img.*src=\"(.*)\"/U", $body, $image);

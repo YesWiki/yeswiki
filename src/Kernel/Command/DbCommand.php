@@ -13,8 +13,8 @@ use YesWiki\Kernel\Service\ThrowableFormatter;
 
 class DbCommand extends Command
 {
-    protected $consoleService;
-    protected $params;
+    protected ConsoleService $consoleService;
+    protected ParameterBagInterface $params;
     protected ContainerInterface $services;
 
     public function __construct(ContainerInterface $services)
@@ -225,18 +225,25 @@ class DbCommand extends Command
         return Command::FAILURE;
     }
 
-    private function getOutput($results): string
+    /**
+     * @param array{array{stdout: string, stderr: string}}|null $results
+     */
+    private function getOutput(?array $results): string
     {
-        $outputResult = (!empty($results) && is_array($results)) ? ($results[array_key_first($results)]['stdout'] ?? '') : '';
-
-        return $outputResult;
+        return $results === null ? '' : $results[0]['stdout'];
     }
 
-    private function getErr($results): string
+    /**
+     * @param array{array{stdout: string, stderr: string}}|null $results
+     */
+    private function getErr(?array $results): string
     {
-        return (!empty($results) && is_array($results)) ? ($results[array_key_first($results)]['stderr'] ?? '') : '';
+        return $results === null ? '' : $results[0]['stderr'];
     }
 
+    /**
+     * @return list<string>
+     */
     private function getExtaDirs(): array
     {
         return '\\' === DIRECTORY_SEPARATOR ? ['c:\\xampp\\mysql\\bin\\'] : ['/usr/bin/', '/usr/local/bin/'];
@@ -245,9 +252,11 @@ class DbCommand extends Command
     /**
      * assert param is a not empty string.
      *
+     * @phpstan-assert non-empty-string $param
+     *
      * @throws \Exception
      */
-    protected function assertParamIsNotEmptyString(string $name, $param)
+    protected function assertParamIsNotEmptyString(string $name, mixed $param): void
     {
         if (empty($param)) {
             throw new \Exception("'$name' should not be empty in 'yeswiki.config.php'");
@@ -258,9 +267,11 @@ class DbCommand extends Command
     /**
      * assert param is a string.
      *
+     * @phpstan-assert string $param
+     *
      * @throws \Exception
      */
-    protected function assertParamIsString(string $name, $param)
+    protected function assertParamIsString(string $name, mixed $param): void
     {
         if (!is_string($param)) {
             throw new \Exception("'$name' should be a string in 'yeswiki.config.php'");

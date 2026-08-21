@@ -10,7 +10,7 @@ use YesWiki\Identity\Service\AccountActivationService;
 class EmailActivationApiController extends YesWikiController
 {
     #[Route('/api/emailactivation/{userId}/activate', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function activateUser($userId)
+    public function activateUser(string $userId): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $this->getService(AccountActivationService::class)->activate($userId, '', true);
@@ -19,7 +19,7 @@ class EmailActivationApiController extends YesWikiController
     }
 
     #[Route('/api/emailactivation/{userId}/inactivate', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function inactivateUser($userId)
+    public function inactivateUser(string $userId): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $this->getService(AccountActivationService::class)->inactivate($userId);

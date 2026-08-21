@@ -25,7 +25,7 @@ class YesWikiControllerResolver extends ControllerResolver
         return $this->configureController(parent::instantiateController($class), $class);
     }
 
-    private function configureController($controller, string $class)
+    private function configureController(object $controller, string $class): object
     {
         if ($controller instanceof YesWikiController) {
             $controller->setServices($this->services);

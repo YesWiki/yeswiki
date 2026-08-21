@@ -14,13 +14,13 @@ use YesWiki\Social\Service\CommentService;
 class CommentApiController extends YesWikiController
 {
     #[Route('/api/comments/{tag}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllComments($tag = '')
+    public function getAllComments(string $tag = ''): ApiResponse
     {
         return new ApiResponse([$this->getService(CommentService::class)->loadComments($tag)]);
     }
 
     #[Route('/api/comments', methods: ['POST'], options: ['acl' => ['+']])]
-    public function postComment()
+    public function postComment(): ApiResponse
     {
         $commentService = $this->getService(CommentService::class);
         $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all());
@@ -57,7 +57,7 @@ class CommentApiController extends YesWikiController
     }
 
     #[Route('/api/comments/{tag}', methods: ['POST'], options: ['acl' => ['+']])]
-    public function editComment($tag)
+    public function editComment(string $tag): ApiResponse
     {
         $commentService = $this->getService(CommentService::class);
         $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all(), $tag);
@@ -65,7 +65,7 @@ class CommentApiController extends YesWikiController
         return $this->answer($result);
     }
 
-    public function deleteComment($tag)
+    public function deleteComment(string $tag): ApiResponse
     {
         if ($this->getService(AclService::class)->isOwner($tag) || $this->getService(AclService::class)->isAdmin()) {
             $commentService = $this->getService(CommentService::class);
@@ -78,7 +78,7 @@ class CommentApiController extends YesWikiController
     }
 
     #[Route('/api/comments/{tag}/delete', methods: ['POST'], options: ['acl' => ['+']])]
-    public function deleteCommentViaPostMethod($tag)
+    public function deleteCommentViaPostMethod(string $tag): ApiResponse
     {
         return $this->deleteComment($tag);
     }

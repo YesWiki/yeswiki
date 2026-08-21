@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 
 class ImportFilesManager
 {
-    protected $uploadPath;
+    protected ?string $uploadPath = null;
     protected ContainerInterface $container;
 
     protected UrlFormatter $urlFormatter;
@@ -31,10 +31,8 @@ class ImportFilesManager
 
     /**
      * Get the local path to files uploads (usually "files").
-     *
-     * @return string local path to files uploads
      */
-    private function getLocalFileUploadPath()
+    private function getLocalFileUploadPath(): string
     {
         if ($this->uploadPath !== null) {
             return $this->uploadPath;
@@ -46,11 +44,9 @@ class ImportFilesManager
             $attachConfig = [];
         }
 
-        if (empty($attachConfig['upload_path'])) {
-            $this->uploadPath = 'files';
-        } else {
-            $this->uploadPath = $attachConfig['upload_path'];
-        }
+        $this->uploadPath = empty($attachConfig['upload_path'])
+            ? 'files'
+            : (string)$attachConfig['upload_path'];
 
         return $this->uploadPath;
     }
@@ -64,7 +60,7 @@ class ImportFilesManager
      *
      * @return string the curl error, or '' when the download succeeded
      */
-    private function cURLDownload($from, $to, $overwrite = false)
+    private function cURLDownload(string $from, string $to, bool $overwrite = false): string
     {
         $output = '';
         if (file_exists($to)) {
@@ -78,9 +74,14 @@ class ImportFilesManager
         }
 
         $fp = fopen($to, 'wb');
+        if ($fp === false) {
+            // without this the handle went to curl_setopt() as `false`, which curl reads as
+            // "write to stdout": the download landed in the page instead of in the file
+            throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $to);
+        }
         $ch = curl_init($from);
         curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_exec($ch);
         $err = curl_error($ch);
@@ -98,24 +99,29 @@ class ImportFilesManager
     /**
      * Return fields that may contain attachments to import (body for wikipage, or textelong fields for bazar entries).
      *
-     * @param array $wikiPage page or entry content as an array
+     * @param array<string, mixed> $wikiPage page or entry content as an array
      *
-     * @return array keys of $wikiPage that may contain attachments to import
+     * @return list<string> keys of $wikiPage that may contain attachments to import
      */
-    public function getTextFieldsFromWikiPage($wikiPage)
+    public function getTextFieldsFromWikiPage(array $wikiPage): array
     {
         $fields = [];
-        if (!empty($wikiPage['tag'])) {
-            $fields[] = 'body';
-        } elseif (!empty($wikiPage['tag'])) {
+        // an entry carries a `tag` of its own, so the entry test has to come first and has to
+        // be the one that tells the two apart: both arms used to read `!empty($wikiPage['tag'])`,
+        // which made the entry arm unreachable and left every long-text field of every imported
+        // entry unscanned for attachments
+        if (!empty($wikiPage['form_id'])) {
             $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($wikiPage['form_id']);
 
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof TextareaField) {
+            foreach ($form['prepared'] ?? [] as $field) {
+                // an unnamed field addresses no key of the entry, so there is nothing to scan
+                if ($field instanceof TextareaField && $field->getName() !== null) {
                     $fields[] = $field->getName();
                 }
             }
+        } elseif (!empty($wikiPage['tag'])) {
+            $fields[] = 'body';
         }
 
         return $fields;
@@ -126,9 +132,10 @@ class ImportFilesManager
      *
      * @param string $tag page id
      *
-     * @return array attachments filenames
+     * @return list<array{path: string, size: int, humanSize: string}> the stored files each
+     *                                                                 `{{attach}}` in the page resolves to
      */
-    public function findDirectLinkAttachements($tag = '')
+    public function findDirectLinkAttachements(string $tag = ''): array
     {
         if (empty(trim($tag))) {
             $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
@@ -140,32 +147,37 @@ class ImportFilesManager
             $rawContent,
             $attachments
         );
-        if (is_array($attachments[1])) {
-            $filesMatched = [];
-            foreach ($attachments[1] as $a) {
-                $ext = pathinfo($a, PATHINFO_EXTENSION);
-                $filename = pathinfo($a, PATHINFO_FILENAME);
-                $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_\d{14}\.' . $ext . '_?$`';
-                $path = $this->getLocalFileUploadPath();
-                $fh = opendir($path);
-                while (($file = readdir($fh)) !== false) {
-                    if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
-                        continue;
-                    }
-                    if (preg_match($searchPattern, $file)) {
-                        $filePath = $path . '/' . $file;
-                        $size = filesize($filePath);
-                        $humanSize = $this->humanFilesize($size);
-                        $filesMatched[] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize];
-                    }
+        // used to be built inside an `if (is_array($attachments[1]))` that is always true, and
+        // returned below whether or not that branch ran -- a page whose content had no
+        // `{{attach}}` at all reached the return with the variable never assigned
+        $filesMatched = [];
+        foreach ($attachments[1] as $a) {
+            $ext = pathinfo($a, PATHINFO_EXTENSION);
+            $filename = pathinfo($a, PATHINFO_FILENAME);
+            $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_\d{14}\.' . $ext . '_?$`';
+            $path = $this->getLocalFileUploadPath();
+            $fh = opendir($path);
+            if ($fh === false) {
+                continue;
+            }
+            while (($file = readdir($fh)) !== false) {
+                if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
+                    continue;
+                }
+                if (preg_match($searchPattern, $file)) {
+                    $filePath = $path . '/' . $file;
+                    $size = filesize($filePath) ?: 0;
+                    $humanSize = $this->humanFilesize($size);
+                    $filesMatched[] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize];
                 }
             }
+            closedir($fh);
         }
 
         return $filesMatched;
     }
 
-    public function humanFilesize($bytes, $decimals = 2)
+    public function humanFilesize(int $bytes, int $decimals = 2): string
     {
         $units = ['', 'K', 'M', 'G', 'T'];
         $factor = (int)min(floor((strlen((string)$bytes) - 1) / 3), count($units) - 1);
@@ -182,7 +194,7 @@ class ImportFilesManager
      *
      * @return string the curl error, or '' when the download succeeded
      */
-    public function downloadDirectLinkAttachment($remoteUrl, $filename, $overwrite = false)
+    public function downloadDirectLinkAttachment(string $remoteUrl, string $filename, bool $overwrite = false): string
     {
         $remoteFileUrl = $remoteUrl . '/files/' . $filename;
         $saveFileLoc = $this->getLocalFileUploadPath() . '/' . $filename;
@@ -193,17 +205,17 @@ class ImportFilesManager
     /**
      * Find file attachments in page or bazar entry It finds attachments linked with /download links.
      *
-     * @param string $remoteUrl distant url
-     * @param array  $wikiPage  page or entry content as an array
-     * @param bool   $transform transform attachments urls for their new location (default:false)
+     * @param string               $remoteUrl distant url
+     * @param array<string, mixed> $wikiPage  page or entry content as an array
+     * @param bool                 $transform transform attachments urls for their new location (default:false)
      *
-     * @return array all file attachments
+     * @return list<string> all file attachments
      */
-    public function findHiddenAttachments($remoteUrl, &$wikiPage, $transform = false)
+    public function findHiddenAttachments(string $remoteUrl, array &$wikiPage, bool $transform = false): array
     {
         preg_match_all(
             '#(?:href|src)="' . preg_quote($remoteUrl, '#') . '\?.+/download&(?:amp;)?file=(?P<filename>.*)"#Ui',
-            $wikiPage['html_output'],
+            (string)($wikiPage['html_output'] ?? ''),
             $htmlMatches
         );
         $attachments = $htmlMatches['filename'];
@@ -213,15 +225,19 @@ class ImportFilesManager
 
         $contentKeys = $this->getTextFieldsFromWikiPage($wikiPage);
         foreach ($contentKeys as $key) {
-            preg_match_all($wikiRegex, $wikiPage[$key], $wikiMatches);
+            preg_match_all($wikiRegex, (string)($wikiPage[$key] ?? ''), $wikiMatches);
             $attachments = array_merge($attachments, $wikiMatches['filename']);
         }
 
-        $attachments = array_unique($attachments);
+        $attachments = array_values(array_unique($attachments));
 
         if ($transform) {
             foreach ($contentKeys as $key) {
-                $wikiPage[$key] = preg_replace($wikiRegex, '="' . $this->urlFormatter->getBaseUrl() . '${trail}"', $wikiPage[$key]);
+                $wikiPage[$key] = preg_replace(
+                    $wikiRegex,
+                    '="' . $this->urlFormatter->getBaseUrl() . '${trail}"',
+                    (string)($wikiPage[$key] ?? '')
+                );
             }
         }
 
@@ -240,7 +256,7 @@ class ImportFilesManager
      * @return void it downloads the file; the `@return array all file attachments` this
      *              carried described a different method entirely
      */
-    public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
+    public function downloadHiddenAttachment(string $remoteUrl, string $pageTag, string $lastPageUpdate, string $filename, bool $overwrite = false): void
     {
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($pageTag);
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage(['tag' => $pageTag, 'time' => $lastPageUpdate]);
@@ -254,28 +270,25 @@ class ImportFilesManager
     /**
      * All type of attachment related to a page or a bazar entry.
      *
-     * @param string $remoteUrl distant url
-     * @param array  $wikiPage  page or entry content as an array
-     * @param bool   $overwrite overwrite existing file ? (default:false)
-     *
-     * @return void
+     * @param string               $remoteUrl distant url
+     * @param array<string, mixed> $wikiPage  page or entry content as an array
+     * @param bool                 $overwrite overwrite existing file ? (default:false)
      */
-    public function downloadAttachments($remoteUrl, &$wikiPage, $overwrite = false)
+    public function downloadAttachments(string $remoteUrl, array &$wikiPage, bool $overwrite = false): void
     {
-        $attachments = $this->findDirectLinkAttachements($remoteUrl, $wikiPage, true);
+        // findDirectLinkAttachements() takes a page tag and nothing else; it was called with
+        // the remote url and two arguments it does not have, so it looked up a page named
+        // after the url, found none, and every `{{attach}}` went undownloaded
+        $directLinks = $this->findDirectLinkAttachements((string)($wikiPage['tag'] ?? ''));
 
-        if (count($attachments)) {
-            foreach ($attachments as $image) {
-                $this->downloadDirectLinkAttachment($remoteUrl, $image, $overwrite);
-            }
+        foreach ($directLinks as $directLink) {
+            $this->downloadDirectLinkAttachment($remoteUrl, basename($directLink['path']), $overwrite);
         }
 
         $attachments = $this->findHiddenAttachments($remoteUrl, $wikiPage, true);
 
-        if (!empty($attachments)) {
-            foreach ($attachments as $attachment) {
-                $this->downloadHiddenAttachment($remoteUrl, $wikiPage['tag'], date('Y-m-d H:i:s'), $attachment, $overwrite);
-            }
+        foreach ($attachments as $attachment) {
+            $this->downloadHiddenAttachment($remoteUrl, (string)($wikiPage['tag'] ?? ''), date('Y-m-d H:i:s'), $attachment, $overwrite);
         }
     }
 }

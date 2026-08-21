@@ -175,7 +175,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/yeswiki.config.php");
                             $config->load();
-                            $data['wakkaContent'] = $config->_parameters;
+                            // The whole parameter array, through the magic accessor that
+                            // ConfigurationFile exposes for it: iterating the object instead
+                            // would stop at the first null value (its valid() uses isset()).
+                            $data['wakkaContent'] = $config->__get('_parameters');
                             unset($config);
                         }
                         $this->recursiveDelete("cache/$tmpFolderName");

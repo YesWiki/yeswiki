@@ -67,7 +67,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
+                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
                 'entry' => $data,
                 'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -102,7 +102,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-list-deleted-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
+                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
                 'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
                 'baseUrl' => $baseUrl,
@@ -310,7 +310,7 @@ class Mailer
             $userName = null;
         } else {
             do {
-                $randomString = md5(rand());
+                $randomString = md5((string)rand());
                 $existingUser = $this->userManager->getOneByName($randomString);
             } while (!empty($existingUser));
             $userName = $randomString;
@@ -318,7 +318,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/email.css'),
+                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
                 'entry' => $data,
                 'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,

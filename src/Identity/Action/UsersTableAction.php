@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Action;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -45,10 +46,10 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
-    protected $authenticationService;
-    protected $csrfTokenChecker;
-    protected $userOperationsService;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected CsrfTokenChecker $csrfTokenChecker;
+    protected UserOperationsService $userOperationsService;
+    protected UserManager $userManager;
 
     public function formatArguments($arg)
     {
@@ -64,7 +65,7 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->userOperationsService = $this->getService(UserOperationsService::class);
@@ -108,8 +109,9 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
             $users = $this->addGroups($users);
         }
 
+        // an anonymous visitor gets '' rather than an array, and that has no 'name' offset
         $connectedUser = $this->authenticationService->getLoggedUser();
-        $connectedUserName = empty($connectedUser['name']) ? '' : $connectedUser['name'];
+        $connectedUserName = is_array($connectedUser) ? strval($connectedUser['name'] ?? '') : '';
 
         return $this->render('@core/users-table.twig', [
             'connectedUserName' => $connectedUserName,
@@ -120,6 +122,11 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
         ]);
     }
 
+    /**
+     * @param User[] $users
+     *
+     * @return array<int|string, array<string, mixed>> the same users, each with its group list added
+     */
     private function addGroups(array $users): array
     {
         return array_map(function ($user) {
@@ -131,6 +138,8 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
 
     /**
      * manage Post Actions (delete) with management of csrf token.
+     *
+     * @param array<string, mixed> $post
      *
      * @return string|null postActionMessages
      */

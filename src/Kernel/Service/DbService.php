@@ -56,7 +56,8 @@ class DbService
     {
         $this->params = $params;
         $this->queryLog = [];
-        $this->driver = $this->params->has('db_driver') ? (string)$this->params->get('db_driver') : 'mysql';
+        $driver = $this->params->has('db_driver') ? $this->params->get('db_driver') : null;
+        $this->driver = (is_string($driver) && $driver !== '') ? $driver : 'mysql';
         $this->dialect = SqlDialectFactory::forDriver($this->driver);
 
         $this->initSqlConnection();
@@ -422,11 +423,6 @@ class DbService
     public function findInSet(string $needle, string $haystack, bool $not = false): string
     {
         return $this->dialect->findInSet($needle, $haystack, $not);
-    }
-
-    public function getCollation(): string
-    {
-        return $this->collation;
     }
 
     /**
@@ -811,12 +807,12 @@ class DbService
         switch ($this->driver) {
             case 'sqlite':
                 // SQLite doesn't have timezone support, use PHP's timezone
-                return ini_get('date.timezone') ?? null;
+                return ini_get('date.timezone') ?: null;
 
             case 'pgsql':
                 $result = $this->loadSingle('SHOW timezone');
 
-                return $result['TimeZone'] ?? (ini_get('date.timezone') ?? null);
+                return $result['TimeZone'] ?? (ini_get('date.timezone') ?: null);
 
             case 'mysql':
             default:
@@ -826,7 +822,7 @@ class DbService
                     ? $result['timezone']
                     : null;
                 if ($tz === 'SYSTEM') {
-                    $tz = ini_get('date.timezone') ?? null;
+                    $tz = ini_get('date.timezone') ?: null;
                 }
                 if (empty($tz)) {
                     $queryBis = 'SELECT NOW() as time;';
@@ -843,7 +839,7 @@ class DbService
                         $diff = new \DateInterval('PT0S');
                         $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                         $diff->i = abs($diffInMinutes) % 60;
-                        $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
+                        $diff->h = intdiv(abs($diffInMinutes) - $diff->i, 60);
 
                         $tz = $diff->format('%R%H:%I');
                     }

@@ -44,7 +44,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSavePageMetadatasPersistsAndMergesWithPrevious(YesWikiRuntime $wiki)
+    public function testSavePageMetadatasPersistsAndMergesWithPrevious(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(PageApiController::class);
         $pageManager = $wiki->services->get(PageManager::class);
@@ -83,7 +83,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSavePageMetadatasRejectsEmptyMetadatas(YesWikiRuntime $wiki)
+    public function testSavePageMetadatasRejectsEmptyMetadatas(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(PageApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);

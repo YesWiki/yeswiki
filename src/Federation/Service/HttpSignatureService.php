@@ -4,12 +4,13 @@ namespace YesWiki\Federation\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class HttpSignatureService
 {
-    protected $httpClient;
-    protected $ssrfUrlValidator;
+    protected HttpClientInterface $httpClient;
+    protected SsrfUrlValidator $ssrfUrlValidator;
 
     public function __construct(SsrfUrlValidator $ssrfUrlValidator)
     {
@@ -17,16 +18,25 @@ class HttpSignatureService
         $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
-    public function getDigest($message)
+    public function getDigest(string $message): string
     {
         return 'SHA-256=' . base64_encode(hash('sha256', $message, true));
     }
 
-    public function generateSignature($activity, $url, $form)
+    /**
+     * @param array<string, mixed> $activity
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, string> the headers that sign this activity
+     */
+    public function generateSignature(array $activity, string $url, array $form): array
     {
         $privateKey = $form['activitypub_private_key'];
 
-        $message = json_encode($activity, JSON_UNESCAPED_SLASHES);
+        // THROW_ON_ERROR because the alternative is `false`, and digesting `false` would
+        // produce a well-formed signature over an empty body that the receiver rejects
+        // with nothing to say why
+        $message = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $digest = $this->getDigest($message);
 
         $date = gmdate("D, d M Y H:i:s \G\M\T");
@@ -72,14 +82,15 @@ class HttpSignatureService
         ];
     }
 
-    public function verifySignature(Request $request)
+    public function verifySignature(Request $request): void
     {
-        if (!$request->headers->has('Signature')) {
+        $signatureHeader = $request->headers->get('Signature');
+        if ($signatureHeader === null || $signatureHeader === '') {
             throw new \Exception('No signature');
         }
 
         $sigConf = parse_ini_string(
-            strtr($request->headers->get('Signature'), [',' => "\n"])
+            strtr($signatureHeader, [',' => "\n"])
         );
 
         if (!isset($sigConf['keyId'],$sigConf['algorithm'],$sigConf['headers'],$sigConf['signature'])) {

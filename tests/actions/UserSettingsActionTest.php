@@ -27,7 +27,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     #[Depends('testWikiExisting')]
     #[DataProvider('displayFormProvider')]
-    public function testDisplayForm($mode, YesWikiRuntime $wiki)
+    public function testDisplayForm(string $mode, YesWikiRuntime $wiki): void
     {
         switch ($mode) {
             case 'connected':
@@ -40,7 +40,10 @@ class UserSettingsActionTest extends YesWikiTestCase
         }
     }
 
-    public static function displayFormProvider()
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function displayFormProvider(): array
     {
         return [
             'not connected' => ['not connected'],
@@ -48,7 +51,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         ];
     }
 
-    private function checkdisplayFormNotConnected(YesWikiRuntime $wiki)
+    private function checkdisplayFormNotConnected(YesWikiRuntime $wiki): void
     {
         $this->ensureCacheFolderIsWritable();
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
@@ -68,7 +71,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression($rexExpStr, $output, '`confpassword` input badly set in user-signup-form.twig !');
     }
 
-    private function checkdisplayFormConnected(YesWikiRuntime $wiki)
+    private function checkdisplayFormConnected(YesWikiRuntime $wiki): void
     {
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -117,7 +120,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     #[Depends('testWikiExisting')]
     #[Depends('testDisplayForm')]
-    public function testDisplayFormNotConnectedWithPostData(YesWikiRuntime $wiki)
+    public function testDisplayFormNotConnectedWithPostData(YesWikiRuntime $wiki): void
     {
         $email = strtolower($this->randomString(10)) . '@example.com';
         $name = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
@@ -154,7 +157,10 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['name']);
     }
 
-    public static function dataProvidertestSignup()
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function dataProvidertestSignup(): array
     {
         return [
             'bad signup' => ['error', false],
@@ -165,7 +171,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     #[Depends('testDisplayForm')]
     #[DataProvider('dataProvidertestSignup')]
-    public function testSignup($suffix, $expectedResult, YesWikiRuntime $wiki)
+    public function testSignup(string $suffix, bool $expectedResult, YesWikiRuntime $wiki): void
     {
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -272,13 +278,13 @@ class UserSettingsActionTest extends YesWikiTestCase
     /**
      * Wiki::$request (a Symfony Request) is built once from the superglobals when Wiki is constructed and is never re-synced afterwards; mutating $_POST/$_GET in a test has no effect on it unless it is rebuilt.
      */
-    private function refreshRequest(YesWikiRuntime $wiki)
+    private function refreshRequest(YesWikiRuntime $wiki): void
     {
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
     }
 
     /** ensure the cache folder is writable before tests. */
-    private function ensureCacheFolderIsWritable()
+    private function ensureCacheFolderIsWritable(): void
     {
         $this->assertTrue(is_dir('cache'), 'The cache folder is not existing !');
         $this->assertTrue(is_writable('cache'), 'The cache folder is not writable !');

@@ -17,7 +17,7 @@ class EntryManagerTest extends YesWikiTestCase
     private const FORM_ID = '999903';
     private const ENTRY_TAG = 'EntryManagerRegressionTestEntry';
 
-    public function testCreateThenGetOneWorksWithinTheSameRequest()
+    public function testCreateThenGetOneWorksWithinTheSameRequest(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);

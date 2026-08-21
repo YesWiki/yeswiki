@@ -10,7 +10,7 @@ namespace YesWiki\Kernel\Service {
         public const COOKIE = 'yw-lang';
         private const COOKIE_LIFETIME = 31536000;
 
-        private static $instance;
+        private static ?LanguageService $instance = null;
 
         /**
          * The language this request is being served in.
@@ -120,8 +120,8 @@ namespace YesWiki\Kernel\Service {
         /**
          * Translate a text key in the page's language.
          *
-         * @param string $textKey key for the text
-         * @param array  $params  values replacing the %{name} placeholders of the translation
+         * @param string               $textKey key for the text
+         * @param array<string, mixed> $params  values replacing the %{name} placeholders of the translation
          *
          * @return string the translated text, or the key itself if not found
          */
@@ -190,7 +190,7 @@ namespace YesWiki\Kernel\Service {
          * Determine which language out of an available set the user prefers most.
          *
          * @param \YesWiki\YesWikiRuntime|object|string $wiki               the runtime, an object exposing ->config, or '' before boot
-         * @param array                                 $availableLanguages language-tag-strings (must be lowercase) that are available
+         * @param array<array-key, string>              $availableLanguages language-tag-strings (must be lowercase) that are available
          * @param string                                $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
          * @param string                                $page               name of WikiPage to check for informations on language
          */
@@ -370,7 +370,7 @@ namespace YesWiki\Kernel\Service {
 
         private function langDir(): string
         {
-            return YESWIKI_SOURCE_DIR . '/src/lang';
+            return YESWIKI_PROGRAM_DIR . '/src/lang';
         }
     }
 }
@@ -381,8 +381,8 @@ namespace {
     /**
      * Translate the text in the page's language.
      *
-     * @param string $textkey array key for the text
-     * @param array  $params  values replacing the %{name} placeholders
+     * @param string               $textkey array key for the text
+     * @param array<string, mixed> $params  values replacing the %{name} placeholders
      *
      * @return string the translated text or the key if not found
      */

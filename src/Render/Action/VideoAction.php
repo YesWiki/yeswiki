@@ -98,8 +98,11 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     {
         $server = $arg['server'] ?? '';
         $attachVideoConfig = $this->params->get('attach-video-config');
+        if (!is_array($attachVideoConfig)) {
+            $attachVideoConfig = [];
+        }
         if (empty($server)) {
-            $server = $attachVideoConfig['default_video_service'];
+            $server = $attachVideoConfig['default_video_service'] ?? '';
         }
 
         $url = (!empty($arg['url']) && is_string($arg['url'])) ? $arg['url'] : '';
@@ -107,7 +110,7 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $id = $arg['id'] ?? '1f5bfc59-998b-41b3-9be3-e8084ad1a2a1';
         $peertubeinstance = $arg['peertubeinstance'] ?? '';
         if (empty($peertubeinstance)) {
-            $peertubeinstance = $attachVideoConfig['default_peertube_instance'];
+            $peertubeinstance = $attachVideoConfig['default_peertube_instance'] ?? '';
         }
         if (substr($peertubeinstance, -1) != '/') {
             $peertubeinstance .= '/';
@@ -150,6 +153,9 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         ];
     }
 
+    /**
+     * @return string the rendered video embed, or an error message for a missing/unknown server
+     */
     public function run()
     {
         if (empty($this->arguments['id'])

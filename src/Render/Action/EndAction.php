@@ -35,7 +35,7 @@ class EndAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/YesWikiPerformable.php';
+        require_once YESWIKI_PROGRAM_DIR . '/src/YesWikiPerformable.php';
 
         $elem = $this->getService(PerformableArguments::class)->get('elem');
         if (empty($elem)) {

@@ -29,7 +29,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         return new PasswordForEditingService($wiki->services, $forcedParams, $wiki->services->get(TemplateEngine::class));
     }
 
-    public function testNotActivatedWhenPasswordForEditingIsEmpty()
+    public function testNotActivatedWhenPasswordForEditingIsEmpty(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
@@ -40,7 +40,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $this->assertSame('', $message);
     }
 
-    public function testDeniedWithoutRequestPasswordThenGrantedWithCorrectOne()
+    public function testDeniedWithoutRequestPasswordThenGrantedWithCorrectOne(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
@@ -64,7 +64,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testAlreadyLoggedInUserBypassesPasswordGate()
+    public function testAlreadyLoggedInUserBypassesPasswordGate(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');

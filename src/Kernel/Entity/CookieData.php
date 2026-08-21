@@ -6,10 +6,10 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherAwareInterface;
 
 class CookieData implements PasswordHasherAwareInterface
 {
-    protected $encryptedData;
-    protected $lastConnectionDate;
-    protected $remember;
-    protected $userName;
+    protected string $encryptedData;
+    protected \DateTime $lastConnectionDate;
+    protected bool $remember;
+    protected string $userName;
 
     public function __construct(
         string $userName,

@@ -22,7 +22,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
     private const ENTITY1_TAG = 'ApiControllerRelationsTestEntity1';
     private const ENTITY2_TAG = 'ApiControllerRelationsTestEntity2';
 
-    public function testCreateThenGetAllRelationsReturnsBothDistinctEntries()
+    public function testCreateThenGetAllRelationsReturnsBothDistinctEntries(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -74,7 +74,9 @@ class ApiControllerRelationsTest extends YesWikiTestCase
 
             $_GET = [];
             $listResponse = $controller->getAllRelations('');
-            $relations = json_decode($listResponse->getContent(), true);
+            $listContent = $listResponse->getContent();
+            $this->assertIsString($listContent);
+            $relations = json_decode($listContent, true);
             $this->assertIsArray($relations);
             $this->assertNotEmpty($relations);
 

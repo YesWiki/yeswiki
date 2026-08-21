@@ -100,14 +100,21 @@ class FormPropertiesService
             foreach ($this->referencedFieldNames($value) as $fieldName) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
                 if ($field instanceof EnumField || $field instanceof FileField) {
-                    $fieldValue = $field->getValue($entry);
+                    // BazarField::getValue() is protected -- calling it from here was a fatal
+                    // error for every title template naming an enum or file field. Read the
+                    // stored value the way FieldRoleResolver::value() does, flattening the
+                    // list shape a tags field stores.
+                    $fieldValue = $entry[(string)$field->getPropertyName()] ?? null;
+                    if (is_array($fieldValue)) {
+                        $fieldValue = implode(',', array_filter($fieldValue, 'is_string'));
+                    }
                     if ($field instanceof CheckboxField) {
                         $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
                         $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
                         $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
                     } elseif ($field instanceof TagsField) {
-                        $fieldValues = explode(',', $fieldValue);
-                        $replacement = trim($fieldValues[0]) ?? '';
+                        $fieldValues = explode(',', (string)$fieldValue);
+                        $replacement = trim($fieldValues[0]);
                     } elseif ($field instanceof EnumField) {
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } elseif ($field instanceof ImageField) {
@@ -123,7 +130,7 @@ class FormPropertiesService
                         } else {
                             $replacement = 'image';
                         }
-                    } elseif ($field instanceof FileField) {
+                    } else {
                         if (!empty($_FILES[$field->getPropertyName()]['name'])) {
                             $replacement = StringUtilService::asFilename($_FILES[$field->getPropertyName()]['name']);
                             if (empty($replacement)) {
@@ -134,10 +141,8 @@ class FormPropertiesService
                         } else {
                             $replacement = 'file';
                         }
-                    } else {
-                        $replacement = $fieldValue;
                     }
-                    $value = str_replace('{{' . $fieldName . '}}', $replacement, $value);
+                    $value = str_replace('{{' . $fieldName . '}}', (string)$replacement, $value);
                 } elseif (isset($entry[$fieldName])) {
                     $value = str_replace('{{' . $fieldName . '}}', $entry[$fieldName], $value);
                 }

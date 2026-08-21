@@ -31,7 +31,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testCreateStoresFormAsAPageTypedViaTripleNotANatureRow()
+    public function testCreateStoresFormAsAPageTypedViaTripleNotANatureRow(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -60,7 +60,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testGetOneResolvesByNumericIdOrByTag()
+    public function testGetOneResolvesByNumericIdOrByTag(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -85,7 +85,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testCreatingWithACollidingDesiredTagUsesSuggestFreeTag()
+    public function testCreatingWithACollidingDesiredTagUsesSuggestFreeTag(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -119,7 +119,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testFormsGetAclsViaMetadataAcls()
+    public function testFormsGetAclsViaMetadataAcls(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -145,7 +145,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testRenamingATagKeepsOldTagResolvableAndDoesNotBreakEntries()
+    public function testRenamingATagKeepsOldTagResolvableAndDoesNotBreakEntries(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -189,7 +189,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testUpdatePreservesFieldsNotPresentInTheSubmission()
+    public function testUpdatePreservesFieldsNotPresentInTheSubmission(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -222,7 +222,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testActivityPubCredentialsSurviveTheRoundTripAndActorUriUsesTheStableId()
+    public function testActivityPubCredentialsSurviveTheRoundTripAndActorUriUsesTheStableId(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -264,7 +264,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testSetActivitypubKeypairRestoresAPreviouslyPublishedKeyAfterCreate()
+    public function testSetActivitypubKeypairRestoresAPreviouslyPublishedKeyAfterCreate(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -298,7 +298,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testBazForFormsAndListsIdsNoLongerQueriesTheDroppedNatureTable()
+    public function testBazForFormsAndListsIdsNoLongerQueriesTheDroppedNatureTable(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -325,7 +325,7 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
-    public function testDeleteRemovesTheFormAndItsEntries()
+    public function testDeleteRemovesTheFormAndItsEntries(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);

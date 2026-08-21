@@ -8,16 +8,22 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 #[\Field(['labelhtml'])]
 class LabelField extends BazarField
 {
+    /** @var string|null */
     protected $formText;
 
+    /** @var string|null */
     protected $viewText;
 
+    /** @var bool */
     protected $useWikiSyntax;
 
     protected const FIELD_FORM_TEXT = 1;
     protected const FIELD_VIEW_TEXT = 3;
     protected const FIELD_USE_WIKI_SYNTAX = 4;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -42,7 +48,7 @@ class LabelField extends BazarField
     protected function renderInput($entry)
     {
         if ($this->useWikiSyntax) {
-            $content = str_replace('<br/>', "\n", $this->formText);
+            $content = str_replace('<br/>', "\n", $this->formText ?? '');
 
             return $this->getService(MarkdownFormatterService::class)->format($content);
         }
@@ -53,7 +59,7 @@ class LabelField extends BazarField
     protected function renderStatic($entry)
     {
         if ($this->useWikiSyntax) {
-            $content = str_replace('<br/>', "\n", $this->viewText);
+            $content = str_replace('<br/>', "\n", $this->viewText ?? '');
 
             return $this->getService(MarkdownFormatterService::class)->format($content);
         }

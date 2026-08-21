@@ -59,12 +59,13 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
 
         return [
             'class' => empty($class) ? '' : ' ' . $class,
-            'tags' => empty($tags) ? [] : array_filter(array_map('trim', explode(' ', $tags)), 'strlen'),
+            'tags' => empty($tags) ? [] : array_filter(array_map('trim', explode(' ', $tags)), fn (string $tag): bool => $tag !== ''),
             'classcount' => empty($classcount) ? 6 : (int)$classcount,
             'sort' => $args['sort'] ?? '',
         ];
     }
 
+    /** @return string */
     public function run()
     {
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
@@ -147,7 +148,11 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         return $output;
     }
 
-    /** The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens. */
+    /**
+     * The `AND value IN (...)` clause for the (already trimmed/filtered) tag tokens.
+     *
+     * @param array<int, string> $tags
+     */
     private function buildSelectionTagsClause(array $tags): SqlFragment
     {
         if (empty($tags)) {

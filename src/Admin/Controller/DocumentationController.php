@@ -16,7 +16,7 @@ class DocumentationController extends YesWikiController
     use DashboardShell;
 
     #[Route('/doc', options: ['acl' => ['public']])]
-    public function show()
+    public function show(): Response
     {
         $templateEngine = $this->getService(TemplateEngine::class);
 
@@ -28,6 +28,7 @@ class DocumentationController extends YesWikiController
         ]))));
     }
 
+    /** @return list<array{name: string, docPath: string}> */
     private function getExtensionsWithDocs(): array
     {
         $extensions = [];

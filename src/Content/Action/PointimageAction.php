@@ -131,8 +131,10 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
 
             preg_match('/<!--([0-9][0-9]*)-([0-9][0-9]*)-(.*)--><!--title-->(.*)<!--\/title-->.*<!--desc-->\"\"(.*)\"\"<!--\/desc-->/msU', $location, $elements);
             if (!empty($elements[1])) {
-                $marker['x'] = round($elements[1]);
-                $marker['y'] = round($elements[2]);
+                // the pattern above captures digits only, and a marker coordinate is a whole
+                // number of pixels: round() was being handed the digits as a string
+                $marker['x'] = (int)$elements[1];
+                $marker['y'] = (int)$elements[2];
                 $marker['color'] = $elements[3];
                 $marker['title'] = $elements[4];
                 $marker['description'] = $this->getService(MarkdownFormatterService::class)->format($elements[5]);

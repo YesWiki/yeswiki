@@ -108,7 +108,12 @@ class EntryApiController extends YesWikiController
             } elseif ($output == 'ical') {
                 return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $get->all());
             } elseif ($get->has('fields')) {
-                $fields = explode(',', (string)$get->get('fields'));
+                // explode() never yields an empty array -- `?fields=` gives [''] -- so the
+                // guard below only means something once the blank names are dropped
+                $fields = array_filter(
+                    explode(',', (string)$get->get('fields')),
+                    fn (string $fieldName): bool => $fieldName !== ''
+                );
                 $lightEntries = [];
                 if (!empty($entries) && !empty($fields)) {
                     foreach ($entries as $id => $entry) {
@@ -192,7 +197,9 @@ class EntryApiController extends YesWikiController
                 'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
-            ['Content-Type: application/ld+json; charset=UTF-8']
+            // a name => value pair, not one colon-joined string: written as a list it named a
+            // header called "0" and the JSON-LD container went out as plain application/json
+            ['Content-Type' => 'application/ld+json; charset=UTF-8']
         );
     }
 

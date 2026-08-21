@@ -27,7 +27,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSubscribedEventsUnchangedFromExtension(YesWikiRuntime $wiki)
+    public function testSubscribedEventsUnchangedFromExtension(YesWikiRuntime $wiki): void
     {
         $events = WebhooksController::getSubscribedEvents();
         $this->assertSame([
@@ -41,7 +41,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testRegisteredAsEventSubscriber(YesWikiRuntime $wiki)
+    public function testRegisteredAsEventSubscriber(YesWikiRuntime $wiki): void
     {
         $this->assertTrue($wiki->services->has(EventDispatcher::class));
         $dispatcher = $wiki->services->get(EventDispatcher::class);
@@ -56,7 +56,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testNoWebhooksRegisteredReturnsEmptyList(YesWikiRuntime $wiki)
+    public function testNoWebhooksRegisteredReturnsEmptyList(YesWikiRuntime $wiki): void
     {
         $controller = $wiki->services->get(WebhooksController::class);
         $this->assertSame([], $controller->get_all_webhooks());

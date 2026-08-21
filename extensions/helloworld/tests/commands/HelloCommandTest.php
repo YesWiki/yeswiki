@@ -16,7 +16,7 @@ require_once 'tests/YesWikiTestCase.php';
 class HelloCommandTest extends YesWikiTestCase
 {
     #[DataProvider('providerTestExecute')]
-    public function testExecute(?string $username, bool $uppercase, int $statusCode, string $waitedOutput)
+    public function testExecute(?string $username, bool $uppercase, int $statusCode, string $waitedOutput): void
     {
         $wiki = $this->getWiki();
 
@@ -37,7 +37,10 @@ class HelloCommandTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression($waitedOutput, $commandTester->getDisplay());
     }
 
-    public static function providerTestExecute()
+    /**
+     * @return array<string, array{string|null, bool, int, string}>
+     */
+    public static function providerTestExecute(): array
     {
         return [
             'no arg, no option' => [null, false, Command::SUCCESS, "/^Hello !(?:\r|\n)+$/"],

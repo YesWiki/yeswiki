@@ -40,7 +40,7 @@ class CaptchaControllerTest extends YesWikiTestCase
         $this->fail('generateHash() produced a hash matching none of DEFAULT_TEXTS');
     }
 
-    public function testAlwaysPassesWhenCaptchaDisabled()
+    public function testAlwaysPassesWhenCaptchaDisabled(): void
     {
         $wiki = $this->getWiki();
         $this->assertFalse($wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin(), 'test must run as a non-admin for checkCaptchaBeforeSave() to evaluate captcha');
@@ -56,7 +56,7 @@ class CaptchaControllerTest extends YesWikiTestCase
         }
     }
 
-    public function testFailsWhenCaptchaMissing()
+    public function testFailsWhenCaptchaMissing(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
@@ -73,7 +73,7 @@ class CaptchaControllerTest extends YesWikiTestCase
         }
     }
 
-    public function testFailsWhenCaptchaWordIsWrongThenSucceedsWithCorrectWord()
+    public function testFailsWhenCaptchaWordIsWrongThenSucceedsWithCorrectWord(): void
     {
         $wiki = $this->getWiki();
         $captchaController = $this->buildController($wiki, true);

@@ -32,7 +32,7 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         $groupOperationsService = $this->getService(GroupOperationsService::class);
         $userManager = $this->getService(UserManager::class);
@@ -113,7 +113,7 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction, Provid
         );
     }
 
-    protected function confirmToken()
+    protected function confirmToken(): void
     {
         $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'confirmToken', false);
     }

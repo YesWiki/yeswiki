@@ -11,9 +11,14 @@ class TabChangeField extends LabelField
     protected const FIELD_FORM_CHANGE = 1;
     protected const FIELD_VIEW_CHANGE = 3;
 
+    /** @var bool */
     protected $formChange;
+    /** @var bool */
     protected $viewChange;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -43,12 +48,12 @@ class TabChangeField extends LabelField
         return $this->getService(TabsRenderer::class)->changeTab('view');
     }
 
-    public function getFormChange()
+    public function getFormChange(): bool
     {
         return $this->formChange;
     }
 
-    public function getViewChange()
+    public function getViewChange(): bool
     {
         return $this->viewChange;
     }

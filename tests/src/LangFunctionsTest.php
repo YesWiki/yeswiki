@@ -23,28 +23,28 @@ class LangFunctionsTest extends TestCase
         return $service;
     }
 
-    public function testPreferredLanguageSectionWins()
+    public function testPreferredLanguageSectionWins(): void
     {
         $this->assertSame('Hello', self::inLanguage('en')->sectionFor(self::BODY, 'fr'));
         $this->assertSame('Bonjour', self::inLanguage('fr')->sectionFor(self::BODY, 'en'));
     }
 
-    public function testFallsBackToDefaultLanguage()
+    public function testFallsBackToDefaultLanguage(): void
     {
         $this->assertSame('Bonjour', self::inLanguage('de')->sectionFor(self::BODY, 'fr'));
     }
 
-    public function testNoMarkersReturnsBodyUnchanged()
+    public function testNoMarkersReturnsBodyUnchanged(): void
     {
         $this->assertSame('plain body', self::inLanguage('fr')->sectionFor('plain body', 'en'));
     }
 
-    public function testNoMatchAtAllReturnsFullBody()
+    public function testNoMatchAtAllReturnsFullBody(): void
     {
         $this->assertSame(self::BODY, self::inLanguage('de')->sectionFor(self::BODY, 'it'));
     }
 
-    public function testLastSectionWinsForDuplicateLanguage()
+    public function testLastSectionWinsForDuplicateLanguage(): void
     {
         $body = '{{lang="fr"}}premier{{lang="fr"}}second';
         $this->assertSame('second', self::inLanguage('fr')->sectionFor($body, 'en'));

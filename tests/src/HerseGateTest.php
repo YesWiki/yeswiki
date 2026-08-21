@@ -14,7 +14,7 @@ require_once 'src/YesWikiRuntime.php';
 #[CoversMethod(YesWikiRuntime::class, 'herseGateAllows')]
 class HerseGateTest extends TestCase
 {
-    public function testUnconfiguredGateAllowsEverything()
+    public function testUnconfiguredGateAllowsEverything(): void
     {
         $this->assertTrue(YesWikiRuntime::herseGateAllows([], []));
         $this->assertTrue(YesWikiRuntime::herseGateAllows(['herse_id' => 'a'], []), 'password missing: gate off');
@@ -22,7 +22,7 @@ class HerseGateTest extends TestCase
         $this->assertTrue(YesWikiRuntime::herseGateAllows(['herse_id' => '', 'herse_password' => ''], []), 'empty defaults: gate off');
     }
 
-    public function testConfiguredGateRequiresExactCredentials()
+    public function testConfiguredGateRequiresExactCredentials(): void
     {
         $config = ['herse_id' => 'door', 'herse_password' => 'sesame'];
         $this->assertFalse(YesWikiRuntime::herseGateAllows($config, []), 'no credentials sent');

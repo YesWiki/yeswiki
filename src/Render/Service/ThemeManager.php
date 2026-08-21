@@ -159,18 +159,18 @@ class ThemeManager implements EventSubscriberInterface
                         case 'theme':
                             $name = basename($requestVal);
                             $customThemePath = $this->storage->directoryExists('custom/themes/' . $name) ? $name : '';
-                            $classicThemePath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requestVal));
+                            $classicThemePath = basename((string)realpath(YESWIKI_PROGRAM_DIR . '/themes/' . $requestVal));
                             $requested[$val] = !empty($customThemePath) ? $customThemePath : $classicThemePath;
                             break;
 
                         case 'squelette':
                             $requestVal = self::normalizeSqueletteName($requestVal);
                             $customPath = basename($requestVal);
-                            $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
+                            $classicPath = basename((string)realpath(YESWIKI_PROGRAM_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $requested[$val] = null;
                             if ($this->storage->exists('custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
-                            } elseif (file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $classicPath)) {
+                            } elseif (file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $classicPath)) {
                                 $requested[$val] = $classicPath;
                             }
                             if (!preg_match('/\.twig$/i', $requested[$val] ?? '', $matches)) {
@@ -182,11 +182,11 @@ class ThemeManager implements EventSubscriberInterface
                         default:
                             // ugly append of "s" to get the path of styleS, presetS and squeletteS
                             $customPath = basename($requestVal);
-                            $classicPath = basename((string)realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
+                            $classicPath = basename((string)realpath(YESWIKI_PROGRAM_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $requestVal));
                             $requested[$val] = null;
                             if ($this->storage->exists('custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
                                 $requested[$val] = $customPath;
-                            } elseif (file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $classicPath)) {
+                            } elseif (file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $classicPath)) {
                                 $requested[$val] = $classicPath;
                             }
 
@@ -211,7 +211,7 @@ class ThemeManager implements EventSubscriberInterface
                                 !$isCustom
                                 && (
                                     $this->storage->fileExists('custom/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
-                                    || is_file(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
+                                    || is_file(YESWIKI_PROGRAM_DIR . '/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
                                 )
                             )
                         )
@@ -262,20 +262,20 @@ class ThemeManager implements EventSubscriberInterface
         // Test existence du template, on utilise le template par defaut sinon==============================
         if (
             (!$this->storage->exists('custom/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette'])
-                and !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette']))
+                and !file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . $this->favorites['theme'] . '/squelettes/' . $this->favorites['squelette']))
             || (!$this->storage->exists('custom/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style'])
-                && !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
+                && !file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
         ) {
             // the second half only ever ran with the theme already equal to the default, so
             // repeating that test there was always true (ticket 40)
             if (
                 $this->favorites['theme'] != THEME_PAR_DEFAUT
-                || !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
-                || !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style'])
+                || !file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
+                || !file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style'])
             ) {
                 if (
-                    file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . SQUELETTE_PAR_DEFAUT)
-                    && file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . CSS_PAR_DEFAUT)
+                    file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . SQUELETTE_PAR_DEFAUT)
+                    && file_exists(YESWIKI_PROGRAM_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . CSS_PAR_DEFAUT)
                 ) {
                     $this->container->get(ThemeResolutionError::class)->themeNotFound(
                         (string)$this->favorites['theme'],
@@ -306,8 +306,8 @@ class ThemeManager implements EventSubscriberInterface
         $this->templates = [];
 
         // themes folder (used by {{update}})
-        if (is_dir(YESWIKI_SOURCE_DIR . '/themes')) {
-            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles(YESWIKI_SOURCE_DIR . '/themes', false));
+        if (is_dir(YESWIKI_PROGRAM_DIR . '/themes')) {
+            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles(YESWIKI_PROGRAM_DIR . '/themes', false));
         }
         // custom themes folder
         if ($this->storage->directoryExists('custom/themes')) {
@@ -338,11 +338,11 @@ class ThemeManager implements EventSubscriberInterface
         $this->theme = $theme;
         $this->squelette = $squelette;
 
-        // test folder - custom/ belongs to the instance, plain themes/ to the source tree
+        // test folder - custom/ belongs to the Instance, plain themes/ to the Program tree
         $themePath = 'themes/' . $this->theme;
         $filePath = $themePath . '/squelettes/' . $this->squelette;
 
-        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $themePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $themePath))) {
+        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $themePath)) || file_exists(YESWIKI_PROGRAM_DIR . '/' . $themePath))) {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_THEME_FOLDER') . $this->theme . _t('THEME_MANAGER_NOT_FOUND'),
@@ -351,7 +351,7 @@ class ThemeManager implements EventSubscriberInterface
             return false;
         }
 
-        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $filePath))) {
+        if (!((!$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath)) || file_exists(YESWIKI_PROGRAM_DIR . '/' . $filePath))) {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_SQUELETTE_FILE') . $this->squelette . _t('THEME_MANAGER_NOT_FOUND'),
@@ -360,7 +360,7 @@ class ThemeManager implements EventSubscriberInterface
             return false;
         }
         $fromInstance = !$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath);
-        $filePath = $fromInstance ? 'custom/' . $filePath : YESWIKI_SOURCE_DIR . '/' . $filePath;
+        $filePath = $fromInstance ? 'custom/' . $filePath : YESWIKI_PROGRAM_DIR . '/' . $filePath;
 
         $fileContent = $fromInstance ? $this->storage->read($filePath) : file_get_contents($filePath);
         if ($fileContent === false) {

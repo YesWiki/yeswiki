@@ -86,9 +86,6 @@ class IcalFormatter extends YesWikiController
             return new Response('', $code);
         }
         $code = Response::HTTP_OK;
-        if (empty($filename)) {
-            $filename = 'calendar';
-        }
         if (!empty($obContent)) {
             $comment = $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'X-COMMENT:' . str_replace(["\n", "\r"], ['\\n', '\\r'], $obContent) . "\r\n");
             $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n" . $comment, $fileData);
@@ -399,8 +396,8 @@ class IcalFormatter extends YesWikiController
     private function chunk_split_unicode(string $input, int $length = 76, string $escape = "\r\n"): string
     {
         $tmp = array_chunk(
-            preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY),
-            $length
+            preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY) ?: [],
+            max(1, $length)
         );
         $str = '';
         foreach ($tmp as $t) {

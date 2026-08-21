@@ -53,19 +53,14 @@ class UserOperationsServiceTest extends YesWikiTestCase
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
     #[DataProvider('dataProviderTestDelete')]
-    public function testDelete(string $connexionMode, bool $expectedResult, YesWikiRuntime $wiki, string $firstAdmin)
+    public function testDelete(string $connexionMode, bool $expectedResult, YesWikiRuntime $wiki, string $firstAdmin): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        do {
-            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
-        } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
-                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
-        } while (!empty($userManager->getOneByName($name)));
+        $email = $this->freeEmail($userManager);
+        $name = $this->freeRandomUserName($userManager);
 
         $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
@@ -109,7 +104,10 @@ class UserOperationsServiceTest extends YesWikiTestCase
         }
     }
 
-    public static function dataProviderTestDelete()
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function dataProviderTestDelete(): array
     {
         return [
             'not connected' => ['!+', false],
@@ -118,7 +116,10 @@ class UserOperationsServiceTest extends YesWikiTestCase
         ];
     }
 
-    public static function dataProviderTestCreate()
+    /**
+     * @return array<string, array{string, string, array<string, mixed>, bool, bool, bool}>
+     */
+    public static function dataProviderTestCreate(): array
     {
         return [
             'email name all right' => ['newRandom', 'newRandom', [], false, false, false],
@@ -130,6 +131,9 @@ class UserOperationsServiceTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $newValues
+     */
     #[Depends('testUserOperationsServiceExisting')]
     #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
@@ -140,7 +144,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         bool $emailExist,
         bool $otherException,
         YesWikiRuntime $wiki
-    ) {
+    ): void {
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
@@ -232,26 +236,19 @@ class UserOperationsServiceTest extends YesWikiTestCase
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
-    public function testDeleteUserAloneInNonAdminGroupDeletesGroupToo(YesWikiRuntime $wiki, string $firstAdmin)
+    public function testDeleteUserAloneInNonAdminGroupDeletesGroupToo(YesWikiRuntime $wiki, string $firstAdmin): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        do {
-            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
-        } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
-                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
-        } while (!empty($userManager->getOneByName($name)));
+        $email = $this->freeEmail($userManager);
+        $name = $this->freeRandomUserName($userManager);
         $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $user = self::requireUser($userManager->getOneByName($name));
 
-        do {
-            $groupName = StringUtilService::generateRandomString(8, self::UPPER_CHARS);
-        } while ($groupOperationsService->groupExists($groupName));
+        $groupName = $this->freeGroupName($groupOperationsService);
         $groupOperationsService->create($groupName, [$name]);
 
         $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
@@ -283,19 +280,14 @@ class UserOperationsServiceTest extends YesWikiTestCase
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
-    public function testDeleteUserAloneInAdminsGroupThrows(YesWikiRuntime $wiki, string $firstAdmin)
+    public function testDeleteUserAloneInAdminsGroupThrows(YesWikiRuntime $wiki, string $firstAdmin): void
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        do {
-            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
-        } while (!empty($userManager->getOneByEmail($email)));
-        do {
-            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
-                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
-        } while (!empty($userManager->getOneByName($name)));
+        $email = $this->freeEmail($userManager);
+        $name = $this->freeRandomUserName($userManager);
         $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $targetUser = $userManager->getOneByName($name);
 
@@ -324,7 +316,10 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $this->assertTrue($exceptionThrown, 'delete() should throw when user cannot be safely deleted');
     }
 
-    public static function dataProviderTestSanitizeName()
+    /**
+     * @return array<string, array{string|false, string, int, bool}>
+     */
+    public static function dataProviderTestSanitizeName(): array
     {
         return [
             'random string' => ['newRandom', '', 0, false],
@@ -347,7 +342,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     #[Depends('testCreate')]
     #[Depends('testDelete')]
     #[DataProvider('dataProviderTestSanitizeName')]
-    public function testSanitizeName($name, string $char, int $length, bool $otherException, YesWikiRuntime $wiki)
+    public function testSanitizeName(string|false $name, string $char, int $length, bool $otherException, YesWikiRuntime $wiki): void
     {
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -385,7 +380,8 @@ class UserOperationsServiceTest extends YesWikiTestCase
                 'email' => $email,
                 'password' => $password,
             ]);
-            $user = $userManager->getOneByName($name);
+            // the non-string case must be rejected by create(); only a string name can be read back
+            $user = is_string($name) ? $userManager->getOneByName($name) : null;
         } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
@@ -441,6 +437,37 @@ class UserOperationsServiceTest extends YesWikiTestCase
                 $userManager->delete($leftover);
             }
         }
+    }
+
+    /** A random user name, drawn from the whole character set the service must accept, that nobody holds yet. */
+    private function freeRandomUserName(UserManager $userManager): string
+    {
+        do {
+            $candidate = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
+        } while (!empty($userManager->getOneByName($candidate)));
+
+        return $candidate;
+    }
+
+    /** An email address no user holds yet. */
+    private function freeEmail(UserManager $userManager): string
+    {
+        do {
+            $candidate = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+        } while (!empty($userManager->getOneByEmail($candidate)));
+
+        return $candidate;
+    }
+
+    /** A group name that does not exist yet. */
+    private function freeGroupName(GroupOperationsService $groupOperationsService): string
+    {
+        do {
+            $candidate = StringUtilService::generateRandomString(8, self::UPPER_CHARS);
+        } while ($groupOperationsService->groupExists($candidate));
+
+        return $candidate;
     }
 
     /** A user name nothing has taken yet. */

@@ -395,8 +395,8 @@ class PresetService
     public function googleFonts(): array
     {
         if ($this->catalogue === null) {
-            $path = defined('YESWIKI_SOURCE_DIR')
-                ? YESWIKI_SOURCE_DIR . '/' . self::GOOGLE_FONTS_FILE
+            $path = defined('YESWIKI_PROGRAM_DIR')
+                ? YESWIKI_PROGRAM_DIR . '/' . self::GOOGLE_FONTS_FILE
                 : self::GOOGLE_FONTS_FILE;
             $decoded = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
             $this->catalogue = is_array($decoded) ? array_values(array_filter($decoded, 'is_string')) : [];
@@ -1043,8 +1043,8 @@ class PresetService
     public function coreDefaults(): array
     {
         if ($this->defaults === null) {
-            $path = defined('YESWIKI_SOURCE_DIR')
-                ? YESWIKI_SOURCE_DIR . '/' . self::CORE_TOKENS_FILE
+            $path = defined('YESWIKI_PROGRAM_DIR')
+                ? YESWIKI_PROGRAM_DIR . '/' . self::CORE_TOKENS_FILE
                 : self::CORE_TOKENS_FILE;
             $css = is_file($path) ? (string)file_get_contents($path) : '';
             $this->defaults = $this->valuesOf($css);
@@ -1162,7 +1162,7 @@ class PresetService
     }
 
     /**
-     * The theme's own presets, `custom/themes/` shadowing the source tree file by file.
+     * The theme's own presets, `custom/themes/` shadowing the Program tree file by file.
      *
      * @return array<string, string> file name => path
      */
@@ -1170,7 +1170,7 @@ class PresetService
     {
         $theme = $this->theme();
         $files = [];
-        foreach (glob(YESWIKI_SOURCE_DIR . '/themes/' . $theme . '/presets/*.css') ?: [] as $path) {
+        foreach (glob(YESWIKI_PROGRAM_DIR . '/themes/' . $theme . '/presets/*.css') ?: [] as $path) {
             $files[basename($path)] = $path;
         }
         foreach ($this->storage->glob('custom/themes/' . $theme . '/presets/*.css') as $path) {
@@ -1216,7 +1216,7 @@ class PresetService
         return $file;
     }
 
-    /** A stylesheet from wherever it is: the source tree ships presets and tokens, the instance stores its own. */
+    /** A stylesheet from wherever it is: the Program tree ships presets and tokens, the instance stores its own. */
     private function cssAt(string $path): string
     {
         return $this->isSourcePath($path)
@@ -1226,6 +1226,6 @@ class PresetService
 
     private function isSourcePath(string $path): bool
     {
-        return defined('YESWIKI_SOURCE_DIR') && str_starts_with($path, YESWIKI_SOURCE_DIR . '/');
+        return defined('YESWIKI_PROGRAM_DIR') && str_starts_with($path, YESWIKI_PROGRAM_DIR . '/');
     }
 }

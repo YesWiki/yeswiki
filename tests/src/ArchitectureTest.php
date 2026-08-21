@@ -49,7 +49,7 @@ class ArchitectureTest extends TestCase
     /**
      * What each file has yet to convert, counted the day the rule was seeded. A number may only shrink and a new file may not appear -- reads count as much as writes, because on object storage a `file_exists('custom/styles/custom.css')` that answers false makes a stylesheet vanish with nobody told.
      *
-     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the source tree, and `Admin/Service/ArchiveService.php` walks and rewrites that source tree on restore. Its backups themselves are Data and went through Storage in ticket 42, which also removed `archive[privatePath]` -- the setting that used to be the reason this file was deferred.
+     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the Program tree, and `Admin/Service/ArchiveService.php` walks and rewrites that source tree on restore. Its backups themselves are Data and went through Storage in ticket 42, which also removed `archive[privatePath]` -- the setting that used to be the reason this file was deferred.
      *
      * @var array<string, int>
      */
@@ -64,12 +64,12 @@ class ArchitectureTest extends TestCase
         'Admin/Entity/PackageExt.php' => 8,
         'Admin/Entity/PackageTool.php' => 2,
         'Admin/Entity/Repository.php' => 2,
-        'Admin/Service/ArchiveService.php' => 20,
+        'Admin/Service/ArchiveService.php' => 16,
         'Admin/Service/AutoUpdateService.php' => 2,
         'Contact/Api/ContactApiController.php' => 2,
         'Content/Action/EntryListAction.php' => 2,
         'Content/Action/FiltertagsAction.php' => 1,
-        'Content/Action/SyndicationAction.php' => 3,
+        'Content/Action/SyndicationAction.php' => 2,
         'Content/Action/ValueAction.php' => 1,
         'Content/Entity/Files.php' => 27,
         'Content/Field/TextareaField.php' => 3,
@@ -106,7 +106,7 @@ class ArchitectureTest extends TestCase
         'Kernel/Service/ConfigurationFileProvider.php' => 2,
         'Kernel/Service/ConfigurationService.php' => 1,
         'Kernel/Service/ConsoleService.php' => 1,
-        'Kernel/Service/HtmlPurifierService.php' => 7,
+        'Kernel/Service/HtmlPurifierService.php' => 6,
         'Kernel/Service/LanguageService.php' => 5,
         'Kernel/Service/Mailer.php' => 3,
         'Kernel/Service/MigrationService.php' => 2,
@@ -232,94 +232,7 @@ class ArchitectureTest extends TestCase
 
         $this->assertSame([], $over, "A file must not reach the filesystem directly: use YesWiki\\Files\\Service\\Storage.\n"
             . 'Reads count as much as writes -- on object storage a read that answers false is a file that silently vanished.');
-        $this->assertSame([], $gone, "The ratchet may only shrink, and these files have: lower their number in FS_        'Admin/Action/ConfigurationAction.php' => 1,
-        'Admin/Action/EditConfigAction.php' => 1,
-        'Admin/Api/DocumentationApiController.php' => 1,
-        'Admin/Controller/DocumentationController.php' => 2,
-        'Admin/Controller/InstallationController.php' => 10,
-        'Admin/Entity/Package.php' => 5,
-        'Admin/Entity/PackageCore.php' => 8,
-        'Admin/Entity/PackageExt.php' => 8,
-        'Admin/Entity/PackageTool.php' => 2,
-        'Admin/Entity/Repository.php' => 2,
-        'Admin/Service/ArchiveService.php' => 20,
-        'Admin/Service/AutoUpdateService.php' => 2,
-        'Contact/Api/ContactApiController.php' => 2,
-        'Content/Action/AttachAction.php' => 3,
-        'Content/Action/EntryListAction.php' => 2,
-        'Content/Action/FiltertagsAction.php' => 1,
-        'Content/Action/SyndicationAction.php' => 3,
-        'Content/Action/ValueAction.php' => 1,
-        'Content/Entity/Files.php' => 27,
-        'Content/Field/TextareaField.php' => 3,
-        'Content/Service/ActionCallRewriter.php' => 1,
-        'Content/Service/ActionsBuilderService.php' => 2,
-        'Content/Service/BazarListService.php' => 1,
-        'Content/Service/DuplicationManager.php' => 9,
-        'Content/Service/FormManager.php' => 10,
-        // tags.functions.php's budget, following its code: `yeswiki_thumbnail_tag()` became
-        // PageSummary::thumbnail() when ticket 50 folded that file into services. The same two
-        // `file_exists` calls on an uploaded image, in a class that can now be given Storage.
-        'Content/Service/PageSummary.php' => 2,
-        // bazar.functions.php's budget of 6, following its code when ticket 50 folded that
-        // file into services: four `file_exists`/`unlink` in `resizeImage()`, which is
-        // ImageResizer::cached() now, and two in the remote-file download.
-        'Files/Service/ImageResizer.php' => 4,
-        'Files/Service/RemoteFile.php' => 2,
-        'Files/Service/AttachedFilePaths.php' => 7,
-        'Identity/Service/AvatarService.php' => 2,
-        'Identity/Service/HashCashService.php' => 4,
-        'Import/Action/AdminImportersAction.php' => 1,
-        'Import/Service/ImapImporter.php' => 2,
-        'Import/Service/ImportFilesManager.php' => 6,
-        'Import/Service/ImportService.php' => 8,
-        'Import/Service/ImporterManager.php' => 7,
-        'Kernel/Command/CreateInstanceCommand.php' => 14,
-        'Kernel/Command/DbCommand.php' => 2,
-        'Kernel/Command/GenerateMigrationCommand.php' => 4,
-        'Kernel/Command/ImageOptimizerCommand.php' => 5,
-        'Kernel/Command/TestConsoleServiceCommand.php' => 2,
-        'Kernel/Entity/ConfigurationFile.php' => 2,
-        'Kernel/Service/AssetPublisher.php' => 51,
-        'Kernel/Service/AssetRegistry.php' => 4,
-        'Kernel/Service/ConfigurationFileProvider.php' => 2,
-        'Kernel/Service/ConfigurationService.php' => 1,
-        'Kernel/Service/ConsoleService.php' => 1,
-        'Kernel/Service/HtmlPurifierService.php' => 7,
-        'Kernel/Service/LanguageService.php' => 5,
-        'Kernel/Service/Mailer.php' => 3,
-        'Kernel/Service/MigrationService.php' => 2,
-        'Kernel/Service/Performer.php' => 2,
-        'Kernel/Service/ThrowableFormatter.php' => 1,
-        'Render/Action/FaviconAction.php' => 1,
-        'Render/Action/SectionAction.php' => 1,
-        'Render/Action/SetWikiDefaultThemeAction.php' => 1,
-        'Render/Action/TranslationAction.php' => 1,
-        'Render/Service/CoreAssets.php' => 5,
-        'Render/Service/CustomTemplateService.php' => 6,
-        'Render/Service/LayoutService.php' => 1,
-        'Render/Service/PresetService.php' => 7,
-        'Render/Service/TemplateEngine.php' => 8,
-        'Render/Service/TemplateHelperService.php' => 15,
-        'Render/Service/ThemeManager.php' => 16,
-        'Render/Service/ThemeSelectorRenderer.php' => 3,
-        'Search/Command/ReindexCommand.php' => 1,
-        'Social/Service/ReactionsFormatter.php' => 6,
-        'YesWikiInit.php' => 5,
-        'YesWikiKernel.php' => 3,
-        'YesWikiLoader.php' => 6,
-        'YesWikiPlugins.php' => 4,
-        'YesWikiRuntime.php' => 17,
-        'assets/pdf-viewer.php' => 2,
-        'autoload.inc.php' => 4,
-        'build-js-lang-keys.php' => 1,
-        'lang/javascript-keys-builder.php' => 1,
-        'migrations/20260726000000_MigrateAttachmentsToPages.php' => 7,
-        'migrations/20260802130000_RewriteRetiredSearchActions.php' => 2,
-        'migrations/20260811120000_RenameActionsAndParametersInBodies.php' => 5,
-        'migrations/20260816100000_PresetsBecomeTokenSets.php' => 3,
-        'migrations/20260817120000_PresetsLoseTheirDerivedTokens.php' => 3,
-        'migrations/20260817160000_ADarkBarMatchesItsDarkPage.php' => 3,.\n"
+        $this->assertSame([], $gone, "The ratchet may only shrink, and these files have: lower their number in FS_REMAINING.\n"
             . 'A budget nobody spends is a rule nobody enforces.');
     }
 

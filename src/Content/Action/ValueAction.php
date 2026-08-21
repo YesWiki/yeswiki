@@ -65,7 +65,7 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         } elseif ($field == 'tag') {
             $urlparsed = parse_url($url);
 
-            return htmlspecialchars(preg_replace('/(.*?)wiki=(.*?)/Ui', '$2', $urlparsed['query'] ?? ''));
+            return htmlspecialchars((string)preg_replace('/(.*?)wiki=(.*?)/Ui', '$2', $urlparsed['query'] ?? ''));
         } elseif (!empty($image) && in_array($image, ['lien', '1'], true)) {
             $regexp = '/<a data-id="' . $field . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
         } else {
@@ -88,7 +88,7 @@ class ValueAction extends YesWikiAction implements RegisteredAction
 
         if (!empty($text) && $text == 'lien') {
             $fragment = $htmlPurifierService->cleanHTML(array_shift($matches[1]));
-            $link = preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', $fragment);
+            $link = (string)preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', $fragment);
 
             return htmlspecialchars($link);
         }

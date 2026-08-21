@@ -254,7 +254,7 @@ class AssetRegistry implements RequestScopedState
 
         // NB: the source-tree check covers files absent from the instance docroot - the
         // URL still works there thanks to AssetPublisher's direct-path interception
-        if (!file_exists($file) && !file_exists(YESWIKI_SOURCE_DIR . '/' . $file)) {
+        if (!file_exists($file) && !file_exists(YESWIKI_PROGRAM_DIR . '/' . $file)) {
             return null;
         }
 
@@ -291,7 +291,7 @@ class AssetRegistry implements RequestScopedState
         // depend on helpers defined in another file, and a cached copy of *that* file breaks
         // every one of them with a ReferenceError. Caching is worth nothing in debug anyway.
         if ($config->getValue('debug')) {
-            $localPath = file_exists($file) ? $file : YESWIKI_SOURCE_DIR . '/' . $file;
+            $localPath = file_exists($file) ? $file : YESWIKI_PROGRAM_DIR . '/' . $file;
             $mtime = @filemtime($localPath);
             if ($mtime !== false) {
                 $revision = $revision . '-' . $mtime;
@@ -311,8 +311,8 @@ class AssetRegistry implements RequestScopedState
      */
     private function publishToCache(): bool
     {
-        return defined('YESWIKI_SOURCE_DIR') && defined('YESWIKI_INSTANCE_DIR')
-            && YESWIKI_SOURCE_DIR !== YESWIKI_INSTANCE_DIR;
+        return defined('YESWIKI_PROGRAM_DIR') && defined('YESWIKI_INSTANCE_DIR')
+            && YESWIKI_PROGRAM_DIR !== YESWIKI_INSTANCE_DIR;
     }
 
     /**

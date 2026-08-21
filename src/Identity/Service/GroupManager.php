@@ -6,8 +6,8 @@ use YesWiki\Kernel\Service\TripleStore;
 
 class GroupManager
 {
-    protected $tripleStore;
-    protected $userManager;
+    protected TripleStore $tripleStore;
+    protected UserManager $userManager;
 
     public function __construct(
         TripleStore $tripleStore,
@@ -23,7 +23,11 @@ class GroupManager
         return $this->tripleStore->hasAnyProperty($group_name, GROUP_PREFIX) || $this->userManager->userExist($group_name);
     }
 
-    /** create group with members. */
+    /**
+     * create group with members.
+     *
+     * @param string[] $members users and/or groups the group is made of
+     */
     public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
@@ -67,9 +71,11 @@ class GroupManager
         return explode("\n", $members);
     }
 
+    /** @param string[] $members users and/or groups to add */
     public function addMembers(string $group_name, array $members): void
     {
         $old_members = $this->getMembers($group_name);
+        $stored_members = implode("\n", $old_members);
         $new_members = array_merge($old_members, $members);
         $new_members = array_unique($new_members);
         $new_members = array_filter($new_members);
@@ -77,30 +83,34 @@ class GroupManager
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
-            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, $old_members, $new_members, GROUP_PREFIX);
+            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, $stored_members, $new_members, GROUP_PREFIX);
         }
     }
 
+    /** @param string[] $members users and/or groups to remove */
     public function removeMembers(string $group_name, array $members): void
     {
         $old_members = $this->getMembers($group_name);
+        $stored_members = implode("\n", $old_members);
         $new_members = array_diff($old_members, $members);
         $new_members = array_filter($new_members);
         $new_members = implode("\n", $new_members);
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
-            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, $old_members, $new_members, GROUP_PREFIX);
+            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, $stored_members, $new_members, GROUP_PREFIX);
         }
     }
 
+    /** @param string[] $members the new member list, replacing the current one */
     public function updateMembers(string $group_name, array $members): void
     {
+        $stored_members = implode("\n", $this->getMembers($group_name));
         $new_members = implode("\n", $members);
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
-            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, null, $new_members, GROUP_PREFIX);
+            $this->tripleStore->update($group_name, WIKINI_VOC_ACLS, $stored_members, $new_members, GROUP_PREFIX);
         }
     }
 }

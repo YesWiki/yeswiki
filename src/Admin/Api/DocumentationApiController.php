@@ -22,7 +22,7 @@ class DocumentationApiController extends YesWikiController
     use DashboardShell;
 
     #[Route('/api', options: ['acl' => ['public']])]
-    public function getDocumentation()
+    public function getDocumentation(): Response
     {
         // the configured base URL, NOT href('', '') -- an empty tag there falls back to
         // the *current* page's tag, which on this very route is `api`, so every URL on

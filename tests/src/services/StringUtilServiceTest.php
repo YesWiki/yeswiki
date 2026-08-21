@@ -9,7 +9,7 @@ use YesWiki\Kernel\Service\StringUtilService;
 class StringUtilServiceTest extends TestCase
 {
     #[DataProvider('folderToNamespaceProvider')]
-    public function testFolderToNamespace(string $input, string $expected)
+    public function testFolderToNamespace(string $input, string $expected): void
     {
         $this->assertEquals(
             $expected,
@@ -18,7 +18,10 @@ class StringUtilServiceTest extends TestCase
         );
     }
 
-    public static function folderToNamespaceProvider()
+    /**
+     * @return list<array{string, string}>
+     */
+    public static function folderToNamespaceProvider(): array
     {
         return [
             ['', ''],

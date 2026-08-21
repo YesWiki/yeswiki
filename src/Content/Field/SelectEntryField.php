@@ -8,6 +8,7 @@ use YesWiki\Content\Controller\EntryController;
 #[\Field(['listefiche'])]
 class SelectEntryField extends EnumField
 {
+    /** @var mixed the form definition's rendering choice for this list */
     protected $displayMethod;
 
     protected const FIELD_DISPLAY_METHOD = 3;

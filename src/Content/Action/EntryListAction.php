@@ -1445,7 +1445,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     // library is gone, but page bodies still ask for them, and they have to keep reaching
     // the map action -- which answers them with `map` -- rather than falling through to a
     // plain list and looking for a template that no longer exists.
-    protected $debug;
+    protected bool $debug = false;
 
     public function formatArguments($arg)
     {
@@ -1517,7 +1517,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         // kept `default_bazar_template` -- which ships as `liste_accordeon.twig`, extension
         // included -- and the dynamic renderer appends `.twig` of its own, asking for
         // `liste_accordeon.twig.twig` and failing with "template not found".
-        $template = $template ?: (string)$this->params->get('default_bazar_template');
+        $configuredTemplate = $this->params->get('default_bazar_template');
+        $template = $template ?: (is_string($configuredTemplate) ? $configuredTemplate : '');
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
@@ -1699,7 +1700,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             // ICONS
 
             // Prefixe des classes CSS utilisees pour la carto et calendrier
-            'iconprefix' => $get->has('iconprefix') ? trim($get->get('iconprefix')) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
+            'iconprefix' => $get->has('iconprefix') ? trim($get->getString('iconprefix')) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
             // Champ utilise pour les icones des marqueurs
             'iconfield' => $iconField,
             // icone des marqueurs
@@ -1732,6 +1733,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         );
     }
 
+    /** @return string */
     public function run()
     {
         $this->debug = (bool)$this->getService(RuntimeConfig::class)->getValue('debug');
@@ -1825,7 +1827,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         ];
     }
 
-    private function renderEntries($entries, $filters = [], $pForms = ''): string
+    /**
+     * @param array<array<string, mixed>> $entries
+     * @param array<string, mixed>        $filters
+     * @param array<mixed>                $pForms  the forms the entries belong to, keyed by form id
+     */
+    private function renderEntries(array $entries, array $filters = [], array $pForms = []): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
         $templateName = $this->arguments['template'];
@@ -1853,7 +1860,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 $data['entries'],
                 (int)$this->arguments['pagination'],
                 Paginator::pageFromQuery($query),
-                (int)$this->params->get('BAZ_DELTA')
+                $this->configuredDelta()
             );
 
             $data['entries'] = $paginator->getPageData();
@@ -2509,7 +2516,20 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
         }
     }
 
-    private function formatDateMin($period)
+    /** The oldest date a `period=` argument admits, or null when it names no period at all. */
+    /**
+     * `BAZ_DELTA` is a configuration value, so it arrives as whatever the config file holds.
+     * 12 is what `YesWikiInit` seeds it with, and it is a saner page size than the 0 a bad
+     * cast would produce.
+     */
+    private function configuredDelta(): int
+    {
+        $delta = $this->params->get('BAZ_DELTA');
+
+        return is_numeric($delta) ? (int)$delta : 12;
+    }
+
+    private function formatDateMin(mixed $period): ?string
     {
         switch ($period) {
             case 'day':
@@ -2525,5 +2545,7 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
 
                 return date('Y-m-d H:i:s', $d);
         }
+
+        return null;
     }
 }

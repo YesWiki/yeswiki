@@ -223,7 +223,7 @@ abstract class BazarField implements \JsonSerializable
         return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
-    public function isEmpty($pValue): bool
+    public function isEmpty(mixed $pValue): bool
     {
         return is_null($pValue) || (is_array($pValue) && count(array_keys($pValue)) == 0) || (is_string($pValue) && trim($pValue) == '');
     }
@@ -346,6 +346,9 @@ abstract class BazarField implements \JsonSerializable
         return $this->maxChars;
     }
 
+    /**
+     * @return mixed the value stored when the Content says nothing about this field
+     */
     public function getDefault()
     {
         return $this->default;

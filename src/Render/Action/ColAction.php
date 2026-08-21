@@ -13,29 +13,26 @@ class ColAction extends YesWikiAction implements RegisteredAction
         return 'col';
     }
 
+    /**
+     * @return string opening markup for the column, or an error message when `size` is
+     *                missing or the closing `{{end elem="col"}}` is
+     */
     public function run()
     {
-        ob_start();
         $size = $this->arguments['size'];
         if (empty($size)) {
-            echo '<div><div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
+            return '<div><div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
                 . _t('TEMPLATE_SIZE_PARAMETER_REQUIRED') . '.</div>' . "\n";
-
-            return;
         }
 
         $class = $this->arguments['class'] ?? '';
         $percent = round($size / 12 * 100, 4);
-        if ($this->check_end_elem('col')) {
-            echo '<!-- start of col -->' . "\n" .
-            '<div class="yw-col' . (isset($class) ? ' ' . $class : '') . '" style="width:' . $percent . '%;">';
-        } else {
-            echo $this->generate_error_msg('col');
+        if (!$this->check_end_elem('col')) {
+            return $this->generate_error_msg('col');
         }
-        $col = ob_get_contents();
-        ob_end_clean();
 
-        return $col;
+        return '<!-- start of col -->' . "\n"
+            . '<div class="yw-col' . (!empty($class) ? ' ' . $class : '') . '" style="width:' . $percent . '%;">';
     }
 
     public function end(): string

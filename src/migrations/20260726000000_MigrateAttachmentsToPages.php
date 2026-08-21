@@ -31,8 +31,9 @@ class MigrateAttachmentsToPages extends YesWikiMigration
     private function getUploadPath(): string
     {
         $attachConfig = $this->params->get('attach_config');
+        $uploadPath = is_array($attachConfig) ? ($attachConfig['upload_path'] ?? '') : '';
 
-        return !empty($attachConfig['upload_path']) ? $attachConfig['upload_path'] : 'files';
+        return is_string($uploadPath) && $uploadPath !== '' ? $uploadPath : 'files';
     }
 
     /**
@@ -71,6 +72,9 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         return $renameMapByOwnerPage;
     }
 
+    /**
+     * @param array<string, array<string, string>> $renameMapByOwnerPage ownerPageTag => [originalFilename => newTag]
+     */
     private function migrateOneFile(
         string $physicalPath,
         string $rawFilename,
@@ -95,7 +99,7 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         $entry = $fileManager->create($originalFilename, $storedFilename, $ownerPageTag, (int)$size, $mimeType);
         unlink($physicalPath);
 
-        $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = $entry['tag'];
+        $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = (string)$entry['tag'];
     }
 
     /**

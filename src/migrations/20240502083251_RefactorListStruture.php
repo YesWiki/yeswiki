@@ -13,9 +13,16 @@ class RefactorListStruture extends YesWikiMigration
         $listManager = $this->getService(ListManager::class);
         foreach ($pageManager->tagsOfType(PageType::LIST) as $tag) {
             $page = $pageManager->getOne($tag);
-            $oldJson = json_decode($page['body'], true);
-            $newJson = $listManager->convertDataStructure($oldJson);
-            $pageManager->save($tag, json_encode($newJson));
+            if ($page === null) {
+                continue;
+            }
+
+            // ticket 09 made a body a decoded array; before it, this column held the JSON text
+            // this migration was written against, and an upgrade can reach either shape
+            $body = $page['body'] ?? [];
+            $oldJson = is_array($body) ? $body : json_decode((string)$body, true);
+            $newJson = $listManager->convertDataStructure(is_array($oldJson) ? $oldJson : []);
+            $pageManager->save($tag, $newJson);
         }
     }
 }

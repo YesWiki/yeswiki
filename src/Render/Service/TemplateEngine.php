@@ -48,7 +48,7 @@ class TemplateEngine
         $this->assetRegistry = $assetRegistry;
         $this->csrfTokenManager = $csrfTokenManager;
 
-        $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_SOURCE_DIR]);
+        $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_PROGRAM_DIR]);
 
         if (file_exists('custom/templates/')) {
             $this->twigLoader->addPath('custom/templates/', 'custom');
@@ -63,25 +63,26 @@ class TemplateEngine
 
             $paths[] = "custom/extensions/$extensionName/templates";
 
-            $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/templates/';
-            $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/';
+            $paths[] = YESWIKI_PROGRAM_DIR . '/templates/' . $extensionName . '/templates/';
+            $paths[] = YESWIKI_PROGRAM_DIR . '/templates/' . $extensionName . '/';
 
-            $paths[] = YESWIKI_SOURCE_DIR . '/themes/tools/' . $extensionName . '/templates/';
-            $paths[] = YESWIKI_SOURCE_DIR . '/themes/tools/' . $extensionName . '/';
+            $paths[] = YESWIKI_PROGRAM_DIR . '/themes/tools/' . $extensionName . '/templates/';
+            $paths[] = YESWIKI_PROGRAM_DIR . '/themes/tools/' . $extensionName . '/';
 
-            $vFavoriteTheme = $config->get('favorite_theme');
+            $favoriteTheme = $config->get('favorite_theme');
+            $vFavoriteTheme = is_string($favoriteTheme) ? $favoriteTheme : '';
 
-            $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/templates/';
-            $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
+            $paths[] = YESWIKI_PROGRAM_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/templates/';
+            $paths[] = YESWIKI_PROGRAM_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
 
             foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
                 $paths[] = "custom/extensions/$otherExtensionName/templates/$extensionName/";
                 $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
 
-            $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/templates/";
+            $paths[] = YESWIKI_PROGRAM_DIR . "/extensions/$extensionName/templates/";
 
-            $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/presentation/templates/";
+            $paths[] = YESWIKI_PROGRAM_DIR . "/extensions/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
                 if (file_exists($path)) {
@@ -96,14 +97,14 @@ class TemplateEngine
         foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
             $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
-        $corePaths[] = YESWIKI_SOURCE_DIR . '/templates/';
+        $corePaths[] = YESWIKI_PROGRAM_DIR . '/templates/';
         foreach ($corePaths as $path) {
             if (file_exists($path)) {
                 $this->twigLoader->addPath($path, 'core');
             }
         }
 
-        $this->twigLoader->addPath(YESWIKI_SOURCE_DIR . '/templates/', 'shipped');
+        $this->twigLoader->addPath(YESWIKI_PROGRAM_DIR . '/templates/', 'shipped');
 
         $this->twig = new \Twig\Environment($this->twigLoader, [
             'cache' => 'cache/templates/',
@@ -526,7 +527,7 @@ class TemplateEngine
     {
         static $map = null, $spriteNames = null;
         if ($map === null) {
-            $map = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/icon-map.json'), true) ?: [];
+            $map = json_decode((string)file_get_contents(YESWIKI_PROGRAM_DIR . '/src/icon-map.json'), true) ?: [];
             unset($map['__comment']);
 
             $spriteNames = array_fill_keys($map, true) + ['star-filled' => true, 'cursor-text' => true];
@@ -564,6 +565,7 @@ class TemplateEngine
 
     /**
      * @param string $name
+     * @param mixed  $options the value the template sees under that name
      */
     public function addGlobal($name, $options): void
     {

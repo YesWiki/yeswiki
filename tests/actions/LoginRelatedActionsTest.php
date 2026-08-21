@@ -35,6 +35,9 @@ class LoginRelatedActionsTest extends YesWikiTestCase
         return $wiki->services->get(YesWikiRuntime::class);
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
     public static function relocatedTagsProvider(): array
     {
         return [
@@ -47,7 +50,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
 
     #[Depends('testWikiExisting')]
     #[DataProvider('relocatedTagsProvider')]
-    public function testRelocatedTagRendersWithoutError(string $tag, YesWikiRuntime $wiki)
+    public function testRelocatedTagRendersWithoutError(string $tag, YesWikiRuntime $wiki): void
     {
         $this->ensureCacheFolderIsWritable();
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($tag);
@@ -64,7 +67,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testResetPasswordRejectsWeakPassword(YesWikiRuntime $wiki)
+    public function testResetPasswordRejectsWeakPassword(YesWikiRuntime $wiki): void
     {
         $userManager = $wiki->services->get(UserManager::class);
         $users = $userManager->getAll();
@@ -97,7 +100,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
     }
 
     /** ensure the cache folder is writable before tests. */
-    private function ensureCacheFolderIsWritable()
+    private function ensureCacheFolderIsWritable(): void
     {
         $this->assertTrue(is_dir('cache'), 'The cache folder is not existing !');
         $this->assertTrue(is_writable('cache'), 'The cache folder is not writable !');

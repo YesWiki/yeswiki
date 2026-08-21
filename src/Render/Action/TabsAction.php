@@ -86,6 +86,9 @@ class TabsAction extends YesWikiAction implements RegisteredAction, ProvidesComp
         ];
     }
 
+    /**
+     * @return string the opening markup for the tab strip
+     */
     public function run()
     {
         return $this->getService(TabsRenderer::class)->openTabs('action', array_merge(

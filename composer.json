@@ -19,14 +19,22 @@
     "php": "^8.3",
     "ext-ctype": "*",
     "ext-curl": "*",
+    "ext-dom": "*",
     "ext-fileinfo": "*",
     "ext-filter": "*",
     "ext-gd": "*",
+    "ext-hash": "*",
     "ext-iconv": "*",
     "ext-json": "*",
+    "ext-libxml": "*",
     "ext-mbstring": "*",
+    "ext-openssl": "*",
     "ext-pcre": "*",
     "ext-pdo": "*",
+    "ext-session": "*",
+    "ext-simplexml": "*",
+    "ext-xml": "*",
+    "ext-xmlreader": "*",
     "ext-zip": "^1.0",
     "caxy/php-htmldiff": "^0.1.13",
     "endroid/qr-code": "^6.0",
@@ -97,9 +105,12 @@
     }
   },
   "suggest": {
+    "ext-imap": "Required by the IMAP importer to read a mailbox (with php-imap/php-imap)",
+    "ext-intl": "Accent-insensitive search: without it SearchManager falls back to iconv transliteration, which folds fewer scripts",
     "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
-    "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
     "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL",
+    "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
+    "ext-zend-opcache": "Lets a configuration write invalidate the cached file instead of waiting for revalidation",
     "php-imap/php-imap": "Required by the IMAP importer to read a mailbox (also needs ext-imap)"
   }
 }

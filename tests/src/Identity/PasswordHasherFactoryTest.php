@@ -66,7 +66,7 @@ class PasswordHasherFactoryTest extends YesWikiTestCase
     public function testTheMd5HasherClassIsGone(): void
     {
         $this->assertFileDoesNotExist(
-            YESWIKI_SOURCE_DIR . '/src/Identity/Security/MD5PasswordHasher.php',
+            YESWIKI_PROGRAM_DIR . '/src/Identity/Security/MD5PasswordHasher.php',
             'MD5PasswordHasher was deleted: nothing in this codebase may hash with md5'
         );
     }

@@ -9,14 +9,14 @@ class ComposerScriptsHelper
     public static function postInstall(Event $event): void
     {
         echo "clean test files from svg-sanitize\n";
-        array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));
+        array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg') ?: []);
 
         echo "clean example files from zebra_image\n";
-        array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/images/*'));
+        array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/images/*') ?: []);
         if (is_dir('vendor/stefangabos/zebra_image/examples/images/')) {
             rmdir('vendor/stefangabos/zebra_image/examples/images/');
         }
-        array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/*'));
+        array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/*') ?: []);
         if (is_dir('vendor/stefangabos/zebra_image/examples')) {
             rmdir('vendor/stefangabos/zebra_image/examples');
         }
@@ -47,7 +47,7 @@ class ComposerScriptsHelper
         } catch (\Throwable $th) {
             return [];
         }
-        if (!empty($content) && is_string($content)) {
+        if (!empty($content)) {
             $data = json_decode($content, true);
             if (is_array($data)) {
                 return $data;
@@ -102,8 +102,8 @@ class ComposerScriptsHelper
                         if (!empty($zipContent)) {
                             $temp = tmpfile();
                             if ($temp) {
-                                $tmpFilename = stream_get_meta_data($temp)['uri'];
-                                if (file_put_contents($tmpFilename, $zipContent) !== false) {
+                                $tmpFilename = stream_get_meta_data($temp)['uri'] ?? '';
+                                if ($tmpFilename !== '' && file_put_contents($tmpFilename, $zipContent) !== false) {
                                     $zip = new \ZipArchive();
                                     if ($zip->open($tmpFilename)) {
                                         if (is_dir('javascripts/vendor/pdfjs-dist/')) {
@@ -132,9 +132,9 @@ class ComposerScriptsHelper
                                             }
                                             echo "Pdfjs-dist updated ! \n";
 
-                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.pdf'));
-                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.js.map'));
-                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/build/*.js.map'));
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.pdf') ?: []);
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.js.map') ?: []);
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/build/*.js.map') ?: []);
                                         }
                                         $zip->close();
                                     } else {

@@ -41,6 +41,7 @@ class QrcodeAction extends YesWikiAction implements RegisteredAction, ProvidesCo
         ];
     }
 
+    /** @return string */
     public function run()
     {
         $this->arguments['text'] = !empty($this->arguments['text']) ?

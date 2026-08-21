@@ -13,12 +13,18 @@ class LinkField extends BazarField
     protected const FIELD_OPTIONS = 6;
     protected const FIELD_CLASS = 7;
 
+    /** @var mixed the CSS class the form definition gives this link */
     protected $class;
+    /** @var bool */
     protected $displayVideo;
-    protected $maxHeight;
-    protected $maxWidth;
-    protected $ratio;
+    /** All three come straight out of the form definition's option list, so they are whatever the webmaster typed; the getters below narrow them. */
+    protected mixed $maxHeight;
+    protected mixed $maxWidth;
+    protected mixed $ratio;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

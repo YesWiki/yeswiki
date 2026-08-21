@@ -34,7 +34,7 @@ class ConsoleServiceTest extends YesWikiTestCase
         ?string $stdout,
         ?string $stderr,
         ConsoleService $consoleService
-    ) {
+    ): void {
         $process = $consoleService->startConsoleAsync($command, $args);
         if ($processIsNull) {
             $this->assertNull($process);
@@ -66,7 +66,7 @@ class ConsoleServiceTest extends YesWikiTestCase
         ?string $stdout,
         ?string $stderr,
         ConsoleService $consoleService
-    ) {
+    ): void {
         $results = $consoleService->startConsoleSync($command, $args);
         if ($processIsNull) {
             $this->assertNull($results);
@@ -84,7 +84,10 @@ class ConsoleServiceTest extends YesWikiTestCase
         }
     }
 
-    public static function checkStartConsole()
+    /**
+     * @return array<string, array{string, list<string>, bool, string|null, string|null}>
+     */
+    public static function checkStartConsole(): array
     {
         return [
             'hello command ok' => ['helloworld:hello', [], false, "/^Hello !(?:\r|\n)+/", null],
@@ -94,7 +97,7 @@ class ConsoleServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testConsoleServiceExisting')]
-    public function testAsync(ConsoleService $consoleService)
+    public function testAsync(ConsoleService $consoleService): void
     {
         $tmp_path = tempnam('cache', 'tmp_test_results_');
         $tmpfile = basename($tmp_path);
@@ -104,11 +107,13 @@ class ConsoleServiceTest extends YesWikiTestCase
             '-c', 'ChildProcess',
             '-w', 1,
         ]);
+        $this->assertNotNull($process, 'the console command must have started');
         $process->wait();
         sleep(3);
 
         $content = file_get_contents($tmp_path);
         unlink($tmp_path);
+        $this->assertIsString($content, 'the parent and child processes must have written the result file');
         $this->assertMatchesRegularExpression('/^ParentProcessChildProcess$/', $content);
     }
 }

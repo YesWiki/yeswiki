@@ -741,7 +741,7 @@ class EntryManager
         if (!empty($vFieldMappings)) {
             try {
                 foreach ($vFieldMappings as $vKey => $vData) {
-                    if (isset($vKey)) {
+                    if (!empty($vKey)) {
                         if (isset($pEntry[$vData])) {
                             $pEntry[$vKey] = $this->container->get(Guard::class)->isFieldDataAuthorizedForFieldMapping($pPage, $pEntry, $vData);
                         }
@@ -798,14 +798,14 @@ class EntryManager
     /**
      * extract multiples parameters from argument.
      *
-     * @param string $firstseparator
-     * @param string $secondseparator
+     * @param non-empty-string $firstseparator
+     * @param non-empty-string $secondseparator
      *
      * @return array<string, string>
      *
      * @throws ParsingMultipleException
      */
-    public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='): array
+    public function getMultipleParameters(string $param, string $firstseparator = ',', string $secondseparator = '='): array
     {
         $tabparam = [];
 
@@ -814,9 +814,6 @@ class EntryManager
         }
         $params = explode($firstseparator, $param);
         $params = array_map('trim', $params);
-        if (count($params) == 0) {
-            throw new ParsingMultipleException('There is no parameter to parse !');
-        }
         foreach ($params as $value) {
             if (empty($value)) {
                 throw new ParsingMultipleException('One parameter should not be empty !');
@@ -863,33 +860,6 @@ class EntryManager
                 }
             }
         }
-    }
-
-    /**
-     * sanitize formsIds and get forms.
-     *
-     * @param array<mixed>|string|null $formsIds
-     *
-     * @return array<int|string, mixed> $forms
-     */
-    private function getFormsFromIds($formsIds): array
-    {
-        $formManager = $this->container->get(FormManager::class);
-        if (!empty($formsIds)) {
-            if (is_scalar($formsIds)) {
-                $formsIds = [$formsIds];
-            }
-            // a scalar is one id; anything else is already a list, and only the entries that
-            // look like a form id survive
-            $formsIds = array_filter($formsIds, function ($formId) {
-                return is_scalar($formId) && (strval(intval($formId)) == strval($formId));
-            });
-        }
-        if (!empty($formsIds)) {
-            return $formManager->getMany($formsIds);
-        }
-
-        return $formManager->getAll();
     }
 
     /**
@@ -1060,7 +1030,7 @@ class EntryManager
      * @param string $sourceTag
      * @param string $destinationTag
      */
-    private function duplicate($sourceTag, $destinationTag): bool
+    public function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
         $this->administrativeLogService->log($this->authenticationService->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');

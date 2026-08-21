@@ -12,13 +12,13 @@ use YesWiki\Core\YesWikiController;
 class ArchiveApiController extends YesWikiController
 {
     #[Route('/api/archives/{id}', methods: ['GET'], options: ['acl' => ['@admins']])]
-    public function getArchive($id)
+    public function getArchive(string $id): Response
     {
         return $this->getService(ArchiveController::class)->getArchive($id);
     }
 
     #[Route('/api/archives/uidstatus/{uid}', methods: ['GET'], options: ['acl' => ['@admins']])]
-    public function getArchiveStatus($uid)
+    public function getArchiveStatus(string $uid): ApiResponse
     {
         $forceStarted = $this->getRequest()->query->get('forceStarted');
 
@@ -29,7 +29,7 @@ class ArchiveApiController extends YesWikiController
     }
 
     #[Route('/api/archives/archivingStatus', methods: ['GET'], options: ['acl' => ['@admins']])]
-    public function getArchivingStatus()
+    public function getArchivingStatus(): ApiResponse
     {
         return new ApiResponse(
             $this->getService(ArchiveService::class)->getArchivingStatus(),
@@ -38,7 +38,7 @@ class ArchiveApiController extends YesWikiController
     }
 
     #[Route('/api/archives/forcedUpdateToken', methods: ['GET'], options: ['acl' => ['@admins']])]
-    public function getForcedUpdateToken()
+    public function getForcedUpdateToken(): ApiResponse
     {
         $token = $this->getService(ArchiveService::class)->getForcedUpdateToken();
 
@@ -49,7 +49,7 @@ class ArchiveApiController extends YesWikiController
     }
 
     #[Route('/api/archives', methods: ['GET'], options: ['acl' => ['@admins']])]
-    public function getArchives()
+    public function getArchives(): ApiResponse
     {
         $archiveService = $this->getService(ArchiveService::class);
 
@@ -60,13 +60,13 @@ class ArchiveApiController extends YesWikiController
     }
 
     #[Route('/api/archives/{id}', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function archiveAction($id)
+    public function archiveAction(string $id): ApiResponse
     {
         return $this->getService(ArchiveController::class)->manageArchiveAction($id);
     }
 
     #[Route('/api/archives', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function archivesAction()
+    public function archivesAction(): ApiResponse
     {
         return $this->getService(ArchiveController::class)->manageArchiveAction();
     }

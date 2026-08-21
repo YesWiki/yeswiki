@@ -19,7 +19,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         . "checkbox***ListeType***Type de ressource*** *** *** ***bf_type*** ***1*** *** *** * *** * *** *** *** ***\r\n"
         . "unknowntype***bf_mystere***Mystère***13*** *** ***\r\n";
 
-    public function testAttributeMapsDeriveFromFieldConstants()
+    public function testAttributeMapsDeriveFromFieldConstants(): void
     {
         $fieldFactory = $this->getWiki()->services->get(FieldFactory::class);
 
@@ -42,7 +42,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         $this->assertSame([], $fieldFactory->getAttributeIndexToKeyMap('unknowntype'));
     }
 
-    public function testLegacySyntaxEncodesToNamedJson()
+    public function testLegacySyntaxEncodesToNamedJson(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
 
@@ -73,7 +73,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         );
     }
 
-    public function testJsonAndLegacyParseToTheSamePositionalArrays()
+    public function testJsonAndLegacyParseToTheSamePositionalArrays(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
 
@@ -88,7 +88,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         $this->assertSame('text', $fromJson[0][7]);
     }
 
-    public function testJsonEncodingIsStable()
+    public function testJsonEncodingIsStable(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
 
@@ -97,7 +97,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         $this->assertSame($json, $formManager->normalizeTemplate($json));
     }
 
-    public function testCreateStoresTemplateAsNativeJsonArrayInPageBody()
+    public function testCreateStoresTemplateAsNativeJsonArrayInPageBody(): void
     {
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
@@ -133,7 +133,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
         }
     }
 
-    public function testEmptyTemplateNormalizesToEmptyJsonArray()
+    public function testEmptyTemplateNormalizesToEmptyJsonArray(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
 

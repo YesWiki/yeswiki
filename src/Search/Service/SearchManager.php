@@ -705,7 +705,7 @@ class SearchManager
                 foreach ($vForm['prepared'] as $vFieldObject) {
                     $vJSONPath = explode('.', $vField);
 
-                    $vPropertyName = $vJSONPath[0] ?? '';
+                    $vPropertyName = $vJSONPath[0];
 
                     if ($vFieldObject->getPropertyName() == $vPropertyName) {
                         $vPropertyFound = true;
@@ -716,13 +716,15 @@ class SearchManager
 
                         $vFieldFound = true;
 
+                        // the `else` used to hang off a second copy of the same condition
+                        // nested inside the first, so it could never run: a path segment the
+                        // field's structure does not have left $vFieldFound true and handed the
+                        // parent structure on as the descriptor, instead of MISSING_FIELD
                         foreach ($vJSONPath as $vJSONPathSegment) {
                             if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
-                                    $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
-                                } else {
-                                    $vFieldFound = false;
-                                }
+                                $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
+                            } else {
+                                $vFieldFound = false;
                             }
                         }
 
@@ -1189,9 +1191,8 @@ class SearchManager
             $vParameters[] = 'field=' . trim($pParameters['field']);
         }
 
-        return implode('&', array_filter($vParameters, function ($pParameter) {
-            return !empty($pParameter);
-        }));
+        // every entry above is a `name=` prefix plus a value, so none of them can be empty
+        return implode('&', $vParameters);
     }
 
     /**
@@ -1290,9 +1291,7 @@ class SearchManager
             ),
         );
 
-        if (isset($vResult)) {
-            return $vResult;
-        }
+        return $vResult;
     }
 
     /**
@@ -1337,9 +1336,7 @@ class SearchManager
             ),
         );
 
-        if (isset($vResult)) {
-            return $vResult;
-        }
+        return $vResult;
     }
 
     /**
@@ -1352,7 +1349,12 @@ class SearchManager
     private function toLowerCaseWithoutAccent(string $s): string
     {
         if (!mb_check_encoding($s, 'UTF-8')) {
-            $s = mb_convert_encoding($s, 'UTF-8', 'auto');
+            $converted = mb_convert_encoding($s, 'UTF-8', 'auto');
+            // false when no encoding could be detected; the string as given is a better
+            // answer than passing false down to mb_strtolower()
+            if (is_string($converted)) {
+                $s = $converted;
+            }
         }
 
         $s = mb_strtolower($s, 'UTF-8');
@@ -1463,7 +1465,11 @@ class SearchManager
      */
     private function buildFieldDescriptorHash($pStructure)
     {
-        return $pStructure['_mode_'] ?? '#|' . $pStructure['_type_'] ?? '#';
+        // `.` binds tighter than `??`, so this read as `_mode_ ?? ('#|' . _type_ ?? '#')`:
+        // a descriptor that had a `_mode_` -- every descriptor built here -- hashed to its
+        // mode alone, and two forms whose field agreed on `single` but differed on
+        // `string` vs `number` were merged into one descriptor carrying the first form's type
+        return ($pStructure['_mode_'] ?? '#') . '|' . ($pStructure['_type_'] ?? '#');
     }
 
     /**

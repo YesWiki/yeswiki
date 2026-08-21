@@ -17,7 +17,7 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
     private const PRIVATE_TAG = 'AclPredicateRegressionPrivate';
     private const PUBLIC_TAG = 'AclPredicateRegressionPublic';
 
-    public function testMaliciousUserNameIsEscapedInGeneratedAclFragment()
+    public function testMaliciousUserNameIsEscapedInGeneratedAclFragment(): void
     {
         $wiki = $this->getWiki();
         $userManager = $wiki->services->get(UserManager::class);
@@ -47,10 +47,9 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
             );
 
             $start = microtime(true);
-            $tags = $pageManager->getReadablePageTags();
+            $pageManager->getReadablePageTags();
             $elapsed = microtime(true) - $start;
 
-            $this->assertIsArray($tags);
             $this->assertLessThan(
                 0.9,
                 $elapsed,

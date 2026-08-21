@@ -154,7 +154,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
      *
      * @return mixed whatever $function answered, or null when it threw and the error was reported as a toast
      */
-    public function securedExecution($function, $param1 = null, $param2 = null, $param3 = null)
+    public function securedExecution($function, mixed $param1 = null, mixed $param2 = null, mixed $param3 = null)
     {
         try {
             if (!is_array($function)) {
@@ -489,7 +489,8 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                     parse_str($query, $queries);
 
                     if (isset($queries['bearer'])) {
-                        if (!empty($queries['bearer'])) {
+                        // parse_str() answers an array for `bearer[]=...`, which is not a token
+                        if (!empty($queries['bearer']) && is_string($queries['bearer'])) {
                             $options['headers'] = ['Authorization' => 'Bearer ' . $queries['bearer']];
                         }
                         unset($queries['bearer']);

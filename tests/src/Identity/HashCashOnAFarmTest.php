@@ -25,8 +25,12 @@ class HashCashOnAFarmTest extends YesWikiTestCase
 
         $this->assertStringStartsWith(\YESWIKI_INSTANCE_DIR . '/cache/', $path);
 
-        if (realpath(\YESWIKI_SOURCE_DIR) !== realpath(\YESWIKI_INSTANCE_DIR)) {
-            $this->assertStringStartsNotWith(\YESWIKI_SOURCE_DIR, $path);
+        $programDir = \YESWIKI_PROGRAM_DIR;
+        if ($programDir === '') {
+            $this->fail('the Program directory must be stated');
+        }
+        if (realpath($programDir) !== realpath(\YESWIKI_INSTANCE_DIR)) {
+            $this->assertStringStartsNotWith($programDir, $path);
         }
     }
 

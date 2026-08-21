@@ -2,7 +2,7 @@
 
 /** Legacy class loader for `YesWiki\Core\*`, `YesWiki\Custom\*` and extension namespaces. */
 spl_autoload_register(function ($className) {
-    $sourceDir = defined('YESWIKI_SOURCE_DIR') ? YESWIKI_SOURCE_DIR : \dirname(__DIR__);
+    $programDir = defined('YESWIKI_PROGRAM_DIR') ? YESWIKI_PROGRAM_DIR : \dirname(__DIR__);
 
     if (!preg_match('/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/', $className, $matches)) {
         return;
@@ -13,8 +13,8 @@ spl_autoload_register(function ($className) {
     }
 
     if (empty($matches[3])) {
-        if ($matches[1] === 'Core' && file_exists($sourceDir . '/src/' . $matches[2] . '.php')) {
-            require_once $sourceDir . '/src/' . $matches[2] . '.php';
+        if ($matches[1] === 'Core' && file_exists($programDir . '/src/' . $matches[2] . '.php')) {
+            require_once $programDir . '/src/' . $matches[2] . '.php';
         }
 
         return;
@@ -31,8 +31,8 @@ spl_autoload_register(function ($className) {
 
             if (is_dir("custom/extensions/{$extension}")) {
                 $basePath = "custom/extensions/{$extension}";
-            } elseif (is_dir($sourceDir . "/extensions/{$extension}")) {
-                $basePath = $sourceDir . "/extensions/{$extension}";
+            } elseif (is_dir($programDir . "/extensions/{$extension}")) {
+                $basePath = $programDir . "/extensions/{$extension}";
             } else {
                 return;
             }

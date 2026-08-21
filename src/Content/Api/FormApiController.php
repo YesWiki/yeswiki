@@ -17,6 +17,10 @@ class FormApiController extends YesWikiController
 {
     /**
      * The form arrays carry the ActivityPub keypair (merged from page metadata for internal use); the private key must never leave through the public API.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
      */
     private function stripFormSecrets(array $form): array
     {
@@ -26,7 +30,7 @@ class FormApiController extends YesWikiController
     }
 
     #[Route('/api/forms', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllForms()
+    public function getAllForms(): ApiResponse
     {
         $forms = $this->getService(FormManager::class)->getAll();
         $forms = array_map([$this, 'stripFormSecrets'], $forms);
@@ -38,7 +42,7 @@ class FormApiController extends YesWikiController
      * Live preview backing the form designer's field cards: each field object of the posted template goes through the very path the entry form uses (FormManager::prepareData + BazarField::renderInputIfPermitted), so a card shows the real Twig markup of the input instead of a JS look-alike.
      */
     #[Route('/api/forms/preview', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function previewFormTemplate(Request $request)
+    public function previewFormTemplate(Request $request): Response
     {
         $template = json_decode((string)$request->request->get('template', ''), true);
         $ids = json_decode((string)$request->request->get('ids', ''), true);
@@ -70,7 +74,7 @@ class FormApiController extends YesWikiController
     }
 
     /** One template field object => its entry-form input HTML, or '' if unrenderable. */
-    private function renderFieldPreview($fieldObject): string
+    private function renderFieldPreview(mixed $fieldObject): string
     {
         if (!is_array($fieldObject) || empty($fieldObject['type'])) {
             return '';
@@ -86,7 +90,7 @@ class FormApiController extends YesWikiController
     }
 
     #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getForm($formId)
+    public function getForm(string $formId): ApiResponse
     {
         if (strpos($formId, 'b64_') === 0) {
             $vFormID = base64_decode(urldecode(substr($formId, 4)), true);

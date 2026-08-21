@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Controller;
 
 use YesWiki\Content\Action\BazarAction;
+use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Core\YesWikiController;
@@ -15,10 +16,10 @@ use YesWiki\Kernel\Service\UrlFormatter;
 
 class ListController extends YesWikiController
 {
-    protected $listManager;
-    protected $hibernationService;
-    protected $aclService;
-    protected $fieldFactory;
+    protected ListManager $listManager;
+    protected HibernationService $hibernationService;
+    protected AclService $aclService;
+    protected FieldFactory $fieldFactory;
 
     public function __construct(
         ListManager $listManager,
@@ -32,15 +33,19 @@ class ListController extends YesWikiController
         $this->fieldFactory = $fieldFactory;
     }
 
-    public function displayAll()
+    public function displayAll(): string
     {
         $post = $this->getRequest()->request;
         $refusal = '';
         if ($post->has('imported-list')) {
             if ($this->mayCreate()) {
                 foreach ($post->all('imported-list') as $listRaw) {
-                    $list = json_decode($listRaw, true);
-                    $this->listManager->create($list['title'], $list['nodes']);
+                    $list = is_string($listRaw) ? json_decode($listRaw, true) : null;
+                    // a list that does not decode to {title, nodes} is not one this can import
+                    if (!is_array($list) || !isset($list['title'])) {
+                        continue;
+                    }
+                    $this->listManager->create($list['title'], $list['nodes'] ?? null);
                 }
                 echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
             } else {
@@ -55,11 +60,16 @@ class ListController extends YesWikiController
         );
 
         foreach ($lists as $key => $list) {
+            // getAll() yields null for a list whose body will not load; it has nothing to show
+            if ($list === null) {
+                unset($lists[$key]);
+                continue;
+            }
             $lists[$key]['canEdit'] = $this->mayEdit((string)$key);
             $lists[$key]['canDelete'] = $this->mayDelete((string)$key);
 
-            $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-            $lists[$key]['options'] = $field->getOptions();
+            $field = $this->fieldFactory->create(['liste', $list['id'] ?? '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            $lists[$key]['options'] = $field instanceof EnumField ? $field->getOptions() : [];
         }
 
         return $refusal . $this->render('@core/lists/list_table.twig', [
@@ -96,7 +106,7 @@ class ListController extends YesWikiController
         ]);
     }
 
-    public function create()
+    public function create(): string
     {
         if (!$this->mayCreate()) {
             return $this->refusal();
@@ -104,8 +114,8 @@ class ListController extends YesWikiController
 
         $post = $this->getRequest()->request;
         if ($post->has('submit')) {
-            $title = $post->get('title');
-            $listId = $this->listManager->create($title, json_decode($post->get('nodes'), true));
+            $title = (string)$post->get('title', '');
+            $listId = $this->listManager->create($title, json_decode((string)$post->get('nodes', ''), true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
@@ -123,12 +133,15 @@ class ListController extends YesWikiController
         ]);
     }
 
-    private function shouldPostMessageOnSubmit()
+    private function shouldPostMessageOnSubmit(): bool
     {
         return $this->getRequest()->query->get('onsubmit') === 'postmessage';
     }
 
-    public function update($id)
+    /**
+     * @param mixed $id the list id, straight off the query string
+     */
+    public function update($id): string
     {
         if (!$this->mayEdit((string)$id)) {
             return $this->refusal();
@@ -137,8 +150,8 @@ class ListController extends YesWikiController
         $post = $this->getRequest()->request;
         if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
-                $title = $post->get('title');
-                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true));
+                $title = (string)$post->get('title', '');
+                $this->listManager->update($id, $title, json_decode((string)$post->get('nodes', ''), true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
@@ -159,7 +172,10 @@ class ListController extends YesWikiController
         ]);
     }
 
-    public function delete($id)
+    /**
+     * @param mixed $id the list id, straight off the query string
+     */
+    public function delete($id): string
     {
         if (!$this->mayDelete((string)$id)) {
             return $this->refusal();

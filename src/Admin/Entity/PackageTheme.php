@@ -9,7 +9,7 @@ class PackageTheme extends PackageExt
     protected function localPath()
     {
         return
-            YESWIKI_SOURCE_DIR
+            YESWIKI_PROGRAM_DIR
             . $this::THEME_PATH
             . $this->name
             . '/';

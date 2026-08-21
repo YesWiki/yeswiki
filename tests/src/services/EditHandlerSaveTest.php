@@ -30,7 +30,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testDisplaySavePreviewAndConflictDetection(YesWikiRuntime $wiki)
+    public function testDisplaySavePreviewAndConflictDetection(YesWikiRuntime $wiki): void
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);

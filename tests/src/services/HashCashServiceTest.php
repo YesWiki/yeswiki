@@ -14,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(HashCashService::class, 'checkHashcash')]
 class HashCashServiceTest extends YesWikiTestCase
 {
-    public function testCheckHashcashIsAlwaysTrueWhenDisabled()
+    public function testCheckHashcashIsAlwaysTrueWhenDisabled(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
@@ -25,7 +25,7 @@ class HashCashServiceTest extends YesWikiTestCase
         $this->assertTrue($hashCashService->checkHashcash());
     }
 
-    public function testCheckHashcashFailsWhenEnabledAndValueMissing()
+    public function testCheckHashcashFailsWhenEnabledAndValueMissing(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
@@ -36,13 +36,13 @@ class HashCashServiceTest extends YesWikiTestCase
         $this->assertFalse($hashCashService->checkHashcash());
     }
 
-    public function testCheckHashcashSucceedsWhenEnabledAndValueMatchesSecret()
+    public function testCheckHashcashSucceedsWhenEnabledAndValueMatchesSecret(): void
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
 
         $secretValue = 'test-secret-' . uniqid();
-        file_put_contents(YESWIKI_SOURCE_DIR . '/cache/hashcash.key', $secretValue);
+        file_put_contents(YESWIKI_PROGRAM_DIR . '/cache/hashcash.key', $secretValue);
 
         try {
             $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('hashcash_value', $secretValue);

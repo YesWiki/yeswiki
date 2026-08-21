@@ -16,6 +16,7 @@ class QrscanAction extends YesWikiAction implements RegisteredAction
         return 'qrscan';
     }
 
+    /** @return string */
     public function run()
     {
         $entryManager = $this->getService(EntryManager::class);

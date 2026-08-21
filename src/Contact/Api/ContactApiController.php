@@ -25,7 +25,7 @@ class ContactApiController extends YesWikiController
      * Consolidated contact-mail-sending route (ticket 18, replaces the ajax branch of tools/contact's handlers/page/mail.php page-handler).
      */
     #[Route('/api/contact/mail', methods: ['POST'], options: ['acl' => ['public']])]
-    public function sendContactMail(Request $request)
+    public function sendContactMail(Request $request): ApiResponse
     {
         $pageTag = (string)$request->request->get('pageTag', '');
         if (empty($pageTag)) {

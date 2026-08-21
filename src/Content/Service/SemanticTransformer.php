@@ -7,8 +7,8 @@ use YesWiki\Render\Service\TemplateEngine;
 
 class SemanticTransformer
 {
-    protected $templateEngine;
-    protected $params;
+    protected TemplateEngine $templateEngine;
+    protected ParameterBagInterface $params;
 
     public function __construct(TemplateEngine $templateEngine, ParameterBagInterface $params)
     {

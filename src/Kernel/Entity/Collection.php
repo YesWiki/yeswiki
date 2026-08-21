@@ -2,10 +2,18 @@
 
 namespace YesWiki\Kernel\Entity;
 
+/**
+ * @implements \ArrayAccess<mixed, mixed>
+ * @implements \Iterator<mixed, mixed>
+ */
 class Collection implements \ArrayAccess, \Iterator, \Countable
 {
+    /** @var array<array-key, mixed> */
     protected $list = [];
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function toArray()
     {
         return $this->list;

@@ -166,16 +166,24 @@ class EntryController extends YesWikiController
             })) < 3
         ) {
             $customTemplatePath = $this->getCustomTemplatePath($entry);
-            if ($customTemplatePath) {
+            $customTemplateValues = null;
+
+            // The semantic fallback: a form that produces semantic data can be rendered by the
+            // template its @context/@type maps to (baz_semantic_types_mapping), even with no
+            // fiche-{form_id}.twig of its own. It used to be guarded on the rendered entry
+            // still being null after the render below, which render() never returns, and on a
+            // $customTemplateValues that only existed inside that branch -- so it never ran.
+            if ($customTemplatePath === null && !empty($pLocalForm['sem_type']) && !empty($pLocalForm['sem_template'])) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
-                $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
+                $semanticTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic'] ?? null);
+                if ($semanticTemplatePath !== null) {
+                    $customTemplatePath = "@core/$semanticTemplatePath";
+                }
             }
 
-            if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
-                $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
-                if ($customTemplatePath) {
-                    $renderedEntry = $this->render("@core/$customTemplatePath", $customTemplateValues);
-                }
+            if ($customTemplatePath !== null) {
+                $customTemplateValues ??= $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
+                $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
             if (is_null($renderedEntry)) {
@@ -614,7 +622,10 @@ class EntryController extends YesWikiController
             }
         }
 
-        if (!empty($form['sem_type'])) {
+        // `sem_type` alone is not enough: convertToSemanticData() renders `sem_template` and
+        // throws BAZAR_SEMANTIC_TYPE_MISSING when there is none, so a form that declares a
+        // semantic type without a template made rendering one of its entries an exception.
+        if (!empty($form['sem_type']) && !empty($form['sem_template'])) {
             $html['tag'] = $entry['tag'];
             $html['semantic'] = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $html);
         }
@@ -776,7 +787,7 @@ class EntryController extends YesWikiController
         $entryStartDate = new \DateTime((string)$startValue);
         if ($endValue !== null && trim((string)$endValue) !== '') {
             $entryEndDate = new \DateTime((string)$endValue);
-            if ($entryEndDate && strpos((string)$endValue, 'T') === false) {
+            if (strpos((string)$endValue, 'T') === false) {
                 $entryEndDate->add(new \DateInterval('P1D'));
             }
         }
@@ -899,7 +910,7 @@ class EntryController extends YesWikiController
         $request = $this->getRequest();
         $incomingUrl = $request->query->get('incomingurl') ?? $request->request->get('incomingurl') ?? '';
         if (!empty($incomingUrl)) {
-            $incomingUrl = urldecode($incomingUrl);
+            $incomingUrl = urldecode((string)$incomingUrl);
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);
         }
 

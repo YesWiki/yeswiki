@@ -155,7 +155,7 @@ class ActionCallRewriter
      */
     private static function readMap(string $file): array
     {
-        $path = YESWIKI_SOURCE_DIR . '/docs/' . $file;
+        $path = YESWIKI_PROGRAM_DIR . '/docs/' . $file;
         $raw = @file_get_contents($path);
         if ($raw === false) {
             throw new \RuntimeException("Cannot read the rename map {$path}. The action rename migration cannot run " . 'without it, and skipping it would leave stored content calling actions that no longer exist.');

@@ -13,7 +13,7 @@ class GreetingAction extends YesWikiAction
         return [];
     }
 
-    public function run()
+    public function run(): string
     {
         $greeting = $this->getService(GreetingService::class);
         $userName = $greeting->getUserName();

@@ -70,7 +70,11 @@ class SsrfUrlValidator
         if ($binary === false || strlen($binary) !== 16) {
             return null;
         }
-        $bytes = array_values(unpack('C16', $binary));
+        $unpacked = unpack('C16', $binary);
+        if ($unpacked === false) {
+            return null;
+        }
+        $bytes = array_values($unpacked);
 
         if ($bytes[0] === 0x20 && $bytes[1] === 0x02) {
             return sprintf('%d.%d.%d.%d', $bytes[2], $bytes[3], $bytes[4], $bytes[5]);

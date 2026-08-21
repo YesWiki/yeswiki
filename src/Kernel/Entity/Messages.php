@@ -4,6 +4,9 @@ namespace YesWiki\Kernel\Entity;
 
 class Messages extends Collection
 {
+    /**
+     * @return array<array-key, mixed>
+     */
     public function reset()
     {
         $this->list = [];
@@ -11,6 +14,12 @@ class Messages extends Collection
         return $this->list;
     }
 
+    /**
+     * @param Messages|array<array-key, mixed>|string $pMessage
+     * @param string                                  $pStatus
+     *
+     * @return $this
+     */
     public function add($pMessage, $pStatus = '')
     {
         if ($pMessage instanceof Messages) {

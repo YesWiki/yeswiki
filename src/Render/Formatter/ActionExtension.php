@@ -33,7 +33,7 @@ class ActionExtension implements ExtensionInterface
     private $renderAction;
 
     /**
-     * @var callable(string, string, ?string, array): string
+     * @var callable(string, string, ?string, array<string, mixed>): string
      */
     private $renderLink;
 
@@ -93,7 +93,7 @@ final class RawHtmlNodeRenderer implements NodeRendererInterface
 final class WikiLinkRenderer implements NodeRendererInterface
 {
     /**
-     * @var callable(string, string, ?string, array): string
+     * @var callable(string, string, ?string, array<string, mixed>): string
      */
     private $renderLink;
 

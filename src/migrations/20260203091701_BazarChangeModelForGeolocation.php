@@ -8,19 +8,20 @@ use YesWiki\Search\Service\SearchManager;
 
 class BazarChangeModelForGeolocation extends YesWikiMigration
 {
-    protected $aReport;
+    /** @var list<string> what this migration did, in the order it did it */
+    protected array $aReport = [];
 
-    public function __construct()
-    {
-        $this->aReport = [];
-    }
-
-    protected function report($pMessage)
+    protected function report(string $pMessage): void
     {
         $this->aReport[] = $pMessage;
     }
 
-    private function checkGeometries(&$pGeometries)
+    /**
+     * @param mixed $pGeometries normalised in place to a JSON string, or null when empty
+     *
+     * @return array{isArray: bool, needUpdate: bool}
+     */
+    private function checkGeometries(&$pGeometries): array
     {
         $vIsArray = false;
         $vNeedUpdate = false;
@@ -42,7 +43,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
         return ['isArray' => $vIsArray, 'needUpdate' => $vNeedUpdate];
     }
 
-    private function dumpGeolocation($pLatitude = null, $pLongitude = null, $pGeometries = null, $pGeometriesAsArray = null)
+    private function dumpGeolocation(mixed $pLatitude = null, mixed $pLongitude = null, mixed $pGeometries = null, mixed $pGeometriesAsArray = null): string
     {
         $vLatitude = (isset($pLatitude) && $pLatitude != '') ? $pLatitude : null;
         $vLongitude = (isset($pLongitude) && $pLongitude != '') ? $pLongitude : null;
@@ -116,7 +117,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vFormsToProcess[] = $vForm['bn_id_nature'];
 
-                    if (trim($vField[6]) != '') {
+                    if (trim((string)($vField[6] ?? '')) != '') {
                         $vAutocompleteFieldnames =
                         is_string($vField[6])
                         ? $vField[6]
@@ -129,7 +130,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                         $vAutocompleteOther = array_map('trim', explode('|', $vAutocompleteFieldnames));
 
                         if (count($vAutocompleteOther) == 6) {
-                            $vAutocompleteOther[6] = $vAutocompleteOther[5] ?? '';
+                            $vAutocompleteOther[6] = $vAutocompleteOther[5];
                             $vAutocompleteOther[5] = '';
 
                             $vField[6] = implode('|', $vAutocompleteOther);
@@ -145,7 +146,11 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                 $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('nature') . ' SET bn_template = \'' . $this->dbService->escape($vFormManager->encodeTemplate($vTemplate)) . '\' WHERE bn_id_nature = \'' . $this->dbService->escape($vForm['bn_id_nature']) . '\'');
             }
+
+            unset($vField);
         }
+        // $vForm is still a reference into $vForms here, and the loop below assigns to it
+        unset($vForm, $vTemplate);
 
         $this->report('----------------------');
 
@@ -153,9 +158,11 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
         $this->report('The entries of forms ' . implode(', ', $vFormsToProcess) . ' need to be updated');
 
-        $vFormsToProcess = array_map(function ($pID) use ($vFormManager) {
+        // getOne() answers null for a form that no longer exists, and every read below assumes
+        // a form
+        $vFormsToProcess = array_filter(array_map(function ($pID) use ($vFormManager) {
             return $vFormManager->getOne($pID);
-        }, $vFormsToProcess);
+        }, $vFormsToProcess));
 
         foreach ($vFormsToProcess as $vForm) {
             $this->report('----------------------');
@@ -168,9 +175,6 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
             $vEntries = array_filter(
                 array_map(
                     function ($vEntry) {
-                        $this->report($vEntry['body']);
-                        $this->report(json_decode($vEntry['body'], true));
-
                         return ['id' => $vEntry['id'], 'time' => $vEntry['time'], 'body' => json_decode($vEntry['body'], true)];
                     },
                     $vEntries
@@ -196,8 +200,8 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                 if (!empty($vEntry['body']['carte_google'])) {
                     $vNeedUpdate = true;
 
-                    $vValues = explode('|', $vEntry['body']['carte_google']);
-                    $vLatitude = $vValues[0] ?? null;
+                    $vValues = explode('|', (string)$vEntry['body']['carte_google']);
+                    $vLatitude = $vValues[0];
                     $vLongitude = $vValues[1] ?? null;
 
                     $this->report('carte_google geolocation found : ' . $this->dumpGeolocation($vLatitude, $vLongitude));
@@ -287,6 +291,12 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                     $vEntry['body']['bf_geolocation'] = $vBFGeolocation;
 
                     $vBody = json_encode($vEntry['body']);
+                    if ($vBody === false) {
+                        // chop(false) is '', so this used to write an empty body over the entry
+                        $this->report('Entry ' . $vEntry['id'] . ' could not be re-encoded and was left untouched');
+
+                        continue;
+                    }
 
                     $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . ' SET body = \'' . $this->dbService->escape(chop($vBody)) . '\' WHERE id = \'' . $this->dbService->escape($vEntry['id']) . '\'');
 
@@ -296,6 +306,8 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                     $this->report('bf_geolocation = ' . $this->dumpGeolocation($vEntry['body']['bf_geolocation']['latitude'] ?? null, $vEntry['body']['bf_geolocation']['longitude'] ?? null, $vEntry['body']['bf_geolocation']['geometries'], false));
                 }
             }
+
+            unset($vEntry);
         }
 
         $this->report($vUpdatedForms . ' updated forms , ' . $vUpdatedEntries . ' updated entries');

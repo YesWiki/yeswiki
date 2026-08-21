@@ -11,19 +11,21 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class QrcodeActionTest extends YesWikiTestCase
 {
-    public function testQrcodeTagRendersImgWithGeneratedFile()
+    public function testQrcodeTagRendersImgWithGeneratedFile(): void
     {
         $wiki = $this->getWiki();
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{qrcode text="hello world"}}');
 
         $this->assertMatchesRegularExpression('/<img src="cache[^"]+\.svg" alt="hello world" class="qrcode-img"/', $html);
 
-        preg_match('/<img src="([^"]+)"/', $html, $matches);
+        if (preg_match('/<img src="([^"]+)"/', $html, $matches) !== 1) {
+            $this->fail('the rendered tag carries no img src');
+        }
         $this->assertFileExists($matches[1]);
         unlink($matches[1]);
     }
 
-    public function testQrcodeTagWithoutTextRendersCoreAlert()
+    public function testQrcodeTagWithoutTextRendersCoreAlert(): void
     {
         $wiki = $this->getWiki();
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{qrcode}}');

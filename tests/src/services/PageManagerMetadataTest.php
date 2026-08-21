@@ -15,7 +15,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
 {
     private const TAG = 'PageManagerMetadataRegressionPage';
 
-    public function testMetadataIsCarriedForwardAcrossPlainContentEdits()
+    public function testMetadataIsCarriedForwardAcrossPlainContentEdits(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -35,7 +35,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         }
     }
 
-    public function testRevertingToAPriorRevisionSeesThatRevisionsMetadataNotLatest()
+    public function testRevertingToAPriorRevisionSeesThatRevisionsMetadataNotLatest(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -60,7 +60,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         }
     }
 
-    public function testSetMetadataMergesRatherThanReplaces()
+    public function testSetMetadataMergesRatherThanReplaces(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -80,7 +80,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         }
     }
 
-    public function testGetMetadataHasNoExtraKeysBeyondDefaultAclsWhenNoneExplicitlySet()
+    public function testGetMetadataHasNoExtraKeysBeyondDefaultAclsWhenNoneExplicitlySet(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -96,7 +96,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         }
     }
 
-    public function testSetMetadataIsANoOpWhenNothingActuallyChanges()
+    public function testSetMetadataIsANoOpWhenNothingActuallyChanges(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

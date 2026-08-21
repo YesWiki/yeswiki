@@ -6,7 +6,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiResponse extends JsonResponse
 {
-    public function __construct($data = null, int $status = 200, array $headers = [], bool $json = false)
+    /**
+     * @param array<string, string|list<string>> $headers
+     */
+    public function __construct(mixed $data = null, int $status = 200, array $headers = [], bool $json = false)
     {
         $headers = array_merge([
             'Access-Control-Allow-Origin' => '*',

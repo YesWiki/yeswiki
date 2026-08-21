@@ -4,18 +4,22 @@ namespace YesWiki\Content\Service;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Kernel\Service\ClassDirectoryScanner;
 
 class FieldFactory
 {
     protected ContainerInterface $container;
 
-    protected $availableFields;
+    /**
+     * @var array<string, class-string<BazarField>> keyword => field class
+     */
+    protected array $availableFields = [];
 
     /**
-     * @var array per-type cache of ['byIndex' => [int => string], 'byKey' => [string => int]]
+     * @var array<string, array{byIndex: array<int, string>, byKey: array<string, int>}> per-type cache
      */
-    protected $attributeMaps = [];
+    protected array $attributeMaps = [];
 
     public function __construct(ContainerInterface $container)
     {
@@ -23,9 +27,9 @@ class FieldFactory
         $this->loadAvailableField();
     }
 
-    private function loadAvailableField()
+    private function loadAvailableField(): void
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/annotations/Field.php';
+        require_once YESWIKI_PROGRAM_DIR . '/src/annotations/Field.php';
 
         $scanner = $this->container->get(ClassDirectoryScanner::class);
         foreach ($scanner->directories('Field', 'fields') as $namespace => $dir) {
@@ -36,7 +40,7 @@ class FieldFactory
     /**
      * @param list<string> $fieldsFiles
      */
-    private function scanFieldsDir(array $fieldsFiles, string $namespace)
+    private function scanFieldsDir(array $fieldsFiles, string $namespace): void
     {
         foreach ($fieldsFiles as $fieldFile) {
             preg_match("/^([a-zA-Z0-9_-]+)Field\.php$/", $fieldFile, $matches);
@@ -45,7 +49,13 @@ class FieldFactory
             }
             $fieldName = $matches[1];
 
-            $fieldClass = new \ReflectionClass($namespace . $fieldName . 'Field');
+            // a file named ...Field.php is not proof that it declares that class, let alone a
+            // field: a mismatched name used to reach ReflectionClass and throw
+            $className = $namespace . $fieldName . 'Field';
+            if (!class_exists($className) || !is_subclass_of($className, BazarField::class)) {
+                continue;
+            }
+            $fieldClass = new \ReflectionClass($className);
 
             $attributes = $fieldClass->getAttributes(\Field::class);
 
@@ -53,37 +63,55 @@ class FieldFactory
                 $fieldAttribute = $attributes[0]->newInstance();
 
                 foreach ($fieldAttribute->keywords as $keyword) {
-                    $this->availableFields[$keyword] = $fieldClass->name;
+                    $this->availableFields[$keyword] = $className;
                 }
 
                 if (!isset($this->availableFields[strtolower($fieldName)])) {
-                    $this->availableFields[strtolower($fieldName)] = $fieldClass->name;
+                    $this->availableFields[strtolower($fieldName)] = $className;
                 }
             }
         }
     }
 
-    public function create(array $values)
+    /**
+     * @param array<int|string, mixed> $values positional field definition, keyed by the FIELD_* constants
+     *
+     * @return BazarField|false false when no field type answers to $values[0]
+     */
+    public function create(array $values): BazarField|false
     {
-        if (!empty($this->availableFields[$values[0]])) {
-            return new $this->availableFields[$values[0]]($values, $this->container);
+        $type = (string)($values[0] ?? '');
+        if (empty($this->availableFields[$type])) {
+            return false;
         }
+        $fieldClass = $this->availableFields[$type];
 
-        return false;
+        return new $fieldClass($values, $this->container);
     }
 
-    /** Positional-index => attribute-key map for a field type (e.g. */
+    /**
+     * Positional-index => attribute-key map for a field type (e.g.
+     *
+     * @return array<int, string>
+     */
     public function getAttributeIndexToKeyMap(string $type): array
     {
         return $this->getAttributeMap($type)['byIndex'];
     }
 
-    /** Inverse of getAttributeIndexToKeyMap(): attribute-key => positional index. */
+    /**
+     * Inverse of getAttributeIndexToKeyMap(): attribute-key => positional index.
+     *
+     * @return array<string, int>
+     */
     public function getAttributeKeyToIndexMap(string $type): array
     {
         return $this->getAttributeMap($type)['byKey'];
     }
 
+    /**
+     * @return array{byIndex: array<int, string>, byKey: array<string, int>}
+     */
     private function getAttributeMap(string $type): array
     {
         if (!isset($this->attributeMaps[$type])) {
@@ -93,6 +121,9 @@ class FieldFactory
         return $this->attributeMaps[$type];
     }
 
+    /**
+     * @return array{byIndex: array<int, string>, byKey: array<string, int>}
+     */
     private function buildAttributeMap(string $type): array
     {
         if (empty($this->availableFields[$type])) {

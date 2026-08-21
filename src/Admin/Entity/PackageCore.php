@@ -73,7 +73,7 @@ class PackageCore extends Package
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = true;
 
-        $this->localPath = YESWIKI_SOURCE_DIR;
+        $this->localPath = YESWIKI_PROGRAM_DIR;
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
     }
@@ -88,8 +88,13 @@ class PackageCore extends Package
             $this->extractionPath .= '/';
         }
 
-        $dirs = array_filter(glob($this->extractionPath . '*'), 'is_dir');
-        $this->extractionPath = $dirs[0] . '/';
+        $entries = glob($this->extractionPath . '*');
+        $dirs = ($entries === false) ? [] : array_filter($entries, 'is_dir');
+        if ($dirs === []) {
+            throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
+        }
+        // array_filter keeps the original keys, so the first directory is rarely at offset 0
+        $this->extractionPath = reset($dirs) . '/';
 
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {

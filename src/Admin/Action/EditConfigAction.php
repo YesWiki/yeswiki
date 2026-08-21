@@ -165,6 +165,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             }
         }
 
+        $defaultLanguage = $this->params->has('default_language') ? $this->params->get('default_language') : null;
+
         return $output . $this->render('@core/edit-config.twig', [
             'SAVE_NAME' => self::SAVE_NAME,
             'keysList' => $keysList,
@@ -172,7 +174,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             'help' => $this->getHelp(),
             'languages' => $this->languageChoices(),
 
-            'defaultLanguage' => $this->params->has('default_language') ? (string)$this->params->get('default_language') : '',
+            'defaultLanguage' => is_scalar($defaultLanguage) ? (string)$defaultLanguage : '',
             'otherLanguages' => $this->params->has('other_languages') ? (array)$this->params->get('other_languages') : [],
         ]);
     }
@@ -455,6 +457,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
                 $keyName = $firstLevelKey . ($length > 1 ? '[' . implode('][', array_slice($keyAsArray, 1)) . ']' : '');
+                // the default this key would fall back to, when the container declares one
+                $hasDefault = $this->params->has($firstLevelKey);
+                $default = $hasDefault ? $this->params->get($firstLevelKey) : null;
                 switch ($length) {
                     case 1:
                         if (isset($config->$firstLevelKey)) {
@@ -462,8 +467,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                         } else {
                             $data[$keyName] = '';
                         }
-                        if ($this->params->has($firstLevelKey)) {
-                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey));
+                        if ($hasDefault) {
+                            $placeholders[$keyName] = $this->array2Str($default);
                         }
                         break;
                     case 2:
@@ -475,11 +480,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                         } else {
                             $data[$keyName] = '';
                         }
-                        if (
-                            $this->params->has($firstLevelKey)
-                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])
-                        ) {
-                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]]);
+                        if (is_array($default) && isset($default[$keyAsArray[1]])) {
+                            $placeholders[$keyName] = $this->array2Str($default[$keyAsArray[1]]);
                         }
                         break;
                     case 3:
@@ -492,12 +494,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                         } else {
                             $data[$keyName] = '';
                         }
-                        if (
-                            $this->params->has($firstLevelKey)
-                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])
-                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]])
-                        ) {
-                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]]);
+                        if (is_array($default) && isset($default[$keyAsArray[1]][$keyAsArray[2]])) {
+                            $placeholders[$keyName] = $this->array2Str($default[$keyAsArray[1]][$keyAsArray[2]]);
                         }
                         break;
 
@@ -545,7 +543,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     /**
      * array to string.
      */
-    private function array2Str($value): string
+    private function array2Str(mixed $value): string
     {
         if (is_array($value)) {
             if (count($value) > 0 && $this->arrayIsList($value)) {
@@ -589,7 +587,8 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         $matches = [];
         if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/', $val, $matches)) {
             $val = $matches[1];
-            $lines = preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
+            // preg_split() answers false only when PCRE itself fails; read the value as empty then
+            $lines = preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val) ?: [];
             $result = [];
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);

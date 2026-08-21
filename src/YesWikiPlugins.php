@@ -4,10 +4,15 @@ namespace YesWiki;
 
 class Plugins
 {
-    public $location;
-    public $type;
+    public ?string $location = null;
+    public string $type;
+    /** @var array<string, array<string, mixed>> */
     public $p_list = [];
 
+    /**
+     * @param string $location
+     * @param string $type
+     */
     public function __construct($location, $type = 'plugin')
     {
         if (is_dir($location)) {
@@ -19,6 +24,9 @@ class Plugins
         $this->type = $type;
     }
 
+    /**
+     * @param bool $active_only
+     */
     public function getPlugins($active_only = true): bool
     {
         if (($list_files = $this->_readDir()) !== false) {
@@ -38,11 +46,17 @@ class Plugins
         return false;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function getPluginsList()
     {
         return $this->p_list;
     }
 
+    /**
+     * @return array<string, string>|false the desc.xml path of every plugin found, or false when there is no directory to read
+     */
     public function _readDir()
     {
         if ($this->location === null) {
@@ -52,6 +66,9 @@ class Plugins
         $res = [];
 
         $d = dir($this->location);
+        if ($d === false) {
+            return false;
+        }
 
         while (($entry = $d->read()) !== false) {
             if ($entry != '.' && $entry != '..'
@@ -65,11 +82,17 @@ class Plugins
         return $res;
     }
 
+    /**
+     * @param string $p path to the plugin's desc.xml
+     *
+     * @return array<string, mixed>|false the plugin description, or false when the file says nothing usable
+     */
     public function getPluginInfo($p)
     {
         if (file_exists($p)) {
             $xml = simplexml_load_file($p);
-            $xml = json_decode(json_encode($xml), true);
+            $encoded = json_encode($xml);
+            $xml = $encoded === false ? null : json_decode($encoded, true);
             if (!empty($xml['@attributes']['name'])) {
                 return [
                     'name' => $xml['@attributes']['name'] ?? null,

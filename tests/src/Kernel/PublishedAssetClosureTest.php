@@ -53,14 +53,14 @@ class PublishedAssetClosureTest extends YesWikiTestCase
 
     public function testAModulesStaticImportsArePublishedWithIt(): void
     {
-        $source = \YESWIKI_SOURCE_DIR . '/javascripts/aceditor.js';
+        $source = \YESWIKI_PROGRAM_DIR . '/javascripts/aceditor.js';
         if (!is_file($source)) {
             $this->markTestSkipped('no aceditor.js to read imports from');
         }
         AssetPublisher::publishedUrl('javascripts/aceditor.js', '1');
 
         foreach (['link-panel.js', 'file-picker-panel.js', 'editor-rails.js', 'mode-yeswiki.js'] as $imported) {
-            if (!is_file(\YESWIKI_SOURCE_DIR . '/javascripts/' . $imported)) {
+            if (!is_file(\YESWIKI_PROGRAM_DIR . '/javascripts/' . $imported)) {
                 continue;
             }
             $this->assertFileExists(
@@ -174,17 +174,17 @@ class PublishedAssetClosureTest extends YesWikiTestCase
 
         $this->assertNotSame('', $stamp, 'read off the published files themselves');
         $this->assertSame(
-            (string)filemtime(\YESWIKI_SOURCE_DIR . '/styles/yw-core.css'),
+            (string)filemtime(\YESWIKI_PROGRAM_DIR . '/styles/yw-core.css'),
             $stamp,
             'and it is how new the published set is'
         );
         $this->assertFileExists($stampFile, 'written down, so the walk happens once');
     }
 
-    /** No file of ours points above the source tree. */
+    /** No file of ours points above the Program tree. */
     public function testNoAssetOfOursReferencesSomethingAboveTheSourceTree(): void
     {
-        $root = \YESWIKI_SOURCE_DIR;
+        $root = \YESWIKI_PROGRAM_DIR;
         $tree = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/javascripts', \FilesystemIterator::SKIP_DOTS));
 
         $broken = [];

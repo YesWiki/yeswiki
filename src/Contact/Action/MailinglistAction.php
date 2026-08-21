@@ -37,7 +37,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         if (empty($list)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
         } elseif ($this->getService(AclService::class)->isAdmin()) {
-            echo '<h2>' . _('CONTACT_MAILS_TO_ADD_OR_REMOVE') . ' ' . $list . '</h2>';
+            echo '<h2>' . _t('CONTACT_MAILS_TO_ADD_OR_REMOVE') . ' ' . $list . '</h2>';
 
             if (isset($_POST['mails'])) {
                 if (is_array($_POST['mails'])) {
@@ -62,17 +62,16 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
             } elseif (isset($_POST['mailinglist'])) {
                 $regEx = "/([\s]*)[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i";
                 preg_match_all($regEx, $_POST['mailinglist'], $emails);
-                if (is_array($emails) && count($emails[0]) > 0) {
+                if (count($emails[0]) > 0) {
                     sort($emails[0]);
                     echo '<form id="ajax-mailing-form" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
         			<div class="well" style="width:600px; height:150px; overflow:auto; ">';
 
                     foreach ($emails[0] as $email) {
                         echo $email . '<br /><input name="mails[]" type="hidden" value="' . htmlspecialchars($email, ENT_COMPAT, YW_CHARSET) . '" />';
-                        $emails[] = $email;
                     }
                     echo '</div>
-        			<strong>' . _t('CONTACT_FOR_ALL_THOSE_EMAILS') . ' : </strong><input class="btn button_save" type="submit" name="action_mails" value="' . _t('CONTACT_BTN_UNSUBSCRIBE') . '" />
+        			<strong>' . _t('CONTACT_FOR_ALL_THOSE_EMAILS') . ' : </strong><input class="btn button_save" type="submit" name="action_mails" value="' . _t('CONTACT_BTN_SUBSCRIBE') . '" />
         			<input class="btn button_cancel" type="submit" name="action_mails" value="' . _t('CONTACT_BTN_UNSUBSCRIBE') . '" />
         			</form><br /><br />
         			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';

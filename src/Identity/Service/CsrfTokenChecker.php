@@ -9,7 +9,7 @@ use YesWiki\Core\YesWikiController;
 
 class CsrfTokenChecker extends YesWikiController
 {
-    protected $csrfTokenManager;
+    protected CsrfTokenManager $csrfTokenManager;
 
     public function __construct(
         CsrfTokenManager $csrfTokenManager

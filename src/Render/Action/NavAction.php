@@ -81,29 +81,18 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         $data = $this->getService(TemplateHelperService::class)->getDataParameter();
         $pagetag = $this->getService(PageContext::class)->getTag();
 
-        $links = $this->getService(PerformableArguments::class)->get('links');
-        if (!empty($links)) {
-            $links = explode(',', $links);
-            $links = array_map('trim', $links);
-        }
+        $links = $this->splitParameter('links');
+        $titles = $this->splitParameter('titles');
 
-        $titles = $this->getService(PerformableArguments::class)->get('titles');
-        if (!empty($titles)) {
-            $titles = explode(',', $titles);
-            $titles = array_map('trim', $titles);
-        }
+        $icons = $this->splitParameter('icons');
+        foreach ($icons as $key => $icon) {
+            $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
 
-        $icons = $this->getService(PerformableArguments::class)->get('icons');
-        if (!empty($icons)) {
-            $icons = explode(',', $icons);
-            foreach ($icons as $key => $icon) {
-                $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
-
-                if (!empty($icon)) {
-                    $icon = $icon . ' ';
-                }
-                $icons[$key] = $icon;
+            if ($icon !== '') {
+                // the space keeps the icon off the title it introduces
+                $icon = $icon . ' ';
             }
+            $icons[$key] = $icon;
         }
 
         $hideIfNoAccess = $this->getService(PerformableArguments::class)->get('hideifnoaccess');
@@ -138,16 +127,34 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         }
 
         $navID = uniqid('nav_');
-        $data = '';
-        if (is_array($data)) {
-            foreach ($data as $key => $value) {
-                $data .= ' data-' . $key . '="' . $value . '"';
-            }
+        // built into its own variable: appending to $data while looping over it dropped every
+        // data-* attribute the `data` parameter asked for
+        $dataAttributes = '';
+        foreach ($data as $key => $value) {
+            $dataAttributes .= ' data-' . $key . '="' . $value . '"';
         }
 
         if (!empty($listlinks)) {
             echo ' <!-- start of nav -->
-                <nav><ul class="' . $class . '" id="' . $navID . '" ' . $data . '>' . $listlinks . '</ul></nav>' . "\n";
+                <nav><ul class="' . $class . '" id="' . $navID . '" ' . $dataAttributes . '>' . $listlinks . '</ul></nav>' . "\n";
         }
+    }
+
+    /**
+     * A comma separated `nav` parameter as the list it is meant to be.
+     *
+     * Each of these used to stay a bare string when the parameter was absent, and `{{nav}}`
+     * with no `titles` then ran straight into `foreach` on a string.
+     *
+     * @return list<string>
+     */
+    private function splitParameter(string $name): array
+    {
+        $value = $this->getService(PerformableArguments::class)->get($name);
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        return array_map('trim', explode(',', $value));
     }
 }

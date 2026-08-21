@@ -20,6 +20,11 @@ class EventDispatcher extends SymfonyEventDispatcher
         $this->throwableFormatter = $throwableFormatter;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
     public function yesWikiDispatch(string $eventName, array $data = []): array
     {
         try {

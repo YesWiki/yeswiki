@@ -9,10 +9,16 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class ForcedParameterBag implements ParameterBagInterface
 {
+    /**
+     * @param array<string, array<mixed>|bool|string|int|float|\UnitEnum|null> $overrides
+     */
     public function __construct(private ParameterBagInterface $real, private array $overrides)
     {
     }
 
+    /**
+     * @return array<mixed>|bool|string|int|float|\UnitEnum|null
+     */
     public function get(string $name): \UnitEnum|array|string|int|float|bool|null
     {
         return array_key_exists($name, $this->overrides) ? $this->overrides[$name] : $this->real->get($name);
@@ -28,11 +34,17 @@ class ForcedParameterBag implements ParameterBagInterface
         $this->real->clear();
     }
 
+    /**
+     * @param array<string, array<mixed>|bool|string|int|float|\UnitEnum|null> $parameters
+     */
     public function add(array $parameters): void
     {
         $this->real->add($parameters);
     }
 
+    /**
+     * @return array<string, array<mixed>|bool|string|int|float|\UnitEnum|null>
+     */
     public function all(): array
     {
         return $this->real->all();
@@ -43,7 +55,10 @@ class ForcedParameterBag implements ParameterBagInterface
         $this->real->remove($name);
     }
 
-    public function set(string $name, $value): void
+    /**
+     * @param array<mixed>|bool|string|int|float|\UnitEnum|null $value
+     */
+    public function set(string $name, array|bool|string|int|float|\UnitEnum|null $value): void
     {
         $this->real->set($name, $value);
     }

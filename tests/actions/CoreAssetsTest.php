@@ -42,7 +42,7 @@ class CoreAssetsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testYwCoreCssIsLoadedWithoutBootstrap(YesWikiRuntime $wiki)
+    public function testYwCoreCssIsLoadedWithoutBootstrap(YesWikiRuntime $wiki): void
     {
         $output = $this->coreAssets($wiki);
         $this->assertStringContainsString('styles/yw-core.css', $output);
@@ -50,7 +50,7 @@ class CoreAssetsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testHtmxAndYwCoreJsAreLoadedGlobally(YesWikiRuntime $wiki)
+    public function testHtmxAndYwCoreJsAreLoadedGlobally(YesWikiRuntime $wiki): void
     {
         $output = $this->coreAssets($wiki);
         $this->assertStringContainsString('javascripts/vendor/htmx/htmx.min.js', $output);

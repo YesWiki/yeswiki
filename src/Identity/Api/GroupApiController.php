@@ -16,7 +16,7 @@ use YesWiki\Kernel\Exception\ExitException;
 class GroupApiController extends YesWikiController
 {
     #[Route('/api/groups/{group_name}/delete', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function deleteGroup(string $group_name)
+    public function deleteGroup(string $group_name): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $groupOperationsService = $this->getService(GroupOperationsService::class);
@@ -44,7 +44,7 @@ class GroupApiController extends YesWikiController
     }
 
     #[Route('/api/groups', methods: ['POST'], options: ['acl' => ['public']])]
-    public function createGroup()
+    public function createGroup(): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $groupOperationsService = $this->getService(GroupOperationsService::class);
@@ -102,7 +102,7 @@ class GroupApiController extends YesWikiController
     }
 
     #[Route('/api/groups/{group_name}/update', methods: ['POST'], options: ['acl' => ['public']])]
-    public function updateGroup(string $group_name)
+    public function updateGroup(string $group_name): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $groupOperationsService = $this->getService(GroupOperationsService::class);
@@ -145,7 +145,7 @@ class GroupApiController extends YesWikiController
     }
 
     #[Route('/api/groups', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllGroups()
+    public function getAllGroups(): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $groupOperationsService = $this->getService(GroupOperationsService::class);
@@ -154,7 +154,7 @@ class GroupApiController extends YesWikiController
     }
 
     #[Route('/api/groups/{group_name}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getGroup(string $group_name)
+    public function getGroup(string $group_name): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $groupOperationsService = $this->getService(GroupOperationsService::class);

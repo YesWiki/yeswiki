@@ -301,12 +301,16 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             '/(\\{\\{template)(.*?)(\\}\\})/is',
             '',
             $plugin_output_new
-        );
+        ) ?? $plugin_output_new;
 
         $themeManager = $this->getService(ThemeManager::class);
 
-        if ((!isset($this->getService(RuntimeConfig::class)['hide_action_template']) or (isset($this->getService(RuntimeConfig::class)['hide_action_template']) && !$this->getService(RuntimeConfig::class)['hide_action_template']))
-            && ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner()))))
+        // SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME used to gate this on admin-or-owner; it is
+        // defined false in src/constants.php and nothing ever flips it, so the gate was
+        // write and read access all along -- said here instead of hidden behind a dead constant
+        if (empty($this->getService(RuntimeConfig::class)['hide_action_template'])
+            && $this->getService(AclService::class)->hasAccess('write')
+            && $this->getService(AclService::class)->hasAccess('read')
         ) {
             $selecteur = '
         <div id="graphical_options" class="yw-modal">' . "\n" .
@@ -333,7 +337,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="' . $themeManager->getFavoriteStyle() . '" />' . "\n";
             $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="' . $themeManager->getFavoriteBackgroundImage() . '" />' . "\n";
 
-            $plugin_output_new = preg_replace('/<\/body>/', $selecteur . "\n" . '</body>', $plugin_output_new);
+            $plugin_output_new = preg_replace('/<\/body>/', $selecteur . "\n" . '</body>', $plugin_output_new) ?? $plugin_output_new;
             $changetheme = true;
         } else {
             $changetheme = false;

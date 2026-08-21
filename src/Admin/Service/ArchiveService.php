@@ -197,12 +197,6 @@ class ArchiveService
             $fileSuffix = self::ARCHIVE_SUFFIX;
         }
 
-        if ($this->checkIfNeedStop($inputFile)) {
-            $this->unsetWikiStatus();
-            $this->writeOutput($output, 'STOP', true, $outputFile);
-
-            return '';
-        }
         // prepare location of zip file
 
         $archiveFileName = (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip";
@@ -328,6 +322,7 @@ class ArchiveService
     /**
      * check if a recent and valided backup is present.
      */
+    /** @param mixed $token the token the update flow was handed back, when it was handed one */
     public function hasValidatedBackup($token): bool
     {
         if (empty($token) || !is_string($token)) {
@@ -636,14 +631,10 @@ class ArchiveService
      */
     protected function restoreFilesFromZip(\ZipArchive $zip): void
     {
-        // `realpath(getcwd())` is `string|false`, and extracting a restore to `false` writes
-        // it somewhere nobody asked for. Checked rather than cast: this is the one place in the
-        // wiki that unpacks an archive over the live tree (ticket 40).
-        $cwd = getcwd();
-        $wikiRoot = $cwd === false ? false : realpath($cwd);
-        if ($wikiRoot === false) {
-            throw new \Exception('cannot resolve the wiki directory to restore into');
-        }
+        // The Instance. This is the one place in the wiki that unpacks an archive over the live
+        // tree, so where "the live tree" is has to be stated rather than inferred from a working
+        // directory (ticket 43); bootstrap_paths.php has already resolved it.
+        $wikiRoot = YESWIKI_INSTANCE_DIR;
         $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
         $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
@@ -786,6 +777,31 @@ class ArchiveService
     }
 
     /**
+     * Refuse to archive something that is not a wiki, asking each root for what it owns.
+     *
+     * All four files used to be looked for in the working directory, which is only right when
+     * the Program and the Instance are the same tree. `composer.json` and `composer.lock` live
+     * in the Program, so on a farm instance -- and on every binary -- this threw and backups
+     * were quietly impossible (ticket 43).
+     *
+     * @throws \Exception when either root is missing what it is supposed to hold
+     */
+    protected function assertArchivableFrom(string $instanceDir, string $programDir): void
+    {
+        if (!file_exists($instanceDir . '/index.php')) {
+            throw new \Exception("no index.php in \"$instanceDir\": that is not a wiki instance");
+        }
+        if (!file_exists(ConfigurationFileProvider::getConfigFileFromEnv())) {
+            throw new \Exception('the wiki has no configuration file: nothing to archive');
+        }
+        foreach (['composer.json', 'composer.lock'] as $manifest) {
+            if (!file_exists($programDir . '/' . $manifest)) {
+                throw new \Exception("no $manifest in \"$programDir\": that is not a yeswiki program tree");
+            }
+        }
+    }
+
+    /**
      * create the zip file.
      *
      * @param array<array-key, mixed>   $foldersToInclude
@@ -806,17 +822,11 @@ class ArchiveService
         string $inputFile = '',
         string $outputFile = ''
     ) {
-        if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
-            throw new \Exception('Can only be started from main directory');
-        }
-        // getcwd() is `string|false`, and preg_replace() returns null on failure. The archive
-        // root is the base every relative path in the zip is measured against, so it is checked
-        // rather than coerced (ticket 40).
-        $pathToArchive = getcwd();
-        if ($pathToArchive === false) {
-            throw new \Exception('cannot resolve the directory to archive');
-        }
-        $pathToArchive = (string)preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
+        $this->assertArchivableFrom(YESWIKI_INSTANCE_DIR, YESWIKI_PROGRAM_DIR);
+        // The Instance, not the working directory: this is the base every relative path in the
+        // zip is measured against, and an application server is started from wherever its unit
+        // file happened to be. bootstrap_paths.php has already resolved it.
+        $pathToArchive = YESWIKI_INSTANCE_DIR;
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
 
@@ -863,7 +873,7 @@ class ArchiveService
                 $dir = (string)preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", '$1', $dir);
                 $baseDirName = (string)preg_replace('/\\\\/', '/', substr($dir, $dirnamePathLen));
                 $baseDirName = (string)preg_replace("/^\//", '', $baseDirName);
-                if (empty($baseDirName) || (!empty($baseDirName) && $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders, $blacklistedRootFolders))) {
+                if (empty($baseDirName) || $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders, $blacklistedRootFolders)) {
                     if (!empty($baseDirName)) {
                         $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
                         $zip->addEmptyDir($baseDirName);
@@ -1082,20 +1092,15 @@ class ArchiveService
                     && preg_match('/^[A-Za-z]:.*$/', $localPath)
             )
         );
-        // Both realpath() calls are `string|false`, and the comparison below used to run on
-        // whatever came back. With $basePath false, `strlen(false)` is 0 and `'' == false` is
-        // TRUE under loose comparison -- so an unresolvable working directory reported the
-        // folder as local and went on to probe it over HTTP with a nonsense path (ticket 40).
-        $cwd = getcwd();
-        $basePath = $cwd === false ? false : realpath($cwd);
+        // The docroot is the Instance directory (ADR-0022), so a relative path is resolved
+        // against that rather than against a working directory nobody stated (ticket 43).
+        $basePath = YESWIKI_INSTANCE_DIR;
         $realLocalPath = $isAbsolutePath
             ? realpath($localPath)
-            : ($basePath === false
-                ? false
-                : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath)));
+            : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath));
 
         // a path that does not resolve is not inside the web root, so nothing serves it
-        if ($basePath === false || $realLocalPath === false) {
+        if ($realLocalPath === false) {
             return true;
         }
         if (!str_starts_with($realLocalPath, $basePath)) {
@@ -1197,7 +1202,7 @@ class ArchiveService
      *
      * @return mixed $values with every key $defaultValues names reset to its default
      */
-    private function setDefaultValuesRecursive(array $defaultValues, $values)
+    private function setDefaultValuesRecursive(array $defaultValues, mixed $values)
     {
         foreach ($defaultValues as $key => $value) {
             if (is_scalar($value)) {
@@ -1321,8 +1326,8 @@ class ArchiveService
         }
         $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
-        $cwd = getcwd();
-        $freeSpace = $cwd === false ? false : disk_free_space((string)realpath($cwd));
+        // the archive is written under the Instance, so that is the volume to measure
+        $freeSpace = disk_free_space(YESWIKI_INSTANCE_DIR);
         if ($freeSpace < $estimateZipSize) {
             throw new \Exception('Not enough free space for a new archive!');
         }
@@ -1387,38 +1392,36 @@ class ArchiveService
             // keep at least one file more than 1 day and other more than 2 days to prevent
             // full deletion if attack on api
             $indexesToRemove = range($maxNBFiles, count($archives) - 1);
-            if (!empty($indexesToRemove)) {
-                $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
-                $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
+            $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
+            $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
 
-                $notDeletedArchivesMoreThan2Days = array_diff($archivesIndexesMoreThan2days, $indexesToRemove);
-                if (!empty($archivesIndexesMoreThan2days) && empty($notDeletedArchivesMoreThan2Days)) {
-                    // we should kept the most recent 2 days old
-                    $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
-                    if (empty($indexesToRemove)) {
-                        $indexesToRemove = [min($archivesIndexesMoreThan2days) - 1];
-                    } else {
-                        array_unshift($indexesToRemove, min($indexesToRemove) - 1);
-                    }
+            $notDeletedArchivesMoreThan2Days = array_diff($archivesIndexesMoreThan2days, $indexesToRemove);
+            if (!empty($archivesIndexesMoreThan2days) && empty($notDeletedArchivesMoreThan2Days)) {
+                // we should kept the most recent 2 days old
+                $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
+                if (empty($indexesToRemove)) {
+                    $indexesToRemove = [min($archivesIndexesMoreThan2days) - 1];
+                } else {
+                    array_unshift($indexesToRemove, min($indexesToRemove) - 1);
                 }
-                $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
-                $notDeletedArchivesBetween1and2days = array_diff($archivesIndexesBetween1and2days, $indexesToRemove);
-                if (!empty($archivesIndexesBetween1and2days) && empty($notDeletedArchivesBetween1and2days)) {
-                    // we should kept the most recent 1 day old
-                    $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
-                    if (empty($indexesToRemove)) {
-                        $indexesToRemove = [min($archivesIndexesBetween1and2days) - 1];
-                    } else {
-                        array_unshift($indexesToRemove, min($indexesToRemove) - 1);
-                    }
-                }
-                $archivesToDelete = [];
-                foreach ($indexesToRemove as $index) {
-                    $archivesToDelete[] = $archives[$index]['filename'];
-                }
-
-                return $archivesToDelete;
             }
+            $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
+            $notDeletedArchivesBetween1and2days = array_diff($archivesIndexesBetween1and2days, $indexesToRemove);
+            if (!empty($archivesIndexesBetween1and2days) && empty($notDeletedArchivesBetween1and2days)) {
+                // we should kept the most recent 1 day old
+                $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
+                if (empty($indexesToRemove)) {
+                    $indexesToRemove = [min($archivesIndexesBetween1and2days) - 1];
+                } else {
+                    array_unshift($indexesToRemove, min($indexesToRemove) - 1);
+                }
+            }
+            $archivesToDelete = [];
+            foreach ($indexesToRemove as $index) {
+                $archivesToDelete[] = $archives[$index]['filename'];
+            }
+
+            return $archivesToDelete;
         }
 
         return [];
@@ -1467,7 +1470,8 @@ class ArchiveService
         return (empty($content) || !is_array($content)) ? [] : $content;
     }
 
-    private function setInfoToFile($content): void
+    /** @param array<string, mixed> $content */
+    private function setInfoToFile(array $content): void
     {
         $this->storage->write(self::PROGRESS_FOLDER . '/info.json', (string)json_encode($content));
     }

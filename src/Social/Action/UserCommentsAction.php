@@ -30,9 +30,12 @@ class UserCommentsAction extends YesWikiAction implements RegisteredAction, Prov
         ];
     }
 
-    protected $commentsService;
-    protected $userManager;
+    protected CommentService $commentsService;
+    protected UserManager $userManager;
 
+    /**
+     * @return string the logged-in user's comments, or an invitation to log in
+     */
     public function run()
     {
         $this->userManager = $this->getService(UserManager::class);

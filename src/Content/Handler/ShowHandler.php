@@ -105,7 +105,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
             $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
-            $replace = '<input type="hidden" name="body" value="' . htmlspecialchars(json_encode($entry), ENT_COMPAT, YW_CHARSET) . '" />';
+            $replace = '<input type="hidden" name="body" value="' . htmlspecialchars((string)json_encode($entry), ENT_COMPAT, YW_CHARSET) . '" />';
             if (isset($_GET['time'])) {
                 $replace = '<input type="hidden" name="time" value="' . htmlspecialchars($_GET['time'], ENT_COMPAT, YW_CHARSET) . '">' . "\n" . $replace;
             }
@@ -113,7 +113,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 '/\<input type=\"hidden\" name=\"body\" value=\".*\" \/\>/Uis',
                 $replace,
                 $plugin_output_new
-            );
+            ) ?? $plugin_output_new;
         }
 
         $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);

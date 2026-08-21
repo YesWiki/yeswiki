@@ -56,10 +56,11 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         ];
     }
 
+    /**
+     * @return string opening markup for the panel, or the unclosed-element error message
+     */
     public function run()
     {
-        ob_start();
-
         $title = $this->arguments['title'] ?? '';
 
         $class = $this->arguments['class'] ?? '';
@@ -67,55 +68,51 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $type = $this->arguments['type'] ?? '';
         $pagetag = $this->getService(PageContext::class)->getTag();
 
-        if ($this->check_end_elem('panel')) {
-            $headingID = uniqid('heading');
-            $collapseID = uniqid('collapse');
-
-            $collapsed = ($type == 'collapsed');
-            $collapsible = ($type == 'collapsible') || $collapsed;
-
-            $elements = $this->getService(GraphicalElementState::class);
-            $accordionID = $elements->currentAccordion($pagetag);
-            if ($accordionID !== '') {
-                $collapsible = true;
-                // the first panel of an accordion is the open one
-                $collapsed = $elements->accordionTakesAnotherPanel($pagetag);
-            }
-
-            $inAccordion = !empty($accordionID);
-
-            if ($collapsible && $inAccordion) {
-                $result = '<!-- start of panel -->'
-                    . '<details class="yw-accordion__item ' . $class . '"' . ($collapsed ? '' : ' open') . '>'
-                    . '<summary class="yw-accordion__summary">' . $title . '</summary>'
-                    . '<div class="yw-accordion__body">';
-            } elseif ($collapsible) {
-                $result = '<!-- start of panel -->'
-                    . '<div class="yw-panel ' . $class . '">'
-                    . '<details class="yw-accordion__item"' . ($collapsed ? '' : ' open') . '>'
-                    . '<summary class="yw-accordion__summary yw-panel__heading">'
-                    . '<h4 class="yw-panel__title">' . $title . '</h4>'
-                    . '</summary>'
-                    . '<div class="yw-accordion__body yw-panel__body">';
-            } else {
-                $result = '<!-- start of panel -->'
-                    . '<div class="yw-panel ' . $class . '">'
-                    . '<div class="yw-panel__heading"><h4 class="yw-panel__title">' . $title . '</h4></div>'
-                    . '<div class="yw-panel__body">';
-            }
-
-            $elements->openPanel($pagetag, $collapsible
-                ? ($inAccordion ? 'accordion-item' : 'collapsible-panel')
-                : 'panel');
-
-            echo $result;
-        } else {
-            echo $this->generate_error_msg('panel');
+        if (!$this->check_end_elem('panel')) {
+            return $this->generate_error_msg('panel');
         }
-        $panel = ob_get_contents();
-        ob_end_clean();
 
-        return $panel;
+        $headingID = uniqid('heading');
+        $collapseID = uniqid('collapse');
+
+        $collapsed = ($type == 'collapsed');
+        $collapsible = ($type == 'collapsible') || $collapsed;
+
+        $elements = $this->getService(GraphicalElementState::class);
+        $accordionID = $elements->currentAccordion($pagetag);
+        if ($accordionID !== '') {
+            $collapsible = true;
+            // the first panel of an accordion is the open one
+            $collapsed = $elements->accordionTakesAnotherPanel($pagetag);
+        }
+
+        $inAccordion = !empty($accordionID);
+
+        if ($collapsible && $inAccordion) {
+            $result = '<!-- start of panel -->'
+                . '<details class="yw-accordion__item ' . $class . '"' . ($collapsed ? '' : ' open') . '>'
+                . '<summary class="yw-accordion__summary">' . $title . '</summary>'
+                . '<div class="yw-accordion__body">';
+        } elseif ($collapsible) {
+            $result = '<!-- start of panel -->'
+                . '<div class="yw-panel ' . $class . '">'
+                . '<details class="yw-accordion__item"' . ($collapsed ? '' : ' open') . '>'
+                . '<summary class="yw-accordion__summary yw-panel__heading">'
+                . '<h4 class="yw-panel__title">' . $title . '</h4>'
+                . '</summary>'
+                . '<div class="yw-accordion__body yw-panel__body">';
+        } else {
+            $result = '<!-- start of panel -->'
+                . '<div class="yw-panel ' . $class . '">'
+                . '<div class="yw-panel__heading"><h4 class="yw-panel__title">' . $title . '</h4></div>'
+                . '<div class="yw-panel__body">';
+        }
+
+        $elements->openPanel($pagetag, $collapsible
+            ? ($inAccordion ? 'accordion-item' : 'collapsible-panel')
+            : 'panel');
+
+        return $result;
     }
 
     public function end(): string

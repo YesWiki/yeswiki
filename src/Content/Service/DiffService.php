@@ -11,9 +11,9 @@ use YesWiki\Render\Service\MarkdownFormatterService;
 
 class DiffService
 {
-    protected $entryController;
-    protected $entryManager;
-    protected $pageManager;
+    protected EntryController $entryController;
+    protected EntryManager $entryManager;
+    protected PageManager $pageManager;
     protected ContainerInterface $container;
 
     public function __construct(
@@ -28,14 +28,18 @@ class DiffService
         $this->entryController = $entryController;
     }
 
-    public function getPageDiff($pageA, $pageB, $compareRender = false)
+    /**
+     * @param array<string, mixed> $pageA
+     * @param array<string, mixed> $pageB
+     */
+    public function getPageDiff(array $pageA, array $pageB, bool $compareRender = false): string
     {
-        $tag = $pageA['tag'];
+        $tag = (string)($pageA['tag'] ?? '');
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
         if ($isEntry) {
             if ($compareRender) {
-                $textA = $pageA['time'] ? $this->entryController->view($tag, $pageA['time'], false) : '';
-                $textB = $pageB['time'] ? $this->entryController->view($tag, $pageB['time'], false) : '';
+                $textA = empty($pageA['time']) ? '' : $this->entryController->view($tag, (string)$pageA['time'], false);
+                $textB = empty($pageB['time']) ? '' : $this->entryController->view($tag, (string)$pageB['time'], false);
             } else {
                 $textA = $this->formatJsonCodeIntoHtmlTable($pageA);
                 $textB = $this->formatJsonCodeIntoHtmlTable($pageB);
@@ -45,8 +49,8 @@ class DiffService
                 $textA = $this->formatPageWithOnlySimpleActions($pageA);
                 $textB = $this->formatPageWithOnlySimpleActions($pageB);
             } else {
-                $textA = PageBody::content($pageA['body'] ?? []);
-                $textB = PageBody::content($pageB['body'] ?? []);
+                $textA = PageBody::content(self::body($pageA));
+                $textB = PageBody::content(self::body($pageB));
             }
         }
 
@@ -60,7 +64,10 @@ class DiffService
         return $firstHtmlDiff->build();
     }
 
-    private function formatPageWithOnlySimpleActions($page)
+    /**
+     * @param array<string, mixed> $page
+     */
+    private function formatPageWithOnlySimpleActions(array $page): string
     {
         $actionsToKeep = [
             'grid', 'section', 'col', 'button', 'configuration', 'end', 'label', 'nav', 'panel',
@@ -72,14 +79,18 @@ class DiffService
         }
         $regexpr .= ".*?\}\})/s";
 
-        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', PageBody::content($page['body'] ?? []));
+        $content = PageBody::content(self::body($page));
+        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $content) ?? $content;
 
         return $this->container->get(MarkdownFormatterService::class)->format($code);
     }
 
-    public function formatJsonCodeIntoHtmlTable($page)
+    /**
+     * @param array<string, mixed> $page
+     */
+    public function formatJsonCodeIntoHtmlTable(array $page): string
     {
-        $result = $page['body'] ?? [];
+        $result = self::body($page);
         ksort($result);
         $html = "<table class='entry-code'><tbody>";
         foreach ($result as $key => $value) {
@@ -88,5 +99,15 @@ class DiffService
         $html .= '</tbody></table>';
 
         return $html;
+    }
+
+    /**
+     * @param array<string, mixed> $page
+     *
+     * @return array<string, mixed>
+     */
+    private static function body(array $page): array
+    {
+        return is_array($page['body'] ?? null) ? $page['body'] : [];
     }
 }

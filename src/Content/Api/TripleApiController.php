@@ -24,7 +24,7 @@ class TripleApiController extends YesWikiController
     }
 
     #[Route('/api/triples', methods: ['GET'], options: ['acl' => ['+']])]
-    public function ByResource()
+    public function ByResource(): ApiResponse
     {
         ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
             = $this->extractTriplesParams(INPUT_GET, 'not empty');
@@ -48,7 +48,7 @@ class TripleApiController extends YesWikiController
     }
 
     #[Route('/api/triples/{resource}', methods: ['GET'], options: ['acl' => ['+']])]
-    public function getTriplesByResource($resource)
+    public function getTriplesByResource(string $resource): ApiResponse
     {
         ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
             = $this->extractTriplesParams(INPUT_GET, $resource);
@@ -72,7 +72,7 @@ class TripleApiController extends YesWikiController
     }
 
     #[Route('/api/triples/{resource}', methods: ['POST'], options: ['acl' => ['+']])]
-    public function setTriple($resource)
+    public function setTriple(string $resource): ApiResponse
     {
         ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
             = $this->extractTriplesParams(INPUT_POST, $resource);
@@ -119,7 +119,7 @@ class TripleApiController extends YesWikiController
     }
 
     #[Route('/api/triples/{resource}/delete', methods: ['POST'], options: ['acl' => ['+']])]
-    public function deleteTriples($resource)
+    public function deleteTriples(string $resource): ApiResponse
     {
         ['property' => $property, 'username' => $username, 'apiResponse' => $apiResponse]
             = $this->extractTriplesParams(INPUT_POST, $resource);
@@ -209,7 +209,7 @@ class TripleApiController extends YesWikiController
      *
      * @return array{property: string|null, username: string|null, apiResponse: ApiResponse|null}
      */
-    private function extractTriplesParams(int $method, $resource): array
+    private function extractTriplesParams(int $method, string $resource): array
     {
         $property = null;
         $username = null;

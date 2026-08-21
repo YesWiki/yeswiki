@@ -4,7 +4,7 @@ use YesWiki\Core\YesWikiHandler;
 
 class HelloHandler extends YesWikiHandler
 {
-    public function run()
+    public function run(): string
     {
         $this->denyAccessUnlessGranted('read');
 

@@ -14,12 +14,12 @@ class SyndicationFunctionsTest extends YesWikiTestCase
         self::getWiki();
     }
 
-    public function testTruncateLeavesShortTextUntouched()
+    public function testTruncateLeavesShortTextUntouched(): void
     {
         $this->assertSame('short text', StringUtilService::truncate('short text', 100));
     }
 
-    public function testTruncateCutsLongTextAndAppendsEllipsis()
+    public function testTruncateCutsLongTextAndAppendsEllipsis(): void
     {
         $result = StringUtilService::truncate(str_repeat('word ', 50), 20);
 
@@ -46,7 +46,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
         $this->assertSame('Second', $result[0]['bf_titre']);
     }
 
-    public function testSyndicationActionFormatArgumentsParsesMapping()
+    public function testSyndicationActionFormatArgumentsParsesMapping(): void
     {
         $wiki = $this->getWiki();
         $action = new \YesWiki\Content\Action\SyndicationAction();

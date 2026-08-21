@@ -23,7 +23,7 @@ class ConfigurationService
     public function write(ConfigurationFile $config, ?string $file = null, string $arrayName = 'yeswikiConfig')
     {
         if (is_null($file)) {
-            $file = $config->_file;
+            $file = $this->filePathOf($config);
         }
         $content = $this->getContentToWrite($config, $arrayName);
 
@@ -43,14 +43,30 @@ class ConfigurationService
     {
         $content = "<?php\n\n\$$arrayName = ";
 
-        $content .= $this->customVarExport($config->_parameters, true);
+        // `_parameters` is protected on the entity and reachable only through its __get().
+        $content .= $this->customVarExport($config->__get('_parameters'), true);
         $content .= ";\n";
 
         return $content;
     }
 
-    /** PHP var_export() with short array syntax (square brackets) indented 2 spaces. */
-    protected function customVarExport($expression, bool $return = false): ?string
+    /**
+     * The path a ConfigurationFile was loaded from.
+     *
+     * `_file` is private to the entity and reachable only through its __get(), which is typed
+     * `mixed` -- this narrows it back to the string it always holds.
+     */
+    private function filePathOf(ConfigurationFile $config): string
+    {
+        $path = $config->__get('_file');
+
+        return is_string($path) ? $path : '';
+    }
+
+    /**
+     * PHP var_export() with short array syntax (square brackets) indented 2 spaces.
+     */
+    protected function customVarExport(mixed $expression, bool $return = false): ?string
     {
         $expression = $this->sanitizeToScalar($expression);
         $export = var_export($expression, true);
@@ -69,8 +85,12 @@ class ConfigurationService
         return null;
     }
 
-    /** sanitize $value to keep only arrays, string, bool, null, int, float. */
-    private function sanitizeToScalar($value)
+    /**
+     * sanitize $value to keep only arrays, string, bool, null, int, float.
+     *
+     * @return array<array-key, mixed>|string|bool|int|float|null
+     */
+    private function sanitizeToScalar(mixed $value)
     {
         if (is_array($value)) {
             return array_map(function ($subValue) {

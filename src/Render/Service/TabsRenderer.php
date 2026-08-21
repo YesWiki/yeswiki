@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiController;
 
 class TabsRenderer extends YesWikiController
 {
-    protected $tabsService;
+    protected TabsService $tabsService;
 
     public function __construct(
         TabsService $tabsService
@@ -36,7 +36,7 @@ class TabsRenderer extends YesWikiController
     /**
      * open tabs.
      *
-     * @param array|TabsField $data
+     * @param array<string, mixed>|TabsField $data
      *
      * @return string $output
      */
@@ -131,6 +131,9 @@ class TabsRenderer extends YesWikiController
         return $this->render('@core/tab-close.twig', $params);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getParams(string $mode, bool $increment = true): array
     {
         return ($mode === 'form')

@@ -12,6 +12,13 @@ parameters:
     # "always false" error.
     dynamicConstantNames:
         - YW_CHARSET
+        # The Program and the Instance are the same directory in a standalone install and
+        # different ones on a farm or under the binary (ticket 43, ADR-0023). The analyser has to
+        # define them as something, and whatever it picks makes every
+        # `YESWIKI_PROGRAM_DIR !== YESWIKI_INSTANCE_DIR` in the codebase fold to a constant --
+        # which is exactly the farm branch that has to keep being analysed.
+        - YESWIKI_PROGRAM_DIR
+        - YESWIKI_INSTANCE_DIR
 
     # php-imap is a *suggested* dependency (composer.json): it needs ext-imap, which PHP has
     # been moving out of core, so a wiki that imports no mailbox installs neither. ImapImporter
@@ -61,8 +68,13 @@ parameters:
         # which is the opposite of the usual case and the reason this is not a burn-down item.
         # It follows that whether this fires depends on the build the analyser runs against, so
         # it must not be reported as unmatched on the builds where the stub and reality agree.
+        #
+        # The pattern stops at `Cal`, one letter short of `Callback`, because PHPStan truncates
+        # a literal in a message at 20 characters: `registerCancelCallb...` matched the longer
+        # pattern and `registerProgressCal...` did not, so for a while this covered one of the
+        # two guards and the other sat in the baseline.
         -
-            message: '#method_exists\(\) with ZipArchive and .register(Cancel|Progress)Call#'
+            message: '#method_exists\(\) with ZipArchive and .register(Cancel|Progress)Cal#'
             path: ../src/Admin/Service/ArchiveService.php
             reportUnmatched: false
 

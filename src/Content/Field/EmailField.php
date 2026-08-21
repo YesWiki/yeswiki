@@ -11,14 +11,20 @@ class EmailField extends BazarField
 {
     use ContributesNoSearchableText;
 
+    /** @var string */
     protected $seeEmailAcls;
+    /** @var bool */
     protected $sendMail;
+    /** @var bool */
     protected $showContactForm;
 
     protected const FIELD_SHOW_CONTACT_FORM = 6;
     protected const FIELD_SEE_MAIL_ACLS = 4;
     protected const FIELD_SEND_EMAIL = 9;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -92,7 +98,7 @@ class EmailField extends BazarField
         return $canBeRead;
     }
 
-    public function getShowContactForm()
+    public function getShowContactForm(): bool
     {
         return $this->showContactForm;
     }

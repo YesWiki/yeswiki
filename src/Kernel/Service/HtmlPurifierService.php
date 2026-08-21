@@ -10,16 +10,14 @@ class HtmlPurifierService
 {
     public const HTMLPURIFIER_CACHE_FOLDER = 'cache/HTMLpurifier';
 
-    protected $params;
-    protected $sanitizer;
-    private $purifier;
-    private $antixss;
+    protected ParameterBagInterface $params;
+    protected ?Sanitizer $sanitizer;
+    private ?\HTMLPurifier $purifier;
 
     public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
         $this->purifier = null;
-        $this->antixss = null;
         $this->sanitizer = null;
     }
 
@@ -66,7 +64,7 @@ class HtmlPurifierService
     /**
      * @param string $content of svg
      *
-     * @return string $content
+     * @return string|false the sanitized SVG, or false when the SVG could not be parsed
      */
     public function sanitizeSVG(string $content)
     {
@@ -85,19 +83,25 @@ class HtmlPurifierService
      */
     public function cleanFile(string $filename, string $extension)
     {
-        if (file_exists($filename)) {
-            if (in_array($extension, ['svg', 'html', 'htm'])) {
-                $content = file_get_contents($filename);
-                if ($extension === 'svg') {
-                    return file_put_contents($filename, $this->sanitizeSVG($content));
-                } elseif ($extension === 'html' || $extension === 'htm') {
-                    return file_put_contents($filename, $this->cleanHTML($content));
-                }
-            } else {
-                return true;
-            }
-        } else {
+        if (!file_exists($filename)) {
             return false;
         }
+        if (!in_array($extension, ['svg', 'html', 'htm'])) {
+            return true;
+        }
+        $content = file_get_contents($filename);
+        if ($content === false) {
+            return false;
+        }
+
+        $cleaned = $extension === 'svg' ? $this->sanitizeSVG($content) : $this->cleanHTML($content);
+        if ($cleaned === false) {
+            // svg-sanitize could not parse the document. Emptying the file would destroy the
+            // upload and writing it back unchanged would keep whatever script it carries, so
+            // the file is left alone and the caller told the clean failed.
+            return false;
+        }
+
+        return file_put_contents($filename, $cleaned);
     }
 }

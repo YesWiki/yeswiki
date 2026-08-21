@@ -3,7 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 /**
- * Publishes static assets (css/js/fonts/images...) from the YesWiki source tree into the instance's own cache/assets/{version}/ folder, so that an instance whose docroot only contains index.php + its data folders (yeswiki.config.php, files/, custom/, cache/, private/) needs no symlinks or webserver aliases to the shared YesWiki sources.
+ * Publishes static assets (css/js/fonts/images...) from the YesWiki Program tree into the instance's own cache/assets/{version}/ folder, so that an instance whose docroot only contains index.php + its data folders (yeswiki.config.php, files/, custom/, cache/, private/) needs no symlinks or webserver aliases to the shared YesWiki sources.
  */
 class AssetPublisher
 {
@@ -43,9 +43,9 @@ class AssetPublisher
     ];
 
     /** Root of the shared YesWiki sources. */
-    public static function sourceDir(): string
+    public static function programDir(): string
     {
-        return defined('YESWIKI_SOURCE_DIR') ? constant('YESWIKI_SOURCE_DIR') : \dirname(__DIR__, 3);
+        return defined('YESWIKI_PROGRAM_DIR') ? constant('YESWIKI_PROGRAM_DIR') : \dirname(__DIR__, 3);
     }
 
     /** Called from index.php before anything else boots. */
@@ -55,7 +55,9 @@ class AssetPublisher
             return;
         }
 
-        $uriPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '');
+        // parse_url() returns false, not null, on a malformed request URI
+        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+        $uriPath = rawurldecode(is_string($requestPath) ? $requestPath : '');
 
         if (preg_match('~^(.+)/index\.php$~', $_SERVER['SCRIPT_NAME'] ?? '', $m)
             && str_starts_with($uriPath, $m[1] . '/')) {
@@ -253,11 +255,11 @@ class AssetPublisher
     }
 
     /**
-     * Locate $relPath in the source tree, or in the instance dir as fallback (per-instance custom/ assets).
+     * Locate $relPath in the Program tree, or in the Instance dir as fallback (per-instance custom/ assets).
      */
     private static function resolveSourceFile(string $relPath): ?string
     {
-        $roots = [self::sourceDir()];
+        $roots = [self::programDir()];
         $instanceDir = getcwd();
         if ($instanceDir !== false && $instanceDir !== $roots[0]) {
             $roots[] = $instanceDir;

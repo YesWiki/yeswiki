@@ -11,7 +11,7 @@ use YesWiki\Search\Service\TagsManager;
 class TagApiController extends YesWikiController
 {
     #[Route('/api/tags', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getTags(Request $request)
+    public function getTags(Request $request): ApiResponse
     {
         $perpage = max(1, min((int)$request->query->get('perpage', 20), 100));
         $page = max(1, (int)$request->query->get('page', 1));

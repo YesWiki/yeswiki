@@ -14,6 +14,7 @@ class QrscannerAction extends YesWikiAction implements RegisteredAction
         return 'qrscanner';
     }
 
+    /** @return string */
     public function run()
     {
         $speak = $this->getService(PerformableArguments::class)->get('speak');

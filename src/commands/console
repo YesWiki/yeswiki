@@ -11,10 +11,10 @@ use YesWiki\Kernel\Service\EnvironmentConfiguration;
 
 // boot paths, autoloaders and private/.env before touching the config file, so a
 // WAKKA_CONFIG_FILE set in the instance environment is honored by the pre-read below
-// (this script lives in the source tree: <source>/src/commands/console)
+// (this script lives in the Program tree: <program>/src/commands/console)
 require_once dirname(__DIR__) . '/bootstrap_paths.php';
 require_once dirname(__DIR__) . '/autoload.inc.php';
-require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
+require_once YESWIKI_PROGRAM_DIR . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/YesWikiLoader.php';
 YesWikiLoader::loadEnv();
 
@@ -24,7 +24,7 @@ YesWikiLoader::loadEnv();
  * **In a wiki** -- a folder with a `yeswiki.config.php` -- everything is available: the
  * config is read, the wiki is booted, and every command gets its container.
  *
- * **In a bare source tree**, there is no config because the folder is nobody's wiki. That
+ * **In a bare Program tree**, there is no config because the folder is nobody's wiki. That
  * is the normal state of a YesWiki shared by every instance on a server, and this used to
  * be a hard stop ("Configuration file not found ... should be launched from your YesWiki
  * root directory") -- refusing to run in the one place where the only thing you want to do
@@ -76,10 +76,10 @@ $application = new Application(
 // simply stopped existing, with "Command core:archive is not defined" as the only symptom.
 // Keep each glob and its namespace in step; same trap as FieldFactory's field scan.
 foreach ([
-    'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
-    'module' => YESWIKI_SOURCE_DIR . '/src/*/Command/*.php',
+    'core' => YESWIKI_PROGRAM_DIR . '/src/commands/*.php',
+    'module' => YESWIKI_PROGRAM_DIR . '/src/*/Command/*.php',
     'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
-    'extensions' => YESWIKI_SOURCE_DIR . '/extensions/*/commands/*.php',
+    'extensions' => YESWIKI_PROGRAM_DIR . '/extensions/*/commands/*.php',
     'custom-extensions' => YESWIKI_INSTANCE_DIR . '/custom/extensions/*/commands/*.php',
 ] as $type => $search) {
     $files = glob($search);
@@ -127,17 +127,17 @@ $asked = isset($_SERVER['argv'][1]) && !str_starts_with((string)$_SERVER['argv']
     ? (string)$_SERVER['argv'][1]
     : '';
 if (!$insideAnInstance && ($asked === '' || $asked === 'list' || $asked === 'help')) {
-    // Two folders have no config, and they are not the same problem: the shared source,
+    // Two folders have no config, and they are not the same problem: the shared Program,
     // where the answer is "make a wiki", and a wiki folder nobody has installed yet, where
     // the answer is "install it".
-    $inTheSourceTree = realpath(YESWIKI_INSTANCE_DIR) === realpath(YESWIKI_SOURCE_DIR);
+    $inTheProgramTree = realpath(YESWIKI_INSTANCE_DIR) === realpath(YESWIKI_PROGRAM_DIR);
     $halfWritten = file_exists($configFile) && !$configuredWiki;
     if ($halfWritten) {
         $reason = "\e[33mThere is a " . basename($configFile) . ' in ' . YESWIKI_INSTANCE_DIR
             . ", but it configures no wiki (no base_url).\e[0m\n"
             . "An install that never finished leaves one behind. Finish it in a browser, or remove the file.\n\n";
-    } elseif ($inTheSourceTree) {
-        $reason = "\e[33mNo yeswiki.config.php here: this is a YesWiki source tree, not a wiki.\e[0m\n"
+    } elseif ($inTheProgramTree) {
+        $reason = "\e[33mNo yeswiki.config.php here: this is a YesWiki program tree, not a wiki.\e[0m\n"
             . "Only the commands that need no wiki are listed. Run this from a wiki folder for the rest,\n"
             // `yeswicli`, not $argv[0]: that is this script deep in src/commands/, and the
             // wrapper is what a person types

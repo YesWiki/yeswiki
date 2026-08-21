@@ -12,7 +12,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 class ApiController extends YesWikiController
 {
     #[Route('/api/hello/{name}', options: ['acl' => ['public']])]
-    public function sayHello(Request $request, $name)
+    public function sayHello(Request $request, string $name): ApiResponse
     {
         $action = $request->get('action') ?? 'hello';
 
@@ -20,7 +20,7 @@ class ApiController extends YesWikiController
     }
 
     #[Route('/api/hello', options: ['acl' => ['public']])]
-    public function onlineDoc()
+    public function onlineDoc(): Response
     {
         $output = $this->getDocumentation();
         $output = $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->renderPage($output);

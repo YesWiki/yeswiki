@@ -63,9 +63,11 @@ class EnvironmentConfiguration
     /**
      * Apply the environment overrides on a configuration array.
      *
-     * @param array      $config     configuration to override
-     * @param array|null $fileValues private/.env content override, for tests
-     *                               (default: YesWikiLoader::envFileValues())
+     * @param array<string, mixed>       $config     configuration to override
+     * @param array<string, string>|null $fileValues private/.env content override, for tests
+     *                                               (default: YesWikiLoader::envFileValues())
+     *
+     * @return array<string, mixed>
      */
     public static function apply(array $config, ?array $fileValues = null): array
     {
@@ -73,9 +75,7 @@ class EnvironmentConfiguration
 
         $keysByUpperName = [];
         foreach (array_keys($config) as $key) {
-            if (is_string($key)) {
-                $keysByUpperName[strtoupper($key)] = $key;
-            }
+            $keysByUpperName[strtoupper($key)] = $key;
         }
 
         foreach ($fileValues as $name => $value) {
@@ -111,6 +111,9 @@ class EnvironmentConfiguration
         return $names;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private static function override(array &$config, string $key, string $value): void
     {
         if (isset($config[$key]) && is_array($config[$key])) {
@@ -119,8 +122,12 @@ class EnvironmentConfiguration
         $config[$key] = self::cast($value, $config[$key] ?? null);
     }
 
-    /** Env values are strings: give the override the type of the value it replaces. */
-    private static function cast(string $value, $currentValue)
+    /**
+     * Env values are strings: give the override the type of the value it replaces.
+     *
+     * @return string|int|float|bool
+     */
+    private static function cast(string $value, mixed $currentValue)
     {
         if (is_bool($currentValue)) {
             return filter_var($value, FILTER_VALIDATE_BOOLEAN);

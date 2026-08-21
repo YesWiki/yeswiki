@@ -12,9 +12,9 @@ use YesWiki\Kernel\Service\LanguageService;
 
 class ThemeSelectorRenderer extends YesWikiController
 {
-    protected $params;
-    protected $hibernationService;
-    protected $themeManager;
+    protected ParameterBagInterface $params;
+    protected HibernationService $hibernationService;
+    protected ThemeManager $themeManager;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -26,7 +26,11 @@ class ThemeSelectorRenderer extends YesWikiController
         $this->themeManager = $themeManager;
     }
 
-    /** render a template with theme-selector appending the right vars to params. */
+    /**
+     * render a template with theme-selector appending the right vars to params.
+     *
+     * @param array<string, mixed> $params
+     */
     public function renderWithThemeSelector(string $templateName, array $params): string
     {
         $templates = $this->themeManager->getTemplates();
@@ -36,7 +40,13 @@ class ThemeSelectorRenderer extends YesWikiController
         $favoritePreset = $this->themeManager->getFavoritePreset();
         $squelettes = $templates[$favoriteTheme]['squelette'];
         $styles = $templates[$favoriteTheme]['style'];
-        $presetsData = $this->themeManager->getPresetsData();
+        // getPresetsData() is declared nullable; the selector still has to render without presets
+        $presetsData = $this->themeManager->getPresetsData() ?? [
+            'themePresets' => [],
+            'selectedPresetName' => null,
+            'customCSSPresets' => [],
+            'selectedCustomPresetName' => null,
+        ];
         $presets = [];
         foreach ($presetsData['themePresets'] as $key => $content) {
             $presets[$key] = $key;
@@ -121,7 +131,11 @@ class ThemeSelectorRenderer extends YesWikiController
         ]);
     }
 
-    /** prepare backgrounds. */
+    /**
+     * prepare backgrounds.
+     *
+     * @return list<string> path of every background thumbnail on offer
+     */
     protected function prepareBackgrounds(): array
     {
         $backgrounds = [];

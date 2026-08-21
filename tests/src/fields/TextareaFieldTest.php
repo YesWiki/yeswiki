@@ -39,6 +39,9 @@ class TextareaFieldTest extends YesWikiTestCase
         return new TextareaField($values, $wiki->services);
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function renderInput(TextareaField $field, array $entry): string
     {
         $reflection = new \ReflectionMethod($field, 'renderInput');
@@ -46,7 +49,7 @@ class TextareaFieldTest extends YesWikiTestCase
         return $reflection->invoke($field, $entry);
     }
 
-    public function testHtmlSyntaxRendersVditorMarkerAndAssetsNotSummernote()
+    public function testHtmlSyntaxRendersVditorMarkerAndAssetsNotSummernote(): void
     {
         LanguageService::getInstance()->serveIn('fr');
 
@@ -58,7 +61,7 @@ class TextareaFieldTest extends YesWikiTestCase
         $this->assertStringNotContainsString('summernote', $output);
     }
 
-    public function testPlainSyntaxDoesNotLoadVditor()
+    public function testPlainSyntaxDoesNotLoadVditor(): void
     {
         $field = $this->buildTextareaField('nohtml');
         $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
@@ -67,7 +70,7 @@ class TextareaFieldTest extends YesWikiTestCase
         $this->assertStringNotContainsString('data-vditor-lang', $output);
     }
 
-    public function testUnsupportedLanguageFallsBackToEnglishVditorLocale()
+    public function testUnsupportedLanguageFallsBackToEnglishVditorLocale(): void
     {
         LanguageService::getInstance()->serveIn('eu');
 

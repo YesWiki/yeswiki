@@ -33,7 +33,7 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction, 
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [

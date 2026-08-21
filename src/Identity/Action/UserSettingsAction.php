@@ -480,7 +480,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     $_POST['submit'] = InputFilter::EDIT_PAGE_SUBMIT_VALUE;
                     list($state, $error) = $this->captchaController->checkCaptchaBeforeSave();
                     if (!$state) {
-                        $this->error = $error;
+                        $this->error = $error ?? '';
                     } else {
                         $user = $this->userOperationsService->create([
                             'changescount' => 100,

@@ -68,7 +68,6 @@ class AuthenticationService extends YesWikiController
         $this->initLimitationHelper(
             'user_password_min_length',
             'passwordMinimumLength',
-            FILTER_VALIDATE_INT,
             self::DEFAULT_PASSWORD_MINIMUM_LENGTH,
             'USER_PASSWORD_MIN_LENGTH_NOT_INT'
         );
@@ -327,7 +326,15 @@ class AuthenticationService extends YesWikiController
 
     private function updateSessionCookieExpires(int $expires): void
     {
-        $this->setPersistentCookie(session_name(), session_id(), $expires);
+        $sessionName = session_name();
+        $sessionId = session_id();
+        if ($sessionName === false || $sessionId === false) {
+            // no session is active, so there is no session cookie to re-date. Sending one
+            // anyway would set a cookie named '' on the visitor.
+            return;
+        }
+
+        $this->setPersistentCookie($sessionName, $sessionId, $expires);
     }
 
     public function setPersistentCookie(string $name, string $value, int $expires): void
@@ -427,7 +434,7 @@ class AuthenticationService extends YesWikiController
 
         $lastConnectionDate = \DateTime::createFromFormat('U', (string)$lastConnection);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
+        if ($lastConnectionDate === false) {
             throw new BadUserConnectException('Last connection date badly formatted');
         }
 
@@ -462,7 +469,7 @@ class AuthenticationService extends YesWikiController
         $lastConnectionDateStr = substr($token, 0, self::DATE_LENGTH_IN_TOKEN);
         $lastConnectionDate = \DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
 
-        if ($lastConnectionDate === false || !($lastConnectionDate instanceof \DateTime)) {
+        if ($lastConnectionDate === false) {
             throw new BadUserConnectException('cookie \'token\' does not begin by a date');
         }
 

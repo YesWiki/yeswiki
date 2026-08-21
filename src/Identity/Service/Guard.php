@@ -202,6 +202,8 @@ class Guard
      * @param array<string, mixed>|null $page
      * @param array<string, mixed>|null $entry
      * @param string                    $fieldName
+     *
+     * @return mixed the raw field value, or '' when it is hidden from this visitor
      */
     public function isFieldDataAuthorizedForFieldMapping(?array $page, ?array $entry, $fieldName)
     {

@@ -25,6 +25,9 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
         return 'editiframe';
     }
 
+    /**
+     * @return string a full HTML document for the edit iframe
+     */
     public function run()
     {
         $output = '';

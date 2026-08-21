@@ -37,10 +37,13 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         ];
     }
 
-    protected $hibernationService;
-    protected $themeSelectorRenderer;
-    protected $themeManager;
+    protected HibernationService $hibernationService;
+    protected ThemeSelectorRenderer $themeSelectorRenderer;
+    protected ThemeManager $themeManager;
 
+    /**
+     * @return string the default-theme screen, or the message that stands in for it
+     */
     public function run()
     {
         if (!$this->getService(AclService::class)->isAdmin()) {
@@ -71,17 +74,18 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
             $params = $this->checkParamActionSetTemplate($themes);
 
             if (!is_null($params)) {
-                $config->favorite_theme = $params['theme'];
-                $config->favorite_squelette = $params['squelette'];
-                $config->favorite_style = $params['style'];
-                if (!empty($config->favorite_preset) && empty($params['preset'])) {
-                    unset($config->favorite_preset);
+                // through ArrayAccess, the interface ConfigurationFile actually declares
+                $config['favorite_theme'] = $params['theme'];
+                $config['favorite_squelette'] = $params['squelette'];
+                $config['favorite_style'] = $params['style'];
+                if (!empty($config['favorite_preset']) && empty($params['preset'])) {
+                    unset($config['favorite_preset']);
                 } elseif (!empty($params['preset'])) {
-                    $config->favorite_preset = $params['preset'];
+                    $config['favorite_preset'] = $params['preset'];
                 }
-                unset($config->hide_action_template);
+                unset($config['hide_action_template']);
                 if ($params['forceTheme']) {
-                    $config->hide_action_template = '1';
+                    $config['hide_action_template'] = '1';
                 }
                 $config->write();
                 $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
@@ -89,17 +93,17 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         }
 
         $params = [
-            'forceTheme' => isset($config->hide_action_template) && $config->hide_action_template === '1',
+            'forceTheme' => isset($config['hide_action_template']) && $config['hide_action_template'] === '1',
         ];
 
-        if (isset($config->favorite_theme)) {
-            $params['favoriteTheme'] = $config->favorite_theme;
+        if (isset($config['favorite_theme'])) {
+            $params['favoriteTheme'] = $config['favorite_theme'];
         }
-        if (isset($config->favorite_squelette)) {
-            $params['favoriteSquelette'] = $config->favorite_squelette;
+        if (isset($config['favorite_squelette'])) {
+            $params['favoriteSquelette'] = $config['favorite_squelette'];
         }
-        if (isset($config->favorite_style)) {
-            $params['favoriteStyle'] = $config->favorite_style;
+        if (isset($config['favorite_style'])) {
+            $params['favoriteStyle'] = $config['favorite_style'];
         }
 
         return $this->themeSelectorRenderer->renderWithThemeSelector(
@@ -108,6 +112,9 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         );
     }
 
+    /**
+     * @return array<string, array<string, mixed>> the styles, squelettes and presets each theme offers
+     */
     protected function getTemplatesList(): array
     {
         $themes = [];
@@ -125,6 +132,11 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         return $themes;
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $availableThemes as returned by getTemplatesList()
+     *
+     * @return array<string, mixed>|null null when the posted theme is not one on offer
+     */
     protected function checkParamActionSetTemplate($availableThemes): ?array
     {
         $post = $this->getRequest()->request;
@@ -163,8 +175,8 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
         ];
     }
 
-    /** sanitize string from POST or return null. */
-    protected function sanitizePost(string $key): ?string
+    /** sanitize a string from POST, or the empty string when there is nothing usable. */
+    protected function sanitizePost(string $key): string
     {
         $raw = $this->getRequest()->request->get($key);
         if (empty($raw) || !is_string($raw)) {

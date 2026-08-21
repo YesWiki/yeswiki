@@ -23,12 +23,15 @@ class AclServiceTest extends YesWikiTestCase
 
     #[Depends('testACLServiceExisting')]
     #[DataProvider('checkAclProvider')]
-    public function testCheckAcl(string $acl, $expected, AclService $aclService)
+    public function testCheckAcl(string $acl, bool $expected, AclService $aclService): void
     {
         $this->assertSame($expected, $aclService->check($acl));
     }
 
-    public static function checkAclProvider()
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function checkAclProvider(): array
     {
         return [
             'public' => ['*', true],

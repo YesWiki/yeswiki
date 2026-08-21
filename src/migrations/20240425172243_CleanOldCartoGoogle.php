@@ -10,10 +10,10 @@ use YesWiki\Search\Service\SearchManager;
 
 class CleanOldCartoGoogle extends YesWikiMigration
 {
-    private $entryManager;
-    private $formManager;
-    private $pageManager;
-    private $hibernationService;
+    private EntryManager $entryManager;
+    private FormManager $formManager;
+    private PageManager $pageManager;
+    private HibernationService $hibernationService;
 
     public function run()
     {
@@ -30,6 +30,9 @@ class CleanOldCartoGoogle extends YesWikiMigration
         }
     }
 
+    /**
+     * @return array<string, array<string, mixed>> the matching entries, keyed by tag
+     */
     private function searchEntriesWithOnlyOldGeoloc(): array
     {
         $entries = $this->getService(SearchManager::class)->search([
@@ -41,16 +44,24 @@ class CleanOldCartoGoogle extends YesWikiMigration
         return empty($entries) ? [] : $entries;
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function extractOldCarto(array $entry): bool
     {
+        // ADR-0010 renamed `id_fiche` to `tag` and `id_typeannonce` to `form_id`, and
+        // EntryManager::decode() unsets the old spellings: reading only those made this
+        // migration return false for every entry on any wiki running current code
+        $tag = $entry['tag'] ?? $entry['id_fiche'] ?? '';
+        $formId = $entry['form_id'] ?? $entry['id_typeannonce'] ?? '';
         if (
-            empty($entry) || empty($entry['id_fiche']) || empty($entry['id_typeannonce'])
-            || strval($entry['id_typeannonce']) != strval(intval($entry['id_typeannonce']))
+            empty($tag) || empty($formId)
+            || strval($formId) != strval(intval($formId))
         ) {
             return false;
         }
 
-        $form = $this->formManager->getOne($entry['id_typeannonce']);
+        $form = $this->formManager->getOne($formId);
         if (empty($form['prepared'])) {
             return false;
         }
@@ -72,16 +83,20 @@ class CleanOldCartoGoogle extends YesWikiMigration
             }
         }
         if ($updated) {
-            $entry['date_maj_fiche'] = empty($entry['date_maj_fiche'])
+            $updatedAtKey = array_key_exists('updated_at', $entry) ? 'updated_at' : 'date_maj_fiche';
+            $entry[$updatedAtKey] = empty($entry[$updatedAtKey])
                 ? date('Y-m-d H:i:s', time())
-                : (new DateTime($entry['date_maj_fiche']))->add(new DateInterval('PT1S'))->format('Y-m-d H:i:s');
+                : (new DateTime((string)$entry[$updatedAtKey]))->add(new DateInterval('PT1S'))->format('Y-m-d H:i:s');
             $this->updateEntry($entry);
         }
 
         return $updated;
     }
 
-    private function updateEntry($data)
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function updateEntry(array $data): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
@@ -107,45 +122,61 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
         if (YW_CHARSET != 'UTF-8') {
             $data = array_map(function ($value) {
-                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+                // an entry holds numbers and nested arrays too, and only a string has an
+                // encoding to convert
+                return is_string($value) ? mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1') : $value;
             }, $data);
         }
 
-        $oldPage = $this->pageManager->getOne($data['id_fiche']);
+        $tag = (string)($data['tag'] ?? $data['id_fiche'] ?? '');
+        $updatedAt = (string)($data['updated_at'] ?? $data['date_maj_fiche'] ?? '');
+
+        $oldPage = $this->pageManager->getOne($tag);
         $owner = $oldPage['owner'] ?? '';
         $user = $oldPage['user'] ?? '';
 
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET latest = 'N' WHERE tag = '{$this->dbService->escape($data['id_fiche'])}'");
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET latest = 'N' WHERE tag = '{$this->dbService->escape($tag)}'");
 
         $userCol = $this->dbService->quoteIdentifier('user');
         $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} " .
             "(tag, time, owner, $userCol, latest, body) VALUES (" .
-            "'{$this->dbService->escape($data['id_fiche'])}', " .
-            "'{$this->dbService->escape($data['date_maj_fiche'])}', " .
+            "'{$this->dbService->escape($tag)}', " .
+            "'{$this->dbService->escape($updatedAt)}', " .
             "'{$this->dbService->escape($owner)}', " .
             "'{$this->dbService->escape($user)}', " .
             "'Y', " .
             "'" . $this->dbService->escape(json_encode($data)) . "')");
     }
 
-    private function getMapFieldValue($field, $entry)
+    /**
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed> the flat latitude/longitude keys recovered from the old
+     *                              `carte_google` value, empty when the field already has one
+     */
+    private function getMapFieldValue(MapField $field, array $entry): array
     {
         $value = $entry[$field->getPropertyName()] ?? $field->getDefault();
 
-        $vLatitudeField = is_callable([$field, 'getLatitudeField']) ? $field->getLatitudeField() : 'bf_latitude';
-        $vLongitudeField = is_callable([$field, 'getLongitudeField']) ? $field->getLongitudeField() : 'bf_longitude';
+        // the flat keys the pre-map carto wrote. This used to ask `is_callable([$field,
+        // 'getLatitudeField'])` first, and no field class in the codebase has ever had that
+        // method, so the fallback was the only answer the guard could give
+        $vLatitudeField = 'bf_latitude';
+        $vLongitudeField = 'bf_longitude';
 
         $returnValue = [];
         if (empty($value)) {
             if (!empty($entry['carte_google'])) {
-                $value = explode('|', $entry['carte_google']);
-                if (!empty($value[0]) && !empty($value[1])) {
+                $coordinates = explode('|', (string)$entry['carte_google']);
+                if (!empty($coordinates[0]) && !empty($coordinates[1])) {
                     $returnValue = [
-                        $vLatitudeField => $value[0],
-                        $vLongitudeField => $value[1],
+                        $vLatitudeField => $coordinates[0],
+                        $vLongitudeField => $coordinates[1],
                     ];
                 }
-            } elseif (!empty($entry[$field->getLatitudeField()]) && !empty($entry[$field->getLongitudeField()])) {
+            // called $field->getLatitudeField() unguarded, which is a fatal on a method
+            // that does not exist; the two lines below already read the same flat keys
+            } elseif (!empty($entry[$vLatitudeField]) && !empty($entry[$vLongitudeField])) {
                 $returnValue = [
                     $vLatitudeField => $entry[$vLatitudeField],
                     $vLongitudeField => $entry[$vLongitudeField],

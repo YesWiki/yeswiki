@@ -35,9 +35,9 @@ class FileManager
     public const STORAGE_DIR = 'private/files';
 
     protected ContainerInterface $container;
-    protected $tripleStore;
-    protected $pageManager;
-    protected $aclService;
+    protected TripleStore $tripleStore;
+    protected PageManager $pageManager;
+    protected AclService $aclService;
     protected Storage $storage;
 
     public function __construct(
@@ -132,19 +132,26 @@ class FileManager
         return $this->pageManager->isType($tag, PageType::FILE);
     }
 
+    /**
+     * @return list<string>
+     */
     public function getAllFileTags(): array
     {
         return $this->pageManager->tagsOfType(PageType::FILE);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getOne(string $tag): ?array
     {
         $page = $this->pageManager->getOne($tag, null, true, true);
         if (empty($page) || ($page['type'] ?? null) !== PageType::FILE) {
             return null;
         }
+        $body = is_array($page['body'] ?? null) ? $page['body'] : [];
 
-        return array_merge(['tag' => $tag], $page['body'] ?? []);
+        return array_merge(['tag' => $tag], $body);
     }
 
     public function getPhysicalPath(string $tag): ?string
@@ -205,6 +212,8 @@ class FileManager
 
     /**
      * Register an already-uploaded/moved physical file as a new file-entry, seeding its ACL from $ownerPageTag's current read ACL.
+     *
+     * @return array<string, mixed>
      */
     public function create(string $originalFilename, string $storedFilename, string $ownerPageTag, int $size, string $mimeType): array
     {

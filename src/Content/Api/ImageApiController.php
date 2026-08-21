@@ -23,10 +23,10 @@ class ImageApiController extends YesWikiController
 
     /** Generate/serve a resized cached copy of an image (ticket 17, relocated from tools/attach). */
     #[Route('/api/images/{filename}/cache/{width}/{height}/{mode}', methods: ['POST'], options: ['acl' => ['public']])]
-    public function getCacheUrlImageViaPost($filename, $width, $height, $mode)
+    public function getCacheUrlImageViaPost(string $filename, string $width, string $height, string $mode): ApiResponse
     {
         try {
-            $this->checkParamsGetCacheUrlImageViaPost($filename, $width, $height, $mode);
+            ['width' => $width, 'height' => $height] = $this->checkParamsGetCacheUrlImageViaPost($filename, $width, $height, $mode);
             $newToken = $this->checkTokenForGetCacheUrlImageViaPost($width, $height, $mode);
 
             if (!$this->getService(Storage::class)->exists("files/$filename")) {
@@ -75,20 +75,28 @@ class ImageApiController extends YesWikiController
         }
     }
 
-    private function checkParamsGetCacheUrlImageViaPost(string $filename, string &$width, string &$height, string $mode)
+    /**
+     * The width and height arrive from the URL as strings and every later step wants them as
+     * integers. They used to be converted in place through `&$width` / `&$height`, which asked
+     * a string-typed reference to hold an int; returning the converted pair says the same thing
+     * without lying about the parameter types.
+     *
+     * @return array{width: int, height: int}
+     */
+    private function checkParamsGetCacheUrlImageViaPost(string $filename, string $width, string $height, string $mode): array
     {
         if (strval($width) != strval(intval($width))) {
             throw new \Exception('width should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
-        $width = intval($width);
-        if (empty($width)) {
+        $intWidth = intval($width);
+        if (empty($intWidth)) {
             throw new \Exception('width should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (strval($height) != strval(intval($height))) {
             throw new \Exception('height should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
-        $height = intval($height);
-        if (empty($height)) {
+        $intHeight = intval($height);
+        if (empty($intHeight)) {
             throw new \Exception('height should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (!in_array($mode, ['fit', 'crop'], true)) {
@@ -97,6 +105,8 @@ class ImageApiController extends YesWikiController
         if (empty(trim($filename))) {
             throw new \Exception('filename should not be empty for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
+
+        return ['width' => $intWidth, 'height' => $intHeight];
     }
 
     /** use $_POST['csrftoken']. */
@@ -107,7 +117,7 @@ class ImageApiController extends YesWikiController
 
         $tokenId = str_replace(
             ['{width}', '{height}', '{mode}'],
-            [$width, $height, $mode],
+            [(string)$width, (string)$height, $mode],
             self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
 

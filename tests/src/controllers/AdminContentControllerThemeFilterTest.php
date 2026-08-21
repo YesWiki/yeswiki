@@ -31,7 +31,7 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
         return $method->invoke($controller, $db, '', 'all', '', '', '', $themeFilter);
     }
 
-    public function testThemeFilterMatchesPagesByTheirOwnMetadataColumn()
+    public function testThemeFilterMatchesPagesByTheirOwnMetadataColumn(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

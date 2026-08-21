@@ -35,12 +35,12 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
         ];
     }
 
-    protected $dbService;
-    protected $hibernationService;
-    protected $utils;
-    protected $groupOperationsService;
+    protected DbService $dbService;
+    protected HibernationService $hibernationService;
+    protected TemplateHelperService $utils;
+    protected GroupOperationsService $groupOperationsService;
 
-    public function run()
+    public function run(): string
     {
         if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
@@ -97,7 +97,9 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
     /**
      * manage change of rights based on $_POST.
      *
-     * @return array ['success'=>string, 'error'=>string]
+     * @param array<string, mixed> $post
+     *
+     * @return array{success: string, error: string}
      */
     protected function manageChangeRights(array $post): array
     {
@@ -151,6 +153,9 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
     /**
      * récupération des filtres.
      *
+     * @param array<string, mixed> $get
+     * @param array<string, mixed> $post
+     *
      * @return array{filter: string, search: string, searchParams: list<mixed>}
      */
     protected function getFilterAndSearch(array $get, array $post): array
@@ -190,6 +195,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
         return compact(['filter', 'search', 'searchParams']);
     }
 
+    /** @param mixed $list the submitted comment-rights list */
     protected function filterCommentRightsBeforeSave($list): string
     {
         if (empty($list) || !is_string($list)) {

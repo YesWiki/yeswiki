@@ -95,11 +95,11 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     /** The query parameter carrying "come back here once I have signed in". */
     public const RETURN_PARAM = 'return';
 
-    protected $authenticationService;
-    protected $pageManager;
-    protected $templateEngine;
-    protected $inputFilter;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected PageManager $pageManager;
+    protected TemplateEngine $templateEngine;
+    protected InputFilter $inputFilter;
+    protected UserManager $userManager;
 
     public function formatArguments($arg)
     {
@@ -164,7 +164,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         ];
     }
 
-    public function run()
+    public function run(): ?string
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->pageManager = $this->getService(PageManager::class);
@@ -298,7 +298,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         return $output;
     }
 
-    private function login()
+    private function login(): void
     {
         $incomingurl = $this->inputFilter->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, false, 'string');
         if (empty($incomingurl)) {
@@ -311,7 +311,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             $emailFallback = $post->get('email', '');
 
             if (!empty($post->get('name'))) {
-                $name = $post->get('name');
+                $name = strval($post->get('name'));
 
                 $user = $this->userManager->getOneByName($name);
 
@@ -321,7 +321,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             }
 
             if (empty($user) && !empty($emailFallback)) {
-                $email = $emailFallback;
+                $email = strval($emailFallback);
 
                 if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $user = $this->userManager->getOneByEmail($email);
@@ -358,7 +358,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $this->getService(Redirector::class)->redirect($destination);
     }
 
-    private function logout()
+    private function logout(): void
     {
         $this->authenticationService->logout();
         $this->getService(FlashMessageService::class)->setMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));

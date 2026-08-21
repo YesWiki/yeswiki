@@ -29,12 +29,16 @@ class AdminReactionsAction extends YesWikiAction implements RegisteredAction, Pr
         ];
     }
 
+    /**
+     * @return string the reactions table, or an invitation to log in as an admin
+     */
     public function run()
     {
         if ($this->getService(AclService::class)->isAdmin()) {
             $allReactions = $this->getService(ReactionManager::class)->getReactions();
-            foreach ($allReactions as $k => $reactions) {
-                usort($reactions['reactions'], function ($a, $b) {
+            foreach (array_keys($allReactions) as $k) {
+                // sort in place: sorting the `foreach` copy left the table in insertion order
+                usort($allReactions[$k]['reactions'], function ($a, $b) {
                     return strnatcasecmp($a['user'], $b['user']);
                 });
             }

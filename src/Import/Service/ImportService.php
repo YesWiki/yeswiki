@@ -13,7 +13,7 @@ class ImportService
     /**
      * extract baseUrl and rootPage for external url TODO check if this function should be in UrlService after refactor.
      *
-     * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
+     * @return array{}|array{string, string, bool} [$baseUrl,$rootPage,$rewriteModeEnabled], empty when the url names no wiki page
      */
     public function extractBaseUrlAndRootPage(string $inputUrl): array
     {
@@ -37,11 +37,9 @@ class ImportService
     /**
      * extract baseUrl, rewriteModeEnabled and tag TODO check if this function should be in UrlService after refactor.
      *
-     * @param string $inputUrl
-     *
-     * @return array [$baseUrl, $rewriteModeEnabled, $tag]
+     * @return array{}|array{string, bool, string} [$baseUrl, $rewriteModeEnabled, $tag], empty when the url names no wiki page
      */
-    private function extractBaseUrlModeAndTag($inputUrl): array
+    private function extractBaseUrlModeAndTag(string $inputUrl): array
     {
         $rewriteModeEnabled = null;
         if (preg_match('/wiki=(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
@@ -86,7 +84,9 @@ class ImportService
         try {
             $headers = $this->getHeaders($inputUrl);
         } catch (CurlTimeoutException $th) {
-            return $intputUrl ?? '';
+            // `$intputUrl` -- a typo for the parameter, so a timed-out HEAD returned the empty
+            // string and the import failed with "no wiki here" instead of trying the url as given
+            return $inputUrl;
         }
         $outputUrl = $inputUrl;
         $location = !empty($headers['Location'])
@@ -109,24 +109,33 @@ class ImportService
     }
 
     /**
-     * @param string $url
+     * The `@return string` this used to carry contradicted the native `array` right below it.
      *
-     * @return string
+     * @return array<int|string, string|list<string>> the response headers, a header seen more
+     *                                                than once holding every value it was sent with
      *
      * @throws \Exception
      * @throws CurlTimeoutException
      */
-    private function getHeaders($url): array
+    private function getHeaders(string $url): array
     {
         $destPath = tempnam('cache', 'tmp_to_delete_');
         $destPathHeaders = tempnam('cache', 'tmp_headers_to_delete_');
+        if ($destPath === false || $destPathHeaders === false) {
+            throw new \Exception("Error getting content from $url (no temporary file could be created in cache/)");
+        }
         $fp = fopen($destPath, 'wb');
         $fph = fopen($destPathHeaders, 'wb');
+        if ($fp === false || $fph === false) {
+            // curl reads a `false` handle as "write to stdout": the response body and its
+            // headers used to be printed into the page instead of captured
+            throw new \Exception("Error getting content from $url (temporary file could not be opened)");
+        }
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_WRITEHEADER, $fph);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
         curl_setopt($ch, CURLOPT_TIMEOUT, 6);
         curl_exec($ch);
@@ -134,8 +143,9 @@ class ImportService
         curl_close($ch);
         fclose($fp);
         fclose($fph);
+        $content = '';
         if (!$error && file_exists($destPathHeaders)) {
-            $content = file_get_contents($destPathHeaders);
+            $content = (string)file_get_contents($destPathHeaders);
         }
         unlink($destPath);
         unlink($destPathHeaders);
@@ -161,10 +171,8 @@ class ImportService
                         $output[$header],
                         $value,
                     ];
-                } elseif (is_array($output[$header])) {
-                    $output[$header][] = $value;
                 } else {
-                    $output[$header] = $value;
+                    $output[$header][] = $value;
                 }
             }
         }

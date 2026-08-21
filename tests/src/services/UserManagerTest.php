@@ -30,6 +30,9 @@ class UserManagerTest extends YesWikiTestCase
         return $wiki->services->get(UserManager::class);
     }
 
+    /**
+     * @return list<User>
+     */
     #[Depends('testUserManagerExisting')]
     public function testGetAll(UserManager $userManager): array
     {
@@ -39,31 +42,42 @@ class UserManagerTest extends YesWikiTestCase
         return $users;
     }
 
+    /**
+     * @param list<User> $users
+     */
     #[Depends('testUserManagerExisting')]
     #[Depends('testGetAll')]
-    public function testGetOneByName(UserManager $userManager, array $users)
+    public function testGetOneByName(UserManager $userManager, array $users): void
     {
         $firstUser = reset($users);
         $this->assertInstanceOf(User::class, $firstUser);
         $user = $userManager->getOneByName($firstUser['name']);
+        $this->assertInstanceOf(User::class, $user);
         $this->assertSame($user['name'], $firstUser['name']);
         $this->assertSame($user['password'], $firstUser['password']);
         $this->assertSame($user['email'], $firstUser['email']);
     }
 
+    /**
+     * @param list<User> $users
+     */
     #[Depends('testUserManagerExisting')]
     #[Depends('testGetAll')]
-    public function testGetOneByEmail(UserManager $userManager, array $users)
+    public function testGetOneByEmail(UserManager $userManager, array $users): void
     {
         $firstUser = reset($users);
         $this->assertInstanceOf(User::class, $firstUser);
         $user = $userManager->getOneByEmail($firstUser['email']);
+        $this->assertInstanceOf(User::class, $user);
         $this->assertSame($user['name'], $firstUser['name']);
         $this->assertSame($user['password'], $firstUser['password']);
         $this->assertSame($user['email'], $firstUser['email']);
     }
 
-    public static function dataProviderTestCreate()
+    /**
+     * @return array<string, array{string, string, bool, bool, bool}>
+     */
+    public static function dataProviderTestCreate(): array
     {
         return [
             'all right' => ['newRandom', 'newRandom', false, false, false],
@@ -86,7 +100,7 @@ class UserManagerTest extends YesWikiTestCase
         bool $emailExist,
         bool $otherException,
         UserManager $userManager
-    ) {
+    ): void {
         $users = $userManager->getAll();
         $firstUser = reset($users);
         $this->assertInstanceOf(User::class, $firstUser);
@@ -176,7 +190,7 @@ class UserManagerTest extends YesWikiTestCase
 
     #[Depends('testUserManagerExisting')]
     #[Depends('testCreate')]
-    public function testDelete(UserManager $userManager)
+    public function testDelete(UserManager $userManager): void
     {
         $user = $this->createRandomUser($userManager);
         $exceptionThrown = false;
@@ -188,11 +202,13 @@ class UserManagerTest extends YesWikiTestCase
         }
 
         $this->assertFalse($exceptionThrown);
-        $this->assertNotInstanceOf(User::class, $createdUser);
         $this->assertNull($createdUser);
     }
 
-    public static function dataProviderTestUpdate()
+    /**
+     * @return array<string, array{array<string, mixed>, string, bool, bool, bool}>
+     */
+    public static function dataProviderTestUpdate(): array
     {
         return [
             'motto update ok' => [[
@@ -236,6 +252,9 @@ class UserManagerTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $newValues
+     */
     #[Depends('testUserManagerExisting')]
     #[Depends('testCreate')]
     #[Depends('testDelete')]
@@ -247,7 +266,7 @@ class UserManagerTest extends YesWikiTestCase
         bool $emailExist,
         bool $otherException,
         UserManager $userManager
-    ) {
+    ): void {
         $users = $userManager->getAll();
         $firstUser = reset($users);
         $this->assertInstanceOf(User::class, $firstUser);

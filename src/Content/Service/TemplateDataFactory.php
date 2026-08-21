@@ -64,7 +64,7 @@ class TemplateDataFactory
 
     private function load(): void
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/annotations/PreparesTemplate.php';
+        require_once YESWIKI_PROGRAM_DIR . '/src/annotations/PreparesTemplate.php';
 
         $scanner = $this->container->get(ClassDirectoryScanner::class);
         foreach ($scanner->directories('TemplateData', 'templatedata') as $namespace => $dir) {

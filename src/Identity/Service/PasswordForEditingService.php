@@ -9,8 +9,8 @@ use YesWiki\Render\Service\TemplateEngine;
 
 class PasswordForEditingService
 {
-    protected $params;
-    protected $templateEngine;
+    protected ParameterBagInterface $params;
+    protected TemplateEngine $templateEngine;
     protected ContainerInterface $container;
 
     public function __construct(ContainerInterface $container, ParameterBagInterface $params, TemplateEngine $templateEngine)
@@ -23,7 +23,7 @@ class PasswordForEditingService
     /**
      * check if password for editing is required.
      *
-     * @return array [bool $state,string $output]
+     * @return array{bool, string} the verdict, and the form to render when it is false
      */
     public function isGrantedPasswordForEditing(): array
     {

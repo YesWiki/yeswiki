@@ -130,7 +130,8 @@ class Performer
         $className = $object['baseName'];
         /* extract extension name from path to allow namespace */
         if (preg_match('/(?:extensions[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
-            $extensionName = empty($matches[1]) ? $matches[2] : $matches[1];
+            // only the `(custom)` alternative leaves group 1 empty, and it is group 2
+            $extensionName = empty($matches[1]) ? ($matches[2] ?? 'custom') : $matches[1];
             $classNameWithNamespace = 'YesWiki\\' . StringUtilService::folderToNamespace($extensionName) . '\\' . $object['baseName'];
             if (class_exists($classNameWithNamespace)) {
                 $className = $classNameWithNamespace;
@@ -157,7 +158,7 @@ class Performer
      */
     public function run($objectName, $objectType, array $vars = [], bool $end_elem = false): string
     {
-        if (!Performer::TYPES[$objectType]) {
+        if (!isset(Performer::TYPES[$objectType])) {
             return "Invalid type $objectType";
         }
         $objectName = strtolower($objectName);
@@ -279,7 +280,7 @@ class Performer
      */
     public function list($objectType): array
     {
-        if (!Performer::TYPES[$objectType]) {
+        if (!isset(Performer::TYPES[$objectType])) {
             throw new PerformerException("Invalid type $objectType");
         }
 

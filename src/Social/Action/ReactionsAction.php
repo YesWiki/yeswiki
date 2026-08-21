@@ -64,6 +64,9 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
         ];
     }
 
+    /**
+     * @return string the reaction buttons, or an error message when `title` is missing
+     */
     public function run()
     {
         if (empty($this->arguments['title'])) {
@@ -101,7 +104,8 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
 
         return $this->render('@core/reactions.twig', [
             'reactionId' => $idreaction,
-            'title' => empty($this->arguments['title']) ? _t('REACTION_SHARE_YOUR_REACTION') : $this->arguments['title'],
+            // run() returns early when there is no title, so there is nothing to fall back to here
+            'title' => $this->arguments['title'],
             'connected' => !empty($username),
             'reactionItems' => $reactionItems,
             'userName' => $username,

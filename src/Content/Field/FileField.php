@@ -23,12 +23,15 @@ class FileField extends BazarField
 {
     use ContributesNoSearchableText;
 
+    /** @var string */
     protected $readLabel;
     protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
 
+    /** @var int the largest upload this field accepts, in bytes */
     protected $maxSize;
+    /** @var array<int, string> the extensions this field accepts, each with its leading dot */
     protected $authorizedExts;
 
     /** Check if a value is a URL. */
@@ -41,6 +44,9 @@ class FileField extends BazarField
         return filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -52,18 +58,18 @@ class FileField extends BazarField
             ? explode(',', trim($exts))
             : [];
         $exts = array_map('trim', $exts);
-        $this->authorizedExts = array_filter($exts, function ($ext) {
-            return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
+        $this->authorizedExts = array_filter($exts, function (string $ext): bool {
+            return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext) === 1;
         });
         $maxFieldSize = $values[self::FIELD_MAX_SIZE]
             ? FileManager::parseSize($values[self::FIELD_MAX_SIZE])
             : 0;
 
-        $this->maxSize = min(array_filter(
-            [
-                $maxFieldSize,
-                $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ],
-        ) ?: [0]);
+        $maxUploadSize = $this->getService(ParameterBagInterface::class)->get('max-upload-size');
+        $this->maxSize = min(array_filter([
+            $maxFieldSize,
+            is_int($maxUploadSize) ? $maxUploadSize : 0,
+        ]) ?: [0]);
     }
 
     protected function renderInput($entry)
@@ -183,7 +189,7 @@ class FileField extends BazarField
             return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => $value,
-                'shortFileName' => basename(parse_url($value, PHP_URL_PATH)) ?: $value,
+                'shortFileName' => $this->fileNameInUrl($value),
                 'isUrl' => true,
             ]);
         }
@@ -205,7 +211,19 @@ class FileField extends BazarField
         return '';
     }
 
-    /** check if user is allowed to delete file. */
+    /** The trailing path segment of a URL-valued file, falling back to the URL itself. */
+    private function fileNameInUrl(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+
+        return (is_string($path) ? basename($path) : '') ?: $url;
+    }
+
+    /**
+     * check if user is allowed to delete file.
+     *
+     * @param array<string, mixed> $entry
+     */
     protected function isAllowedToDeleteFile(array $entry, string $fileName): bool
     {
         return !$this->getService(HibernationService::class)->isWikiHibernated()
@@ -214,6 +232,8 @@ class FileField extends BazarField
 
     /**
      * define file prefix.
+     *
+     * @param array<string, mixed> $entry
      *
      * @return string $prefixFileName
      */
@@ -249,6 +269,9 @@ class FileField extends BazarField
         return $this->readLabel;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getAuthorizedExts(): array
     {
         return $this->authorizedExts;
@@ -314,8 +337,15 @@ class FileField extends BazarField
         return $this->getService(Storage::class);
     }
 
-    protected function updateEntryAfterFileDelete($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    protected function updateEntryAfterFileDelete($entry): void
     {
+        if (empty($entry['tag'])) {
+            return;
+        }
+
         $entryManager = $this->services->get(EntryManager::class);
 
         $entryFromDb = $entryManager->getOne($entry['tag']);

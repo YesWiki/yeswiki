@@ -17,24 +17,16 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
         return 'entryexport';
     }
 
-    private $CSVManager;
-    private $formManager;
-    private $bazarListService;
-
     public function formatArguments($arg)
     {
         $request = $this->getRequest();
         $get = $request->query;
         $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['id'] ?? $arg['id'] ?? '';
 
-        if (!$this->bazarListService) {
-            $this->bazarListService = $this->getService(BazarListService::class);
-        }
-
-        $vIDs = $this->bazarListService->getIDs($vIDs);
+        $vIDs = $this->getService(BazarListService::class)->getIDs($vIDs);
 
         return [
-            'id' => $vIDs ?? null,
+            'id' => $vIDs,
             'keywords' => $this->getService(SearchManager::class)->aggregateKeywords($get->get('q'), $get->get('keywords')),
             'query' => $get->get('query'),
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($get->all() + $request->request->all(), false, 'bazar-export-option-keys-instead-of-values'),
@@ -45,23 +37,20 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /** @return string */
     public function run()
     {
         if (!empty($aclMessage = $this->checkSecuredACL(false))) {
             return $aclMessage;
         }
 
-        $this->CSVManager = $this->getService(CSVManager::class);
-        $this->formManager = $this->getService(FormManager::class);
-        if (!$this->bazarListService) {
-            $this->bazarListService = $this->getService(BazarListService::class);
-        }
+        // these were three lazily-filled properties, which said "this state outlives the call"
+        // about three container lookups that do not
+        $csvManager = $this->getService(CSVManager::class);
 
-        $vForms = $this->formManager->getAll();
+        $vForms = $this->getService(FormManager::class)->getAll();
 
-        $csvraw = null;
-
-        $vTheID = $this->bazarListService->getTheID($this->arguments['id'], false);
+        $vTheID = $this->getService(BazarListService::class)->getTheID($this->arguments['id'], false);
 
         if ($vTheID) {
             $vID = $vTheID['id'];
@@ -71,7 +60,7 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
 
             $vSelectedForm = $vForms[$vID];
 
-            $csv_raw = $this->CSVManager->getCSVfromFormId(
+            $csv_raw = $csvManager->getCSVfromFormId(
                 $vID,
                 [
                     'query' => $this->arguments['query'],
@@ -83,7 +72,7 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
                 ]
             );
 
-            $vFilename = $this->CSVManager->buildExportFilename($vTheID);
+            $vFilename = $csvManager->buildExportFilename($vTheID);
         } else {
             $vSelectedForm = null;
         }
@@ -94,7 +83,7 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
             'params' => $this->arguments['params'],
             'filename' => $vFilename ?? null,
             'selectedForm' => $vSelectedForm,
-            'csv' => !empty($csv_raw) ? $this->CSVManager->arrayToCSVToDisplay($csv_raw) : null,
+            'csv' => !empty($csv_raw) ? $csvManager->arrayToCSVToDisplay($csv_raw) : null,
             'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0,
             'optionKeysInsteadOfValuesChecked' => $this->arguments['bazar-export-option-keys-instead-of-values'],
         ]);

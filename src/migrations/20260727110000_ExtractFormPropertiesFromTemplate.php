@@ -8,11 +8,19 @@ use YesWiki\Core\YesWikiMigration;
  */
 class ExtractFormPropertiesFromTemplate extends YesWikiMigration
 {
+    /**
+     * @param mixed $value the form-definition cell, whose type the old template never fixed
+     */
     private function truthy($value): bool
     {
         return in_array($value, [1, true, '1', 'true', 'yes'], true);
     }
 
+    /**
+     * @param array<string, mixed> $pairs
+     *
+     * @return array<string, mixed> $pairs without its null and blank values
+     */
     private function compactObject(array $pairs): array
     {
         return array_filter($pairs, function ($value) {

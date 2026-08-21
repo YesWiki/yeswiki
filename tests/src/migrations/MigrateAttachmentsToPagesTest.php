@@ -25,7 +25,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         require_once 'src/migrations/20260726000000_MigrateAttachmentsToPages.php';
     }
 
-    public function testRecoverOriginalFilenameFlatSafeMode()
+    public function testRecoverOriginalFilenameFlatSafeMode(): void
     {
         $this->assertSame(
             'my_document.txt',
@@ -36,7 +36,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         );
     }
 
-    public function testRecoverOriginalFilenameSubdirMode()
+    public function testRecoverOriginalFilenameSubdirMode(): void
     {
         $this->assertSame(
             'report.pdf',
@@ -47,13 +47,13 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         );
     }
 
-    public function testRecoverOriginalFilenameSkipsNonMatchingNames()
+    public function testRecoverOriginalFilenameSkipsNonMatchingNames(): void
     {
         $this->assertNull(\MigrateAttachmentsToPages::recoverOriginalFilename('yeswiki-logo.png', null));
         $this->assertNull(\MigrateAttachmentsToPages::recoverOriginalFilename('README.md', null));
     }
 
-    public function testMigrateFilesAndRewritePageBodies()
+    public function testMigrateFilesAndRewritePageBodies(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
@@ -87,6 +87,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
             $this->assertTrue($fileManager->isFileTag($newTag));
             $entry = $fileManager->getOne($newTag);
+            $this->assertNotNull($entry, 'the migrated file must be readable back as a file entry');
             $this->assertSame('my_report.txt', $entry['original_filename']);
             $this->assertSame(self::OWNER_PAGE_TAG, $entry['uploaded_from']);
             $this->assertFileDoesNotExist($physicalPath, 'the legacy physical file should have been moved, not copied');
@@ -113,7 +114,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         }
     }
 
-    public function testRewritePageBodiesDoesNotCollideAcrossPagesWithSameOriginalFilename()
+    public function testRewritePageBodiesDoesNotCollideAcrossPagesWithSameOriginalFilename(): void
     {
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);

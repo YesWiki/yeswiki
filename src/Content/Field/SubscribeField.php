@@ -9,8 +9,11 @@ use YesWiki\Kernel\Service\Mailer;
 #[\Field(['inscriptionliste'])]
 class SubscribeField extends BazarField
 {
+    /** @var string the list address subscriptions are sent to */
     protected $mailerEmail;
+    /** @var string the entry key holding the subscriber's address */
     protected $emailField;
+    /** @var string which list manager the address belongs to, self::MAILER_EZMLM or self::MAILER_SYMPA */
     protected $mailerTool;
 
     protected const FIELD_MAILER_EMAIL = 1;
@@ -20,6 +23,9 @@ class SubscribeField extends BazarField
     public const MAILER_EZMLM = 'ezmlm';
     public const MAILER_SYMPA = 'sympa';
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -76,7 +82,10 @@ class SubscribeField extends BazarField
         return '';
     }
 
-    protected function getSubscribeEmail($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    protected function getSubscribeEmail($entry): string
     {
         $subscribeEmail = str_replace('@', '-subscribe@', $this->mailerEmail);
 
@@ -87,7 +96,10 @@ class SubscribeField extends BazarField
         return $subscribeEmail;
     }
 
-    protected function getUnsubscribeEmail($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    protected function getUnsubscribeEmail($entry): string
     {
         $unsubscribeEmail = str_replace('@', '-unsubscribe@', $this->mailerEmail);
 

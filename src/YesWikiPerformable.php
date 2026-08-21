@@ -20,9 +20,11 @@ abstract class YesWikiPerformable
     use FormatsArguments;
 
     protected ContainerInterface $services;
-    protected $params;
-    protected $twig;
+    protected ParameterBagInterface $params;
+    protected TemplateEngine $twig;
+    /** @var array<string, mixed> */
     protected $arguments = [];
+    /** @var string */
     protected $output;
 
     /** Setter for the service container (historic setWiki()). */
@@ -43,7 +45,11 @@ abstract class YesWikiPerformable
         $this->twig = $twig;
     }
 
-    /** Setter for the arguments property. */
+    /**
+     * Setter for the arguments property.
+     *
+     * @param array<string, mixed> $arguments
+     */
     public function setArguments(array &$arguments): void
     {
         $this->arguments = &$arguments;
@@ -57,14 +63,20 @@ abstract class YesWikiPerformable
         $this->output = &$output;
     }
 
+    /**
+     * What this action or handler prints.
+     *
+     * @return string HTML
+     */
     abstract public function run();
 
     /**
      * Shortcut to render twig template.
      *
-     * @param string $templatePath path to twig template. you can use full path
-     *                             like tools/bazar/template/myfile.twig, or namespace like @bazar/myfile.twig
-     * @param array  $data         An array with data to pass to the template
+     * @param string               $templatePath path to twig template. you can use full path
+     *                                           like tools/bazar/template/myfile.twig, or namespace like @bazar/myfile.twig
+     * @param array<string, mixed> $data         An array with data to pass to the template
+     * @param string               $method       the TemplateEngine method to render with
      *
      * @return string HTML
      */
@@ -79,7 +91,7 @@ abstract class YesWikiPerformable
             private UserManager $userManager;
             private bool $entryResolved = false;
             /**
-             * @var array<mixed>|null
+             * @var array<string, mixed>|null
              */
             private ?array $entry = null;
 
@@ -90,7 +102,7 @@ abstract class YesWikiPerformable
             }
 
             /**
-             * @return array<mixed>
+             * @return array<string, mixed>
              */
             public function getEntry(): array
             {
@@ -135,6 +147,8 @@ abstract class YesWikiPerformable
      * actions read to break the recursion they were built on: `{{entrylist template="map"}}`
      * called `{{entrymap}}`, which called `{{entrylist}}` back. Ticket 49 replaced that with
      * template preparers, and the flag went with it. Nothing needs to know who called it.
+     *
+     * @param array<string, mixed> $arguments
      */
     protected function callAction(string $action, $arguments = []): string
     {

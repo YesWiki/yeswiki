@@ -17,7 +17,7 @@ class RelationApiController extends YesWikiController
      * List qrcode relations (ticket 14, formerly yeswiki-extension-qrcode's own ApiController) -- pairs of Bazar entries linked via {{qrscan}}'s paired QR-code scanning flow.
      */
     #[Route('/api/relations/{type}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllRelations(string $type = 'contact')
+    public function getAllRelations(string $type = 'contact'): ApiResponse
     {
         $entryCache = [];
         $options = [
@@ -45,7 +45,7 @@ class RelationApiController extends YesWikiController
 
     /** Create a qrcode relation entry linking two scanned Bazar entries (ticket 14). */
     #[Route('/api/relations', methods: ['POST'], options: ['acl' => ['public']])]
-    public function createRelation()
+    public function createRelation(): ApiResponse
     {
         $_POST['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create(

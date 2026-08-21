@@ -48,12 +48,17 @@ class ReactionsField extends BazarField
     public const DEFAULT_OK_KEY = 'oui';
     public const MAX_REACTIONS = 1;
 
-    protected $ids;
-    protected $labels;
-    protected $images;
-    protected $imagesPath;
-    protected $options;
-    protected $reactionsFormatter;
+    /** @var array<array-key, string> the reaction ids this field offers */
+    protected array $ids;
+    /** @var array<array-key, string> label per reaction, keyed like */
+    protected array $labels;
+    /** @var string the images parameter, comma separated, as configured on the form */
+    protected string $images;
+    /** @var array<array-key, string>|null resolved image URLs, null until first asked for */
+    protected ?array $imagesPath;
+    /** @var array<string, string> */
+    protected array $options;
+    protected ReactionsFormatter $reactionsFormatter;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -75,9 +80,8 @@ class ReactionsField extends BazarField
         $this->size = null;
         $this->maxChars = null;
 
-        $this->ids = trim($values[self::FIELD_IDS]);
-        $this->ids = empty($this->ids) ? [] : explode(',', $this->ids);
-        $this->ids = array_map('trim', $this->ids);
+        $rawIds = trim($values[self::FIELD_IDS]);
+        $this->ids = $rawIds === '' ? [] : array_map('trim', explode(',', $rawIds));
 
         $labels = isset($values[self::FIELD_LABELS]) && is_string($values[self::FIELD_LABELS])
             ? trim($values[self::FIELD_LABELS])
@@ -116,7 +120,8 @@ class ReactionsField extends BazarField
             $this->reactionsFormatter->getReactionItems(
                 $currentEntryTag,
                 $username,
-                $this->name,
+                // never null: the constructor names an unnamed reactions field 'reactions'
+                (string)$this->name,
                 $this->ids,
                 $this->labels,
                 $this->getImagesPath(),
@@ -135,6 +140,9 @@ class ReactionsField extends BazarField
         ]);
     }
 
+    /**
+     * @return array<array-key, string> image URL per reaction, keyed like getIds()
+     */
     public function getImagesPath(): array
     {
         if (is_null($this->imagesPath)) {
@@ -150,16 +158,25 @@ class ReactionsField extends BazarField
         return $this->imagesPath;
     }
 
+    /**
+     * @return array<array-key, string>
+     */
     public function getIds(): array
     {
         return $this->ids;
     }
 
+    /**
+     * @return array<array-key, string>
+     */
     public function getLabels(): array
     {
         return $this->labels;
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     */
     protected function getCurrentTag($entry): ?string
     {
         return !empty($entry['tag']) ? $entry['tag'] : null;
