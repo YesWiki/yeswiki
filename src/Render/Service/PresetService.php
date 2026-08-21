@@ -8,6 +8,7 @@ use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\StringUtilService;
 
 /**
  * The wiki's Presets: what they are, which one is on, whether one is complete, and how to write one.
@@ -1025,7 +1026,7 @@ class PresetService
     /** The file a typed name would be written to. */
     public function fileNameFor(string $name): string
     {
-        $name = preg_replace('/[^a-zA-Z0-9_-]+/', '-', removeAccents(trim($name)));
+        $name = preg_replace('/[^a-zA-Z0-9_-]+/', '-', StringUtilService::withoutDiacritics(trim($name)));
         $name = trim((string)$name, '-');
         if ($name === '') {
             throw new \InvalidArgumentException('a preset needs a name');

@@ -2,6 +2,8 @@
 
 namespace YesWiki\Contact\Action;
 
+use YesWiki\Contact\Service\MailForm;
+use YesWiki\Contact\Service\MailFormCounter;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -11,8 +13,6 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
-
-include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
 
 class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -51,7 +51,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
     {
         $mailList = $this->formatArray($arg['mail'] ?? null);
         if (!empty($mailList)) {
-            $mailList = parseMails($mailList);
+            $mailList = $this->getService(MailForm::class)->resolveRecipients($mailList);
         }
 
         return [
@@ -69,13 +69,8 @@ class ContactAction extends YesWikiAction implements RegisteredAction, ProvidesC
             return '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         }
 
-        if (isset($GLOBALS['nbactionmail'])) {
-            $GLOBALS['nbactionmail']++;
-        } else {
-            $GLOBALS['nbactionmail'] = 1;
-        }
         $options = array_merge($this->arguments, [
-            'nbactionmail' => $GLOBALS['nbactionmail'],
+            'nbactionmail' => $this->getService(MailFormCounter::class)->next(),
             'pageTag' => $this->getService(PageContext::class)->getTag(),
         ]);
 

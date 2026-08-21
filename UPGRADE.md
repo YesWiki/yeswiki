@@ -190,7 +190,7 @@ The renames, for reference when fixing those files:
 | `{{bazarexport}}` / `{{bazarimport}}`  | `{{entryexport}}` / `{{entryimport}}` |
 | `{{bazarfollow}}`                      | `{{entryfollow}}`                     |
 | `{{bazaruserpage}}`                    | `{{entryuserpage}}`                   |
-| `{{bazarlistecategorie}}`              | `{{entrylistcategory}}`               |
+| `{{bazarlistecategorie}}`              | removed, see below                    |
 | `{{calendrier}}`                       | `{{calendar}}`                        |
 | `{{abonnement}}` / `{{desabonnement}}` | `{{subscribe}}` / `{{unsubscribe}}`   |
 | `{{nuagetag}}`                         | `{{tagcloud}}`                        |
@@ -201,6 +201,21 @@ The renames, for reference when fixing those files:
 | `{{barreredaction}}`                   | `{{editbar}}`                         |
 | `{{titrepage}}`                        | `{{pagetitle}}`                       |
 | `{{moteurrecherche}}`                  | `{{searchform}}`                      |
+
+**Four of those names are deprecated spellings now, not actions.** `{{entrymap}}`,
+`{{entrytable}}`, `{{entryuserpage}}` and `{{calendar}}` are one action, `{{entrylist}}`, with a
+template pinned. They keep working and pages containing them need no edit, but three things follow
+from there being one action rather than five:
+
+- **They answer to `entrylist`'s permission.** A permission set on the old name is not consulted
+  any more, and the upgrade removes it rather than leaving it to look effective. If one of them was
+  restricting who may list entries, set that permission on `entrylist`. The removal is written to
+  the administrative log with the value it had.
+- **The actions builder writes `{{entrylist template="…"}}`**, never a deprecated name. Opening a
+  page that contains one still opens the right settings.
+- **`{{entrytable}}` now draws a table.** Written without a template it used to render the wiki's
+  default list template, which is the accordion, because the action of that name passed no template
+  of its own. It is pinned to `tableau` now, which is what the name always claimed.
 
 `{{bazar}}` **keeps its name.** It is the BazaR admin console rather than an entry, `bazar` is
 the product's own word for that screen, and it is the most widely written action call in the
@@ -257,7 +272,83 @@ table — so the practical approach is to diff your override against the core te
 on. **A migration cannot help here either**: the sandbox cannot cover overrides, and a template
 override is arbitrary code against an interface that changed.
 
-### 5. FontAwesome icon classes in your own markup
+### 5. Custom themes: the squelette is a Twig template with two blocks
+
+A squelette used to be a file split in half at a plain-text `{WIKINI_PAGE}` marker: the top was
+rendered, then the page body, then the bottom. It is an ordinary Twig template now, with two
+named blocks, and the order is inverted. The `body` block renders first, so that every stylesheet
+and script an action or a field registered while rendering is known, and only then does the
+`head` block render with the full set in hand. That is what removes the flash of unstyled
+content: a bazar list's stylesheet used to arrive after the list had been painted.
+
+**A squelette written for Doryphore will not work**, and no migration can fix it. A theme is a
+file of yours, and rewriting one from a database migration is not something an upgrade should do.
+Copy `themes/yeswiki/squelettes/1col.twig` out of this release and move your markup into it, or
+port your own file against the contract below.
+
+The contract:
+
+- `{% block head %}` and `{% block body %}`. There is no `{WIKINI_PAGE}` marker and no string
+  splitting anywhere.
+- `{{ page_content|raw }}`, inside the body block, is where the rendered page goes.
+- `{{ declared_assets()|raw }}` goes **last inside the head block**. Everything registered during
+  the body render is emitted there, in one place, in registration order. An action written after
+  it in the head block registers too late to be picked up. That follows from rendering the head
+  last and is not worth designing around.
+- `{{ page_state()|raw }}` goes first in the body block. It carries the inline `wiki` properties
+  (page tag, locale, base URL, CSRF token, JS translations) and the flash message. Leave it out
+  and per-page JavaScript reads the previous page's values, which is worst on the admin screens
+  that build an API URL from `wiki.pageTag`.
+- A theme that wants a stylesheet of its own calls `include_css('...')` rather than passing it to
+  an action.
+
+A layout is still free to call any action anywhere, which is why this is two blocks rather than a
+fixed set of slots.
+
+**Actions that no longer exist.** `{{linkstyle}}` and `{{linkjavascript}}`, their French aliases
+`{{liensstyle}}` and `{{liensjavascripts}}`, and `{{header}}` and `{{footer}}` with the
+`header_action` and `footer_action` config keys. Each one registered assets and then flushed
+them, and with a single emission point in the head there is nothing left to flush. A squelette
+that calls one gets an unknown action, and so does a **page body** that calls one, which is the
+case worth searching for: the failure is visible rather than silent, but it is in your content
+rather than in your theme. `{{liensstyle othercss="..."}}` has no direct replacement; the theme
+calls `include_css()` instead.
+
+`{{parambody}}` still exists for body attributes but emits nothing of its own any more. Its old
+job was an `onload` attribute that showed the flash message, and a boosted navigation neither
+replaces that attribute nor re-fires it.
+
+**What boosted navigation asks of a theme.** Internal links load through htmx now, and the
+bundled squelette carries four things because of it:
+
+- `hx-boost="true"` on `<body>`, with the progress indicator and the layout fingerprint
+  alongside it, all inside `{% if htmx_navigation %}` so the `htmx_navigation` config key
+  (default `true`) can switch the whole thing off for a theme that cannot cope.
+- An element for the indicator to drive (`.yw-progress.htmx-indicator`). Without one a slow
+  navigation looks like a dead click, because the browser shows no progress for an XHR.
+- `#yw-main` with `tabindex="-1"`, and an `<h1>` in the content where the page has a title.
+  Focus moves there after each navigation. Without it a keyboard user's tab order restarts at
+  the top of the document on every click.
+- A `role="status" aria-live="polite"` region, which announces the new page's title.
+
+Leave the last three out and navigation still works. It just stops being usable without a mouse.
+
+**Going back is a full page load, and none of your pages are kept in the browser.** htmx caches
+page snapshots in `sessionStorage` by default; that is switched off here. A page carrying
+`{{admincontent}}` renders 2.37 MB against a quota of roughly 5 MB per origin, so the first
+navigation away from one failed. With the cache off, the back button does an ordinary load. The
+side effect is worth having on its own: no page content, private or otherwise, is written to
+browser storage.
+
+**Theme JavaScript: key an initialiser on the element, not on `body`.** A boosted navigation
+swaps the *contents* of `<body>`, and the `<body>` element itself survives. So
+`ywInitEach('body', ...)` runs once per session, and every page after the first is left
+uninitialised: a widget that never mounts, with nothing in the console. Key it on the thing being
+set up (`.aceditor-container`, `.tag-label`) and it runs once per navigation instead. The same
+trap catches a `DOMContentLoaded` listener written inline in a template, since a boosted
+navigation is not a new document. Use `ywInit()` / `ywInitEach()` for both.
+
+### 6. FontAwesome icon classes in your own markup
 
 FontAwesome is no longer shipped. Icons come from a generated Tabler sprite. Core templates map
 historical names through `iconFromLegacy()`, so shipped markup is fine, but
@@ -265,7 +356,7 @@ historical names through `iconFromLegacy()`, so shipped markup is fine, but
 
 Use the `icon()` Twig helper, or `iconFromLegacy()` if you want the legacy name translated.
 
-### 6. CSS and JavaScript targeting `bazar-list*`
+### 7. CSS and JavaScript targeting `bazar-list*`
 
 Everything named `bazar-list…` is named `entry-list…` now — the list is a list of **entries**,
 and `bazar` was the old name for the thing that holds them:
@@ -293,7 +384,7 @@ never fire again.
 whatever followed a list ran straight into it. If you had added one yourself, you will now have
 both.
 
-### 7. Images are converted and capped
+### 8. Images are converted and capped
 
 **New pictures are uploaded as WebP.** The browser converts an image and fits it inside
 1920x1920 before sending it, so what the wiki stores is a few hundred kilobytes rather than a
@@ -319,10 +410,23 @@ gives. A picture smaller than the cap is served as it is, not enlarged to it.
 Both are configurable — `image-upload-*` and `image-render-*`, listed in the admin
 documentation. `image-upload-format: ''` turns the conversion off entirely.
 
-### 8. Removed features
+### 9. Removed features
 
 Check whether any page or template of yours depends on these, because nothing replaces them:
 
+- **`{{entrylistcategory}}`**, and `{{bazarlistecategorie}}` before the rename. Removed, and
+  rewritten for you. A migration turns each call into
+  `{{entrylist id="…" groups="…" template="liste_accordeon"}}`, which is what it drew: a form's
+  entries grouped under the values of one of its list fields, each group a collapsible section.
+
+  **It had not worked since the previous release.** It took `idtypeannonce` for the form and `id`
+  for the field to group on; the conversion to a class read `id` for both, so one of the two was
+  always wrong and the action printed `Undefined array key` where the list should have been. The
+  rewrite reads what the call means rather than what the class did with it, so these pages should
+  show more than they did, not less. Two parameters have no equivalent and the migration names the
+  pages that used them in the administrative log: `list` named the page holding the list's values,
+  which a facet reads from the field itself, and `template` named the template each group was drawn
+  with, which is the accordion now.
 - **GoGoCarto** integration — removed.
 - **Referrers** — the `referrers` table and everything reading it. There is no referrer report.
 - **Backlinks / `links`** — the link graph table is gone.

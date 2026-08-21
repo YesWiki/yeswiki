@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -22,7 +23,7 @@ class DocumentationController extends YesWikiController
         return new Response($templateEngine->renderPage($templateEngine->render('@core/doc.twig', $this->dashboardShell('doc', [
             'config' => $this->getService(RuntimeConfig::class)->all(),
             'i18n' => $GLOBALS['translations_js'],
-            'locale' => $GLOBALS['prefered_language'],
+            'locale' => $this->getService(LanguageService::class)->preferredLanguage(),
             'extensions' => $this->getExtensionsWithDocs(),
         ]))));
     }
@@ -31,7 +32,7 @@ class DocumentationController extends YesWikiController
     {
         $extensions = [];
         foreach ($this->getService(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extName => $extPath) {
-            $localizedPath = "{$extPath}docs/{$GLOBALS['prefered_language']}/README.md";
+            $localizedPath = "{$extPath}docs/{$this->getService(LanguageService::class)->preferredLanguage()}/README.md";
             $path = "{$extPath}docs/README.md";
             $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;
             if ($docPath) {

@@ -5,10 +5,11 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
 /** Whether this request is an htmx navigation, and what the server owes it (ticket 16). */
-class BoostedNavigation
+class BoostedNavigation implements RequestScopedState
 {
     /** The header the client echoes back so the server can compare skeletons. */
     public const FINGERPRINT_HEADER = 'HX-YesWiki-Layout';
@@ -85,5 +86,16 @@ class BoostedNavigation
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * "This response went through renderPage()" is true of one request, not of a process.
+     *
+     * Left set, every later response in a worker would claim to be swappable, including the ones
+     * that must force a full load (ADR-0024).
+     */
+    public function startNewRequest(): void
+    {
+        $this->renderedAPage = false;
     }
 }

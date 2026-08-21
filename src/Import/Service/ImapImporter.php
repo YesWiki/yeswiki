@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Kernel\Service\StringUtilService;
 
 class ImapImporter extends Importer
 {
@@ -184,7 +185,7 @@ EOT,
     {
         $existingEntries = $this->entryManager->search(['formsIds' => [$this->config['formId']]]);
         foreach ($data as $entry) {
-            $res = multiArraySearch($existingEntries, 'message_id', $entry['message_id']);
+            $res = StringUtilService::searchNested($existingEntries, 'message_id', $entry['message_id']);
             if (!$res) {
                 $entry['antispam'] = 1;
                 $this->entryManager->create($this->config['formId'], $entry, false, $entry['message_id']);

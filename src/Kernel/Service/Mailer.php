@@ -2,6 +2,8 @@
 
 namespace YesWiki\Kernel\Service;
 
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
+use PHPMailer\PHPMailer\PHPMailer;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Controller\EntryController;
@@ -11,6 +13,9 @@ use YesWiki\Render\Service\TemplateEngine;
 
 class Mailer
 {
+    /** How many recipients one message carries before the next batch. */
+    private const BATCH_SIZE = 10;
+
     protected ContainerInterface $container;
     protected $authenticationService;
     protected $dbService;
@@ -127,22 +132,136 @@ class Mailer
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $address,
-            removeAccents($subject),
+            StringUtilService::withoutDiacritics($subject),
             $text,
             empty($html) ? $html : $this->sanitizeLinksIfNeeded($html)
         );
     }
 
     /**
-     * Generic send, the single seam every mail-sending caller in core should go through (ticket 18) instead of calling send_mail() directly -- a thin wrapper today (send_mail() itself, in src/email.inc.php, is unchanged), but the seam this ticket asked for so callers don't reach past the abstraction.
+     * Generic send, the single seam every mail-sending caller in core goes through (ticket 18).
+     *
+     * Was a wrapper around the global `send_mail()` in `Kernel/email.inc.php`, which reached for
+     * the container through `$GLOBALS['yeswikiServices']` fourteen times to read its own
+     * configuration. Ticket 50 folded it in here, where the configuration is already injected.
      *
      * @param string|string[] $mailReceiver
      */
     public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/Kernel/email.inc.php';
+        $mail = new PHPMailer(true);
 
-        return send_mail($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml);
+        try {
+            $mail->set('CharSet', 'utf-8');
+            $this->configureTransport($mail);
+            $this->configureSender($mail, $mailSender, $nameSender);
+
+            $mail->Subject = $subject;
+            if (empty($messageHtml)) {
+                $mail->isHTML(false);
+                $mail->Body = $messageTxt;
+            } else {
+                $mail->isHTML(true);
+                $mail->Body = $messageHtml;
+                if (!empty($messageTxt)) {
+                    $mail->AltBody = $messageTxt;
+                }
+            }
+
+            if (!is_array($mailReceiver)) {
+                $mailReceiver = filter_var($mailReceiver, FILTER_VALIDATE_EMAIL) ? [$mailReceiver] : [];
+            }
+
+            // Sent in batches with a pause between them, which is what keeps a large mailing
+            // from looking like a burst to the receiving side.
+            foreach (array_chunk($mailReceiver, self::BATCH_SIZE) as $batch) {
+                $mail->clearBCCs();
+                foreach ($batch as $bccEmail) {
+                    $mail->addBCC($bccEmail);
+                }
+                $mail->send();
+                sleep(1);
+            }
+
+            return true;
+        } catch (PHPMailerException $e) {
+            if ($this->container->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) {
+                echo $e->errorMessage();
+            }
+
+            return false;
+        }
+    }
+
+    /** SMTP, sendmail or PHP's own mail(), as the wiki is configured. */
+    private function configureTransport(PHPMailer $mail): void
+    {
+        $transport = $this->config()['contact_mail_func'] ?? '';
+
+        if ($transport === 'sendmail') {
+            $mail->isSendmail();
+
+            return;
+        }
+        if ($transport !== 'smtp') {
+            return;
+        }
+
+        $mail->isSMTP();
+        $mail->SMTPDebug = $this->config()['contact_debug'];
+        $mail->Debugoutput = 'html';
+        $mail->Host = $this->config()['contact_smtp_host'];
+        $mail->Port = $this->config()['contact_smtp_port'];
+
+        if (empty($this->config()['contact_smtp_user'])) {
+            $mail->SMTPAuth = false;
+
+            return;
+        }
+
+        $mail->SMTPAuth = true;
+        $mail->Username = $this->config()['contact_smtp_user'];
+        $mail->Password = $this->config()['contact_smtp_pass'];
+
+        $secure = $this->config()['contact_smtp_secure'] ?? null;
+        if (empty($secure)) {
+            $secure = self::encryptionForPort($mail->Port);
+        }
+        if ($secure === 'ssl') {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        } elseif ($secure === 'tls') {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        }
+    }
+
+    private function configureSender(PHPMailer $mail, string $mailSender, string $nameSender): void
+    {
+        if (!empty($this->config()['contact_reply_to'])) {
+            $mail->addReplyTo($this->config()['contact_reply_to']);
+        } else {
+            $mail->addReplyTo($mailSender, $nameSender);
+        }
+
+        if (!empty($this->config()['contact_from'])) {
+            $mailSender = $this->config()['contact_from'];
+        }
+
+        $mail->setFrom($mailSender, empty($nameSender) ? $mailSender : $nameSender);
+    }
+
+    /** The encryption the well-known submission ports imply, when nothing is configured. */
+    private static function encryptionForPort(int $port): string
+    {
+        return match ((string)$port) {
+            '465' => 'ssl',
+            '587' => 'tls',
+            default => '',
+        };
+    }
+
+    private function config(): RuntimeConfig
+    {
+        return $this->container->get(RuntimeConfig::class);
     }
 
     public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null)

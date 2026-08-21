@@ -18,6 +18,45 @@ class UrlFormatter
         $this->pageContext = $pageContext;
     }
 
+    /**
+     * Every internal link in $body pointed at the iframe handler, unless it opens a new window.
+     *
+     * The iframe handlers render a page inside somebody else's page, and a link out of one has to
+     * stay inside it or the frame navigates away from the wiki. A link that says `target="_blank"`
+     * or carries `new-window` is asking to leave and is left alone.
+     *
+     * Was the global `replaceLinksWithIframe()` in `Kernel/urlutils.inc.php`, which reached the
+     * container to read the one configuration value this class is built on (ticket 50).
+     */
+    public function throughIframeHandler(string $body): string
+    {
+        $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:' . preg_quote($this->rawBaseUrl(), '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(\2)([^>]*>)~i';
+
+        $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_?blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+
+        if (preg_match_all($pattern, $body, $matches)) {
+            foreach ($matches[0] as $key => $match) {
+                if (!preg_match($NEW_WINDOW_PATTERN, $matches[1][$key]) && !preg_match(
+                    $NEW_WINDOW_PATTERN,
+                    $matches[8][$key]
+                )) {
+                    $replacement =
+                        $matches[1][$key] .
+                        $matches[2][$key] .
+                        $matches[3][$key] .
+                        $matches[4][$key] .
+                        ($matches[5][$key] == '/edit' ? '/editiframe' : '/iframe') .
+                        $matches[6][$key] .
+                        $matches[7][$key] .
+                        $matches[8][$key];
+                    $body = str_replace($match, $replacement, $body);
+                }
+            }
+        }
+
+        return $body;
+    }
+
     /** The raw base_url config value ("https://host/?" or ".../index.php?" form). */
     private function rawBaseUrl(): string
     {

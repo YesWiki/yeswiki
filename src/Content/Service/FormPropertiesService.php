@@ -12,6 +12,7 @@ use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TagsField;
 use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AccountJustCreated;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
@@ -19,6 +20,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -83,7 +85,7 @@ class FormPropertiesService
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($template);
         $formManager = $this->getService(FormManager::class);
 
-        if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
+        if (!$this->getService(ImportContext::class)->isImporting()) {
             $formId = $entry['form_id'] ?? null;
             foreach ($this->referencedFieldNames($value) as $fieldName) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
@@ -102,7 +104,7 @@ class FormPropertiesService
                         $filenameKey = 'filename-' . $field->getPropertyName();
                         $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
                         if (!empty($request->request->get($filenameKey))) {
-                            $replacement = sanitizeFilename($request->request->get($filenameKey));
+                            $replacement = StringUtilService::asFilename($request->request->get($filenameKey));
                             if (empty($replacement)) {
                                 $replacement = 'image';
                             }
@@ -113,7 +115,7 @@ class FormPropertiesService
                         }
                     } elseif ($field instanceof FileField) {
                         if (!empty($_FILES[$field->getPropertyName()]['name'])) {
-                            $replacement = sanitizeFilename($_FILES[$field->getPropertyName()]['name']);
+                            $replacement = StringUtilService::asFilename($_FILES[$field->getPropertyName()]['name']);
                             if (empty($replacement)) {
                                 $replacement = 'file';
                             }
@@ -402,7 +404,7 @@ class FormPropertiesService
         $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         $value = $entry[self::USER_PROPERTY_NAME] ?? '';
-        $isImport = isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] === 'import';
+        $isImport = $this->getService(ImportContext::class)->isImporting();
 
         if (
             $this->aclService->isAdmin()
@@ -419,7 +421,7 @@ class FormPropertiesService
         } else {
             $wikiName = $entry[$nameField] ?? '';
             if (!$this->urlFormatter->isWikiName($wikiName)) {
-                $wikiName = generateWikiName($wikiName, 0);
+                $wikiName = $this->getService(WikiNameGenerator::class)->generate($wikiName, 0);
             }
             if ($this->isUserByName($wikiName)) {
                 $currentWikiName = $wikiName;
@@ -468,7 +470,7 @@ class FormPropertiesService
             }
         }
 
-        $GLOBALS['created_user_name'] = $wikiName;
+        $this->getService(AccountJustCreated::class)->record($wikiName);
 
         return [
             self::USER_PROPERTY_NAME => $wikiName,

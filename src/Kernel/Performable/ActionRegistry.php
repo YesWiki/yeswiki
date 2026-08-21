@@ -13,15 +13,41 @@ class ActionRegistry
      */
     private array $map;
 
+    /**
+     * @var array<string, array<string, array{name: string, defaults: array<string, string>}>> type => [deprecated name => what it resolves to]
+     */
+    private array $aliases;
+
     private ContainerInterface $container;
 
     /**
-     * @param array<string, array<string, string>> $map
+     * @param array<string, array<string, string>>                                               $map
+     * @param array<string, array<string, array{name: string, defaults: array<string, string>}>> $aliases
      */
-    public function __construct(ContainerInterface $container, array $map = [])
+    public function __construct(ContainerInterface $container, array $map = [], array $aliases = [])
     {
         $this->container = $container;
         $this->map = $map;
+        $this->aliases = $aliases;
+    }
+
+    /**
+     * The canonical name $name is a spelling of, and the arguments that spelling implies.
+     *
+     * Returns $name lowercased when it is not an alias, so every caller can resolve first and
+     * ask questions afterwards, and so a name compared against the result needs no case handling
+     * of its own. Resolution has to happen before the ACL check: an alias
+     * answers to what it aliases, and a permission of its own would be a permission nobody
+     * knew they were granting (ticket 49).
+     *
+     * @return array{0: string, 1: array<string, string>}
+     */
+    public function resolve(string $type, string $name): array
+    {
+        $name = strtolower($name);
+        $alias = $this->aliases[$type][$name] ?? null;
+
+        return $alias === null ? [$name, []] : [$alias['name'], $alias['defaults']];
     }
 
     public function has(string $type, string $name): bool

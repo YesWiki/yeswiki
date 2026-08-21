@@ -148,6 +148,7 @@ class FormPropertiesTest extends YesWikiTestCase
             'statut_fiche' => '1',
         ]);
 
+        $this->assertIsArray($data);
         $this->assertSame('OldEntry', $data['tag']);
         $this->assertSame('42', $data['form_id']);
         $this->assertSame('Old title', $data['title']);

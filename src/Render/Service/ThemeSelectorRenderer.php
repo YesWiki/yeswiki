@@ -8,6 +8,7 @@ use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\LanguageService;
 
 class ThemeSelectorRenderer extends YesWikiController
 {
@@ -113,7 +114,7 @@ class ThemeSelectorRenderer extends YesWikiController
             'listWikinames' => $listWikinames,
             'showAdminActions' => $this->getService(AclService::class)->isAdmin(),
             'availableLanguages' => $GLOBALS['available_languages'],
-            'preferedLanguage' => $GLOBALS['prefered_language'],
+            'preferedLanguage' => $this->getService(LanguageService::class)->preferredLanguage(),
             'languagesList' => $GLOBALS['languages_list'],
             'page' => $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),

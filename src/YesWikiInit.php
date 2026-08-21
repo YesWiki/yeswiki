@@ -10,6 +10,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\WikiUrls;
 
 class AttributeRouteControllerLoader extends AttributeClassLoader
 {
@@ -173,7 +174,7 @@ class Init
      */
     public function getConfig($yeswikiConfig = [])
     {
-        $_rewrite_mode = detectRewriteMode();
+        $_rewrite_mode = WikiUrls::rewriteMode();
         $yeswikiDefaultConfig = [
             'yeswiki_version' => '',
             'yeswiki_release' => '',
@@ -187,7 +188,7 @@ class Init
             'db_user' => '',
             'db_password' => '',
             'table_prefix' => 'yeswiki_',
-            'base_url' => computeBaseURL($_rewrite_mode),
+            'base_url' => WikiUrls::baseUrl($_rewrite_mode),
             'rewrite_mode' => $_rewrite_mode,
             'meta_keywords' => '',
             'meta_description' => '',

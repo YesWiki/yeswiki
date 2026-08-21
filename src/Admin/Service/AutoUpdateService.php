@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Admin\Entity\PackageCollection;
 use YesWiki\Admin\Entity\Repository;
 use YesWiki\Kernel\Entity\Messages;
+use YesWiki\Kernel\Service\ConfigurationService;
 
 class AutoUpdateService
 {
@@ -29,7 +30,11 @@ class AutoUpdateService
 
     public function initRepository($requestedVersion = '')
     {
-        $this->repository = new Repository($this->repositoryAddress($requestedVersion));
+        $this->repository = new Repository(
+            $this->repositoryAddress($requestedVersion),
+            (string)$requestedVersion,
+            $this->container->get(ConfigurationService::class)
+        );
 
         return $this->repository->load();
     }

@@ -9,6 +9,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\WikiNameGenerator;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -96,7 +97,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     $form = $this->getService(FormManager::class)->getOne($proposedEntry['form_id'] ?? null);
                 } else {
                     $pageTitle = ($originalContent['title'] ?? $originalContent['bf_titre'] ?? '') . ' (' . _t('DUPLICATE') . ')';
-                    $proposedTag = generateWikiName($pageTitle);
+                    $proposedTag = $this->getService(WikiNameGenerator::class)->generate($pageTitle);
                 }
             } elseif ($isList) {
                 $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->getService(PageContext::class)->getTag();
@@ -106,14 +107,14 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
                     $pageTitle = ($originalContent['titre_liste'] ?? '') . ' (' . _t('DUPLICATE') . ')';
-                    $proposedTag = generateWikiName('Liste ' . $pageTitle);
+                    $proposedTag = $this->getService(WikiNameGenerator::class)->generate('Liste ' . $pageTitle);
                 }
             } else {
                 $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->getService(PageContext::class)->getTag();
                 if ($toExternalWiki) {
                     $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
-                    $proposedTag = generateWikiName($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
+                    $proposedTag = $this->getService(WikiNameGenerator::class)->generate($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
                 }
                 $originalContent = PageBody::content($this->getService(PageContext::class)->getPage()['body']);
             }

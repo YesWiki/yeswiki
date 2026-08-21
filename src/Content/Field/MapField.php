@@ -4,6 +4,8 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Action\EntryListAction;
+use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Render\Service\ActionRunner;
 
 #[\Field(['map', 'carte_google'])]
@@ -112,7 +114,7 @@ class MapField extends BazarField
         ];
     }
 
-    public function isEmpty($pValue)
+    public function isEmpty($pValue): bool
     {
         if (empty($pValue) || !is_array($pValue)) {
             return true;
@@ -214,12 +216,23 @@ class MapField extends BazarField
     {
         $output = '';
 
+        // Which list, if any, is drawing this entry: the one that named this entry's form.
+        //
+        // This used to ask whether the action's name began with `bazar`, which stopped being
+        // true of any list when ticket 23 renamed `bazarliste` to `entrylist` and ticket 33
+        // rewrote the stored calls to match. The setting has been offered by the actions
+        // builder and had no effect ever since.
+        //
+        // The log holds the name as the page spells it, so a page still saying `{{entrymap}}`
+        // has to count too. Resolving through the registry is how Performer decides the same
+        // question, and it means a spelling added later needs no second list here (ticket 49).
+        $registry = $this->getService(ActionRegistry::class);
         $filteredActions =
-            array_filter($this->getService(ActionRunner::class)->actionsLog(), function ($v) use ($entry) {
+            array_filter($this->getService(ActionRunner::class)->actionsLog(), function ($v) use ($entry, $registry) {
                 return !empty($v['action'])
-                    && substr($v['action'], 0, 5) === 'bazar'
+                    && $registry->resolve('action', (string)$v['action'])[0] === EntryListAction::performableName()
                     && !empty($v['vars']['id'])
-                    && $v['vars']['id'] == $entry['form_id'];
+                    && $v['vars']['id'] == ($entry['form_id'] ?? null);
             });
         $lastAction = end($filteredActions);
         $showMapInDynamicListView = ($this->getRequest()->query->get('showmapinlistview') === '1');
@@ -232,7 +245,7 @@ class MapField extends BazarField
         ) {
             $showMapInListView = true;
         }
-        $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === $entry['tag']);
+        $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === ($entry['tag'] ?? null));
 
         if (
             $this->showMapInEntryView === '1' && $currentUrlIsEntry
@@ -241,7 +254,7 @@ class MapField extends BazarField
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries'])) {
                 $output .= $this->render('@core/fields/map.twig', [
-                    'tag' => $entry['tag'],
+                    'tag' => $entry['tag'] ?? '',
                     'mapFieldData' => $mapFieldData,
                 ]);
             }

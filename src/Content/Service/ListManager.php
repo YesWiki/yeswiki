@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\StringUtilService;
 
 class ListManager
 {
@@ -20,14 +21,18 @@ class ListManager
     protected $cachedLists;
     protected AclService $aclService;
 
+    private WikiNameGenerator $wikiNames;
+
     public function __construct(
         DbService $dbService,
         HtmlPurifierService $htmlPurifierService,
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        AclService $aclService
+        AclService $aclService,
+        WikiNameGenerator $wikiNames
     ) {
+        $this->wikiNames = $wikiNames;
         $this->aclService = $aclService;
         $this->dbService = $dbService;
         $this->pageManager = $pageManager;
@@ -72,7 +77,7 @@ class ListManager
             }, $data['nodes']);
             $data['parentId'] = $parent;
         } elseif (!empty($parent)) {
-            $data['nodes'] = multiArraySearch($data['nodes'], 'id', $parent)[0]['children'] ?? null;
+            $data['nodes'] = StringUtilService::searchNested($data['nodes'], 'id', $parent)[0]['children'] ?? null;
             $data['parentId'] = $parent;
         }
 
@@ -121,7 +126,7 @@ class ListManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $id = $id ?? generateWikiName('List ' . $title);
+        $id = $id ?? $this->wikiNames->generate('List ' . $title);
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $body = [
@@ -163,7 +168,7 @@ class ListManager
             throw new \Exception('List ID not specified');
         }
 
-        if (!$GLOBALS['yeswikiServices']->get(AclService::class)->isAdmin() && !$this->aclService->isOwner($id)) {
+        if (!$this->aclService->isAdmin() && !$this->aclService->isOwner($id)) {
             throw new \Exception('Unauthorized');
         }
 
@@ -178,7 +183,7 @@ class ListManager
         if (empty($list)) {
             return '';
         }
-        $val = multiArraySearch($list['nodes'], 'id', $key);
+        $val = StringUtilService::searchNested($list['nodes'], 'id', $key);
         $val = array_shift($val);
 
         return $val['label'] ?? '';

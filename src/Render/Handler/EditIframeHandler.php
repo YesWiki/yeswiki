@@ -13,6 +13,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -56,7 +57,7 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page">' . "\n";
 
-            $output .= replaceLinksWithIframe($buffer);
+            $output .= $this->getService(UrlFormatter::class)->throughIframeHandler($buffer);
         } else {
             $output = '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
@@ -64,13 +65,13 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
                 . '>' . "\n";
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
-                $output .= replaceLinksWithIframe($this->getService(MarkdownFormatterService::class)->format(PageBody::content($contenu['body'])));
+                $output .= $this->getService(UrlFormatter::class)->throughIframeHandler($this->getService(MarkdownFormatterService::class)->format(PageBody::content($contenu['body'])));
             } else {
                 $output .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . replaceLinksWithIframe($this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig" signupurl="0"}}' . "\n\n"))
+                    . $this->getService(UrlFormatter::class)->throughIframeHandler($this->getService(MarkdownFormatterService::class)->format('{{login template="login-form.twig" signupurl="0"}}' . "\n\n"))
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         }

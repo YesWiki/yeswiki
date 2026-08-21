@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -13,6 +14,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -86,13 +88,11 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
         $this->getService(PerformableArguments::class)->set('class', empty($class) ? 'include' : 'include ' . $class);
         $this->class = $this->getService(PerformableArguments::class)->get('class');
 
-        require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->getService(PerformableArguments::class)->get('page')));
         if (!empty($langIncludedPage['body'])) {
             $langBody = PageBody::content($langIncludedPage['body']);
-            $langFilteredBody = filterBodyByLanguage(
+            $langFilteredBody = $this->getService(LanguageService::class)->sectionFor(
                 $langBody,
-                $GLOBALS['prefered_language'],
                 $this->getService(RuntimeConfig::class)['default_language']
             );
             if ($langFilteredBody !== $langBody) {
@@ -118,7 +118,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction, ProvidesC
 
         $entryManager = $this->getService(EntryManager::class);
         if ($entryManager->isEntry($incPageName)) {
-            $plugin_output_new = '<div class="' . $class . '">' . "\n" . renderEntryView(0, $incPageName) . "\n" . '</div>' . "\n";
+            $plugin_output_new = '<div class="' . $class . '">' . "\n" . $this->getService(EntryDisplay::class)->renderEntry(0, $incPageName) . "\n" . '</div>' . "\n";
         } else {
             $type = '';
         }

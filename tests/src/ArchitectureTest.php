@@ -39,12 +39,17 @@ class ArchitectureTest extends TestCase
         'bootstrap_paths.php',
         'ComposerScriptsHelper.php',
         'Files/Service/Storage',
+        // Source paths only: `src/<Module>/<Convention>/` and an extension's own folder, which
+        // ADR-0022 puts outside the tiers because they hold code rather than data. One place
+        // reads them, so fields and template-data preparers no longer each carry their own
+        // glob and scandir (ticket 49).
+        'Kernel/Service/ClassDirectoryScanner.php',
     ];
 
     /**
      * What each file has yet to convert, counted the day the rule was seeded. A number may only shrink and a new file may not appear -- reads count as much as writes, because on object storage a `file_exists('custom/styles/custom.css')` that answers false makes a stylesheet vanish with nobody told.
      *
-     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the source tree, and `Admin/Service/ArchiveService.php` addresses a backup folder that `archive[privatePath]` may put outside the instance entirely.
+     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the source tree, and `Admin/Service/ArchiveService.php` walks and rewrites that source tree on restore. Its backups themselves are Data and went through Storage in ticket 42, which also removed `archive[privatePath]` -- the setting that used to be the reason this file was deferred.
      *
      * @var array<string, int>
      */
@@ -72,10 +77,16 @@ class ArchitectureTest extends TestCase
         'Content/Service/ActionsBuilderService.php' => 2,
         'Content/Service/BazarListService.php' => 1,
         'Content/Service/DuplicationManager.php' => 9,
-        'Content/Service/FieldFactory.php' => 4,
         'Content/Service/FormManager.php' => 10,
-        'Content/bazar.functions.php' => 6,
-        'Content/tags.functions.php' => 2,
+        // tags.functions.php's budget, following its code: `yeswiki_thumbnail_tag()` became
+        // PageSummary::thumbnail() when ticket 50 folded that file into services. The same two
+        // `file_exists` calls on an uploaded image, in a class that can now be given Storage.
+        'Content/Service/PageSummary.php' => 2,
+        // bazar.functions.php's budget of 6, following its code when ticket 50 folded that
+        // file into services: four `file_exists`/`unlink` in `resizeImage()`, which is
+        // ImageResizer::cached() now, and two in the remote-file download.
+        'Files/Service/ImageResizer.php' => 4,
+        'Files/Service/RemoteFile.php' => 2,
         'Files/Service/AttachedFilePaths.php' => 7,
         'Identity/Service/AvatarService.php' => 2,
         'Identity/Service/HashCashService.php' => 4,
@@ -245,10 +256,16 @@ class ArchitectureTest extends TestCase
         'Content/Service/ActionsBuilderService.php' => 2,
         'Content/Service/BazarListService.php' => 1,
         'Content/Service/DuplicationManager.php' => 9,
-        'Content/Service/FieldFactory.php' => 4,
         'Content/Service/FormManager.php' => 10,
-        'Content/bazar.functions.php' => 6,
-        'Content/tags.functions.php' => 2,
+        // tags.functions.php's budget, following its code: `yeswiki_thumbnail_tag()` became
+        // PageSummary::thumbnail() when ticket 50 folded that file into services. The same two
+        // `file_exists` calls on an uploaded image, in a class that can now be given Storage.
+        'Content/Service/PageSummary.php' => 2,
+        // bazar.functions.php's budget of 6, following its code when ticket 50 folded that
+        // file into services: four `file_exists`/`unlink` in `resizeImage()`, which is
+        // ImageResizer::cached() now, and two in the remote-file download.
+        'Files/Service/ImageResizer.php' => 4,
+        'Files/Service/RemoteFile.php' => 2,
         'Files/Service/AttachedFilePaths.php' => 7,
         'Identity/Service/AvatarService.php' => 2,
         'Identity/Service/HashCashService.php' => 4,

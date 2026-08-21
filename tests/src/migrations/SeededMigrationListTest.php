@@ -53,6 +53,58 @@ class SeededMigrationListTest extends TestCase
     }
 
     /**
+     * The seeded list says every migration has already run, so nothing ever rewrites the seed. That only holds if the seed is written in the shape the migrations produce, and it was not: both seeded forms carried `{"type":"map","name":"bf_latitude","label":"bf_longitude"}` and all four seeded entries carried top-level `bf_latitude`/`bf_longitude` plus a legacy `geolocation` object, which is exactly what `20260203091701_BazarChangeModelForGeolocation` exists to convert. An upgraded wiki was therefore correct and a fresh one was not, and the map on the seeded `CartoAnnuaire` page had no markers on it.
+     */
+    public function testTheSeedCarriesNoPreMigrationGeolocation(): void
+    {
+        $stale = [];
+        foreach ($this->seededBodies() as $tag => $body) {
+            foreach (['bf_latitude', 'bf_longitude', 'geolocation'] as $key) {
+                if (array_key_exists($key, $body)) {
+                    $stale[] = "{$tag}: entry key '{$key}'";
+                }
+            }
+
+            foreach ($body['template'] ?? [] as $field) {
+                if (($field['type'] ?? '') !== 'map') {
+                    continue;
+                }
+                $name = $field['name'] ?? '';
+                if ($name !== 'bf_geolocation') {
+                    $stale[] = "{$tag}: map field named '{$name}'";
+                }
+            }
+        }
+
+        $this->assertSame([], $stale, 'the seed is in the shape a migration converts away from, and no migration will ever run on it');
+    }
+
+    /**
+     * Every seeded body, keyed by tag. Each row is `('Tag', [[ now ]], '<json>', '{{WikiName}}', ...)` with SQL's doubled single quotes.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function seededBodies(): array
+    {
+        preg_match_all(
+            "/^\('([^']+)',\s+\[\[ now \]\], '(.*?)', '\{\{WikiName\}\}'/m",
+            (string)file_get_contents(self::SEED),
+            $matches,
+            PREG_SET_ORDER
+        );
+        $this->assertNotEmpty($matches, 'no seeded rows matched -- the seed format changed and this test is now blind');
+
+        $bodies = [];
+        foreach ($matches as [, $tag, $raw]) {
+            $decoded = json_decode(str_replace("''", "'", $raw), true);
+            $this->assertIsArray($decoded, "the seeded body for {$tag} is not valid JSON");
+            $bodies[$tag] = $decoded;
+        }
+
+        return $bodies;
+    }
+
+    /**
      * @return list<string>
      */
     private function seededMigrations(): array

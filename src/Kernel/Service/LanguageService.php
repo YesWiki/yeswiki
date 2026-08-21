@@ -12,6 +12,70 @@ namespace YesWiki\Kernel\Service {
 
         private static $instance;
 
+        /**
+         * The language this request is being served in.
+         *
+         * Was `$GLOBALS['prefered_language']`. On a container that survives the request the
+         * first visitor's language became everyone's (ADR-0024), and a global is the one place
+         * a value like this can be set from anywhere and read from anywhere without anybody
+         * being able to say who did it.
+         */
+        private string $preferredLanguage = 'fr';
+
+        /** The language this request is being served in. */
+        public function preferredLanguage(): string
+        {
+            return $this->preferredLanguage;
+        }
+
+        /**
+         * The part of $body written for the language this request is being served in.
+         *
+         * A page body may hold several `{{lang="xx"}}` sections; the reader sees one. Falls back
+         * to $defaultLanguage, and returns the body untouched when it holds no sections at all.
+         *
+         * Was the global `filterBodyByLanguage()` in `Kernel/lang.functions.php`, which both its
+         * callers handed the same two arguments: this service's own preferred language, and the
+         * configured default. It only ever needed the second (ticket 50).
+         */
+        public function sectionFor(string $body, string $defaultLanguage): string
+        {
+            $chunks = preg_split('/({{lang="[a-zA-Z][a-zA-Z]*"}})/ms', $body, -1, PREG_SPLIT_DELIM_CAPTURE);
+            if ($chunks === false || count($chunks) <= 1) {
+                return $body;
+            }
+
+            foreach ([$this->preferredLanguage, $defaultLanguage] as $wantedLanguage) {
+                $found = null;
+                for ($t = 1; $t < count($chunks); $t = $t + 2) {
+                    if (
+                        preg_match('/{{lang="([a-zA-Z][a-zA-Z])*"}}/', $chunks[$t], $langToDisplay)
+                        && ($langToDisplay[1] ?? '') === $wantedLanguage
+                    ) {
+                        $found = $chunks[$t + 1];
+                    }
+                }
+                if ($found !== null) {
+                    return $found;
+                }
+            }
+
+            return $body;
+        }
+
+        /**
+         * Serve the rest of this request in $language.
+         *
+         * `loadPreferredLanguage()` is what decides this for a real request, from the reader's
+         * cookie, the page and the configuration. This is the same decision stated outright,
+         * which is what a test asserting language-dependent output needs and what nothing else
+         * should want: it is a fact about the request being served, not a setting.
+         */
+        public function serveIn(string $language): void
+        {
+            $this->preferredLanguage = $language;
+        }
+
         public static function getInstance(): self
         {
             return self::$instance ?? self::$instance = new self();
@@ -23,7 +87,14 @@ namespace YesWiki\Kernel\Service {
         public function initialize(): void
         {
             if (!defined('YW_CHARSET')) {
-                define('YW_CHARSET', $GLOBALS['wiki']->config['charset'] ?? 'UTF-8');
+                // `$GLOBALS['wiki']->config['charset']` until ticket 45, and **dead since ticket
+                // 08 deleted the Wiki class**: nothing has assigned `$GLOBALS['wiki']` since, so
+                // the fallback was always what ran. This is that fallback, stated. It runs at
+                // load time, before any configuration is read, so the configured `charset` has
+                // no way to reach it -- which means a wiki configured as anything but UTF-8 has
+                // silently been served as UTF-8. Worth a decision of its own: either the config
+                // key goes, or this constant stops being defined this early.
+                define('YW_CHARSET', 'UTF-8');
             }
             if (!defined('SUPPORTED_LANGS')) {
                 define('SUPPORTED_LANGS', self::SUPPORTED_LANGUAGES);
@@ -36,11 +107,14 @@ namespace YesWiki\Kernel\Service {
                 $this->loadTranslations(require_once $this->langDir() . '/yeswikijs_fr.php', true);
             }
 
-            $wiki = $GLOBALS['wiki'] ?? '';
+            // '' is the documented "before boot" argument, and the only one reachable here:
+            // this runs at load time. `loadPreferredLanguage()` redoes the detection with the
+            // runtime once it exists (YesWikiRuntime::boot()), which is what actually decides.
+            $wiki = '';
 
             $GLOBALS['installed_languages'] = $this->installedLanguages();
             $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
-            $GLOBALS['prefered_language'] = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages']);
+            $this->preferredLanguage = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages']);
         }
 
         /**
@@ -216,7 +290,7 @@ namespace YesWiki\Kernel\Service {
             $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
 
             $lang = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
-            $GLOBALS['prefered_language'] = $lang;
+            $this->preferredLanguage = $lang;
             $this->rememberChoice($lang, $GLOBALS['available_languages']);
 
             if ($lang != 'fr' && file_exists($this->langDir() . '/yeswiki_' . $lang . '.php')) {

@@ -8,6 +8,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -89,12 +90,11 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             } else {
                 $page = $this->pageManager->getOne($favorite['resource']);
                 if (!empty($page)) {
-                    include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
-                    $title = get_title_from_body($page);
+                    $title = $this->getService(PageSummary::class)->title($page);
                     if (!empty($title)) {
                         $favorites[$key]['title'] = $title;
                     }
-                    $image = $this->get_image_from_body($page);
+                    $image = $this->imageFromBody($page);
                     if (!empty($image)) {
                         $favorites[$key]['image'] = $image;
                     }
@@ -103,7 +103,8 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function get_image_from_body($page)
+    /** @param array<string, mixed> $page */
+    private function imageFromBody(array $page): string
     {
         $body = PageBody::content($page['body']);
 
@@ -118,7 +119,9 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             $imagefile = mb_convert_encoding(
                 preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
-                    'encodingFromUTF8',
+                    // was the global `encodingFromUTF8()`, reached by name through a string
+                    // callback -- which is why no grep for its name found a caller (ticket 50)
+                    static fn (array $matches): string => (string)iconv('UCS-4LE', 'UTF-8', pack('V', hexdec($matches[1]))),
                     $image[1][0]
                 ),
                 'ISO-8859-1',

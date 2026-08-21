@@ -158,6 +158,16 @@ class Performer
         }
         $objectName = strtolower($objectName);
 
+        // A deprecated spelling becomes the name it aliases here, before anything else looks
+        // at it: the ACL below, the event dispatched to extensions and the arguments parsed
+        // downstream all belong to the canonical performable, never to the alias (ticket 49).
+        // The alias's own arguments are defaults, so a webmaster who wrote one explicitly
+        // still wins.
+        [$objectName, $aliasDefaults] = $this->registry->resolve($objectType, $objectName);
+        if ($aliasDefaults !== []) {
+            $vars += $aliasDefaults;
+        }
+
         // Check if user is allowed to use this particular action or handler (see EditHandlersAclsAction EditActionsAclsAction)
         // inline FQCN, not an import: ModuleAclService lives in Identity and Kernel may
         // depend on no feature module (ArchitectureTest is import-based)

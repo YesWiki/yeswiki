@@ -23,7 +23,7 @@ use YesWiki\Kernel\Asset\AssetSet;
  * @see AssetSet
  * @see docs/adr/0014-assets-are-declared-by-a-render-not-accumulated-by-a-request.md
  */
-class AssetRegistry
+class AssetRegistry implements RequestScopedState
 {
     // Backward compatibility : in case some extensions were using javascript code previously in
     // tools/templates (and which have been moved elsewhere), we handle it
@@ -359,5 +359,12 @@ class AssetRegistry
         }
 
         return $file;
+    }
+
+    public function startNewRequest(): void
+    {
+        // what a page declared belongs to that page (ticket 14)
+        $this->page = new AssetSet();
+        $this->scopes = [];
     }
 }

@@ -30,6 +30,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -233,7 +234,7 @@ class EntryController extends YesWikiController
         }
 
         $user = $this->authenticationService->getLoggedUser();
-        if (!empty($user) && $this->favoritesManager->areFavoritesActivated() && (testUrlInIframe() == 'iframe')) {
+        if (!empty($user) && $this->favoritesManager->areFavoritesActivated() && (WikiUrls::iframeSuffixFor() == 'iframe')) {
             $currentuser = $user['name'];
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
@@ -257,7 +258,7 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->getService(AclService::class)->isAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
-            'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
+            'incomingUrl' => $this->getRequest()->query->get('incomingurl', WikiUrls::absoluteUrl()),
         ]);
     }
 
@@ -358,7 +359,7 @@ class EntryController extends YesWikiController
         }
 
         return $urlFormatter->href(
-            testUrlInIframe(),
+            WikiUrls::iframeSuffixFor(),
             '',
             [
                 'view' => 'consulter',
@@ -384,7 +385,7 @@ class EntryController extends YesWikiController
 
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
-                    : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
+                    : $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), '', [
                         'view' => 'consulter',
                         'action' => 'voir_fiche',
                         'tag' => $entry['tag'],
@@ -565,7 +566,7 @@ class EntryController extends YesWikiController
 
         if (!empty($form['sem_type'])) {
             $html['tag'] = $entry['tag'];
-            $html['semantic'] = $GLOBALS['yeswikiServices']->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
+            $html['semantic'] = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $html);
         }
 
         $values = [];

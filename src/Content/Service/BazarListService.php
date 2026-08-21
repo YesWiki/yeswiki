@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Search\Service\SearchManager;
 
 class BazarListService
@@ -655,6 +656,6 @@ class BazarListService
             ? strval($value)
             : (string)json_encode($value);
 
-        return strtoupper(removeAccents($value));
+        return strtoupper(StringUtilService::withoutDiacritics($value));
     }
 }

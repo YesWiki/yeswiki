@@ -18,6 +18,7 @@ use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 
 /**
  * Outgoing webhooks on comment and bazar-entry events (ticket 20, formerly the yeswiki-extension-webhooks repo).
@@ -188,7 +189,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         }
 
         return $this->render('@core/webhooks/webhooks_form.twig', [
-            'url' => getAbsoluteUrl(),
+            'url' => WikiUrls::absoluteUrl(),
             'webhooks' => $this->get_all_webhooks(),
 
             'forms' => $this->formManager->getAllLabels(),

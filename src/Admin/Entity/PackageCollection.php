@@ -3,12 +3,22 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Kernel\Entity\Collection;
+use YesWiki\Kernel\Service\ConfigurationService;
 
 class PackageCollection extends Collection
 {
     public const THEME_CLASS = 'YesWiki\Admin\Entity\PackageTheme';
     public const TOOL_CLASS = 'YesWiki\Admin\Entity\PackageTool';
     public const CORE_CLASS = 'YesWiki\Admin\Entity\PackageCore';
+
+    /**
+     * The version an admin asked for, when they asked for one, and the service that reads the
+     * configuration file. Only PackageCore wants either; it used to reach for both through
+     * `$GLOBALS['yeswikiServices']` because an entity built from a class-string has nowhere else
+     * to look (ticket 45).
+     */
+    protected string $requestedVersion = '';
+    protected ?ConfigurationService $configurationService = null;
 
     public function add($release, $address, $file, $description, $documentation, $minimalPhpVersion = null)
     {
@@ -20,6 +30,9 @@ class PackageCollection extends Collection
             $documentation,
             $minimalPhpVersion
         );
+        if ($package instanceof PackageCore) {
+            $package->updateContext($this->requestedVersion, $this->configurationService);
+        }
         $this->list[$package->name] = $package;
     }
 

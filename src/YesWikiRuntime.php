@@ -4,9 +4,6 @@ namespace YesWiki;
 
 require_once __DIR__ . '/bootstrap_paths.php';
 require_once __DIR__ . '/constants.php';
-require_once __DIR__ . '/Kernel/urlutils.inc.php';
-require_once __DIR__ . '/Kernel/email.inc.php';
-require_once __DIR__ . '/Content/bazar.functions.php';
 // defines LanguageService and the global _t() translation function; loaded
 // explicitly because the autoloader may not be registered yet at this point
 require_once __DIR__ . '/Kernel/Service/LanguageService.php';
@@ -56,6 +53,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -308,6 +306,12 @@ class YesWikiRuntime
 
     private function doRun($tag, $method)
     {
+        // A request begins here. Under php-fpm the process dies with it and this changes
+        // nothing; under worker mode (ADR-0024) it is what stops one visitor's counters, flags
+        // and stacks from becoming the next visitor's. Which services those are comes from who
+        // implements RequestScopedState, not from a list anybody maintains.
+        $this->service(RequestScope::class)->startNewRequest();
+
         if ($this->shouldRunMaintenance()) {
             $this->maintenance();
         }
@@ -766,7 +770,12 @@ class YesWikiRuntime
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
         $this->services->set(YesWikiRuntime::class, $this);
-        // explicit replacement for the implicit `$wiki` entry-point global procedural code read
+        // **Deprecated, and the last write of its kind in core.** It was the explicit replacement
+        // for the implicit `$wiki` global that procedural code read, and ticket 45 removed every
+        // core reader: 77 of them, 51 inside the global-function files ticket 50 deleted. It is
+        // written and never read here, kept only because an extension in the wild may still read
+        // it. Nothing in core may read it again; remove it when extensions have had a release to
+        // move to constructor injection.
         $GLOBALS['yeswikiServices'] = $this->services;
 
         // need to be executed after the container is compiled because the %paramName% are resolved there
@@ -802,12 +811,12 @@ class YesWikiRuntime
                 $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
                 $languageService->loadTranslations($returnedArray, true);
             }
-            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+            if ($this->service(LanguageService::class)->preferredLanguage() != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php';
                 $languageService->loadTranslations($returnedArray);
             }
-            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
+            if ($this->service(LanguageService::class)->preferredLanguage() != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php';
                 $languageService->loadTranslations($returnedArray, true);
             }
         }

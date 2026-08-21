@@ -12,6 +12,7 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Identity\Service\AccountJustCreated;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -97,6 +98,9 @@ class EntryManager
     }
 
     /** Returns true if the provided page is a Bazar fiche. */
+    /**
+     * @param string $tag
+     */
     public function isEntry($tag): bool
     {
         if (empty($tag)) {
@@ -107,6 +111,9 @@ class EntryManager
     }
 
     /** return array with list of page's tag for all entries. */
+    /**
+     * @return list<string>
+     */
     public function getAllEntriesTags(): array
     {
         return $this->pageManager->tagsOfType(PageType::ENTRY);
@@ -144,6 +151,12 @@ class EntryManager
         return $data;
     }
 
+    /**
+     * @param int|string                $pFormID
+     * @param array<string, mixed>|null $pData
+     *
+     * @return array<string, mixed>
+     */
     protected function removeUnknownFields($pFormID, $pData)
     {
         $vAuthorizedFields = [...$pData ?? []];
@@ -166,9 +179,10 @@ class EntryManager
     /**
      * getDataFromPage.
      *
-     * @param array  $page          , content of page from sql
-     * @param bool   $debug,        to throw exception in case of error
-     * @param string $fieldMapping, to pass fieldMapping parameter directly to appendDisplayData
+     * @param array                $page          , content of page from sql
+     * @param bool                 $debug,        to throw exception in case of error
+     * @param string               $fieldMapping, to pass fieldMapping parameter directly to appendDisplayData
+     * @param array<string, mixed> $page
      *
      * @return array data formated
      */
@@ -226,6 +240,9 @@ class EntryManager
     /**
      * Validate the fiche's data.
      *
+     * @param array<string, mixed> $data
+     * @param int                  $pFlags
+     *
      * @throws \Exception
      */
     public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
@@ -252,8 +269,10 @@ class EntryManager
     /**
      * Create a new fiche.
      *
-     * @param bool        $semantic
-     * @param string|null $sourceUrl
+     * @param bool                 $semantic
+     * @param string|null          $sourceUrl
+     * @param int|string           $formId
+     * @param array<string, mixed> $data
      *
      * @return array
      *
@@ -268,7 +287,10 @@ class EntryManager
         $data['form_id'] = "$formId";
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData(
+                $this->container->get(FormManager::class)->getOne($formId),
+                $data
+            );
         }
 
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
@@ -285,11 +307,12 @@ class EntryManager
 
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
-        if (isset($GLOBALS['created_user_name'])) {
+        $justCreated = $this->container->get(AccountJustCreated::class);
+        if ($justCreated->isRecorded()) {
             $olduser = $this->authenticationService->getLoggedUser();
             $this->authenticationService->logout();
 
-            $user = $this->userManager->getOneByName($GLOBALS['created_user_name']);
+            $user = $this->userManager->getOneByName((string)$justCreated->name());
             $this->authenticationService->login($user);
         }
 
@@ -325,13 +348,16 @@ class EntryManager
             );
         }
 
-        if (isset($GLOBALS['created_user_name']) && !empty($olduser)) {
+        if ($justCreated->isRecorded() && !empty($olduser)) {
             $this->authenticationService->logout();
             $oldUserClass = $this->userManager->getOneByName($olduser['name']);
             if (!empty($oldUserClass)) {
                 $this->authenticationService->login($oldUserClass, $olduser['remember'] ?? 1);
             }
         }
+        // the account has been written as, and the activation mail decided; nothing later in the
+        // request has any business believing an account was just created (ADR-0024)
+        $justCreated->forget();
 
         $this->pageManager->cacheType($data['tag'], PageType::ENTRY);
 
@@ -349,8 +375,10 @@ class EntryManager
     /**
      * Update an entry with the provided data.
      *
-     * @param bool $semantic
-     * @param bool $replace  If true, all the data will be provided (no merge with the previous data)
+     * @param bool                 $semantic
+     * @param bool                 $replace  If true, all the data will be provided (no merge with the previous data)
+     * @param string               $tag
+     * @param array<string, mixed> $data
      *
      * @return array
      *
@@ -384,7 +412,7 @@ class EntryManager
         }
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($data['form_id'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($form, $data);
         }
 
         $data = $this->formatDataBeforeSave($data);
@@ -414,9 +442,12 @@ class EntryManager
     /**
      * Replace the field values which are restricted at reading and writing.
      *
-     * @param array $data         the provided data to update
-     * @param array $previousData the provided previousData to update
-     * @param array $form         the entry form
+     * @param array                $data         the provided data to update
+     * @param array                $previousData the provided previousData to update
+     * @param array                $form         the entry form
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $previousData
+     * @param array<string, mixed> $form
      *
      * @return array the data with the restricted values added
      */
@@ -456,9 +487,12 @@ class EntryManager
     /**
      * Add the $previousData attributes which match the actual form and which are not in $data.
      *
-     * @param array $previousData the data saved in the entry
-     * @param array $form         the entry form
-     * @param array $data         the provided data to update
+     * @param array                $previousData the data saved in the entry
+     * @param array                $form         the entry form
+     * @param array                $data         the provided data to update
+     * @param array<string, mixed> $previousData
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $form
      *
      * @return array the data with the merged values
      *
@@ -481,9 +515,11 @@ class EntryManager
     /**
      * Delete a fiche.
      *
+     * @param string $tag
+     *
      * @throws \Exception
      */
-    public function delete($tag, bool $forceEvenIfNotOwner = false)
+    public function delete($tag, bool $forceEvenIfNotOwner = false): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -523,11 +559,13 @@ class EntryManager
      * Normalizes an already-decoded entry body (ticket 09: `pages.body` is a JSON object for every Content type, and PageManager hands it back decoded).
      *
      * @param array<string, mixed>|null $body
+     *
+     * @return array<string, mixed>|null null when there was no body to normalise
      */
     public function decode($body)
     {
         $data = $body;
-        if (is_iterable($data)) {
+        if (is_array($data)) {
             foreach (self::LEGACY_ENTRY_KEYS as $legacyKey => $key) {
                 if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
                     $data[$key] = $data[$legacyKey];
@@ -545,7 +583,7 @@ class EntryManager
     /**
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant de la valeur POST les valeurs inadequates et en formattant les champs.
      *
-     * @param $data current raw entry values
+     * @param array<string, mixed> $data current raw entry values
      *
      * @return array with extra calculated fields like tag, and time, and handled fields with acls
      *
@@ -566,17 +604,15 @@ class EntryManager
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
-                if (is_array($tab)) {
-                    if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                        foreach ($tab['fields-to-remove'] as $field) {
-                            if (isset($data[$field])) {
-                                unset($data[$field]);
-                            }
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $field) {
+                        if (isset($data[$field])) {
+                            unset($data[$field]);
                         }
-                        unset($tab['fields-to-remove']);
                     }
-                    $data = array_merge($data, $tab);
+                    unset($tab['fields-to-remove']);
                 }
+                $data = array_merge($data, $tab);
             }
         }
 
@@ -686,8 +722,11 @@ class EntryManager
     /**
      * Apply field mappings to an entry.
      *
-     * @param array        $pEntry
-     * @param string|array $pFieldMappings
+     * @param array                $pEntry
+     * @param string|array         $pFieldMappings
+     * @param array<string, mixed> $pEntry
+     * @param string|null          $pFieldMappings
+     * @param array<string, mixed> $pPage
      *
      * @return mixed the entry with modified fields
      *
@@ -699,11 +738,7 @@ class EntryManager
             return $pEntry;
         }
 
-        if (is_string($pFieldMappings)) {
-            $vFieldMappings = $this->getMultipleParameters($pFieldMappings, ',', '=');
-        } else {
-            $vFieldMappings = $pFieldMappings;
-        }
+        $vFieldMappings = $this->getMultipleParameters($pFieldMappings, ',', '=');
 
         if (!empty($vFieldMappings)) {
             try {
@@ -727,11 +762,16 @@ class EntryManager
     /**
      * Append data needed for display TODO move this to a class dedicated to display.
      *
-     * @param array  $pEntry
-     * @param bool   $pSemantic
-     * @param string $pFieldMappings
-     * @param array  $pPage,         appendDisplayData is called in environment with access to $pPage
-     *                               helping to get owner without asking another time to the page manager to get it
+     * @param array                $pEntry
+     * @param bool                 $pSemantic
+     * @param string               $pFieldMappings
+     * @param array                $pPage,         appendDisplayData is called in environment with access to $pPage
+     *                                             helping to get owner without asking another time to the page manager to get it
+     * @param array<string, mixed> $pEntry
+     * @param string|null          $pFieldMappings
+     * @param array<string, mixed> $pPage
+     *
+     * @return void
      *
      * @throws \Exception
      */
@@ -762,6 +802,8 @@ class EntryManager
      *
      * @param string $firstseparator
      * @param string $secondseparator
+     *
+     * @return array<string, string>
      *
      * @throws ParsingMultipleException
      */
@@ -804,6 +846,12 @@ class EntryManager
         return $sendmail;
     }
 
+    /**
+     * @param array<string, mixed>|null $data
+     * @param array<string, mixed>|null $previousEntry
+     *
+     * @return void
+     */
     private function sendMailToNotifiedEmails(?string $sendmail, ?array $data, bool $isCreation, ?array $previousEntry = null)
     {
         if ($sendmail) {
@@ -819,6 +867,8 @@ class EntryManager
     /**
      * sanitize formsIds and get forms.
      *
+     * @param array<mixed>|string|null $formsIds
+     *
      * @return array $forms
      */
     private function getFormsFromIds($formsIds): array
@@ -828,13 +878,11 @@ class EntryManager
             if (is_scalar($formsIds)) {
                 $formsIds = [$formsIds];
             }
-            if (is_array($formsIds)) {
-                $formsIds = array_filter($formsIds, function ($formId) {
-                    return is_scalar($formId) && (strval(intval($formId)) == strval($formId));
-                });
-            } else {
-                $formsIds = null;
-            }
+            // a scalar is one id; anything else is already a list, and only the entries that
+            // look like a form id survive
+            $formsIds = array_filter($formsIds, function ($formId) {
+                return is_scalar($formId) && (strval(intval($formId)) == strval($formId));
+            });
         }
         if (!empty($formsIds)) {
             return $formManager->getMany($formsIds);
@@ -846,7 +894,9 @@ class EntryManager
     /**
      * remove attributes from entries only for admins !!!
      *
-     * @param array $params
+     * @param array                $params
+     * @param array<string, mixed> $params
+     * @param list<string>         $attributesNames
      *
      * @return bool true if attributesNames are foond and replaced
      */
@@ -858,7 +908,9 @@ class EntryManager
     /**
      * remove attributes from entries only for admins !!!
      *
-     * @param array $params
+     * @param array                $params
+     * @param array<string, mixed> $params
+     * @param list<string>         $attributesNames
      *
      * @return array with entry's ids if attributesNames are found and replaced
      */
@@ -870,8 +922,10 @@ class EntryManager
     /**
      * rename attributes from entries only for admins !!!
      *
-     * @param array $params
-     * @param array $attributesNames [$oldName => $newName]
+     * @param array                 $params
+     * @param array                 $attributesNames [$oldName => $newName]
+     * @param array<string, mixed>  $params
+     * @param array<string, string> $attributesNames
      *
      * @return bool true if attributesNames are foond and replaced
      */
@@ -883,8 +937,10 @@ class EntryManager
     /**
      * rename attributes from entries only for admins !!!
      *
-     * @param array $params
-     * @param array $attributesNames [$oldName => $newName]
+     * @param array                 $params
+     * @param array                 $attributesNames [$oldName => $newName]
+     * @param array<string, mixed>  $params
+     * @param array<string, string> $attributesNames
      *
      * @return array with entry's ids if attributesNames are found and replaced
      */
@@ -896,7 +952,9 @@ class EntryManager
     /**
      * manage attributes from entries only for admins !!!
      *
-     * @param array $params
+     * @param array                $params
+     * @param array<string, mixed> $params
+     * @param array<mixed>         $attributesNames
      *
      * @return array with entry's ids if attributesNames are found and replaced
      */
@@ -958,6 +1016,10 @@ class EntryManager
         $entriesIds = [];
         foreach ($pages as $page) {
             $entry = $this->decode(PageBody::decode($page['body']));
+            if ($entry === null) {
+                // a revision whose body is not a document has no attributes to manage
+                continue;
+            }
 
             foreach ($attributesNames as $attributeName) {
                 if ($mode === 'rename') {
@@ -998,6 +1060,10 @@ class EntryManager
         return $entriesIds;
     }
 
+    /**
+     * @param string $sourceTag
+     * @param string $destinationTag
+     */
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
@@ -1006,6 +1072,9 @@ class EntryManager
         return $result;
     }
 
+    /**
+     * @param array<mixed> $array
+     */
     protected function is_multidimensional_array(array $array): bool
     {
         foreach ($array as $item) {
@@ -1017,6 +1086,9 @@ class EntryManager
         return false;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function buildHtmlDataAttributes(array $data): string
     {
         $htmldata = '';
@@ -1040,6 +1112,12 @@ class EntryManager
         return $htmldata;
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     * @param array<mixed>|string  $formtab
+     *
+     * @return string
+     */
     protected function getHtmlDataAttributes($entry, $formtab = '')
     {
         $htmldata = '';
@@ -1058,7 +1136,7 @@ class EntryManager
         $notFilterFieldClasses = [
             'YesWiki\Content\Field\MapField', 'YesWiki\Content\Field\HiddenField', 'YesWiki\Content\Field\FileField', 'YesWiki\Content\Field\ImageField', 'YesWiki\Content\Field\LabelField', 'YesWiki\Content\Field\LinkField', 'YesWiki\Content\Field\TextareaField',
         ];
-        if (is_array($entry) && isset($entry['form_id'])) {
+        if (isset($entry['form_id'])) {
             $form = isset($formtab[$entry['form_id']]) ? $formtab[$entry['form_id']] : $this->container->get(FormManager::class)->getOne($entry['form_id']);
             foreach ($entry as $key => $value) {
                 if (!empty($value)) {
@@ -1092,6 +1170,11 @@ class EntryManager
         return $htmldata;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         return $this->searchManager->search($params, $filterOnReadACL, $useGuard);

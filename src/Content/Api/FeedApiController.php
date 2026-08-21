@@ -12,7 +12,9 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Search\Service\TagsManager;
@@ -91,7 +93,7 @@ class FeedApiController extends YesWikiController
             $this->addTag($doc, $channel, 'description', $this->sanitize($config['BAZ_RSS_DESCRIPTIONSITE']));
             $this->addTag($doc, $channel, 'link', $this->sanitize($config['BAZ_RSS_ADRESSESITE']));
             $this->addTag($doc, $channel, 'language', 'fr-FR');
-            $this->addTag($doc, $channel, 'copyright', 'Copyright (c) ' . date('Y') . ' ' . removeAccents($config['BAZ_RSS_NOMSITE']));
+            $this->addTag($doc, $channel, 'copyright', 'Copyright (c) ' . date('Y') . ' ' . StringUtilService::withoutDiacritics($config['BAZ_RSS_NOMSITE']));
             $this->addTag($doc, $channel, 'docs', 'http://www.stervinou.com/projets/rss/');
             $this->addTag($doc, $channel, 'category', $config['BAZ_RSS_CATEGORIE']);
             $this->addTag($doc, $channel, 'managingEditor', $config['BAZ_RSS_MANAGINGEDITOR']);
@@ -270,7 +272,7 @@ class FeedApiController extends YesWikiController
 
         if (preg_match_all($pattern, $vBody, $matches)) {
             foreach ($matches[3] as $vKey => $vURL) {
-                $vAbsoluteURL = getAbsoluteURLForLinkInAPage($pPageURL, $vURL);
+                $vAbsoluteURL = WikiUrls::absoluteUrlForLinkInPage($pPageURL, $vURL);
                 $vBody = str_replace($matches[0][$vKey], $matches[1][$vKey] . $matches[2][$vKey] . $vAbsoluteURL . $matches[2][$vKey] . $matches[5][$vKey], $vBody);
             }
         }

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Kernel\Service\ClassDirectoryScanner;
 
 class FieldFactory
 {
@@ -26,27 +27,17 @@ class FieldFactory
     {
         require_once YESWIKI_SOURCE_DIR . '/src/annotations/Field.php';
 
-        foreach (glob(YESWIKI_SOURCE_DIR . '/src/*/Field', GLOB_ONLYDIR) ?: [] as $moduleFieldsDir) {
-            $module = basename(dirname($moduleFieldsDir));
-            $this->scanFieldsDir($moduleFieldsDir, 'YesWiki\\' . $module . '\\Field\\');
-        }
-
-        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionKey => $extensionDir) {
-            $extensionName = ucfirst($extensionKey);
-            if ($extensionName === 'Helloworld') {
-                $extensionName = 'HelloWorld';
-            }
-            $this->scanFieldsDir(realpath($extensionDir) . '/fields', 'YesWiki\\' . $extensionName . '\\Field\\');
+        $scanner = $this->container->get(ClassDirectoryScanner::class);
+        foreach ($scanner->directories('Field', 'fields') as $namespace => $dir) {
+            $this->scanFieldsDir($scanner->filesIn($dir), $namespace);
         }
     }
 
-    private function scanFieldsDir(string $fullDir, string $namespace)
+    /**
+     * @param list<string> $fieldsFiles
+     */
+    private function scanFieldsDir(array $fieldsFiles, string $namespace)
     {
-        if (!is_dir($fullDir)) {
-            return;
-        }
-        $fieldsFiles = array_diff(scandir($fullDir), ['..', '.']);
-
         foreach ($fieldsFiles as $fieldFile) {
             preg_match("/^([a-zA-Z0-9_-]+)Field\.php$/", $fieldFile, $matches);
             if (empty($matches[1])) {

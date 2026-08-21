@@ -17,11 +17,10 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Search\Service\SearchManager;
-
-include_once YESWIKI_SOURCE_DIR . '/src/Content/syndication.functions.php';
 
 class SyndicationAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
 {
@@ -198,7 +197,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         if (empty($desc)) {
             $desc = $feedItem['description'];
         }
-        $feedItem['summary'] = truncate(
+        $feedItem['summary'] = StringUtilService::truncate(
             strip_tags($desc ?? ''),
             500
         );
@@ -227,7 +226,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
 
             if ($descLen > 0
                 && $descLen > $this->arguments['maxchars']) {
-                $feedItem['description'] = truncate(
+                $feedItem['description'] = StringUtilService::truncate(
                     $feedItem['description'],
                     $this->arguments['maxchars'],
                     '... <a class="lien_lire_suite" href="' . $feedItem['url']
@@ -347,7 +346,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                             $feedItem = $this->feedItemFields($item, $nburl);
                             if ($mappingToBazar) {
                                 $feedItem['linkToEntry'] = $feedItem['mappingInput'] = '';
-                                $entryExists = multiArraySearch($entries, $this->arguments['mapping']['url'], $feedItem['url']);
+                                $entryExists = StringUtilService::searchNested($entries, $this->arguments['mapping']['url'], $feedItem['url']);
                                 if (!empty($entryExists)) {
                                     $feedItem['linkToEntry'] = $this->getService(UrlFormatter::class)->href('', $entryExists[0]['tag']);
                                 } else {

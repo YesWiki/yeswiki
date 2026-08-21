@@ -130,7 +130,7 @@ class EntryApiController extends YesWikiController
                 $html = $this->getService(EntryController::class)->view($entryId, '', true);
                 $isInIframe = $get->get('isInIframe');
                 if ($isInIframe && $isInIframe == 'iframe') {
-                    $html = replaceLinksWithIframe($html);
+                    $html = $this->getService(UrlFormatter::class)->throughIframeHandler($html);
                 }
             } else {
                 $html = $this->render('@core/alert-message.twig', [
@@ -148,6 +148,9 @@ class EntryApiController extends YesWikiController
     public function getAllSemanticEntries($formId, $entries)
     {
         $form = $this->getService(FormManager::class)->getOne($formId);
+        if ($form === null) {
+            return [];
+        }
 
         $resources = array_map(function ($entry) use ($form) {
             return $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);

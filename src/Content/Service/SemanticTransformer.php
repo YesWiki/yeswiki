@@ -16,7 +16,12 @@ class SemanticTransformer
         $this->params = $params;
     }
 
-    public function convertToSemanticData($form, $data): array
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
+     */
+    public function convertToSemanticData(array $form, mixed $data): array
     {
         if (empty($form['sem_template'])) {
             throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
@@ -34,12 +39,19 @@ class SemanticTransformer
         return $semanticData;
     }
 
-    public function convertFromSemanticData($formId, $data): array
+    /**
+     * @param array<string, mixed> $form the form itself, not its id: looking it up here would
+     *                                   make this service depend on FormManager, and FormManager
+     *                                   already depends on EntryManager which depends on this
+     *                                   (ticket 04's cycle, reintroduced and caught by the
+     *                                   container in ticket 50)
+     *
+     * @return array<string, mixed>
+     */
+    public function convertFromSemanticData(array $form, mixed $data): array
     {
-        $form = formValues($formId);
-
         if (empty($form['sem_reverse_template'])) {
-            throw new \Exception('No reverse semantic template defined for form ' . $formId);
+            throw new \Exception('No reverse semantic template defined for form ' . ($form['id'] ?? '?'));
         }
 
         $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['sem_reverse_template'], $data);

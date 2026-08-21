@@ -59,7 +59,7 @@ class EmailField extends BazarField
         }
 
         if ($this->showContactForm) {
-            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');
+            $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }
 
         return $this->render('@core/fields/email.twig', [

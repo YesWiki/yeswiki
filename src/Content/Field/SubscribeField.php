@@ -3,6 +3,8 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Service\ImportContext;
+use YesWiki\Kernel\Service\Mailer;
 
 #[\Field(['inscriptionliste'])]
 class SubscribeField extends BazarField
@@ -46,28 +48,27 @@ class SubscribeField extends BazarField
         $subscribeEmail = $this->getSubscribeEmail($entry);
         $unsubscribeEmail = $this->getUnsubscribeEmail($entry);
 
-        if (!class_exists('Mail')) {
-            include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
-        }
-
-        if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
+        if ($this->getService(ImportContext::class)->isImporting()) {
             if ($value === $subscribeEmail) {
-                send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+                $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
                 return [$this->propertyName => $value];
             } elseif ($value === $unsubscribeEmail) {
                 return [$this->propertyName => $value];
             }
-        } else {
-            if (isset($value)) {
-                send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
-                return [$this->propertyName => $subscribeEmail];
-            }
-            send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
-
-            return [$this->propertyName => $unsubscribeEmail];
+            // an imported value that is neither address subscribes nobody and unsubscribes
+            // nobody; this fell off the end and contributed null instead
+            return [];
         }
+        if (isset($value)) {
+            $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+
+            return [$this->propertyName => $subscribeEmail];
+        }
+        $this->getService(Mailer::class)->send($entry[$this->emailField] ?? '', $entry['title'] ?? $entry['bf_titre'] ?? '', $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+
+        return [$this->propertyName => $unsubscribeEmail];
     }
 
     protected function renderStatic($entry)

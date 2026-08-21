@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\TemplateEngine;
 
 class PasswordForEditingService
@@ -61,7 +62,7 @@ class PasswordForEditingService
                     && !empty($this->params->get('password_for_editing_message')))
                     ? $this->params->get('password_for_editing_message') : null,
                 'time' => $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('time'),
-                'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
+                'handler' => WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit',
             ]
         );
     }

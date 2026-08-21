@@ -15,6 +15,8 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\StringUtilService;
 
 class ThemeManager implements EventSubscriberInterface
 {
@@ -267,10 +269,11 @@ class ThemeManager implements EventSubscriberInterface
                     file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . SQUELETTE_PAR_DEFAUT)
                     && file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . CSS_PAR_DEFAUT)
                 ) {
-                    $GLOBALS['template-error']['type'] = 'theme-not-found';
-                    $GLOBALS['template-error']['theme'] = $this->favorites['theme'];
-                    $GLOBALS['template-error']['style'] = $this->favorites['style'];
-                    $GLOBALS['template-error']['squelette'] = $this->favorites['squelette'];
+                    $this->container->get(ThemeResolutionError::class)->themeNotFound(
+                        (string)$this->favorites['theme'],
+                        (string)$this->favorites['style'],
+                        (string)$this->favorites['squelette']
+                    );
                     $this->setFavorite('theme', THEME_PAR_DEFAUT);
                     $this->setFavorite('style', CSS_PAR_DEFAUT);
                     $this->setFavorite('squelette', SQUELETTE_PAR_DEFAUT);
@@ -391,7 +394,7 @@ class ThemeManager implements EventSubscriberInterface
             $this->getFavoriteStyle(),
             $this->getFavoritePreset(),
             $this->getFavoriteBackgroundImage(),
-            (string)($GLOBALS['prefered_language'] ?? ''),
+            (string)($this->container->get(LanguageService::class)->preferredLanguage() ?? ''),
         ];
     }
 
@@ -750,7 +753,7 @@ class ThemeManager implements EventSubscriberInterface
     /** Keep a family's `@font-face` rules beside its files. See FONT_FACES_FILE. */
     public function writeFontFaces(string $family, string $css): void
     {
-        $directory = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family));
+        $directory = self::CUSTOM_FONT_PATH . '/' . StringUtilService::asFilename($this->cleanFont($family));
         if ($this->storage->directoryExists($directory)) {
             $this->storage->write($directory . '/' . self::FONT_FACES_FILE, trim($css) . "\n");
         }
@@ -759,7 +762,7 @@ class ThemeManager implements EventSubscriberInterface
     /** A family's stored rules, or '' if it was installed before they were kept. */
     public function fontFaces(string $family): string
     {
-        $file = self::CUSTOM_FONT_PATH . '/' . sanitizeFilename($this->cleanFont($family))
+        $file = self::CUSTOM_FONT_PATH . '/' . StringUtilService::asFilename($this->cleanFont($family))
             . '/' . self::FONT_FACES_FILE;
 
         return $this->storage->fileExists($file) ? $this->storage->read($file) : '';
@@ -963,10 +966,10 @@ class ThemeManager implements EventSubscriberInterface
      */
     protected function importFontFile(string $family, string $style, string $weight, string $subset, string $url): string
     {
-        $folder = sanitizeFilename($family);
+        $folder = StringUtilService::asFilename($family);
         $directory = self::CUSTOM_FONT_PATH . '/' . $folder;
 
-        $name = sanitizeFilename($family . '-' . $style . '-' . $weight . '-' . $subset) . '.woff2';
+        $name = StringUtilService::asFilename($family . '-' . $style . '-' . $weight . '-' . $subset) . '.woff2';
         $bytes = $this->fetch($url, self::BROWSER_USER_AGENT);
         if ($bytes === null) {
             return $url;

@@ -48,9 +48,12 @@ test('an admin copies a template, edits it, and the wiki renders the edit', asyn
   await expect(page.locator('.yw-dashboard__link--current')).toContainText(
     'Gabarits',
   )
-  await expect(page.locator('.yw-templates__table')).not.toContainText(
-    'core/admin/keywords.twig',
-  )
+  // The list renders a table or an empty-state paragraph, never both, and a wiki with no
+  // override at all gets the paragraph -- so asserting on the table alone fails on a clean
+  // wiki with "element(s) not found" rather than on the thing it means to check.
+  await expect(
+    page.locator('.yw-templates__table, .yw-templates__empty'),
+  ).not.toContainText('core/admin/keywords.twig')
 
   await page
     .locator('.yw-templates__start select')

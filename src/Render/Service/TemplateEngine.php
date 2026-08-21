@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Files\Service\RemoteImageCache;
 use YesWiki\Files\Service\Storage;
@@ -16,9 +18,12 @@ use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Entity\LayoutChrome;
 
 class TemplateEngine
@@ -119,7 +124,7 @@ class TemplateEngine
             'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
         ]);
         $this->twig->addGlobal('config', $this->container->get(RuntimeConfig::class)->all());
-        $this->twig->addGlobal('isInIframe', testUrlInIframe());
+        $this->twig->addGlobal('isInIframe', WikiUrls::iframeSuffixFor());
 
         $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
@@ -145,7 +150,7 @@ class TemplateEngine
             if (substr($options['tag'], 0, 4) === 'api/') {
                 $iframe = '';
             } else {
-                $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
+                $iframe = !empty($options['handler']) ? $options['handler'] : WikiUrls::iframeSuffixFor();
             }
 
             return $this->urlFormatter->href($iframe, $options['tag'], $options['params'], false);
@@ -283,7 +288,7 @@ class TemplateEngine
         });
 
         $this->addTwigHelper('customValueForEntry', function ($parameter, $field, $entry, $default = '') {
-            return getCustomValueForEntry($parameter, $field, $entry, $default);
+            return $this->container->get(EntryDisplay::class)->customValueFor($parameter, $field, $entry, $default);
         });
 
         $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
@@ -296,26 +301,26 @@ class TemplateEngine
             return $this->container->get(AclService::class)->isOwner($tag ?: '');
         });
         $this->addTwigHelper('absoluteUrl', function () {
-            return getAbsoluteUrl();
+            return WikiUrls::absoluteUrl();
         });
 
         $this->addTwigHelper('renderEntry', function ($showManagementBar, $entry, $form = '') {
-            return renderEntryView($showManagementBar, $entry, $form ?: '');
+            return $this->container->get(EntryDisplay::class)->renderEntry($showManagementBar, $entry, $form ?: '');
         });
 
         $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
-            return resizeImage('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
+            return $this->container->get(ImageResizer::class)->cached('files/' . $image, $width, $height, $mode);
         });
 
         $this->addTwigHelper('resizeImageTo', function ($source, $destination, $width, $height, $mode = 'fit') {
-            return resizeImage($source, $destination, $width, $height, $mode);
+            return $this->container->get(ImageResizer::class)->cached($source, $width, $height, $mode);
         });
 
         $this->addTwigHelper('timestamp', function ($value) {
             return (int)strtotime((string)$value);
         });
         $this->addTwigHelper('removeAccents', function ($text) {
-            return removeAccents((string)$text);
+            return StringUtilService::withoutDiacritics((string)$text);
         });
         $this->addTwigHelper('fileExists', function ($path) {
             return file_exists((string)$path);
@@ -333,7 +338,7 @@ class TemplateEngine
             return $this->container->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
-            return $this->container->get(Storage::class)->url(BAZ_CHEMIN_UPLOAD . $fileName);
+            return $this->container->get(Storage::class)->url(AttachedFilePaths::UPLOAD_DIR . $fileName);
         });
 
         $this->addTwigHelper('layout_chrome', fn () => $this->renderLayoutChrome());
@@ -364,7 +369,7 @@ class TemplateEngine
     /** The viewer's own controls at the end of the bar: Colour scheme, and language. */
     private function renderChromeTools(): string
     {
-        $current = (string)($GLOBALS['prefered_language'] ?? '');
+        $current = (string)($this->container->get(LanguageService::class)->preferredLanguage() ?? '');
         $available = (array)($GLOBALS['available_languages'] ?? []);
         $names = (array)($GLOBALS['languages_list'] ?? []);
 
@@ -476,7 +481,7 @@ class TemplateEngine
         $tag = $this->container->get(LayoutService::class)->pageFor($roles[$part]);
 
         return $this->render('@core/layout/edit-chrome.twig', [
-            'href' => $this->urlFormatter->href('edit', $tag, ['incomingurl' => getAbsoluteUrl()], false),
+            'href' => $this->urlFormatter->href('edit', $tag, ['incomingurl' => WikiUrls::absoluteUrl()], false),
             'label' => _t('LAYOUT_EDIT_' . strtoupper($part)),
         ]);
     }
@@ -508,7 +513,7 @@ class TemplateEngine
                 return '';
             }
 
-            $moment->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
+            $moment->locale((string)($this->container->get(LanguageService::class)->preferredLanguage() ?? 'en'));
 
             return $moment->isoFormat($format);
         }));
@@ -601,7 +606,7 @@ class TemplateEngine
         $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
 
         $baseUrl = $this->urlFormatter->getBaseUrl();
-        $uploadPath = BAZ_CHEMIN_UPLOAD;
+        $uploadPath = AttachedFilePaths::UPLOAD_DIR;
         $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
             return $baseUrl . '/' . $uploadPath . $fileName;
         }));

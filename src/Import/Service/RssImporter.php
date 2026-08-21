@@ -10,6 +10,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FeedLoader;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Kernel\Service\StringUtilService;
 
 class RssImporter extends Importer
 {
@@ -187,7 +188,7 @@ EOT,
     {
         $existingEntries = $this->entryManager->search(['formsIds' => [$this->config['formId']]]);
         foreach ($data as $entry) {
-            $res = multiArraySearch($existingEntries, 'bf_url', $entry['bf_url']);
+            $res = StringUtilService::searchNested($existingEntries, 'bf_url', $entry['bf_url']);
             if (!$res) {
                 $entry['antispam'] = 1;
                 $this->entryManager->create($this->config['formId'], $entry, false, $entry['bf_url']);

@@ -16,13 +16,16 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Render\Service\ThemeResolutionError;
 use YesWiki\Search\Service\TagsManager;
 
 /** `/PageName/show` -- converted from the procedural handlers/page/show.php by ticket 06. */
@@ -65,7 +68,9 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
                 if ($semantic) {
                     $form = $this->getService(FormManager::class)->getOne($entry['form_id'] ?? null);
-                    $semanticFiche = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
+                    $semanticFiche = $form === null
+                        ? []
+                        : $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     $this->getService(Redirector::class)->terminate((string)json_encode($semanticFiche));
                 } else {
                     $this->getService(Redirector::class)->terminate((string)json_encode($entry));
@@ -77,13 +82,11 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
 
-        require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $pageContext = $this->getService(PageContext::class);
         $body = ($pageContext->getPage() ?? [])['body'] ?? [];
         if (!empty(PageBody::content($body))) {
-            $body[PageBody::CONTENT] = filterBodyByLanguage(
+            $body[PageBody::CONTENT] = $this->getService(LanguageService::class)->sectionFor(
                 PageBody::content($body),
-                $GLOBALS['prefered_language'],
                 $this->getService(RuntimeConfig::class)['default_language']
             );
             $pageContext->setPageField('body', $body);
@@ -117,13 +120,13 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         $plugin_output_new = str_replace('onload="alert(\'' . _t('EDIT_NO_CHANGE_MSG') . '\');"', '', $plugin_output_new);
 
-        if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == 'theme-not-found') {
+        $missingTheme = $this->getService(ThemeResolutionError::class)->takeMissingTheme();
+        if ($missingTheme !== null) {
             $plugin_output_new = str_replace(
                 '<div class="page" >',
-                '<div class="page">' . "\n" . '<div class="yw-alert yw-alert--danger"><a href="#" data-yw-dismiss="alert" class="yw-close">&times;</a><strong>' . _t('TEMPLATE_NO_THEME_FILES') . ' :</strong><br />themes/' . $GLOBALS['template-error']['theme'] . '/squelettes/' . $GLOBALS['template-error']['squelette'] . '<br />themes/' . $GLOBALS['template-error']['theme'] . '/styles/' . $GLOBALS['template-error']['style'] . '<br><strong>' . _t('TEMPLATE_DEFAULT_THEME_USED') . '</strong>.</div>',
+                '<div class="page">' . "\n" . '<div class="yw-alert yw-alert--danger"><a href="#" data-yw-dismiss="alert" class="yw-close">&times;</a><strong>' . _t('TEMPLATE_NO_THEME_FILES') . ' :</strong><br />themes/' . $missingTheme['theme'] . '/squelettes/' . $missingTheme['squelette'] . '<br />themes/' . $missingTheme['theme'] . '/styles/' . $missingTheme['style'] . '<br><strong>' . _t('TEMPLATE_DEFAULT_THEME_USED') . '</strong>.</div>',
                 $plugin_output_new
             );
-            $GLOBALS['template-error'] = '';
         }
 
         if (!$this->getService(AclService::class)->hasAccess('read')) {
@@ -215,7 +218,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                         $latest = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()); ?>
                         <?php
                         $time = isset($_GET['time']) ? $_GET['time'] : '';
-                        echo $this->getService(TemplateEngine::class)->formOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
+                        echo $this->getService(TemplateEngine::class)->formOpen(WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit', '', 'get'); ?>
                         <input type="hidden" name="time" value="<?php echo htmlspecialchars($time, ENT_QUOTES, YW_CHARSET); ?>" />
                         <input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
                         <?php echo $this->getService(TemplateEngine::class)->formClose(); ?>

@@ -41,12 +41,15 @@ class LinkedEntryField extends BazarField
 
     protected function renderInput($entry)
     {
-        if (isset($entry['tag'])) {
-            return $this->render(
-                '@core/inputs/linked-entry.twig',
-                $this->getTwigOptions($entry)
-            );
+        if (!isset($entry['tag'])) {
+            // nothing to link to yet: the entry has not been saved
+            return '';
         }
+
+        return $this->render(
+            '@core/inputs/linked-entry.twig',
+            $this->getTwigOptions($entry)
+        );
     }
 
     protected function renderStatic($entry)

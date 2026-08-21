@@ -59,17 +59,15 @@ class CleanOldCartoGoogle extends YesWikiMigration
             if ($field instanceof MapField) {
                 $entry = array_merge($entry, $this->getMapFieldValue($field, $entry));
                 $tab = $field->formatValuesBeforeSaveIfEditable($entry);
-                if (is_array($tab)) {
-                    if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                        foreach ($tab['fields-to-remove'] as $fieldName) {
-                            if (isset($entry[$fieldName])) {
-                                unset($entry[$fieldName]);
-                            }
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $fieldName) {
+                        if (isset($entry[$fieldName])) {
+                            unset($entry[$fieldName]);
                         }
-                        unset($tab['fields-to-remove']);
                     }
-                    $entry = array_merge($entry, $tab);
+                    unset($tab['fields-to-remove']);
                 }
+                $entry = array_merge($entry, $tab);
                 $updated = true;
             }
         }

@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Database\SqlFragment;
@@ -13,6 +14,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
@@ -41,7 +43,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
 
         $elementwidth = $this->getService(PerformableArguments::class)->get('elementwidth');
@@ -59,8 +60,9 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
             $template = 'pages_grid_filter.twig';
         }
 
-        $params = get_filtertags_parameters_recursive();
-        if (!is_array($params) && strstr($params, 'alert-danger')) {
+        $params = $this->filterParameters();
+        if (is_string($params)) {
+            // an unusable `filter1`, and the message to show instead of a filter bar
             echo $params;
 
             return;
@@ -105,7 +107,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
                 if ($tagname == 'alaligne') {
                     echo '<br />' . "\n";
                 } else {
-                    echo '<button type="button" class="btn btn-default filter" data-filter="' . sanitizeEntity($tagname) . '">' . $tagname . '</button>' . "\n";
+                    echo '<button type="button" class="btn btn-default filter" data-filter="' . StringUtilService::withoutAccents($tagname) . '">' . $tagname . '</button>' . "\n";
                 }
             }
             echo '</div>' . "\n" . '</div>' . "\n";
@@ -124,13 +126,13 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
                 $element[$page['tag']]['owner'] = $page['owner'];
                 $element[$page['tag']]['user'] = $page['user'];
                 $element[$page['tag']]['time'] = $page['time'];
-                $element[$page['tag']]['title'] = get_title_from_body($page);
-                $element[$page['tag']]['image'] = get_image_from_body($page);
+                $element[$page['tag']]['title'] = $this->getService(PageSummary::class)->title($page);
+                $element[$page['tag']]['image'] = $this->getService(PageSummary::class)->image($page);
                 $this->getService(InclusionStack::class)->register($page['tag']);
-                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
+                $element[$page['tag']]['desc'] = StringUtilService::truncateOnWord(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
                 $this->getService(InclusionStack::class)->unregisterLast();
                 foreach (TagsManager::keywordsOf($page) as $keyword) {
-                    $element[$page['tag']]['tagnames'] .= sanitizeEntity($keyword) . ' ';
+                    $element[$page['tag']]['tagnames'] .= StringUtilService::withoutAccents($keyword) . ' ';
                     $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
                 }
             }
@@ -143,5 +145,58 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         ]);
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/filtertags.js');
+    }
+
+    /**
+     * The `filter1`, `filter2`, ... arguments read into one structure, or the error to show instead.
+     *
+     * Was the global `get_filtertags_parameters_recursive()`, which reached the container to read
+     * the arguments of the very action calling it (ticket 50).
+     *
+     * @param array<mixed> $tab
+     *
+     * @return array<mixed>|string
+     */
+    private function filterParameters(int $nb = 1, array $tab = [])
+    {
+        $filter = $this->getService(PerformableArguments::class)->get('filter' . $nb);
+
+        if (empty($filter) && $nb == 1) {
+            return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_NO_FILTERS') . '</div>' . "\n";
+        } elseif (empty($filter)) {
+            return $tab;
+        }
+
+        if (!isset($tab['tags'])) {
+            $tab['tags'] = [];
+        }
+        $explodelabel = explode(':', $filter);
+
+        if (count($explodelabel) > 2) {
+            return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_ONLY_ONE_DOUBLEPOINT') . '</div>' . "\n";
+        } elseif (count($explodelabel) == 2) {
+            $tab[$nb]['title'] = '<strong>' . $explodelabel[0] . ' : </strong>' . "\n";
+            $tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
+        } else {
+            $tab[$nb]['title'] = '';
+            $tab[$nb]['arraytags'] = explode(',', $explodelabel[0]);
+        }
+        $toggle = $this->getService(PerformableArguments::class)->get('select' . $nb);
+        if (!empty($toggle) && $toggle == 'checkbox') {
+            $tab[$nb]['toggle'] = $toggle;
+        } else {
+            $tab[$nb]['toggle'] = 'radio';
+        }
+        $class = $this->getService(PerformableArguments::class)->get('class' . $nb);
+        if (!empty($class)) {
+            $tab[$nb]['class'] = $class;
+        } else {
+            $tab[$nb]['class'] = 'filter-inline';
+        }
+        $tab['tags'] = [...$tab['tags'], ...array_values($tab[$nb]['arraytags'])];
+        $nb++;
+        $tab = $this->filterParameters($nb, $tab);
+
+        return $tab;
     }
 }

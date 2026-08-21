@@ -9,6 +9,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Render\Service\GraphicalElementState;
 
 class AccordionAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -44,11 +45,8 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
         $pagetag = $this->getService(PageContext::class)->getTag();
 
         if ($this->check_end_elem('accordion')) {
-            $accordionID = '';
-            if ($GLOBALS['check_' . $pagetag]['accordion']) {
-                $accordionID = uniqid('accordion_');
-                $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
-            }
+            $accordionID = uniqid('accordion_');
+            $this->getService(GraphicalElementState::class)->openAccordion($pagetag, $accordionID);
 
             echo '<!-- start of accordion -->' . "\n" .
             "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
@@ -64,7 +62,7 @@ class AccordionAction extends YesWikiAction implements RegisteredAction, Provide
     public function end(): string
     {
         $pagetag = $this->getService(PageContext::class)->getTag();
-        unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
+        $this->getService(GraphicalElementState::class)->closeAccordion($pagetag);
 
         return "\n</div> <!-- end of accordion -->\n";
     }

@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\ContentCreator;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\IcalFormatter;
@@ -201,7 +202,7 @@ class FormController extends YesWikiController
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
-                'formAndListIds' => formAndListIds(),
+                'formAndListIds' => $this->getService(EntryDisplay::class)->formAndListNames(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
@@ -231,7 +232,7 @@ class FormController extends YesWikiController
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
-                'formAndListIds' => formAndListIds(),
+                'formAndListIds' => $this->getService(EntryDisplay::class)->formAndListNames(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),

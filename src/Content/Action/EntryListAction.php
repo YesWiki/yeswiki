@@ -14,10 +14,13 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
+use YesWiki\Content\Service\ListIndex;
+use YesWiki\Content\Service\TemplateDataFactory;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Identity\Service\AclService;
@@ -28,21 +31,48 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Component\SettingGroup;
 use YesWiki\Kernel\Exception\TemplateNotFound;
+use YesWiki\Kernel\Performable\AliasesPerformable;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Search\Service\SearchManager;
 
-class EntryListAction extends YesWikiAction implements RegisteredAction, ProvidesComponents, SuppliesItems
+class EntryListAction extends YesWikiAction implements AliasesPerformable, RegisteredAction, ProvidesComponents, SuppliesItems
 {
     /** `{{entrylist}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
     {
         return 'entrylist';
+    }
+
+    /**
+     * The deprecated spellings of `{{entrylist}}` that stored pages still contain (ticket 49).
+     *
+     * Each of these was an action of its own whose whole job was to format a few arguments
+     * and call this one, which called it back. The formatting lives in a `PrepareData…` class
+     * keyed on the template now, so what is left of each is the argument its name implies.
+     * Defaults rather than pins: `{{entrymap template="gogomap"}}` still means gogomap.
+     *
+     * `entrytable` pins `tableau`, the bazar table, which is not the shared `table`
+     * Presentation. Written bare it used to render the wiki's default list template, because
+     * the action it named formatted arguments and passed no template of its own: an action
+     * called `entrytable` that drew an accordion. Pinning the template is the fix.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function performableAliases(): array
+    {
+        return [
+            'entrymap' => ['template' => 'map'],
+            'calendar' => ['template' => 'calendar'],
+            'entrytable' => ['template' => 'tableau'],
+            'entryuserpage' => ['filteruserasowner' => 'true'],
+        ];
     }
 
     public static function sourceLabel(): string
@@ -502,8 +532,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                             ]),
                         ),
                 ),
+            // `entrymap` is a deprecated spelling of this action, not a component of its own
+            // (ticket 49). The palette recognises a stored `{{entrymap}}` through the pinned
+            // template below and writes `{{entrylist}}`.
             Component::for('entrymap')
-                ->writes('entrylist', 'entrymap')
+                ->writes('entrylist')
                 ->category(Category::Lists)
                 ->label(_t('AB_bazarcarto_label'))
                 ->icon('map-2')
@@ -1412,10 +1445,6 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
     // library is gone, but page bodies still ask for them, and they have to keep reaching
     // the map action -- which answers them with `map` -- rather than falling through to a
     // plain list and looking for a template that no longer exists.
-    protected const BAZARCARTO_TEMPLATES = ['map', 'gogomap', 'gogocarto', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
-    protected const BAZARTABLE_TEMPLATES = ['table', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
-    protected const CALENDAR_TEMPLATES = ['calendar']; // liste des templates sans .twig ni .tpl.html
-
     protected $debug;
 
     public function formatArguments($arg)
@@ -1556,7 +1585,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
 
         $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $this->getRequest()->get('q'), $this->getRequest()->get('keywords'));
 
-        return [
+        $formatted = [
             // //////////////////
             // USER PARAMETERS
             // ////////////////
@@ -1688,48 +1717,24 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             // //////////////////
 
             // Iframe ?
-            'isInIframe' => testUrlInIframe(),
+            'isInIframe' => WikiUrls::iframeSuffixFor(),
 
             'selectedID' => $get->get('selectedID'),
         ];
+
+        // Everything above is what every template shares. A template that needs more says so
+        // with a `PrepareData…` class of its own (ticket 49) -- the map's marker vocabulary,
+        // the table's columns -- rather than with an action of its own that called this one
+        // back with a class name in the arguments to stop the recursion.
+        return $this->getService(TemplateDataFactory::class)->prepare(
+            (string)$formatted['template'],
+            array_merge($arg, $formatted)
+        );
     }
 
     public function run()
     {
         $this->debug = (bool)$this->getService(RuntimeConfig::class)->getValue('debug');
-
-        // If the template is a map or a calendar, call the dedicated action so that
-        // arguments can be properly formatted. The second first condition prevents infinite loops
-        if (
-            self::specialActionFromTemplate($this->arguments['template'], 'BAZARCARTO_TEMPLATES')
-            && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'], ['EntryMapAction', 'EntryTableAction']))
-        ) {
-            return $this->callAction('entrymap', $this->arguments);
-        } elseif (
-            self::specialActionFromTemplate($this->arguments['template'], 'CALENDAR_TEMPLATES')
-            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendarAction')
-        ) {
-            return $this->callAction('calendar', $this->arguments);
-        } elseif (
-            self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
-            // `table` is a shared Presentation now and renders server-side (ticket 37);
-            // entrytable exists only to compute the Vue table's columns, so it is a detour
-            // worth making when that table is the one asked for, and only then
-            && ($this->arguments['dynamic'] || $this->arguments['template'] === 'map-and-table')
-            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'EntryTableAction')
-        ) {
-            // Ceci est bancal : entrylist action appelle entrytable action qui rappelle une deuxieme entrylist action.
-            // L'objectif est de formater les arguments correctement pour les tables.
-            // Ainsi on créé une action entrytable qui créée une deuxieme entrylist action avec les paramètres correctement formatés pour les tables
-            // Cela a des effets de bords :
-            // ex : si la entrylist action utilise des parametres de $_REQUEST pour définir ses arguments, alors ces arguments peuvent être dupliqués dans la deuxième entrylist action créée
-            // ie :
-            //		- 1ere entrylist action : entrytable ($arg + $_REQUEST)
-            // 		- entrytable action : entrylist ($arg + $_REQUEST)
-            // 		- 2eme entrylist action : entrylist (($arg + $_REQUEST) + $_REQUEST)
-
-            return $this->callAction('entrytable', $this->arguments);
-        }
 
         $bazarListService = $this->getService(BazarListService::class);
         $vForms = $bazarListService->getForms($this->arguments);
@@ -1755,20 +1760,16 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
         $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
         $entries = $bazarListService->filterEntriesOnFacets($entries);
 
-        // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
-        // We use a global variable to count the number of entrylist action run on this page
-        if (!isset($GLOBALS['_BAZAR_']['listindex'])) {
-            $GLOBALS['_BAZAR_']['listindex'] = 0;
-        }
-        $GLOBALS['_BAZAR_']['listindex']++;
-        $this->arguments['listindex'] = $GLOBALS['_BAZAR_']['listindex'];
+        // Two lists on a page need two sets of DOM ids, so each takes the next number.
+        $listIndex = $this->getService(ListIndex::class)->next();
+        $this->arguments['listindex'] = $listIndex;
 
         // TODO put in all bazar templates
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
         return $this->render('@core/entries/index.twig', [
-            'listId' => $GLOBALS['_BAZAR_']['listindex'],
+            'listId' => $listIndex,
             'filters' => $filters,
             'entries' => $entries,
             'renderedEntries' => $this->renderEntries($entries, $filters, $vForms),
@@ -2096,8 +2097,8 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
                 }
 
                 foreach ($entries as $entry) {
-                    $colors[$entry['tag']] = getCustomValueForEntry($params['color'] ?? null, $params['colorfield'] ?? null, $entry, '');
-                    $icons[$entry['tag']] = getCustomValueForEntry($params['icon'] ?? null, $params['iconfield'] ?? null, $entry, '');
+                    $colors[$entry['tag']] = $this->getService(EntryDisplay::class)->customValueFor($params['color'] ?? null, $params['colorfield'] ?? null, $entry, '');
+                    $icons[$entry['tag']] = $this->getService(EntryDisplay::class)->customValueFor($params['icon'] ?? null, $params['iconfield'] ?? null, $entry, '');
                 }
             } else {
                 $prefix = $this->render('@core/alert-message.twig', [
@@ -2195,11 +2196,11 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
             );
 
             // couleur de marqueur
-            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_color']);
+            $color = $this->getService(EntryDisplay::class)->customValueFor($params['color'], $params['colorfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_color']);
 
             // icone de marqueur
             $icon = $params['iconprefix']
-                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
+                    . $this->getService(EntryDisplay::class)->customValueFor($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
 
             if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
                 // on genere le point marqueur sur la carte
@@ -2221,7 +2222,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
 								}),
 								title: \'' . addslashes($entry['title'] ?? $entry['bf_titre'] ?? '') . '\'
 						});
-				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['managementbar'], $entry))) . '\');
+				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $entry))) . '\');
 				';
                 if ($params['spider'] == 'true' or $params['spider'] == '1') {
                     $markersjs .= 'map' . $params['listindex'] . '.addLayer(marker[i]);' . "\n" . 'oms.addMarker(marker[i]);' . "\n";
@@ -2398,7 +2399,7 @@ class EntryListAction extends YesWikiAction implements RegisteredAction, Provide
     map' . $params['listindex'] . ".addLayer(drawnFeatures)\n";
             foreach ($vAllGeometries as $id => $g) {
                 $geometriesModuleJs .= "const geo{$id} = " . $g . "\n";
-                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['managementbar'], $id))) . '\'' . "\n";
+                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes($this->getService(EntryDisplay::class)->renderEntry($params['managementbar'], $id))) . '\'' . "\n";
                 $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
             }
             if (!empty($geometriesWithoutMarker)) {
@@ -2524,36 +2525,5 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
 
                 return date('Y-m-d H:i:s', $d);
         }
-    }
-
-    /* Method to test if the current template is associated to a specific bazar actions
-     * @param $templateName string (ex. "map","map.tpl.html","map.twig")
-     * @param $constName string name of the constant array containing the right template names
-     *                          "BAZARCARTO_TEMPLATES" or "CALENDAR_TEMPLATES"
-     */
-    public static function specialActionFromTemplate(string $templateName, string $constName): bool
-    {
-        switch ($constName) {
-            case 'BAZARCARTO_TEMPLATES':
-                $baseArray = self::BAZARCARTO_TEMPLATES;
-                break;
-            case 'CALENDAR_TEMPLATES':
-                $baseArray = self::CALENDAR_TEMPLATES;
-                break;
-            case 'BAZARTABLE_TEMPLATES':
-                $baseArray = self::BAZARTABLE_TEMPLATES;
-                break;
-            default:
-                return false;
-        }
-
-        $templatesnames = [];
-        foreach ($baseArray as $templateBaseName) {
-            $templatesnames[] = $templateBaseName;
-            $templatesnames[] = $templateBaseName . '.tpl.html';
-            $templatesnames[] = $templateBaseName . '.twig';
-        }
-
-        return in_array($templateName, $templatesnames);
     }
 }

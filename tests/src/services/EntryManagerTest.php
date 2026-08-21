@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -9,7 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for a bug found while testing the {{newtextsearch}} SQL-injection fix : EntryManager::getHtmlDataAttributes() used to fall back to $GLOBALS['wiki']->services->get(FormManager::class) when the form wasn't already in its local $formtab cache (appendDisplayData() always calls it with the default $formtab = '').
+ * Regression test for a bug found while testing the {{newtextsearch}} SQL-injection fix : EntryManager::$this->getService(EntryDisplay::class)->dataAttributes() used to fall back to $GLOBALS['wiki']->services->get(FormManager::class) when the form wasn't already in its local $formtab cache (appendDisplayData() always calls it with the default $formtab = '').
  */
 class EntryManagerTest extends YesWikiTestCase
 {

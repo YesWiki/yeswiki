@@ -3,6 +3,8 @@
 namespace YesWiki\Files\Service;
 
 use stefangabos\Zebra_Image\Zebra_Image;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\HibernationService;
 
 /**
  * Resized copies of an image, cached under the cache directory (ticket 24, extracted from `Attach`).
@@ -14,11 +16,50 @@ class ImageResizer
 
     private AttachedFilePaths $paths;
     private Storage $storage;
+    private HibernationService $hibernation;
+    private AclService $acl;
 
-    public function __construct(AttachedFilePaths $paths, Storage $storage)
+    public function __construct(AttachedFilePaths $paths, Storage $storage, HibernationService $hibernation, AclService $acl)
     {
         $this->paths = $paths;
         $this->storage = $storage;
+        $this->hibernation = $hibernation;
+        $this->acl = $acl;
+    }
+
+    /**
+     * The resized copy of $source, made once and reused after that.
+     *
+     * `?refresh=1` from an admin throws the cached copy away first, which is how a picture
+     * replaced under the same name gets its thumbnails rebuilt. Answers $source unchanged when
+     * the resize fails, so a template still has something to show, and '' when there is no
+     * source to resize.
+     *
+     * Was the global `resizeImage()` in `Content/bazar.functions.php` (ticket 50).
+     */
+    public function cached(string $source, string $width, string $height, string $method = 'fit'): string
+    {
+        if (!file_exists($source)) {
+            return '';
+        }
+
+        $target = $this->resizedFilename($source, $width, $height, $method);
+
+        if (
+            !$this->hibernation->isWikiHibernated()
+            && file_exists($target)
+            && isset($_GET['refresh'])
+            && $_GET['refresh'] == 1
+            && $this->acl->isAdmin()
+        ) {
+            unlink($target);
+        }
+
+        if (!file_exists($target)) {
+            return $this->resize($source, $target, $width, $height, $method) === $target ? $target : $source;
+        }
+
+        return $target;
     }
 
     /** Where the resized copy of $fullFilename at these dimensions lives, whether or not it exists yet. */

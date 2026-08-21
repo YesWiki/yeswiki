@@ -166,6 +166,6 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             return $input;
         }
 
-        return replaceLinksWithIframe($input);
+        return $this->getService(UrlFormatter::class)->throughIframeHandler($input);
     }
 }

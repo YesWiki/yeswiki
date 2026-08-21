@@ -33,8 +33,6 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
-
         $list = $this->getService(PerformableArguments::class)->get('list');
         if (empty($list)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';

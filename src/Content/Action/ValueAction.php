@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\RemotePageCache;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -50,10 +51,10 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         $image = $this->arguments['image'];
         $text = $this->arguments['text'];
 
-        if (!isset($GLOBALS['externalpage'][$url])) {
-            $GLOBALS['externalpage'][$url] = @file_get_contents($url . '/html');
-        }
-        $remotePage = $GLOBALS['externalpage'][$url];
+        $remotePage = $this->getService(RemotePageCache::class)->get(
+            $url,
+            static fn () => @file_get_contents($url . '/html')
+        );
 
         if ($remotePage === false) {
             return $this->renderError(_t('BAZAR_URL_ERROR') . ' : ' . htmlspecialchars($url) . '.');

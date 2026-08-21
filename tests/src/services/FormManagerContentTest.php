@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Content\Entity\PageType;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
@@ -301,7 +302,7 @@ class FormManagerContentTest extends YesWikiTestCase
                 'condition' => '',
             ]);
 
-            $result = formAndListIds();
+            $result = self::getWiki()->services->get(EntryDisplay::class)->formAndListNames();
 
             $this->assertArrayHasKey('forms', $result);
             $this->assertArrayHasKey('lists', $result);

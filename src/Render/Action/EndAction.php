@@ -8,6 +8,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\GraphicalElementState;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /** `{{end}}` -- converted from the procedural actions/end.php by ticket 06. */
@@ -45,14 +46,13 @@ class EndAction extends YesWikiAction implements RegisteredAction
         $pagetag = $this->getService(PageContext::class)->getTag();
         $body = PageBody::content($this->getService(PageContext::class)->getPage()['body'] ?? []);
 
-        if (!isset($GLOBALS['check_' . $pagetag])) {
-            $GLOBALS['check_' . $pagetag] = [];
-        }
-        if (!isset($GLOBALS['check_' . $pagetag][$elem])) {
-            $GLOBALS['check_' . $pagetag][$elem] = $this->getService(TemplateHelperService::class)->checkGraphicalElements($elem, $pagetag, $body);
-        }
+        $closes = $this->getService(GraphicalElementState::class)->closesElement(
+            $pagetag,
+            $elem,
+            fn (): bool => $this->getService(TemplateHelperService::class)->checkGraphicalElements($elem, $pagetag, $body)
+        );
 
-        if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
+        if ($closes || in_array($elem, ['tab', 'tabs'], true)) {
             echo $this->getService(Performer::class)->run($elem, 'action', [], true);
         }
     }

@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiEventCompilerPass;
 use YesWiki\Core\YesWikiPerformableCompilerPass;
+use YesWiki\Core\YesWikiRequestScopeCompilerPass;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -61,6 +62,7 @@ class YesWikiKernel extends Kernel
     {
         $container->addCompilerPass(new YesWikiEventCompilerPass());
         $container->addCompilerPass(new YesWikiPerformableCompilerPass());
+        $container->addCompilerPass(new YesWikiRequestScopeCompilerPass());
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__));
         $loader->load('services.yaml');

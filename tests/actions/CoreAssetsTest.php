@@ -34,6 +34,7 @@ class CoreAssetsTest extends YesWikiTestCase
             $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class),
             $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class),
             $wiki->services->get(\Symfony\Component\Security\Csrf\CsrfTokenManager::class),
+            $wiki->services->get(\YesWiki\Kernel\Service\LanguageService::class),
             $wiki->services->get(\YesWiki\Files\Service\Storage::class),
         ))->register();
 

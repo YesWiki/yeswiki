@@ -3,7 +3,8 @@
 namespace YesWiki\Test\Core;
 
 require_once 'tests/YesWikiTestCase.php';
-require_once 'src/Content/syndication.functions.php';
+
+use YesWiki\Kernel\Service\StringUtilService;
 
 /** Regression test for ticket 23 (syndication absorbed into core). */
 class SyndicationFunctionsTest extends YesWikiTestCase
@@ -15,31 +16,31 @@ class SyndicationFunctionsTest extends YesWikiTestCase
 
     public function testTruncateLeavesShortTextUntouched()
     {
-        $this->assertSame('short text', truncate('short text', 100));
+        $this->assertSame('short text', StringUtilService::truncate('short text', 100));
     }
 
     public function testTruncateCutsLongTextAndAppendsEllipsis()
     {
-        $result = truncate(str_repeat('word ', 50), 20);
+        $result = StringUtilService::truncate(str_repeat('word ', 50), 20);
 
         $this->assertStringEndsWith('&hellip;', $result);
         $this->assertLessThan(50, strlen($result));
     }
 
     /**
-     * SyndicationAction::run() calls multiArraySearch() (to detect whether a feed item was already imported as a Bazar entry) without defining it itself -- it's defined in src/bazar.functions.php (relocated from tools/bazar/libs/bazar.fonct.php by ticket 24), required unconditionally from src/YesWiki.php.
+     * `SyndicationAction` asks whether a feed item was already imported as an entry, by searching
+     * the entries it holds for one whose url matches. That search was the global
+     * `multiArraySearch()`, reachable only because `bazar.functions.php` was required
+     * unconditionally at boot; it is `StringUtilService::searchNested()` since ticket 50, so what
+     * is worth asserting is what it finds rather than whether it exists.
      */
-    public function testMultiArraySearchFromBazarIsReachableAfterWikiBoots()
+    public function testSearchNestedFindsAnEntryByOneOfItsFields(): void
     {
-        $this->getWiki();
-
-        $this->assertTrue(function_exists('multiArraySearch'));
-
         $entries = [
             ['bf_titre' => 'First', 'bf_url' => 'https://example.com/a'],
             ['bf_titre' => 'Second', 'bf_url' => 'https://example.com/b'],
         ];
-        $result = multiArraySearch($entries, 'bf_url', 'https://example.com/b');
+        $result = StringUtilService::searchNested($entries, 'bf_url', 'https://example.com/b');
 
         $this->assertNotEmpty($result);
         $this->assertSame('Second', $result[0]['bf_titre']);

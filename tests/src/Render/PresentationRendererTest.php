@@ -4,6 +4,7 @@ namespace YesWiki\Test\Render;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Content\Entity\Item;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Render\Service\PresentationRenderer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -89,15 +90,15 @@ class PresentationRendererTest extends YesWikiTestCase
     #[DataProvider('presentations')]
     public function testADateIsLocalisedAndOnlyDrawnWhenThereIsOne(string $presentation): void
     {
-        $previous = $GLOBALS['prefered_language'] ?? null;
+        $previous = LanguageService::getInstance()->preferredLanguage();
 
         try {
-            $GLOBALS['prefered_language'] = 'fr';
+            LanguageService::getInstance()->serveIn('fr');
             $french = self::renderer()->render($presentation, self::items());
-            $GLOBALS['prefered_language'] = 'en';
+            LanguageService::getInstance()->serveIn('en');
             $english = self::renderer()->render($presentation, self::items());
         } finally {
-            $GLOBALS['prefered_language'] = $previous;
+            LanguageService::getInstance()->serveIn($previous);
         }
 
         $this->assertStringContainsString('12 août 2026', $french, "{$presentation} in French");

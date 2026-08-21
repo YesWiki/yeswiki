@@ -28,6 +28,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 
 class UserSettingsAction extends YesWikiAction implements RegisteredAction
 {
@@ -178,7 +179,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 'adminIsActing' => $this->adminIsActing,
                 'errorPasswordChange' => $this->errorPasswordChange,
                 'errorUpdate' => $this->errorUpdate,
-                'inIframe' => testUrlInIframe() == 'iframe',
+                'inIframe' => WikiUrls::iframeSuffixFor() == 'iframe',
                 'referrer' => $this->referrer,
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,

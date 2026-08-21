@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -43,7 +44,7 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
             $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
-            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . renderEntryView(0, $entry) . '""']);
+            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . $this->getService(EntryDisplay::class)->renderEntry(0, $entry) . '""']);
         }
     }
 

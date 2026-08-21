@@ -196,7 +196,7 @@ class FileField extends BazarField
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
                     ? $this->storage()->url($basePath . $value)
-                    : $this->getService(UrlFormatter::class)->href('download', $entry['tag'] . '_' . $this->getPropertyName(), ['file' => $value], false),
+                    : $this->getService(UrlFormatter::class)->href('download', ($entry['tag'] ?? '') . '_' . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
                 'isUrl' => false,
             ]);

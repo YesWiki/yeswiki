@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Service\EntryTagsCleared;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -72,16 +73,18 @@ class TagsField extends EnumField
 
         $value = $this->getValue($entry);
 
-        if (!isset($GLOBALS['delete_tags']) && !empty($entry['tag'])) {
+        // once per entry per request: a second tags field on the same form must not delete what
+        // the first one just wrote, and a second entry saved in the same request must still have
+        // its own keywords cleared, which the flag this replaces got wrong (ticket 45)
+        if (!empty($entry['tag']) && $this->getService(EntryTagsCleared::class)->needsClearing($entry['tag'])) {
             $tripleStore->delete($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
-            $GLOBALS['delete_tags'] = true;
         }
 
         $tags = explode(',', (string)$value);
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $tripleStore->create($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+                $tripleStore->create($entry['tag'] ?? '', 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
         }
 
@@ -97,7 +100,7 @@ class TagsField extends EnumField
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
             $tags = array_map(function ($tag) {
-                return '<a class="tag-label label label-info" href="' . $GLOBALS['yeswikiServices']->get(UrlFormatter::class)->href('listpages', $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                return '<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [

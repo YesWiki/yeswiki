@@ -5,9 +5,11 @@ namespace YesWiki\Contact\Api;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use YesWiki\Contact\Service\MailForm;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
@@ -25,8 +27,6 @@ class ContactApiController extends YesWikiController
     #[Route('/api/contact/mail', methods: ['POST'], options: ['acl' => ['public']])]
     public function sendContactMail(Request $request)
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
-
         $pageTag = (string)$request->request->get('pageTag', '');
         if (empty($pageTag)) {
             return new ApiResponse(['type' => 'danger', 'message' => "'pageTag' should not be empty"], Response::HTTP_BAD_REQUEST);
@@ -48,7 +48,7 @@ class ContactApiController extends YesWikiController
                 if (is_array($val) && isset($val[$field])) {
                     $mailReceiver[] = $val[$field];
                 }
-                $form = formValues($val['form_id'] ?? null) ?? [];
+                $form = $this->getService(FormManager::class)->getOne($val['form_id'] ?? null) ?? [];
                 $mailSenderForMsg = (string)$request->request->get('email', '');
                 $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->getService(UrlFormatter::class)->href('', $val['tag'] ?? '') . '">'
                     . ($val['title'] ?? $val['bf_titre'] ?? $pageTag) . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . ($form['label'] ?? '') . ' » '
@@ -75,10 +75,10 @@ class ContactApiController extends YesWikiController
                     $body = $fileContent . "\n" . $pageContent;
                 }
                 $nbActionMail = $request->request->get('nbactionmail');
-                $mailReceiver = !empty($nbActionMail) ? FindMailFromWikiPage($body, $nbActionMail) : false;
+                $mailReceiver = !empty($nbActionMail) ? $this->getService(MailForm::class)->addressOnPage($body, (int)$nbActionMail) : false;
                 if ($mailReceiver) {
                     $mailList = array_map('trim', explode(',', $mailReceiver));
-                    $mailReceiver = parseMails($mailList);
+                    $mailReceiver = $this->getService(MailForm::class)->resolveRecipients($mailList);
                 }
             }
         }
@@ -114,7 +114,7 @@ class ContactApiController extends YesWikiController
         }
 
         if ($hasReadAccess) {
-            $message = check_parameters_mail($type, $mailSender, $nameSender, $mailReceiver ?? '', $subject, $messageTxt);
+            $message = $this->getService(MailForm::class)->problemsWith($type, $mailSender, $nameSender, $mailReceiver, $subject, $messageTxt);
             if ($type != 'subscribe' && $type != 'unsubscribe' && !empty($infomsg)) {
                 $messageTxt = strip_tags($infomsg) . '\n\n' . $messageTxt;
                 $messageHtml = $infomsg . $messageHtml;
@@ -129,7 +129,9 @@ class ContactApiController extends YesWikiController
         if ($message['class'] == 'success') {
             $mailingList = (string)$request->request->get('mailinglist', '');
             if (!empty($mailingList)) {
-                $mailReceiver = array_pop($mailReceiver);
+                // a mailing list has one address; the page-body form yields a string and
+                // the recipient list an array, and only the second has anything to pop
+                $mailReceiver = is_array($mailReceiver) ? array_pop($mailReceiver) : $mailReceiver;
                 if ($mailingList == 'ezmlm') {
                     $mailReceiver = str_replace('@', '-' . str_replace('@', '=', $mailSender) . '@', $mailReceiver);
                 } elseif ($mailingList == 'sympa') {

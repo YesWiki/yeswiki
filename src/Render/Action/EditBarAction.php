@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -202,7 +203,7 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
             return null;
         }
 
-        $moment->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
+        $moment->locale($this->getService(LanguageService::class)->preferredLanguage());
 
         return $moment->isoFormat($format);
     }

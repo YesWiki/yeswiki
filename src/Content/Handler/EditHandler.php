@@ -26,6 +26,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -387,7 +388,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
 
-            $cancelUrl = $this->getService(UrlFormatter::class)->href(testUrlInIframe());
+            $cancelUrl = $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
 
             $pageFields = $this->contentFormFields();
             $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
@@ -400,7 +401,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
                 $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                     'previous' => $previous,
-                    'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
+                    'handler' => WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit',
                     'cancelUrl' => $cancelUrl,
                     'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                     'preview' => true,
@@ -433,7 +434,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $newBody
                     );
 
-                    $after = $this->incomingUrl() ?? $this->getService(UrlFormatter::class)->href(testUrlInIframe());
+                    $after = $this->incomingUrl() ?? $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
 
                     if ($unchanged) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
@@ -447,7 +448,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         );
 
                         if (($this->getService(PageContext::class)->getPage() ?? [])['parent']) {
-                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor(), ($this->getService(PageContext::class)->getPage() ?? [])['parent']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
                             $this->getService(Redirector::class)->redirect($after);
                         }
@@ -462,7 +463,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                         'error' => $error ?? null,
                         'previous' => $previous,
-                        'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
+                        'handler' => WikiUrls::iframeSuffixFor() ? 'editiframe' : 'edit',
                         'passwordForEditing' => $passwordForEditing,
                         'cancelUrl' => $cancelUrl,
                         'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
@@ -484,7 +485,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         $output = '<div class="page">' . "\n" . $output . "\n" . '<hr class="hr_clear" />' . "\n" . '</div>' . "\n";
 
-        if (!testUrlInIframe()) {
+        if (!WikiUrls::iframeSuffixFor()) {
             echo $this->getService(TemplateEngine::class)->renderPage($output);
         } else {
             echo $output;

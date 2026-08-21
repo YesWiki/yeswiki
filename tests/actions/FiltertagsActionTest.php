@@ -29,11 +29,12 @@ class FiltertagsActionTest extends YesWikiTestCase
         $tripleStore->create(self::PAGE_TAG, self::TAG_PROPERTY, self::DECOY_TAG, '', '');
 
         try {
-            include_once 'src/Content/tags.functions.php';
-
             $filterArgs = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
             $wiki->services->get(\YesWiki\Kernel\Service\PerformableArguments::class)->bind($filterArgs);
-            $params = get_filtertags_parameters_recursive();
+
+            $action = new \YesWiki\Content\Action\FiltertagsAction();
+            $action->setServices($wiki->services);
+            $params = (new \ReflectionMethod($action, 'filterParameters'))->invoke($action);
             $taglist = $params['tags'];
 
             $this->assertSame(

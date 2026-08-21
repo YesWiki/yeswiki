@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Entity;
 use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 
 class PackageCore extends Package
 {
@@ -41,6 +42,24 @@ class PackageCore extends Package
     public const FILES_TO_UPDATE_TO_IGNORED_FOLDERS = [
         'files/PageHeader_bandeau_20200101000000_29991231000000.png',
     ];
+
+    /** The version an admin asked for, empty when they asked for none. */
+    private string $requestedVersion = '';
+
+    private ?ConfigurationService $configurationService = null;
+
+    /**
+     * The two facts this entity used to reach for through `$GLOBALS['yeswikiServices']`.
+     *
+     * A package is built from a class-string by PackageCollection, so its constructor signature
+     * is shared with the theme and tool packages and cannot carry these. The collection hands
+     * them over straight afterwards, from what the update flow already knew (ticket 45).
+     */
+    public function updateContext(string $requestedVersion, ?ConfigurationService $configurationService): void
+    {
+        $this->requestedVersion = $requestedVersion;
+        $this->configurationService = $configurationService;
+    }
 
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
@@ -143,7 +162,7 @@ class PackageCore extends Package
 
     public function upgradeInfos()
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
         $configuration['yeswiki_release'] = $this->release;
         $configuration['yeswiki_version'] = $this->requestedVersion();
@@ -158,7 +177,7 @@ class PackageCore extends Package
 
     public function localVersion()
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
 
         $version = AutoUpdateService::DEFAULT_VERS;
@@ -171,16 +190,15 @@ class PackageCore extends Package
 
     public function requestedVersion()
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
 
         $version = AutoUpdateService::DEFAULT_VERS;
         if (isset($configuration['yeswiki_version'])) {
             $version = $configuration['yeswiki_version'];
         }
-        $requestedVersion = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PerformableArguments::class)->get('version');
-        if (isset($requestedVersion) && $requestedVersion != '') {
-            $version = $requestedVersion;
+        if ($this->requestedVersion !== '') {
+            $version = $this->requestedVersion;
         }
 
         return strtolower($version);
@@ -200,7 +218,7 @@ class PackageCore extends Package
 
     protected function localRelease()
     {
-        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv());
+        $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
 
         $release = Release::UNKNOW_RELEASE;

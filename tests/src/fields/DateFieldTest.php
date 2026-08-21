@@ -58,7 +58,6 @@ class DateFieldTest extends YesWikiTestCase
 
         $result = $field->formatValuesBeforeSave($entry);
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('bf_date_fin_evenement', $result);
     }
 

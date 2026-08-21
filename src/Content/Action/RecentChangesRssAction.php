@@ -32,7 +32,6 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
                 $this->getService(LinkRenderer::class)->link($this->getService(PageContext::class)->getTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
         }
-        require_once YESWIKI_SOURCE_DIR . '/src/Content/rss.functions.php';
         $max = 50;
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $max = $user['changescount'];
@@ -112,7 +111,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
                 $description = htmlspecialchars(
                     _t('RSS_CHANGE_OF') . ' ' . ($readAcl ? $this->getService(LinkRenderer::class)->linkToPage($page['tag']) : $tag)
                     . ($readAcl ? ' (' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')' : '')
-                    . ' --- ' . _t('BY') . " $user" . ($readAcl ? rssdiff($page['tag'], $firstpage['id'], $lastpage['id']) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>')
+                    . ' --- ' . _t('BY') . " $user" . ($readAcl ? $this->revisionDiff($page['tag'], $firstpage['id'], $lastpage['id']) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>')
                 );
                 $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);
             }
@@ -120,11 +119,101 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
 
         $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
         $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : '';
-        $description = empty($decription) ? $yeswikiName : $description;
+        // was `empty($decription)`, a typo that made this always true, so the configured
+        // meta_description never reached the feed and every wiki's RSS described itself by name
+        $description = empty($description) ? $yeswikiName : $description;
 
         return $this->render(
             '@core/rss/recent-changes-rss.twig',
             compact(['xmlUrl', 'yeswikiName', 'link', 'items', 'yesWikiRevision', 'description'])
         );
+    }
+
+    /**
+     * What changed between two revisions of $tag, as the markup an RSS item carries.
+     *
+     * Was the global `rssdiff()` in `Content/rss.functions.php`, which reached the container
+     * through `$GLOBALS['yeswikiServices']` because a function has no other way to (ticket 50).
+     * This action is its only caller.
+     */
+    private function revisionDiff(string $tag, int|string $idfirst, int|string $idlast): string
+    {
+        $output = '';
+
+        if ($idfirst == $idlast) {
+            $previousdiff = $this->getService(\YesWiki\Kernel\Service\DbService::class)->loadSingle(
+                'select id from '
+                . $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
+                . 'pages where tag = ? and id < ? order by '
+                . $this->getService(\YesWiki\Kernel\Service\DbService::class)->quoteIdentifier('time')
+                . ' desc limit 1',
+                [$tag, $idfirst]
+            );
+            if (!$previousdiff) {
+                // the first revision a page ever had has nothing to be compared with
+                return '';
+            }
+            $idlast = $previousdiff['id'];
+        }
+
+        $pageA = $this->getService(PageManager::class)->getById($idfirst);
+        $pageB = $this->getService(PageManager::class)->getById($idlast);
+        if ($pageA === null || $pageB === null) {
+            // a revision the page no longer has: nothing to compare, and nothing to say
+            return '';
+        }
+
+        $entryManager = $this->getService(\YesWiki\Content\Service\EntryManager::class);
+
+        if ($entryManager->isEntry($tag)) {
+            $toPairs = function (array $body): array {
+                $pairs = [];
+                foreach ($body as $key => $value) {
+                    $pairs[] = json_encode((string)$key, \YesWiki\Content\Entity\PageBody::JSON_FLAGS)
+                        . ':' . json_encode($value, \YesWiki\Content\Entity\PageBody::JSON_FLAGS);
+                }
+
+                return $pairs;
+            };
+            $bodyA = $toPairs($pageA['body'] ?? []);
+            $bodyB = $toPairs($pageB['body'] ?? []);
+        } else {
+            $bodyA = explode("\n", \YesWiki\Content\Entity\PageBody::content($pageA['body'] ?? []));
+            $bodyB = explode("\n", \YesWiki\Content\Entity\PageBody::content($pageB['body'] ?? []));
+        }
+
+        $added = array_diff($bodyA, $bodyB);
+        $deleted = array_diff($bodyB, $bodyA);
+
+        $output .= "<br />\n";
+        $output .= "<br />\n";
+        $output .= '<b>' . _t('RSS_COMPARISON_OF') . ' <a href="'
+            . $this->getService(UrlFormatter::class)->href('', $tag, 'time='
+            . urlencode($pageA['time']))
+            . '">' . $pageA['time']
+            . '</a> ' . _t('RSS_TO') . ' <a href="'
+            . $this->getService(UrlFormatter::class)->href('', $tag, 'time=' . urlencode($pageB['time']))
+            . '">'
+            . $pageB['time']
+            . "</a></b><br />\n";
+
+        $this->getService(\YesWiki\Kernel\Service\InclusionStack::class)->register($tag);
+        if ($added) {
+            $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
+            $output .= '<div class="additions">' . implode("\n", $added) . '</div>';
+        }
+
+        if ($deleted) {
+            $output .= "<br />\n<b>" . _t('RSS_DELETIONS') . ":</b><br />\n";
+            $output .= '<div class="deletions">' . implode("\n", $deleted) . '</div>';
+        }
+
+        $this->getService(\YesWiki\Kernel\Service\InclusionStack::class)->unregisterLast();
+
+        if (!$added && !$deleted) {
+            $output .= "<br />\n" . _t('RSS_NO_DIFF') . '.';
+        }
+
+        return $output;
     }
 }

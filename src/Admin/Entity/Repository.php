@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Content\Entity\Files;
+use YesWiki\Kernel\Service\ConfigurationService;
 
 class Repository extends PackageCollection
 {
@@ -11,10 +12,12 @@ class Repository extends PackageCollection
     private $address;
     private $fileHandler;
 
-    public function __construct($address)
+    public function __construct($address, string $requestedVersion = '', ?ConfigurationService $configurationService = null)
     {
         $this->address = $address . '/';
         $this->fileHandler = new Files();
+        $this->requestedVersion = $requestedVersion;
+        $this->configurationService = $configurationService;
     }
 
     public function load()

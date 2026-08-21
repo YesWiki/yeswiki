@@ -2,6 +2,7 @@
 
 namespace YesWiki\Contact\Action;
 
+use YesWiki\Contact\Service\MailFormCounter;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -67,12 +68,7 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction, Provi
         if (empty($templateVars['mail'])) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_DESABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         } else {
-            if (isset($GLOBALS['nbactionmail'])) {
-                $GLOBALS['nbactionmail']++;
-            } else {
-                $GLOBALS['nbactionmail'] = 1;
-            }
-            $templateVars['nbactionmail'] = $GLOBALS['nbactionmail'];
+            $templateVars['nbactionmail'] = $this->getService(MailFormCounter::class)->next();
 
             $template = $this->getService(PerformableArguments::class)->get('template');
             if (empty($template)) {

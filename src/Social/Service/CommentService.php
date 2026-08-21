@@ -16,6 +16,7 @@ use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -33,6 +34,7 @@ class CommentService implements EventSubscriberInterface
      * @var list<string>
      */
     protected array $pagesWhereCommentWereRendered;
+    protected PageContext $pageContext;
     protected UserManager $userManager;
     protected TemplateEngine $templateEngine;
     protected mixed $commentsActivated;
@@ -49,8 +51,10 @@ class CommentService implements EventSubscriberInterface
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager,
-        UrlFormatter $urlFormatter
+        UrlFormatter $urlFormatter,
+        PageContext $pageContext
     ) {
+        $this->pageContext = $pageContext;
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
         $this->dbService = $dbService;
@@ -143,13 +147,13 @@ class CommentService implements EventSubscriberInterface
             $com['commentOn'] = $comment['parent'];
             $com['rawbody'] = PageBody::content($comment['body']);
 
-            $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-            $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
-            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($comment);
-            $com['body'] = $GLOBALS['yeswikiServices']->get(MarkdownFormatterService::class)->format($com['rawbody']);
-            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
-            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
+            $oldPage = $this->pageContext->getTag();
+            $oldPageArray = $this->pageContext->getPage();
+            $this->pageContext->setTag($comment['tag']);
+            $this->pageContext->setPage($comment);
+            $com['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['rawbody']);
+            $this->pageContext->setTag($oldPage);
+            $this->pageContext->setPage($oldPageArray);
             $this->setUserData($comment, 'user', $com);
             $this->setUserData($comment, 'owner', $com);
             $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));

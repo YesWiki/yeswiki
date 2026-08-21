@@ -10,6 +10,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -131,7 +132,7 @@ class EditBarTest extends YesWikiTestCase
             $createdAt = $pageManager->getCreateTime(self::DATES_PAGE);
             $this->assertNotNull($createdAt);
             $expected = Carbon::parse($createdAt);
-            $expected->locale((string)($GLOBALS['prefered_language'] ?? 'en'));
+            $expected->locale(LanguageService::getInstance()->preferredLanguage());
             $this->assertStringContainsString(
                 $expected->isoFormat('LLL'),
                 $rendered,

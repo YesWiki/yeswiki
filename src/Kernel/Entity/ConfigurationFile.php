@@ -14,11 +14,10 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     {
         $this->_file = $file;
         $this->_parameters = [];
-        if ($configurationService instanceof ConfigurationService) {
-            $this->configurationService = $configurationService;
-        } elseif (isset($GLOBALS['yeswikiServices'])) {
-            $this->configurationService = $GLOBALS['yeswikiServices']->get(ConfigurationService::class);
-        }
+        // The service is passed in, always: ConfigurationService builds these itself, and
+        // PackageCore is handed one by the collection that builds it. The `$GLOBALS` fallback
+        // this replaces existed for PackageCore alone (ticket 45).
+        $this->configurationService = $configurationService;
     }
 
     public function __get($name)

@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Contact\Service\MailingListDigest;
 
 /** `./yeswicli contact:send-digest --period=week` -- the periodic mailing-list digest. */
 class ContactDigestCommand extends Command
@@ -59,11 +60,9 @@ class ContactDigestCommand extends Command
             return Command::FAILURE;
         }
 
-        require_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
-
         $output->writeln("Sending the '{$period}' digest");
         try {
-            sendEmailsToSubscribers($period, (string)$input->getOption('subject'));
+            $this->services->get(MailingListDigest::class)->sendForPeriod($period, (string)$input->getOption('subject'));
         } catch (\Throwable $th) {
             $output->writeln('<error>' . $th->getMessage() . '</error>');
 

@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Field;
 require_once 'tests/YesWikiTestCase.php';
 
 use YesWiki\Content\Field\TextareaField;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 /**
@@ -47,7 +48,7 @@ class TextareaFieldTest extends YesWikiTestCase
 
     public function testHtmlSyntaxRendersVditorMarkerAndAssetsNotSummernote()
     {
-        $GLOBALS['prefered_language'] = 'fr';
+        LanguageService::getInstance()->serveIn('fr');
 
         $field = $this->buildTextareaField('html');
         $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
@@ -68,7 +69,7 @@ class TextareaFieldTest extends YesWikiTestCase
 
     public function testUnsupportedLanguageFallsBackToEnglishVditorLocale()
     {
-        $GLOBALS['prefered_language'] = 'eu';
+        LanguageService::getInstance()->serveIn('eu');
 
         $field = $this->buildTextareaField('html');
         $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);

@@ -8,6 +8,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
 class AceditorAction extends YesWikiAction implements RegisteredAction
@@ -52,7 +53,7 @@ class AceditorAction extends YesWikiAction implements RegisteredAction
             'actionsBuilderData' => $data,
             'pageTags' => $pageTags,
             'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
-            'vditorLang' => self::VDITOR_LANGS[strtolower((string)($GLOBALS['prefered_language'] ?? 'en'))] ?? 'en_US',
+            'vditorLang' => self::VDITOR_LANGS[strtolower($this->getService(LanguageService::class)->preferredLanguage())] ?? 'en_US',
         ]);
     }
 

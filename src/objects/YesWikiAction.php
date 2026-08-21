@@ -7,6 +7,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Render\Service\GraphicalElementState;
 use YesWiki\Render\Service\TemplateHelperService;
 
 abstract class YesWikiAction extends YesWikiPerformable
@@ -69,13 +70,13 @@ abstract class YesWikiAction extends YesWikiPerformable
     protected function check_end_elem(string $action_name): bool
     {
         $pagetag = $this->getService(PageContext::class)->getTag();
-        if (!isset($GLOBALS["check_$pagetag"][$action_name])) {
-            $GLOBALS["check_$pagetag"][$action_name] =
-                $this->getService(TemplateHelperService::class)
-                    ->checkGraphicalElements($action_name, $pagetag, PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body'] ?? []));
-        }
 
-        return $GLOBALS["check_$pagetag"][$action_name];
+        return $this->getService(GraphicalElementState::class)->closesElement(
+            $pagetag,
+            $action_name,
+            fn (): bool => $this->getService(TemplateHelperService::class)
+                ->checkGraphicalElements($action_name, $pagetag, PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body'] ?? []))
+        );
     }
 
     protected function generate_error_msg(string $action_name): string

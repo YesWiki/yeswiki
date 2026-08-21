@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method YesWiki\\Helloworld\\GreetingAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../extensions/helloworld/actions/GreetingAction.php
-
-		-
-			message: '#^Method YesWiki\\Helloworld\\GreetingAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../extensions/helloworld/actions/GreetingAction.php
-
-		-
 			message: '#^Method YesWiki\\Helloworld\\GreetingAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -39,42 +27,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../extensions/helloworld/fields/AlertField.php
-
-		-
-			message: '#^Method YesWiki\\HelloWorld\\Field\\AlertField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../extensions/helloworld/fields/AlertField.php
 
@@ -165,18 +117,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Admin\\Action\\EditConfigAction\:\:convertKeysAsArray\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Admin/Action/EditConfigAction.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Action\\EditConfigAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Admin/Action/EditConfigAction.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Action\\EditConfigAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Admin/Action/EditConfigAction.php
 
@@ -323,18 +263,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Admin/Action/MailPeriodAction.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Action\\UpdateAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Admin/Action/UpdateAction.php
-
-		-
-			message: '#^Method YesWiki\\Admin\\Action\\UpdateAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Admin/Action/UpdateAction.php
 
 		-
 			message: '#^Method YesWiki\\Admin\\Action\\UpdateAction\:\:run\(\) has no return type specified\.$#'
@@ -1693,12 +1621,6 @@ parameters:
 			path: ../src/Admin/Service/ApiService.php
 
 		-
-			message: '#^Call to function method_exists\(\) with ZipArchive and ''registerCancelCallb…'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Admin/Service/ArchiveService.php
-
-		-
 			message: '#^Call to function method_exists\(\) with ZipArchive and ''registerProgressCal…'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -1763,7 +1685,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../src/Admin/Service/ArchiveService.php
-
 
 		-
 			message: '#^Method YesWiki\\Admin\\Service\\ArchiveService\:\:createZip\(\) has parameter \$blacklistedRootFolders with no value type specified in iterable type array\.$#'
@@ -2216,18 +2137,6 @@ parameters:
 			path: ../src/ComposerScriptsHelper.php
 
 		-
-			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/Action/ContactAction.php
-
-		-
-			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/Action/ContactAction.php
-
-		-
 			message: '#^Method YesWiki\\Contact\\Action\\ContactAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2252,192 +2161,6 @@ parameters:
 			path: ../src/Contact/Api/ContactApiController.php
 
 		-
-			message: '#^Function FindMailFromWikiPage\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function FindMailFromWikiPage\(\) has parameter \$nbactionmail with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function FindMailFromWikiPage\(\) has parameter \$wikipage with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function ValidateEmail\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function ValidateEmail\(\) has parameter \$email with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$mail_receiver with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$mail_sender with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$messagebody with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$name_sender with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$subject with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function check_parameters_mail\(\) has parameter \$type with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterDailyMailGroups\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterDailyMailGroups\(\) has parameter \$var with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterMailGroups\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterMailGroups\(\) has parameter \$var with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterMonthlyMailGroups\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterMonthlyMailGroups\(\) has parameter \$var with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterWeeklyMailGroups\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function filterWeeklyMailGroups\(\) has parameter \$var with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function getPageTitle\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function getPageTitle\(\) has parameter \$page with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function parseMails\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function parseMails\(\) has parameter \$emails with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendEmailsToSubscribers\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendEmailsToSubscribers\(\) has parameter \$period with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendEmailsToSubscribers\(\) has parameter \$subject with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendPeriodicalMailToGroup\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$groups with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$period with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
-			message: '#^Function sendPeriodicalMailToGroup\(\) has parameter \$subject with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Contact/contact.functions.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\AdminTagAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2450,18 +2173,6 @@ parameters:
 			path: ../src/Content/Action/AdminTagAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\BazarAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/BazarAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\BazarAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/BazarAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\BazarAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2472,42 +2183,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: ../src/Content/Action/BazarAction.php
-
-		-
-			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
-			identifier: greater.alwaysTrue
-			count: 1
-			path: ../src/Content/Action/CalendarAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\CalendarAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/CalendarAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\CalendarAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/CalendarAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\CalendarAction\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/CalendarAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryExportAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryExportAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryExportAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryExportAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\EntryExportAction\:\:run\(\) has no return type specified\.$#'
@@ -2532,18 +2207,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Action/EntryExportAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryImportAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryImportAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryImportAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryImportAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\EntryImportAction\:\:run\(\) has no return type specified\.$#'
@@ -2574,18 +2237,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Action/EntryImportAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryListAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryListAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryListAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryListAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\EntryListAction\:\:formatDateMin\(\) has no return type specified\.$#'
@@ -2636,96 +2287,6 @@ parameters:
 			path: ../src/Content/Action/EntryListAction.php
 
 		-
-			message: '#^Call to function is_array\(\) with array\{\}\|array\{entries\: non\-empty\-list\} will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../src/Content/Action/EntryListCategoryAction.php
-
-		-
-			message: '#^Function YesWiki\\Content\\Action\\compareFieldsByPosition\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryListCategoryAction.php
-
-		-
-			message: '#^Function YesWiki\\Content\\Action\\compareFieldsByPosition\(\) has parameter \$a with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryListCategoryAction.php
-
-		-
-			message: '#^Function YesWiki\\Content\\Action\\compareFieldsByPosition\(\) has parameter \$b with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryListCategoryAction.php
-
-		-
-			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
-			identifier: function.inner
-			count: 1
-			path: ../src/Content/Action/EntryListCategoryAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryMapAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryMapAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryMapAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryMapAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryMapAction\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryMapAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:appendAllFieldsIds\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:appendAllFieldsIds\(\) has parameter \$arg with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:appendAllFieldsIds\(\) has parameter \$newArg with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryTableAction\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\EntryUserPageAction\:\:run\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/EntryUserPageAction.php
-
-		-
 			message: '#^Parameter \#1 \$string of function bin2hex expects string, string\|false given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2744,18 +2305,6 @@ parameters:
 			path: ../src/Content/Action/MychangesAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\PdfAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/PdfAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\PdfAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/PdfAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\PdfAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2766,18 +2315,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: ../src/Content/Action/PointimageAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\QrCardscanAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/QrCardscanAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\QrCardscanAction\:\:formatArguments\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Action/QrCardscanAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\QrcodeAction\:\:run\(\) has no return type specified\.$#'
@@ -2796,18 +2333,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../src/Content/Action/QrscannerAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\RecentChangesRssAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/RecentChangesRssAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\RecentChangesRssAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/RecentChangesRssAction.php
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\RecentChangesRssAction\:\:run\(\) has no return type specified\.$#'
@@ -2864,32 +2389,8 @@ parameters:
 			path: ../src/Content/Action/SyndicationAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\SyndicationAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\SyndicationAction\:\:formatArguments\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Action/SyndicationAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\TagCloudAction\:\:buildSelectionTagsClause\(\) has parameter \$tags with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Action/TagCloudAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\TagCloudAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/TagCloudAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\TagCloudAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Action/TagCloudAction.php
 
@@ -2930,18 +2431,6 @@ parameters:
 			path: ../src/Content/Action/UserFavoritesAction.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:getFileName\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2955,18 +2444,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:getFileName\(\) has parameter \$page with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:get_image_from_body\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\UserFavoritesAction\:\:get_image_from_body\(\) has parameter \$page with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Action/UserFavoritesAction.php
@@ -3030,18 +2507,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Action/UserFavoritesAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Action/ValueAction.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Action\\ValueAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Action/ValueAction.php
 
 		-
 			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, string\|null given\.$#'
@@ -3650,12 +3115,6 @@ parameters:
 			path: ../src/Content/Controller/EntryController.php
 
 		-
-			message: '#^Parameter \#2 \$subject of function preg_match expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/Controller/EntryController.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Controller\\EntryController\:\:\$aclService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -4166,56 +3625,8 @@ parameters:
 			path: ../src/Content/Entity/Files.php
 
 		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:canEdit\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:canEdit\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:canRead\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:formatValuesBeforeSaveIfEditable\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:formatValuesBeforeSaveIfEditable\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/BazarField.php
 
@@ -4298,19 +3709,7 @@ parameters:
 			path: ../src/Content/Field/BazarField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:getValue\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:getWriteAccess\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:isEmpty\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Content/Field/BazarField.php
@@ -4335,42 +3734,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:render\(\) has parameter \$templatePath with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderInputIfPermitted\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderInputIfPermitted\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/BazarField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\BazarField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/BazarField.php
@@ -4478,18 +3841,6 @@ parameters:
 			path: ../src/Content/Field/CalcField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:getEntryValue\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -4528,30 +3879,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:peekToken\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CalcField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CalcField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/CalcField.php
 
@@ -4634,32 +3961,8 @@ parameters:
 			path: ../src/Content/Field/CheckboxEntryField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxEntryField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CheckboxEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxEntryField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/CheckboxEntryField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/CheckboxField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CheckboxField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/CheckboxField.php
 
@@ -4689,18 +3992,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:getValues\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/CheckboxField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CheckboxField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/CheckboxField.php
@@ -4773,18 +4064,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\CheckboxListField\:\:filterTree\(\) has parameter \$tree with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/CheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxListField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/CheckboxListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\CheckboxListField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/CheckboxListField.php
@@ -4970,50 +4249,8 @@ parameters:
 			path: ../src/Content/Field/ConditionsCheckingField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:getValue\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:getValue\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/DateField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\DateField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/DateField.php
 
@@ -5030,38 +4267,8 @@ parameters:
 			path: ../src/Content/Field/EmailField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:canRead\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:getShowContactForm\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/EmailField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\EmailField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/EmailField.php
 
@@ -5192,18 +4399,6 @@ parameters:
 			path: ../src/Content/Field/FileField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:getAuthorizedExts\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -5212,30 +4407,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:isAllowedToDeleteFile\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/FileField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\FileField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/FileField.php
 
@@ -5294,32 +4465,8 @@ parameters:
 			path: ../src/Content/Field/HiddenField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\HiddenField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/HiddenField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\HiddenField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/HiddenField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/ImageField.php
 
@@ -5343,30 +4490,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:isImage\(\) has parameter \$fileName with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/ImageField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\ImageField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/ImageField.php
@@ -5450,50 +4573,8 @@ parameters:
 			path: ../src/Content/Field/LabelField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:getValue\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:getValue\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LabelField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LabelField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/LabelField.php
 
@@ -5518,18 +4599,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\LinkField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/LinkField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LinkField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/LinkField.php
 
@@ -5594,31 +4663,7 @@ parameters:
 			path: ../src/Content/Field/LinkedEntryField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:renderSecuredBazarList\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/LinkedEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\LinkedEntryField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/LinkedEntryField.php
@@ -5666,18 +4711,6 @@ parameters:
 			path: ../src/Content/Field/MapField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:getAutocomplete\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -5714,43 +4747,7 @@ parameters:
 			path: ../src/Content/Field/MapField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:getValue\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:isEmpty\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:isEmpty\(\) has parameter \$pValue with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/MapField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\MapField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/MapField.php
@@ -5810,42 +4807,6 @@ parameters:
 			path: ../src/Content/Field/OldField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OldField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OldField.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Field\\OldField\:\:\$error has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -5870,62 +4831,8 @@ parameters:
 			path: ../src/Content/Field/OpeningHoursField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\OpeningHoursField\:\:getValue\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OpeningHoursField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OpeningHoursField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/OpeningHoursField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OpeningHoursField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OpeningHoursField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OpeningHoursField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/OpeningHoursField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\OpeningHoursField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/OpeningHoursField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\PasswordField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/PasswordField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\PasswordField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/PasswordField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\PasswordField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/PasswordField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\PasswordField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/PasswordField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\PasswordField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/PasswordField.php
 
@@ -5938,18 +4845,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\RadioEntryField\:\:getOptions\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/RadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioEntryField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/RadioEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioEntryField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/RadioEntryField.php
 
@@ -5967,18 +4862,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\RadioField\:\:generateTagsData\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/RadioField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/RadioField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/RadioField.php
@@ -6002,18 +4885,6 @@ parameters:
 			path: ../src/Content/Field/RadioListField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioListField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/RadioListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\RadioListField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/RadioListField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -6022,30 +4893,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:getOptions\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SelectEntryField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectEntryField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/SelectEntryField.php
 
@@ -6062,44 +4909,8 @@ parameters:
 			path: ../src/Content/Field/SelectListField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectListField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectListField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/SelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectListField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SelectListField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SelectListField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/SelectListField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/SubscribeField.php
 
@@ -6123,30 +4934,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:getUnsubscribeEmail\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/SubscribeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\SubscribeField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/SubscribeField.php
@@ -6184,30 +4971,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\TabChangeField\:\:getViewChange\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TabChangeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabChangeField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TabChangeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabChangeField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TabChangeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabChangeField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TabChangeField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabChangeField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/TabChangeField.php
 
@@ -6255,30 +5018,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Field\\TabsField\:\:prepareText\(\) has parameter \$mode with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TabsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabsField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TabsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TabsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabsField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TabsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TabsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/TabsField.php
@@ -6362,18 +5101,6 @@ parameters:
 			path: ../src/Content/Field/TagsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:getName\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -6392,30 +5119,6 @@ parameters:
 			path: ../src/Content/Field/TagsField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TagsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TagsField.php
-
-		-
 			message: '#^Parameter \#1 \$string of function stripslashes expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -6424,18 +5127,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/TextField.php
 
@@ -6454,30 +5145,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:getSubType\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/TextField.php
 
@@ -6506,18 +5173,6 @@ parameters:
 			path: ../src/Content/Field/TextareaField.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:formatValuesBeforeSave\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:formatValuesBeforeSave\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:getEntryCreationTime\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -6538,30 +5193,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:getSyntax\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Field/TextareaField.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Field\\TextareaField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Field/TextareaField.php
 
@@ -7766,80 +6397,8 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:appendDisplayData\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:appendDisplayData\(\) has parameter \$pEntry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:appendDisplayData\(\) has parameter \$pPage with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:applyFieldMappings\(\) has parameter \$pEntry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:applyFieldMappings\(\) has parameter \$pFieldMappings with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:applyFieldMappings\(\) has parameter \$pPage with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:assignRestrictedFields\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:assignRestrictedFields\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:assignRestrictedFields\(\) has parameter \$previousData with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:assignRestrictedFields\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:buildHtmlDataAttributes\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:create\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:create\(\) has parameter \$formId with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
@@ -7850,61 +6409,13 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:decode\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:delete\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:delete\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:duplicate\(\) has parameter \$destinationTag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:duplicate\(\) has parameter \$sourceTag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:duplicate\(\) is unused\.$#'
 			identifier: method.unused
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:formatDataBeforeSave\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:formatDataBeforeSave\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getAllEntriesTags\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getDataFromPage\(\) has parameter \$page with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
@@ -7916,12 +6427,6 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getFormsFromIds\(\) has parameter \$formsIds with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getFormsFromIds\(\) is unused\.$#'
 			identifier: method.unused
 			count: 1
@@ -7929,30 +6434,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getFormsFromIds\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getHtmlDataAttributes\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getHtmlDataAttributes\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getHtmlDataAttributes\(\) has parameter \$formtab with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:getMultipleParameters\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
@@ -7970,79 +6451,13 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:isEntry\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:is_multidimensional_array\(\) has parameter \$array with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:manageAttributes\(\) has parameter \$attributesNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:manageAttributes\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:manageAttributes\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) has parameter \$previousData with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:mergeFields\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeAttributes\(\) has parameter \$attributesNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeAttributes\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeAttributesAndReturnList\(\) has parameter \$attributesNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeAttributesAndReturnList\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
@@ -8060,92 +6475,8 @@ parameters:
 			path: ../src/Content/Service/EntryManager.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeUnknownFields\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeUnknownFields\(\) has parameter \$pData with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:removeUnknownFields\(\) has parameter \$pFormID with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:renameAttributes\(\) has parameter \$attributesNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:renameAttributes\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:renameAttributesAndReturnList\(\) has parameter \$attributesNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:renameAttributesAndReturnList\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:renameAttributesAndReturnList\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:search\(\) has parameter \$params with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:search\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:sendMailToNotifiedEmails\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:sendMailToNotifiedEmails\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:sendMailToNotifiedEmails\(\) has parameter \$previousEntry with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:update\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:update\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
@@ -8158,18 +6489,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:validate\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:validate\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/EntryManager.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\EntryManager\:\:validate\(\) has parameter \$pFlags with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Content/Service/EntryManager.php
 
@@ -9722,42 +8041,6 @@ parameters:
 			path: ../src/Content/Service/PageOperationsService.php
 
 		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertFromSemanticData\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertFromSemanticData\(\) has parameter \$formId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertFromSemanticData\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertToSemanticData\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertToSemanticData\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Method YesWiki\\Content\\Service\\SemanticTransformer\:\:convertToSemanticData\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
 			message: '#^Property YesWiki\\Content\\Service\\SemanticTransformer\:\:\$params has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -9768,402 +8051,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: ../src/Content/Service/SemanticTransformer.php
-
-		-
-			message: '#^Function compareFieldsByPosition\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function compareFieldsByPosition\(\) has parameter \$a with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function compareFieldsByPosition\(\) has parameter \$b with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function copyUrlToLocalFile\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function copyUrlToLocalFile\(\) has parameter \$localPath with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function copyUrlToLocalFile\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function formAndListIds\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function formValues\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function formValues\(\) has parameter \$formId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getHtmlDataAttributes\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getHtmlDataAttributes\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getHtmlDataAttributes\(\) has parameter \$formtab with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getMultipleParameters\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getMultipleParameters\(\) has parameter \$firstseparator with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getMultipleParameters\(\) has parameter \$param with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function getMultipleParameters\(\) has parameter \$secondseparator with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function listValues\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function listValues\(\) has parameter \$listId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function multiArraySearch\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function multiArraySearch\(\) has parameter \$array with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function multiArraySearch\(\) has parameter \$key with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function multiArraySearch\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renameUrlToSanitizedFilename\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renameUrlToSanitizedFilename\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renderEntryView\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renderEntryView\(\) has parameter \$entryId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renderEntryView\(\) has parameter \$form with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function renderEntryView\(\) has parameter \$inApp with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has parameter \$hauteur with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has parameter \$image_dest with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has parameter \$image_src with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has parameter \$largeur with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function resizeImage\(\) has parameter \$method with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function sanitizeFilename\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function sanitizeFilename\(\) has parameter \$string with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function show\(\) has parameter \$class with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function show\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function show\(\) has parameter \$label with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function show\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function show\(\) has parameter \$val with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function userIsAllowedTo\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function userIsAllowedTo\(\) has parameter \$id with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function userIsAllowedTo\(\) has parameter \$request with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/bazar.functions.php
-
-		-
-			message: '#^Function rssdiff\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/rss.functions.php
-
-		-
-			message: '#^Function rssdiff\(\) has parameter \$idfirst with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/rss.functions.php
-
-		-
-			message: '#^Function rssdiff\(\) has parameter \$idlast with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/rss.functions.php
-
-		-
-			message: '#^Function rssdiff\(\) has parameter \$tag with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/rss.functions.php
-
-		-
-			message: '#^Variable \$output in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.variable
-			count: 1
-			path: ../src/Content/rss.functions.php
-
-		-
-			message: '#^Function truncate\(\) has parameter \$append with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/syndication.functions.php
-
-		-
-			message: '#^Function encodingFromUTF8\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function encodingFromUTF8\(\) has parameter \$matches with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function get_filtertags_parameters_recursive\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function get_filtertags_parameters_recursive\(\) has parameter \$nb with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function get_filtertags_parameters_recursive\(\) has parameter \$tab with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function get_title_from_body\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function get_title_from_body\(\) has parameter \$page with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function sanitizeEntity\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function sanitizeEntity\(\) has parameter \$string with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function tokenTruncate\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function tokenTruncate\(\) has parameter \$string with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function tokenTruncate\(\) has parameter \$your_desired_width with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function utf8_special_decode\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Function utf8_special_decode\(\) has parameter \$matches with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Loose comparison using \!\= between non\-falsy\-string and '''' will always evaluate to true\.$#'
-			identifier: notEqual.alwaysTrue
-			count: 1
-			path: ../src/Content/tags.functions.php
-
-		-
-			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Content/tags.functions.php
 
 		-
 			message: '#^Method YesWiki\\Federation\\Action\\EntryFollowAction\:\:run\(\) has no return type specified\.$#'
@@ -10466,18 +8353,6 @@ parameters:
 			path: ../src/Identity/Action/EditHandlersAclsAction.php
 
 		-
-			message: '#^Method YesWiki\\Identity\\Action\\ListusersAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Identity/Action/ListusersAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\ListusersAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Identity/Action/ListusersAction.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Action\\ListusersAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -10488,18 +8363,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: ../src/Identity/Action/ListusersAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\LoginAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Identity/Action/LoginAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\LoginAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Identity/Action/LoginAction.php
 
 		-
 			message: '#^Method YesWiki\\Identity\\Action\\LoginAction\:\:login\(\) has no return type specified\.$#'
@@ -10672,18 +8535,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Action\\UserSettingsAction\:\:doPrerenderingActions\(\) has parameter \$post with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Action/UserSettingsAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\UserSettingsAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Identity/Action/UserSettingsAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\UserSettingsAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Identity/Action/UserSettingsAction.php
 
@@ -10876,18 +8727,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Action\\UsersTableAction\:\:addGroups\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Identity/Action/UsersTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\UsersTableAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Identity/Action/UsersTableAction.php
-
-		-
-			message: '#^Method YesWiki\\Identity\\Action\\UsersTableAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Identity/Action/UsersTableAction.php
 
@@ -13112,12 +10951,6 @@ parameters:
 			path: ../src/Kernel/Service/Mailer.php
 
 		-
-			message: '#^Parameter \#3 \$mail_receiver of function send_mail expects string, array\<string\>\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Kernel/Service/Mailer.php
-
-		-
 			message: '#^Property YesWiki\\Kernel\\Service\\Mailer\:\:\$authenticationService has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -13322,94 +11155,10 @@ parameters:
 			path: ../src/Kernel/Service/TripleStore.php
 
 		-
-			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: ../src/Kernel/email.inc.php
-
-		-
-			message: '#^Function getSMTPSecure\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/email.inc.php
-
-		-
-			message: '#^Function getSMTPSecure\(\) has parameter \$pPort with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/email.inc.php
-
-		-
-			message: '#^Function send_mail\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/email.inc.php
-
-		-
-			message: '#^Property PHPMailer\\PHPMailer\\PHPMailer\:\:\$Port \(int\) on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.property
-			count: 1
-			path: ../src/Kernel/email.inc.php
-
-		-
-			message: '#^Offset 1 might not exist on array\{0\: non\-falsy\-string, 1\?\: non\-falsy\-string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: ../src/Kernel/lang.functions.php
-
-		-
-			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../src/Kernel/lang.functions.php
-
-		-
-			message: '#^Cannot access offset ''path'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
-			path: ../src/Kernel/urlutils.inc.php
-
-		-
-			message: '#^Function testUrlInIframe\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Kernel/urlutils.inc.php
-
-		-
-			message: '#^Function testUrlInIframe\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Kernel/urlutils.inc.php
-
-		-
-			message: '#^Offset ''vPath'' on array\{scheme\: string, host\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: ../src/Kernel/urlutils.inc.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''/'' and ''/'' will always evaluate to false\.$#'
-			identifier: notIdentical.alwaysFalse
-			count: 1
-			path: ../src/Kernel/urlutils.inc.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\AccordionAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/AccordionAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\AceditorAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Action/AceditorAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\AceditorAction\:\:formatArguments\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Render/Action/AceditorAction.php
 
 		-
 			message: '#^Call to function is_array\(\) with array\<mixed\> will always evaluate to true\.$#'
@@ -13622,52 +11371,16 @@ parameters:
 			path: ../src/Render/Action/SetWikiDefaultThemeAction.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Action\\TabAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Render/Action/TabAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\TabAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Action/TabAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\TabAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/TabAction.php
 
 		-
-			message: '#^Method YesWiki\\Render\\Action\\TabsAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Render/Action/TabsAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\TabsAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Action/TabsAction.php
-
-		-
 			message: '#^Method YesWiki\\Render\\Action\\TabsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: ../src/Render/Action/TabsAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\VideoAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Render/Action/VideoAction.php
-
-		-
-			message: '#^Method YesWiki\\Render\\Action\\VideoAction\:\:formatArguments\(\) has parameter \$arg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Render/Action/VideoAction.php
 
 		-
 			message: '#^Method YesWiki\\Render\\Action\\VideoAction\:\:run\(\) has no return type specified\.$#'
@@ -14558,18 +12271,6 @@ parameters:
 			path: ../src/Social/Action/CommentsTableAction.php
 
 		-
-			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Action/ReactionsAction.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:formatArguments\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Action/ReactionsAction.php
-
-		-
 			message: '#^Method YesWiki\\Social\\Action\\ReactionsAction\:\:run\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -14794,30 +12495,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:getLabels\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: ../src/Social/Field/ReactionsField.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderInput\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Field/ReactionsField.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderInput\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/Social/Field/ReactionsField.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderStatic\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/Social/Field/ReactionsField.php
-
-		-
-			message: '#^Method YesWiki\\Social\\Field\\ReactionsField\:\:renderStatic\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: ../src/Social/Field/ReactionsField.php
 
@@ -15339,48 +13016,6 @@ parameters:
 
 		-
 			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:callAction\(\) has parameter \$arguments with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatArguments\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatArguments\(\) has parameter \$arguments with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatArray\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatArray\(\) has parameter \$param with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatBoolean\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatBoolean\(\) has parameter \$default with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: ../src/YesWikiPerformable.php
-
-		-
-			message: '#^Method YesWiki\\Core\\YesWikiPerformable\:\:formatBoolean\(\) has parameter \$param with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: ../src/YesWikiPerformable.php
@@ -16224,12 +13859,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: ../tests/src/LangFunctionsTest.php
-
-		-
-			message: '#^Method YesWiki\\Test\\Core\\SyndicationFunctionsTest\:\:testMultiArraySearchFromBazarIsReachableAfterWikiBoots\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../tests/src/SyndicationFunctionsTest.php
 
 		-
 			message: '#^Method YesWiki\\Test\\Core\\SyndicationFunctionsTest\:\:testSyndicationActionFormatArgumentsParsesMapping\(\) has no return type specified\.$#'

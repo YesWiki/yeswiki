@@ -36,7 +36,7 @@ class ActionsBuilderService
 
         $registry = $this->container->get(ComponentRegistry::class);
 
-        $data = formAndListIds();
+        $data = $this->container->get(EntryDisplay::class)->formAndListNames();
 
         $data['palette'] = $registry->palette();
         $data['components'] = $registry->byId();

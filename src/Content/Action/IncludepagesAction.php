@@ -4,9 +4,11 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
@@ -35,7 +37,6 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
         $output = '';
         $class = $this->getService(PerformableArguments::class)->get('class');
@@ -63,11 +64,11 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
                 $element[$page['tag']]['owner'] = $page['owner'];
                 $element[$page['tag']]['user'] = $page['user'];
                 $element[$page['tag']]['time'] = $page['time'];
-                $element[$page['tag']]['title'] = get_title_from_body($page);
-                $element[$page['tag']]['image'] = get_image_from_body($page);
-                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($body)), $nbcartrunc);
+                $element[$page['tag']]['title'] = $this->getService(PageSummary::class)->title($page);
+                $element[$page['tag']]['image'] = $this->getService(PageSummary::class)->image($page);
+                $element[$page['tag']]['desc'] = StringUtilService::truncateOnWord(strip_tags($this->getService(MarkdownFormatterService::class)->format($body)), $nbcartrunc);
                 foreach (TagsManager::keywordsOf($page) as $keyword) {
-                    $element[$page['tag']]['tagnames'] .= sanitizeEntity($keyword) . ' ';
+                    $element[$page['tag']]['tagnames'] .= StringUtilService::withoutAccents($keyword) . ' ';
                     $element[$page['tag']]['tagbadges'] .= '<span class="label label-info">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
                 }
             }

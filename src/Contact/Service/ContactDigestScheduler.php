@@ -135,11 +135,9 @@ class ContactDigestScheduler implements EventSubscriberInterface
             @fastcgi_finish_request();
         }
         @set_time_limit(0);
-
-        require_once YESWIKI_SOURCE_DIR . '/src/Contact/contact.functions.php';
         foreach ($periods as $period) {
             try {
-                sendEmailsToSubscribers($period, '');
+                $this->services->get(MailingListDigest::class)->sendForPeriod($period, '');
             } catch (\Throwable $ignored) {
             }
         }

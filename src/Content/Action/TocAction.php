@@ -67,8 +67,6 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
 
     private function emit(): void
     {
-        $GLOBALS['tocaction'] = 0;
-
         $tag = $this->getService(PageContext::class)->getTag();
         $page = $this->getService(PageManager::class)->getOne($tag);
         $toc_body = PageBody::content($page['body'] ?? []);

@@ -8,6 +8,7 @@ use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\ThemeManager;
@@ -93,7 +94,7 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction, Pro
                     echo htmlentities($this->getService(RuntimeConfig::class)[$param], ENT_QUOTES, YW_CHARSET);
                     break;
                 case 'lang':
-                    echo $GLOBALS['prefered_language'];
+                    echo $this->getService(LanguageService::class)->preferredLanguage();
                     break;
                 case 'theme_path':
                     $theme = $themeManager->getFavoriteTheme();

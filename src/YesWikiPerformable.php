@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Performable\FormatsArguments;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\HibernationNotice;
@@ -16,6 +17,8 @@ use YesWiki\Render\Service\TemplateEngine;
  */
 abstract class YesWikiPerformable
 {
+    use FormatsArguments;
+
     protected ContainerInterface $services;
     protected $params;
     protected $twig;
@@ -125,10 +128,16 @@ abstract class YesWikiPerformable
         return $this->services->get($className);
     }
 
+    /**
+     * Run another action from inside this one.
+     *
+     * Used to stamp the caller's class short name into `calledBy`, which the entry-list
+     * actions read to break the recursion they were built on: `{{entrylist template="map"}}`
+     * called `{{entrymap}}`, which called `{{entrylist}}` back. Ticket 49 replaced that with
+     * template preparers, and the flag went with it. Nothing needs to know who called it.
+     */
     protected function callAction(string $action, $arguments = []): string
     {
-        $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
-
         return $this->getService(ActionRunner::class)->action($action, $arguments);
     }
 
@@ -137,38 +146,20 @@ abstract class YesWikiPerformable
         return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
+    /**
+     * The arguments this performable was written with, normalised for its own use.
+     *
+     * Every action overrides this to give its parameters defaults and types; the base hands them
+     * back untouched. `setArguments()` merges what comes back over what came in, so a return
+     * value need only carry the keys it wants to change.
+     *
+     * @param array<string, mixed> $arguments
+     *
+     * @return array<string, mixed>
+     */
     protected function formatArguments($arguments)
     {
         return $arguments;
-    }
-
-    protected function formatBoolean($param, $default = true, string $index = '')
-    {
-        if (is_array($param)) {
-            if ($index != '' && isset($param[$index])) {
-                $param = $param[$index];
-            } else {
-                return $default;
-            }
-        }
-        if (is_bool($param)) {
-            return $param;
-        } elseif (in_array($param, [0, '0', 'no', 'non', 'false'], true)) {
-            return false;
-        } elseif (empty($param)) {
-            return $default;
-        }
-
-        return true;
-    }
-
-    protected function formatArray($param)
-    {
-        if (is_array($param)) {
-            return $param;
-        }
-
-        return !empty($param) ? array_map('trim', explode(',', $param)) : [];
     }
 
     /**

@@ -13,6 +13,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 
 class LostPasswordAction extends YesWikiAction implements RegisteredAction
 {
@@ -100,7 +101,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                     'user' => $user,
                     'message' => $message ?? '',
                     'key' => $hash ?? $key,
-                    'inIframe' => (testUrlInIframe() == 'iframe'),
+                    'inIframe' => (WikiUrls::iframeSuffixFor() == 'iframe'),
                 ]);
             case 'directDangerMessage':
                 return $renderedTitle . $this->render('@core/alert-message.twig', [

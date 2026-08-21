@@ -206,7 +206,7 @@ class ActivityPubService
 
             case 'Create':
                 $object = $activity['object'];
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
+                $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                 $entry['read-only'] = 1;
                 $entryManager = $this->container->get(EntryManager::class);
                 $entryManager->create($form['id'], $entry, false, $object['id']);
@@ -218,7 +218,7 @@ class ActivityPubService
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
-                        $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
+                        $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                         $entryManager = $this->container->get(EntryManager::class);
                         $entryManager->update($tag, $entry, false);
                     }
@@ -363,20 +363,20 @@ class ActivityPubService
 
             if ($type === 'Create') {
                 if (empty($existingTriples)) {
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                     $entry['read-only'] = 1;
 
                     $entryManager->create($form['id'], $entry, false, $object['id']);
                     $stats['created']++;
                 } else {
                     $tag = $existingTriples[0]['resource'];
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                     $entryManager->update($tag, $entry, false);
                     $stats['updated']++;
                 }
             } elseif ($type === 'Update' && !empty($existingTriples)) {
                 $tag = $existingTriples[0]['resource'];
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
+                $entry = $this->semanticTransformer->convertFromSemanticData($form, $object);
                 $entryManager->update($tag, $entry, false);
                 $stats['updated']++;
             }

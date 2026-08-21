@@ -11,6 +11,8 @@ use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TagsField;
+use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\RemoteFile;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -241,7 +243,7 @@ class CSVManager
                 // against nothing -- and exported a password hash into a CSV.
                 if (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
                     // ajoute l'URL de base aux images et fichiers
-                    $value = $this->storage->url(BAZ_CHEMIN_UPLOAD . $value);
+                    $value = $this->storage->url(AttachedFilePaths::UPLOAD_DIR . $value);
                 } elseif (
                     $header['field'] instanceof EnumField
                     && !($header['field'] instanceof TagsField)
@@ -381,10 +383,14 @@ class CSVManager
      */
     public function importEntry(array $importedEntries, string $formId): ?array
     {
-        if (!$this->importdone) {
-            // Pour les traitements particulier lors de l import
-            $GLOBALS['_BAZAR_']['provenance'] = 'import';
-            $createdEntries = [];
+        if ($this->importdone) {
+            return null;
+        }
+
+        // Scoped to the import rather than left set: a flag that says "this is an import" and
+        // is never unset makes every later write in the process an import too (ADR-0024).
+        $createdEntries = $this->container->get(ImportContext::class)->during(function () use ($importedEntries, $formId): array {
+            $created = [];
             foreach ($importedEntries as $entry) {
                 $entry = unserialize(base64_decode($entry), ['allowed_classes' => false]);
                 $entry = array_map('strval', $entry);
@@ -397,15 +403,15 @@ class CSVManager
                 $entry = $this->entryManager->create($formId, $entry);
 
                 if ($entry) {
-                    $createdEntries[] = $entry;
+                    $created[] = $entry;
                 }
             }
-            $this->importdone = true;
 
-            return $createdEntries;
-        }
+            return $created;
+        });
+        $this->importdone = true;
 
-        return null;
+        return $createdEntries;
     }
 
     /**
@@ -817,7 +823,7 @@ class CSVManager
     {
         // TODO refactor this part if needed because only copied
         $imageorig = trim($value);
-        $nomimage = renameUrlToSanitizedFilename($imageorig);
+        $nomimage = RemoteFile::filenameFor($imageorig);
 
         // reject the download outright if the destination extension is not an authorized image extension
         // (renameUrlToSanitizedFilename only strips path/traversal characters, not the extension)
@@ -829,10 +835,10 @@ class CSVManager
         }
 
         // test si c'est url vers l'image
-        $fileCopied = copyUrlToLocalFile($imageorig, BAZ_CHEMIN_UPLOAD . $nomimage);
+        $fileCopied = RemoteFile::download($imageorig, AttachedFilePaths::UPLOAD_DIR . $nomimage);
         if ($fileCopied) {
             $value = $nomimage;
-        } elseif ($this->storage->exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
+        } elseif ($this->storage->exists(AttachedFilePaths::UPLOAD_DIR . $imageorig)) {
             if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
                 // on enleve les accents sur les noms de fichiers, et les espaces
                 $nomimage = preg_replace(
@@ -842,11 +848,11 @@ class CSVManager
                 );
                 $nomimage = str_replace(' ', '_', (string)$nomimage);
                 $value = $nomimage;
-                $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
+                $chemin_destination = AttachedFilePaths::UPLOAD_DIR . $nomimage;
 
                 // verification de la presence de ce fichier
                 if (!$this->storage->exists($chemin_destination)) {
-                    $this->storage->move(BAZ_CHEMIN_UPLOAD . $imageorig, $chemin_destination);
+                    $this->storage->move(AttachedFilePaths::UPLOAD_DIR . $imageorig, $chemin_destination);
                 }
             } else {
                 $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
@@ -870,7 +876,7 @@ class CSVManager
     private function extractValueFromFileFieldData(string $value, FileField $field): string
     {
         $fileUrl = trim($value);
-        $file = renameUrlToSanitizedFilename($fileUrl);
+        $file = RemoteFile::filenameFor($fileUrl);
 
         // reject the download outright if the destination extension is not in the upload allowlist
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -882,15 +888,15 @@ class CSVManager
         }
 
         // test si c'est url vers l'image
-        $fileCopied = copyUrlToLocalFile($fileUrl, BAZ_CHEMIN_UPLOAD . $file);
+        $fileCopied = RemoteFile::download($fileUrl, AttachedFilePaths::UPLOAD_DIR . $file);
         if ($fileCopied) {
             $value = $file;
-        } elseif ($this->storage->exists(BAZ_CHEMIN_UPLOAD . $fileUrl)) {
+        } elseif ($this->storage->exists(AttachedFilePaths::UPLOAD_DIR . $fileUrl)) {
             $value = $file;
-            $chemin_destination = BAZ_CHEMIN_UPLOAD . $file;
+            $chemin_destination = AttachedFilePaths::UPLOAD_DIR . $file;
             // verification de la presence de ce fichier
             if (!$this->storage->exists($chemin_destination)) {
-                $this->storage->move(BAZ_CHEMIN_UPLOAD . $fileUrl, $chemin_destination);
+                $this->storage->move(AttachedFilePaths::UPLOAD_DIR . $fileUrl, $chemin_destination);
             }
         } else {
             $this->errormsg[] = _t('BAZ_FILE_NOT_FOUND') . ' : ' . $fileUrl;

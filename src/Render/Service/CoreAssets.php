@@ -5,7 +5,9 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RequestScopedState;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
@@ -13,7 +15,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
  *
  * @see docs/adr/0014-assets-are-declared-by-a-render-not-accumulated-by-a-request.md
  */
-class CoreAssets
+class CoreAssets implements RequestScopedState
 {
     private bool $registered = false;
 
@@ -24,6 +26,7 @@ class CoreAssets
         private readonly RuntimeConfig $config,
         private readonly PageContext $pageContext,
         private readonly CsrfTokenManager $csrfTokenManager,
+        private readonly LanguageService $languages,
         private readonly Storage $storage,
     ) {
     }
@@ -208,7 +211,7 @@ class CoreAssets
     public function pageStateScript(): string
     {
         $props = [
-            'locale' => $GLOBALS['prefered_language'],
+            'locale' => $this->languages->preferredLanguage(),
             'timezone' => date_default_timezone_get(),
             'baseUrl' => $this->config['base_url'],
             'pageTag' => $this->pageContext->getTag(),
@@ -254,5 +257,12 @@ class CoreAssets
         }
 
         return $found;
+    }
+
+    public function startNewRequest(): void
+    {
+        // "register once per request" is instance state, and a worker's instance outlives the
+        // request: without this the second visitor's page carries no stylesheet at all.
+        $this->registered = false;
     }
 }

@@ -367,6 +367,16 @@ function paintPreview(holder, field) {
     holder.innerHTML = `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
   }
   holder.classList.remove('yw-fb__card-preview--pending')
+  // Painting writes markup nobody announced, and an unannounced node is an uninitialised
+  // one: every initialiser hangs off `htmx:load` (yw-init.js). The first preview on a page
+  // got away with it because loading leaflet fires `yw:assets-ready`, which re-runs every
+  // initialiser over the whole document. The second one does not: its assets are already
+  // there, so nothing fires, and the canvas re-render that added it had just replaced the
+  // first map's mounted DOM with a fresh copy of the same string. Both maps ended up as
+  // markup. `process` wires the hx attributes a preview carries (the tag input has one),
+  // `trigger` is how this file says "these nodes are new" in the vocabulary yw-init reads.
+  htmx.process(holder)
+  htmx.trigger(holder, 'htmx:load')
 }
 
 function forgetStalePreviews() {
@@ -463,7 +473,10 @@ function renderCanvas() {
       ),
     )
   }
-  fields.forEach((field) => canvasEl.append(renderCard(field)))
+  fields.forEach((field) => {
+    canvasEl.append(renderCard(field))
+    paintCached(field)
+  })
   forgetStalePreviews()
   const missing = fields
     .filter((field) => previewHtml[field.id] === undefined)
@@ -494,9 +507,6 @@ function renderCard(field) {
       <div class="yw-fb__card-preview yw-fb__card-preview--pending" id="yw-fb-preview-${field.id}"></div>
     </div>
   </div>`)
-
-  const holder = card.querySelector('.yw-fb__card-preview')
-  if (previewHtml[field.id] !== undefined) paintPreview(holder, field)
 
   card.addEventListener('click', (event) => {
     const action = event.target
@@ -529,7 +539,23 @@ function renderCard(field) {
 
 function refreshCard(field) {
   const existing = canvasEl.querySelector(`[data-fb-id="${field.id}"]`)
-  if (existing) existing.replaceWith(renderCard(field))
+  if (!existing) return
+  existing.replaceWith(renderCard(field))
+  paintCached(field)
+}
+
+/**
+ * Paint a card's cached preview, once the card is in the document.
+ *
+ * Order matters and is the whole reason this is its own function: painting announces the
+ * nodes it wrote by firing `htmx:load`, that event bubbles to the listener on `document`,
+ * and a card that has not been appended yet bubbles to nobody. Painting inside `renderCard`
+ * meant every re-rendered preview was left as inert markup.
+ */
+function paintCached(field) {
+  if (previewHtml[field.id] === undefined) return
+  const holder = previewHolder(field)
+  if (holder) paintPreview(holder, field)
 }
 
 function selectField(id) {

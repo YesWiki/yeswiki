@@ -66,7 +66,7 @@ class ImageField extends FileField
 
         if ($isUrl) {
             if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
-                if ($this->isAllowedToDeleteFile($entry, $value)) {
+                if ($this->isAllowedToDeleteFile($entry ?? [], $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@core/alert-message.twig', [
                         'type' => 'info',

@@ -81,9 +81,9 @@ abstract class BazarField implements \JsonSerializable
      * @param array|null  $entry
      * @param string|null $userNameForRendering username to render the field, if empty uses connected user
      *
-     * @return string|null $html
+     * @return string $html
      */
-    public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
+    public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null): string
     {
         if (!$this->canRead($entry, $userNameForRendering)) {
             return '';
@@ -117,16 +117,24 @@ abstract class BazarField implements \JsonSerializable
         return !array_key_exists($this->propertyName, $entry);
     }
 
-    public function renderInputIfPermitted($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    public function renderInputIfPermitted($entry): string
     {
         if (!$this->canEdit($entry)) {
             return '';
         }
 
-        return $this->renderInput($entry);
+        return (string)$this->renderInput($entry);
     }
 
-    public function formatValuesBeforeSaveIfEditable($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return array<string, mixed>
+     */
+    public function formatValuesBeforeSaveIfEditable($entry): array
     {
         if (empty($this->propertyName)) {
             return [];
@@ -139,11 +147,23 @@ abstract class BazarField implements \JsonSerializable
         return [$this->propertyName => $this->getValue($entry) ?? $this->default];
     }
 
+    /**
+     * What this field contributes to the entry being written.
+     *
+     * @param array<string, mixed>|null $entry
+     *
+     * @return array<string, mixed> the keys to store, or `['fields-to-remove' => [...]]` to drop some
+     */
     public function formatValuesBeforeSave($entry)
     {
         return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return string|null
+     */
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
@@ -153,6 +173,11 @@ abstract class BazarField implements \JsonSerializable
         ]) : '';
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return string|null
+     */
     protected function renderInput($entry)
     {
         return $this->render("@core/inputs/{$this->type}.twig", [
@@ -165,12 +190,15 @@ abstract class BazarField implements \JsonSerializable
         return $this->services->get($class);
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     */
     protected function getValue($entry)
     {
         return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
-    public function isEmpty($pValue)
+    public function isEmpty($pValue): bool
     {
         return is_null($pValue) || (is_array($pValue) && count(array_keys($pValue)) == 0) || (is_string($pValue) && trim($pValue) == '');
     }
@@ -205,25 +233,28 @@ abstract class BazarField implements \JsonSerializable
     /**
      * Return true if we are if reading is allowed for the field.
      *
-     * @param array|null  $entry
-     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @param array|null                $entry
+     * @param string|null               $userNameForRendering username to render the field, if empty uses connected user
+     * @param array<string, mixed>|null $entry
      *
      * @return bool
      */
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
-        $isCreation = !isset($entry) || !is_array($entry) || !isset($entry['tag']);
+        $isCreation = !isset($entry['tag']);
 
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['tag']);
     }
 
-    public function canEdit($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    public function canEdit($entry): bool
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
 
-        $isCreation = !$entry;
-        $isCreation = !isset($entry) || !is_array($entry) || !isset($entry['tag']);
+        $isCreation = !isset($entry['tag']);
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['tag'], $isCreation ? 'creation' : 'edit');
     }
@@ -297,6 +328,9 @@ abstract class BazarField implements \JsonSerializable
         return $this->writeAccess;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

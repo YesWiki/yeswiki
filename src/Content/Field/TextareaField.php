@@ -8,6 +8,8 @@ use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\StringUtilService;
 
 #[\Field(['textelong'])]
 class TextareaField extends BazarField
@@ -89,7 +91,7 @@ class TextareaField extends BazarField
 
             $this->getService(AssetRegistry::class)->addJsFile('javascripts/vditor-textarea.js', false, true);
 
-            $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
+            $vditorLang = self::VDITOR_LANG_MAP[strtolower($this->getService(LanguageService::class)->preferredLanguage())] ?? 'en_US';
         }
 
         $tempTag = !isset($entry['tag']) ? ($this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) : null;
@@ -111,10 +113,10 @@ class TextareaField extends BazarField
 
         if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
-            $value = $this->sanitizeBase64Img($value, $entry);
+            $value = $this->sanitizeBase64Img($value, $entry ?? []);
             $value = $this->sanitizeHTML($value);
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
-            $value = $this->sanitizeAttach($value, $entry);
+            $value = $this->sanitizeAttach($value, $entry ?? []);
             $value = $this->sanitizeHTMLInWikiCode($value);
         } else {
             $value = $this->sanitizeHTML($value);
@@ -135,7 +137,7 @@ class TextareaField extends BazarField
                 $pageContext = $this->getService(\YesWiki\Kernel\Service\PageContext::class);
                 $oldPage = $pageContext->getTag();
                 $oldPageArray = $pageContext->getPage();
-                $pageContext->setTag($entry['tag']);
+                $pageContext->setTag($entry['tag'] ?? null);
                 $pageContext->setPage($this->getService(\YesWiki\Content\Service\PageManager::class)->getOne($pageContext->getTag()));
                 $pageContext->setPageField('body', [PageBody::CONTENT => $value]);
 
@@ -292,7 +294,7 @@ class TextareaField extends BazarField
      */
     private function sanitizeFileName(string $inputString): string
     {
-        return removeAccents((string)preg_replace('/--+/u', '-', (string)preg_replace('/[[:punct:]]/', '-', $inputString)));
+        return StringUtilService::withoutDiacritics((string)preg_replace('/--+/u', '-', (string)preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 
     /** sanitize html to prevent xss. */

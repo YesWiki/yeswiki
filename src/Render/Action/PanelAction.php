@@ -9,6 +9,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Render\Service\GraphicalElementState;
 
 class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
@@ -73,17 +74,12 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             $collapsed = ($type == 'collapsed');
             $collapsible = ($type == 'collapsible') || $collapsed;
 
-            if (isset($GLOBALS['check_' . $pagetag]['accordion_uniqueID'])) {
-                $accordionID = $GLOBALS['check_' . $pagetag]['accordion_uniqueID'];
+            $elements = $this->getService(GraphicalElementState::class);
+            $accordionID = $elements->currentAccordion($pagetag);
+            if ($accordionID !== '') {
                 $collapsible = true;
-                if (!isset($GLOBALS['check_' . $pagetag]['accordion_collapsible'])) {
-                    $collapsed = false;
-                    $GLOBALS['check_' . $pagetag]['accordion_collapsible'] = true;
-                } else {
-                    $collapsed = true;
-                }
-            } else {
-                $accordionID = '';
+                // the first panel of an accordion is the open one
+                $collapsed = $elements->accordionTakesAnotherPanel($pagetag);
             }
 
             $inAccordion = !empty($accordionID);
@@ -108,9 +104,9 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
                     . '<div class="yw-panel__body">';
             }
 
-            $GLOBALS['check_' . $pagetag]['panel_shape'][] = $collapsible
+            $elements->openPanel($pagetag, $collapsible
                 ? ($inAccordion ? 'accordion-item' : 'collapsible-panel')
-                : 'panel';
+                : 'panel');
 
             echo $result;
         } else {
@@ -125,7 +121,7 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
     public function end(): string
     {
         $pagetag = $this->getService(PageContext::class)->getTag();
-        $shape = array_pop($GLOBALS['check_' . $pagetag]['panel_shape']) ?? 'panel';
+        $shape = $this->getService(GraphicalElementState::class)->closePanel($pagetag);
 
         return match ($shape) {
             'accordion-item' => "\n</div>\n</details> <!-- end of panel -->\n",

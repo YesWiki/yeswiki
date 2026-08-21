@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -11,6 +12,7 @@ use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
@@ -80,7 +82,6 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
     {
         $tagsManager = $this->getService(TagsManager::class);
 
-        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
         $tags = $this->getService(PerformableArguments::class)->get('tags');
         $type = $this->getService(PerformableArguments::class)->get('type');
@@ -111,10 +112,10 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction, Prov
                     $element[$page['tag']]['owner'] = $page['owner'];
                     $element[$page['tag']]['user'] = $page['user'];
                     $element[$page['tag']]['time'] = $page['time'];
-                    $element[$page['tag']]['title'] = get_title_from_body($page);
-                    $element[$page['tag']]['image'] = get_image_from_body($page);
+                    $element[$page['tag']]['title'] = $this->getService(PageSummary::class)->title($page);
+                    $element[$page['tag']]['image'] = $this->getService(PageSummary::class)->image($page);
                     foreach (TagsManager::keywordsOf($page) as $keyword) {
-                        $element[$page['tag']]['tagnames'] .= sanitizeEntity($keyword) . ' ';
+                        $element[$page['tag']]['tagnames'] .= StringUtilService::withoutAccents($keyword) . ' ';
                         $element[$page['tag']]['tagbadges'] .= '<span class="label label-info">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
                     }
                 }

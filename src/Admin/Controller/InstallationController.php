@@ -9,6 +9,7 @@ use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
@@ -98,7 +99,7 @@ class InstallationController
             ?? (file_exists(self::BACKUP_SQL_FILE) ? self::BACKUP_SQL_FILE : 'default');
 
         $this->step = trim($_REQUEST['installAction'] ?? '') ?: 'default';
-        $this->baseUrl = computeBaseURL(true);
+        $this->baseUrl = WikiUrls::baseUrl(true);
         $this->twig = $this->setupTwig();
     }
 
@@ -159,7 +160,7 @@ class InstallationController
             'baseUrl' => $this->baseUrl,
             'config' => $this->config,
             'env' => $this->env,
-            'locale' => $GLOBALS['prefered_language'],
+            'locale' => LanguageService::getInstance()->preferredLanguage(),
 
             'installedLanguages' => $GLOBALS['installed_languages'] ?? $GLOBALS['available_languages'],
             'languagesList' => $GLOBALS['languages_list'],

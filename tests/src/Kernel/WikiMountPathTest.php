@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -18,7 +19,7 @@ class WikiMountPathTest extends YesWikiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        require_once 'src/Kernel/urlutils.inc.php';
+        require_once 'src/Kernel/Service/WikiUrls.php';
         $this->server = $_SERVER;
         $_SERVER['HTTP_HOST'] = 'example.org';
         unset($_SERVER['HTTPS']);
@@ -35,7 +36,7 @@ class WikiMountPathTest extends YesWikiTestCase
         $_SERVER['SCRIPT_NAME'] = $scriptName;
         $_SERVER['REQUEST_URI'] = $requestUri;
 
-        return computeBaseURL(true);
+        return WikiUrls::baseUrl(true);
     }
 
     /**

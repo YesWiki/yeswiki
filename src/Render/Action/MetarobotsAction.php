@@ -49,7 +49,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
                 . $this->getService(RuntimeConfig::class)['yeswiki_name'] . '" />' . "\n";
             $utils = $this->getService(TemplateHelperService::class);
             $title = $utils->getTitleFromBody($this->getService(PageContext::class)->getPage());
-            echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['yeswikiServices']->get(RuntimeConfig::class)['yeswiki_name']) . '" />' . "\n";
+            echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $this->getService(RuntimeConfig::class)['yeswiki_name']) . '" />' . "\n";
             $desc = htmlspecialchars($utils->getDescriptionFromBody($this->getService(PageContext::class)->getPage(), $title), ENT_COMPAT | ENT_HTML5);
             if ($desc) {
                 echo '  <meta property="og:description" content="' . $desc . '" />' . "\n";

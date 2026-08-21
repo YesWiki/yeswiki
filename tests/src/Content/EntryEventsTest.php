@@ -21,6 +21,11 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class EntryEventsTest extends YesWikiTestCase
 {
+    /** A form of this test's own, whose only field is the title. */
+    private const FORM_ID = '999910';
+    private const TITLE_FIELD = 'bf_titre';
+    private const TEMPLATE = "texte***bf_titre***Titre***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\n";
+
     protected function setUp(): void
     {
         $wiki = self::getWiki();
@@ -31,11 +36,27 @@ class EntryEventsTest extends YesWikiTestCase
         ));
         $this->assertNotFalse($admin, 'need an existing admin on this wiki');
         $wiki->services->get(AuthenticationService::class)->login($admin);
+
+        $formManager = $wiki->services->get(FormManager::class);
+        if ($formManager->getOne(self::FORM_ID)) {
+            $formManager->delete(self::FORM_ID);
+        }
+        $formManager->create([
+            'id' => self::FORM_ID,
+            'label' => 'EntryEventsTest form',
+            'template' => self::TEMPLATE,
+            'condition' => '',
+        ]);
     }
 
     protected function tearDown(): void
     {
-        self::getWiki()->services->get(AuthenticationService::class)->logout();
+        $wiki = self::getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        if ($formManager->getOne(self::FORM_ID)) {
+            $formManager->delete(self::FORM_ID);
+        }
+        $wiki->services->get(AuthenticationService::class)->logout();
     }
 
     /** Records every entry event it hears, in order. */
@@ -48,32 +69,35 @@ class EntryEventsTest extends YesWikiTestCase
     }
 
     /**
-     * Create an entry carrying only a title, on whichever seeded form will accept one.
+     * Create an entry carrying only a title, on this test's own form.
+     *
+     * It used to walk the seeded forms looking for one that would accept a title and nothing
+     * else. Whether any does is a property of the wiki the suite happens to run against: every
+     * form in the default content requires a second field, so the search found nothing and
+     * three tests failed for a reason that had nothing to do with events. The form is a fixture
+     * now, like the admin login above.
      *
      * @return array{array<string, mixed>, string, string} the entry, its form id, its title field
      */
     private static function createTitleOnlyEntry(string $title): array
     {
         $wiki = self::getWiki();
-        $entryManager = $wiki->services->get(EntryManager::class);
         $properties = $wiki->services->get(FormPropertiesService::class);
+        $form = $wiki->services->get(FormManager::class)->getOne(self::FORM_ID);
+        self::assertIsArray($form, 'the fixture form was not created');
+        self::assertSame(
+            self::TITLE_FIELD,
+            $properties->titleFieldName($form),
+            'the fixture form must answer the title-field question, or the entry has no title to carry'
+        );
 
-        foreach ($wiki->services->get(FormManager::class)->getAll() as $form) {
-            $titleField = $properties->titleFieldName($form);
-            if (empty($form['id']) || !is_string($titleField) || $titleField === '') {
-                continue;
-            }
-            try {
-                $entry = $entryManager->create((string)$form['id'], [$titleField => $title, 'antispam' => 1]);
-            } catch (\Throwable) {
-                continue;
-            }
-            if (!empty($entry['tag'])) {
-                return [$entry, (string)$form['id'], $titleField];
-            }
-        }
+        $entry = $wiki->services->get(EntryManager::class)->create(
+            self::FORM_ID,
+            [self::TITLE_FIELD => $title, 'antispam' => 1]
+        );
+        self::assertNotEmpty($entry['tag'] ?? null, 'the fixture form refused a title-only entry');
 
-        self::fail('no seeded form accepts an entry with only a title, so nothing can be written');
+        return [$entry, self::FORM_ID, self::TITLE_FIELD];
     }
 
     public function testEveryWritePathAnnounces(): void
