@@ -4,23 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * Ticket 47: composer.json names every PHP extension core calls into.
- *
- * `ext-openssl` was used by `HttpSignatureService` and `KeyPairGenerator` from the day they were
- * written and was never declared. Nobody noticed because every distribution ships it -- but a
- * fully static musl build contains exactly the extensions it was compiled with and can never load
- * another, so an undeclared extension is a feature that silently does not exist (ADR-0023).
- *
- * The audit is mechanical rather than a list somebody maintains: every symbol core names is
- * resolved through reflection to the extension that defines it, and an extension nothing declares
- * fails here.
- *
- * **What this cannot see**: an extension the running PHP has not loaded. `imap_open()` resolves to
- * nothing when ext-imap is absent, so it reads as an ordinary undefined function and is skipped.
- * ALWAYS_OPTIONAL below is the answer to that: those are declared because the audit found them
- * once, and this test asserts the declaration stays whether or not the extension is loaded today.
- */
+/** Ticket 47: composer.json names every PHP extension core calls into. */
 class ExtensionManifestTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
@@ -28,17 +12,12 @@ class ExtensionManifestTest extends TestCase
     /**
      * Extensions that are part of the language and have no `ext-` package to require.
      *
-     * `Core`, `standard` and `SPL` are PHP itself. `date`, `random` and `Reflection` cannot be
-     * built without since 8.0, and composer resolves no package for them.
-     *
      * @var list<string>
      */
     private const NOT_REQUIRABLE = ['Core', 'standard', 'SPL', 'date', 'random', 'Reflection', 'pcre'];
 
     /**
      * Optional by construction: core checks for them at run time and does without.
-     *
-     * The value is the feature that stops existing, which is what a `suggest` line has to say.
      *
      * @var array<string, string>
      */
@@ -105,7 +84,6 @@ class ExtensionManifestTest extends TestCase
                 $prev = $p >= 0 ? $tokens[$p] : null;
                 $next = $q < $count ? $tokens[$q] : null;
 
-                // a declaration, a property or a method call names nothing global
                 if (is_array($prev) && in_array($prev[0], [T_FUNCTION, T_CONST, T_CLASS, T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON], true)) {
                     continue;
                 }
@@ -215,9 +193,7 @@ class ExtensionManifestTest extends TestCase
         );
     }
 
-    /**
-     * The other direction, for the ones reflection cannot see on a PHP that has not loaded them.
-     */
+    /** The other direction, for the ones reflection cannot see on a PHP that has not loaded them. */
     public function testTheOptionalExtensionsStayDeclared(): void
     {
         $manifest = $this->manifest();
@@ -232,13 +208,7 @@ class ExtensionManifestTest extends TestCase
         }
     }
 
-    /**
-     * The phpunit workflow installs what the manifest requires.
-     *
-     * Its own comment already claimed "everything composer.json declares under ext-*", and the
-     * two drifted anyway -- which is how `ext-openssl` stayed undeclared while every leg of the
-     * matrix happened to ship it. A claim nothing checks is a comment.
-     */
+    /** The phpunit workflow installs what the manifest requires. */
     public function testTheCiWorkflowInstallsWhatTheManifestRequires(): void
     {
         $workflow = (string)file_get_contents(self::ROOT . '/.github/workflows/phpunit.yml');
@@ -261,13 +231,7 @@ class ExtensionManifestTest extends TestCase
         $this->assertSame([], $missing, 'the phpunit workflow runs a PHP that cannot run YesWiki: add these to its `extensions:` line');
     }
 
-    /**
-     * INSTALL.md lists what a server needs, and lists the same thing composer.json requires.
-     *
-     * A webmaster on shared hosting reads the doc, not the manifest, so a doc that has drifted
-     * sends them to install a wiki that cannot boot -- and finding out which extension is missing
-     * from a white page is not a thing anybody should have to do.
-     */
+    /** INSTALL.md lists what a server needs, and lists the same thing composer.json requires. */
     public function testTheInstallDocListsWhatTheManifestRequires(): void
     {
         $doc = (string)file_get_contents(self::ROOT . '/INSTALL.md');

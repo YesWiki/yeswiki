@@ -4,7 +4,6 @@ namespace YesWiki\Admin\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Entity\Messages;
@@ -40,7 +39,7 @@ class UpdateAdminPagesService
     public function update(array $adminPagesToUpdate): Messages
     {
         $messages = new Messages();
-        $defaultSQL = ltrim(InstallationController::renderSqlTemplate(
+        $defaultSQL = ltrim(InstallationService::renderSqlTemplate(
             YESWIKI_PROGRAM_DIR . '/templates/installation-default-content.sql.twig',
             ['driver' => 'mysql']
         ));

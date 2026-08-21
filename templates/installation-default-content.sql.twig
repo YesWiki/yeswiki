@@ -121,7 +121,7 @@ INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]prop
 ('20260731110000_PageFormContentUsesTheWikiEditor', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20260801000000_RenameContentOffReservedTags', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20260801120000_RenameActionAclsToEnglishNames', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
-<# ticket 18: a fresh install creates the search index in InstallationController and
+<# ticket 18: a fresh install creates the search index in InstallationService and
    queues the seeded pages for it, so the migration that does the same for an existing
    wiki must be marked already-run here -- otherwise it would re-run against a schema
    that already exists. This is the list ticket 25's defect 4 came from forgetting. #>
@@ -137,7 +137,7 @@ INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]prop
 ('20260805100000_DropLinksTable', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20260805110000_PageCssBecomesAFile', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 <# ticket 30: a fresh install seeds no PageTitre/PageMenuHaut/PageRapideHaut and gets its
-   layout_* keys from InstallationController::defaultLayout(), so there is nothing to read
+   layout_* keys from InstallationService::defaultLayout(), so there is nothing to read
    into configuration -- and letting this run would find no pages and do nothing anyway. #>
 ('20260806100000_LayoutBecomesConfiguration', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 <# ticket 30: a fresh install seeds no LookWiki and nothing linking to it. #>

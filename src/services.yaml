@@ -128,6 +128,9 @@ services:
 
   YesWiki\Admin\Service\:
     resource: 'Admin/Service/*'
+    # the installer runs before the container exists (no config file, no database), and takes
+    # the configuration to install with as a constructor argument -- see InstallationService
+    exclude: 'Admin/Service/InstallationService.php'
 
   YesWiki\Admin\Action\:
     resource: 'Admin/Action/*'

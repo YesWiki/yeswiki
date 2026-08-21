@@ -122,7 +122,7 @@ jobs:
           # Everything composer.json declares under ext-*, so `composer install`
           # and the installer request run against the same extension set. All three PDO
           # drivers, so the same image serves every leg of the matrix -- the installer only
-          # offers a driver whose extension is loaded (InstallationController::availableDrivers).
+          # offers a driver whose extension is loaded (InstallationService::availableDrivers).
           # ExtensionManifestTest asserts this line and composer.json's `require` still agree:
           # the list drifted once already, which is how ext-openssl went four years undeclared
           # while every leg happened to have it (ticket 47).
@@ -157,11 +157,11 @@ jobs:
       # `mysql` default and the wiki CI tested was always MySQL -- the driver was not a choice
       # anyone had made, which is why nobody noticed it was the only one covered.
       # SQLite needs no credentials and ignores db_database: the installer puts the file at a
-      # fixed private/yeswiki.db (InstallationController::SQLITE_DATABASE_PATH).
+      # fixed private/yeswiki.db (InstallationService::SQLITE_DATABASE_PATH).
       - name: Setup Wiki
         run: |
           # SQLite takes no credentials and ignores db_database: the installer puts the file at a
-          # fixed private/yeswiki.db (InstallationController::SQLITE_DATABASE_PATH).
+          # fixed private/yeswiki.db (InstallationService::SQLITE_DATABASE_PATH).
           DB_ARGS=()
           if [ "${{ matrix.driver }}" != "sqlite" ]; then
             DB_ARGS=(

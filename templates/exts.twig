@@ -1,5 +1,4 @@
 
-{% set blockedReason = isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') %}
 
 <table class="yw-table table-updates" data-yw-datatable>
   <thead>
@@ -34,7 +33,7 @@
             </td>
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
-                    {% if canTriggerUpdate %}
+                    {% if canTriggerExtensionUpdate %}
                         <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
                             class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ _t('AU_UPDATE') }}"
@@ -44,7 +43,7 @@
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--primary"
-                            title="{{ blockedReason }}"
+                            title="{{ extensionBlockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"
                         >
@@ -56,7 +55,7 @@
             </td>
             <td>
                 {% if isAdmin and not ext.installed %}
-                    {% if canTriggerUpdate %}
+                    {% if canTriggerExtensionUpdate %}
                         <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
                             class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ _t('AU_INSTALL') }}"
@@ -66,7 +65,7 @@
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--primary"
-                            title="{{ blockedReason }}"
+                            title="{{ extensionBlockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"
                         >
@@ -76,7 +75,7 @@
                 {% endif %}
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
-                    {% if canTriggerUpdate %}
+                    {% if canTriggerExtensionUpdate %}
                         <a  href="{{ url({params:{ action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
                             class="yw-btn yw-btn--sm yw-btn--danger"
                             title="{{ _t('AU_DELETE_EXT') }}"
@@ -86,7 +85,7 @@
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--danger"
-                            title="{{ blockedReason }}"
+                            title="{{ extensionBlockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"
                         >

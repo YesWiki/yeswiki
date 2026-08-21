@@ -12,10 +12,7 @@ use YesWiki\Kernel\Service\TripleStore;
 
 class TripleApiController extends YesWikiController
 {
-    /**
-     * Anonymous visitors have no name; reading the offset off the empty string getLoggedUser()
-     * returns for them was a fatal.
-     */
+    /** The logged-in user's name, or '' for an anonymous visitor. */
     private function loggedUserName(): string
     {
         $user = $this->getService(AuthenticationService::class)->getLoggedUser();

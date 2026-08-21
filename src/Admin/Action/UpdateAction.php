@@ -32,6 +32,19 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
+    /** Why a button is disabled, most specific reason first. */
+    private function blockedReason(bool $isHibernated, bool $mayTrigger): string
+    {
+        if ($isHibernated) {
+            return _t('WIKI_IN_HIBERNATION');
+        }
+        if (!$mayTrigger) {
+            return _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE');
+        }
+
+        return _t('ACLS_RESERVED_FOR_ADMINS');
+    }
+
     /** @return string */
     public function run()
     {
@@ -66,12 +79,18 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
             $vIsAdmin = $this->getService(AclService::class)->isAdmin();
             $vIsDesignatedUpdateInstance = $vUpdateService->isDesignatedUpdateInstance();
 
+            $vCanTriggerCoreUpdate = $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance;
+            $vCanTriggerExtensionUpdate = $vIsAdmin && !$vIsReadOnly;
+
             return $this->render('@core/status.twig', [
                 'isAdmin' => $vIsAdmin,
                 'isHibernated' => $vIsReadOnly,
                 'isDesignatedUpdateInstance' => $vIsDesignatedUpdateInstance,
 
-                'canTriggerUpdate' => $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance,
+                'canTriggerUpdate' => $vCanTriggerCoreUpdate,
+                'canTriggerExtensionUpdate' => $vCanTriggerExtensionUpdate,
+                'blockedReason' => $this->blockedReason($vIsReadOnly, $vIsDesignatedUpdateInstance),
+                'extensionBlockedReason' => $this->blockedReason($vIsReadOnly, true),
                 'core' => $vUpdateService->repository->getCorePackage(),
                 'themes' => $vUpdateService->repository->getThemesPackages(),
                 'tools' => $vUpdateService->repository->getToolsPackages(),
@@ -86,7 +105,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
 
         $vMessages = new Messages();
 
-        if (!$vUpdateService->isDesignatedUpdateInstance()) {
+        if (in_array($vAction, ['upgrade', 'delete'], true) && !$vUpdateService->mayUpgrade((string)$vPackageName)) {
             $vMessages->add('AU_NOT_DESIGNATED_UPDATE_INSTANCE', 'AU_ERROR');
 
             return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [

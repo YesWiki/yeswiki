@@ -8,14 +8,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * Ticket 43: which Program and which Instance are meant is stated, not inferred.
- *
- * `bootstrap_paths.php` runs before anything else and defines both constants for the life of the
- * process, so the three resolution paths cannot be exercised in-process. Each case is a
- * subprocess that requires the file and prints what it decided, which is how `BarePathAssetsTest`
- * covers the same file.
- */
+/** Ticket 43: which Program and which Instance are meant is stated, not inferred. */
 #[CoversMethod(ArchiveService::class, 'assertArchivableFrom')]
 class ProgramAndInstanceAreStatedTest extends YesWikiTestCase
 {
@@ -90,11 +83,7 @@ class ProgramAndInstanceAreStatedTest extends YesWikiTestCase
         $this->assertSame($stated, $result['out']);
     }
 
-    /**
-     * The bug this ticket names: `composer.json` and `composer.lock` live in the Program, and
-     * were being looked for in the Instance. Every farm instance failed this check, so no farm
-     * instance could take a backup.
-     */
+    /** The bug this ticket names: `composer.json` and `composer.lock` live in the Program, and were being looked for in the Instance. */
     public function testAFarmInstanceCanBeArchived(): void
     {
         $wiki = $this->getWiki();
@@ -106,8 +95,6 @@ class ProgramAndInstanceAreStatedTest extends YesWikiTestCase
         touch($instance . '/index.php');
 
         try {
-            // an instance holding no composer manifest of its own -- which is every farm
-            // instance, and every wiki the binary will serve
             $this->assertFalse(file_exists($instance . '/composer.json'));
 
             $assert->invoke($service, $instance, \YESWIKI_PROGRAM_DIR);

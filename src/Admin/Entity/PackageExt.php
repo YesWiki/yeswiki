@@ -4,6 +4,13 @@ namespace YesWiki\Admin\Entity;
 
 abstract class PackageExt extends Package
 {
+    /** Whether this package installs into the Instance's own `custom/` rather than the Program. */
+    /** Whether a package installs into the Instance's own `custom/` rather than the shared Program. */
+    protected static function installsIntoInstance(): bool
+    {
+        return YESWIKI_INSTANCE_DIR !== YESWIKI_PROGRAM_DIR;
+    }
+
     public const INFOS_FILENAME = 'infos.json';
 
     /** @var array<string, mixed>|null what infos.json holds, null until getInfos() has read it */
@@ -61,7 +68,6 @@ abstract class PackageExt extends Package
         if ($dirs === []) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
-        // array_filter keeps the original keys, so the first directory is rarely at offset 0
         $extractionPath = reset($dirs) . '/';
 
         $this->copy(

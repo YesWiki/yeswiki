@@ -631,9 +631,6 @@ class ArchiveService
      */
     protected function restoreFilesFromZip(\ZipArchive $zip): void
     {
-        // The Instance. This is the one place in the wiki that unpacks an archive over the live
-        // tree, so where "the live tree" is has to be stated rather than inferred from a working
-        // directory (ticket 43); bootstrap_paths.php has already resolved it.
         $wikiRoot = YESWIKI_INSTANCE_DIR;
         $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
         $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
@@ -779,12 +776,7 @@ class ArchiveService
     /**
      * Refuse to archive something that is not a wiki, asking each root for what it owns.
      *
-     * All four files used to be looked for in the working directory, which is only right when
-     * the Program and the Instance are the same tree. `composer.json` and `composer.lock` live
-     * in the Program, so on a farm instance -- and on every binary -- this threw and backups
-     * were quietly impossible (ticket 43).
-     *
-     * @throws \Exception when either root is missing what it is supposed to hold
+     * @throws \Exception
      */
     protected function assertArchivableFrom(string $instanceDir, string $programDir): void
     {
@@ -823,9 +815,6 @@ class ArchiveService
         string $outputFile = ''
     ) {
         $this->assertArchivableFrom(YESWIKI_INSTANCE_DIR, YESWIKI_PROGRAM_DIR);
-        // The Instance, not the working directory: this is the base every relative path in the
-        // zip is measured against, and an application server is started from wherever its unit
-        // file happened to be. bootstrap_paths.php has already resolved it.
         $pathToArchive = YESWIKI_INSTANCE_DIR;
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
@@ -1092,14 +1081,11 @@ class ArchiveService
                     && preg_match('/^[A-Za-z]:.*$/', $localPath)
             )
         );
-        // The docroot is the Instance directory (ADR-0022), so a relative path is resolved
-        // against that rather than against a working directory nobody stated (ticket 43).
         $basePath = YESWIKI_INSTANCE_DIR;
         $realLocalPath = $isAbsolutePath
             ? realpath($localPath)
             : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath));
 
-        // a path that does not resolve is not inside the web root, so nothing serves it
         if ($realLocalPath === false) {
             return true;
         }
@@ -1326,7 +1312,6 @@ class ArchiveService
         }
         $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
-        // the archive is written under the Instance, so that is the volume to measure
         $freeSpace = disk_free_space(YESWIKI_INSTANCE_DIR);
         if ($freeSpace < $estimateZipSize) {
             throw new \Exception('Not enough free space for a new archive!');

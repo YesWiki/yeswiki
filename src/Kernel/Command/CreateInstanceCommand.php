@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Provision a new farm Instance folder: an index.php pointing at this YesWiki Prorce tree, plus the instance data folders.
+ * Provision a new farm Instance folder: an index.php pointing at this YesWiki Program tree, plus the instance data folders.
  */
 class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
 {
@@ -113,9 +113,9 @@ class CreateInstanceCommand extends Command implements RunsOutsideAnInstance
         $console = YESWIKI_PROGRAM_DIR . '/src/commands/console';
         $wrapper = <<<SH
             #!/usr/bin/env bash
-            # This wiki's console: the shared YesWiki source, run from this folder -- which is
-            # what tells it which wiki it is (YESWIKI_INSTANCE_DIR is the working directory).
             cd "\$(dirname "\${BASH_SOURCE[0]}")" || exit 1
+            export YESWIKI_INSTANCE_DIR="\$PWD"
+            export YESWIKI_CONFIG_FILE="\$PWD/yeswiki.config.php"
             php {$console} "\$@"
 
             SH;

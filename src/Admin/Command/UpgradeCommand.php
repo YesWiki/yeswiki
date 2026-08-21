@@ -29,11 +29,11 @@ class UpgradeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $package = $input->getArgument('package');
+        $package = (string)$input->getArgument('package');
 
         $updateService = $this->services->get(AutoUpdateService::class);
 
-        if (!$updateService->isDesignatedUpdateInstance()) {
+        if (!$updateService->mayUpgrade($package)) {
             $output->writeln('<error>' . _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') . '</error>');
 
             return Command::FAILURE;

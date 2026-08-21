@@ -28,15 +28,24 @@ makes. A laptop's `~/.local/share/yeswiki` is writable and upgrades. A container
 Container detection was considered and rejected in ADR-0023: every available signal is a heuristic
 that answers wrongly for a writable container somebody genuinely wants to self-update.
 
-This also exposes a bug this ADR's check caused and the binary merely revealed.
-`UpgradeCommand::execute()` tests `isDesignatedUpdateInstance()` before it looks at its `package`
-argument, so `yeswicli upgrade some-extension` is refused on every farm instance, even though
-`PackageTool::localPath()` would have installed that extension into the instance's own
-`custom/extensions/` perfectly well. The gate belongs on core updates, not on the command. The
-same applies to `PackageTheme::localPath()`, which unlike `PackageTool` still targets the Program
-unconditionally, so no farm instance can install a theme of its own either, despite
-`custom/themes/` already being a root that `ThemeManager`, `PresetService` and
+This also exposed two bugs this ADR's check caused and the binary merely revealed. **Both are
+fixed (2026-08-21, ticket 46).**
+
+`UpgradeCommand::execute()` tested `isDesignatedUpdateInstance()` before it looked at its
+`package` argument, so `yeswicli upgrade some-extension` was refused on every farm instance, even
+though `PackageTool::localPath()` would have installed that extension into the instance's own
+`custom/extensions/` perfectly well. And `PackageTheme::localPath()`, unlike `PackageTool`,
+targeted the Program unconditionally, so no farm instance could install a theme of its own either,
+despite `custom/themes/` already being a root that `ThemeManager`, `PresetService` and
 `ConfigurationAction` all read.
+
+**The gate is per package, not per instance**: `AutoUpdateService::mayUpgrade()` asks whether this
+package is core, and only then whether this is the designated instance. That is what the rule
+above always meant -- the authority is needed because a core update mutates code every instance
+runs, and an instance-local extension is not that. `PackageTheme` now mirrors `PackageTool`:
+the Program tree when Instance and Program are the same directory, `custom/themes/{name}/`
+otherwise. The admin screen carries the same distinction, so an instance is no longer shown an
+update button that refuses.
 
 Finally, `upgrade` splits: fetching, verifying and swapping the executable is separable from
 running migrations, so an image deployment can run migrations as a job while the executable

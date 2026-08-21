@@ -1,24 +1,6 @@
 <?php
 
-/**
- * Where the Program is, and which Instance is meant.
- *
- * Each is stated three ways, in falling order of how deliberate it is: a constant an entry point
- * already defined, then the environment, then the fallback. The environment step is what an
- * application server needs -- under php-fpm the working directory is the docroot and `getcwd()`
- * is right by accident, but a long-lived process is started from wherever its unit file happened
- * to be, so a wiki that inferred its Instance from `getcwd()` could install itself somewhere
- * nobody would find it. `YESWIKI_CONFIG_FILE` set the precedent: CreateInstanceCommand already
- * writes a `putenv()` for it into every Instance's index.php.
- *
- * Both resolve to an absolute path, and a value that does not resolve stops the boot naming
- * itself and the value it was given. Continuing on a relative or missing path means every later
- * path is relative to a working directory that may change, and the failure then shows up as a
- * missing template somewhere unrelated.
- *
- * A closure rather than a function: this file is required from three entry points, and core
- * declares exactly one global function (ticket 50, `_t()`).
- */
+/** A directory stated by an already-defined constant, then the environment, then a fallback, resolved absolute. */
 $yeswikiStatedDir = static function (string $constant, string $fallback): string {
     $stated = getenv($constant);
     $candidate = ($stated === false || trim($stated) === '') ? $fallback : $stated;

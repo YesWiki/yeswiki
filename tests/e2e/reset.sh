@@ -48,27 +48,20 @@ case "$DRIVER" in
     ;;
 esac
 
-curl --silent --fail --show-error \
-          -F "config[default_language]=fr" \
-          `# two more languages, so the suite covers a wiki that offers a choice: the` \
-          `# language switcher only exists where there is something to switch to, and` \
-          `# this is also the only place the installer's own handling of the list runs` \
-          -F "config[other_languages][]=en" \
-          -F "config[other_languages][]=es" \
-          -F "config[wakka_name]=MyTestWiki" \
-          -F "config[root_page]=PagePrincipale" \
-          -F "config[base_url]=http://yeswiki-web/?" \
-          -F "config[db_driver]=${DRIVER}" \
-          -F "config[db_host]=${DB_HOST}" \
-          -F "config[db_database]=${DB_NAME}" \
-          -F "config[db_user]=${DB_USER}" \
-          -F "config[db_password]=${DB_PASSWORD}" \
-          -F "config[table_prefix]=yeswiki_" \
-          -F "config[allow_raw_html]=1" \
-          -F "admin_name=WikiAdmin" \
-          -F "admin_password=WikiAdminPassword" \
-          -F "admin_password_conf=WikiAdminPassword" \
-          -F "admin_email=test@example.com" \
-          -F "submit=Continue" \
-          "http://yeswiki-web/?PagePrincipale&installAction=install"
+php /var/www/html/src/commands/console core:install --no-interaction \
+          --driver="${DRIVER}" \
+          --db-host="${DB_HOST}" \
+          --db-database="${DB_NAME}" \
+          --db-user="${DB_USER}" \
+          --db-password="${DB_PASSWORD}" \
+          --table-prefix=yeswiki_ \
+          --base-url="http://yeswiki-web/?" \
+          --root-page=PagePrincipale \
+          --wiki-name=MyTestWiki \
+          --language=fr \
+          --other-languages=en,es \
+          --allow-raw-html \
+          --admin-name=WikiAdmin \
+          --admin-email=test@example.com \
+          --admin-password=WikiAdminPassword
 /var/www/html/yeswicli migrate

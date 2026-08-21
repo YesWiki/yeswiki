@@ -30,6 +30,16 @@ class AutoUpdateService
         return realpath($instanceDir ?? YESWIKI_INSTANCE_DIR) === realpath($programDir ?? YESWIKI_PROGRAM_DIR);
     }
 
+    /** Whether this instance may install or upgrade this package: only a core update mutates the shared Program. */
+    public function mayUpgrade(string $packageName, ?string $instanceDir = null, ?string $programDir = null): bool
+    {
+        if ($packageName !== PackageCore::CORE_NAME) {
+            return true;
+        }
+
+        return $this->isDesignatedUpdateInstance($instanceDir, $programDir);
+    }
+
     /** @return bool false when the repository index could not be read */
     public function initRepository(string $requestedVersion = ''): bool
     {

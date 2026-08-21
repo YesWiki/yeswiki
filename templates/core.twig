@@ -7,8 +7,6 @@
     }) -}}
 {% endmacro %}
 
-{% set blockedReason = isHibernated ? _t('WIKI_IN_HIBERNATION') : (not isDesignatedUpdateInstance ? _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') : _t('ACLS_RESERVED_FOR_ADMINS')) %}
-
 <h2>YesWiki</h2>
 <p>
     {{ _t('AU_VERSION_WIKI') }} : <span class="label {{ (core.updateAvailable or core.newVersionRequested) ? 'label-warning' : 'label-primary' }}">{{ core.localVersion }} {{ core.localRelease }}</span>

@@ -44,6 +44,7 @@ class ArchitectureTest extends TestCase
         // reads them, so fields and template-data preparers no longer each carry their own
         // glob and scandir (ticket 49).
         'Kernel/Service/ClassDirectoryScanner.php',
+        'Admin/Service/InstallationService.php',
     ];
 
     /**
@@ -58,11 +59,10 @@ class ArchitectureTest extends TestCase
         'Admin/Action/EditConfigAction.php' => 1,
         'Admin/Api/DocumentationApiController.php' => 1,
         'Admin/Controller/DocumentationController.php' => 2,
-        'Admin/Controller/InstallationController.php' => 10,
+        'Admin/Controller/InstallationController.php' => 2,
         'Admin/Entity/Package.php' => 5,
         'Admin/Entity/PackageCore.php' => 8,
         'Admin/Entity/PackageExt.php' => 8,
-        'Admin/Entity/PackageTool.php' => 2,
         'Admin/Entity/Repository.php' => 2,
         'Admin/Service/ArchiveService.php' => 16,
         'Admin/Service/AutoUpdateService.php' => 2,
