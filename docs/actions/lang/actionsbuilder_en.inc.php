@@ -445,4 +445,6 @@ return [
     'AB_checkcontent_action_description' => 'Lists the entries whose values no longer match the form: empty required fields, values outside a list, links to deleted entries, malformed emails, dates and web addresses, fields the form no longer defines. Admins only.',
     'AB_checkcontent_textreplace_label' => 'Stand-in text for empty required fields',
     'AB_checkcontent_textreplace_hint' => 'Offered as the value when a required text or long-text field is empty. Defaults to the site language wording. Leave empty to offer nothing and fix those entries by hand.',
+    'AB_checkcontent_forcevalues_label' => 'Values to fill empty required fields with',
+    'AB_checkcontent_forcevalues_hint' => 'Comma separated `field=value` pairs, for instance `bf_type=atelier,bf_date=2014-12-23`. Every empty required field named here comes back with that value already chosen and its row already ticked, so a repair writes it. Repeat the name to fill a field holding several values. A value the list no longer offers is ignored.',
 ];

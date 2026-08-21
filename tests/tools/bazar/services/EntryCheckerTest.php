@@ -739,6 +739,90 @@ class EntryCheckerTest extends TestCase
         $this->assertSame('https://', $saved['bf_site']);
     }
 
+    public function testAForcedValuePreselectsTheListOptionAndTicksTheRow()
+    {
+        $select = new SelectListField($this->values([1 => 'ListeCouleurs', 5 => 'vert', 6 => 'listeListeCouleurs', 8 => 1]), $this->services);
+        $this->givenForm(
+            [$select],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'listeListeCouleurs' => '']]
+        );
+
+        $rows = $this->checker()->check('1', '', ['listeListeCouleurs' => 'rouge'])['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertSame('rouge', $rows[0]['suggested']);
+        $this->assertTrue($rows[0]['forced']);
+    }
+
+    public function testAForcedValueOutsideTheListLeavesTheDefaultAlone()
+    {
+        $select = new SelectListField($this->values([1 => 'ListeCouleurs', 5 => 'vert', 6 => 'listeListeCouleurs', 8 => 1]), $this->services);
+        $this->givenForm(
+            [$select],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'listeListeCouleurs' => '']]
+        );
+
+        $rows = $this->checker()->check('1', '', ['listeListeCouleurs' => 'fuchsia'])['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertSame('vert', $rows[0]['suggested']);
+        $this->assertFalse($rows[0]['forced']);
+    }
+
+    public function testAForcedValueKeepsEveryOptionAMultipleFieldOffers()
+    {
+        $checkbox = new CheckboxListField($this->values([1 => 'ListeCouleurs', 6 => 'checkboxListeCouleurs', 8 => 1]), $this->services);
+        $this->givenForm([$checkbox], ['FicheUne' => ['id_fiche' => 'FicheUne']]);
+
+        $rows = $this->checker()->check('1', '', ['checkboxListeCouleurs' => 'rouge,fuchsia,vert'])['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertSame('rouge,vert', $rows[0]['suggested']);
+        $this->assertTrue($rows[0]['multiple']);
+    }
+
+    public function testAForcedValueFillsAFieldNoStandInTextCouldFill()
+    {
+        $body = ['id_fiche' => 'FicheUne', 'id_typeannonce' => '1', 'bf_quand' => ''];
+        $date = new TextField($this->values([0 => 'texte', 1 => 'bf_quand', 7 => 'date', 8 => 1]), $this->services);
+        $this->givenForm([$date], ['FicheUne' => $body]);
+        $saved = $this->captureSave($body);
+
+        $forced = ['bf_quand' => '2014-12-23'];
+        $rows = $this->checker()->check('1', 'à compléter', $forced)['problems'][EntryChecker::REQUIRED_EMPTY];
+        $this->assertSame('any', $rows[0]['freeText']);
+        $this->assertSame('2014-12-23', $rows[0]['suggested']);
+        $this->assertTrue($rows[0]['forced']);
+
+        $key = $rows[0]['key'];
+        $result = $this->checker()->repair('1', [$key], [$key => '2014-12-23'], 'à compléter', $forced);
+
+        $this->assertSame(1, $result['repaired']);
+        $this->assertSame('2014-12-23', $saved->body['bf_quand']);
+    }
+
+    public function testAForcedValueLeavesAFieldItDoesNotNameUntouched()
+    {
+        $this->givenForm(
+            [$this->textField('bf_note', true)],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'bf_note' => '']]
+        );
+
+        $rows = $this->checker()->check('1', '', ['bf_autre' => 'oui'])['problems'][EntryChecker::REQUIRED_EMPTY];
+
+        $this->assertSame('', $rows[0]['freeText']);
+        $this->assertFalse($rows[0]['forced']);
+    }
+
+    public function testAForcedValueDoesNotTouchAFieldThatHoldsAValue()
+    {
+        $this->givenForm(
+            [new SelectListField($this->values([1 => 'ListeCouleurs', 6 => 'listeListeCouleurs', 8 => 1]), $this->services)],
+            ['FicheUne' => ['id_fiche' => 'FicheUne', 'listeListeCouleurs' => 'vert']]
+        );
+
+        $problems = $this->checker()->check('1', '', ['listeListeCouleurs' => 'rouge'])['problems'];
+
+        $this->assertArrayNotHasKey(EntryChecker::REQUIRED_EMPTY, $problems);
+    }
+
     public function testRepairIgnoresAKeyThatNoLongerMatchesAProblem()
     {
         $this->givenForm(

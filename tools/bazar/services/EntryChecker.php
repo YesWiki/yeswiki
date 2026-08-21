@@ -77,6 +77,7 @@ class EntryChecker
     protected $entryTags;
     protected $probedUrls;
     protected $textReplacement;
+    protected $forcedValues;
 
     public function __construct(
         EntryManager $entryManager,
@@ -93,14 +94,16 @@ class EntryChecker
         $this->entryTags = null;
         $this->probedUrls = [];
         $this->textReplacement = '';
+        $this->forcedValues = [];
     }
 
     /**
      * Group every problem found in the entries of a form by problem code.
      */
-    public function check(string $formId, string $textReplacement = ''): array
+    public function check(string $formId, string $textReplacement = '', array $forcedValues = []): array
     {
         $this->textReplacement = $textReplacement;
+        $this->forcedValues = $forcedValues;
         $form = $this->formManager->getOne($formId);
         if (empty($form) || !is_array($form['prepared'] ?? null)) {
             return ['entriesCount' => 0, 'problems' => [], 'unchecked' => []];
@@ -139,14 +142,14 @@ class EntryChecker
     /**
      * Apply the fix of every selected problem, one save per entry.
      */
-    public function repair(string $formId, array $selectedKeys, array $pickedValues = [], string $textReplacement = ''): array
+    public function repair(string $formId, array $selectedKeys, array $pickedValues = [], string $textReplacement = '', array $forcedValues = []): array
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $rowsByKey = [];
-        foreach ($this->check($formId, $textReplacement)['problems'] as $rows) {
+        foreach ($this->check($formId, $textReplacement, $forcedValues)['problems'] as $rows) {
             foreach ($rows as $row) {
                 $rowsByKey[$row['key']] = $row;
             }
@@ -293,17 +296,45 @@ class EntryChecker
     private function missingValueProblem(array $entry, BazarField $field): array
     {
         $problem = $this->problem(self::REQUIRED_EMPTY, $entry, $field, '', null);
+        $forced = $this->forcedValues[$field->getPropertyName()] ?? null;
         $options = $this->pickableOptions($field);
         if (!empty($options)) {
+            $multiple = $this->holdsSeveralValues($field);
+            $picked = $this->forcedOptions($forced, $options, $multiple);
             $problem['options'] = $options;
-            $problem['multiple'] = $this->holdsSeveralValues($field);
-            $problem['suggested'] = array_key_exists($field->getDefault(), $options) ? $field->getDefault() : '';
+            $problem['multiple'] = $multiple;
+            $problem['forced'] = $picked !== null;
+            $problem['suggested'] = $picked
+                ?? (array_key_exists($field->getDefault(), $options) ? strval($field->getDefault()) : '');
+        } elseif ($forced !== null) {
+            $problem['freeText'] = 'any';
+            $problem['suggested'] = $forced;
+            $problem['forced'] = true;
         } elseif ($this->textReplacement !== '' && $this->acceptsFreeText($field)) {
             $problem['freeText'] = 'any';
             $problem['suggested'] = $this->textReplacement;
         }
 
         return $problem;
+    }
+
+    /**
+     * Keep only the forced values the list actually offers, so a value gone from the list
+     * leaves the field on its usual default rather than writing something unselectable.
+     */
+    private function forcedOptions(?string $forced, array $options, bool $multiple): ?string
+    {
+        if ($forced === null) {
+            return null;
+        }
+        $values = array_filter(array_map('trim', explode(',', $forced)), function ($value) use ($options) {
+            return $value !== '' && array_key_exists($value, $options);
+        });
+        if (empty($values)) {
+            return null;
+        }
+
+        return $multiple ? implode(',', $values) : strval(reset($values));
     }
 
     /**
@@ -528,6 +559,7 @@ class EntryChecker
                 'multiple' => false,
                 'freeText' => '',
                 'suggested' => '',
+                'forced' => false,
             ];
         }
 
@@ -587,6 +619,7 @@ class EntryChecker
             'multiple' => false,
             'freeText' => '',
             'suggested' => '',
+            'forced' => false,
         ];
     }
 

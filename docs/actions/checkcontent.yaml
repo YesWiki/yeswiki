@@ -13,3 +13,8 @@ actions:
         hint: _t(AB_checkcontent_textreplace_hint)
         type: text
         advanced: true
+      forcevalues:
+        label: _t(AB_checkcontent_forcevalues_label)
+        hint: _t(AB_checkcontent_forcevalues_hint)
+        type: text
+        advanced: true

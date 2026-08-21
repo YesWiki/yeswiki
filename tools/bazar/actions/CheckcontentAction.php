@@ -21,8 +21,29 @@ class CheckcontentAction extends YesWikiAction
             'textreplace' => is_scalar($arg['textreplace'] ?? null)
                 ? strval($arg['textreplace'])
                 : _t('BAZ_CHECKCONTENT_TEXT_REPLACEMENT'),
+            'forcevalues' => $this->forcedValues($arg['forcevalues'] ?? null),
             'params' => $request->query->has('debug') ? ['debug' => 'yes'] : [],
         ];
+    }
+
+    /**
+     * Read `name=value` pairs, a name repeated across pairs holding several values.
+     */
+    private function forcedValues($param): array
+    {
+        $forced = [];
+        foreach ($this->formatArray($param) as $pair) {
+            if (!is_string($pair) || !str_contains($pair, '=')) {
+                continue;
+            }
+            [$name, $value] = array_map('trim', explode('=', $pair, 2));
+            if ($name === '' || $value === '') {
+                continue;
+            }
+            $forced[$name] = isset($forced[$name]) ? $forced[$name] . ',' . $value : $value;
+        }
+
+        return $forced;
     }
 
     public function run()
@@ -56,11 +77,12 @@ class CheckcontentAction extends YesWikiAction
                 $id,
                 $this->arguments['repair'],
                 $this->arguments['pickedValues'],
-                $this->arguments['textreplace']
+                $this->arguments['textreplace'],
+                $this->arguments['forcevalues']
             );
         }
 
-        $result = $entryChecker->check($id, $this->arguments['textreplace']);
+        $result = $entryChecker->check($id, $this->arguments['textreplace'], $this->arguments['forcevalues']);
 
         return $this->render('@bazar/checkcontent.twig', [
             'forms' => $forms,

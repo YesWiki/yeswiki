@@ -402,7 +402,7 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_CHECKCONTENT_FIX_CLEAR' => 'the value is emptied',
     'BAZ_CHECKCONTENT_FIX_REPLACE' => 'the value becomes "%{value}"',
     'BAZ_CHECKCONTENT_REQUIRED_EMPTY' => 'Required field left empty',
-    'BAZ_CHECKCONTENT_REQUIRED_EMPTY_HINT' => 'The form marks these fields as required, but the entry holds no value. Nothing can be filled in automatically: open the entry and complete it.',
+    'BAZ_CHECKCONTENT_REQUIRED_EMPTY_HINT' => 'The form marks these fields as required, but the entry holds no value. Pick the value to write, or open the entry and complete it.',
     'BAZ_CHECKCONTENT_UNKNOWN_OPTION' => 'Value outside the list',
     'BAZ_CHECKCONTENT_UNKNOWN_OPTION_HINT' => 'The stored value is no longer one of the list options. Repairing drops the unknown values and keeps the valid ones.',
     'BAZ_CHECKCONTENT_BROKEN_ENTRY' => 'Link to a deleted entry',

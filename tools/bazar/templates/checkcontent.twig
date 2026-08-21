@@ -114,7 +114,7 @@
                     <td>
                       {% if row.fix or row.options is not empty or row.freeText %}
                         <label title="{{ row.entryTitle }}">
-                          <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}">
+                          <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}"{% if row.forced %} checked{% endif %}>
                           <span></span>
                         </label>
                       {% endif %}
@@ -133,8 +133,9 @@
                           {% if not row.multiple %}
                             <option value="">{{ _t('BAZ_CHOISIR') }}</option>
                           {% endif %}
+                          {% set chosen = row.multiple ? row.suggested|split(',') : [row.suggested] %}
                           {% for value, label in row.options %}
-                            <option value="{{ value }}"{% if value == row.suggested %} selected{% endif %}>{{ label }}</option>
+                            <option value="{{ value }}"{% if value in chosen %} selected{% endif %}>{{ label }}</option>
                           {% endfor %}
                         </select>
                       {% elseif row.fix is null and row.freeText %}
