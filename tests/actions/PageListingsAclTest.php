@@ -29,6 +29,7 @@ class PageListingsAclTest extends YesWikiTestCase
     protected function setUp(): void
     {
         $this->wiki = $this->getWiki();
+        $GLOBALS['wiki'] = $this->wiki;
         $this->pageManager = $this->wiki->services->get(PageManager::class);
         $this->aclService = $this->wiki->services->get(AclService::class);
         $this->tripleStore = $this->wiki->services->get(TripleStore::class);
@@ -44,6 +45,10 @@ class PageListingsAclTest extends YesWikiTestCase
 
     protected function tearDown(): void
     {
+        while (ob_get_level() > 1) {
+            ob_end_clean();
+        }
+
         foreach ([self::PUBLIC_TAG, self::RESTRICTED_TAG] as $tag) {
             $this->tripleStore->delete($tag, self::TAG_PROPERTY, self::TAG_VALUE, '', '');
             $this->pageManager->deleteOrphaned($tag);
@@ -59,6 +64,9 @@ class PageListingsAclTest extends YesWikiTestCase
             'orphanedpages' => ['orphanedpages', []],
             'nuagetag' => ['nuagetag', ['tags' => self::TAG_VALUE]],
             'admintag' => ['admintag', []],
+            'listpagestag' => ['listpagestag', ['tags' => self::TAG_VALUE]],
+            'includepages' => ['includepages', ['pages' => self::PUBLIC_TAG . ',' . self::RESTRICTED_TAG]],
+            'filtertags' => ['filtertags', ['filter1' => self::TAG_VALUE]],
         ];
     }
 
@@ -75,6 +83,24 @@ class PageListingsAclTest extends YesWikiTestCase
         $html = $this->wiki->Action('nuagetag', 1, ['tags' => self::TAG_VALUE]);
 
         $this->assertStringContainsString(self::PUBLIC_TAG, $html);
+    }
+
+    public function testAListingStillShowsThePublicPage()
+    {
+        $html = $this->wiki->Action('includepages', 1, ['pages' => self::PUBLIC_TAG . ',' . self::RESTRICTED_TAG]);
+
+        $this->assertStringContainsString(self::PUBLIC_TAG, $html);
+    }
+
+    public function testAResultCountDoesNotCountUnreadablePages()
+    {
+        $html = $this->wiki->Action('filtertags', 1, ['filter1' => self::TAG_VALUE]);
+
+        $this->assertMatchesRegularExpression(
+            '/<span class="nbfilteredelements">1<\/span>/',
+            $html,
+            'the result count betrays how many unreadable pages carry the tag'
+        );
     }
 
     public function testPagesByTagsHidesTheRestrictedPage()

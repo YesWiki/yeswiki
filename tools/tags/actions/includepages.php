@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\AclService;
+
 include_once 'tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
 $output = '';
@@ -14,9 +16,14 @@ if (empty($pages)) {
         $template = 'pages_list.tpl.html';
     }
 
+    $aclService = $this->services->get(AclService::class);
+    $element = [];
     $resultat = explode(',', $pages);
     foreach ($resultat as $page) {
         $page = $this->LoadPage(trim($page));
+        if (empty($page) || !$aclService->hasAccess('read', $page['tag'])) {
+            continue;
+        }
         $element[$page['tag']]['tagnames'] = '';
         $element[$page['tag']]['tagbadges'] = '';
         $element[$page['tag']]['body'] = $page['body'];
