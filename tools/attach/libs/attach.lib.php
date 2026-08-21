@@ -4,6 +4,7 @@
 
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
@@ -33,6 +34,8 @@ if (!class_exists('attach')) {
         public $isSafeMode = true; // indicateur du safe mode de PHP
         public $data = ''; // indicateur du safe mode de PHP
         private $params;
+
+        public const FM_WRITE_OPERATIONS = ['restore', 'erase', 'del', 'emptytrash'];
 
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration.
@@ -849,6 +852,20 @@ if (!class_exists('attach')) {
         public function doFileManager($isAction = false)
         {
             $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
+            if (in_array($do, self::FM_WRITE_OPERATIONS, true)) {
+                $do = '';
+            }
+            if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+                && isset($_POST['do'])
+                && in_array($_POST['do'], self::FM_WRITE_OPERATIONS, true)) {
+                try {
+                    $this->wiki->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
+                    $do = $_POST['do'];
+                } catch (Throwable $th) {
+                    echo '<div class="alert alert-danger">' . htmlspecialchars($th->getMessage(), ENT_QUOTES, YW_CHARSET) . '</div>' . "\n";
+                    $do = in_array($_POST['do'], ['restore', 'erase', 'emptytrash'], true) ? 'trash' : '';
+                }
+            }
             switch ($do) {
                 case 'restore':
                     $this->fmRestore();
@@ -981,6 +998,14 @@ if (!class_exists('attach')) {
         }
 
         /**
+         * Nom du fichier vise par une operation du gestionnaire de fichiers.
+         */
+        public function fmPostedFileName(): string
+        {
+            return isset($_POST['file']) && is_string($_POST['file']) ? $_POST['file'] : '';
+        }
+
+        /**
          * Vide la corbeille.
          */
         public function fmEmptyTrash()
@@ -1001,7 +1026,7 @@ if (!class_exists('attach')) {
         {
             $path = $this->GetUploadPath();
             // Sanitize file path
-            $filename = $this->GetUploadPath() . '/' . basename(realpath($_GET['file'] ? $_GET['file'] : ''));
+            $filename = $path . '/' . basename($this->fmPostedFileName());
             // Make sure that the filename ends with trash and a date
             if (file_exists($filename) && preg_match('/trash\d{14}$/', $filename)) {
                 unlink($filename);
@@ -1015,7 +1040,7 @@ if (!class_exists('attach')) {
         {
             $path = $this->GetUploadPath();
             $rawFileName = empty($rawFileName)
-                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
+                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_POST, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
                 : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {
@@ -1061,7 +1086,7 @@ if (!class_exists('attach')) {
         public function fmRestore()
         {
             $path = $this->GetUploadPath();
-            $filename = $path . '/' . ($_GET['file'] ? $_GET['file'] : '');
+            $filename = $path . '/' . basename($this->fmPostedFileName());
             if (file_exists($filename)) {
                 $restFile = preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename);
                 rename($filename, $restFile);

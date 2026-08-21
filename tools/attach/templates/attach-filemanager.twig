@@ -53,22 +53,23 @@
           {% if trash %}<td class="fmfiletrashdate">{{ file.parsedTrashDate }}</td>{% endif %}
           <td class="fmfileactions">
             {% if trash %}
-              {# lien de restauration #}
-              <a 
-                class="btn btn-sm btn-primary"
-                href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
-                title="{{ _t('ATTACH_RESTORE') }}"
-              >
-                <i class="fas fa-redo"></i>&nbsp;{{ _t('ATTACH_RESTORE') }}
-              </a>
+              <form method="post" action="{{ url({tag:tag,handler:method}) }}" style="display: inline">
+                <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+                <input type="hidden" name="do" value="restore">
+                <input type="hidden" name="file" value="{{ file.realname }}">
+                <button type="submit" class="btn btn-sm btn-primary" title="{{ _t('ATTACH_RESTORE') }}">
+                  <i class="fas fa-redo"></i>&nbsp;{{ _t('ATTACH_RESTORE') }}
+                </button>
+              </form>
             {% endif %}
-            {# lien de suppression #}
-            <a
-              class="btn btn-sm btn-danger btn-icon"
-              href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"
-              title="{{ _t('DELETE') }}">
-              <i class="{{ trash ? 'fa fa-remove icon-remove' : 'fa fa-trash icon-trash' }} icon-white"></i>
-            </a>
+            <form method="post" action="{{ url({tag:tag,handler:method}) }}" style="display: inline">
+              <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+              <input type="hidden" name="do" value="{{ trash ? 'erase' : 'del' }}">
+              <input type="hidden" name="file" value="{{ file.realname }}">
+              <button type="submit" class="btn btn-sm btn-danger btn-icon" title="{{ _t('DELETE') }}">
+                <i class="{{ trash ? 'fa fa-remove icon-remove' : 'fa fa-trash icon-trash' }} icon-white"></i>
+              </button>
+            </form>
           </td>
         </tr>
       {% endfor %}
@@ -76,11 +77,13 @@
   </table>
   {% if trash %}
     <div class="alert alert-danger">
-      <a
-        href="{{ url({tag:tag,handler:method,params:{do:'emptytrash'}}) }}"
-        class="btn btn-danger pull-right">
-        <i class="fa fa-remove icon-remove icon-white"></i>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
-      </a>
+      <form method="post" action="{{ url({tag:tag,handler:method}) }}" class="pull-right">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+        <input type="hidden" name="do" value="emptytrash">
+        <button type="submit" class="btn btn-danger">
+          <i class="fa fa-remove icon-remove icon-white"></i>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
+        </button>
+      </form>
       <strong>{{ _t('CAUTION') }} :</strong> {{ _t('ATTACH_EMPTY_TRASH_NOTICE') }}
       <div class="clearfix"></div>
     </div>
