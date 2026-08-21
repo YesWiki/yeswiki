@@ -454,4 +454,5 @@ return [
     'BAZ_CHECKCONTENT_UNFETCHED_BLOCKED' => 'pointe vers le réseau du serveur, non interrogée',
     'BAZ_CHECKCONTENT_UNFETCHED_OVER_LIMIT' => 'au-delà de la limite de 200 adresses par passage',
     'BAZ_CHECKCONTENT_TEXT_REPLACEMENT' => 'à compléter',
+    'BAZ_CHECKCONTENT_TOO_MANY_SELECTED' => 'Le navigateur a envoyé plus de champs que ce serveur n\'en accepte : la fin du formulaire n\'est jamais arrivée et rien n\'a été réparé. Réparez en plusieurs fois, ou augmentez max_input_vars dans la configuration PHP du serveur.',
 ];

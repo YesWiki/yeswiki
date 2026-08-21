@@ -4,6 +4,7 @@
     <div class="alert alert-danger">{{ _t('BAZ_PAS_DE_FORMULAIRES_TROUVES') }}</div>
   {% else %}
     <form method="post" class="form-horizontal" action="{{ url({params: params}) }}">
+      <input type="hidden" name="checkcontent-complete" value="1">
       <div class="control-group form-group">
         <label class="control-label col-sm-3">{{ _t('BAZ_CHECKCONTENT_FORM_LABEL') }} :</label>
         <div class="controls col-sm-9">
@@ -20,6 +21,10 @@
         </div>
       </div>
     </form>
+  {% endif %}
+
+  {% if truncated %}
+    <div class="alert alert-danger">{{ _t('BAZ_CHECKCONTENT_TOO_MANY_SELECTED') }}</div>
   {% endif %}
 
   {% if repairResult %}
@@ -81,8 +86,9 @@
         {{ _t('BAZ_CHECKCONTENT_SUMMARY', {problems: problemsCount, entries: entriesCount}) }}
       </div>
 
-      <form method="post" action="{{ url({params: params}) }}"
+      <form method="post" action="{{ url({params: params|merge({'id_typeannonce': id})}) }}"
         class="checkcontent-repair-form" data-confirm="{{ _t('BAZ_CHECKCONTENT_CONFIRM') }}">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
         {% for code, rows in problems %}
           {% set selectable = rows|filter(row => row.fix or row.options is not empty or row.freeText)|length %}
           <div class="panel panel-warning">
@@ -158,11 +164,10 @@
           </div>
         {% endfor %}
 
-        <input type="hidden" name="id_typeannonce" value="{{ id }}">
-        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
         <button class="btn btn-primary" type="submit">
           {{ _t('BAZ_CHECKCONTENT_REPAIR') }}
         </button>
+        <input type="hidden" name="checkcontent-complete" value="1">
       </form>
     {% endif %}
   {% endif %}

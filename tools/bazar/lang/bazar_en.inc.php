@@ -437,4 +437,5 @@ The created folder will be automatically linked to your account. Please log in t
     'BAZ_CHECKCONTENT_UNFETCHED_BLOCKED' => 'points inside the server network, not requested',
     'BAZ_CHECKCONTENT_UNFETCHED_OVER_LIMIT' => 'past the 200 address limit for one run',
     'BAZ_CHECKCONTENT_TEXT_REPLACEMENT' => 'to be completed',
+    'BAZ_CHECKCONTENT_TOO_MANY_SELECTED' => 'The browser sent more fields than this server accepts: the end of the form never arrived and nothing was repaired. Repair in several passes, or raise max_input_vars in the server PHP configuration.',
 ];

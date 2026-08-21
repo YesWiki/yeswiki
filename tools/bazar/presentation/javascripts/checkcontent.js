@@ -22,5 +22,15 @@ document.addEventListener('submit', (event) => {
   )
   if (selected.length > 0 && !window.confirm(form.dataset.confirm)) {
     event.preventDefault()
+    return
   }
+  form.querySelectorAll('tbody tr').forEach((row) => {
+    const box = row.querySelector('input[name="checkcontent-repair[]"]')
+    if (box && box.checked) {
+      return
+    }
+    row.querySelectorAll('input, select, textarea').forEach((field) => {
+      field.disabled = true
+    })
+  })
 })

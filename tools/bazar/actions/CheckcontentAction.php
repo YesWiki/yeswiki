@@ -22,6 +22,7 @@ class CheckcontentAction extends YesWikiAction
                 ? strval($arg['textreplace'])
                 : _t('BAZ_CHECKCONTENT_TEXT_REPLACEMENT'),
             'forcevalues' => $this->forcedValues($arg['forcevalues'] ?? null),
+            'truncated' => $this->postWasTruncated($request),
             'params' => $request->query->has('debug') ? ['debug' => 'yes'] : [],
         ];
     }
@@ -46,6 +47,20 @@ class CheckcontentAction extends YesWikiAction
         return $forced;
     }
 
+    /**
+     * PHP drops the tail of a POST holding more fields than max_input_vars, csrf token and
+     * form id included, so a submission missing its closing marker never arrived whole.
+     */
+    private function postWasTruncated($request): bool
+    {
+        if (!$request->isMethod('POST') || $request->request->has('checkcontent-complete')) {
+            return false;
+        }
+
+        return $request->request->has('checkcontent-repair')
+            || ($request->request->count() === 0 && intval($request->headers->get('Content-Length')) > 0);
+    }
+
     public function run()
     {
         if (!empty($aclMessage = $this->checkSecuredACL())) {
@@ -63,12 +78,13 @@ class CheckcontentAction extends YesWikiAction
             return $this->render('@bazar/checkcontent.twig', [
                 'forms' => $forms,
                 'id' => null,
+                'truncated' => $this->arguments['truncated'],
                 'params' => $this->arguments['params'],
             ]);
         }
 
         $repairResult = null;
-        if (!empty($this->arguments['repair'])) {
+        if (!empty($this->arguments['repair']) && !$this->arguments['truncated']) {
             if ($this->isWikiHibernated()) {
                 return $this->getMessageWhenHibernated();
             }
@@ -93,6 +109,7 @@ class CheckcontentAction extends YesWikiAction
             'unchecked' => $result['unchecked'],
             'problemsCount' => array_sum(array_map('count', $result['problems'])),
             'repairResult' => $repairResult,
+            'truncated' => $this->arguments['truncated'],
             'params' => $this->arguments['params'],
         ]);
     }
