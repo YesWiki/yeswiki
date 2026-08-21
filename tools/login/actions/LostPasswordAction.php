@@ -17,9 +17,9 @@ class LostPasswordAction extends YesWikiAction
      *
      * Sending the recovery mail is the slow part, so without this an account is told
      * apart from an unknown address by the clock rather than by what the page says.
-     * It has to stay above the time a send actually takes.
+     * It has to stay above the time a send actually takes, SMTP included.
      */
-    public const ANSWER_DELAY = 1000000;
+    public const ANSWER_DELAY = 3000000;
 
     protected $authController;
     protected $errorType;
