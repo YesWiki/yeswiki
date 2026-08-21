@@ -24,13 +24,17 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 
     // initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
-    $hasReadAccess = true;
+    $hasReadAccess = $aclService->hasAccess('read');
+    // naming the receiver in the request is reserved to logged in users, like the form below
+    $canChooseReceiver = !empty($this->GetUser());
+    $isAllowed = $hasReadAccess
+        && ($canChooseReceiver || empty($_POST['mail']) || !empty($_GET['field']));
+    $mail_receiver = false;
     if (!empty($_GET['field'])) {
-        $hasReadAccess = $aclService->hasAccess('read');
         $mail_receiver = [];
-        if ($hasReadAccess) {
-            $val = $entryManager->getOne($this->GetPageTag());
-            if (is_array($val) and isset($val[$_GET['field']])) {
+        $val = $isAllowed ? $entryManager->getOne($this->GetPageTag()) : null;
+        if (is_array($val)) {
+            if (isset($val[$_GET['field']])) {
                 $mail_receiver[] = $val[$_GET['field']];
             }
             $form = baz_valeurs_formulaire($val['id_typeannonce']);
@@ -40,12 +44,11 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
                 ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
                     . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
         }
-    } else {
+    } elseif ($canChooseReceiver) {
         $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
     }
     if (!$mail_receiver) {
-        $hasReadAccess = $aclService->hasAccess('read');
-        if ($hasReadAccess) {
+        if ($isAllowed) {
             // on prend le squelette du theme qui pourrait contenir des actions avec des mails
             $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
@@ -74,8 +77,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if ($type == 'mail') {
-        $hasReadAccess = $aclService->hasAccess('read');
-        if ($hasReadAccess) {
+        if ($isAllowed) {
             $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
             if ($entryManager->isEntry($this->GetPageTag())) {
                 $renderedPage = $entryController->view($this->GetPageTag());
@@ -86,6 +88,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
         }
     } elseif ($type == 'abonnement' or $type == 'desabonnement') {
+        $subject = '';
         $message_html = $message_txt = 'Mailinglist : ' . $type;
     } else {
         // pour un envoi de mail classique, le message en txt
@@ -98,7 +101,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     }
 
     // on verifie si tous les parametres sont bons
-    if ($hasReadAccess) {
+    if ($isAllowed) {
         $message = check_parameters_mail(
             $type,
             $mail_sender,
