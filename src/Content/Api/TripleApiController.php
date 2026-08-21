@@ -12,6 +12,17 @@ use YesWiki\Kernel\Service\TripleStore;
 
 class TripleApiController extends YesWikiController
 {
+    /**
+     * Anonymous visitors have no name; reading the offset off the empty string getLoggedUser()
+     * returns for them was a fatal.
+     */
+    private function loggedUserName(): string
+    {
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
+
+        return is_array($user) ? (string)($user['name'] ?? '') : '';
+    }
+
     #[Route('/api/triples', methods: ['GET'], options: ['acl' => ['+']])]
     public function ByResource()
     {
@@ -75,7 +86,7 @@ class TripleApiController extends YesWikiController
             );
         }
         if (empty($username)) {
-            $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
+            $username = $this->loggedUserName();
         }
 
         $value = $this->getRequest()->request->all()['value'] ?? [];
@@ -220,13 +231,12 @@ class TripleApiController extends YesWikiController
             $username = (empty($rawUsername) || !is_string($rawUsername)) ? '' : htmlspecialchars(strip_tags($rawUsername));
             if (empty($username)) {
                 if (!$this->getService(AclService::class)->isAdmin()) {
-                    $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
+                    $username = $this->loggedUserName();
                 } else {
                     $username = null;
                 }
             }
-            $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
-            if (!$this->getService(AclService::class)->isAdmin() && $currentUser['name'] != $username) {
+            if (!$this->getService(AclService::class)->isAdmin() && $this->loggedUserName() != $username) {
                 $apiResponse = new ApiResponse(
                     ['error' => 'Not authorized to access a triple of another user if not admin !'],
                     Response::HTTP_UNAUTHORIZED

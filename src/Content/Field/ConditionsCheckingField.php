@@ -7,8 +7,10 @@ use Psr\Container\ContainerInterface;
 #[\Field(['conditionschecking'])]
 class ConditionsCheckingField extends LabelField
 {
-    private $condition;
-    private $options;
+    private string $condition = '';
+
+    /** @var array{noclean: bool} */
+    private array $options = ['noclean' => false];
 
     protected const FIELD_CONDITION = 1;
     protected const FIELD_OPTIONS = 2;
@@ -28,18 +30,22 @@ class ConditionsCheckingField extends LabelField
         ]);
     }
 
-    public function getCondition()
+    public function getCondition(): string
     {
         return $this->condition;
     }
 
-    public function getOptions()
+    /**
+     * @return array{noclean: bool}
+     */
+    public function getOptions(): array
     {
         return $this->options;
     }
 
     /**
-     * @param array $fieldsByPropertyName BazarField instances of the form, indexed by propertyName
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName BazarField instances of the form, indexed by propertyName
      */
     public function evaluate(array $entry, array $fieldsByPropertyName = []): bool
     {
@@ -52,6 +58,12 @@ class ConditionsCheckingField extends LabelField
         return $this->evalOr($tokens, $pos);
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     *
+     * @return list<array{type: 'NOT'|'OPEN'|'CLOSE'|'AND'|'OR'}|array{type: 'BOOL', value: bool}>|null null when the condition is malformed
+     */
     private function buildConditionTokens(string $condition, array $entry, array $fieldsByPropertyName): ?array
     {
         $tokens = [];
@@ -99,6 +111,9 @@ class ConditionsCheckingField extends LabelField
         return $tokens;
     }
 
+    /**
+     * @return array{current: string, operation: string, rest: string}
+     */
     private function getFirstOperation(string $condition): array
     {
         $best = null;
@@ -129,6 +144,9 @@ class ConditionsCheckingField extends LabelField
         ];
     }
 
+    /**
+     * @return array{left: string, type: string, right: string}
+     */
     private function splitLeafCondition(string $condition): array
     {
         $condition = trim($condition);
@@ -153,6 +171,10 @@ class ConditionsCheckingField extends LabelField
         ];
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     */
     private function evaluateLeaf(string $condition, array $entry, array $fieldsByPropertyName): bool
     {
         $leaf = $this->splitLeafCondition($condition);
@@ -184,6 +206,12 @@ class ConditionsCheckingField extends LabelField
         }
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     *
+     * @return list<string>
+     */
     private function getEntryFieldValues(string $fieldName, array $entry, array $fieldsByPropertyName): array
     {
         $raw = $entry[$fieldName] ?? '';
@@ -193,7 +221,7 @@ class ConditionsCheckingField extends LabelField
             return [];
         }
         $isMultiple = false;
-        if (isset($fieldsByPropertyName[$fieldName]) && $fieldsByPropertyName[$fieldName] instanceof BazarField) {
+        if (isset($fieldsByPropertyName[$fieldName])) {
             $structure = $fieldsByPropertyName[$fieldName]->getValueStructure();
             $isMultiple = ($structure[$fieldName]['_mode_'] ?? 'single') === 'multiple';
         }
@@ -206,6 +234,9 @@ class ConditionsCheckingField extends LabelField
         }));
     }
 
+    /**
+     * @return list<string>
+     */
     private function extractConditionValues(string $values): array
     {
         $trimmed = trim($values);
@@ -219,6 +250,10 @@ class ConditionsCheckingField extends LabelField
         return array_map('trim', explode(',', $trimmed));
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     */
     private function conditionIsEqual(string $fieldName, string $values, array $entry, array $fieldsByPropertyName): bool
     {
         $fieldValues = array_values(array_unique($this->getEntryFieldValues($fieldName, $entry, $fieldsByPropertyName)));
@@ -232,6 +267,10 @@ class ConditionsCheckingField extends LabelField
         return $fieldValues === $conditionValues;
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     */
     private function conditionIsIn(string $fieldName, string $values, array $entry, array $fieldsByPropertyName): bool
     {
         $fieldValues = $this->getEntryFieldValues($fieldName, $entry, $fieldsByPropertyName);
@@ -243,6 +282,10 @@ class ConditionsCheckingField extends LabelField
         return !empty(array_intersect($fieldValues, $conditionValues));
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     */
     private function conditionIsLength(string $fieldName, string $values, string $operation, array $entry, array $fieldsByPropertyName): bool
     {
         $values = trim($values);
@@ -269,6 +312,10 @@ class ConditionsCheckingField extends LabelField
         }
     }
 
+    /**
+     * @param array<string, mixed>      $entry
+     * @param array<string, BazarField> $fieldsByPropertyName
+     */
     private function conditionMatch(string $fieldName, string $values, array $entry, array $fieldsByPropertyName): bool
     {
         $fieldValues = $this->getEntryFieldValues($fieldName, $entry, $fieldsByPropertyName);
@@ -300,6 +347,9 @@ class ConditionsCheckingField extends LabelField
         return true;
     }
 
+    /**
+     * @param list<array{type: 'NOT'|'OPEN'|'CLOSE'|'AND'|'OR'}|array{type: 'BOOL', value: bool}> $tokens
+     */
     private function evalOr(array $tokens, int &$pos): bool
     {
         $result = $this->evalAnd($tokens, $pos);
@@ -312,6 +362,9 @@ class ConditionsCheckingField extends LabelField
         return $result;
     }
 
+    /**
+     * @param list<array{type: 'NOT'|'OPEN'|'CLOSE'|'AND'|'OR'}|array{type: 'BOOL', value: bool}> $tokens
+     */
     private function evalAnd(array $tokens, int &$pos): bool
     {
         $result = $this->evalUnary($tokens, $pos);
@@ -324,6 +377,9 @@ class ConditionsCheckingField extends LabelField
         return $result;
     }
 
+    /**
+     * @param list<array{type: 'NOT'|'OPEN'|'CLOSE'|'AND'|'OR'}|array{type: 'BOOL', value: bool}> $tokens
+     */
     private function evalUnary(array $tokens, int &$pos): bool
     {
         if ($pos < count($tokens) && $tokens[$pos]['type'] === 'NOT') {
@@ -335,6 +391,9 @@ class ConditionsCheckingField extends LabelField
         return $this->evalPrimary($tokens, $pos);
     }
 
+    /**
+     * @param list<array{type: 'NOT'|'OPEN'|'CLOSE'|'AND'|'OR'}|array{type: 'BOOL', value: bool}> $tokens
+     */
     private function evalPrimary(array $tokens, int &$pos): bool
     {
         if ($pos >= count($tokens)) {

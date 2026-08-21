@@ -4,9 +4,15 @@ namespace YesWiki\Content\Entity;
 
 class Files
 {
+    /**
+     * @return string the path of a fresh, empty temporary directory
+     */
     protected function tmpdir()
     {
         $path = tempnam(YESWIKI_INSTANCE_DIR . '/cache', 'yeswiki_');
+        if ($path === false) {
+            throw new \RuntimeException('could not create a temporary file in ' . YESWIKI_INSTANCE_DIR . '/cache');
+        }
 
         if (is_file($path)) {
             unlink($path);
@@ -17,6 +23,11 @@ class Files
         return $path;
     }
 
+    /**
+     * @param string|null $path
+     *
+     * @return true|list<string> true when nothing is left at $path, otherwise the paths that could not be deleted
+     */
     protected function delete($path)
     {
         if (empty($path)) {
@@ -34,8 +45,18 @@ class Files
         if (is_dir($path)) {
             return $this->deleteFolder($path);
         }
+
+        // nothing is_file() or is_dir() can see, which is what a caller of delete() asked for.
+        // Falling off the end here used to return null, against the declared contract.
+        return true;
     }
 
+    /**
+     * @param string $src
+     * @param string $des
+     *
+     * @return bool
+     */
     protected function copy($src, $des)
     {
         if (is_file($des) or is_dir($des) or is_link($des)) {
@@ -55,6 +76,11 @@ class Files
         return false;
     }
 
+    /**
+     * @param string $path
+     *
+     * @return true|list<string> true when everything under $path can be written, otherwise the paths that cannot
+     */
     protected function isWritable($path)
     {
         try {
@@ -80,12 +106,25 @@ class Files
         }
     }
 
+    /**
+     * @param string      $sourceUrl
+     * @param string|null $destPath     where to write, a temporary file when null
+     * @param int         $timeoutInSec
+     *
+     * @return string the path the body was written to
+     */
     public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
     {
         if ($destPath === null) {
             $destPath = tempnam(YESWIKI_INSTANCE_DIR . '/cache', 'tmp_to_delete_');
+            if ($destPath === false) {
+                throw new \RuntimeException('could not create a temporary file in ' . YESWIKI_INSTANCE_DIR . '/cache');
+            }
         }
         $fp = fopen($destPath, 'wb');
+        if ($fp === false) {
+            throw new \RuntimeException("could not open $destPath for writing");
+        }
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -100,6 +139,11 @@ class Files
         return $destPath;
     }
 
+    /**
+     * @param string $path
+     *
+     * @return true|list<string>
+     */
     private function isWritableFolder($path)
     {
         $file2ignore = ['.', '..', '.git'];
@@ -136,6 +180,11 @@ class Files
         return $vNotWritables;
     }
 
+    /**
+     * @param string $path
+     *
+     * @return true|list<string>
+     */
     private function deleteFolder($path)
     {
         $file2ignore = ['.', '..'];
@@ -172,6 +221,12 @@ class Files
         return $vNotDeleteds;
     }
 
+    /**
+     * @param string $srcPath
+     * @param string $desPath
+     *
+     * @return bool
+     */
     private function copyFolder($srcPath, $desPath)
     {
         $file2ignore = ['.', '..'];

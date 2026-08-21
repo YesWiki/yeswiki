@@ -10,10 +10,10 @@ use YesWiki\Content\Service\FormManager;
 
 class Guard
 {
-    protected $aclService;
-    protected $authenticationService;
-    protected $formManager;
-    protected $userManager;
+    protected AclService $aclService;
+    protected AuthenticationService $authenticationService;
+    protected FormManager $formManager;
+    protected UserManager $userManager;
 
     public function __construct(
         AclService $aclService,
@@ -27,7 +27,7 @@ class Guard
         $this->userManager = $userManager;
     }
 
-    public function isAllowed($action = 'saisie_fiche', $ownerId = ''): bool
+    public function isAllowed(string $action = 'saisie_fiche', string $ownerId = ''): bool
     {
         $loggedUserName = $this->authenticationService->getLoggedUserName();
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
@@ -58,11 +58,11 @@ class Guard
     /**
      * Teste les droits d'acces champ par champ du contenu d'un fiche bazar Si utilisateur connecte est proprietaire ou adminstrateur : acces a tous les champs Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
      *
-     * @param array       $page
-     * @param string      $tag
-     * @param string|null $userNameForCheckingACL username used to check ACL, if empty, uses en the connectd user
+     * @param array<string, mixed> $page
+     * @param string               $tag
+     * @param string|null          $userNameForCheckingACL username used to check ACL, if empty, uses en the connectd user
      *
-     * @return array $page
+     * @return array<string, mixed> $page
      */
     public function checkAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
@@ -103,11 +103,11 @@ class Guard
     /**
      * Redacts a users-type Content page's sensitive fields for display, the same way checkAcls() does for bazar entries -- and, like checkAcls(), applies uniformly whether $page is the current revision or a historical one, since both flow through this same call from PageManager::checkEntriesACL().
      *
-     * @param array       $page
-     * @param string      $tag
-     * @param string|null $userNameForCheckingACL username used to check ACL, if empty uses the connected user
+     * @param array<string, mixed> $page
+     * @param string               $tag
+     * @param string|null          $userNameForCheckingACL username used to check ACL, if empty uses the connected user
      *
-     * @return array $page
+     * @return array<string, mixed> $page
      */
     public function checkUserAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
@@ -172,8 +172,15 @@ class Guard
         return $denied;
     }
 
+    /**
+     * @param array<string, mixed>|null $page
+     */
     protected function isPageOwner($page, ?string $userName = null): bool
     {
+        if (empty($page['owner'])) {
+            return false;
+        }
+
         if (!empty($userName)) {
             return $page['owner'] === $userName;
         }
@@ -192,7 +199,9 @@ class Guard
     /**
      * sanitize data for a field mapping: the field value, or an empty string when the visitor may not read it.
      *
-     * @param string $fieldName
+     * @param array<string, mixed>|null $page
+     * @param array<string, mixed>|null $entry
+     * @param string                    $fieldName
      */
     public function isFieldDataAuthorizedForFieldMapping(?array $page, ?array $entry, $fieldName)
     {

@@ -91,7 +91,7 @@ class EditBarTest extends YesWikiTestCase
             $userManager->create(self::READER, 'editbar-reader@example.tld', 'Aa1!aaaaProbe');
             $reader = $userManager->getOneByName(self::READER);
         }
-        $this->assertNotEmpty($reader);
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $reader);
 
         try {
             $authentication->login($reader);

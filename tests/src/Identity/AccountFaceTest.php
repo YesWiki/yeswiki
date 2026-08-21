@@ -226,7 +226,7 @@ class AccountFaceTest extends YesWikiTestCase
             $userManager->create(self::PROBE, 'account-face@example.tld', 'Aa1!aaaaProbe');
             $user = $userManager->getOneByName(self::PROBE);
         }
-        $this->assertNotEmpty($user);
+        $this->assertInstanceOf(User::class, $user);
 
         $authentication->login($user);
         try {

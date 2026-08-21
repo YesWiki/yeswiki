@@ -17,10 +17,10 @@ class TagsManager
 {
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
 
-    protected $dbService;
-    protected $hibernationService;
-    protected $tripleStore;
-    protected $params;
+    protected DbService $dbService;
+    protected HibernationService $hibernationService;
+    protected TripleStore $tripleStore;
+    protected ParameterBagInterface $params;
     protected ContainerInterface $container;
 
     public function __construct(
@@ -69,7 +69,8 @@ class TagsManager
         return is_array($keywords) ? array_values(array_filter($keywords, 'is_string')) : [];
     }
 
-    public function deleteAll($page)
+    /** Drop every index row for a page, without touching its body. */
+    public function deleteAll(string $page): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -83,7 +84,7 @@ class TagsManager
      *
      * @param string $liste_tags comma-separated, as typed in the edit form
      */
-    public function save($page, $liste_tags)
+    public function save(string $page, string $liste_tags): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -163,8 +164,10 @@ class TagsManager
      * @param string $page if empty, every distinct keyword in the whole wiki is returned
      *                     (from the index); otherwise the given page's own keywords, read
      *                     from its body
+     *
+     * @return list<array<string, mixed>> rows carrying at least a `value`
      */
-    public function getAll($page = '')
+    public function getAll(string $page = ''): array
     {
         if ($page == '') {
             $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . 'WHERE property = ?';
@@ -206,6 +209,8 @@ class TagsManager
 
     /**
      * Every (id, value, resource) index row, for the admin keyword-management page (AdminTagAction) -- unlike getAll()/search(), this exposes the row id, which is how that page targets individual page/keyword pairs for removeByIds().
+     *
+     * @return list<array<string, mixed>>
      */
     public function getAllTriples(): array
     {
@@ -255,7 +260,17 @@ class TagsManager
         }
     }
 
-    public function getPagesByTags($tags = '', $type = '', $nb = '', $sort = '')
+    /**
+     * The pages carrying every one of these keywords, or -- with no keyword -- every page.
+     *
+     * @param string     $tags comma-separated keywords, all of which a page must carry
+     * @param string     $type '' for any page, 'wiki' for ordinary pages, 'bazar' for entries
+     * @param int|string $nb   accepted for backwards compatibility, ignored
+     * @param string     $sort '' to keep the database order, 'alpha' by tag, 'date' newest first
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getPagesByTags(string $tags = '', string $type = '', $nb = '', string $sort = ''): array
     {
         if (!empty($tags)) {
             $req = ' AND EXISTS (select resource FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource=tag';

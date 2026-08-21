@@ -228,9 +228,9 @@ class AdminPagesApiController extends YesWikiController
     {
         $mode = $request->request->get('acl_mode', 'replace');
         $appendAcl = ($mode === 'append');
-        $newRead = $request->request->get('acl_read', '');
-        $newWrite = $request->request->get('acl_write', '');
-        $newComment = $request->request->get('acl_comment', '');
+        $newRead = (string)$request->request->get('acl_read', '');
+        $newWrite = (string)$request->request->get('acl_write', '');
+        $newComment = (string)$request->request->get('acl_comment', '');
 
         foreach ($pageTags as $tag) {
             try {

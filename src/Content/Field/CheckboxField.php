@@ -6,11 +6,22 @@ use Psr\Container\ContainerInterface;
 
 abstract class CheckboxField extends EnumField
 {
+    /** @var mixed how many options before the "select all" control shows up; false to never show it */
     protected $displaySelectAllLimit;
+
+    /** @var mixed how many options before the filter box shows up; false to never show it */
     protected $displayFilterLimit;
+
+    /** @var string */
     protected $displayMethod;
+
+    /** @var string|null */
     protected $formName;
+
+    /** @var mixed one of the CHECKBOX_TWIG_LIST keys */
     protected $normalDisplayMode;
+
+    /** @var string */
     protected $dragAndDropDisplayMode;
 
     protected const FIELD_DISPLAY_METHOD = 7;
@@ -23,13 +34,16 @@ abstract class CheckboxField extends EnumField
 
     protected const FROM_FORM_ID = '_fromForm';
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
+        $this->displayMethod = (string)($values[self::FIELD_DISPLAY_METHOD] ?? '');
         $this->displaySelectAllLimit = false;
         $this->displayFilterLimit = false;
-        $this->formName = $this->name;
+        $this->formName = (string)$this->name;
         $this->normalDisplayMode = self::CHECKBOX_DISPLAY_MODE_DIV;
         $this->dragAndDropDisplayMode = '';
     }
@@ -71,7 +85,7 @@ abstract class CheckboxField extends EnumField
                     $this->getService(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/inputs/filter-entries.js');
                 }
 
-                return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [
+                return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode] ?? self::CHECKBOX_TWIG_LIST[self::CHECKBOX_DISPLAY_MODE_DIV], [
                     'options' => $this->getOptions(),
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
@@ -81,6 +95,11 @@ abstract class CheckboxField extends EnumField
         }
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return list<int|string> the checked option keys
+     */
     public function getValues($entry)
     {
         $value = $this->getValue($entry);
@@ -112,10 +131,10 @@ abstract class CheckboxField extends EnumField
     }
 
     /**
-     * @param string|array $rawValue
-     * @param string       $format   "string" or "array"
+     * @param mixed            $rawValue the stored or submitted value for this field
+     * @param 'string'|'array' $format
      *
-     * @return array|string
+     * @return ($format is 'string' ? string : list<int|string>)
      */
     private function sanitizeValues($rawValue, string $format = 'string')
     {
@@ -141,6 +160,11 @@ abstract class CheckboxField extends EnumField
         return $rawValue;
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return array<string, mixed>
+     */
     private function generateTagsData($entry)
     {
         $existingTags = [];
@@ -165,6 +189,9 @@ abstract class CheckboxField extends EnumField
         return self::FROM_FORM_ID;
     }
 
+    /**
+     * @return string|null
+     */
     protected function getFormName()
     {
         return $this->formName;

@@ -21,9 +21,10 @@ class RewriteRetiredSearchActions extends YesWikiMigration
         $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
+        $bodyAsText = $db->jsonAsText('body');
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages}"
-            . " WHERE body LIKE '%searchform%' OR body LIKE '%newtextsearch%'"
+            . " WHERE {$bodyAsText} LIKE '%searchform%' OR {$bodyAsText} LIKE '%newtextsearch%'"
         );
 
         $rewritten = [];

@@ -95,7 +95,7 @@ class IcalFieldRolesTest extends YesWikiTestCase
         }
 
         $entryManager = $wiki->services->get(EntryManager::class);
-        $stored = $entryManager->getOne(self::$entryTag);
+        $stored = $entryManager->getOne((string)self::$entryTag);
         $this->assertIsArray($stored);
 
         $ical = $wiki->services->get(IcalFormatter::class)->formatToICAL([$stored], $form['id']);

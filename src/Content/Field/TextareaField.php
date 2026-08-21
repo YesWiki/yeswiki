@@ -14,8 +14,13 @@ use YesWiki\Kernel\Service\StringUtilService;
 #[\Field(['textelong'])]
 class TextareaField extends BazarField
 {
+    /** @var int|string rows of the textarea, as the form definition spells it */
     protected $numRows;
+
+    /** @var string one of the SYNTAX_* constants */
     protected $syntax;
+
+    /** @var string */
     protected $placeholder;
 
     protected const FIELD_NUM_ROWS = 4;
@@ -29,6 +34,9 @@ class TextareaField extends BazarField
     public const SYNTAX_HTML = 'html';
     public const SYNTAX_PLAIN = 'nohtml';
 
+    /**
+     * @param array<int|string, mixed> $values one field's line of the form definition, by positional index
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -160,21 +168,33 @@ class TextareaField extends BazarField
         ]);
     }
 
+    /**
+     * @return int|string
+     */
     public function getNumRows()
     {
         return $this->numRows;
     }
 
+    /**
+     * @return string
+     */
     public function getPlaceholder()
     {
         return $this->placeholder;
     }
 
+    /**
+     * @return string one of the SYNTAX_* constants
+     */
     public function getSyntax()
     {
         return $this->syntax;
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function sanitizeAttach(string $text, array $entry): string
     {
         $temp_tag_for_entry_creation = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'];
@@ -220,6 +240,9 @@ class TextareaField extends BazarField
         return $text;
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function sanitizeBase64Img(string $text, array $entry): string
     {
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"[^>]*>';
@@ -272,6 +295,9 @@ class TextareaField extends BazarField
         return $text;
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     */
     private function getEntryCreationTime(?array $entry): string
     {
         $dbTz = $this->getService(DbService::class)->getDbTimeZone();
@@ -298,7 +324,7 @@ class TextareaField extends BazarField
     }
 
     /** sanitize html to prevent xss. */
-    private function sanitizeHTMLInWikiCode(string $value)
+    private function sanitizeHTMLInWikiCode(string $value): string
     {
         $preformattedDirtyHTML = str_replace(['@@', '""'], ['\\@\\@\\', '@@'], $value);
         $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
@@ -307,7 +333,7 @@ class TextareaField extends BazarField
     }
 
     /** sanitize html to prevent xss. */
-    private function sanitizeHTML(string $value)
+    private function sanitizeHTML(string $value): string
     {
         return $this->getService(HtmlPurifierService::class)->cleanHTML($value);
     }

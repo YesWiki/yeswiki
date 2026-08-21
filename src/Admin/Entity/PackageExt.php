@@ -6,12 +6,22 @@ abstract class PackageExt extends Package
 {
     public const INFOS_FILENAME = 'infos.json';
 
+    /** @var array<string, mixed>|null what infos.json holds, null until getInfos() has read it */
     protected $infos;
 
+    /** @var string */
     public $deleteLink;
 
+    /** @return string absolute path the package is installed at, with a trailing slash */
     abstract protected function localPath();
 
+    /**
+     * @param Release     $release
+     * @param string      $address
+     * @param string      $desc
+     * @param string      $doc
+     * @param string|null $minimalPhpVersion
+     */
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
@@ -21,6 +31,7 @@ abstract class PackageExt extends Package
         $this->deleteLink = '&delete=' . $this->name;
     }
 
+    /** @return bool */
     public function upgrade()
     {
         $desPath = $this->localPath();
@@ -56,6 +67,7 @@ abstract class PackageExt extends Package
         return true;
     }
 
+    /** @return bool */
     public function upgradeInfos()
     {
         $infos = [
@@ -68,6 +80,7 @@ abstract class PackageExt extends Package
         return true;
     }
 
+    /** @return true|list<string> true when the installed files are gone, otherwise the paths that could not be deleted */
     public function deletePackage()
     {
         $desPath = $this->localPath();
@@ -85,6 +98,7 @@ abstract class PackageExt extends Package
         return true;
     }
 
+    /** @return array<string, mixed> what infos.json holds, empty when the package has none or it is unreadable */
     protected function getInfos()
     {
         if ($this->infos !== null) {
@@ -94,12 +108,16 @@ abstract class PackageExt extends Package
         $this->infos = [];
         if (is_file($this->infosFilePath())) {
             $json = file_get_contents($this->infosFilePath());
-            $this->infos = json_decode($json, true);
+            $decoded = ($json === false) ? null : json_decode($json, true);
+            if (is_array($decoded)) {
+                $this->infos = $decoded;
+            }
         }
 
         return $this->infos;
     }
 
+    /** @return Release|string */
     protected function localRelease()
     {
         if ($this->installed()) {
@@ -112,7 +130,7 @@ abstract class PackageExt extends Package
         return new Release(Release::UNKNOW_RELEASE);
     }
 
-    private function installed()
+    private function installed(): bool
     {
         if (is_dir($this->localPath())) {
             return true;
@@ -121,7 +139,7 @@ abstract class PackageExt extends Package
         return false;
     }
 
-    private function infosFilePath()
+    private function infosFilePath(): string
     {
         return $this->localPath() . $this::INFOS_FILENAME;
     }

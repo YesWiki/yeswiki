@@ -91,7 +91,7 @@ class AccountRoutesTest extends YesWikiTestCase
             $userManager->create(self::PROBE, 'account-routes@example.tld', 'Aa1!aaaaProbe');
             $user = $userManager->getOneByName(self::PROBE);
         }
-        $this->assertNotEmpty($user, 'the account screens need an account to render for');
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $user, 'the account screens need an account to render for');
 
         $authentication->login($user);
         try {

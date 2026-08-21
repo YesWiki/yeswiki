@@ -105,9 +105,12 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         'meta_description' => 'templates',
     ];
 
+    /** @var list<mixed>|null the authorized keys, built once per request */
     private $keys;
+    /** @var array<string, string>|null key name => the extension it belongs to */
     private $associatedExtensions;
 
+    /** @var ConfigurationService */
     protected $configurationService;
 
     public function formatArguments($arg)
@@ -119,6 +122,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
+    /**
+     * @return string
+     */
     public function run()
     {
         $this->keys = null;
@@ -187,10 +193,14 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $choices;
     }
 
-    /** get AUTHORIZED_KEYS return array [$keys,$associatedExtensions]. */
+    /**
+     * get AUTHORIZED_KEYS return array [$keys,$associatedExtensions].
+     *
+     * @return array{list<mixed>, array<string, string>}
+     */
     private function getAuthorizedKeys(): array
     {
-        if (is_null($this->keys)) {
+        if (is_null($this->keys) || is_null($this->associatedExtensions)) {
             $associatedExtensions = self::AUTHORIZED_KEYS;
             $keys = array_keys(self::AUTHORIZED_KEYS);
 
@@ -279,29 +289,33 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     /**
      * prepare array of $keyNames from $keys recursive.
      *
-     * @param array|string $keys
+     * @param array<array-key, mixed>|string $keys
      *
-     * @return array [$keyName1,$keyName2]
+     * @return list<string> [$keyName1,$keyName2]
      */
     private function prepareKeyNames($keys, bool $firstLevel = false): array
     {
         if (is_string($keys)) {
             return $firstLevel ? [$keys] : ["[{$keys}]"];
-        } elseif (is_array($keys)) {
-            $result = [];
-            $isList = $this->arrayIsList($keys);
-            foreach ($keys as $key => $value) {
-                $subLevelKeyNames = $this->prepareKeyNames($value, $firstLevel && $isList);
-                foreach ($subLevelKeyNames as $subLevelKeyName) {
-                    $result[] = ($isList ? '' : ($firstLevel ? $key : "[{$key}]")) . $subLevelKeyName;
-                }
-            }
-
-            return $result;
         }
+
+        $result = [];
+        $isList = $this->arrayIsList($keys);
+        foreach ($keys as $key => $value) {
+            $subLevelKeyNames = $this->prepareKeyNames($value, $firstLevel && $isList);
+            foreach ($subLevelKeyNames as $subLevelKeyName) {
+                $result[] = ($isList ? '' : ($firstLevel ? $key : "[{$key}]")) . $subLevelKeyName;
+            }
+        }
+
+        return $result;
     }
 
-    /** could be replace by array_is_list since php 8.1. */
+    /**
+     * could be replace by array_is_list since php 8.1.
+     *
+     * @param array<array-key, mixed> $array
+     */
     private function arrayIsList(array $array): bool
     {
         $keys = array_keys($array);
@@ -426,7 +440,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     /**
      * get data from config file.
      *
-     * @return array [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
+     * @return array{array<string, string>, array<string, string>, array<string, string>} [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
      */
     private function getDataFromConfigFile(): array
     {
@@ -500,7 +514,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
     /**
      * convert $keys to array of arrays.
      *
-     * @return array $conertedKeys
+     * @param array<array-key, mixed> $keys
+     *
+     * @return list<list<array-key>> $conertedKeys
      */
     private function convertKeysAsArray(array $keys): array
     {
@@ -515,7 +531,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                     if ($isList) {
                         $convertedKeys[] = $value;
                     } else {
-                        $newValue = array_values($value);
+                        $newValue = $value;
                         array_unshift($newValue, $key);
                         $convertedKeys[] = $newValue;
                     }
@@ -526,7 +542,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $convertedKeys;
     }
 
-    /** array to string. */
+    /**
+     * array to string.
+     */
     private function array2Str($value): string
     {
         if (is_array($value)) {
@@ -534,9 +552,9 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 $value = '['
                     . implode(
                         ',',
-                        array_map(function ($k, $v) {
+                        array_map(function ($v) {
                             return ($v === false) ? 'false' : (($v === true) ? 'true' : "'" . $v . "'");
-                        }, array_keys($value), array_values($value))
+                        }, $value)
                     )
                     . ']';
             } else {
@@ -560,7 +578,11 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $value;
     }
 
-    /** string to array if needed. */
+    /**
+     * string to array if needed.
+     *
+     * @return array<array-key, mixed>|string|bool
+     */
     private function strtoarray(string $value)
     {
         $val = trim($value);
@@ -603,7 +625,11 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         return $value;
     }
 
-    /** get help from translation. */
+    /**
+     * get help from translation.
+     *
+     * @return array<string, string>
+     */
     private function getHelp(): array
     {
         $help = [];

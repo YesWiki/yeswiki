@@ -21,9 +21,10 @@ class ReplaceLoginModalWithAccountLink extends YesWikiMigration
         $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
+        $bodyAsText = $db->jsonAsText('body');
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages}"
-            . " WHERE body LIKE '%modal.twig%' OR body LIKE '%LoginModal%'"
+            . " WHERE {$bodyAsText} LIKE '%modal.twig%' OR {$bodyAsText} LIKE '%LoginModal%'"
         );
 
         $rewritten = [];

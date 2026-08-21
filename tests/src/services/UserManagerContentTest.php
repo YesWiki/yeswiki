@@ -49,6 +49,7 @@ class UserManagerContentTest extends YesWikiTestCase
 
             $this->assertSame($name, $page['owner']);
             $metadata = $pageManager->getMetadata($name);
+            $this->assertNotNull($metadata);
             $this->assertSame("%\n@admins", $metadata['acls']['write']);
         } finally {
             $this->cleanupUser($userManager, $name);
@@ -71,10 +72,12 @@ class UserManagerContentTest extends YesWikiTestCase
             $this->assertNotEmpty($internal['password']);
 
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
+            $this->assertNotNull($asOwner);
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner['password']);
 
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
+            $this->assertNotNull($asOther);
             $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther['password']);
         } finally {
@@ -95,11 +98,13 @@ class UserManagerContentTest extends YesWikiTestCase
             $userManager->create($name, 'umct-fieldacl@example.tld', 'Aa1!aaaaRegression');
 
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
+            $this->assertNotNull($asOther);
             $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther['email'], 'email must be hidden from an unrelated viewer');
             $this->assertSame('', $bodyAsOther['doubleclickedit'], 'account preferences must be hidden from an unrelated viewer');
 
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
+            $this->assertNotNull($asOwner);
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('umct-fieldacl@example.tld', $bodyAsOwner['email'], 'email must stay visible to the account owner');
 
@@ -123,7 +128,9 @@ class UserManagerContentTest extends YesWikiTestCase
             $userManager->create($name, 'umct-history@example.tld', 'Aa1!aaaaRegression');
             $originalUser = self::requireUser($userManager->getOneByName($name));
             $originalHash = $originalUser['password'];
-            $firstRevisionTime = $pageManager->getOne($name, null, true, true)['time'];
+            $firstRevision = $pageManager->getOne($name, null, true, true);
+            $this->assertNotNull($firstRevision);
+            $firstRevisionTime = $firstRevision['time'];
 
             sleep(1);
             $userManager->update($originalUser, ['motto' => 'updated motto']);
@@ -153,7 +160,9 @@ class UserManagerContentTest extends YesWikiTestCase
             $originalHash = $originalUser['password'];
             $this->assertNotEmpty($originalHash);
 
-            $firstRevisionId = $pageManager->getOne($name, null, true, true)['id'];
+            $firstRevision = $pageManager->getOne($name, null, true, true);
+            $this->assertNotNull($firstRevision);
+            $firstRevisionId = $firstRevision['id'];
 
             sleep(1);
             $userManager->update($originalUser, ['motto' => 'updated motto']);

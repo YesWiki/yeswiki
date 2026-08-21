@@ -15,11 +15,17 @@ use YesWiki\Render\Service\TemplateEngine;
 #[\Field(['image'])]
 class ImageField extends FileField
 {
+    /** @var int|string|null */
     protected $thumbnailHeight;
+    /** @var int|string|null */
     protected $thumbnailWidth;
+    /** @var int|string|null */
     protected $imageHeight;
+    /** @var int|string|null */
     protected $imageWidth;
+    /** @var string|null */
     protected $imageClass;
+    /** @var string|null */
     protected $imageDefault;
 
     protected const FIELD_THUMBNAIL_HEIGHT = 3;
@@ -29,6 +35,9 @@ class ImageField extends FileField
     protected const FIELD_IMAGE_CLASS = 7;
     public const FIELD_IMAGE_DEFAULT = 13;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -44,6 +53,11 @@ class ImageField extends FileField
         $this->default = null;
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return string|false the shared default image for this field, or false when the wiki has none
+     */
     protected function getDefaultImageName($entry)
     {
         $id = $entry['form_id'] ?? $_SESSION['current_form_id'] ?? 'no_id';
@@ -254,7 +268,7 @@ class ImageField extends FileField
             return '<img src="' . htmlspecialchars($sized) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
         }
 
-        if (isset($value) && $value != '' && $this->storage()->exists($this->getBasePath() . $value)) {
+        if ($value != '' && $this->storage()->exists($this->getBasePath() . $value)) {
             return $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                 'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                 'imageFullPath' => $this->getBasePath() . $value,
@@ -291,15 +305,27 @@ class ImageField extends FileField
         ]);
     }
 
+    /**
+     * @param string $fileName
+     *
+     * @return bool
+     */
     protected function isImage($fileName)
     {
         $imageExtPreg = $this->getService(ParameterBagInterface::class)->get('attach_config')['ext_images'];
 
-        return preg_match("/($imageExtPreg)\$/i", $fileName);
+        return (bool)preg_match("/($imageExtPreg)\$/i", $fileName);
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return bool
+     */
     private function securedDeleteImageAndCache($entry, string $filename)
     {
+        $entry ??= [];
+
         if ($this->isAllowedToDeleteFile($entry, $filename)) {
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                 $this->getService(FileBrowser::class)->moveToTrash($filename);

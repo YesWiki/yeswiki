@@ -145,7 +145,7 @@ namespace YesWiki\Kernel\Service {
          */
         public function offeredLanguages($wiki, array $installed): array
         {
-            if (!($wiki instanceof \YesWiki\YesWikiRuntime) || !is_array($wiki->config)) {
+            if (!$wiki instanceof \YesWiki\YesWikiRuntime) {
                 return $installed;
             }
 

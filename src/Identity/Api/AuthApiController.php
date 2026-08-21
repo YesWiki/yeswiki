@@ -23,10 +23,11 @@ class AuthApiController extends YesWikiController
         $post = $this->getRequest()->request;
         $userManager = $this->getService(UserManager::class);
 
-        $user = $userManager->getOneByName($post->get('username'));
+        $username = (string)$post->get('username', '');
+        $user = $userManager->getOneByName($username);
 
-        if (!$user && filter_var($post->get('username'), FILTER_VALIDATE_EMAIL)) {
-            $user = $userManager->getOneByEmail($post->get('username'));
+        if (!$user && filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            $user = $userManager->getOneByEmail($username);
         }
 
         if (!$user) {

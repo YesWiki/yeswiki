@@ -116,6 +116,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
             $this->assertIsArray($form);
 
             $page = $pageManager->getOne($form['tag'], null, true, true);
+            $this->assertNotNull($page);
             $body = $page['body'];
             $this->assertIsArray($body['template']);
             $this->assertCount(4, $body['template']);

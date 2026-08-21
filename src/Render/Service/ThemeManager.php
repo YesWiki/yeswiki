@@ -63,19 +63,25 @@ class ThemeManager implements EventSubscriberInterface
      */
     public const BROWSER_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-    protected $errorMessage;
-    protected $favorites;
-    protected $fileContent;
-    protected $fileLoaded;
-    protected $pageManager;
-    protected $params;
-    protected $hibernationService;
-    protected $squelette;
-    protected $templates;
-    protected $theme;
-    protected $twig;
-    protected $useFallbackTheme;
-    protected $utils;
+    protected string $errorMessage;
+
+    /** @var array<string, string> theme, squelette, style, preset and background_image */
+    protected array $favorites;
+
+    /** @var string|null the squelette's source, once loadTheme() has read it */
+    protected ?string $fileContent;
+    protected bool $fileLoaded;
+    protected PageManager $pageManager;
+    protected ParameterBagInterface $params;
+    protected HibernationService $hibernationService;
+    protected ?string $squelette;
+
+    /** @var array<string, array<string, mixed>> the themes found, by name */
+    protected array $templates;
+    protected ?string $theme;
+    protected TemplateEngine $twig;
+    protected bool $useFallbackTheme;
+    protected TemplateHelperService $utils;
     protected Storage $storage;
     protected ContainerInterface $container;
 
@@ -119,11 +125,13 @@ class ThemeManager implements EventSubscriberInterface
         $this->storage = $storage;
     }
 
-    /* function imported from tooles/templates/libs/templates.functions.php
-     * to load templates and generate an error if needed
+    /**
+     * function imported from tools/templates/libs/templates.functions.php
+     * to load templates and generate an error if needed.
      *
-     * @param $metadata metadata fr the current Page
-     * @return array of templates
+     * @param array<string, mixed>|null $metadata metadata for the current Page
+     *
+     * @return array<string, array<string, mixed>>|null the templates found, by theme name
      */
     public function loadTemplates($metadata = []): ?array
     {
@@ -258,12 +266,12 @@ class ThemeManager implements EventSubscriberInterface
             || (!$this->storage->exists('custom/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style'])
                 && !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
         ) {
+            // the second half only ever ran with the theme already equal to the default, so
+            // repeating that test there was always true (ticket 40)
             if (
                 $this->favorites['theme'] != THEME_PAR_DEFAUT
-                || (
-                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
-                        or !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style']))
-                )
+                || !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
+                || !file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style'])
             ) {
                 if (
                     file_exists(YESWIKI_SOURCE_DIR . '/themes/' . THEME_PAR_DEFAUT . '/squelettes/' . SQUELETTE_PAR_DEFAUT)
@@ -481,6 +489,9 @@ class ThemeManager implements EventSubscriberInterface
         return $this->twig->createSquelette((string)$this->fileContent)->renderBlock('head');
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function getTemplates(): array
     {
         return $this->templates;
@@ -511,7 +522,10 @@ class ThemeManager implements EventSubscriberInterface
         return $this->favorites['background_image'];
     }
 
-    protected function setFavorite(string $key, $newVal)
+    /**
+     * @param mixed $newVal what the caller asked for; anything but a non-empty string stores ''
+     */
+    protected function setFavorite(string $key, $newVal): void
     {
         if ($key === 'squelette' && is_string($newVal)) {
             // stored page metadata and old configs still say e.g. '1col.tpl.html'
@@ -558,7 +572,7 @@ class ThemeManager implements EventSubscriberInterface
     /**
      * get custom css-presets.
      *
-     * @return array $template = [$filename=>$css]
+     * @return array<string, string> $template = [$filename=>$css]
      */
     public function getCustomCSSPresets(): array
     {
@@ -578,7 +592,7 @@ class ThemeManager implements EventSubscriberInterface
     /**
      * delete a css custom preset.
      *
-     * @return array ['status' => bool, 'message' => '...']
+     * @return array{status: bool, message: string}
      */
     public function deleteCustomCSSPreset(string $filename): array
     {
@@ -987,7 +1001,7 @@ class ThemeManager implements EventSubscriberInterface
     /**
      * save metadata for new page if needed.
      */
-    public function saveMetadataIfNeeded(Event $event)
+    public function saveMetadataIfNeeded(Event $event): void
     {
         $data = $event->getData();
         $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();

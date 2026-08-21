@@ -65,7 +65,8 @@ class LookWikiIsRetired extends YesWikiMigration
      */
     private function rewriteLinks(DbService $db, string $pages): array
     {
-        $rows = $db->loadAll("SELECT id, tag, body FROM {$pages} WHERE body LIKE '%LookWiki%'");
+        $bodyAsText = $db->jsonAsText('body');
+        $rows = $db->loadAll("SELECT id, tag, body FROM {$pages} WHERE {$bodyAsText} LIKE '%LookWiki%'");
 
         $changedTags = [];
         foreach ($rows as $row) {

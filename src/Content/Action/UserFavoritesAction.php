@@ -24,12 +24,12 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         return 'userfavorites';
     }
 
-    protected $authenticationService;
-    protected $entryManager;
-    protected $favoritesManager;
-    protected $formManager;
-    protected $pageManager;
-    protected $templateEngine;
+    protected AuthenticationService $authenticationService;
+    protected EntryManager $entryManager;
+    protected FavoritesManager $favoritesManager;
+    protected FormManager $formManager;
+    protected PageManager $pageManager;
+    protected TemplateEngine $templateEngine;
 
     public function formatArguments($arg)
     {
@@ -38,7 +38,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryManager = $this->getService(EntryManager::class);
@@ -65,7 +65,8 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         ]);
     }
 
-    private function updateFavoritesWithTitleImagesAndEntries(array &$favorites)
+    /** @param array<array-key, array<string, mixed>> $favorites */
+    private function updateFavoritesWithTitleImagesAndEntries(array &$favorites): void
     {
         foreach ($favorites as $key => $favorite) {
             if ($this->entryManager->isEntry($favorite['resource'])) {
@@ -142,7 +143,11 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         return '';
     }
 
-    private function getFileName($page, $file)
+    /**
+     * @param array<string, mixed> $page
+     * @param string               $file
+     */
+    private function getFileName($page, $file): string
     {
         $oldpagetag = $this->getService(PageContext::class)->getTag();
         $oldpage = $this->getService(PageContext::class)->getPage();

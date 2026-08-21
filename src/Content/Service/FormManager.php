@@ -32,17 +32,18 @@ class FormManager
     // (which should never happen, but shouldn't be trusted blindly either) can't hang
     private const MAX_ALIAS_HOPS = 10;
 
-    protected $dbService;
+    protected DbService $dbService;
     protected KeyPairGenerator $keyPairGenerator;
-    protected $entryManager;
-    protected $hibernationService;
-    protected $fieldFactory;
-    protected $params;
-    protected $pageManager;
-    protected $tripleStore;
-    protected $aclService;
-    protected $cachedForms;
-    protected $cacheValidatedForAll;
+    protected EntryManager $entryManager;
+    protected HibernationService $hibernationService;
+    protected FieldFactory $fieldFactory;
+    protected ParameterBagInterface $params;
+    protected PageManager $pageManager;
+    protected TripleStore $tripleStore;
+    protected AclService $aclService;
+    /** @var array<int|string, array<string, mixed>> forms already loaded this request, keyed by id and by tag */
+    protected array $cachedForms = [];
+    protected bool $cacheValidatedForAll = false;
     /** @var array<string, string|null> content type => the tag of its form, false-free memo */
     private array $cachedContentTypeTags = [];
     protected AttachedFilePaths $paths;
@@ -80,18 +81,22 @@ class FormManager
         $this->resizer = $this->container->get(ImageResizer::class);
     }
 
-    protected function getBasePath()
+    protected function getBasePath(): string
     {
         $basePath = $this->paths->uploadPath();
 
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
-    protected function cleanCacheDefaultImage($prefix)
+    /** @param string $prefix */
+    protected function cleanCacheDefaultImage($prefix): void
     {
         $cache_path = $this->paths->cachePath();
         $cache_path = $cache_path . (substr($cache_path, -1) != '/' ? '/' : '');
         $scan_cache_files = scandir($cache_path);
+        if ($scan_cache_files === false) {
+            return;
+        }
         foreach ($scan_cache_files as $scan_cache_file) {
             if (str_starts_with($scan_cache_file, $prefix)) {
                 unlink($cache_path . $scan_cache_file);
@@ -104,6 +109,11 @@ class FormManager
      * default as `filename|data:image/...;base64,...`; the base64 part is written to
      * files/defaultimage{id}_{name}.jpg and only the filename stays in the stored
      * field object. Operates on (and returns) the native array of field objects.
+     *
+     * @param array<int, array<string, mixed>> $template
+     * @param int|string                       $id       the form's stable numeric id
+     *
+     * @return array<int, array<string, mixed>>
      */
     protected function convertWithSpecialParameters(array $template, $id)
     {
@@ -146,6 +156,10 @@ class FormManager
      * Read-side counterpart: embeds the stored default image back into each image
      * field object (`image_default` becomes `filename|data:image/jpg;base64,...`) so
      * the designer and API consumers can display it.
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<int, array<string, mixed>>
      */
     protected function prepare_with_special_parameters($form)
     {
@@ -156,8 +170,9 @@ class FormManager
                 continue;
             }
             $default_image_filename = $basePath . "defaultimage{$form['id']}_" . ($fieldObject['name'] ?? '') . '.jpg';
-            if (file_exists($default_image_filename)) {
-                $fieldObject['image_default'] = ($fieldObject['image_default'] ?? '') . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+            $storedImage = file_exists($default_image_filename) ? file_get_contents($default_image_filename) : false;
+            if ($storedImage !== false) {
+                $fieldObject['image_default'] = ($fieldObject['image_default'] ?? '') . '|data:image/jpg;base64,' . base64_encode($storedImage);
             } else {
                 unset($fieldObject['image_default']);
             }
@@ -230,6 +245,11 @@ class FormManager
      * JSON/API dumps of a page's body), are merged back in under `activitypub_*` keys
      * so no consumer needs to know where they're actually stored.
      */
+    /**
+     * @param array<string, mixed> $page
+     *
+     * @return array<string, mixed>
+     */
     private function pageToFormArray(array $page): array
     {
         $body = $page['body'] ?? [];
@@ -273,6 +293,11 @@ class FormManager
         return $body;
     }
 
+    /**
+     * @param int|string $formId numeric id, current tag, or a former tag
+     *
+     * @return array<string, mixed>|null
+     */
     public function getOne($formId): ?array
     {
         if (isset($this->cachedForms[$formId])) {
@@ -330,6 +355,10 @@ class FormManager
      * objects (with image defaults embedded for display), `prepared` built from it.
      * The positional arrays feeding the field constructors stay internal -- they are
      * neither stored on the form nor exposed by the API (ADR-0010).
+     *
+     * @param array<string, mixed> $form
+     *
+     * @return array<string, mixed>
      */
     public function getFromRawData($form)
     {
@@ -383,6 +412,7 @@ class FormManager
         return null;
     }
 
+    /** @return array<int|string, array<string, mixed>> every form, keyed by its numeric id */
     public function getAll(): array
     {
         if (!$this->cacheValidatedForAll) {
@@ -405,7 +435,7 @@ class FormManager
             // require a valid numeric-id key *and* an actual form array : consumers (e.g.
             // SearchManager::searchWithLists()) expect every entry to be a real form
             function ($pForm, $pKey) {
-                return is_array($pForm) && intval($pKey) . '' === $pKey . '';
+                return intval($pKey) . '' === $pKey . '';
             },
             ARRAY_FILTER_USE_BOTH,
         );
@@ -512,6 +542,11 @@ class FormManager
         return array_keys($this->getAllLabels());
     }
 
+    /**
+     * @param array<int|string> $formsIds
+     *
+     * @return array<int|string, array<string, mixed>|null> null for an id no form answers to
+     */
     public function getMany($formsIds): array
     {
         if (count($formsIds) == 0) {
@@ -547,6 +582,11 @@ class FormManager
      * seeded, not exposed in the edit UI) are included only if present in $data, so that
      * update()'s array_merge() over the existing body leaves them untouched rather than
      * wiping them on every edit.
+     */
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
      */
     private function buildBody(array $data): array
     {
@@ -595,6 +635,12 @@ class FormManager
      * form is enabled for ActivityPub and preserving the existing one afterwards (the admin
      * edit form has no input for the keys themselves, only for enable/username).
      */
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $existingActivitypub
+     *
+     * @return array<string, mixed>
+     */
     private function buildActivitypubMetadata(array $data, array $existingActivitypub): array
     {
         // the form's own metadata key, read directly: asking the ActivityPub service whether
@@ -626,6 +672,11 @@ class FormManager
         return $slug !== '' ? $slug : 'form';
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return int PageManager::save()'s status, 0 on success
+     */
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
@@ -677,6 +728,7 @@ class FormManager
      * an existing one being migrated, and so always generates a fresh keypair -- would
      * otherwise silently rotate it out from under any already-federating form.
      */
+    /** @param int|string $formId */
     public function setActivitypubKeypair($formId, string $privateKey, string $publicKey): void
     {
         $tag = $this->resolveTag((string)$formId);
@@ -693,6 +745,11 @@ class FormManager
         unset($this->cachedForms[$formId], $this->cachedForms[$tag]);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return int PageManager::save()'s status, 0 on success
+     */
     public function update($data)
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -768,6 +825,7 @@ class FormManager
      * FORMER_TAG_URI triple. Returns the tag actually used (suggestFreeTag()-resolved if
      * $desiredNewTag collided with existing Content).
      */
+    /** @param int|string $formId */
     public function renameTag($formId, string $desiredNewTag): string
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -794,6 +852,11 @@ class FormManager
         return $newTag;
     }
 
+    /**
+     * @param int|string $id
+     *
+     * @return int|false PageManager::save()'s status for the copy, false when there is nothing to copy
+     */
     public function clone($id)
     {
         $data = $this->getOne($id);
@@ -859,6 +922,11 @@ class FormManager
         return $deleted;
     }
 
+    /**
+     * @param int|string $id
+     *
+     * @return bool|null true when the form was deleted, null when $id names no deletable form
+     */
     public function delete($id)
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -893,6 +961,7 @@ class FormManager
         return true;
     }
 
+    /** @return list<string> the tags of every entry under this form */
     private function getEntryTagsForForm(string $numericId): array
     {
         $jsonExtract = $this->dbService->jsonExtract('p.body', '$.form_id');
@@ -903,7 +972,8 @@ class FormManager
         return array_column($this->dbService->loadAll($sql, [$numericId, PageType::ENTRY]), 'tag');
     }
 
-    public function findNewId()
+    /** @return int an id no form is using yet */
+    public function findNewId(): int
     {
         $ids = array_map('intval', $this->getAllIds());
 
@@ -939,7 +1009,7 @@ class FormManager
      *
      * @param string $raw stored template (JSON, or legacy `***` syntax)
      *
-     * @return array list of positional field arrays, each padded to 16 entries
+     * @return array<int, array<int, string>> positional field arrays, each padded to 16 entries
      */
     public function parseTemplate($raw)
     {
@@ -1004,8 +1074,10 @@ class FormManager
      * parseTemplate()'s JSON branch). Empty slots are omitted; slots with no named
      * FIELD_* constant on the handling class keep their numeric position as a string
      * key so unknown/extension data survives round-trips losslessly.
+     *
+     * @param array<int, mixed> $template_list positional field arrays
      */
-    public function encodeTemplate($template_list)
+    public function encodeTemplate($template_list): string
     {
         $fieldObjects = [];
         foreach ($template_list as $positional) {
@@ -1015,10 +1087,21 @@ class FormManager
             }
         }
 
-        return json_encode($fieldObjects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $json = json_encode($fieldObjects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        // json_encode() answers false only when the data cannot be encoded at all (invalid
+        // UTF-8 in a label, say). '' is what every caller already saw in that case, the
+        // string return type having coerced the false.
+        return $json === false ? '' : $json;
     }
 
-    /** One JSON field object => one positional array padded to 16 entries, or null if typeless. */
+    /**
+     * One JSON field object => one positional array padded to 16 entries, or null if typeless.
+     *
+     * @param array<array-key, mixed> $fieldObject
+     *
+     * @return array<int, string>|null
+     */
     private function namedToPositional(array $fieldObject): ?array
     {
         $type = trim((string)($fieldObject['type'] ?? $fieldObject[0] ?? ''));
@@ -1044,7 +1127,13 @@ class FormManager
         return $positional;
     }
 
-    /** One positional array => one JSON field object with named keys, or null if typeless. */
+    /**
+     * One positional array => one JSON field object with named keys, or null if typeless.
+     *
+     * @param array<array-key, mixed> $positional
+     *
+     * @return array<string, string>|null
+     */
     private function positionalToNamed(array $positional): ?array
     {
         $type = trim((string)($positional[0] ?? ''));
@@ -1072,6 +1161,7 @@ class FormManager
      * Re-encodes any template input (designer JSON or legacy `***` syntax, e.g. a form
      * imported from an older remote wiki) to the canonical JSON storage format.
      */
+    /** @param mixed $template stored template: JSON, legacy `***` syntax, or an already-decoded array */
     public function normalizeTemplate($template): string
     {
         return $this->encodeTemplate($this->parseTemplate((string)$template));
@@ -1081,6 +1171,11 @@ class FormManager
      * Native template (array of field objects) => list of positional arrays. For the
      * few boundaries that still need the constructors' positional wire format
      * (legacy migrations; ExternalBazarService was the other one, deleted by ticket 34).
+     */
+    /**
+     * @param array<array-key, mixed> $template
+     *
+     * @return list<array<array-key, mixed>> positional field arrays
      */
     public function templateToPositionalList(array $template): array
     {
@@ -1097,7 +1192,13 @@ class FormManager
         return $list;
     }
 
-    /** Inverse: list of positional arrays => native template (array of field objects). */
+    /**
+     * Inverse: list of positional arrays => native template (array of field objects).
+     *
+     * @param array<array-key, mixed> $list positional field arrays
+     *
+     * @return list<array<array-key, mixed>> field objects
+     */
     public function positionalListToTemplate(array $list): array
     {
         $template = [];
@@ -1118,7 +1219,8 @@ class FormManager
      * import, or an already-decoded array) => the native array of named-attribute field
      * objects stored inside the page body.
      */
-    private function templateToStorage($template, ?string $contentType = null): array
+    /** @return array<int, array<string, mixed>> */
+    private function templateToStorage(mixed $template, ?string $contentType = null): array
     {
         // arrays go through the same positional round-trip canonicalization as
         // string input (empty-slot dropping, key resolution) — no bypass
@@ -1152,6 +1254,11 @@ class FormManager
         return ContentTypeSchema::isKnownType($requested) ? (string)$requested : ContentTypeSchema::TYPE_ENTRY;
     }
 
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return array<int, BazarField>
+     */
     public function prepareData($form)
     {
         $i = 0;
@@ -1187,7 +1294,11 @@ class FormManager
         Add a form to the cache if it is not existing
     */
 
-    public function cacheForm($pFormId, $pForm)
+    /**
+     * @param int|string           $pFormId
+     * @param array<string, mixed> $pForm
+     */
+    public function cacheForm($pFormId, $pForm): void
     {
         $this->cachedForms[$pFormId] = $pForm;
     }
@@ -1232,6 +1343,12 @@ class FormManager
         return true;
     }
 
+    /**
+     * @param int|string $formId
+     * @param string[]   $fieldTypes short class names, e.g. 'SelectEntryField'
+     *
+     * @return list<BazarField>
+     */
     public function findTypeOfFields($formId, array $fieldTypes): array
     {
         $res = [];
@@ -1252,6 +1369,14 @@ class FormManager
         return $res;
     }
 
+    /**
+     * The first field of these forms whose property name is $fieldId.
+     *
+     * @param array<int|string> $formId  form ids to search, in order
+     * @param string            $fieldId
+     *
+     * @return BazarField|array{} the empty array when no form carries that field
+     */
     public function findFieldWithId(array $formId, $fieldId)
     {
         $res = [];
@@ -1270,6 +1395,11 @@ class FormManager
         return $res;
     }
 
+    /**
+     * @param string $username
+     *
+     * @return array<string, mixed>|null
+     */
     public function findByActivityPubUsername($username)
     {
         $forms = $this->getAll();

@@ -34,7 +34,6 @@ class UserManagerTest extends YesWikiTestCase
     public function testGetAll(UserManager $userManager): array
     {
         $users = $userManager->getAll();
-        $this->assertTrue(is_array($users));
         $this->assertGreaterThan(0, count($users));
 
         return $users;
@@ -44,7 +43,8 @@ class UserManagerTest extends YesWikiTestCase
     #[Depends('testGetAll')]
     public function testGetOneByName(UserManager $userManager, array $users)
     {
-        $firstUser = $users[array_key_first($users)];
+        $firstUser = reset($users);
+        $this->assertInstanceOf(User::class, $firstUser);
         $user = $userManager->getOneByName($firstUser['name']);
         $this->assertSame($user['name'], $firstUser['name']);
         $this->assertSame($user['password'], $firstUser['password']);
@@ -55,7 +55,8 @@ class UserManagerTest extends YesWikiTestCase
     #[Depends('testGetAll')]
     public function testGetOneByEmail(UserManager $userManager, array $users)
     {
-        $firstUser = $users[array_key_first($users)];
+        $firstUser = reset($users);
+        $this->assertInstanceOf(User::class, $firstUser);
         $user = $userManager->getOneByEmail($firstUser['email']);
         $this->assertSame($user['name'], $firstUser['name']);
         $this->assertSame($user['password'], $firstUser['password']);
@@ -87,7 +88,8 @@ class UserManagerTest extends YesWikiTestCase
         UserManager $userManager
     ) {
         $users = $userManager->getAll();
-        $firstUser = $users[array_key_first($users)];
+        $firstUser = reset($users);
+        $this->assertInstanceOf(User::class, $firstUser);
         if ($name == 'newRandom') {
             do {
                 $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
@@ -247,7 +249,8 @@ class UserManagerTest extends YesWikiTestCase
         UserManager $userManager
     ) {
         $users = $userManager->getAll();
-        $firstUser = $users[array_key_first($users)];
+        $firstUser = reset($users);
+        $this->assertInstanceOf(User::class, $firstUser);
 
         $user = $this->createRandomUser($userManager);
         if (!empty($email)) {

@@ -22,7 +22,8 @@ class LoginDefaultsToTheAccountButton extends YesWikiMigration
         $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
-        $rows = $db->loadAll("SELECT id, tag, body FROM {$pages} WHERE body LIKE '%login%'");
+        $bodyAsText = $db->jsonAsText('body');
+        $rows = $db->loadAll("SELECT id, tag, body FROM {$pages} WHERE {$bodyAsText} LIKE '%login%'");
 
         $rewritten = [];
         foreach ($rows as $row) {

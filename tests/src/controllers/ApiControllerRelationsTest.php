@@ -59,8 +59,8 @@ class ApiControllerRelationsTest extends YesWikiTestCase
                 'bf_titre' => 'Second entity',
                 'tag' => self::ENTITY2_TAG,
             ]);
-            $this->assertIsArray($entry1);
-            $this->assertIsArray($entry2);
+            $this->assertNotEmpty($entry1);
+            $this->assertNotEmpty($entry2);
 
             $_POST = [
                 'antispam' => 1,

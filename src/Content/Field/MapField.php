@@ -13,12 +13,19 @@ class MapField extends BazarField
 {
     use ContributesNoSearchableText;
 
+    /** @var array<string, string> the entry key each autocompleted part of the address writes to */
     protected $autocompleteFieldnames;
+    /** @var string|null "<postal code field>,<town field>", null when the form names neither */
     protected $autocomplete;
+    /** @var int 1 when the field offers to geolocate the browser, 0 otherwise */
     protected $geolocate;
+    /** @var mixed the form-definition cell: '1' when the map shows in the entry view */
     protected $showMapInEntryView;
+    /** @var array<int, string>|string the geometries the field may draw, or DEFAULT_GEOMETRIES when the form names none */
     protected $geometries;
+    /** @var int */
     protected $max_geometries;
+    /** @var bool */
     protected $has_geometries;
 
     protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
@@ -45,15 +52,7 @@ class MapField extends BazarField
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
 
-        $autocomplete = empty($this->autocomplete) ? '' : (
-            is_string($this->autocomplete)
-            ? $this->autocomplete
-            : (
-                is_array($this->autocomplete)
-                ? implode(',', $this->autocomplete)
-                : ''
-            )
-        );
+        $autocomplete = empty($this->autocomplete) ? '' : $this->autocomplete;
         $data = array_map('trim', explode(',', $autocomplete));
         $postalCode = empty($data[0]) ? self::DEFAULT_FIELDNAME_POSTALCODE : $data[0];
         $town = empty($data[1]) ? self::DEFAULT_FIELDNAME_TOWN : $data[1];
@@ -127,7 +126,12 @@ class MapField extends BazarField
         return trim($vLatitude) == '' && trim($vLongitude) == '' && trim($vGeometries) == '';
     }
 
-    protected function getMapFieldData($entry)
+    /**
+     * @param array<string, mixed>|null $entry
+     *
+     * @return array<string, mixed> everything the map templates need to draw this field
+     */
+    protected function getMapFieldData($entry): array
     {
         $value = $this->getValue($entry);
 
@@ -263,17 +267,20 @@ class MapField extends BazarField
         return $output;
     }
 
-    public function getAutocomplete()
+    public function getAutocomplete(): ?string
     {
         return $this->autocomplete;
     }
 
-    public function getGeolocate()
+    public function getGeolocate(): int
     {
         return $this->geolocate;
     }
 
-    public function getAutocompleteFieldnames()
+    /**
+     * @return array<string, string>
+     */
+    public function getAutocompleteFieldnames(): array
     {
         return $this->autocompleteFieldnames;
     }

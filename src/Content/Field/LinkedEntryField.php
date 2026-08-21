@@ -10,12 +10,12 @@ use YesWiki\Render\Service\TabsService;
 #[\Field(['listefichesliees', 'listefiches'])]
 class LinkedEntryField extends BazarField
 {
-    protected $query;
-    protected $otherParams;
-    protected $limit;
-    protected $template;
-    protected $linkedId;
-    protected $addEntryBtnLabel;
+    protected string $query;
+    protected string $otherParams;
+    protected string $limit;
+    protected string $template;
+    protected string $linkedId;
+    protected string $addEntryBtnLabel;
 
     protected const FIELD_QUERY = 2;
     protected const FIELD_OTHER_PARAMS = 3;
@@ -25,18 +25,21 @@ class LinkedEntryField extends BazarField
     protected const FIELD_LABEL = 7;
     protected const FIELD_ADD_ENTRY_BTN_LABEL = 10;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->label = $values[self::FIELD_LABEL] ?? '';
-        $this->query = $values[self::FIELD_QUERY] ?? '';
-        $this->otherParams = $values[self::FIELD_OTHER_PARAMS] ?? '';
-        $this->limit = $values[self::FIELD_LIMIT] ?? '';
-        $this->template = $values[self::FIELD_TEMPLATE] ?? '';
-        $this->linkedId = $values[self::FIELD_LINK_TYPE] ?? '';
+        $this->query = (string)($values[self::FIELD_QUERY] ?? '');
+        $this->otherParams = (string)($values[self::FIELD_OTHER_PARAMS] ?? '');
+        $this->limit = (string)($values[self::FIELD_LIMIT] ?? '');
+        $this->template = (string)($values[self::FIELD_TEMPLATE] ?? '');
+        $this->linkedId = (string)($values[self::FIELD_LINK_TYPE] ?? '');
         $this->propertyName = null;
-        $this->addEntryBtnLabel = $values[self::FIELD_ADD_ENTRY_BTN_LABEL] ?? '';
+        $this->addEntryBtnLabel = (string)($values[self::FIELD_ADD_ENTRY_BTN_LABEL] ?? '');
     }
 
     protected function renderInput($entry)
@@ -64,6 +67,11 @@ class LinkedEntryField extends BazarField
         return '';
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     *
+     * @return array{output: string, addEntryLink: string, addEntryBtnLabel: string, emptyList: bool}
+     */
     protected function getTwigOptions($entry)
     {
         $output = $this->renderSecuredBazarList($entry);
@@ -79,6 +87,9 @@ class LinkedEntryField extends BazarField
         return compact(['output', 'addEntryLink', 'addEntryBtnLabel', 'emptyList']);
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     protected function renderSecuredBazarList($entry): string
     {
         $tabsService = $this->getService(TabsService::class);
@@ -94,6 +105,9 @@ class LinkedEntryField extends BazarField
         return empty($output) || preg_match('/<div id="[^"]+" class="entry-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/', $output);
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function getBazarListAction($entry): string
     {
         $query = $this->getQueryForLinkedLabels($entry);
@@ -110,6 +124,9 @@ class LinkedEntryField extends BazarField
         return '';
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     protected function getQueryForLinkedLabels($entry): ?string
     {
         if (str_contains((string)$this->name, '|')) {

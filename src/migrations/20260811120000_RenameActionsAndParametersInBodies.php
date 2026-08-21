@@ -19,7 +19,7 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
         $rewriter = $this->getService(ActionCallRewriter::class);
         $pages = $db->prefixTable('pages');
 
-        $candidates = $this->candidatePredicate($rewriter);
+        $candidates = $this->candidatePredicate($rewriter, $db->jsonAsText('body'));
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages} WHERE " . $candidates->sql,
             $candidates->params
@@ -57,11 +57,11 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
     }
 
     /** Narrow the sweep to rows that could possibly contain something to rewrite. */
-    private function candidatePredicate(ActionCallRewriter $rewriter): SqlFragment
+    private function candidatePredicate(ActionCallRewriter $rewriter, string $bodyAsText): SqlFragment
     {
         $clauses = array_map(
             static fn (string $needle): SqlFragment => SqlFragment::of(
-                'body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
+                $bodyAsText . ' LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
                 [SqlParameters::likeContains($needle)]
             ),
             $rewriter->candidateNeedles()

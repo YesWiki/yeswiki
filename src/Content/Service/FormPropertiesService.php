@@ -46,9 +46,9 @@ class FormPropertiesService
     ];
 
     protected ContainerInterface $container;
-    protected $params;
-    protected $aclService;
-    protected $pageManager;
+    protected ParameterBagInterface $params;
+    protected AclService $aclService;
+    protected PageManager $pageManager;
     protected GroupOperationsService $groupOperationsService;
 
     public function __construct(
@@ -67,6 +67,13 @@ class FormPropertiesService
         $this->groupOperationsService = $groupOperationsService;
     }
 
+    /**
+     * @template T
+     *
+     * @param class-string<T> $className
+     *
+     * @return T
+     */
     private function getService(string $className)
     {
         return $this->container->get($className);
@@ -74,6 +81,9 @@ class FormPropertiesService
 
     /**
      * Computes the entry's `title` from the form's `entry_title_template` -- a `{{field}}` substitution template ("{{bf_nom}} {{bf_prenom}}"), with per-type value resolution for enum/file/image fields (option label rather than key, filename rather than raw value).
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
      */
     public function computeTitle(array $form, array $entry): string
     {
@@ -177,7 +187,11 @@ class FormPropertiesService
         return null;
     }
 
-    /** The {{field}} names a title template references. */
+    /**
+     * The {{field}} names a title template references.
+     *
+     * @return list<string>
+     */
     public function referencedFieldNames(string $titleTemplate): array
     {
         preg_match_all('#{{(.*)}}#U', $titleTemplate, $matches);
@@ -200,6 +214,9 @@ class FormPropertiesService
 
     /**
      * Stamps the form's entry_read_access / entry_write_access / entry_comment_access onto a saved entry.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
      */
     public function applyEntryAcls(array $form, array $entry, bool $force = false): void
     {
@@ -233,6 +250,9 @@ class FormPropertiesService
         }
     }
 
+    /**
+     * @param array<string, mixed> $form
+     */
     public function permitsActivateComments(array $form): bool
     {
         return in_array($form['entry_permit_activate_comments'] ?? false, [true, 1, '1', 'true'], true);
@@ -245,7 +265,12 @@ class FormPropertiesService
         return (empty($commentsType) || !is_string($commentsType)) ? '' : $commentsType;
     }
 
-    /** The author's posted comments-toggle choice opens or closes the entry's comments. */
+    /**
+     * The author's posted comments-toggle choice opens or closes the entry's comments.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
+     */
     private function resolveCommentsChoice(array $form, array $entry): string
     {
         $choice = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
@@ -263,6 +288,9 @@ class FormPropertiesService
 
     /**
      * Renders the comments toggle appended at the end of the entry form when entry_permit_activate_comments is on.
+     *
+     * @param array<string, mixed>      $form
+     * @param array<string, mixed>|null $entry
      */
     public function renderCommentsToggle(array $form, ?array $entry): string
     {
@@ -288,6 +316,12 @@ class FormPropertiesService
         ]);
     }
 
+    /**
+     * @param string               $right an ACL line, in which 'user' and '#' stand for the entry's creator
+     * @param array<string, mixed> $entry
+     *
+     * @return string
+     */
     private function replaceWithCreator($right, array $entry)
     {
         if ($right === 'user' || $right === '#') {
@@ -299,6 +333,9 @@ class FormPropertiesService
 
     /**
      * Applies the form's entry_metadatas {theme, skeleton, style, background_image, css_preset} to the saved entry's page metadata (retired metadatas field).
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
      */
     public function applyEntryMetadatas(array $form, array $entry): void
     {
@@ -321,6 +358,9 @@ class FormPropertiesService
     private const FORCE_LABEL = '_force_label';
     private const USER_PROPERTY_NAME = 'nomwiki';
 
+    /**
+     * @param array<string, mixed> $form
+     */
     public function createsUser(array $form): bool
     {
         return is_array($form['entry_creates_user'] ?? null);
@@ -328,6 +368,9 @@ class FormPropertiesService
 
     /**
      * Renders the account-creation block (username + passwords) appended to the entry form when entry_creates_user is configured.
+     *
+     * @param array<string, mixed>      $form
+     * @param array<string, mixed>|null $entry
      */
     public function renderUserCreationInputs(array $form, ?array $entry): string
     {
@@ -355,13 +398,15 @@ class FormPropertiesService
                     );
                 }
                 if ($value !== $loggedUser['name'] && $this->aclService->isAdmin()) {
+                    // the name an admin typed may belong to nobody
                     $associatedUser = $userManager->getOneByName($value);
                 }
-                if ($value === $loggedUser['name'] || ($this->aclService->isAdmin() && !empty($associatedUser['email']))) {
+                $associatedEmail = $associatedUser['email'] ?? '';
+                if ($value === $loggedUser['name'] || ($this->aclService->isAdmin() && !empty($associatedEmail))) {
                     $autoUpdate = in_array($config['update_email'] ?? '', [true, '1', 1], true);
                     $message = (!empty($message) ? $message . "\n" : '') . ($autoUpdate ? str_replace(
                         '{email}',
-                        $associatedUser['email'],
+                        $associatedEmail,
                         _t('BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE')
                     ) : '');
                 }
@@ -383,6 +428,11 @@ class FormPropertiesService
 
     /**
      * Creates (or links) the wiki account configured by entry_creates_user during entry save.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed> the account's `nomwiki` plus the `fields-to-remove` the entry must not keep, or [] when the form creates no account
      *
      * @throws UserFieldException
      */
@@ -515,6 +565,9 @@ class FormPropertiesService
         }
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     */
     private function addUserToGroups(string $wikiName, ?array $entry, string $addToGroup): void
     {
         if ($addToGroup === '') {
@@ -557,6 +610,9 @@ class FormPropertiesService
         }
     }
 
+    /**
+     * @param array<string> $existingsGroups the names of every group that already exists
+     */
     private function userMustBeAddedToGroup(
         string $wikiName,
         string $groupName,

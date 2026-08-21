@@ -51,7 +51,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
-        $this->assertNotFalse($admin, 'need an existing admin user to exercise the write path');
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'need an existing admin user to exercise the write path');
 
         try {
             $authenticationService->login($admin);
@@ -60,17 +60,20 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
                 'metadatas' => ['theme' => 'margot', 'squelette' => '1col.tpl.html'],
             ]);
             $response = $controller->savePageMetadatas($request, self::PAGE_TAG);
-            $data = json_decode($response->getContent(), true);
+            $data = json_decode((string)$response->getContent(), true);
 
             $this->assertSame('margot', $data['theme']);
             $this->assertSame('1col.tpl.html', $data['squelette']);
-            $this->assertSame('margot', $pageManager->getMetadata(self::PAGE_TAG)['theme']);
+            $savedMetadata = $pageManager->getMetadata(self::PAGE_TAG);
+            $this->assertNotNull($savedMetadata);
+            $this->assertSame('margot', $savedMetadata['theme']);
 
             $request2 = Request::create('/api/pages/' . self::PAGE_TAG . '/metadatas', 'POST', [
                 'metadatas' => ['style' => 'light.css'],
             ]);
             $controller->savePageMetadatas($request2, self::PAGE_TAG);
             $merged = $pageManager->getMetadata(self::PAGE_TAG);
+            $this->assertNotNull($merged);
 
             $this->assertSame('margot', $merged['theme'], 'previous metadata must survive a partial update');
             $this->assertSame('light.css', $merged['style']);
@@ -86,6 +89,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'need an existing admin user to exercise the write path');
 
         try {
             $authenticationService->login($admin);

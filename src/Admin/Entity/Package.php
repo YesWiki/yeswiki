@@ -8,33 +8,74 @@ abstract class Package extends Files
 {
     public const PREFIX_FILENAME = 'yeswiki_';
 
+    /** @var string URL the package archive is downloaded from */
     protected $address;
 
+    /** @var string|null folder the archive was extracted into, null while nothing is extracted */
     protected $extractionPath;
 
+    /** @var string|null path of the downloaded archive, null while nothing is downloaded */
     protected $downloadedFile;
 
+    /** @var string|null path of the downloaded .md5 checksum file */
     protected $md5File;
 
+    /** @var string */
     public $name;
 
+    /** @var Release release offered by the repository */
     public $release;
+
+    /** @var Release|string release currently installed, Release::UNKNOW_RELEASE when none is */
     public $localRelease;
+
+    /** @var bool */
     public $installed = false;
+
+    /** @var bool */
     public $updateAvailable = false;
+
+    /** @var string */
     public $updateLink;
+
+    /** @var string */
     public $description = '';
+
+    /** @var string */
     public $documentation = '';
+
+    /** @var string|null minimum PHP version the repository declares, null when it declares none */
     protected $minimalPhpVersion;
 
+    /**
+     * Replace the installed files with the extracted ones.
+     *
+     * @return bool
+     */
     abstract public function upgrade();
 
+    /**
+     * Record the newly installed release where localRelease() will read it back.
+     *
+     * @return bool
+     */
     abstract public function upgradeInfos();
 
+    /**
+     * @return Release|string
+     */
     abstract protected function localRelease();
 
+    /** @var string absolute path the package is installed at */
     protected $localPath;
 
+    /**
+     * @param Release     $release
+     * @param string      $address
+     * @param string      $desc
+     * @param string      $doc
+     * @param string|null $minimalPhpVersion
+     */
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         $this->release = $release;
@@ -47,6 +88,9 @@ abstract class Package extends Files
         $this->minimalPhpVersion = $minimalPhpVersion;
     }
 
+    /**
+     * @return array<string> the paths the updater would not be able to write, relative to the install
+     */
     public function checkACL()
     {
         $file2check = [
@@ -77,7 +121,7 @@ abstract class Package extends Files
                 $vNotWritables = $this->isWritable($path);
 
                 if ($vNotWritables !== true) {
-                    $vNotGoods = array_merge($vNotGoods, is_array($vNotWritables) ? $vNotWritables : [$path]);
+                    $vNotGoods = array_merge($vNotGoods, $vNotWritables);
                 }
             }
         }
@@ -91,6 +135,9 @@ abstract class Package extends Files
         return $vNotGoods;
     }
 
+    /**
+     * @return bool
+     */
     public function checkIntegrity()
     {
         if ($this->downloadedFile === null) {
@@ -102,6 +149,9 @@ abstract class Package extends Files
         return $md5File === $md5Repo;
     }
 
+    /**
+     * @return string|false path of the downloaded archive, false when the download produced no file
+     */
     public function getFile()
     {
         $this->downloadedFile = $this->download($this->address, null, 30);
@@ -114,6 +164,9 @@ abstract class Package extends Files
         return false;
     }
 
+    /**
+     * @return string|false folder the archive was extracted into, false when it could not be opened or extracted
+     */
     public function extract()
     {
         if ($this->downloadedFile === null) {
@@ -134,6 +187,9 @@ abstract class Package extends Files
         return $this->extractionPath;
     }
 
+    /**
+     * @return void
+     */
     public function cleanTempFiles()
     {
         $this->delete($this->downloadedFile);
@@ -206,13 +262,23 @@ abstract class Package extends Files
         );
     }
 
+    /**
+     * @return string
+     */
     protected function name()
     {
         $namePlusDate = explode('-', basename($this->address, '.zip'), 2)[1];
 
-        return preg_replace('/-' . SEMVER . '$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
+        // preg_replace() answers null only when PCRE itself fails; keep the un-stripped name then
+        // rather than handing a null package name to everything downstream.
+        $withoutDate = preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate) ?? $namePlusDate;
+
+        return preg_replace('/-' . SEMVER . '$/', '', $withoutDate) ?? $withoutDate;
     }
 
+    /**
+     * @return string
+     */
     private function getMD5()
     {
         $this->md5File = $this->download($this->address . '.md5');
@@ -220,6 +286,9 @@ abstract class Package extends Files
         return explode(' ', file_get_contents($this->md5File))[0];
     }
 
+    /**
+     * @return bool
+     */
     protected function updateAvailable()
     {
         if ($this->installed) {

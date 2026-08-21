@@ -14,7 +14,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
 
 class TemplateHelperService
 {
-    protected $params;
+    protected ParameterBagInterface $params;
     protected ContainerInterface $container;
 
     protected UrlFormatter $urlFormatter;
@@ -35,9 +35,9 @@ class TemplateHelperService
     /**
      * Get the first image in the page.
      *
-     * @param array  $page   Page info
-     * @param string $width  Width of the image
-     * @param string $height Height of the image
+     * @param array<string, mixed> $page   Page info
+     * @param string               $width  Width of the image
+     * @param string               $height Height of the image
      *
      * @return string link to the image
      */
@@ -60,9 +60,8 @@ class TemplateHelperService
                     }
                 } else {
                     $images = [];
-                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $content, $images)
-                        && !empty($images[1])) {
-                        if (file_exists('files/' . basename($images[1][0]))) {
+                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $content, $images)) {
+                        if (file_exists('files/' . basename($images[1]))) {
                             $image = $this->getResizedFilename('files/' . basename($images[1]), $page, $page['tag'], $width, $height, false);
                         }
                     }
@@ -92,6 +91,9 @@ class TemplateHelperService
         return $image;
     }
 
+    /**
+     * @param array<string, mixed> $page
+     */
     protected function getResizedFilename(string $fileName, array $page, string $tag, string $width, string $height, bool $extractFullFileName = false): string
     {
         $resizer = $this->container->get(ImageResizer::class);
@@ -157,15 +159,19 @@ class TemplateHelperService
     /**
      * Parcours des dossiers a la recherche de templates.
      *
-     * @param      $directory : chemin relatif vers le dossier contenant les templates
-     * @param bool $isCustom
-     *                        return array : tableau des themes trouves, ranges par ordre alphabetique
+     * @param string $directory chemin relatif vers le dossier contenant les templates
+     *
+     * @return array<string, array<string, mixed>> les themes trouves, ranges par ordre alphabetique
      */
     public function searchTemplateFiles($directory, bool $isCustom = false)
     {
         $tab_themes = [];
         $dir = opendir($directory);
-        while ($dir && ($file = readdir($dir)) !== false) {
+        if ($dir === false) {
+            return [];
+        }
+
+        while (($file = readdir($dir)) !== false) {
             if ($file != '.' && $file != '..' && $file != 'CVS' && is_dir($directory . DIRECTORY_SEPARATOR . $file)) {
                 $pathToStyles = $directory . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . 'styles';
                 if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
@@ -201,7 +207,7 @@ class TemplateHelperService
                         }
                     }
                     closedir($dir4);
-                    if (isset($tab_themes[$file]['presets']) && is_array($tab_themes[$file]['presets'])) {
+                    if (isset($tab_themes[$file]['presets'])) {
                         ksort($tab_themes[$file]['presets']);
                     }
                 }
@@ -209,20 +215,23 @@ class TemplateHelperService
         }
         closedir($dir);
 
-        if (is_array($tab_themes)) {
-            ksort($tab_themes);
-        }
+        ksort($tab_themes);
 
         return $tab_themes;
     }
 
+    /**
+     * @param string $filename
+     *
+     * @return string
+     */
     public function removeExtension($filename, bool $onlyTemplate = false)
     {
         if ($onlyTemplate) {
-            return preg_replace("/(\.twig|\.tpl.html)$/", '', $filename);
+            return (string)preg_replace("/(\.twig|\.tpl.html)$/", '', $filename);
         }
 
-        return preg_replace("/\..*/i", '', $filename);
+        return (string)preg_replace("/\..*/i", '', $filename);
     }
 
     public function strIreplacement(string $search, string $replace, string $subject): string
@@ -241,7 +250,7 @@ class TemplateHelperService
     /**
      * recupere le parametre data sous forme d'un tableau.
      *
-     * @return array or null if not result
+     * @return array<string, string> the `key=value` pairs, empty when the parameter is not set
      */
     public function getDataParameter()
     {
@@ -254,9 +263,8 @@ class TemplateHelperService
                 $key = htmlspecialchars($tabdecoup[0]);
                 $datas[$key] = htmlspecialchars(trim($tabdecoup[1]));
             }
-            if (is_array($datas)) {
-                return $datas;
-            }
+
+            return $datas;
         }
 
         return [];
@@ -280,6 +288,11 @@ class TemplateHelperService
         return '<i class="' . $icon . '"></i>';
     }
 
+    /**
+     * @param string $output
+     *
+     * @return string
+     */
     public function postFormat($output)
     {
         $pattern = [
@@ -291,13 +304,13 @@ class TemplateHelperService
             '<li class="yw-dropdown__divider"></li>',
         ];
 
-        return preg_replace($pattern, $replacement, $output);
+        return (string)preg_replace($pattern, $replacement, $output);
     }
 
     /**
      * Récupère les droits de la page désignée en argument et renvoie un tableau.
      *
-     * @param string $page
+     * @param array<string, mixed> $page a page row, with its acl columns
      *
      * @return array<int|string, mixed>
      */
@@ -331,7 +344,7 @@ class TemplateHelperService
     /**
      * Get the first title in page.
      *
-     * @param array $page Informations de la page
+     * @param array<string, mixed> $page Informations de la page
      *
      * @return string The title string
      */
@@ -355,11 +368,11 @@ class TemplateHelperService
                 $title = $titles[1];
             } else {
                 preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
-                if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+                if (isset($titles[1][0]) && $titles[1][0] != '') {
                     $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                 } else {
                     preg_match_all('/={5}(.*)={5}/U', $content, $titles);
-                    if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+                    if (isset($titles[1][0]) && $titles[1][0] != '') {
                         $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                     }
                 }
@@ -372,13 +385,13 @@ class TemplateHelperService
     /**
      * Get the first title in page.
      *
-     * @param array  $page   Page informations
-     * @param string $title  The page title
-     * @param int    $length Max number of chars (default 300)
+     * @param array<string, mixed> $page   Page informations
+     * @param string               $title  The page title
+     * @param int                  $length Max number of chars (default 300)
      *
      * @return string The title string
      */
-    public function getDescriptionFromBody($page, $title, $length = 300)
+    public function getDescriptionFromBody($page, $title, $length = 300): string
     {
         $entryManager = $this->container->get(EntryManager::class);
 
@@ -399,10 +412,10 @@ class TemplateHelperService
             }
         }
 
-        $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
+        $desc = (string)preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
 
         $desc = trim(
-            preg_replace(
+            (string)preg_replace(
                 '!\s+!',
                 ' ',
                 str_replace(

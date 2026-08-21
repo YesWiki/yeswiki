@@ -13,6 +13,7 @@ use YesWiki\Kernel\Service\TripleStore;
 
 class DuplicationManager
 {
+    /** @var string local path to files uploads (usually "files") */
     protected $uploadPath;
     protected ContainerInterface $container;
 
@@ -52,9 +53,9 @@ class DuplicationManager
     /**
      * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries).
      *
-     * @param array $id
+     * @param string $id the entry's tag
      *
-     * @return array keys of fields that may contain attachments to import
+     * @return list<\YesWiki\Content\Field\BazarField> the fields that may contain attachments to import
      */
     private function getUploadFieldsFromEntry($id)
     {
@@ -74,11 +75,16 @@ class DuplicationManager
         return $fields;
     }
 
+    /**
+     * @param mixed $fieldValue the field's stored value, a filename
+     *
+     * @return array{path: string, size: int, humanSize: string}|array{} the file's path and size, empty when there is no such file
+     */
     private function findFilesInUploadField($fieldValue)
     {
         $f = $this->uploadPath . '/' . $fieldValue;
         if ($f !== $this->uploadPath . '/' && file_exists($f)) {
-            $size = filesize($f);
+            $size = filesize($f) ?: 0;
             $humanSize = $this->humanFilesize($size);
 
             return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
@@ -90,9 +96,10 @@ class DuplicationManager
     /**
      * find files in wiki text.
      *
+     * @param string $tag      page id
      * @param string $wikiText
      *
-     * @return array files
+     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}> files
      */
     private function findFilesInWikiText($tag, $wikiText)
     {
@@ -103,28 +110,30 @@ class DuplicationManager
             $wikiText,
             $attachments
         );
-        if (is_array($attachments[1])) {
-            foreach ($attachments[1] as $a) {
-                $ext = pathinfo($a, PATHINFO_EXTENSION);
-                $filename = pathinfo($a, PATHINFO_FILENAME);
-                $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_(\d{14})\.' . $ext . '_?$`';
-                $path = $this->getLocalFileUploadPath();
-                $fh = opendir($path);
-                while (($file = readdir($fh)) !== false) {
-                    if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
+        foreach ($attachments[1] as $a) {
+            $ext = pathinfo($a, PATHINFO_EXTENSION);
+            $filename = pathinfo($a, PATHINFO_FILENAME);
+            $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_(\d{14})\.' . $ext . '_?$`';
+            $path = $this->getLocalFileUploadPath();
+            $fh = opendir($path);
+            if ($fh === false) {
+                continue;
+            }
+            while (($file = readdir($fh)) !== false) {
+                if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
+                    continue;
+                }
+                if (preg_match($searchPattern, $file, $matches)) {
+                    $filePath = $path . '/' . $file;
+                    $size = filesize($filePath) ?: 0;
+                    $humanSize = $this->humanFilesize($size);
+                    if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
                         continue;
                     }
-                    if (preg_match($searchPattern, $file, $matches)) {
-                        $filePath = $path . '/' . $file;
-                        $size = filesize($filePath);
-                        $humanSize = $this->humanFilesize($size);
-                        if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
-                            continue;
-                        }
-                        $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
-                    }
+                    $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
                 }
             }
+            closedir($fh);
         }
         $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']), '#') .
             '(' . $this->uploadPath . '/.*\.[a-zA-Z0-9]{1,16}\b([-a-zA-Z0-9!@:%_\+.~\#?&\/\/=]*))#Ui';
@@ -135,7 +144,7 @@ class DuplicationManager
         );
         foreach ($fileUrls[1] as $f) {
             if (file_exists($f)) {
-                $size = filesize($f);
+                $size = filesize($f) ?: 0;
                 $humanSize = $this->humanFilesize($size);
                 $filesMatched[] = ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
             }
@@ -149,7 +158,7 @@ class DuplicationManager
      *
      * @param string $tag page id
      *
-     * @return array attachments filenames
+     * @return array<array-key, array{path: string, size: int, humanSize: string, modified?: string}> attachments filenames
      */
     public function findFiles($tag = '')
     {
@@ -181,12 +190,18 @@ class DuplicationManager
         return $files;
     }
 
+    /**
+     * @param string $fromTag
+     * @param string $toTag
+     *
+     * @return list<array{originalFile: string, duplicatedFile: string}>
+     */
     public function duplicateFiles($fromTag, $toTag)
     {
         $files = $this->findFiles($fromTag);
         $doneFiles = [];
         foreach ($files as $f) {
-            $newPath = preg_replace(
+            $newPath = (string)preg_replace(
                 '~' . $this->uploadPath . '/' . preg_quote($fromTag, '~') . '_~Ui',
                 $this->uploadPath . '/' . $toTag . '_',
                 $f['path']
@@ -205,6 +220,11 @@ class DuplicationManager
         return $doneFiles;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed> the same data, once every check has passed
+     */
     public function checkPostData($data)
     {
         if (empty($data['type']) || !in_array($data['type'], ['form', 'page', 'list', 'entry'])) {
@@ -234,7 +254,10 @@ class DuplicationManager
         return $data;
     }
 
-    public function duplicateLocally($data)
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function duplicateLocally($data): void
     {
         if (!$this->container->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
@@ -300,7 +323,10 @@ class DuplicationManager
         }
     }
 
-    public function importDistantContent($tag, $request)
+    /**
+     * @param string $tag the tag to create locally
+     */
+    public function importDistantContent($tag, \Symfony\Component\HttpFoundation\Request $request): void
     {
         if ($this->container->get(PageManager::class)->getOne($tag)) {
             throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
@@ -328,12 +354,23 @@ class DuplicationManager
         }
     }
 
+    /**
+     * @param string $sourceUrl
+     * @param string $fromTag
+     * @param string $toTag
+     * @param int    $timeoutInSec
+     *
+     * @return string the local path the file was written to
+     */
     public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
     {
         $t = explode('/', $sourceUrl);
         $fileName = array_pop($t);
         $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
         $fp = fopen($destPath, 'wb');
+        if ($fp === false) {
+            throw new \RuntimeException("could not open $destPath for writing");
+        }
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -350,6 +387,12 @@ class DuplicationManager
         return $destPath;
     }
 
+    /**
+     * @param int|float $bytes
+     * @param int       $decimals
+     *
+     * @return string
+     */
     public function humanFilesize($bytes, $decimals = 2)
     {
         $units = ['', 'K', 'M', 'G', 'T'];

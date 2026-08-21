@@ -32,6 +32,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
     private function plantActivationKey(PageManager $pageManager, string $name, string $key, int $issuedAt): void
     {
         $page = $pageManager->getOne($name, null, true, true);
+        self::assertNotNull($page);
         $body = $page['body'];
         $body[AccountActivationService::BODY_KEY_KEY] = $key . ':' . $issuedAt;
         $pageManager->save($name, $body, '', true);
@@ -188,10 +189,12 @@ class AccountActivationServiceTest extends YesWikiTestCase
             $this->assertTrue($accountActivationService->isActivated($name));
 
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
+            $this->assertNotNull($asOwner);
             $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner[AccountActivationService::BODY_KEY_STATUS]);
 
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
+            $this->assertNotNull($asOther);
             $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther[AccountActivationService::BODY_KEY_STATUS]);
         } finally {
@@ -230,6 +233,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
     private function readRawActivationKey(PageManager $pageManager, string $name): string
     {
         $page = $pageManager->getOne($name, null, true, true);
+        self::assertNotNull($page);
         $body = $page['body'];
 
         return $body[AccountActivationService::BODY_KEY_KEY] ?? '';

@@ -33,7 +33,7 @@ class SyncAction extends YesWikiAction implements RegisteredAction
             $result = $this->getService(ConsoleService::class)->startConsoleSync('importer:sync', [], '', 3600);
             $output = $result === null
                 ? _t('IMPORTER_SYNC_NO_CONSOLE')
-                : trim(($result[0]['stdout'] ?? '') . "\n" . ($result[0]['stderr'] ?? ''));
+                : trim($result[0]['stdout'] . "\n" . $result[0]['stderr']);
             $returnCode = $result === null ? 1 : 0;
         }
 

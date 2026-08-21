@@ -165,9 +165,7 @@ class UserApiController extends YesWikiController
         $accountActivationService = $this->getService(AccountActivationService::class);
 
         $users = array_map(function ($user) use ($userFields, $accountActivationService) {
-            if (!is_array($user)) {
-                $user = $user->getArrayCopy();
-            }
+            $user = $user->getArrayCopy();
 
             $filtered = array_filter($user, function ($k) use ($userFields) {
                 return in_array($k, $userFields);

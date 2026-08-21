@@ -36,18 +36,22 @@ class InstallationController
     /** SQLite databases always live at this instance-relative path. */
     private const SQLITE_DATABASE_PATH = 'private/yeswiki.db';
 
-    protected $config;
-    protected $configFile;
-    protected $configPosted;
-    protected $env;
-    protected $step;
-    protected $baseUrl;
-    protected $twig;
-    protected $adminName;
-    protected $adminEmail;
-    protected $adminPassword;
-    protected $adminPasswordConf;
-    protected $contentSQL;
+    /** @var array<string, mixed> */
+    protected array $config;
+    protected string $configFile;
+    /** @var array<string, mixed> the `config` values this request posted back, legacy keys already mapped */
+    protected array $configPosted;
+    /** @var array<string, mixed> configuration values the environment forces, which the form shows as read-only */
+    protected array $env;
+    protected string $step;
+    protected string $baseUrl;
+    protected \Twig\Environment $twig;
+    protected string $adminName;
+    protected string $adminEmail;
+    protected string $adminPassword;
+    protected string $adminPasswordConf;
+    /** @var string either self::BACKUP_SQL_FILE or 'default' */
+    protected string $contentSQL;
 
     /**
      * @var \PDO|null
@@ -58,9 +62,9 @@ class InstallationController
     private ?string $lastSqlError = null;
 
     /**
-     * @var array[] every check already passed, ['result' => 'success'|'warning', 'output' => text]
+     * @var list<array{result: string, output: string}> every check already passed
      */
-    protected $messages = [];
+    protected array $messages = [];
 
     /** The connection, once there is one. */
     private function db(): \PDO
@@ -73,8 +77,8 @@ class InstallationController
     }
 
     /**
-     * @param array  $config     configuration from Init::getConfig() (defaults + environment overrides)
-     * @param string $configFile path of the yeswiki.config.php file to create
+     * @param array<string, mixed> $config     configuration from Init::getConfig() (defaults + environment overrides)
+     * @param string               $configFile path of the yeswiki.config.php file to create
      */
     public function __construct(array $config, string $configFile)
     {
@@ -91,12 +95,14 @@ class InstallationController
 
         $this->config = EnvironmentConfiguration::apply(array_merge($this->config, $this->configPosted));
 
-        $this->adminName = $_POST['admin_name'] ?? $this->envValue('ADMIN_NAME') ?? '';
-        $this->adminEmail = $_POST['admin_email'] ?? $this->envValue('ADMIN_EMAIL') ?? '';
-        $this->adminPassword = $_POST['admin_password'] ?? $this->envValue('ADMIN_PASSWORD') ?? '';
-        $this->adminPasswordConf = $_POST['admin_password_conf'] ?? $this->envValue('ADMIN_PASSWORD') ?? '';
-        $this->contentSQL = $_POST['contentSQL']
-            ?? (file_exists(self::BACKUP_SQL_FILE) ? self::BACKUP_SQL_FILE : 'default');
+        $this->adminName = $this->postedOrEnv('admin_name', 'ADMIN_NAME');
+        $this->adminEmail = $this->postedOrEnv('admin_email', 'ADMIN_EMAIL');
+        $this->adminPassword = $this->postedOrEnv('admin_password', 'ADMIN_PASSWORD');
+        $this->adminPasswordConf = $this->postedOrEnv('admin_password_conf', 'ADMIN_PASSWORD');
+        $postedContentSQL = $_POST['contentSQL'] ?? null;
+        $this->contentSQL = is_string($postedContentSQL)
+            ? $postedContentSQL
+            : (file_exists(self::BACKUP_SQL_FILE) ? self::BACKUP_SQL_FILE : 'default');
 
         $this->step = trim($_REQUEST['installAction'] ?? '') ?: 'default';
         $this->baseUrl = WikiUrls::baseUrl(true);
@@ -142,6 +148,7 @@ class InstallationController
         }
     }
 
+    /** @param array<string, mixed> $extraOptions */
     protected function render(string $template, array $extraOptions = []): string
     {
         $availableDrivers = [];
@@ -337,7 +344,6 @@ class InstallationController
 
         if (
             empty($this->adminName)
-            || !is_string($this->adminName)
             || strlen($this->adminName) > 80
             || !preg_match('/^[^!#@<>\\\\\/][^<>\\\\\/]{2,}$/', $this->adminName)
         ) {
@@ -579,8 +585,8 @@ class InstallationController
     /**
      * Render a Twig SQL template file.
      *
-     * @param string $templateFile absolute path to the .sql.twig template file
-     * @param array  $variables    variables to pass to the template
+     * @param string               $templateFile absolute path to the .sql.twig template file
+     * @param array<string, mixed> $variables    variables to pass to the template
      */
     public static function renderSqlTemplate(string $templateFile, array $variables = []): string
     {
@@ -646,6 +652,7 @@ class InstallationController
     /**
      * Render a .sql.twig template for the current driver, substitute the {{keyword}} placeholders and execute the resulting statements.
      */
+    /** @param array<string, mixed> $replacements */
     private function execSqlTemplate(string $templateName, array $replacements): bool
     {
         $sql = self::renderSqlTemplate(
@@ -702,6 +709,7 @@ class InstallationController
     /**
      * Configuration values forced by the environment, as configKey => value: every private/.env entry plus the known variables from the real environment.
      */
+    /** @return array<string, mixed> */
     private function environmentForcedValues(): array
     {
         $values = [];
@@ -720,6 +728,20 @@ class InstallationController
         return $values;
     }
 
+    /**
+     * The value this request posted under $postKey, or -- when it posted none, or something
+     * that is not a string -- what the environment says, or ''.
+     */
+    private function postedOrEnv(string $postKey, string $envName): string
+    {
+        $posted = $_POST[$postKey] ?? null;
+        if (is_string($posted)) {
+            return $posted;
+        }
+
+        return $this->envValue($envName) ?? '';
+    }
+
     /** An environment value by variable name (private/.env values are putenv()ed by YesWikiLoader). */
     private function envValue(string $name): ?string
     {
@@ -728,6 +750,11 @@ class InstallationController
         return $value === false ? null : $value;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>
+     */
     private function mapLegacyKeys(array $config): array
     {
         foreach (self::LEGACY_KEY_MAPPING as $oldKey => $newKey) {

@@ -10,20 +10,33 @@ use YesWiki\Render\Service\TemplateEngine;
 
 abstract class BazarField implements \JsonSerializable
 {
+    /** @var ContainerInterface */
     protected $services;
 
+    /** @var string */
     protected $type;
+    /** @var string|null */
     protected $name;
+    /** @var string|null */
     protected $label;
+    /** @var int|string|null */
     protected $size;
+    /** @var int|string|null */
     protected $maxChars;
+    /** @var mixed the value stored when the Content says nothing about this field */
     protected $default;
+    /** @var bool */
     protected $required;
+    /** @var string|null */
     protected $searchable;
+    /** @var string|null */
     protected $hint;
+    /** @var string */
     protected $readAccess;
+    /** @var string */
     protected $writeAccess;
 
+    /** @var string|null the entry key this field reads and writes, null for fields that store nothing */
     protected $propertyName;
 
     protected const FIELD_TYPE = 0;
@@ -38,6 +51,9 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
 
+    /**
+     * @param array<int|string, mixed> $values one field's line of the form definition, by positional index
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         $this->services = $services;
@@ -69,6 +85,8 @@ abstract class BazarField implements \JsonSerializable
 
     /**
      * Whether formatValuesBeforeSave() needs the Content's tag to already exist -- an upload names its file after it, a keyword index is keyed by it.
+     *
+     * @return bool
      */
     public function requiresTagBeforeFormatting()
     {
@@ -78,8 +96,8 @@ abstract class BazarField implements \JsonSerializable
     /**
      * Render the edit view of the field.
      *
-     * @param array|null  $entry
-     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @param array<string, mixed>|null $entry
+     * @param string|null               $userNameForRendering username to render the field, if empty uses connected user
      *
      * @return string $html
      */
@@ -185,6 +203,11 @@ abstract class BazarField implements \JsonSerializable
         ]);
     }
 
+    /**
+     * @param class-string $class
+     *
+     * @return mixed the service, as the container has no generic contract to narrow it
+     */
     protected function getService($class)
     {
         return $this->services->get($class);
@@ -192,6 +215,8 @@ abstract class BazarField implements \JsonSerializable
 
     /**
      * @param array<string, mixed>|null $entry
+     *
+     * @return mixed the stored value, the value being submitted, or this field's default
      */
     protected function getValue($entry)
     {
@@ -233,9 +258,8 @@ abstract class BazarField implements \JsonSerializable
     /**
      * Return true if we are if reading is allowed for the field.
      *
-     * @param array|null                $entry
-     * @param string|null               $userNameForRendering username to render the field, if empty uses connected user
      * @param array<string, mixed>|null $entry
+     * @param string|null               $userNameForRendering username to render the field, if empty uses connected user
      *
      * @return bool
      */
@@ -259,6 +283,12 @@ abstract class BazarField implements \JsonSerializable
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['tag'], $isCreation ? 'creation' : 'edit');
     }
 
+    /**
+     * @param string               $templatePath
+     * @param array<string, mixed> $data
+     *
+     * @return string
+     */
     protected function render($templatePath, $data = [])
     {
         $data = array_merge([
@@ -268,31 +298,49 @@ abstract class BazarField implements \JsonSerializable
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
+    /**
+     * @return string|null
+     */
     public function getPropertyName()
     {
         return $this->propertyName;
     }
 
+    /**
+     * @return string
+     */
     public function getType()
     {
         return $this->type;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @return string|null
+     */
     public function getLabel()
     {
         return $this->label;
     }
 
+    /**
+     * @return int|string|null
+     */
     public function getSize()
     {
         return $this->size;
     }
 
+    /**
+     * @return int|string|null
+     */
     public function getMaxChars()
     {
         return $this->maxChars;
@@ -308,21 +356,33 @@ abstract class BazarField implements \JsonSerializable
         return $this->required;
     }
 
+    /**
+     * @return string|null
+     */
     public function getSearchable()
     {
         return $this->searchable;
     }
 
+    /**
+     * @return string|null
+     */
     public function getHint()
     {
         return $this->hint;
     }
 
+    /**
+     * @return string
+     */
     public function getReadAccess()
     {
         return $this->readAccess;
     }
 
+    /**
+     * @return string
+     */
     public function getWriteAccess()
     {
         return $this->writeAccess;

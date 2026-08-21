@@ -8,11 +8,19 @@ use YesWiki\Search\Service\SearchManager;
 
 abstract class EnumField extends BazarField
 {
+    /** @var array<int|string, mixed>|null null while the options have not been loaded yet */
     protected $options;
+
+    /** @var array<int|string, mixed>|null the raw list nodes, when the list is hierarchical */
     protected $optionsTree;
 
+    /** @var string name of the list, or id of the form, the options come from */
     protected $linkedObjectName;
+
+    /** @var string */
     protected $keywords;
+
+    /** @var string */
     protected $queries;
 
     protected const FIELD_LINKED_OBJECT = 1;
@@ -20,20 +28,26 @@ abstract class EnumField extends BazarField
     protected const FIELD_KEYWORDS = 13;
     protected const FIELD_QUERIES = 15;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->name = $values[self::FIELD_NAME];
-        $this->linkedObjectName = $values[self::FIELD_LINKED_OBJECT];
-        $this->keywords = $values[self::FIELD_KEYWORDS];
-        $this->queries = $values[self::FIELD_QUERIES];
+        $this->linkedObjectName = (string)($values[self::FIELD_LINKED_OBJECT] ?? '');
+        $this->keywords = (string)($values[self::FIELD_KEYWORDS] ?? '');
+        $this->queries = (string)($values[self::FIELD_QUERIES] ?? '');
 
         $this->options = [];
 
         $this->propertyName = $this->name;
     }
 
+    /**
+     * @return void
+     */
     public function loadOptionsFromList()
     {
         if (!empty($this->getLinkedObjectName())) {
@@ -48,7 +62,10 @@ abstract class EnumField extends BazarField
         }
     }
 
-    private function loadOptionsFromListNode($node, $parentLabel = '')
+    /**
+     * @param array<string, mixed> $node
+     */
+    private function loadOptionsFromListNode(array $node, string $parentLabel = ''): void
     {
         $this->options[$node['id']] = $parentLabel . $node['label'];
         if (!empty($node['children'])) {
@@ -58,6 +75,9 @@ abstract class EnumField extends BazarField
         }
     }
 
+    /**
+     * @return void
+     */
     public function loadOptionsFromEntries()
     {
         $vSearchManager = $this->getService(SearchManager::class);
@@ -82,9 +102,7 @@ abstract class EnumField extends BazarField
         foreach ($linkedEntries as $linkedEntry) {
             $this->options[$linkedEntry['tag']] = $linkedEntry['title'] ?? $linkedEntry['bf_titre'] ?? $linkedEntry['tag'];
         }
-        if (is_array($this->options)) {
-            asort($this->options);
-        }
+        asort($this->options);
     }
 
     /** A linked form named by a URL is no longer resolvable (ticket 34). */
@@ -98,9 +116,12 @@ abstract class EnumField extends BazarField
         return _t('BAZ_EXTERNAL_IDS_REMOVED', ['ids' => $linked]);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function getOptions()
     {
-        return $this->options;
+        return $this->options ?? [];
     }
 
     /** The stored **keys**, not the option labels (ticket 18 / ADR-0015). */
@@ -109,20 +130,29 @@ abstract class EnumField extends BazarField
         return parent::searchableText($entry);
     }
 
+    /**
+     * @return array<int|string, mixed>|null
+     */
     public function getOptionsTree()
     {
         return $this->optionsTree;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     protected function getEntriesOptions()
     {
         if (is_null($this->options)) {
             $this->loadOptionsFromEntries();
         }
 
-        return $this->options;
+        return $this->options ?? [];
     }
 
+    /**
+     * @return string
+     */
     public function getLinkedObjectName()
     {
         return $this->linkedObjectName;

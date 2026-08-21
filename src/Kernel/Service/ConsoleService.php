@@ -11,9 +11,9 @@ class ConsoleService
 {
     protected const CONSOLE_BIN = 'src/commands/console';
 
-    protected $params;
-    protected $executableFinder;
-    protected $phpBinaryFinder;
+    protected ParameterBagInterface $params;
+    protected ExecutableFinder $executableFinder;
+    protected PhpExecutableFinder $phpBinaryFinder;
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -22,11 +22,17 @@ class ConsoleService
         $this->phpBinaryFinder = new PhpExecutableFinder();
     }
 
+    /**
+     * @param list<string|int> $args
+     */
     public function startConsoleAsync(string $command, array $args = [], string $subfolder = '', bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
         $phpBinaryPath = getenv('ASYNC_PHP_BINARY');
         if (!$phpBinaryPath) {
             $phpBinaryPath = $this->phpBinaryFinder->find();
+        }
+        if (empty($phpBinaryPath)) {
+            return null;
         }
         $newCommand = $phpBinaryPath;
         $newArgs = [self::CONSOLE_BIN, $command];
@@ -37,6 +43,9 @@ class ConsoleService
         return $this->startRawCommandAsync($newCommand, $newArgs, $subfolder, $newConsole, $timeoutInSec);
     }
 
+    /**
+     * @return array{array{stdout: string, stderr: string}}
+     */
     public function getProcessOut(Process $process): array
     {
         $stdout = '';
@@ -53,7 +62,9 @@ class ConsoleService
     }
 
     /**
-     * @return array|null ['stdout|stderr' => $output]
+     * @param list<string|int> $args
+     *
+     * @return array{array{stdout: string, stderr: string}}|null
      */
     public function startConsoleSync(string $command, array $args = [], string $subfolder = '', int $timeoutInSec = 60): ?array
     {
@@ -66,6 +77,9 @@ class ConsoleService
         return $this->getProcessOut($process);
     }
 
+    /**
+     * @param list<string|int> $args
+     */
     public function startRawCommandAsync(string $command, array $args = [], string $subfolder = '', bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
         if (empty($command)) {
@@ -93,7 +107,9 @@ class ConsoleService
     }
 
     /**
-     * @return array|null ['stdout|stderr' => $output]
+     * @param list<string|int> $args
+     *
+     * @return array{array{stdout: string, stderr: string}}|null
      */
     public function startRawCommandSync(string $command, array $args = [], string $subfolder = '', int $timeoutInSec = 60): ?array
     {
@@ -106,6 +122,10 @@ class ConsoleService
         return $this->getProcessOut($process);
     }
 
+    /**
+     * @param list<string|int> $args
+     * @param list<string>     $extraDirsWhereSearch
+     */
     public function findAndStartExecutableAsync(string $executableName, array $args = [], string $subfolder = '', array $extraDirsWhereSearch = [], bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
         $executable = $this->findExecutable($executableName, $extraDirsWhereSearch);
@@ -117,7 +137,10 @@ class ConsoleService
     }
 
     /**
-     * @return array|null ['command'=>['stdout|stderr' => $output]]
+     * @param list<string|int> $args
+     * @param list<string>     $extraDirsWhereSearch
+     *
+     * @return array{array{stdout: string, stderr: string}}|null
      */
     public function findAndStartExecutableSync(string $executableName, array $args = [], string $subfolder = '', array $extraDirsWhereSearch = [], int $timeoutInSec = 60): ?array
     {
@@ -148,11 +171,11 @@ class ConsoleService
     }
 
     /**
-     * @param array $extraDirs wherer search
+     * @param list<string> $extraDirs where to search
      *
      * @throws \Exception
      */
-    protected function findExecutable(string $name, array $extraDirs = []): string
+    protected function findExecutable(string $name, array $extraDirs = []): ?string
     {
         if (empty($name)) {
             throw new \Exception("'name' should not be empty !");

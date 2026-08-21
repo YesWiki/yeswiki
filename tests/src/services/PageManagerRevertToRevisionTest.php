@@ -22,6 +22,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
         try {
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v1 body, open to everyone'], '', true);
             $v1 = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($v1);
 
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v2 body, contains something sensitive'], '', true);
             $pageManager->setMetadata(self::TAG, ['acls' => ['read' => '@admins']]);
@@ -30,6 +31,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $pageManager->revertToRevision(self::TAG, $v1['id']);
 
             $current = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($current);
             $this->assertSame('v1 body, open to everyone', PageBody::content($current['body']));
             $this->assertSame(
                 '@admins',
@@ -50,6 +52,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v1 body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $v1 = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($v1);
 
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v2 body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'colibris']);
@@ -57,6 +60,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $pageManager->revertToRevision(self::TAG, $v1['id'], fullRevert: true);
 
             $current = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($current);
             $this->assertSame('v1 body', PageBody::content($current['body']));
             $this->assertSame(
                 'margot',
@@ -76,6 +80,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
         try {
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v1 body'], '', true);
             $v1 = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($v1);
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'v2 body'], '', true);
 
             $revisionsBefore = count($pageManager->getRevisions(self::TAG));
@@ -96,6 +101,7 @@ class PageManagerRevertToRevisionTest extends YesWikiTestCase
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'page A content'], '', true);
             $pageManager->save(self::OTHER_TAG, [PageBody::CONTENT => 'page B content'], '', true);
             $otherRevision = $pageManager->getOne(self::OTHER_TAG);
+            $this->assertNotNull($otherRevision);
 
             $this->expectException(\Exception::class);
             $pageManager->revertToRevision(self::TAG, $otherRevision['id']);

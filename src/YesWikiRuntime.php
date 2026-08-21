@@ -72,14 +72,27 @@ LanguageService::getInstance()->initialize();
  */
 class YesWikiRuntime
 {
+    /** @var array<string, mixed> */
     public $config;
+
+    /** @var Request */
     public $request;
+
     // what Init derived from the URL, seeded into PageContext at boot()
+    /** @var string */
     private $initialTag;
+
+    /** @var string */
     private $initialMethod;
+
+    /** @var string */
     public $CookiePath = '/';
+
+    /** @var array<string, string> extension name => the folder it was loaded from */
     public $extensions = [];
+
     // lazily populated RouteCollection - always read it through getRoutes()
+    /** @var RouteCollection|array<mixed> */
     public $routes = [];
     /**
      * The service container, assigned from the kernel in boot().
@@ -94,11 +107,16 @@ class YesWikiRuntime
      */
     public $services;
 
+    /** @var string */
     private $environment;
+
+    /** @var HttpKernel|null built on the first routed request, then reused */
     private $httpKernel;
 
     /**
      * Constructor.
+     *
+     * @param array<string, mixed> $config
      */
     public function __construct($config = [])
     {
@@ -143,6 +161,12 @@ class YesWikiRuntime
         return $service;
     }
 
+    /**
+     * @param string $name
+     * @param mixed  $default answered when the key is missing or holds null
+     *
+     * @return mixed the configured value, trimmed when it is a string; '' when there is neither a value nor a default
+     */
     private function getConfigValue($name, $default = null)
     {
         return isset($this->config[$name])
@@ -153,6 +177,8 @@ class YesWikiRuntime
     /**
      * Make the purge of page versions that are older than the last version older than "pages_purge_time"
      * This method permits to allways keep a not latest version that is older than that period.
+     *
+     * @return void
      */
     public function purgePages()
     {
@@ -215,6 +241,8 @@ class YesWikiRuntime
      *  - `previousRun` unix time of the run before this one, or null when nothing recorded
      *                  one -- which is what tells a listener how much time it is covering
      * and `maintenance.after` adds `duration`, the seconds core's own housekeeping took.
+     *
+     * @return void
      */
     public function maintenance()
     {
@@ -288,6 +316,12 @@ class YesWikiRuntime
     }
 
     // THE BIG EVIL NASTY ONE!
+    /**
+     * @param string $tag
+     * @param string $method
+     *
+     * @return void
+     */
     public function run($tag = '', $method = '')
     {
         try {
@@ -304,6 +338,12 @@ class YesWikiRuntime
         }
     }
 
+    /**
+     * @param string $tag
+     * @param string $method
+     *
+     * @return void
+     */
     private function doRun($tag, $method)
     {
         // A request begins here. Under php-fpm the process dies with it and this changes
@@ -359,6 +399,9 @@ class YesWikiRuntime
     }
 
     // Find and run controller action based on route declaration, instead of using page Tag
+    /**
+     * @return void
+     */
     private function runSpecialPages()
     {
         // We must manually parse the body data for the PUT or PATCH methods
@@ -629,6 +672,8 @@ class YesWikiRuntime
     /**
      * Load extensions from a directory.
      *
+     * @param string $pPluginsRoot
+     *
      * @return void
      */
     private function loadExtensionsFromDir($pPluginsRoot)
@@ -698,6 +743,9 @@ class YesWikiRuntime
     /**
      * The herse gate's pure decision: allowed when the gate is unconfigured, or
      * when the request carries the exact configured Basic Auth credentials.
+     *
+     * @param array<string, mixed> $config
+     * @param array<string, mixed> $server the request's $_SERVER
      */
     public static function herseGateAllows(array $config, array $server): bool
     {

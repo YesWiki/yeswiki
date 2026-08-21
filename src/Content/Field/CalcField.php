@@ -5,6 +5,9 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\FormManager;
 
+/**
+ * @phpstan-type CalcToken array{type: 'number', value: float}|array{type: 'op', value: string}|array{type: 'name', value: string}
+ */
 #[\Field(['calc'])]
 class CalcField extends BazarField
 {
@@ -23,19 +26,23 @@ class CalcField extends BazarField
         'sqrt' => 'sqrt', 'ceil' => 'ceil', 'floor' => 'floor', 'round' => 'round',
     ];
 
-    protected $calcFormula;
-    protected $displayText;
+    protected string $calcFormula;
+    protected string $displayText;
 
-    protected $formManager;
+    protected ?FormManager $formManager = null;
 
+    /** @var list<CalcToken> */
     private array $formulaTokens = [];
     private int $formulaPos = 0;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->calcFormula = $values[self::FIELD_CALCFORMULA];
-        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : $values[self::FIELD_DISPLAY_TEXT];
+        $this->calcFormula = (string)($values[self::FIELD_CALCFORMULA] ?? '');
+        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : (string)$values[self::FIELD_DISPLAY_TEXT];
         $this->default = '';
         $this->maxChars = '';
         $this->formManager = null;
@@ -83,7 +90,9 @@ class CalcField extends BazarField
                     $formula .= $this->getEntryValue($entry, $matches[6][$key]);
                 }
             }
-            $formula = preg_replace('/\s+/', '', $formula);
+            // preg_replace() answers null only on a PCRE failure; the unsqueezed formula is
+            // still the best thing to hand the parser if that ever happens.
+            $formula = preg_replace('/\s+/', '', $formula) ?? $formula;
             try {
                 $value = $this->evaluateFormula($formula);
                 if (!is_finite($value)) {
@@ -100,19 +109,29 @@ class CalcField extends BazarField
         return [$this->getPropertyName() => strval($value)];
     }
 
-    private function getEntryValue($entry, $name, $default = 0)
+    /**
+     * @param array<string, mixed>|null $entry
+     * @param float|int                 $default
+     *
+     * @return float|int
+     */
+    private function getEntryValue($entry, string $name, $default = 0)
     {
         $propertyName = $this->getPropertyNameIfDefined($entry, $name);
 
-        return empty($propertyName) ? $default : floatval($entry[$propertyName]);
+        return empty($propertyName) ? $default : floatval($entry[$propertyName] ?? $default);
     }
 
-    private function testEntryValue($entry, $name, $value)
+    /**
+     * @param array<string, mixed>|null $entry
+     * @param string|null               $value the value to compare against, null when the formula gave none
+     */
+    private function testEntryValue($entry, string $name, $value): string
     {
         $result = false;
         $propertyName = $this->getPropertyNameIfDefined($entry, $name);
         if (!empty($propertyName)) {
-            $fieldValue = $entry[$propertyName];
+            $fieldValue = $entry[$propertyName] ?? null;
             if (empty($value) && !in_array($value, [0, '0'], true)) {
                 $result = empty($fieldValue);
             } else {
@@ -123,13 +142,20 @@ class CalcField extends BazarField
         return $result ? '1' : '0';
     }
 
-    private function getPropertyNameIfDefined($entry, $name): ?string
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    private function getPropertyNameIfDefined($entry, string $name): ?string
     {
         if (!empty($entry['form_id'])) {
             if (is_null($this->formManager)) {
-                $this->formManager = $this->getService(FormManager::class);
+                $formManager = $this->getService(FormManager::class);
+                if (!$formManager instanceof FormManager) {
+                    return null;
+                }
+                $this->formManager = $formManager;
             }
-            $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['form_id']);
+            $field = $this->formManager->findFieldFromNameOrPropertyName($name, (string)$entry['form_id']);
             if (!empty($field)) {
                 $propertyName = $field->getPropertyName();
                 if (!empty($propertyName) && isset($entry[$propertyName]) && is_scalar($entry[$propertyName])) {
@@ -153,6 +179,9 @@ class CalcField extends BazarField
         return $result;
     }
 
+    /**
+     * @return list<CalcToken>
+     */
     private function tokenizeFormula(string $formula): array
     {
         $tokens = [];
@@ -209,11 +238,17 @@ class CalcField extends BazarField
         return $tokens;
     }
 
+    /**
+     * @return CalcToken|null
+     */
     private function peekToken(): ?array
     {
         return $this->formulaTokens[$this->formulaPos] ?? null;
     }
 
+    /**
+     * @return CalcToken
+     */
     private function consumeToken(): array
     {
         $t = $this->formulaTokens[$this->formulaPos] ?? null;
@@ -314,7 +349,8 @@ class CalcField extends BazarField
 
             return (float)$fn($arg);
         }
-        if ($t['type'] === 'op' && $t['value'] === '(') {
+        // only an 'op' token can reach here: 'number' and 'name' both returned above
+        if ($t['value'] === '(') {
             $val = $this->parseAddSub();
             $close = $this->consumeToken();
             if ($close['type'] !== 'op' || $close['value'] !== ')') {

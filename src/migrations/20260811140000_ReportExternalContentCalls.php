@@ -20,14 +20,15 @@ class ReportExternalContentCalls extends YesWikiMigration
         $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
+        $bodyAsText = $db->jsonAsText('body');
         $candidates = SqlFragment::all(
             ' OR ',
             SqlFragment::of(
-                'body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
+                $bodyAsText . ' LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
                 [SqlParameters::likeContains('http://')]
             ),
             SqlFragment::of(
-                'body LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
+                $bodyAsText . ' LIKE ?' . SqlParameters::LIKE_CLAUSE_SUFFIX,
                 [SqlParameters::likeContains('https://')]
             )
         )->wrappedIn('(', ')');

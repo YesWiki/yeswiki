@@ -97,6 +97,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
             $rewritePageBodies->invoke($migration, $renameMapByOwnerPage, $pageManager);
             $rewritten = $pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true);
+            $this->assertNotNull($rewritten);
             $this->assertStringContainsString('file="' . $newTag . '"', PageBody::content($rewritten['body']));
             $this->assertStringNotContainsString('file="my_report.txt"', PageBody::content($rewritten['body']));
         } finally {
@@ -135,8 +136,12 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         try {
             $rewritePageBodies->invoke($migration, $renameMapByOwnerPage, $pageManager);
 
-            $ownerBody = PageBody::content($pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true)['body']);
-            $otherBody = PageBody::content($pageManager->getOne($otherPageTag, null, true, true)['body']);
+            $ownerPage = $pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true);
+            $otherPage = $pageManager->getOne($otherPageTag, null, true, true);
+            $this->assertNotNull($ownerPage);
+            $this->assertNotNull($otherPage);
+            $ownerBody = PageBody::content($ownerPage['body']);
+            $otherBody = PageBody::content($otherPage['body']);
             $this->assertStringContainsString('file="tag-for-owner-page"', $ownerBody);
             $this->assertStringContainsString('file="tag-for-other-page"', $otherBody);
         } finally {

@@ -29,15 +29,19 @@ use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
+/**
+ * @implements UserProviderInterface<User>
+ */
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
     protected ContainerInterface $container;
-    protected $dbService;
-    protected $passwordHasherFactory;
-    protected $hibernationService;
-    protected $params;
-    protected $tripleStore;
+    protected DbService $dbService;
+    protected PasswordHasherFactory $passwordHasherFactory;
+    protected HibernationService $hibernationService;
+    protected ParameterBagInterface $params;
+    protected TripleStore $tripleStore;
 
+    /** @var array<string, array<string, mixed>|null> */
     private array $associatedEntryCache = [];
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
@@ -81,16 +85,22 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $this->pageManager()->isType($tag, PageType::USER);
     }
 
+    /** @return list<string> */
     public function getAllUserTags(): array
     {
         return $this->pageManager()->tagsOfType(PageType::USER);
     }
 
+    /** @param string $name */
     public function userExist($name): bool
     {
         return !empty($this->getOneByName($name));
     }
 
+    /**
+     * @param string      $name
+     * @param string|null $password when given, the account is only returned if this is its stored password
+     */
     public function getOneByName($name, $password = null): ?User
     {
         if (!$this->isUserTag($name)) {
@@ -106,6 +116,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $user;
     }
 
+    /**
+     * @param string      $mail
+     * @param string|null $password when given, the account is only returned if this is its stored password
+     */
     public function getOneByEmail($mail, $password = null): ?User
     {
         $tag = $this->resolveTagFromEmail($mail);
@@ -128,6 +142,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $row['tag'] ?? null;
     }
 
+    /**
+     * @param string[] $dbFields
+     *
+     * @return list<User>
+     */
     public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
     {
         $pageManager = $this->container->get(PageManager::class);
@@ -139,23 +158,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             }
         }
 
-        usort($users, function ($a, $b) {
-            return strcmp($a['name'], $b['name']);
+        usort($users, function (User $a, User $b): int {
+            return strcmp($a->getName(), $b->getName());
         });
 
         return $users;
     }
 
     /**
-     * @param array|string $wikiNameOrUser array to create the wiki or wikiname
-     * @param string       $email          optional if parameters are passed as an array
-     * @param string       $plainPassword  optional if parameters are passed as an array
-     * @param string|null  $forcedTag      the tag to store the account at, when the caller has
-     *                                     already settled it -- creating an account from the User
-     *                                     form has to know the tag before it saves, because a
-     *                                     field like the profile picture formats its upload
-     *                                     against it (ticket 13). Defaults to suggesting one from
-     *                                     the name, which is what every other caller wants.
+     * @param array<string, mixed>|string $wikiNameOrUser array to create the wiki or wikiname
+     * @param string                      $email          optional if parameters are passed as an array
+     * @param string                      $plainPassword  optional if parameters are passed as an array
+     * @param string|null                 $forcedTag      the tag to store the account at, when the caller has
+     *                                                    already settled it -- creating an account from the User
+     *                                                    form has to know the tag before it saves, because a
+     *                                                    field like the profile picture formats its upload
+     *                                                    against it (ticket 13). Defaults to suggesting one from
+     *                                                    the name, which is what every other caller wants.
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
      */
@@ -174,12 +193,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'show_comments' => '',
                 'signuptime' => '',
             ]);
-            $wikiName = $userAsArray['name'] ?? '';
-            $wikiName = trim($wikiName);
+            $wikiName = trim(strval($userAsArray['name'] ?? ''));
             $userAsArray['name'] = $wikiName;
-            $email = $userAsArray['email'] ?? '';
-            $plainPassword = $userAsArray['password'] ?? '';
-        } elseif (is_string($wikiNameOrUser)) {
+            $email = strval($userAsArray['email'] ?? '');
+            $plainPassword = strval($userAsArray['password'] ?? '');
+        } else {
             $wikiName = trim($wikiNameOrUser);
             $userAsArray = [
                 'changescount' => '',
@@ -192,8 +210,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'show_comments' => '',
                 'signuptime' => '',
             ];
-        } else {
-            throw new \Exception('First parameter of UserManager->create should be string or array!');
         }
 
         if (empty($wikiName)) {
@@ -240,6 +256,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /**
      * Migrates one row from the legacy `users` table, preserving its password hash VERBATIM -- unlike create(), which always hashes a fresh plaintext password and so must never be reused for migrating an already-hashed existing account (that would silently invalidate every existing user's password).
      */
+    /** @param array<string, mixed> $legacyRow */
     public function migrateLegacyUser(array $legacyRow): void
     {
         $name = trim((string)($legacyRow['name'] ?? ''));
@@ -253,6 +270,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->persistNewUserPage($tag, $body);
     }
 
+    /** @param array<string, mixed> $body */
     private function persistNewUserPage(string $tag, array $body): bool
     {
         $pageManager = $this->container->get(PageManager::class);
@@ -270,6 +288,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return true;
     }
 
+    /**
+     * @param array<string, mixed> $fields
+     *
+     * @return array<string, mixed>
+     */
     private function buildBody(array $fields): array
     {
         return [
@@ -301,6 +324,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ]));
     }
 
+    /**
+     * @param array<string, mixed> $fields
+     *
+     * @return mixed the field's value, or $default when it is absent or empty
+     */
     private function valueOrDefault(array $fields, string $key, string $default)
     {
         return (isset($fields[$key]) && $fields[$key] !== '') ? $fields[$key] : $default;
@@ -328,7 +356,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ], false);
 
         if (!boolval($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['contact_disable_email_for_password'])) {
-            $pieces = parse_url($this->params->get('base_url'));
+            $baseUrl = $this->params->get('base_url');
+            $pieces = parse_url(is_string($baseUrl) ? $baseUrl : '');
             $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
             $message = _t('LOGIN_DEAR') . ' ' . $user['name'] . ",\n";
@@ -369,7 +398,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /**
      * update user params for e-mail check is existing e-mail.
      *
-     * @param array $newValues (associative array)
+     * @param array<string, mixed> $newValues (associative array)
      *
      * @throws \Exception
      * @throws UserEmailAlreadyUsedException
@@ -433,7 +462,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 continue;
             }
             $propertyName = $field->getPropertyName();
-            if ($propertyName !== '' && !in_array($propertyName, $never, true)) {
+            if (is_string($propertyName) && $propertyName !== '' && !in_array($propertyName, $never, true)) {
                 $keys[] = $propertyName;
             }
         }
@@ -446,7 +475,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @throws DeleteUserException
      */
-    public function delete(User $user)
+    public function delete(User $user): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -480,7 +509,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @param string      $groupName    The name of the group for which we are testing membership
      * @param string|null $username     if null check current user
-     * @param array       $formerGroups former groups list to avoid loops
+     * @param string[]    $formerGroups former groups list to avoid loops
      *
      * @return bool True if the $user is member of $groupName, false otherwise
      */
@@ -495,15 +524,21 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return $this->container->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
     }
 
-    /** get the entry that is linked to the username. */
+    /**
+     * get the entry that is linked to the username.
+     *
+     * @param string $user defaults to the signed-in user
+     *
+     * @return array<string, mixed>|null
+     */
     public function getAssociatedEntry($user = '')
     {
         if (empty($user)) {
-            $user = $this->container->get(AuthenticationService::class)->getLoggedUser();
-            if (empty($user['name'])) {
+            $loggedUser = $this->container->get(AuthenticationService::class)->getLoggedUser();
+            if (!is_array($loggedUser) || empty($loggedUser['name'])) {
                 return null;
             }
-            $user = $user['name'];
+            $user = strval($loggedUser['name']);
         }
         if (array_key_exists($user, $this->associatedEntryCache)) {
             return $this->associatedEntryCache[$user];
@@ -523,9 +558,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             'formsIds' => $formsIds,
         ]);
         $found = null;
-        if (!empty($entry)) {
+        if (is_array($entry) && !empty($entry)) {
             $candidate = array_pop($entry);
-            if (!empty($candidate['tag'])) {
+            if (is_array($candidate) && !empty($candidate['tag'])) {
                 $found = $candidate;
             }
         }
@@ -571,6 +606,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @throws UnsupportedUserException if the user is not supported
      * @throws UserNotFoundException    if the user is not found
      */
+    /** @return User */
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof User) {
@@ -597,6 +633,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
+     * @return User
+     *
      * @throws UserNotFoundException
      */
     public function loadUserByIdentifier(string $identifier): UserInterface
@@ -611,6 +649,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
+     * @return array<string, mixed>|''
+     *
      * @deprecated Use AuthenticationService::getLoggedUser
      */
     public function getLoggedUser()
@@ -621,15 +661,18 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /**
      * @deprecated Use AuthenticationService::getLoggedUserName
      */
-    public function getLoggedUserName()
+    public function getLoggedUserName(): string
     {
         return $this->container->get(AuthenticationService::class)->getLoggedUserName();
     }
 
     /**
+     * @param array<string, mixed>|User $user
+     * @param bool|int|string           $remember
+     *
      * @deprecated Use AuthenticationService::login
      */
-    public function login($user, $remember = 0)
+    public function login($user, $remember = 0): void
     {
         $this->container->get(AuthenticationService::class)->login($user, $remember);
     }
@@ -637,11 +680,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /**
      * @deprecated Use AuthenticationService::logout
      */
-    public function logout()
+    public function logout(): void
     {
         $this->container->get(AuthenticationService::class)->logout();
     }
 
+    /** @param array<string, mixed>|null $page */
     private function arrayToUser(?array $page): ?User
     {
         if (empty($page) || !isset($page['tag'])) {
@@ -659,6 +703,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /**
      * Builds a User from a flat, name-keyed array (as opposed to arrayToUser(), which decodes a `pages` row) -- used where a User object is needed before any page exists yet (picking a password hasher during create(), which needs a User instance but happens before suggestFreeTag() has even settled the final tag).
      */
+    /** @param array<string, mixed> $userAsArray */
     private function arrayToDraftUser(array $userAsArray): User
     {
         foreach (User::PROPS_LIST as $key) {

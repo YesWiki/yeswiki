@@ -25,7 +25,7 @@ class FormManagerTest extends YesWikiTestCase
         $this->assertNull($results[self::NONEXISTENT_FORM_ID]);
 
         foreach ($formManager->getAll() as $id => $form) {
-            $this->assertIsArray($form, "getAll() returned a non-array entry for id $id");
+            $this->assertNotEmpty($form, "getAll() returned an empty entry for id $id");
         }
     }
 }

@@ -20,6 +20,9 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(ArchiveService::class, 'setWikiStatus')]
 class ArchiveServiceTest extends YesWikiTestCase
 {
+    /**
+     * @return array{wiki: YesWikiRuntime, archiveService: ArchiveService}
+     */
     public function testArchiveServiceExisting(): array
     {
         $wiki = $this->getWiki();
@@ -28,6 +31,13 @@ class ArchiveServiceTest extends YesWikiTestCase
         return ['wiki' => $wiki, 'archiveService' => $wiki->services->get(ArchiveService::class)];
     }
 
+    /**
+     * @param list<string>                                                $foldersToInclude
+     * @param list<string>                                                $foldersToExclude
+     * @param list<string>                                                $filesToFind
+     * @param array<string, mixed>|null                                   $wakkaContent
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
     #[Depends('testArchiveServiceExisting')]
     #[DataProvider('archiveProvider')]
     public function testArchive(
@@ -40,7 +50,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         array $filesToFind,
         ?array $wakkaContent,
         array $services
-    ) {
+    ): void {
         $this->assertTrue(
             $services['wiki']->services->get(DbService::class)->dialect()->supportsDump(),
             'every supported driver must be able to export its table structure'
@@ -72,7 +82,10 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    public static function archiveProvider()
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function archiveProvider(): array
     {
         $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
         $defaultFoldersToExclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE');
@@ -102,7 +115,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     /**
      * retrieve data from location delete the zip file because only for tests.
      *
-     * @return array $data
+     * @return array<string, mixed> $data
      */
     private function getDataFromLocation(string $location, YesWikiRuntime $wiki): array
     {
@@ -116,7 +129,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
                     do {
-                        $tmpFolderName = 'tmp_folder_to_delete_' . md5(time());
+                        $tmpFolderName = 'tmp_folder_to_delete_' . md5((string)time());
                     } while (file_exists("cache/$tmpFolderName"));
                     if (!$zip->extractTo("cache/$tmpFolderName")) {
                         $data['error'] = "\"\$location\" (\"$location\") is not extractable !";
@@ -128,6 +141,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                         while (count($dirs)) {
                             $dir = current($dirs);
                             $dh = opendir($dir);
+                            if ($dh === false) {
+                                array_shift($dirs);
+                                continue;
+                            }
                             while (false !== ($file = readdir($dh))) {
                                 if ($file != '.' && $file != '..') {
                                     if (!in_array("$dir/$file", ['.', '..'])) {
@@ -145,8 +162,12 @@ class ArchiveServiceTest extends YesWikiTestCase
                             closedir($dh);
                             array_shift($dirs);
                         }
-                        $files = array_map(function ($path) use ($tmpFolderName) {
-                            return str_replace('\\', '/', preg_replace("/^cache(?:\/|\\\\)" . preg_quote($tmpFolderName, '/') . "(?:\/|\\\\)/", '', $path));
+                        $files = array_map(function (string $path) use ($tmpFolderName): string {
+                            // preg_replace() answers null only on a PCRE failure, and an
+                            // unstripped path still names the file that was found
+                            $stripped = preg_replace("/^cache(?:\/|\\\\)" . preg_quote($tmpFolderName, '/') . "(?:\/|\\\\)/", '', $path) ?? $path;
+
+                            return str_replace('\\', '/', $stripped);
                         }, $files);
                         $data['files'] = $files;
 
@@ -169,16 +190,18 @@ class ArchiveServiceTest extends YesWikiTestCase
         return $data;
     }
 
-    private function recursiveDelete(string $path)
+    private function recursiveDelete(string $path): void
     {
         if (!in_array(basename($path), ['.', '..']) && !preg_match("/(?:^|\/|\\\\)\.{1,2}(?:^|\/|\\\\)/", $path)) {
             if (file_exists($path)) {
                 if (is_dir($path)) {
                     $dh = opendir($path);
-                    while (false !== ($file = readdir($dh))) {
-                        $this->recursiveDelete("$path/$file");
+                    if ($dh !== false) {
+                        while (false !== ($file = readdir($dh))) {
+                            $this->recursiveDelete("$path/$file");
+                        }
+                        closedir($dh);
                     }
-                    closedir($dh);
                     rmdir($path);
                 } elseif (is_file($path)) {
                     unlink($path);
@@ -187,7 +210,11 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    private function checkWakkaContent($contentDefinition, $contentToCheck)
+    /**
+     * @param mixed $contentDefinition what the fixture says the archived config must contain
+     * @param mixed $contentToCheck    the matching part of the archived config
+     */
+    private function checkWakkaContent($contentDefinition, $contentToCheck): void
     {
         if (is_array($contentDefinition)) {
             $this->assertIsArray($contentToCheck);
@@ -204,17 +231,23 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
     #[Depends('testArchiveServiceExisting')]
     #[Depends('testArchive')]
     #[DataProvider('notInParallelProvider')]
     public function testNotArchiveInParallel(
         string $status,
         array $services
-    ) {
+    ): void {
         $params = $services['wiki']->services->get(ParameterBagInterface::class);
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
+        // a parameter bag answers with any scalar, an array or an enum; only a string is a
+        // status this test could put back
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
+        $previousStatus = is_string($previousStatus) ? $previousStatus : '';
         $this->setWikiStatus($configService, $status);
 
         $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
@@ -228,16 +261,19 @@ class ArchiveServiceTest extends YesWikiTestCase
         } else {
             $this->setWikiStatus($configService, $previousStatus);
         }
+        $this->assertNotNull($results, 'the archive command produced no output at all');
+        // the key is always there; what makes this a failure is something having been written
+        // to it, and asking isset() made the assertion below pass whatever happened (ticket 40)
         $atLeastOneStdErr = false;
         foreach ($results as $result) {
-            if (isset($result['stderr'])) {
+            if (!empty($result['stderr'])) {
                 $atLeastOneStdErr = true;
             }
         }
         $this->assertTrue($atLeastOneStdErr, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; results: " . json_encode($results));
     }
 
-    protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving')
+    protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving'): void
     {
         $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
@@ -245,7 +281,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    protected function unsetWikiStatus(ConfigurationService $configurationService)
+    protected function unsetWikiStatus(ConfigurationService $configurationService): void
     {
         $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
@@ -253,7 +289,10 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    public static function notInParallelProvider()
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function notInParallelProvider(): array
     {
         return [
             'archiving' => ['archiving'],
@@ -262,6 +301,11 @@ class ArchiveServiceTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed>|null                                   $hideConfigValuesParam
+     * @param array<string, mixed>                                        $wakkaContent
+     * @param array{wiki: YesWikiRuntime, archiveService: ArchiveService} $services
+     */
     #[Depends('testArchiveServiceExisting')]
     #[Depends('testArchive')]
     #[DataProvider('hideConfigValuesProvider')]
@@ -270,7 +314,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         ?array $hideConfigValuesParam,
         array $wakkaContent,
         array $services
-    ) {
+    ): void {
         $params = $services['wiki']->services->get(ParameterBagInterface::class);
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
@@ -290,8 +334,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                 $this->setHideConfigValuesParam($configService, $hideConfigValuesParam);
             }
         } else {
+            $encoded = json_encode($hideConfigValuesParam);
+            $this->assertNotFalse($encoded, 'the hideConfigValues fixture must be encodable');
             $consoleParams[] = '-a';
-            $consoleParams[] = json_encode($hideConfigValuesParam);
+            $consoleParams[] = $encoded;
         }
         $results = $consoleService->startConsoleSync('core:archive', $consoleParams);
         if (!is_null($previoushideConfigValuesParams)) {
@@ -300,9 +346,10 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->unsetHideConfigValuesParam($configService);
         }
 
-        $location = null;
+        $location = '';
+        $this->assertNotNull($results, 'the archive command produced no output at all');
         foreach ($results as $result) {
-            if (isset($result['stdout'])) {
+            if (!empty($result['stdout'])) {
                 if (preg_match("/^Archive \\\"(.*)\\\" successfully created !\s*END\s*$/m", $result['stdout'], $matches)) {
                     $location = $matches[1];
                 }
@@ -320,6 +367,9 @@ class ArchiveServiceTest extends YesWikiTestCase
         $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     protected function getHideConfigValuesParam(ConfigurationService $configurationService): ?array
     {
         $config = $configurationService->getConfiguration('yeswiki.config.php');
@@ -329,7 +379,10 @@ class ArchiveServiceTest extends YesWikiTestCase
         return $archiveParams['hideConfigValues'] ?? null;
     }
 
-    protected function setHideConfigValuesParam(ConfigurationService $configurationService, array $hideConfigValuesParam)
+    /**
+     * @param array<string, mixed> $hideConfigValuesParam
+     */
+    protected function setHideConfigValuesParam(ConfigurationService $configurationService, array $hideConfigValuesParam): void
     {
         $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
@@ -339,7 +392,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    protected function unsetHideConfigValuesParam(ConfigurationService $configurationService)
+    protected function unsetHideConfigValuesParam(ConfigurationService $configurationService): void
     {
         $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
@@ -355,7 +408,10 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    public static function hideConfigValuesProvider()
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function hideConfigValuesProvider(): array
     {
         return [
             'default' => [

@@ -41,7 +41,6 @@ class FormDesignerLockedFieldsTest extends YesWikiTestCase
             $wiki->services->get(AuthenticationService::class)->logout();
         }
 
-        $this->assertIsString($html);
         $this->assertStringContainsString('data-locked-fields=', $html);
         foreach (['title', 'content', 'keywords'] as $locked) {
             $this->assertMatchesRegularExpression(
@@ -70,7 +69,6 @@ class FormDesignerLockedFieldsTest extends YesWikiTestCase
             $wiki->services->get(AuthenticationService::class)->logout();
         }
 
-        $this->assertIsString($html);
         $this->assertStringContainsString('data-locked-fields="[]"', $html);
     }
 }

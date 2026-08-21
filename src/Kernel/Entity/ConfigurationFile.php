@@ -4,13 +4,19 @@ namespace YesWiki\Kernel\Entity;
 
 use YesWiki\Kernel\Service\ConfigurationService;
 
+/**
+ * @implements \ArrayAccess<array-key, mixed>
+ * @implements \Iterator<int|string|null, mixed>
+ */
 class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
 {
-    private $_file = '';
-    protected $_parameters;
-    protected $configurationService;
+    private string $_file = '';
+    /** @var array<array-key, mixed> */
+    protected array $_parameters = [];
+    protected ?ConfigurationService $configurationService = null;
 
-    public function __construct($file, ?ConfigurationService $configurationService = null)
+    /** @param string $file path of the configuration file */
+    public function __construct(string $file, ?ConfigurationService $configurationService = null)
     {
         $this->_file = $file;
         $this->_parameters = [];
@@ -20,7 +26,7 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         $this->configurationService = $configurationService;
     }
 
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         if ($name == '_file') {
             return $this->_file;
@@ -33,31 +39,37 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         throw new \Exception("Paramètre inconnu Configuration::$name", 1);
     }
 
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         return isset($this->_parameters[$name]);
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
         if ($name != '_file') {
             $this->_parameters[$name] = $value;
         }
     }
 
-    public function __unset($name)
+    public function __unset(string $name): void
     {
         unset($this->_parameters[$name]);
     }
 
-    public function load($arrayName = 'yeswikiConfig')
+    /** @param string $arrayName name of the array the file assigns its values to */
+    public function load(string $arrayName = 'yeswikiConfig'): void
     {
         if (!is_file($this->_file)) {
             return;
         }
 
+        $rawContent = file_get_contents($this->_file);
+        if ($rawContent === false) {
+            return;
+        }
+
         $yeswikiConfig = [];
-        $content = str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], file_get_contents($this->_file));
+        $content = str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], $rawContent);
         eval($content);
         if (!empty($yeswikiConfig)) {
             $this->_parameters = $yeswikiConfig;
@@ -74,6 +86,10 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
      */
     public function write($file = null, $arrayName = 'yeswikiConfig')
     {
+        if ($this->configurationService === null) {
+            throw new \Exception('this ConfigurationFile was built without a ConfigurationService, so it cannot write itself');
+        }
+
         return $this->configurationService->write($this, $file, $arrayName);
     }
 

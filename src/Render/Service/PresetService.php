@@ -821,7 +821,7 @@ class PresetService
         $file = substr($id, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX));
         $result = $this->themeManager->deleteCustomCSSPreset($file);
         if (empty($result['status'])) {
-            throw new \RuntimeException((string)($result['message'] ?? 'preset not deleted'));
+            throw new \RuntimeException($result['message']);
         }
     }
 

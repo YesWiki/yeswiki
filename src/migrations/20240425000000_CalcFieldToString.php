@@ -39,6 +39,8 @@ class CalcFieldToString extends YesWikiMigration
 
                         $commentOnCol = $this->dbService->quoteIdentifier('parent');
                         $bodyCol = $this->dbService->quoteIdentifier('body');
+                        // ADR-0018: `body` is native JSON, and `jsonb` has neither LIKE nor a regexp operator
+                        $bodyAsText = $this->dbService->jsonAsText('body');
                         $typeCol = $this->dbService->quoteIdentifier('type');
                         $entryType = PageType::ENTRY;
                         $idCol = $this->dbService->quoteIdentifier('id');
@@ -46,9 +48,9 @@ class CalcFieldToString extends YesWikiMigration
                         $sql = <<<SQL
                             SELECT DISTINCT * FROM {$this->dbService->prefixTable('pages')}
                             WHERE $commentOnCol = ''
-                            AND $bodyCol LIKE '%"id_typeannonce":"{$this->dbService->escape(strval($formId))}"%'
+                            AND $bodyAsText LIKE '%"id_typeannonce":"{$this->dbService->escape(strval($formId))}"%'
                             AND $typeCol = '{$entryType}'
-                            AND $bodyCol $regexpOp '"($fieldsNamesList)":-?[0-9]'
+                            AND $bodyAsText $regexpOp '"($fieldsNamesList)":-?[0-9]'
                         SQL;
                         $results = $this->dbService->loadAll($sql);
                         if (!empty($results)) {

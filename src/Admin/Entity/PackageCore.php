@@ -61,6 +61,13 @@ class PackageCore extends Package
         $this->configurationService = $configurationService;
     }
 
+    /**
+     * @param Release     $release
+     * @param string      $address
+     * @param string      $desc
+     * @param string      $doc
+     * @param string|null $minimalPhpVersion
+     */
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
@@ -71,7 +78,7 @@ class PackageCore extends Package
         $this->updateAvailable = $this->updateAvailable();
     }
 
-    public function upgrade()
+    public function upgrade(): bool
     {
         $desPath = $this->localPath;
         if ($this->extractionPath === null) {
@@ -126,7 +133,7 @@ class PackageCore extends Package
         return true;
     }
 
-    public function upgradeDefaultTheme()
+    public function upgradeDefaultTheme(): bool
     {
         $src = $this->extractionPath . '/themes/' . THEME_PAR_DEFAUT;
         $desPath = $this->localPath . '/themes/' . THEME_PAR_DEFAUT;
@@ -143,7 +150,7 @@ class PackageCore extends Package
         return true;
     }
 
-    public function upgradeTools()
+    public function upgradeTools(): bool
     {
         $src = $this->extractionPath . '/extensions';
         $desPath = $this->localPath . '/extensions';
@@ -160,7 +167,7 @@ class PackageCore extends Package
         return true;
     }
 
-    public function upgradeInfos()
+    public function upgradeInfos(): bool
     {
         $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
@@ -170,12 +177,12 @@ class PackageCore extends Package
         return $configuration->write();
     }
 
-    public function name()
+    public function name(): string
     {
         return $this::CORE_NAME;
     }
 
-    public function localVersion()
+    public function localVersion(): string
     {
         $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
@@ -188,7 +195,7 @@ class PackageCore extends Package
         return strtolower($version);
     }
 
-    public function requestedVersion()
+    public function requestedVersion(): string
     {
         $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
@@ -204,7 +211,7 @@ class PackageCore extends Package
         return strtolower($version);
     }
 
-    public function newVersionRequested()
+    public function newVersionRequested(): bool
     {
         $result = false;
         $localVersion = $this->localVersion();
@@ -216,7 +223,7 @@ class PackageCore extends Package
         return $result;
     }
 
-    protected function localRelease()
+    protected function localRelease(): Release
     {
         $configuration = new ConfigurationFile(ConfigurationFileProvider::getConfigFileFromEnv(), $this->configurationService);
         $configuration->load();
@@ -230,7 +237,7 @@ class PackageCore extends Package
         return $release;
     }
 
-    protected function updateAvailable()
+    protected function updateAvailable(): bool
     {
         if ($this->release->compare($this->localRelease()) > 0) {
             return true;

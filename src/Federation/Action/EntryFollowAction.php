@@ -32,7 +32,7 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
         if ($post->has('actor_handle') && $post->get('form_id') == $formId) {
             $formActorUri = $activityPubService->getFormActorUri($form);
 
-            $interactionUrl = $webfingerService->getInteractionUrl($post->get('actor_handle'), $formActorUri);
+            $interactionUrl = $webfingerService->getInteractionUrl((string)$post->get('actor_handle', ''), $formActorUri);
 
             return $this->getService(Redirector::class)->redirect($interactionUrl);
         }

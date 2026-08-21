@@ -39,7 +39,6 @@ class EntryManagerTest extends YesWikiTestCase
                 'bf_titre' => 'Test entry',
                 'tag' => self::ENTRY_TAG,
             ]);
-            $this->assertIsArray($entry);
             $this->assertArrayHasKey('tag', $entry);
             $tag = $entry['tag'];
 

@@ -68,7 +68,7 @@ class FieldRoleAssignmentTest extends YesWikiTestCase
         $form[FieldRole::FORM_PROPERTY] = $map;
         $formManager->update($form);
 
-        $reloaded = $formManager->getOne(self::$formId);
+        $reloaded = $formManager->getOne((string)self::$formId);
         $this->assertNotNull($reloaded);
 
         return $reloaded;

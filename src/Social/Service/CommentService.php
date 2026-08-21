@@ -499,7 +499,7 @@ class CommentService implements EventSubscriberInterface
         $data = $event->getData();
         if (!empty($data['data']['commentOn'])) {
             $parentTag = $data['data']['commentOn'];
-            $loggedUser = $this->userManager->getLoggedUser();
+            $loggedUser = $this->userManager->getOneByName($this->userManager->getLoggedUserName());
             $parentPage = $this->getParentPage($data['data']['tag']);
             if (!empty($loggedUser)) {
                 $parentComment = $this->pageManager->getOne($parentTag);

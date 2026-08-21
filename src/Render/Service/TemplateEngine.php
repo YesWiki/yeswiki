@@ -29,10 +29,10 @@ use YesWiki\Render\Entity\LayoutChrome;
 class TemplateEngine
 {
     protected ContainerInterface $container;
-    protected $twigLoader;
-    protected $twig;
+    protected \Twig\Loader\FilesystemLoader $twigLoader;
+    protected \Twig\Environment $twig;
     protected AssetRegistry $assetRegistry;
-    protected $csrfTokenManager;
+    protected CsrfTokenManager $csrfTokenManager;
 
     protected UrlFormatter $urlFormatter;
 
@@ -552,17 +552,27 @@ class TemplateEngine
         return rtrim($baseUrl, '?') . 'src/assets/icons.svg';
     }
 
-    private function addTwigHelper($name, $callback)
+    /**
+     * @param string   $name
+     * @param callable $callback
+     */
+    private function addTwigHelper($name, $callback): void
     {
         $function = new \Twig\TwigFunction($name, $callback);
         $this->twig->addFunction($function);
     }
 
-    public function addGlobal($name, $options)
+    /**
+     * @param string $name
+     */
+    public function addGlobal($name, $options): void
     {
         $this->twig->addGlobal($name, $options);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function renderFromString(string $templateString, array $data = []): string
     {
         return $this->twig->createTemplate($templateString)->render($data);
@@ -576,6 +586,9 @@ class TemplateEngine
         return $this->twig->createTemplate($source);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function renderFromStringNoEscape(string $templateString, array $data = []): string
     {
         $wrapped = '{% autoescape false %}' . $templateString . '{% endautoescape %}';
@@ -583,7 +596,11 @@ class TemplateEngine
         return $this->twig->createTemplate($wrapped)->render($data);
     }
 
-    /** Render an untrusted Twig string in a locked-down sandbox environment. */
+    /**
+     * Render an untrusted Twig string in a locked-down sandbox environment.
+     *
+     * @param array<string, mixed> $data
+     */
     public function renderSandboxedFromStringNoEscape(string $templateString, array $data = []): string
     {
         $loader = new \Twig\Loader\ArrayLoader(['__sem__' => $templateString]);
@@ -668,6 +685,9 @@ class TemplateEngine
         return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath) ?? $templatePath;
     }
 
+    /**
+     * @param string $templatePath
+     */
     public function hasTemplate($templatePath): bool
     {
         return $this->twigLoader->exists(self::resolveLegacyTemplateName($templatePath));
@@ -685,6 +705,11 @@ class TemplateEngine
 
     /**
      * Render a Twig template.
+     *
+     * @param string               $templatePath
+     * @param array<string, mixed> $data
+     *
+     * @return string
      *
      * @throws TemplateNotFound when no template matches (template names can be
      *                          stored user data, so this must stay catchable)

@@ -13,13 +13,13 @@ use YesWiki\Social\Service\ReactionManager;
 class ReactionApiController extends YesWikiController
 {
     #[Route('/api/reactions', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllReactions()
+    public function getAllReactions(): ApiResponse
     {
         return new ApiResponse($this->getService(ReactionManager::class)->getReactions('', []));
     }
 
     #[Route('/api/reactions/{id}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getReactions($id)
+    public function getReactions(string $id): ApiResponse
     {
         $id = array_map('trim', explode(',', $id));
 
@@ -27,20 +27,20 @@ class ReactionApiController extends YesWikiController
     }
 
     #[Route('/api/users/{userId}/reactions', options: ['acl' => ['public']])]
-    public function getAllReactionsFromUser($userId)
+    public function getAllReactionsFromUser(string $userId): ApiResponse
     {
         return new ApiResponse($this->getService(ReactionManager::class)->getReactions('', [], $userId));
     }
 
     #[Route('/api/users/{userId}/reactions/{id}', options: ['acl' => ['public']])]
-    public function getReactionsFromUser($userId, $id)
+    public function getReactionsFromUser(string $userId, string $id): ApiResponse
     {
         $id = array_map('trim', explode(',', $id));
 
         return new ApiResponse($this->getService(ReactionManager::class)->getReactions('', $id, $userId));
     }
 
-    public function deleteReaction($idreaction, $id, $page, $username)
+    public function deleteReaction(string $idreaction, string $id, string $page, string $username): ApiResponse
     {
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             if ($username == $user['name'] || $this->getService(AclService::class)->isAdmin()) {
@@ -76,20 +76,20 @@ class ReactionApiController extends YesWikiController
     }
 
     #[Route('/api/reactions/{idreaction}/{id}/{page}/{username}/delete', methods: ['POST'], options: ['acl' => ['+']])]
-    public function deleteReactionViaPostMethod($idreaction, $id, $page, $username)
+    public function deleteReactionViaPostMethod(string $idreaction, string $id, string $page, string $username): ApiResponse
     {
         return $this->deleteReaction($idreaction, $id, $page, $username);
     }
 
     #[Route('/api/reactions', methods: ['POST'], options: ['acl' => ['+']])]
-    public function addReactionFromUser()
+    public function addReactionFromUser(): ApiResponse
     {
         $post = $this->getRequest()->request;
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             if ($post->get('username') == $user['name'] || $this->getService(AclService::class)->isAdmin()) {
-                $reactionid = $post->get('reactionid');
-                $pagetag = $post->get('pagetag');
-                $reactionIdValue = $post->get('id');
+                $reactionid = $post->getString('reactionid');
+                $pagetag = $post->getString('pagetag');
+                $reactionIdValue = $post->getString('id');
                 if ($reactionid) {
                     if ($pagetag) {
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($pagetag, [$reactionid], $user['name']);

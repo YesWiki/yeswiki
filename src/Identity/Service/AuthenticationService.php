@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Service;
 
-use DateTime;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
@@ -23,12 +22,14 @@ class AuthenticationService extends YesWikiController
     protected const DATE_LENGTH_IN_TOKEN = 17;
     protected const DATE_FORMAT_IN_TOKEN = 'Ymd-H-i-s';
 
-    private $limitations;
-    protected $accountActivationService;
-    protected $params;
-    protected $passwordHasherFactory;
-    protected $hibernationService;
-    protected $userManager;
+    /** @var array<string, mixed> */
+    private array $limitations = [];
+    protected AccountActivationService $accountActivationService;
+    protected ParameterBagInterface $params;
+    protected PasswordHasherFactory $passwordHasherFactory;
+    protected HibernationService $hibernationService;
+    protected UserManager $userManager;
+    /** @var array<string, mixed>|string|null */
     private $loggedUserCache;
 
     /** Overridable seam: tests exercise the non-CLI branches under the CLI SAPI. */
@@ -94,7 +95,7 @@ class AuthenticationService extends YesWikiController
 
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $user->getPassword();
-        if (!$passwordHasher->verify($hashedPassword, $plainTextPassword)) {
+        if ($hashedPassword === null || !$passwordHasher->verify($hashedPassword, $plainTextPassword)) {
             return false;
         }
         if ($passwordHasher->needsRehash($hashedPassword) && !$this->hibernationService->isWikiHibernated()) {
@@ -110,7 +111,7 @@ class AuthenticationService extends YesWikiController
      *
      * @throws BadFormatPasswordException
      */
-    public function setPassword(User $user, string $plainTextPassword)
+    public function setPassword(User $user, string $plainTextPassword): void
     {
         $this->checkPasswordValidateRequirements($plainTextPassword);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
@@ -133,7 +134,7 @@ class AuthenticationService extends YesWikiController
     }
 
     /** connect a user from SESSION or COOKIES. */
-    public function connectUser()
+    public function connectUser(): void
     {
         $this->cleanOldFormatCookie();
         try {
@@ -165,6 +166,11 @@ class AuthenticationService extends YesWikiController
         }
     }
 
+    /**
+     * The signed-in user as an array, or '' when nobody is signed in.
+     *
+     * @return array<string, mixed>|''
+     */
     public function getLoggedUser()
     {
         if (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) {
@@ -183,15 +189,14 @@ class AuthenticationService extends YesWikiController
         return $this->loggedUserCache;
     }
 
-    public function getLoggedUserName()
+    /** The signed-in user's name, or -- for an anonymous visitor -- their IP address, by a convention as old as the wiki. */
+    public function getLoggedUserName(): string
     {
         if ($user = $this->getLoggedUser()) {
-            $name = $user['name'];
-        } else {
-            $name = $this->isCli() ? '' : $this->getRequest()->getClientIp();
+            return strval($user['name'] ?? '');
         }
 
-        return $name;
+        return $this->isCli() ? '' : ($this->getRequest()->getClientIp() ?? '');
     }
 
     public function getExpirationTimeStamp(\DateTime $startTime, bool $remember): int
@@ -204,7 +209,11 @@ class AuthenticationService extends YesWikiController
      *                           activated yet (an activation email is (re-)sent as a
      *                           side effect)
      */
-    public function login($user, $remember = 0)
+    /**
+     * @param array<string, mixed>|User $user
+     * @param bool|int|string           $remember
+     */
+    public function login($user, $remember = 0): void
     {
         $userName = empty($user['name']) ? null : $user['name'];
         if (
@@ -245,25 +254,32 @@ class AuthenticationService extends YesWikiController
 
         if (!$this->isCli()) {
             if (!$user instanceof User) {
-                if (!empty($user['name'])) {
-                    $user = $this->userManager->getOneByName($user['name']);
-                } else {
+                if (empty($user['name'])) {
                     throw new \Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
                 }
+                $storedUser = $this->userManager->getOneByName($user['name']);
+                if ($storedUser === null) {
+                    throw new \Exception("no user named `{$user['name']}` to sign in");
+                }
+                $user = $storedUser;
             }
 
-            $rawData = $this->prepareRawData($currentDateTime, $remember, $user->getPassword());
+            $hashedPassword = $user->getPassword();
+            if ($hashedPassword === null) {
+                throw new \Exception("user `{$user->getName()}` has no password to sign the auth cookie with");
+            }
+            $rawData = $this->prepareRawData($currentDateTime, $remember, $hashedPassword);
 
             $passwordHasher = $this->passwordHasherFactory->getPasswordHasher('cookie');
             $encryptedData = $passwordHasher->hash($rawData);
 
             $expires = $this->getExpirationTimeStamp($currentDateTime, $remember);
-            $this->setPersistentCookie('name', $user['name'], $expires);
+            $this->setPersistentCookie('name', $user->getName(), $expires);
             $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0') . $encryptedData, $expires);
         }
     }
 
-    public function logout()
+    public function logout(): void
     {
         $this->cleanSensitiveDataFromSession();
         $this->cleanOldFormatCookie();
@@ -309,12 +325,12 @@ class AuthenticationService extends YesWikiController
             || array_key_exists('login-sso', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
     }
 
-    private function updateSessionCookieExpires(int $expires)
+    private function updateSessionCookieExpires(int $expires): void
     {
         $this->setPersistentCookie(session_name(), session_id(), $expires);
     }
 
-    public function setPersistentCookie(string $name, string $value, int $expires)
+    public function setPersistentCookie(string $name, string $value, int $expires): void
     {
         $sessionParams = session_get_cookie_params();
         $newParams = array_filter($sessionParams, function ($v, $k) {
@@ -324,10 +340,11 @@ class AuthenticationService extends YesWikiController
         setcookie($name, $value, $newParams);
     }
 
-    public function deleteOldCookie(string $name)
+    public function deleteOldCookie(string $name): void
     {
+        $cookiePath = $this->params->get('cookie_path');
         setcookie($name, '', [
-            'path' => $this->params->get('cookie_path'),
+            'path' => is_string($cookiePath) ? $cookiePath : '/',
             'domain' => '',
             'secure' => $this->getRequest()->isSecure(),
             'httponly' => true,
@@ -342,11 +359,7 @@ class AuthenticationService extends YesWikiController
     /**
      * connect a user from COOKIE.
      *
-     * @return array [
-     *               'user' => User,
-     *               'remember' => bool,
-     *               'lastConnectionDate' => DateTime
-     *               ]
+     * @return array{user: User, remember: bool, lastConnectionDate: \DateTime}
      *
      * @throws BadUserConnectException
      */
@@ -364,7 +377,12 @@ class AuthenticationService extends YesWikiController
             throw new BadUserConnectException('Password predates this version, must be reset');
         }
 
-        $rawData = $this->prepareRawData($data->getLastConnectionDate(), $data->getRemember(), $user->getPassword());
+        $hashedPassword = $user->getPassword();
+        if ($hashedPassword === null) {
+            throw new BadUserConnectException('Account has no password');
+        }
+
+        $rawData = $this->prepareRawData($data->getLastConnectionDate(), $data->getRemember(), $hashedPassword);
 
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($data);
         if (!$passwordHasher->verify($data->getEncryptedData(), $rawData)) {
@@ -381,11 +399,7 @@ class AuthenticationService extends YesWikiController
     /**
      * connect a user from SESSION.
      *
-     * @return array [
-     *               'user' => User,
-     *               'remember' => bool,
-     *               'lastConnectionDate' => DateTime
-     *               ]
+     * @return array{user: User, remember: bool, lastConnectionDate: \DateTime}
      *
      * @throws BadUserConnectException
      */
@@ -466,7 +480,7 @@ class AuthenticationService extends YesWikiController
     }
 
     /** clean sensitive data from session. */
-    protected function cleanSensitiveDataFromSession()
+    protected function cleanSensitiveDataFromSession(): void
     {
         if (!empty($_SESSION['user']['name'])) {
             if (isset($_SESSION['_csrf'])) {
@@ -480,7 +494,7 @@ class AuthenticationService extends YesWikiController
     }
 
     /** clean auth cookie for old format. */
-    protected function cleanOldFormatCookie()
+    protected function cleanOldFormatCookie(): void
     {
         if (!$this->isCli()) {
             if (!empty($this->getRequest()->cookies->get('password'))) {

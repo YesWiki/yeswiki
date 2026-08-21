@@ -27,16 +27,17 @@ class UserOperationsService extends YesWikiController
      */
     public const PATTERN_USER_NAME = '^[^!#@<>\\\\\/][^<>\\\\\/]{2,}$';
 
-    private $limitations;
+    /** @var array<string, mixed> */
+    private array $limitations = [];
 
-    protected $authenticationService;
-    protected $dbService;
-    protected $groupOperationsService;
-    protected $pageManager;
-    protected $params;
-    protected $hibernationService;
-    protected $tripleStore;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected DbService $dbService;
+    protected GroupOperationsService $groupOperationsService;
+    protected PageManager $pageManager;
+    protected ParameterBagInterface $params;
+    protected HibernationService $hibernationService;
+    protected TripleStore $tripleStore;
+    protected UserManager $userManager;
 
     public function __construct(
         AuthenticationService $authenticationService,
@@ -86,7 +87,7 @@ class UserOperationsService extends YesWikiController
     /**
      * create a user for e-mail check is existing e-mail.
      *
-     * @param array $newValues (associative array)
+     * @param array<string, mixed> $newValues (associative array)
      *
      * @return User|null $user
      *
@@ -112,7 +113,7 @@ class UserOperationsService extends YesWikiController
     /**
      * update user params for e-mail check is existing e-mail.
      *
-     * @param array $newValues (associative array)
+     * @param array<string, mixed> $newValues (associative array)
      *
      * @throws BadFormatPasswordException
      * @throws \Exception
@@ -123,8 +124,11 @@ class UserOperationsService extends YesWikiController
         $newValues = $this->sanitizeValues($newValues);
         $this->userManager->update($user, $newValues);
         if (isset($newValues['password'])) {
-            $user = $this->userManager->getOneByName($user['name']);
-            $this->authenticationService->setPassword($user, $newValues['password']);
+            $updatedUser = $this->userManager->getOneByName($user['name']);
+            if ($updatedUser === null) {
+                throw new \Exception(_t('USERSTABLE_NOT_EXISTING_USER', ['username' => $user['name']]));
+            }
+            $this->authenticationService->setPassword($updatedUser, $newValues['password']);
         }
 
         return true;
@@ -133,9 +137,9 @@ class UserOperationsService extends YesWikiController
     /**
      * sanitize values.
      *
-     * @param array $newValues (associative array)
+     * @param array<string, mixed> $newValues (associative array)
      *
-     * @return array $sanitizedValues
+     * @return array<string, mixed> $sanitizedValues
      *
      * @throws \Exception
      */
@@ -172,7 +176,7 @@ class UserOperationsService extends YesWikiController
      * @throws DeleteUserException
      * @throws \Exception
      */
-    public function delete(User $user)
+    public function delete(User $user): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -234,7 +238,7 @@ class UserOperationsService extends YesWikiController
      *
      * @throws DeleteUserException
      */
-    private function deleteGroupsWhereUserIsAlone(User $user)
+    private function deleteGroupsWhereUserIsAlone(User $user): void
     {
         $grouptab = $this->userManager->groupsWhereIsMember($user, false);
         foreach ($grouptab as $group) {
@@ -256,7 +260,7 @@ class UserOperationsService extends YesWikiController
      *
      * @throws DeleteUserException
      */
-    private function deleteUserFromEveryGroup(User $user)
+    private function deleteUserFromEveryGroup(User $user): void
     {
         $groups = $this->tripleStore->getMatching(
             GROUP_PREFIX . '%',
@@ -267,27 +271,25 @@ class UserOperationsService extends YesWikiController
             'LIKE'
         );
         $error = false;
-        if (is_array($groups)) {
-            $pregQuoteSearchValue = preg_quote($user['name'], '/');
-            $prefixLen = strlen(GROUP_PREFIX);
-            foreach ($groups as $group) {
-                $newValue = $group['value'];
-                $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
-                if ($newValue != $group['value']) {
-                    $groupName = substr($group['resource'], $prefixLen);
-                    $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
-                    if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
-                        $this->groupOperationsService->delete($groupName);
-                    } elseif (!in_array($this->tripleStore->update(
-                        $group['resource'],
-                        $group['property'],
-                        $group['value'],
-                        $newValue,
-                        '',
-                        ''
-                    ), [0, 3])) {
-                        $error = true;
-                    }
+        $pregQuoteSearchValue = preg_quote($user['name'], '/');
+        $prefixLen = strlen(GROUP_PREFIX);
+        foreach ($groups as $group) {
+            $newValue = $group['value'];
+            $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
+            if ($newValue != $group['value']) {
+                $groupName = substr($group['resource'], $prefixLen);
+                $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
+                if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
+                    $this->groupOperationsService->delete($groupName);
+                } elseif (!in_array($this->tripleStore->update(
+                    $group['resource'],
+                    $group['property'],
+                    $group['value'],
+                    $newValue,
+                    '',
+                    ''
+                ), [0, 3])) {
+                    $error = true;
                 }
             }
         }
@@ -301,7 +303,7 @@ class UserOperationsService extends YesWikiController
      *
      * @throws \Exception
      */
-    private function removeOwnership(User $user)
+    private function removeOwnership(User $user): void
     {
         $pagesWhereOwner = $this->dbService->loadAll("
             SELECT tag FROM {$this->dbService->prefixTable('pages')}
@@ -321,6 +323,8 @@ class UserOperationsService extends YesWikiController
     /**
      * check if value is int and return new value.
      *
+     * @param mixed $value as it came out of the submitted values
+     *
      * @throws \Exception
      */
     private function sanitizeCount($value, string $propertyName): int
@@ -334,6 +338,8 @@ class UserOperationsService extends YesWikiController
 
     /**
      * check if value is Y or N and return new value.
+     *
+     * @param mixed $value as it came out of the submitted values
      *
      * @throws \Exception
      */
@@ -350,6 +356,8 @@ class UserOperationsService extends YesWikiController
     /**
      * check if value is String and return new value.
      *
+     * @param mixed $value as it came out of the submitted values
+     *
      * @throws \Exception
      */
     private function sanitizeString($value, string $propertyName): string
@@ -363,6 +371,8 @@ class UserOperationsService extends YesWikiController
 
     /**
      * check if value is a nameand return new value.
+     *
+     * @param mixed $value as it came out of the submitted values
      *
      * @throws \Exception
      */
@@ -388,6 +398,8 @@ class UserOperationsService extends YesWikiController
 
     /**
      * check if value is an email and return new value.
+     *
+     * @param mixed $value as it came out of the submitted values
      *
      * @throws \Exception
      */

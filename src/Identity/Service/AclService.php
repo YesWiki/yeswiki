@@ -13,13 +13,18 @@ use YesWiki\Kernel\Service\HibernationService;
 
 class AclService
 {
-    protected $authenticationService;
-    protected $dbService;
-    protected $hibernationService;
-    protected $userManager;
-    protected $params;
+    protected AuthenticationService $authenticationService;
+    protected DbService $dbService;
+    protected HibernationService $hibernationService;
+    protected UserManager $userManager;
+    protected ParameterBagInterface $params;
     protected ContainerInterface $container;
 
+    /**
+     * tag => privilege => ['page_tag' => string, 'privilege' => string, 'list' => mixed].
+     *
+     * @var array<string, array<string, array<string, mixed>>>
+     */
     protected $cache;
     /**
      * tag => the `acls` sub-object of its `metadata`, as stored.
@@ -87,7 +92,7 @@ class AclService
      * @param string $privilege
      * @param bool   $useDefaults
      *
-     * @return array [page_tag, privilege, list]
+     * @return array<string, mixed>|null ['page_tag' => ..., 'privilege' => ..., 'list' => ...], null when this page has no such privilege set
      */
     public function load($tag, $privilege, $useDefaults = true): ?array
     {
@@ -135,7 +140,8 @@ class AclService
     /**
      * Saves several privileges in ONE metadata revision (ACLs are versioned with content, ADR-0002 -- privilege-by-privilege stamping would pile up a revision per privilege, e.g.
      *
-     * @param array $lists privilege => list
+     * @param string                $tag
+     * @param array<string, string> $lists privilege => list
      */
     public function saveMany($tag, array $lists): void
     {
@@ -159,6 +165,14 @@ class AclService
         $this->writeMetadataAcls($tag, $acls);
     }
 
+    /**
+     * @param string $tag
+     * @param string $privilege
+     * @param string $list
+     * @param bool   $appendAcl
+     *
+     * @return void
+     */
     public function save($tag, $privilege, $list, $appendAcl = false)
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -166,7 +180,7 @@ class AclService
         }
 
         if (strpos($list, ',') !== false) {
-            $list = preg_replace('/\s*,\s*/', "\n", $list);
+            $list = preg_replace('/\s*,\s*/', "\n", $list) ?? $list;
         }
 
         $acl = $this->load($tag, $privilege, false);
@@ -189,8 +203,10 @@ class AclService
     }
 
     /**
-     * @param string       $tag        The page's WikiName
-     * @param string|array $privileges a privilege or several privileges to delete from database
+     * @param string                    $tag        The page's WikiName
+     * @param string|array<int, string> $privileges a privilege or several privileges to delete from database
+     *
+     * @return void
      */
     public function delete($tag, $privileges = ['read', 'write', 'comment'])
     {
@@ -216,6 +232,8 @@ class AclService
 
     /**
      * Reads the `acls` sub-object of a page's `metadata` column (`['read' => '...', 'write' => '...', 'comment' => '...']`, only the privileges that have an explicit, non-default value set).
+     *
+     * @return array<string, string> privilege => list
      */
     private function readMetadataAcls(string $tag): array
     {
@@ -237,6 +255,8 @@ class AclService
 
     /**
      * Writes the `acls` sub-object back into `metadata`, versioned the same way any other metadata change is (ADR-0002): marks the current revision non-latest and inserts a new one carrying `body`/`owner`/`parent` forward unchanged, alongside every other `metadata` key untouched.
+     *
+     * @param array<string, string> $acls privilege => list
      */
     private function writeMetadataAcls(string $tag, array $acls): void
     {
@@ -248,7 +268,7 @@ class AclService
         $metadata = empty($current['metadata']) ? [] : (json_decode($current['metadata'], true) ?? []);
         $previousAcls = $metadata['acls'] ?? [];
 
-        $acls = array_filter($acls, fn ($list) => $list !== null && $list !== '');
+        $acls = array_filter($acls, fn (string $list) => $list !== '');
         if ($acls === $previousAcls) {
             return;
         }
@@ -344,23 +364,23 @@ class AclService
     /**
      * Checks if some $user satisfies the given $acl.
      *
-     * @param string $acl
-     *                             The acl to check, in the same format than for pages ACL's
-     * @param string $user
-     *                             The name of the user that must satisfy the ACL. By default
-     *                             the current remote user.
-     * @param bool   $adminCheck
-     *                             Check if user is in admins groups
-     *                             Default true
-     * @param string $tag
-     *                             The name of the page or form to be tested when $acl contains '%'.
-     *                             By Default ''
-     * @param string $mode
-     *                             Mode for cases when $acl contains '%'
-     *                             Default '', standard case. $mode = 'creation', the test returns true
-     *                             even if the user is connected
-     * @param array  $formerGroups
-     *                             to avoid loops we keep track of former calls
+     * @param string       $acl
+     *                                   The acl to check, in the same format than for pages ACL's
+     * @param string       $user
+     *                                   The name of the user that must satisfy the ACL. By default
+     *                                   the current remote user.
+     * @param bool         $adminCheck
+     *                                   Check if user is in admins groups
+     *                                   Default true
+     * @param string       $tag
+     *                                   The name of the page or form to be tested when $acl contains '%'.
+     *                                   By Default ''
+     * @param string       $mode
+     *                                   Mode for cases when $acl contains '%'
+     *                                   Default '', standard case. $mode = 'creation', the test returns true
+     *                                   even if the user is connected
+     * @param list<string> $formerGroups
+     *                                   to avoid loops we keep track of former calls
      *
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
@@ -534,7 +554,8 @@ class AclService
                 ->wrappedIn('(', ')');
         }
 
-        if ($nullMeansDefault && $this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
+        $defaultReadAcl = $this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*';
+        if ($nullMeansDefault && $this->check(is_string($defaultReadAcl) ? $defaultReadAcl : '*')) {
             return SqlFragment::all(
                 ' OR ',
                 SqlFragment::of("({$readAclExpr} IS NULL)"),

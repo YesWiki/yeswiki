@@ -11,9 +11,9 @@ use YesWiki\Kernel\Exception\InvalidInputException;
 
 class GroupOperationsService extends YesWikiController
 {
-    protected $groupManager;
-    protected $userManager;
-    protected $authenticationService;
+    protected GroupManager $groupManager;
+    protected UserManager $userManager;
+    protected AuthenticationService $authenticationService;
 
     public function __construct(
         GroupManager $groupManager,
@@ -23,6 +23,14 @@ class GroupOperationsService extends YesWikiController
         $this->groupManager = $groupManager;
         $this->userManager = $userManager;
         $this->authenticationService = $authenticationService;
+    }
+
+    /** The signed-in user's name, or null when nobody is signed in -- never an anonymous visitor's IP, unlike getLoggedUserName(). */
+    private function loggedUserName(): ?string
+    {
+        $loggedUser = $this->authenticationService->getLoggedUser();
+
+        return is_array($loggedUser) && isset($loggedUser['name']) ? strval($loggedUser['name']) : null;
     }
 
     private function isNameValid(string $name): bool
@@ -81,7 +89,7 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
-     * @return array the ACL associated with the current group
+     * @return string[] the ACL associated with the current group
      */
     public function getMembers(string $groupName): array
     {
@@ -94,9 +102,12 @@ class GroupOperationsService extends YesWikiController
     /**
      * create group.
      *
-     * @param string $name group name
+     * @param string        $name    group name
+     * @param string[]|null $members users and/or groups the new group is made of
      *
-     * @throws GroupNameAlreadyExist
+     * @return array{name: string, members: string[]}
+     *
+     * @throws GroupNameAlreadyUsedException
      */
     public function create(string $name, ?array $members): ?array
     {
@@ -104,7 +115,7 @@ class GroupOperationsService extends YesWikiController
             throw new GroupNameAlreadyUsedException(_t('GROUP_NAME_ALREADY_USED'));
         }
         if ($this->isNameValid($name)) {
-            foreach ($members as $member) {
+            foreach ($members ?? [] as $member) {
                 switch ($this->checkMemberValidity($name, $member)) {
                     case 0:
                         break;
@@ -116,7 +127,7 @@ class GroupOperationsService extends YesWikiController
                         throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
                 }
             }
-            $group_created = $this->groupManager->create($name, $members);
+            $group_created = $this->groupManager->create($name, $members ?? []);
         } else {
             throw new InvalidGroupNameException(_t('INVALID_GROUP_NAME'));
         }
@@ -128,6 +139,7 @@ class GroupOperationsService extends YesWikiController
         throw new \Exception(_t('ERROR_SAVING_GROUP') . '.');
     }
 
+    /** @return string[] the names of every group */
     public function getAll(): array
     {
         return $this->groupManager->getAll();
@@ -149,10 +161,10 @@ class GroupOperationsService extends YesWikiController
     /**
      * add users and/or groups to group.
      *
-     * @param array $members users and/or groups to add
+     * @param string[] $members users and/or groups to add
      *
-     * @throws UserDoesNotExistException
-     * @throws GroupDoesNotExistException
+     * @throws UserNameDoesNotExistException
+     * @throws GroupNameDoesNotExistException
      * @throws InvalidInputException
      */
     public function add(string $groupName, array $members): void
@@ -193,13 +205,13 @@ class GroupOperationsService extends YesWikiController
     /**
      * Checks if a new group acl is defined recursively (this method expects that groups that are already defined are not themselves defined recursively...).
      *
-     * @param string $groupName
-     *                          The name of the group to test against origin
-     * @param string $origin    group name to save test recursivity
+     * @param string   $groupName The name of the group to test against origin
+     * @param string   $origin    group name to save test recursivity
+     * @param string[] $checked   group names already visited on this branch
      *
      * @return bool True if the new acl defines the group recursively
      */
-    private function CheckGroupRecursive($groupName, $origin, $checked = []): bool
+    private function CheckGroupRecursive(string $groupName, string $origin, array $checked = []): bool
     {
         $groupName = trim($groupName);
         if (strtolower($groupName) === $origin) {
@@ -236,9 +248,9 @@ class GroupOperationsService extends YesWikiController
     /**
      * remove users and/or groups from group.
      *
-     * @param array $members users and/or groups to add
+     * @param string[] $members users and/or groups to remove
      *
-     * @throws GroupDoesNotExistException
+     * @throws GroupNameDoesNotExistException
      */
     public function remove(string $groupName, array $members): void
     {
@@ -246,8 +258,8 @@ class GroupOperationsService extends YesWikiController
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
         if ($groupName == ADMIN_GROUP) {
-            $currentUser = $this->authenticationService->getLoggedUser()['name'];
-            if (in_array($currentUser, $members)) {
+            $currentUser = $this->loggedUserName();
+            if ($currentUser !== null && in_array($currentUser, $members, true)) {
                 throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
             }
         }
@@ -257,12 +269,10 @@ class GroupOperationsService extends YesWikiController
     /**
      * add or replace current members with new one.
      *
-     * @param array $members new members List
+     * @param string[] $members new members List
      *
-     * @return bool
-     *
-     * @throws UserDoesNotExistException
-     * @throws GroupDoesNotExistException
+     * @throws UserNameDoesNotExistException
+     * @throws GroupNameDoesNotExistException
      * @throws InvalidInputException
      */
     private function addOrUpdate(string $groupName, array $members, bool $add): void
@@ -292,17 +302,17 @@ class GroupOperationsService extends YesWikiController
     /**
      * replace current members with new one.
      *
-     * @param array $members new members List
+     * @param string[] $members new members List
      *
-     * @throws UserDoesNotExistException
-     * @throws GroupDoesNotExistException
+     * @throws UserNameDoesNotExistException
+     * @throws GroupNameDoesNotExistException
      * @throws InvalidInputException
      */
     public function update(string $groupName, array $members): void
     {
         if ($groupName == ADMIN_GROUP) {
-            $currentUser = $this->authenticationService->getLoggedUser()['name'];
-            if (!in_array($currentUser, $members)) {
+            $currentUser = $this->loggedUserName();
+            if ($currentUser === null || !in_array($currentUser, $members, true)) {
                 throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
             }
         }

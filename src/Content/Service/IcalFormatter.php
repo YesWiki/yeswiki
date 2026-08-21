@@ -16,11 +16,11 @@ class IcalFormatter extends YesWikiController
 {
     public const MAX_CHARS_BY_LINE = 74;
 
-    protected $dateService;
-    protected $entryController;
-    protected $geoJSONFormatter;
-    protected $params;
-    protected $markdownFormatter;
+    protected DateService $dateService;
+    protected EntryController $entryController;
+    protected GeoJSONFormatter $geoJSONFormatter;
+    protected ParameterBagInterface $params;
+    protected MarkdownFormatterService $markdownFormatter;
 
     protected UrlFormatter $urlFormatter;
 
@@ -47,7 +47,13 @@ class IcalFormatter extends YesWikiController
         $this->markdownFormatter = $markdownFormatter;
     }
 
-    /** format api response. */
+    /**
+     * format api response.
+     *
+     * @param array<array-key, array<string, mixed>>  $entries
+     * @param int|string|array<array-key, mixed>|null $formId  a form id, or the array a query string can make of one
+     * @param array<string, mixed>|null               $get     the query parameters
+     */
     public function apiResponse(array $entries, $formId = null, ?array $get = null, string $filename = ''): Response
     {
         ob_start();
@@ -104,6 +110,9 @@ class IcalFormatter extends YesWikiController
     /**
      * get data grom entries in GeoJSON format.
      *
+     * @param array<array-key, array<string, mixed>> $entries
+     * @param int|string|null                        $formId
+     *
      * @return string $fileData
      */
     public function formatToICAL(array $entries, $formId = null): string
@@ -148,7 +157,9 @@ class IcalFormatter extends YesWikiController
     /**
      * extract getICALData.
      *
-     * @return array [''=>,''=>] or []
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, string> ['startDate'=>..,'endDate'=>..] or []
      */
     private function getICALData(array $entry, ?string $startField, ?string $endField): array
     {
@@ -157,13 +168,7 @@ class IcalFormatter extends YesWikiController
         }
         if (!empty($entry[$startField]) && !empty($entry[$endField])) {
             $startDate = $this->dateService->getDateTimeWithRightTimeZone($entry[$startField]);
-            if (is_null($startDate)) {
-                return [];
-            }
             $endDate = $this->dateService->getDateTimeWithRightTimeZone($entry[$endField]);
-            if (is_null($endDate)) {
-                return [];
-            }
 
             if ($this->isAllDay(strval($entry[$endField]))) {
                 $endDate = $endDate->add(new \DateInterval('P1D'));
@@ -190,15 +195,17 @@ class IcalFormatter extends YesWikiController
     /**
      * add header and footer.
      *
+     * @param int|string|null $formId
+     *
      * @return string $fileData
      */
     private function addHeaderAndFooter(string $fileData, $formId = null): string
     {
         $header = "BEGIN:VCALENDAR\r\n";
         $header .= "VERSION:2.0\r\n";
-        $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'PRODID:-//' . $this->params->get('base_url')
-            . '//YesWiki ' . $this->params->get('yeswiki_version')
-            . ' ' . $this->params->get('yeswiki_release') . "//EN\r\n");
+        $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'PRODID:-//' . $this->configString('base_url')
+            . '//YesWiki ' . $this->configString('yeswiki_version')
+            . ' ' . $this->configString('yeswiki_release') . "//EN\r\n");
         if (!empty($formId) && intval($formId) == $formId) {
             $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SOURCE:' . $this->urlFormatter->href('forms/' . $formId . '/entries/ical', 'api') . "\r\n");
         } else {
@@ -217,6 +224,7 @@ class IcalFormatter extends YesWikiController
      *
      * @param array<string, mixed>      $entry
      * @param array<string, mixed>      $icalData
+     * @param array<array-key, mixed>   $cache    per-form-id geolocation memo, owned by GeoJSONFormatter
      * @param array<string, mixed>|null $form
      */
     private function formatEvent(array $entry, array $icalData, array &$cache, ?array $form = null): string
@@ -287,7 +295,8 @@ class IcalFormatter extends YesWikiController
     /**
      * build RRULE (and EXDATE, if any) lines for a recurring entry, or '' if not recurrent.
      *
-     * @param array $icalData ['startDate'=>'Y-m-d H:i:s', 'endDate'=>'Y-m-d H:i:s']
+     * @param array<string, mixed> $entry
+     * @param array<string, mixed> $icalData ['startDate'=>'Y-m-d H:i:s', 'endDate'=>'Y-m-d H:i:s']
      */
     private function formatRecurrenceLines(array $entry, array $icalData): string
     {
@@ -380,14 +389,14 @@ class IcalFormatter extends YesWikiController
         return $output;
     }
 
-    private function chunck_split_except_last(string $input, int $length = 76, string $escape = "\r\n", string $additionnalSeparator = ' ')
+    private function chunck_split_except_last(string $input, int $length = 76, string $escape = "\r\n", string $additionnalSeparator = ' '): string
     {
         $output = $this->chunk_split_unicode($input, $length, $escape . $additionnalSeparator);
 
         return substr($output, 0, -strlen($additionnalSeparator));
     }
 
-    private function chunk_split_unicode(string $input, int $length = 76, string $escape = "\r\n")
+    private function chunk_split_unicode(string $input, int $length = 76, string $escape = "\r\n"): string
     {
         $tmp = array_chunk(
             preg_split('//u', $input, -1, PREG_SPLIT_NO_EMPTY),
@@ -416,7 +425,11 @@ class IcalFormatter extends YesWikiController
         return $output;
     }
 
-    /** test if form is ICAL. */
+    /**
+     * test if form is ICAL.
+     *
+     * @param array<string, mixed>|null $form
+     */
     public function isICALForm(?array $form = null): bool
     {
         if (empty($form['prepared'] ?? null)) {
@@ -435,11 +448,19 @@ class IcalFormatter extends YesWikiController
     /** get base Url. */
     private function getBaseURL(): string
     {
-        $baseUrl = $this->params->get('base_url');
+        $baseUrl = $this->configString('base_url');
         if (substr($baseUrl, -1) == '?') {
             $baseUrl = substr($baseUrl, 0, -1);
         }
 
         return $baseUrl;
+    }
+
+    /** A configuration value as a string: the parameter bag types every value as a union. */
+    private function configString(string $key): string
+    {
+        $value = $this->params->get($key);
+
+        return is_scalar($value) ? (string)$value : '';
     }
 }

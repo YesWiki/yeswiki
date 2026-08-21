@@ -105,7 +105,10 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         return $wiki->services->get(GroupOperationsService::class);
     }
 
-    public static function dataProviderTestCreate()
+    /**
+     * @return array<string, array{string, int, list<string>}>
+     */
+    public static function dataProviderTestCreate(): array
     {
         $wiki = static::getWiki();
         $invalid_group_name = StringUtilService::generateRandomString(5, self::INVALID_CHAR) . StringUtilService::generateRandomString(10);
@@ -124,6 +127,9 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param list<string> $members
+     */
     #[Depends('testGroupOperationsServiceExisting')]
     #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
@@ -131,7 +137,7 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         int $result_type,
         array $members,
         GroupOperationsService $groupcontroller
-    ) {
+    ): void {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, $members);
             $this->assertTrue($groupcontroller->groupExists($groupname));
@@ -147,10 +153,13 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * @param list<string> $members
+     */
     #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestCreate')]
-    public function testGetMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
+    public function testGetMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller): void
     {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, $members);
@@ -168,10 +177,13 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * @param list<string> $members
+     */
     #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestCreate')]
-    public function testDelete(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
+    public function testDelete(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller): void
     {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, []);
@@ -192,7 +204,10 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         }
     }
 
-    public static function dataProviderTestAdd()
+    /**
+     * @return array<string, array{string, int, list<string>}>
+     */
+    public static function dataProviderTestAdd(): array
     {
         $wiki = static::getWiki();
         $valid_group_name = self::groupName();
@@ -221,10 +236,13 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param list<string> $members
+     */
     #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestAdd')]
-    public function testAdd(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
+    public function testAdd(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller): void
     {
         if ($result_type == 0) {
             $groupcontroller->add($groupname, $members);
@@ -243,7 +261,10 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         }
     }
 
-    public static function dataProviderTestRemoveMembers()
+    /**
+     * @return array<string, array{string, int, list<string>}>
+     */
+    public static function dataProviderTestRemoveMembers(): array
     {
         $wiki = static::getWiki();
         $valid_group_name = self::groupName();
@@ -266,10 +287,13 @@ class GroupOperationsServiceTest extends YesWikiTestCase
         ];
     }
 
+    /**
+     * @param list<string> $members
+     */
     #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestRemoveMembers')]
-    public function testRemoveMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
+    public function testRemoveMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller): void
     {
         if ($result_type == 0) {
             $groupcontroller->remove($groupname, $members);

@@ -19,11 +19,19 @@ class TabsService
         'tabOpened' => false,
     ];
 
-    protected $nextPrefix;
-    protected $data;
-    protected $stack;
-    protected $usedSlugs;
-    protected $states;
+    protected int $nextPrefix;
+
+    /** @var array<string, array<string, mixed>> one entry per mode ('form', 'view', 'action') */
+    protected array $data;
+
+    /** @var array<string, list<array<string, mixed>>> per mode, the enclosing tab sets still open */
+    protected array $stack;
+
+    /** @var list<string> */
+    protected array $usedSlugs;
+
+    /** @var list<array{data: array<string, array<string, mixed>>, stack: array<string, list<array<string, mixed>>>, usedSlugs: list<string>, nextPrefix: int}> */
+    protected array $states;
 
     public function __construct()
     {
@@ -38,7 +46,7 @@ class TabsService
         $this->states = [];
     }
 
-    public function setFormTitles(TabsField $field)
+    public function setFormTitles(TabsField $field): void
     {
         $this->setTitles(
             $field->getFormTitles(),
@@ -50,7 +58,7 @@ class TabsService
         );
     }
 
-    public function setViewTitles(TabsField $field)
+    public function setViewTitles(TabsField $field): void
     {
         $this->setTitles(
             $field->getViewTitles(),
@@ -62,19 +70,26 @@ class TabsService
         );
     }
 
-    public function setActionTitles(array $params)
+    /**
+     * @param array<string, mixed> $params the tabs action's arguments
+     */
+    public function setActionTitles(array $params): void
     {
+        $rawTitles = $params['titles'] ?? [];
         $this->setTitles(
-            $params['titles'] ?? [],
+            is_array($rawTitles) ? array_values(array_map('strval', $rawTitles)) : [],
             'action',
-            $params['btnClass'] ?? '',
-            $params['bottom_nav'] ?? $this->dataDefaults['bottom_nav'],
-            $params['counter_on_bottom_nav'] ?? $this->dataDefaults['counter_on_bottom_nav'],
-            $params['selectedtab'] ?? 1
+            (string)($params['btnClass'] ?? ''),
+            (bool)($params['bottom_nav'] ?? self::DEFAULT_DATA['bottom_nav']),
+            (bool)($params['counter_on_bottom_nav'] ?? self::DEFAULT_DATA['counter_on_bottom_nav']),
+            (int)($params['selectedtab'] ?? 1)
         );
     }
 
-    private function setTitles(array $titles, string $mode, string $btnClass, bool $bottom_nav, bool $counter_on_bottom_nav, int $selectedtab)
+    /**
+     * @param array<int, string> $titles
+     */
+    private function setTitles(array $titles, string $mode, string $btnClass, bool $bottom_nav, bool $counter_on_bottom_nav, int $selectedtab): void
     {
         $this->saveInStackIfNeeded($mode);
         $this->data[$mode]['titles'] = $titles;
@@ -98,27 +113,39 @@ class TabsService
         }, array_keys($titles));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFormData(bool $increment = true)
     {
         return $this->getData('form', $increment);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getViewData(bool $increment = true)
     {
         return $this->getData('view', $increment);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getActionData(bool $increment = true)
     {
         return $this->getData('action', $increment);
     }
 
+    /**
+     * @return list<string>
+     */
     public function getSlugs(string $mode): array
     {
         return $this->data[$mode]['slugs'];
     }
 
-    private function saveInStackIfNeeded(string $mode)
+    private function saveInStackIfNeeded(string $mode): void
     {
         if ($this->data[$mode]['counter'] !== false) {
             if (!isset($this->stack[$mode])) {
@@ -129,7 +156,7 @@ class TabsService
         }
     }
 
-    private function retrieveFromStackIfNeeded(string $mode)
+    private function retrieveFromStackIfNeeded(string $mode): void
     {
         if (!empty($this->stack[$mode])) {
             $this->data[$mode] = array_pop($this->stack[$mode]);
@@ -144,6 +171,9 @@ class TabsService
         return $newPrefix;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getData(string $mode, bool $increment = true)
     {
         $data = $this->data[$mode];
@@ -167,12 +197,12 @@ class TabsService
         return $data;
     }
 
-    public function openTab(string $mode)
+    public function openTab(string $mode): void
     {
         $this->data[$mode]['tabOpened'] = true;
     }
 
-    public function registerClose(string $mode)
+    public function registerClose(string $mode): void
     {
         $this->data[$mode]['isClosed'] = true;
         $this->retrieveFromStackIfNeeded($mode);

@@ -19,10 +19,10 @@ use YesWiki\Social\Field\ReactionsField;
 class ReactionManager
 {
     protected ContainerInterface $container;
-    protected $dbService;
-    protected $entryManager;
-    protected $formManager;
-    protected $tripleStore;
+    protected DbService $dbService;
+    protected EntryManager $entryManager;
+    protected FormManager $formManager;
+    protected TripleStore $tripleStore;
 
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
     public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
@@ -32,6 +32,7 @@ class ReactionManager
     public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
     public const DEFAULT_MAX_REACTIONS = 1;
 
+    /** @var array<string, mixed>|null */
     protected $cachedReactions;
 
     public function __construct(
@@ -48,7 +49,12 @@ class ReactionManager
         $this->tripleStore = $tripleStore;
     }
 
-    public function getReactions($pageTag = '', $ids = [], $user = '', $singleEntry = false)
+    /**
+     * @param list<string> $ids only these reaction ids, or [] for all of them
+     *
+     * @return array<string, mixed> keyed by "reactionId|pageTag", or by reactionId alone when $singleEntry
+     */
+    public function getReactions(string $pageTag = '', array $ids = [], string $user = '', bool $singleEntry = false): array
     {
         $res = [];
 
@@ -111,7 +117,7 @@ class ReactionManager
         return $res;
     }
 
-    public function getReactionsCount($tag)
+    public function getReactionsCount(string $tag): int
     {
         $type = self::TYPE_URI;
 
@@ -121,16 +127,24 @@ class ReactionManager
         ", [$tag, $type]);
     }
 
-    public function getActionParameters($page, $idReaction = null)
+    /**
+     * @return array<string, mixed> the {{reactions}} parameters, keyed by reaction id
+     */
+    public function getActionParameters(string $page, ?string $idReaction = null): array
     {
+        // `$idReaction = null` used to stand where the argument goes, which assigned over the
+        // caller's value and asked for every reaction each time (ticket 40)
         if ($this->entryManager->isEntry($page)) {
-            return $this->getActionParametersFromEntry($page, $idReaction = null);
+            return $this->getActionParametersFromEntry($page, $idReaction);
         }
 
-        return $this->getActionParametersFromPage($page, $idReaction = null);
+        return $this->getActionParametersFromPage($page, $idReaction);
     }
 
-    public function getActionParametersFromPage($page, $idReaction = null)
+    /**
+     * @return array<string, mixed>
+     */
+    public function getActionParametersFromPage(string $page, ?string $idReaction = null): array
     {
         $p = $this->container->get(PageManager::class)->getOne($page);
         if (!empty($p)) {
@@ -149,7 +163,10 @@ class ReactionManager
         return [];
     }
 
-    public function getActionParametersFromEntry($entryId, $idReaction = null)
+    /**
+     * @return array<string, mixed>
+     */
+    public function getActionParametersFromEntry(string $entryId, ?string $idReaction = null): array
     {
         $entry = $this->entryManager->getOne($entryId);
         $params = [];
@@ -178,66 +195,82 @@ class ReactionManager
         return $params;
     }
 
-    protected function appendParamsFromActionDefinition(array &$params, string $text)
+    /**
+     * @param array<string, mixed> $params
+     */
+    protected function appendParamsFromActionDefinition(array &$params, string $text): void
     {
         if (preg_match_all('/{{reactions(?:\s([^}]*))?\s*}}/Ui', $text, $matches)) {
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
                 if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"|\s*/U', $paramText, $paramMatches)) {
-                    $k = array_search('title', $paramMatches[1]);
+                    // three arrays of strings, kept in step: what each parameter is called, what
+                    // it was written as, and the whole `name="value"` it came from. The computed
+                    // labels/images maps used to be written back over $names' string values,
+                    // which is why explode() below could be handed an array (ticket 40).
+                    $names = $paramMatches[1];
+                    $written = $paramMatches[2];
+                    $declarations = $paramMatches[0];
+
+                    $k = array_search('title', $names);
                     if ($k === false) {
-                        $paramMatches[1][] = 'title';
-                        $k = array_search('title', $paramMatches[1]);
-                        $paramMatches[2][$k] = _t(ReactionManager::DEFAULT_TITLE_T);
-                        $paramMatches[0][] = "title=\"{$paramMatches[2][$k]}\"";
+                        $names[] = 'title';
+                        $k = count($names) - 1;
+                        $written[$k] = _t(self::DEFAULT_TITLE_T);
+                        $declarations[] = "title=\"{$written[$k]}\"";
                     }
-                    $title = $paramMatches[2][$k];
-                    $k = array_search('labels', $paramMatches[1]);
+                    $title = $written[$k];
+
+                    $k = array_search('labels', $names);
                     if ($k === false) {
-                        $paramMatches[1][] = 'labels';
-                        $k = array_search('labels', $paramMatches[1]);
-                        $paramMatches[2][$k] = implode(',', array_map('_t', ReactionManager::DEFAULT_LABELS_T));
-                        $paramMatches[0][] = "labels=\"{$paramMatches[2][$k]}\"";
+                        $names[] = 'labels';
+                        $k = count($names) - 1;
+                        $written[$k] = implode(',', array_map('_t', self::DEFAULT_LABELS_T));
+                        $declarations[] = "labels=\"{$written[$k]}\"";
                     }
-                    $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
-                    foreach ($labels as $lab) {
-                        $id = \URLify::slug($lab);
-                        $labelsWithId[$id] = $lab;
+                    foreach (array_map('trim', explode(',', $written[$k])) as $lab) {
+                        $labelsWithId[\URLify::slug($lab)] = $lab;
                     }
-                    $paramMatches[2][$k] = $labelsWithId;
                     $ids = array_keys($labelsWithId);
-                    $k = array_search('images', $paramMatches[1]);
+
+                    $k = array_search('images', $names);
                     if ($k === false) {
-                        $paramMatches[1][] = 'images';
-                        $k = array_search('images', $paramMatches[1]);
-                        $paramMatches[2][$k] = implode(',', ReactionManager::DEFAULT_IMAGES);
-                        $paramMatches[0][] = "images=\"{$paramMatches[2][$k]}\"";
+                        $names[] = 'images';
+                        $k = count($names) - 1;
+                        $written[$k] = implode(',', self::DEFAULT_IMAGES);
+                        $declarations[] = "images=\"{$written[$k]}\"";
                     }
-                    $images = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $htmlImages = [];
-                    foreach ($images as $i => $img) {
-                        $image = empty($img)
+                    foreach (array_map('trim', explode(',', $written[$k])) as $i => $img) {
+                        if (!isset($ids[$i])) {
+                            // more images than labels: nothing to attach this one to
+                            continue;
+                        }
+                        $htmlImages[$ids[$i]] = empty($img)
                             ? ''
                             : trim($this->container->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
                                 'image' => $img,
                                 'id' => 'image',
                             ]));
-                        $htmlImages[$ids[$i]] = $image;
                     }
-                    $paramMatches[2][$k] = $htmlImages;
 
                     $reactionId = \URLify::slug($title);
-                    foreach ($paramMatches[0] as $idM => $paramMatch) {
-                        $params[$reactionId][$paramMatches[1][$idM]] = $paramMatches[2][$idM];
+                    foreach (array_keys($declarations) as $idM) {
+                        $params[$reactionId][$names[$idM]] = $written[$idM];
                     }
+                    $params[$reactionId]['labels'] = $labelsWithId;
+                    $params[$reactionId]['images'] = $htmlImages;
                 }
             }
         }
     }
 
     /** to ensure backward compatibility with old reactions from lms extension. */
-    protected function appendParametersFromField(array &$params, string $tag, ?ReactionsField $field = null)
+    /**
+     * @param array<string, mixed> $params
+     */
+    protected function appendParametersFromField(array &$params, string $tag, ?ReactionsField $field = null): void
     {
         $labels = [];
         $images = [];
@@ -297,37 +330,44 @@ class ReactionManager
         }
     }
 
-    public function getAllReactionInfos($idReaction, $page)
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getAllReactionInfos(string $idReaction, string $page)
     {
         return $this->getActionParameters($page)[$idReaction] ?? null;
     }
 
-    public function addUserReaction($pageTag, $values)
+    /**
+     * @param array<string, mixed> $values
+     *
+     * @return int 0 (success), 1 (failure) or 3 (already exists)
+     */
+    public function addUserReaction(string $pageTag, array $values)
     {
         if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             throw new \Exception('Unauthorized');
         }
 
-        return $this->tripleStore->create(
-            $pageTag,
-            self::TYPE_URI,
-            json_encode([
-                'user' => $values['userName'],
-                'idReaction' => $values['reactionId'],
-                'id' => $values['id'],
-                'date' => $values['date'],
-            ]),
-            '',
-            ''
-        );
+        $payload = json_encode([
+            'user' => $values['userName'],
+            'idReaction' => $values['reactionId'],
+            'id' => $values['id'],
+            'date' => $values['date'],
+        ]);
+        if ($payload === false) {
+            throw new \Exception('Reaction could not be encoded');
+        }
+
+        return $this->tripleStore->create($pageTag, self::TYPE_URI, $payload, '', '');
     }
 
-    public function deleteUserReaction($pageTag, $reactionId, $id, $user): bool
+    public function deleteUserReaction(string $pageTag, string $reactionId, string $id, string $user): bool
     {
-        if (!isset($reactionId) || $reactionId === '') {
+        if ($reactionId === '') {
             throw new \Exception('ReactionId not specified');
         }
-        if (!isset($id) || $id === '') {
+        if ($id === '') {
             throw new \Exception('Reaction value not specified');
         }
 

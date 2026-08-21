@@ -1,0 +1,7 @@
+includes:
+    - phpstan.neon
+
+parameters:
+    # analysing a handful of files leaves every other baseline entry unmatched, which is noise
+    # rather than signal when you are working on one file
+    reportUnmatchedIgnoredErrors: false

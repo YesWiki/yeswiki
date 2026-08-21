@@ -14,6 +14,9 @@ use YesWiki\Kernel\Service\WikiUrls;
 
 class AttributeRouteControllerLoader extends AttributeClassLoader
 {
+    /**
+     * @param \ReflectionClass<object> $class
+     */
     protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
     {
         $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
@@ -23,19 +26,20 @@ class AttributeRouteControllerLoader extends AttributeClassLoader
 /** Yeswiki initialization class. */
 class Init
 {
-    public $page = '';
-    public $method = '';
-    public $config = [];
-    public $configFile;
+    public string $page = '';
+    public string $method = '';
+
+    /** @var array<string, mixed> */
+    public array $config = [];
+
+    public string $configFile;
 
     /**
      * Create a new Init instance.
      *
-     * @param array $config initial config array (empty by default)
-     *
-     * @return void
+     * @param array<string, mixed> $config initial config array (empty by default)
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
@@ -130,7 +134,7 @@ class Init
         return implode('.', array_slice($parts, -2));
     }
 
-    private function setIframeHeaders()
+    private function setIframeHeaders(): void
     {
         $allowedMethods = $this->config['allowed_methods_in_iframe'] ?? 'all';
 
@@ -148,9 +152,12 @@ class Init
     /**
      * Utility function to merge the multidimentionnal config array the right way.
      *
-     * @return array merged array
+     * @param array<array-key, mixed> $array1
+     * @param array<array-key, mixed> $array2
+     *
+     * @return array<array-key, mixed> merged array
      */
-    protected function array_merge_recursive_distinct(array &$array1, array &$array2)
+    protected function array_merge_recursive_distinct(array &$array1, array &$array2): array
     {
         $merged = $array1;
 
@@ -168,11 +175,11 @@ class Init
     /**
      * Check in the config file exists and provide default configuration.
      *
-     * @param array $yeswikiConfig initial config array (empty by default)
+     * @param array<string, mixed> $yeswikiConfig initial config array (empty by default)
      *
-     * @return array the configuration
+     * @return array<string, mixed> the configuration
      */
-    public function getConfig($yeswikiConfig = [])
+    public function getConfig(array $yeswikiConfig = []): array
     {
         $_rewrite_mode = WikiUrls::rewriteMode();
         $yeswikiDefaultConfig = [

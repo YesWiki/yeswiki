@@ -52,7 +52,7 @@ class FileContentField extends BazarField
      */
     public function formatValuesBeforeSave($entry): array
     {
-        $uploadedFile = $this->getRequest()->files->get($this->name);
+        $uploadedFile = $this->getRequest()->files->get((string)$this->name);
 
         if (empty($uploadedFile)) {
             return [];

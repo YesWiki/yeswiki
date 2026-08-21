@@ -55,6 +55,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'these routes need an admin account');
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the write path');
 
         $tmpPath = sys_get_temp_dir() . '/ApiControllerFilesTest-' . uniqid() . '.txt';
@@ -98,6 +99,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $userManager = $wiki->services->get(UserManager::class);
         $aclService = $wiki->services->get(AclService::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'these routes need an admin account');
 
         $tmpPath = sys_get_temp_dir() . '/ApiControllerFilesTest-' . uniqid() . '.txt';
         file_put_contents($tmpPath, 'public content');
@@ -137,6 +139,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'these routes need an admin account');
 
         $tmpPath = sys_get_temp_dir() . '/ApiControllerFilesTest-' . uniqid() . '.txt';
         file_put_contents($tmpPath, 'listing test');
@@ -196,6 +199,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
+        $this->assertInstanceOf(\YesWiki\Identity\Entity\User::class, $admin, 'these routes need an admin account');
 
         $fileManager = $wiki->services->get(FileManager::class);
         $marker = 'familyfiltermarker';

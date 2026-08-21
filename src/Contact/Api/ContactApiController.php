@@ -83,8 +83,8 @@ class ContactApiController extends YesWikiController
             }
         }
 
-        $mailSender = trim((string)$request->request->get('email', '')) ?: false;
-        $nameSender = (string)$request->request->get('name', '') ?: false;
+        $mailSender = trim((string)$request->request->get('email', ''));
+        $nameSender = (string)$request->request->get('name', '');
         $type = (string)$request->request->get('type', '');
 
         $subject = '';

@@ -33,7 +33,7 @@ class RetireListpages extends YesWikiMigration
         $pagesFormId = (string)$form['id'];
 
         $rows = $db->loadAll(
-            "SELECT id, tag, body FROM {$pages} WHERE body LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX,
+            "SELECT id, tag, body FROM {$pages} WHERE {$db->jsonAsText('body')} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX,
             [SqlParameters::likeContains('listpages')]
         );
 

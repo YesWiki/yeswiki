@@ -38,20 +38,23 @@ use YesWiki\Search\Service\SearchManager;
 
 class EntryController extends YesWikiController
 {
-    protected $aclService;
-    protected $authenticationService;
-    protected $captchaController;
-    protected $config;
-    protected $entryManager;
-    protected $eventDispatcher;
-    protected $favoritesManager;
-    protected $formManager;
-    protected $hibernationService;
-    protected $pageManager;
-    protected $semanticTransformer;
-    protected $templateEngine;
-    protected $tripleStore;
+    protected AclService $aclService;
+    protected AuthenticationService $authenticationService;
+    protected CaptchaController $captchaController;
 
+    /** @var array<string, mixed> every configuration parameter, as ParameterBagInterface::all() gives them */
+    protected $config;
+
+    protected EntryManager $entryManager;
+    protected EventDispatcher $eventDispatcher;
+    protected FavoritesManager $favoritesManager;
+    protected FormManager $formManager;
+    protected HibernationService $hibernationService;
+    protected PageManager $pageManager;
+    protected SemanticTransformer $semanticTransformer;
+    protected TripleStore $tripleStore;
+
+    /** @var list<string> the entries view() is inside of, innermost first -- guards against an entry embedding itself */
     private $parentsEntries;
 
     public function __construct(
@@ -84,7 +87,7 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * @param array $formsIds (empty = all)
+     * @param array<int|string> $formsIds (empty = all)
      *
      * @return string
      */
@@ -110,8 +113,12 @@ class EntryController extends YesWikiController
      * @param string|null                 $time                 choose only the entry's revision corresponding to time, null = latest revision
      * @param bool                        $showFooter
      * @param string|null                 $userNameForRendering userName used to render the entry, if empty uses the connected user
+     * @param array<string, mixed>|null   $pLocalForm           the entry's own form, when the caller already has it
+     * @param array<string, mixed>|null   $pExternalForm        the form of the entry's `external-data`, when the caller already has it
+     *
+     * @return string the rendered entry, or an alert when there is none to render
      */
-    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
+    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = null, $pExternalForm = null)
     {
         if (is_array($entryId)) {
             if (empty($entryId) || !isset($entryId['tag'])) {
@@ -262,6 +269,9 @@ class EntryController extends YesWikiController
         ]);
     }
 
+    /**
+     * @return list<string> the property names the `excludeFields` query parameter asks to skip
+     */
     private function fieldsToExclude()
     {
         $excludeFields = $this->getRequest()->query->get('excludeFields');
@@ -269,19 +279,31 @@ class EntryController extends YesWikiController
         return $excludeFields ? explode(',', $excludeFields) : [];
     }
 
+    /**
+     * Entry moderation, which no longer has anywhere to store its answer.
+     *
+     * It set `bf_statut_fiche` on the `fiche` table; both that table and
+     * EntryManager::publish() went away with the SQL-bindings rewrite, so every call here has
+     * been a fatal one since. BazarAction still routes `publier`/`pas_publier` to it, so this
+     * says what happened instead of dying on an undefined method.
+     *
+     * @param string $entryId
+     * @param bool   $accepted
+     *
+     * @return string
+     *
+     * @throws \Exception always
+     */
     public function publish($entryId, $accepted)
     {
-        $this->entryManager->publish($entryId, $accepted);
-
-        if ($accepted) {
-            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>' . _t('BAZ_FICHE_VALIDEE') . '</div>';
-        } else {
-            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>' . _t('BAZ_FICHE_PAS_VALIDEE') . '</div>';
-        }
-
-        return $this->view($entryId);
+        throw new \Exception("Entry moderation is no longer supported: nothing records whether entry '{$entryId}' is published");
     }
 
+    /**
+     * @param string $formId
+     *
+     * @return string the creation form, or an alert when there is none to show
+     */
     public function create($formId, ?string $redirectUrl = null)
     {
         if (empty($formId)) {
@@ -371,10 +393,21 @@ class EntryController extends YesWikiController
         );
     }
 
+    /**
+     * @param string $entryId
+     *
+     * @return string the edit form
+     */
     public function update($entryId)
     {
         $entry = $this->entryManager->getOne($entryId);
+        if (empty($entry)) {
+            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
+        }
         $form = $this->formManager->getOne($entry['form_id']);
+        if (empty($form)) {
+            return '<div class="alert alert-danger">' . str_replace('{{nb}}', $entry['form_id'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')) . '</div>';
+        }
 
         list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
@@ -400,7 +433,7 @@ class EntryController extends YesWikiController
                 'message' => $e->getMessage(),
             ]);
 
-            $entry = array_merge($entry ?? [], $post->all());
+            $entry = array_merge($entry, $post->all());
         }
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);
@@ -423,6 +456,9 @@ class EntryController extends YesWikiController
         ]);
     }
 
+    /**
+     * @param string $entryId
+     */
     public function delete($entryId, bool $redirectAfter = false): bool
     {
         if ($this->entryManager->isEntry($entryId)) {
@@ -447,7 +483,7 @@ class EntryController extends YesWikiController
 
             return false;
         }
-        throw new \Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
+        throw new \Exception("Not deleted because not entry ({$entryId})");
     }
 
     /**
@@ -465,6 +501,12 @@ class EntryController extends YesWikiController
         return $this->getService(ContentTypeResolver::class)->asEntry($page, null, false);
     }
 
+    /**
+     * @param array<string, mixed>      $form
+     * @param array<string, mixed>|null $entry
+     *
+     * @return list<string> one rendered input per field, plus the form's own extra inputs
+     */
     private function getRenderedInputs($form, $entry = null)
     {
         $renderedFields = [];
@@ -481,6 +523,9 @@ class EntryController extends YesWikiController
         return $renderedFields;
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     private function getCustomTemplatePath($entry): ?string
     {
         $templatePaths = [
@@ -495,6 +540,9 @@ class EntryController extends YesWikiController
         return null;
     }
 
+    /**
+     * @param array<string, mixed>|null $semanticData
+     */
     private function getCustomSemanticTemplatePath($semanticData): ?string
     {
         if (empty($semanticData)) {
@@ -533,9 +581,11 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * @param array       $entry
-     * @param array|null  $form
-     * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
+     * @param array<string, mixed>      $entry
+     * @param array<string, mixed>|null $form
+     * @param string|null               $userNameForRendering userName used to render the entry, if empty uses the connected user
+     *
+     * @return array<string, mixed> the variables a custom entry template is rendered with, [] when there is no form
      */
     private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
     {
@@ -587,9 +637,11 @@ class EntryController extends YesWikiController
     /**
      * format queries from GET and from $arg in order to give the right 'queries' to SearchManager->search.
      *
-     * @param array|string|null $arg
-     * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
-     *                               NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
+     * @param array<string, mixed>|string|null $arg
+     * @param array<string, mixed>             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+     *                                              NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
+     *
+     * @return array<int, array<string, mixed>> one entry per query, as SearchManager::parseQuery() shapes them
      */
     public function formatQuery($arg, array $get): array
     {
@@ -601,10 +653,10 @@ class EntryController extends YesWikiController
     /**
      * filter entries on date.
      *
-     * @param array  $entries
-     * @param string $datefilter
+     * @param array<array-key, array<string, mixed>> $entries
+     * @param string                                 $datefilter
      *
-     * @return array $entries
+     * @return array<array-key, array<string, mixed>> $entries
      */
     public function filterEntriesOnDate($entries, $datefilter): array
     {
@@ -704,6 +756,9 @@ class EntryController extends YesWikiController
         return $vDate;
     }
 
+    /**
+     * @param array<string, mixed>|null $entry
+     */
     private function filterEntriesOnDateTraversing(?array $entry, string $mode, \DateTime $date): bool
     {
         if (empty($entry)) {
@@ -758,6 +813,13 @@ class EntryController extends YesWikiController
         );
     }
 
+    /**
+     * @param array<array-key, array<string, mixed>> $entries
+     * @param array<string, mixed>                   $params         the entrylist action's other arguments
+     * @param bool                                   $showNumEntries
+     *
+     * @return string
+     */
     public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
         $ids = [];
@@ -785,7 +847,9 @@ class EntryController extends YesWikiController
     /**
      * check if creation of entry is authorized for this form.
      *
-     * @return array ["error" => string, "output" => string]
+     * @param array<string, mixed> $form
+     *
+     * @return array{error: string, output: string}
      */
     private function checkIfOnlyOneEntry(array $form): array
     {

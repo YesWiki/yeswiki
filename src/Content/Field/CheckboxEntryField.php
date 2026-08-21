@@ -32,9 +32,10 @@ class CheckboxEntryField extends CheckboxField
     {
         $keys = $this->getValues($entry);
         $values = [];
+        $options = $this->getOptions();
         foreach ($keys as $key) {
-            if (in_array($key, array_keys($this->getOptions()))) {
-                $values[$key]['value'] = $this->options[$key];
+            if (array_key_exists($key, $options)) {
+                $values[$key]['value'] = $options[$key];
                 $values[$key]['href'] = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $key);
             }
         }

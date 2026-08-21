@@ -282,11 +282,13 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $db = $this->getService(DbService::class);
         $pages = $db->prefixTable('pages');
         $metadata = $db->quoteIdentifier('metadata');
+        // ADR-0018: `metadata` is native JSON, and `jsonb` has no LIKE
+        $metadataAsText = $db->jsonAsText('metadata');
 
         $rows = $db->loadAll(
             "SELECT tag, {$metadata} FROM {$pages} WHERE latest = 'Y'"
-            . " AND ({$metadata} LIKE '%PageTitre%' OR {$metadata} LIKE '%PageMenuHaut%'"
-            . " OR {$metadata} LIKE '%PageRapideHaut%')"
+            . " AND ({$metadataAsText} LIKE '%PageTitre%' OR {$metadataAsText} LIKE '%PageMenuHaut%'"
+            . " OR {$metadataAsText} LIKE '%PageRapideHaut%')"
         );
 
         $affected = [];

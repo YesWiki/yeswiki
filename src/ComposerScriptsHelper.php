@@ -6,7 +6,7 @@ use Composer\Script\Event;
 
 class ComposerScriptsHelper
 {
-    public static function postInstall(Event $event)
+    public static function postInstall(Event $event): void
     {
         echo "clean test files from svg-sanitize\n";
         array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));
@@ -22,7 +22,7 @@ class ComposerScriptsHelper
         }
     }
 
-    public static function postUpdate(Event $event)
+    public static function postUpdate(Event $event): void
     {
         self::postInstall($event);
 
@@ -31,6 +31,9 @@ class ComposerScriptsHelper
         self::updatePdfJsDist($fileData);
     }
 
+    /**
+     * @return array<string, mixed> the decoded GitHub release payload, or [] if it could not be fetched
+     */
     private static function getPdfJsDistFiles(): array
     {
         $url = 'https://api.github.com/repos/mozilla/pdf.js/releases/latest';
@@ -55,7 +58,9 @@ class ComposerScriptsHelper
     }
 
     /**
-     * @return array ['fileName' => string, 'url' => string]
+     * @param array<string, mixed> $data the decoded GitHub release payload
+     *
+     * @return array<string, string> ['fileName' => ..., 'url' => ..., 'major_revision' => ..., 'minor_revision' => ..., 'buxfix_revision' => ...], or [] if no legacy dist asset is in the release
      */
     private static function extractPdfJsDistFileUrl(array $data): array
     {
@@ -78,7 +83,10 @@ class ComposerScriptsHelper
         return [];
     }
 
-    private static function updatePdfJsDist(array $params)
+    /**
+     * @param array<string, string> $params as returned by extractPdfJsDistFileUrl()
+     */
+    private static function updatePdfJsDist(array $params): void
     {
         if (!empty($params['url'])) {
             if (is_dir('javascripts/vendor/')) {
@@ -153,6 +161,9 @@ class ComposerScriptsHelper
         }
     }
 
+    /**
+     * @param array<string, string> $params as returned by extractPdfJsDistFileUrl()
+     */
     private static function pdfJsDistNeedsUpdate(string $filePath, array $params): bool
     {
         if (!is_file($filePath)) {
@@ -180,7 +191,7 @@ class ComposerScriptsHelper
         return false;
     }
 
-    private static function deleteFolder($path)
+    private static function deleteFolder(string $path): bool
     {
         $file2ignore = ['.', '..'];
         if (is_link($path)) {
@@ -204,7 +215,7 @@ class ComposerScriptsHelper
         return false;
     }
 
-    private static function delete($path)
+    private static function delete(string $path): bool
     {
         if (empty($path)) {
             return false;
@@ -219,5 +230,8 @@ class ComposerScriptsHelper
         if (is_dir($path)) {
             return self::deleteFolder($path);
         }
+
+        // neither a file nor a directory: nothing was deleted
+        return false;
     }
 }

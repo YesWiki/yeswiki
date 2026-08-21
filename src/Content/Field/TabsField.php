@@ -9,11 +9,15 @@ use YesWiki\Render\Service\TabsRenderer;
 #[\Field(['tabs'])]
 class TabsField extends LabelField
 {
+    /** @var array<int, string> */
     private $formTitles;
+    /** @var array<int, string> */
     private $viewTitles;
+    /** @var bool */
     private $moveSubmitButtonToLastTab;
-    private $tabsClass;
+    /** @var string */
     private $btnClass;
+    /** @var TabsRenderer */
     protected $tabsRenderer;
 
     protected const FIELD_FORM_TITLES = 1;
@@ -22,6 +26,9 @@ class TabsField extends LabelField
     protected const FIELD_BTN_COLOR = 7;
     protected const FIELD_BTN_SIZE = 9;
 
+    /**
+     * @param array<int|string, mixed> $values
+     */
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -38,8 +45,15 @@ class TabsField extends LabelField
         $this->viewText = '';
     }
 
-    protected function sanitizeTitles(?string $input): ?array
+    /**
+     * @return array<int, string>
+     */
+    protected function sanitizeTitles(?string $input): array
     {
+        if ($input === null) {
+            return [];
+        }
+
         $titles = explode(',', str_replace('|', ',', $input));
         $titles = array_filter(array_map('trim', $titles), function ($title) {
             return !empty($title);
@@ -48,7 +62,7 @@ class TabsField extends LabelField
         return $titles;
     }
 
-    protected function prepareText($mode): ?string
+    protected function prepareText(string $mode): string
     {
         return $this->tabsRenderer->openTabs($mode, $this);
     }
@@ -70,21 +84,33 @@ class TabsField extends LabelField
         return $this->viewText;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getFormTitles()
     {
         return $this->formTitles;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getViewTitles()
     {
         return $this->viewTitles;
     }
 
+    /**
+     * @return bool
+     */
     public function getMoveSubmitButtonToLastTab()
     {
         return $this->moveSubmitButtonToLastTab;
     }
 
+    /**
+     * @return string
+     */
     public function getBtnClass()
     {
         return $this->btnClass;

@@ -594,7 +594,7 @@ class YesWikiToYesWikiImporter extends Importer
         ]);
         $byProperty = [];
         foreach ($fields as $field) {
-            $propertyName = $field ? $field->getPropertyName() : null;
+            $propertyName = $field->getPropertyName();
 
             if (!empty($propertyName)) {
                 $byProperty[$propertyName] = $field;
@@ -762,7 +762,8 @@ class YesWikiToYesWikiImporter extends Importer
             return false;
         }
         $authenticationService = $this->getService(AuthenticationService::class);
-        $this->impersonationPreviousUser = $authenticationService->getLoggedUser();
+        $previousUser = $authenticationService->getLoggedUser();
+        $this->impersonationPreviousUser = is_array($previousUser) ? $previousUser : null;
         $authenticationService->login($adminUser);
 
         return true;

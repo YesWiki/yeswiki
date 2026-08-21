@@ -3,12 +3,13 @@
 namespace YesWiki\Federation\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class WebfingerService
 {
-    protected $httpClient;
-    protected $ssrfUrlValidator;
+    protected HttpClientInterface $httpClient;
+    protected SsrfUrlValidator $ssrfUrlValidator;
 
     public function __construct(SsrfUrlValidator $ssrfUrlValidator)
     {
@@ -16,7 +17,10 @@ class WebfingerService
         $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
-    public function splitHandle($handle)
+    /**
+     * @return array<int|string, string> the preg_match captures, keyed by group name and number
+     */
+    public function splitHandle(string $handle): array
     {
         if (!preg_match(
             '/^@?(?P<user>[\w\-\.]+)@(?P<host>[\w\.\-]+)(?P<port>:[\d]+)?$/',
@@ -30,7 +34,10 @@ class WebfingerService
         return $matches;
     }
 
-    public function formatLocalActor($handle, $actorUri)
+    /**
+     * @return array<string, mixed> the WebFinger response body for a local actor
+     */
+    public function formatLocalActor(string $handle, string $actorUri): array
     {
         $webfinger = new WebFinger();
 
@@ -47,7 +54,7 @@ class WebfingerService
         return $webfinger->toArray();
     }
 
-    protected function getWebfingerObject($handle)
+    protected function getWebfingerObject(string $handle): WebFinger
     {
         $matches = $this->splitHandle($handle);
 
@@ -77,14 +84,15 @@ class WebfingerService
         return new WebFinger($json);
     }
 
-    public function getRemoteActor($handle)
+    /** @return string|null the remote profile id, or null when the response declares no self link */
+    public function getRemoteActor(string $handle): ?string
     {
         $webfinger = $this->getWebfingerObject($handle);
 
         return $webfinger->getProfileId();
     }
 
-    public function getInteractionUrl($handle, $actorToFollow)
+    public function getInteractionUrl(string $handle, string $actorToFollow): string
     {
         $webfinger = $this->getWebfingerObject($handle);
 

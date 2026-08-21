@@ -12,6 +12,7 @@ use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
@@ -45,14 +46,17 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     public const VOCABULARY_TEST = 'http://yeswiki.net/_vocabulary/webhook-test';
     public const ACTIVITYPUB_PUBLIC_URI = 'https://www.w3.org/ns/activitystreams#Public';
 
-    protected $aclService;
+    protected AclService $aclService;
+
+    /** @var bool|null memoised on first read by getDebugMode() */
     protected $debugMode;
-    protected $entryManager;
-    protected $formManager;
-    protected $params;
-    protected $semanticTransformer;
-    protected $tripleStore;
-    protected $userManager;
+
+    protected EntryManager $entryManager;
+    protected FormManager $formManager;
+    protected ParameterBagInterface $params;
+    protected SemanticTransformer $semanticTransformer;
+    protected TripleStore $tripleStore;
+    protected UserManager $userManager;
 
     protected ContainerInterface $container;
 
@@ -89,19 +93,19 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         ];
     }
 
-    public function sendCommentCreatedWebHook($event)
+    public function sendCommentCreatedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], ['comment' => $data['data']], self::WEBHOOKS_ACTION_CREATED_COMMENT);
     }
 
-    public function sendCommentModifiedWebHook($event)
+    public function sendCommentModifiedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], ['comment' => $data['data']], self::WEBHOOKS_ACTION_MODIFIED_COMMENT);
     }
 
-    public function sendCommentDeletedWebHook($event)
+    public function sendCommentDeletedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], [
@@ -111,19 +115,19 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         ], self::WEBHOOKS_ACTION_DELETED_COMMENT);
     }
 
-    public function sendEntryCreatedWebHook($event)
+    public function sendEntryCreatedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], $data['data'], self::ACTION_ADD);
     }
 
-    public function sendEntryModifiedWebHook($event)
+    public function sendEntryModifiedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], $data['data'], self::ACTION_EDIT);
     }
 
-    public function sendEntryDeletedWebHook($event)
+    public function sendEntryDeletedWebHook(Event $event): void
     {
         $data = $event->getData();
         $this->securedExecution([$this, 'webhooks_post_all'], $data['data'], self::ACTION_DELETE);
@@ -146,13 +150,14 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     /**
      * execution of $function with catch of errors.
      *
-     * @param string|array $function string = a function , otherwise [className, Method]
+     * @param callable-string|array{0: object, 1: string} $function string = a function , otherwise [className, Method]
+     *
+     * @return mixed whatever $function answered, or null when it threw and the error was reported as a toast
      */
     public function securedExecution($function, $param1 = null, $param2 = null, $param3 = null)
     {
-        $isMethod = (is_array($function) && count($function) == 2);
         try {
-            if (!$isMethod) {
+            if (!is_array($function)) {
                 return $function($param1, $param2, $param3);
             }
             $object = $function[0];
@@ -163,12 +168,8 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             if ($this->getDebugMode() && $this->getService(AclService::class)->isAdmin()) {
                 throw $th;
             }
-            $functionName = $isMethod
-                ? (
-                    is_string(get_class($function[0])) ? get_class($function[0]) . '->' : ''
-                ) . (
-                    is_string($function[1]) ? $function[1] : ''
-                )
+            $functionName = is_array($function)
+                ? get_class($function[0]) . '->' . $function[1]
                 : $function;
 
             $_SESSION['message'] = ($_SESSION['message'] ?? '') . str_replace(
@@ -198,7 +199,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         ]);
     }
 
-    protected function registerWebhooks()
+    protected function registerWebhooks(): void
     {
         $this->tripleStore->delete($this->getService(PageContext::class)->getTag(), self::VOCABULARY_WEBHOOK, null, '', '');
 
@@ -220,8 +221,9 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                             }
                         }
                     } elseif ($formId !== 'comments') {
+                        // no such form is as good a reason to refuse as a non-semantic one
                         $form = $this->formManager->getOne($formId);
-                        if (!$form['sem_type']) {
+                        if (empty($form['sem_type'])) {
                             $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                         }
                     }
@@ -234,7 +236,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                         'format' => $_POST['format'][$i],
                         'form' => $formId,
                         'url' => trim($_POST['url'][$i]),
-                    ]),
+                    ], JSON_THROW_ON_ERROR),
                     '',
                     ''
                 );
@@ -244,6 +246,13 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         header('Location:' . $_SERVER['REQUEST_URI']);
     }
 
+    /**
+     * The webhooks registered on the BazaR page, optionally only those watching one form.
+     *
+     * @param int|string $form_id 0 for every webhook, 'comments' for the comment ones, otherwise a form id
+     *
+     * @return array<int, array<string, mixed>> each decoded from its triple's JSON value
+     */
     public function get_all_webhooks($form_id = 0)
     {
         $all_webhooks = array_map(function ($webhook) {
@@ -259,6 +268,11 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         });
     }
 
+    /**
+     * @param string $url
+     *
+     * @return string|false the url itself when it is a well-formed http(s) one, false otherwise
+     */
     protected function is_valid_url($url)
     {
         if (preg_match('/^(http|https):\\/\\/[a-z0-9_]+([\\-\\.]{1}[a-z_0-9]+)*(\\.[_a-z]{2,5})?((:[0-9]{1,5})?\\/.*)?$/i', $url)) {
@@ -268,6 +282,13 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         return false;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @param string               $action_type one of the WEBHOOKS_ACTION_* / ACTION_* constants
+     * @param string               $user_name
+     *
+     * @return string the rendered notification body
+     */
     protected function get_notification_text($data, $action_type, $user_name)
     {
         switch ($action_type) {
@@ -308,8 +329,15 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             case self::WEBHOOKS_ACTION_DELETED_COMMENT:
                 return $this->render('@core/webhooks/message-delete-comment.twig', $tabData);
         }
+
+        throw new \Exception("Webhook error: no notification template for action '{$action_type}'");
     }
 
+    /**
+     * @param string $date as stored, 'YYYY-MM-DD HH:MM:SS'
+     *
+     * @return string the same instant in the XSD dateTime spelling
+     */
     protected function format_date_xsd($date)
     {
         $date_array = explode(' ', $date);
@@ -317,11 +345,16 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         return $date_array[0] . 'T' . $date_array[1] . 'Z';
     }
 
+    /**
+     * @param string|null $actor the entry's own actor uri, empty to fall back to the logged-in user
+     *
+     * @return string the actor uri, rebased on `webhooks_activitypub_actors_base_url` when one is configured
+     */
     protected function get_actor_uri($actor)
     {
-        if ($this->params->has('webhooks_activitypub_default_actor')
-            && !empty($this->params->get('webhooks_activitypub_default_actor'))) {
-            return $this->params->get('webhooks_activitypub_default_actor');
+        $defaultActor = $this->configuredString('webhooks_activitypub_default_actor');
+        if ($defaultActor !== '') {
+            return $defaultActor;
         }
 
         if (!$actor) {
@@ -329,16 +362,34 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             $actor = $this->getService(UrlFormatter::class)->href('', !empty($user['name']) ? $user['name'] : _t('WEBHOOKS_ANONYMOUS_USER'));
         }
 
-        if ($this->params->has('webhooks_activitypub_actors_base_url')
-            && !empty($this->params->get('webhooks_activitypub_actors_base_url'))) {
-            $actor = str_replace($this->params->get('base_url'), '', $actor);
-
-            return $this->params->get('webhooks_activitypub_actors_base_url') . $actor;
+        $actorsBaseUrl = $this->configuredString('webhooks_activitypub_actors_base_url');
+        if ($actorsBaseUrl !== '') {
+            return $actorsBaseUrl . str_replace($this->configuredString('base_url'), '', $actor);
         }
 
         return $actor;
     }
 
+    /**
+     * A configuration value that is only meaningful as a string: '' when it is unset, or set
+     * to something that is not one (a webmaster can put anything in the config file).
+     */
+    private function configuredString(string $name): string
+    {
+        if (!$this->params->has($name)) {
+            return '';
+        }
+        $value = $this->params->get($name);
+
+        return is_string($value) ? $value : '';
+    }
+
+    /**
+     * @param string               $format one of the FORMAT_* constants
+     * @param array<string, mixed> $data
+     *
+     * @return mixed the body to POST, shaped for $format
+     */
     protected function format_json_data($format, $data)
     {
         switch ($format) {
@@ -412,14 +463,19 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
                 return $data;
         }
+
+        // a format nobody recognises (an old triple, a webmaster's typo) is sent as-is,
+        // the same as FORMAT_RAW -- better a delivered webhook than a silent null body
+        return $data;
     }
 
     /**
      * update $webhook['url'], $data and options according to $webhook['format'].
      *
-     * @param array $data
+     * @param array<string, mixed> $webhook
+     * @param array<string, mixed> $data
      *
-     * @return array [$url, $options (to merge to current options))]
+     * @return array{0: string, 1: array<string, mixed>} [$url, $options (to merge to current options))]
      */
     protected function extract_url_options($webhook, $data)
     {
@@ -460,6 +516,12 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         return [$url, $options];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @param string               $action_type one of the WEBHOOKS_ACTION_* / ACTION_* constants
+     *
+     * @return void
+     */
     public function webhooks_post_all($data, $action_type)
     {
         switch ($action_type) {

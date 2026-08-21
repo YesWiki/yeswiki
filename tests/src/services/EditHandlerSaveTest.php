@@ -38,6 +38,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
 
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'original content'], '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
+        $this->assertNotNull($page);
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
@@ -70,6 +71,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             }
             $this->assertTrue($redirected, 'a successful save must redirect');
             $reloaded = $pageManager->getOne(self::PAGE_TAG);
+            $this->assertNotNull($reloaded);
             $this->assertSame('NEW SAVED CONTENT', trim(PageBody::content($reloaded['body'])));
 
             $_POST = ['submit' => 'Sauver', 'body' => 'CONFLICTING CONTENT', 'previous' => $page['id']];
@@ -77,6 +79,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($reloaded);
             $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $stillSaved = $pageManager->getOne(self::PAGE_TAG);
+            $this->assertNotNull($stillSaved);
             $this->assertSame('NEW SAVED CONTENT', trim(PageBody::content($stillSaved['body'])), 'a stale save must be rejected, not silently overwrite');
         } finally {
             $pageManager->deleteOrphaned(self::PAGE_TAG);

@@ -22,17 +22,19 @@ use YesWiki\Search\Service\TagsManager;
 
 class PageManager
 {
-    protected $aclService;
-    protected $authenticationService;
-    protected $dbService;
-    protected $eventDispatcher;
-    protected $params;
-    protected $hibernationService;
-    protected $tagsManager;
-    protected $tripleStore;
-    protected $userManager;
+    protected AclService $aclService;
+    protected AuthenticationService $authenticationService;
+    protected DbService $dbService;
+    protected EventDispatcher $eventDispatcher;
+    protected ParameterBagInterface $params;
+    protected HibernationService $hibernationService;
+    protected TagsManager $tagsManager;
+    protected TripleStore $tripleStore;
+    protected UserManager $userManager;
 
+    /** @var array<string, string|null> tag => the row's owner */
     protected $ownersCache;
+    /** @var array<string, array<string, mixed>|null> tag => the latest revision, or null for a tag with no row */
     protected $pageCache;
     /**
      * @var array<string, string|null> tag => `pages`.`type`, or null for a tag with no row
@@ -82,6 +84,8 @@ class PageManager
      * @param bool        $cache                  : use cache ?
      * @param bool        $bypassAcls             : do not check acl
      * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
+     *
+     * @return array<string, mixed>|null
      */
     public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
@@ -109,7 +113,7 @@ class PageManager
                 $this->rawPageCache[$tag] = $page;
             }
 
-            if (!$bypassAcls) {
+            if (!$bypassAcls && $page !== null) {
                 $page = $this->checkEntriesACL([$page], $tag, $userNameForCheckingACL)[0];
             }
 
@@ -202,6 +206,8 @@ class PageManager
     /**
      * Retrieves the cached version of a page.
      *
+     * @param string $tag
+     *
      * @return mixed The cached version of a page:
      *               - the page DB line if the page exists and is in cache
      *               - null if the cache knows that the page does not exists
@@ -215,20 +221,24 @@ class PageManager
     /**
      * Caches a page's DB line.
      *
-     * @param array  $page
-     *                        The page (full) DB line or null if the page does not exists
-     * @param string $pageTag
-     *                        The tag of the page to cache. Defaults to $page['tag'] but is mandatory when $page === null
+     * @param array<string, mixed>|null $page
+     *                                           The page (full) DB line or null if the page does not exists
+     * @param string|null               $pageTag
+     *                                           The tag of the page to cache. Defaults to $page['tag'] but is mandatory when $page === null
      */
-    public function cache($page, $pageTag = null)
+    public function cache($page, $pageTag = null): void
     {
+        $pageTag ??= $page['tag'] ?? null;
         if ($pageTag === null) {
-            $pageTag = $page['tag'];
+            throw new \InvalidArgumentException('PageManager::cache() needs a tag when the page is null');
         }
         $this->pageCache[$pageTag] = $page;
     }
 
-    public function cacheOwner($page)
+    /**
+     * @param array<string, mixed>|null $page
+     */
+    public function cacheOwner($page): void
     {
         if (!empty($page['tag']) && isset($page['owner'])) {
             $this->ownersCache[$page['tag']] = $page['owner'];
@@ -281,7 +291,7 @@ class PageManager
             [$type]
         );
 
-        return array_values(array_map(static fn (array $row): string => (string)$row['tag'], $rows));
+        return array_map(static fn (array $row): string => (string)$row['tag'], $rows);
     }
 
     /** Forget everything remembered about this tag. */
@@ -296,7 +306,10 @@ class PageManager
         $this->typeCache[$tag] = $type;
     }
 
-    private function unsetCacheOwner($page)
+    /**
+     * @param array<string, mixed>|null $page
+     */
+    private function unsetCacheOwner($page): void
     {
         if (!empty($page['tag'])) {
             unset($this->ownersCache[$page['tag']]);
@@ -304,22 +317,27 @@ class PageManager
     }
 
     /**
-     * @param bool $bypassAcls do not check acl (and, since ticket 06, skip users-type Field
-     *                         ACL redaction too) -- needed by revertToRevision(), which reads
-     *                         a revision's TRUE stored data to write it back, not to display
-     *                         it. Getting this wrong silently corrupts data rather than just
-     *                         hiding it: getById() is also reachable from a genuine display
-     *                         path (Wiki::LoadPageById(), used by the RSS revision-diff view),
-     *                         which must keep bypassAcls=false so it still redacts sensitive
-     *                         fields on that path.
+     * @param bool       $bypassAcls do not check acl (and, since ticket 06, skip users-type Field
+     *                               ACL redaction too) -- needed by revertToRevision(), which reads
+     *                               a revision's TRUE stored data to write it back, not to display
+     *                               it. Getting this wrong silently corrupts data rather than just
+     *                               hiding it: getById() is also reachable from a genuine display
+     *                               path (Wiki::LoadPageById(), used by the RSS revision-diff view),
+     *                               which must keep bypassAcls=false so it still redacts sensitive
+     *                               fields on that path.
+     * @param int|string $id
+     *
+     * @return array<string, mixed>|null
      */
     public function getById($id, bool $bypassAcls = false): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . 'where id = ? limit 1', [$id]);
-        if ($page) {
-            $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
-            $page['body'] = PageBody::decode($page['body'] ?? null);
+        if ($page === null) {
+            return null;
         }
+
+        $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
+        $page['body'] = PageBody::decode($page['body'] ?? null);
         if (!$bypassAcls) {
             $page = $this->checkEntriesACL([$page], $page['tag'])[0];
         }
@@ -329,6 +347,9 @@ class PageManager
 
     /**
      * Revert a page to a prior revision (identified by its `id`, not `time` -- `time` has only second-granularity and isn't guaranteed unique across revisions).
+     *
+     * @param string     $tag
+     * @param int|string $revisionId
      */
     public function revertToRevision($tag, $revisionId, bool $fullRevert = false): int
     {
@@ -348,6 +369,9 @@ class PageManager
 
     /**
      * Overwrites the *current* latest revision's metadata in place (no new revision, no merge) -- only meaningful as the second half of revertToRevision()'s full-revert case, completing that one logical action on the row save() just created a moment ago.
+     *
+     * @param string                    $tag
+     * @param array<string, mixed>|null $metadata
      */
     private function replaceMetadata($tag, ?array $metadata): void
     {
@@ -362,6 +386,12 @@ class PageManager
         $this->aclService->forget($tag);
     }
 
+    /**
+     * @param string $pageTag
+     * @param int    $limit
+     *
+     * @return array<array-key, array<string, mixed>> one row per revision, newest first
+     */
     public function getRevisions($pageTag, $limit = 10000)
     {
         $userCol = $this->dbService->quoteIdentifier('user');
@@ -374,6 +404,11 @@ class PageManager
         ", [$pageTag, (int)$limit]), $pageTag);
     }
 
+    /**
+     * @param array<string, mixed> $page
+     *
+     * @return array<string, mixed>|null the revision before this one, null when it is the first
+     */
     public function getPreviousRevision($page)
     {
         $timeCol = $this->dbService->quoteIdentifier('time');
@@ -383,14 +418,21 @@ class PageManager
             ORDER BY {$timeCol} DESC
             LIMIT 1
         ", [$page['tag'], $page['time']]);
-        if ($previous) {
-            $previous['metadatas'] = $this->decodeMetadata($previous['metadata'] ?? null);
-            $previous['body'] = PageBody::decode($previous['body'] ?? null);
+        if ($previous === null) {
+            return null;
         }
+
+        $previous['metadatas'] = $this->decodeMetadata($previous['metadata'] ?? null);
+        $previous['body'] = PageBody::decode($previous['body'] ?? null);
 
         return $this->checkEntriesACL([$previous], $page['tag'])[0];
     }
 
+    /**
+     * @param string $page the page's tag
+     *
+     * @return int
+     */
     public function countRevisions($page)
     {
         return $this->dbService->countRows("
@@ -399,6 +441,12 @@ class PageManager
         ", [$page]);
     }
 
+    /**
+     * @param int    $limit
+     * @param string $minDate
+     *
+     * @return array<array-key, array<string, mixed>>|null null when nothing changed
+     */
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
         $userCol = $this->dbService->quoteIdentifier('user');
@@ -417,6 +465,9 @@ class PageManager
         return null;
     }
 
+    /**
+     * @return array<array-key, array<string, mixed>>
+     */
     public function getAll(): array
     {
         $pages = $this->dbService->loadAll(<<<SQL
@@ -456,6 +507,11 @@ class PageManager
         }, $pages);
     }
 
+    /**
+     * @param string $pageTag
+     *
+     * @return string|null when the page was first written, null when there is no such page
+     */
     public function getCreateTime($pageTag)
     {
         $timeCol = $this->dbService->quoteIdentifier('time');
@@ -471,7 +527,10 @@ class PageManager
         return null;
     }
 
-    public function deleteOrphaned($tag)
+    /**
+     * @param string $tag
+     */
+    public function deleteOrphaned($tag): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -530,9 +589,9 @@ class PageManager
         if ($rights) {
             $initialMetadata = null;
             if (!$oldPage = $this->getOne($tag)) {
-                $defaultWrite = $this->aclService->load($tag, 'write', true)['list'];
-                $defaultRead = $this->aclService->load($tag, 'read', true)['list'];
-                $defaultComment = $this->aclService->load($tag, 'comment', true)['list'];
+                $defaultWrite = $this->aclService->load($tag, 'write', true)['list'] ?? '';
+                $defaultRead = $this->aclService->load($tag, 'read', true)['list'] ?? '';
+                $defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ?? '';
 
                 $initialMetadata = ['acls' => [
                     'write' => $parent ? $user : $defaultWrite,
@@ -653,6 +712,12 @@ class PageManager
         );
     }
 
+    /**
+     * @param string $tag
+     * @param string $time
+     *
+     * @return string|null the owner's username, null when nobody owns the page
+     */
     public function getOwner($tag = '', $time = '')
     {
         if (!$tag = trim($tag)) {
@@ -677,7 +742,11 @@ class PageManager
         return $this->ownersCache[$tag];
     }
 
-    public function setOwner($tag, $user)
+    /**
+     * @param string $tag
+     * @param string $user the new owner's username
+     */
+    public function setOwner($tag, $user): void
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -692,6 +761,11 @@ class PageManager
         unset($this->pageCache[$tag], $this->rawPageCache[$tag]);
     }
 
+    /**
+     * @param string $tag
+     *
+     * @return array<string, mixed>|null
+     */
     public function getMetadata($tag): ?array
     {
         $page = $this->getOne($tag, null, true, true);
@@ -701,6 +775,11 @@ class PageManager
 
     /**
      * Metadata is versioned along with content (ADR-0002): changing it creates a new `pages` revision, the same as an edit to body, carrying the current body forward unchanged -- so permission/metadata history stays reconstructable and revertable separately from content (see PageManager::save()'s revisioning, which this mirrors).
+     *
+     * @param string               $tag
+     * @param array<string, mixed> $metadata
+     *
+     * @return bool whether anything changed
      */
     public function setMetadata($tag, $metadata)
     {
@@ -778,6 +857,9 @@ class PageManager
         );
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function decodeMetadata(?string $rawJson): ?array
     {
         if (empty($rawJson)) {
@@ -792,6 +874,9 @@ class PageManager
         return json_decode($rawJson, true);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     private function encodeMetadata(array $metadata): string
     {
         if (YW_CHARSET != 'UTF-8') {
@@ -806,9 +891,10 @@ class PageManager
     /**
      * use Guard to checkACL for entries.
      *
-     * @param string|null $userNameForCheckingACL if empty uses the connected user
+     * @param array<array-key, array<string, mixed>> $pages
+     * @param string|null                            $userNameForCheckingACL if empty uses the connected user
      *
-     * @return array $pages
+     * @return array<array-key, array<string, mixed>> $pages
      */
     private function checkEntriesACL(array $pages, ?string $tag = null, ?string $userNameForCheckingACL = null): array
     {
@@ -847,7 +933,11 @@ class PageManager
         return $pages;
     }
 
-    private function duplicate($sourceTag, $destinationTag): bool
+    /**
+     * @param string $sourceTag
+     * @param string $destinationTag
+     */
+    public function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
         $this->container->get(AdministrativeLogService::class)->log($this->authenticationService->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');

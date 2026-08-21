@@ -12,9 +12,9 @@ use YesWiki\Search\Service\SearchManager;
 
 class BazarListService
 {
-    protected $entryManager;
-    protected $entryExtraFields;
-    protected $formManager;
+    protected EntryManager $entryManager;
+    protected EntryExtraFieldsService $entryExtraFields;
+    protected FormManager $formManager;
     protected ContainerInterface $container;
 
     public function __construct(
@@ -29,6 +29,11 @@ class BazarListService
         $this->formManager = $formManager;
     }
 
+    /**
+     * @param array<string, mixed> $pOptions
+     *
+     * @return array<int|string, mixed> the forms the options name, by id
+     */
     public function getForms($pOptions = []): array
     {
         $vIDs = $this->getIDs($pOptions['id'] ?? '');
@@ -56,11 +61,18 @@ class BazarListService
         throw new BadRequestHttpException(_t('BAZ_EXTERNAL_IDS_REMOVED', ['ids' => $described]));
     }
 
+    /**
+     * @param array<string, mixed>                   $options
+     * @param array<int|string, mixed>               $forms
+     * @param array<array-key, array<string, mixed>> $entries
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
     private function replaceDefaultImage($options, $forms, $entries): array
     {
         $basePath = $this->container->get(AttachedFilePaths::class)->uploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
-        $formIds = array_keys($forms) ?? [];
+        $formIds = array_keys($forms);
 
         foreach ($formIds as $id) {
             $template = $forms[(int)$id]['template'] ?? [];
@@ -92,11 +104,15 @@ class BazarListService
         return $entries;
     }
 
+    /**
+     * @param array<string, mixed>          $pOptions
+     * @param array<int|string, mixed>|null $pForms   the forms already loaded, or null to load them from the options
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
     public function getEntries($pOptions, $pForms = null): array
     {
-        if (is_array($pOptions)) {
-            $pOptions['queries'] = $pOptions['queries'] ?? $pOptions['query'] ?? null;
-        }
+        $pOptions['queries'] = $pOptions['queries'] ?? $pOptions['query'] ?? null;
 
         if ($pForms == null) {
             $vForms = $this->getForms($pOptions);
@@ -152,6 +168,14 @@ class BazarListService
         return $vEntries;
     }
 
+    /**
+     * @param array<string, mixed>                   $options
+     * @param array<array-key, array<string, mixed>> $entries
+     * @param array<int|string, mixed>               $forms
+     * @param bool                                   $withIdIndexes key the filters by property name rather than by position
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
     public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
     {
         $options = array_merge([
@@ -224,7 +248,8 @@ class BazarListService
                 $linkedField = [];
                 if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
                     $linkedField = $this->formManager->findFieldWithId($formIdsUsed, $idLinkedData[0]);
-                    if (!empty($linkedField)) {
+                    // only an EnumField names another form; findFieldWithId() answers any field
+                    if ($linkedField instanceof EnumField) {
                         $linkedFormId = $linkedField->getLinkedObjectName();
                         $finalField = $this->formManager->findFieldWithId([$linkedFormId], $idLinkedData[1]);
                         if (!empty($finalField)) {
@@ -254,7 +279,7 @@ class BazarListService
                 $uniqValues = array_unique(array_column($entries, $propName));
 
                 usort($uniqValues, function ($a, $b) {
-                    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+                    return strcmp($this->sortKey($a), $this->sortKey($b));
                 });
 
                 foreach ($uniqValues as $value) {
@@ -398,6 +423,15 @@ class BazarListService
         ));
     }
 
+    /** The transliterated, lower-cased form a facet value sorts on. */
+    private function sortKey(string $value): string
+    {
+        return strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $value) ?: $value);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function createFilterNode($value, $label)
     {
         return [
@@ -407,6 +441,11 @@ class BazarListService
         ];
     }
 
+    /**
+     * @param array<string, mixed> $node
+     *
+     * @return array<string, mixed>
+     */
     private function recursivelyCreateNode($node)
     {
         $result = $this->createFilterNode($node['id'], $node['label']);
@@ -417,6 +456,14 @@ class BazarListService
         return $result;
     }
 
+    /**
+     * @param array<string, mixed>        $node
+     * @param string                      $propName
+     * @param array<array-key, int>       $countedValues how many entries hold each value
+     * @param array<string, list<string>> $checkedValues the facets the reader has checked
+     *
+     * @return array<string, mixed>
+     */
     private function recursivelyInitValuesForNonDynamic($node, $propName, $countedValues, $checkedValues)
     {
         $result = array_merge($node, [
@@ -433,6 +480,9 @@ class BazarListService
         return $result;
     }
 
+    /**
+     * @param string|null $key a key, or a dotted path into nested arrays
+     */
     private function getValueForArray($array, $key, $default = null)
     {
         if (!is_array($array)) {
@@ -458,6 +508,11 @@ class BazarListService
         return $array;
     }
 
+    /**
+     * @param bool $pThrowException
+     *
+     * @return array<string, mixed>|null null when the ids do not name exactly one local form
+     */
     public function getTheID($pIDs, $pThrowException = true)
     {
         $vIDs = $this->getIDs($pIDs);
@@ -483,6 +538,9 @@ class BazarListService
         return ['id' => $vLocalIDs[0], 'key' => $vLocalIDs[0], 'isExternal' => false];
     }
 
+    /**
+     * @return array<string, mixed> `locals` and `externals`, each a list
+     */
     public function getIDs($pIDs)
     {
         if ($pIDs === null) {
@@ -517,7 +575,7 @@ class BazarListService
         ];
     }
 
-    protected function isValidID($pID)
+    protected function isValidID($pID): bool
     {
         if (!is_string($pID)) {
             return false;
@@ -536,11 +594,14 @@ class BazarListService
         return true;
     }
 
-    protected function isValidURL($pURL)
+    protected function isValidURL($pURL): bool
     {
         return true;
     }
 
+    /**
+     * @return array<string, mixed> `locals` and `externals`, each a list
+     */
     protected function parseIDs($pIDs)
     {
         if (is_array($pIDs)) {
@@ -550,7 +611,7 @@ class BazarListService
             $pIDs = implode(',', $pIDs);
         }
 
-        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
+        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs)) ?? '';
 
         $vLines = str_getcsv($pIDs, ',', '"', '\\');
 
@@ -578,7 +639,7 @@ class BazarListService
             $vURL = trim($vExploded[0]);
             $vPostFix = $vExploded[1];
 
-            $vPostFix = preg_replace('/[\s()]*/', '', $vPostFix);
+            $vPostFix = preg_replace('/[\s()]*/', '', $vPostFix) ?? '';
 
             $vPostFix = explode(',', $vPostFix);
 
@@ -610,7 +671,7 @@ class BazarListService
                 if (!$this->isValidID($vID['id'])) {
                     throw new \Exception('Invalid external ID ' . $vID['id'] . print_r($vID, true));
                 }
-                if (isset($vID['localFormId']) && (trim($vID['localFormId']) != '') && !$this->isValidID($vID['localFormId'])) {
+                if (trim($vID['localFormId']) != '' && !$this->isValidID($vID['localFormId'])) {
                     throw new \Exception('Invalid local ID');
                 }
 
@@ -621,6 +682,10 @@ class BazarListService
         return $vResults;
     }
 
+    /**
+     * @param mixed $order     'desc' to reverse, anything else to sort ascending
+     * @param mixed $sortField the entry key to sort on, possibly a dotted path
+     */
     private function buildFieldSorter($order, $sortField): callable
     {
         $sortField = EntryManager::LEGACY_ENTRY_KEYS[$sortField] ?? $sortField;

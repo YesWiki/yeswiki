@@ -28,10 +28,15 @@ use YesWiki\Search\Service\SearchManager;
 
 class EntryApiController extends YesWikiController
 {
+    /**
+     * @param array<int|string>|int|string $formId          one form, or [] for every form the visitor may read
+     * @param string|null                  $output          '', 'csv', 'json-ld', 'html', 'geojson' or 'ical'
+     * @param string|null                  $selectedEntries comma-separated entry tags to restrict the answer to
+     */
     #[Route('/api/forms/{formId}/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
+    public function getAllFormEntries($formId, $output = null, $selectedEntries = null): Response
     {
-        if (!is_array($formId) && strpos($formId, 'b64_') === 0) {
+        if (is_string($formId) && strpos($formId, 'b64_') === 0) {
             $vFormID = base64_decode(urldecode(substr($formId, 4)), true);
         } else {
             $vFormID = $formId;
@@ -87,6 +92,12 @@ class EntryApiController extends YesWikiController
 
             $acceptHeader = (string)$this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
+                if (is_array($formId)) {
+                    // json-ld answers with one form's ldp:Container; there is no such
+                    // container spanning every form, so asking for one is a bad request
+                    throw new BadRequestHttpException();
+                }
+
                 return $this->getAllSemanticEntries($formId, $entries);
             } elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
@@ -120,11 +131,16 @@ class EntryApiController extends YesWikiController
         return new ApiResponse(empty($entries) ? null : $entries);
     }
 
+    /**
+     * @param string|null $output          as for getAllFormEntries()
+     * @param string|null $selectedEntries comma-separated entry tags
+     */
     #[Route('/api/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getAllEntries($output = null, $selectedEntries = null)
+    public function getAllEntries($output = null, $selectedEntries = null): Response
     {
         $get = $this->getRequest()->query;
-        if ($this->getService(EntryFastAccessService::class)->isFastAccess($output, $selectedEntries, $get->all())) {
+        if ($selectedEntries !== null
+            && $this->getService(EntryFastAccessService::class)->isFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
                 $html = $this->getService(EntryController::class)->view($entryId, '', true);
@@ -145,11 +161,17 @@ class EntryApiController extends YesWikiController
         return $this->getAllFormEntries([], $output, $selectedEntries);
     }
 
-    public function getAllSemanticEntries($formId, $entries)
+    /**
+     * @param int|string                             $formId
+     * @param array<array-key, array<string, mixed>> $entries
+     */
+    public function getAllSemanticEntries($formId, $entries): ApiResponse
     {
         $form = $this->getService(FormManager::class)->getOne($formId);
         if ($form === null) {
-            return [];
+            // this is the body of a routed answer (getAllFormEntries returns it straight
+            // through), so an unknown form has to be a 404 and not a bare array
+            throw new NotFoundHttpException();
         }
 
         $resources = array_map(function ($entry) use ($form) {
@@ -174,8 +196,11 @@ class EntryApiController extends YesWikiController
         );
     }
 
+    /**
+     * @param string $sourceUrl url-encoded
+     */
     #[Route('/api/entries/url/{sourceUrl}')]
-    public function getEntryUrl($sourceUrl)
+    public function getEntryUrl($sourceUrl): ApiResponse
     {
         $triples = $this->getService(TripleStore::class)->getMatching(
             null,
@@ -194,8 +219,11 @@ class EntryApiController extends YesWikiController
     }
 
     /** Create or update an entry. */
+    /**
+     * @param int|string $formId
+     */
     #[Route('/api/entries/{formId}', methods: ['POST'], options: ['acl' => ['+']])]
-    public function createEntry($formId)
+    public function createEntry($formId): Response
     {
         $request = $this->getRequest();
         if (strpos((string)$request->headers->get('content-type', ''), 'application/ld+json') !== false) {
@@ -227,8 +255,11 @@ class EntryApiController extends YesWikiController
         );
     }
 
+    /**
+     * @param int|string $formId
+     */
     #[Route('/api/entries/{formId}/json-ld', methods: ['POST'], options: ['acl' => ['+']])]
-    public function createSemanticEntry($formId)
+    public function createSemanticEntry($formId): Response
     {
         $postData = $this->getRequest()->request->all();
         $postData['antispam'] = 1;
@@ -245,7 +276,7 @@ class EntryApiController extends YesWikiController
     }
 
     #[Route('/api/entries/bazarlist', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
-    public function getBazarListData()
+    public function getBazarListData(): ApiResponse
     {
         $vBazarListService = $this->getService(BazarListService::class);
 

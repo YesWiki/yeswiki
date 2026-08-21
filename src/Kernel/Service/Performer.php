@@ -44,13 +44,17 @@ class Performer
     ];
 
     protected ContainerInterface $container;
-    protected $params;
-    protected $twig;
+    protected ParameterBagInterface $params;
+    protected TemplateEngine $twig;
     protected ThrowableFormatter $throwableFormatter;
     protected PerformableArguments $performableArguments;
 
-    /** Extension-provided performables found by scanning; core ones live in the registry. */
-    protected $objectList;
+    /**
+     * Extension-provided performables found by scanning; core ones live in the registry.
+     *
+     * @var array<string, array<string, array{filePath: string, baseName: string}>> type => performable name => where its class lives
+     */
+    protected $objectList = [];
     protected ActionRegistry $registry;
     protected EventDispatcher $events;
 
@@ -84,7 +88,7 @@ class Performer
     /**
      * Record the performable classes an extension ships in $dir.
      */
-    private function findObjectInPath($dir, $objectType)
+    private function findObjectInPath(string $dir, string $objectType): void
     {
         if (!file_exists($dir) || !($dh = opendir($dir))) {
             return;
@@ -114,11 +118,11 @@ class Performer
     /**
      * Build the performable described by $object.
      *
-     * @param array $object the object description
-     * @param array $vars   the variables defined in the execution context of the object
-     * @param       $output the current generated output
+     * @param array{filePath: string, baseName: string} $object the object description
+     * @param array<mixed>                              $vars   the variables defined in the execution context of the object
+     * @param string                                    $output the current generated output
      *
-     * @return mixed the performable instance
+     * @return \YesWiki\Core\YesWikiPerformable the performable instance
      */
     public function createPerformable(array $object, array &$vars, &$output)
     {
@@ -145,9 +149,9 @@ class Performer
     /**
      * Run an action or handler.
      *
-     * @param       $objectName the object name
-     * @param       $objectType a Performer::TYPES key
-     * @param array $vars       the arguments given to the performable, keyed by parameter name
+     * @param string       $objectName the object name
+     * @param string       $objectType a Performer::TYPES key
+     * @param array<mixed> $vars       the arguments given to the performable, keyed by parameter name
      *
      * @return string the generated output
      */
@@ -251,7 +255,7 @@ class Performer
         return $event->getOutput();
     }
 
-    private function renderError($message, $objectType)
+    private function renderError(string $message, string $objectType): string
     {
         $data = [
             'type' => 'danger',
@@ -268,6 +272,8 @@ class Performer
 
     /**
      * Every available performable of $objectType: core services plus extension classes.
+     *
+     * @param string $objectType a Performer::TYPES key
      *
      * @return list<string>
      */

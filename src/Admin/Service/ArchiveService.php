@@ -73,11 +73,11 @@ class ArchiveService
         " - On Apache server, check that the file `.htaccess` is taken in count.\n" .
         " - On Nginx server or other, configure the server to **deny all** access on this folder\n";
 
-    protected $configurationService;
-    protected $consoleService;
-    protected $dbService;
-    protected $params;
-    protected $hibernationService;
+    protected ConfigurationService $configurationService;
+    protected ConsoleService $consoleService;
+    protected DbService $dbService;
+    protected ParameterBagInterface $params;
+    protected HibernationService $hibernationService;
 
     protected UrlFormatter $urlFormatter;
     protected Storage $storage;
@@ -103,7 +103,12 @@ class ArchiveService
     /**
      * archive data in zip file.
      *
-     * @param string|OutputInterface &$output
+     * @param string|OutputInterface    &$output
+     * @param array<array-key, mixed>   $foldersToInclude
+     * @param array<array-key, mixed>   $foldersToExclude
+     * @param array<string, mixed>|null $hideConfigValuesParams the config keys to anonymize, null for the configured ones
+     *
+     * @return string the path of the archive, or '' when the run stopped before writing one
      *
      * @throws \Exception
      */
@@ -115,7 +120,7 @@ class ArchiveService
         array $foldersToExclude = [],
         ?array $hideConfigValuesParams = null,
         string $uid = ''
-    ) {
+    ): string {
         $vStatus = $this->getArchivingStatus();
 
         $inputFile = '';
@@ -258,6 +263,11 @@ class ArchiveService
         return $location;
     }
 
+    /**
+     * @param array<string, mixed> $pStatus as getArchivingStatus() answers it
+     *
+     * @return list<string> one message per reason this wiki cannot be archived right now
+     */
     public function getCannotArchiveDetails($pStatus)
     {
         $vMessages = [];
@@ -340,7 +350,7 @@ class ArchiveService
     /**
      * retrieve the current status to archive.
      *
-     * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool]
+     * @return array<string, mixed> ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool]
      */
     public function getArchivingStatus(): array
     {
@@ -460,6 +470,9 @@ class ArchiveService
     /**
      * start archive async via CLI or directly if sync.
      *
+     * @param array<array-key, mixed> $foldersToInclude
+     * @param array<array-key, mixed> $foldersToExclude
+     *
      * @return string uid
      */
     public function startArchive(
@@ -516,6 +529,8 @@ class ArchiveService
 
     /**
      * get the list of archives in a array with information for each one.
+     *
+     * @return list<array<string, mixed>> newest first
      */
     public function getArchives(): array
     {
@@ -656,7 +671,9 @@ class ArchiveService
     /**
      * delete archives.
      *
-     * @return array $results = ['filename' => bool]
+     * @param array<array-key, mixed> $filesnames
+     *
+     * @return array<string, bool> $results = ['filename' => bool]
      */
     public function deleteArchives(array $filesnames): array
     {
@@ -682,7 +699,7 @@ class ArchiveService
     /**
      * get uid status.
      *
-     * @return array ['found'=> bool,'running' => bool,'finished'=>bool,'output' => string]
+     * @return array<string, mixed> ['found'=> bool,'running' => bool,'finished'=>bool,'output' => string]
      */
     public function getUIDStatus(string $uid, bool $forceStarted = false): array
     {
@@ -771,7 +788,10 @@ class ArchiveService
     /**
      * create the zip file.
      *
-     * @param string|OutputInterface &$output
+     * @param array<array-key, mixed>   $foldersToInclude
+     * @param list<string>              $blacklistedRootFolders
+     * @param string|OutputInterface    &$output
+     * @param array<string, mixed>|null $hideConfigValuesParams
      *
      * @return bool : true on success, false on failure
      */
@@ -809,7 +829,7 @@ class ArchiveService
 
         $resource = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         if ($resource !== true) {
-            return;
+            return false;
         }
 
         // register cancel callback if available
@@ -948,6 +968,9 @@ class ArchiveService
 
     /**
      * test if folder should be included.
+     *
+     * @param list<string> $whitelistedRootFolders
+     * @param list<string> $blacklistedRootFolders
      */
     protected function shouldIncludeFolder(
         string $relativeFolderName,
@@ -966,6 +989,11 @@ class ArchiveService
         })) > 0;
     }
 
+    /**
+     * @param array<array-key, mixed> $list
+     *
+     * @return list<string> the relative paths of $list, without duplicates
+     */
     private function sanitizeFileList(array $list): array
     {
         $outputList = [];
@@ -975,7 +1003,7 @@ class ArchiveService
                 // remove path containing '/../' to be sure to keep in root folder of the wiki
                 // or begining by '/' or 'c:\' to be sure to keep relative to root folder of website
                 if (!empty($filePath) && !preg_match('/^(?:\\/|\\\\)|[A-Za-z]:\\\\|(?:\\/|\\\\|^)\\.\\.(?:\\/|\\\\|$)/', $filePath)) {
-                    $formattedFilePath = preg_replace("/(\/|\\\\)$/", '', $filePath);
+                    $formattedFilePath = (string)preg_replace("/(\/|\\\\)$/", '', $filePath);
                     if (!in_array($formattedFilePath, $outputList)) {
                         $outputList[] = $formattedFilePath;
                     }
@@ -992,6 +1020,9 @@ class ArchiveService
         return self::PRIVATE_FOLDER_NAME_IN_ZIP;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getArchiveParams(): array
     {
         if ($this->params->has(self::PARAMS_KEY_IN_WAKKA)) {
@@ -1073,7 +1104,7 @@ class ArchiveService
         if (!$this->storage->fileExists("$localPath/$testFileName")) {
             throw new \Exception("\"$localPath/$testFileName\" must exist for tests !");
         }
-        $url = preg_replace("/\??$/", '', $this->params->get('base_url'));
+        $url = (string)preg_replace("/\??$/", '', $this->configString('base_url'));
         $url .= str_replace(DIRECTORY_SEPARATOR, '/', "$localPath/$testFileName");
         $ct = stream_context_set_default([
             'ssl' => [
@@ -1092,11 +1123,20 @@ class ArchiveService
     }
 
     /**
+     * /** A configuration value as a string: the parameter bag types every value as a union. */
+    private function configString(string $key): string
+    {
+        $value = $this->params->get($key);
+
+        return is_scalar($value) ? (string)$value : '';
+    }
+
+    /**
      * write text to the output.
      *
      * @param string|OutputInterface &$output
      */
-    private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = '')
+    private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = ''): void
     {
         if (!empty($outputFile) && $this->storage->fileExists($outputFile)) {
             if (!$this->append($outputFile, $text . ($newline ? "\n" : ''))) {
@@ -1114,6 +1154,10 @@ class ArchiveService
 
     /**
      * sanitize yeswiki.config.php before saving it.
+     *
+     * @param array<array-key, mixed>   $foldersToInclude
+     * @param array<array-key, mixed>   $foldersToExclude
+     * @param array<string, mixed>|null $hideConfigValuesParams
      */
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
@@ -1148,6 +1192,11 @@ class ArchiveService
         return $this->configurationService->getContentToWrite($config);
     }
 
+    /**
+     * @param array<array-key, mixed> $defaultValues
+     *
+     * @return mixed $values with every key $defaultValues names reset to its default
+     */
     private function setDefaultValuesRecursive(array $defaultValues, $values)
     {
         foreach ($defaultValues as $key => $value) {
@@ -1165,7 +1214,7 @@ class ArchiveService
         return $values;
     }
 
-    protected function setWikiStatus()
+    protected function setWikiStatus(): void
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
@@ -1173,7 +1222,7 @@ class ArchiveService
         $this->configurationService->write($config);
     }
 
-    protected function unsetWikiStatus()
+    protected function unsetWikiStatus(): void
     {
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
@@ -1190,7 +1239,7 @@ class ArchiveService
             $results = $this->consoleService->startConsoleSync('core:exportdb', [
                 '--test',
             ]);
-            if (empty($results) || !is_array($results)) {
+            if (empty($results)) {
                 return false;
             }
             $result = $results[array_key_first($results)];
@@ -1254,9 +1303,11 @@ class ArchiveService
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo).
      *
+     * @param list<string> $blacklistedRootFolders
+     *
      * @throws \Exception
      */
-    protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
+    protected function assertEnoughtSpace(array $blacklistedRootFolders = []): void
     {
         if (empty($blacklistedRootFolders)) {
             $blacklistedRootFolders = self::FOLDERS_TO_EXCLUDE;
@@ -1302,7 +1353,7 @@ class ArchiveService
     /**
      * remove oldest files to keep only 10 files.
      */
-    private function cleanOldestFiles()
+    private function cleanOldestFiles(): void
     {
         $archivesToDelete = $this->archivesToDelete();
         if (!empty($archivesToDelete)) {
@@ -1324,7 +1375,7 @@ class ArchiveService
     /**
      * extract list of archives to delete.
      *
-     * @return array $files
+     * @return list<string> $files the filenames to delete
      */
     public function archivesToDelete(bool $beforeArchive = false): array
     {
@@ -1373,6 +1424,11 @@ class ArchiveService
         return [];
     }
 
+    /**
+     * @param list<array<string, mixed>> $archives as getArchives() answers them
+     *
+     * @return list<int> the positions in $archives of the archives older than $days days
+     */
     private function getIndexesMoreThanxdays(array $archives, int $days): array
     {
         if ($days < 1) {
@@ -1395,8 +1451,12 @@ class ArchiveService
         return $indexes;
     }
 
-    /** What is running, and where each run says so. */
-    private function getInfoFromFile()
+    /**
+     * What is running, and where each run says so.
+     *
+     * @return array<string, mixed> the decoded info.json, keyed by uid
+     */
+    private function getInfoFromFile(): array
     {
         $file = self::PROGRESS_FOLDER . '/info.json';
         if (!$this->storage->fileExists($file)) {
@@ -1407,7 +1467,7 @@ class ArchiveService
         return (empty($content) || !is_array($content)) ? [] : $content;
     }
 
-    private function setInfoToFile($content)
+    private function setInfoToFile($content): void
     {
         $this->storage->write(self::PROGRESS_FOLDER . '/info.json', (string)json_encode($content));
     }
@@ -1415,9 +1475,6 @@ class ArchiveService
     /**
      * get a unique id for the current PID with input and output files created.
      *
-     * @return array|null ['uid' => string, 'input' => string, 'output' => string]
-     */
-    /**
      * Declared nullable and never returning null: it either builds the two log files or throws.
      * The fiction cost seven baselined offset errors at its two call sites (ticket 40).
      *
@@ -1448,7 +1505,7 @@ class ArchiveService
     /**
      * savePID for uid in info.json.
      */
-    private function updatePIDForUID(string $pid, string $uid)
+    private function updatePIDForUID(string $pid, string $uid): void
     {
         $info = $this->getInfoFromFile();
         if (isset($info[$uid])) {
@@ -1460,7 +1517,7 @@ class ArchiveService
     /**
      * clean uid info in info.json.
      */
-    private function cleanUID(string $uid)
+    private function cleanUID(string $uid): void
     {
         $info = $this->getInfoFromFile();
         if (isset($info[$uid])) {
@@ -1476,7 +1533,9 @@ class ArchiveService
     }
 
     /** check id current uid is running.
-     * @return array ['running' => bool, 'finished' => bool, 'stopped' => bool,'output' => string]
+     * @param array<string, mixed> $info this uid's entry in info.json
+     *
+     * @return array<string, mixed> ['running' => bool, 'finished' => bool, 'stopped' => bool,'output' => string]
      */
     private function getRunningUIDdata(string $uid, array $info): array
     {
@@ -1503,7 +1562,10 @@ class ArchiveService
     /**
      * generate ---ListedRootFolder from DEFAULT, params and yeswiki.config.
      *
-     * @param string $type "white"|"black"
+     * @param string                  $type       "white"|"black"
+     * @param array<array-key, mixed> $fromParams
+     *
+     * @return list<string>
      */
     private function generateListRootFolders(string $type, array $fromParams): array
     {

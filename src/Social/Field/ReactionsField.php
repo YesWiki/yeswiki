@@ -63,7 +63,7 @@ class ReactionsField extends BazarField
         $this->imagesPath = null;
         $this->options = array_map('_t', self::DEFAULT_OPTIONS);
 
-        if (empty(trim($this->name))) {
+        if (empty(trim((string)$this->name))) {
             $this->name = 'reactions';
         }
 

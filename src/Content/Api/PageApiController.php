@@ -29,7 +29,7 @@ class PageApiController extends YesWikiController
     private const COMMENTS_CLOSED = 'comments-closed';
 
     #[Route('/api/pages', options: ['acl' => ['public']])]
-    public function getAllPages()
+    public function getAllPages(): ApiResponse
     {
         $dbService = $this->getService(DbService::class);
         $aclService = $this->getService(AclService::class);
@@ -54,7 +54,7 @@ class PageApiController extends YesWikiController
     }
 
     #[Route('/api/pages/{tag}', methods: ['GET'], options: ['acl' => ['public']])]
-    public function getPage(Request $request, $tag)
+    public function getPage(Request $request, string $tag): ApiResponse
     {
         $this->denyAccessUnlessGranted('read', $tag);
 
@@ -92,7 +92,7 @@ class PageApiController extends YesWikiController
     }
 
     #[Route('/api/pages/{tag}', methods: ['POST'], options: ['acl' => ['+']])]
-    public function savePage(Request $request, $tag)
+    public function savePage(Request $request, string $tag): ApiResponse
     {
         $this->denyAccessUnlessGranted('write', $tag);
 
@@ -113,7 +113,7 @@ class PageApiController extends YesWikiController
      * Relocated from tools/templates's savemetadatas AJAX handler (ticket 12) - saves per-page theme/style/squelette/background-image overrides.
      */
     #[Route('/api/pages/{tag}/metadatas', methods: ['POST'], options: ['acl' => ['+']])]
-    public function savePageMetadatas(Request $request, $tag)
+    public function savePageMetadatas(Request $request, string $tag): ApiResponse
     {
         $this->denyAccessUnlessGranted('write', $tag);
 
@@ -129,7 +129,7 @@ class PageApiController extends YesWikiController
     }
 
     #[Route('/api/pages/{tag}/duplicate', methods: ['POST'], options: ['acl' => ['@admins']])]
-    public function duplicatePage(Request $request, $tag)
+    public function duplicatePage(Request $request, string $tag): ApiResponse
     {
         $this->denyAccessUnlessAdmin();
         $duplicationManager = $this->getService(DuplicationManager::class);
@@ -142,7 +142,7 @@ class PageApiController extends YesWikiController
         return new ApiResponse($request->request->all(), Response::HTTP_OK);
     }
 
-    public function deletePage($tag)
+    public function deletePage(string $tag): ApiResponse
     {
         $pageManager = $this->getService(PageManager::class);
         $pageOperationsService = $this->getService(PageOperationsService::class);
@@ -193,7 +193,7 @@ class PageApiController extends YesWikiController
     }
 
     #[Route('/api/pages/{tag}/delete', methods: ['POST'], options: ['acl' => ['+']])]
-    public function deletePageViaPostMethod($tag)
+    public function deletePageViaPostMethod(string $tag): ApiResponse
     {
         $result = [];
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;

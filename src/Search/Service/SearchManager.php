@@ -23,8 +23,8 @@ use YesWiki\Kernel\Service\DbService;
 class SearchManager
 {
     protected ContainerInterface $container;
-    protected $dbService;
-    protected $aclService;
+    protected DbService $dbService;
+    protected AclService $aclService;
 
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
@@ -51,15 +51,15 @@ class SearchManager
     /**
      * prepare searches.
      *
-     * @param array $forms (needed to filter only on concerned forms)
+     * @param array<array-key, array<string, mixed>> $forms (needed to filter only on concerned forms)
      *
-     * @return array ['needle 1'=>[], // when not in list
-     *               'needle 2'=>[$result1,$result2]
-     *               ,...]  // each $result= [
-     *               'propertyName' => 'bf_...',
-     *               'key' => 'bf_...',
-     *               'isCheckBox' => true,
-     *               ]
+     * @return array<string, list<array<string, mixed>>> ['needle 1'=>[], // when not in list
+     *                                                   'needle 2'=>[$result1,$result2]
+     *                                                   ,...]  // each $result= [
+     *                                                   'propertyName' => 'bf_...',
+     *                                                   'key' => 'bf_...',
+     *                                                   'isCheckBox' => true,
+     *                                                   ]
      */
     public function searchWithLists(string $phrase, array $forms = []): array
     {
@@ -94,28 +94,30 @@ class SearchManager
 
     /**
      * search needles in values (options) of EnumField and return array [['propertyName' => ...,'key'=>$key,'isCheckbox' => true],].
+     *
+     * @param array<string, mixed> $needles keyed by needle; only the keys are read
+     * @param array<string, mixed> $form
+     *
+     * @return list<array<string, mixed>>
      */
     private function searchInFormOptions(array $needles, array $form): array
     {
         $results = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof EnumField) {
-                $options = $field->getOptions();
-                if (is_array($options)) {
-                    foreach ($options as $key => $option) {
-                        foreach ($needles as $needle => $values) {
-                            if (is_array($option)) {
-                                $option = implode(' ', $option);
-                            }
+                foreach ($field->getOptions() as $key => $option) {
+                    foreach ($needles as $needle => $values) {
+                        if (is_array($option)) {
+                            $option = implode(' ', $option);
+                        }
 
-                            if (preg_match('/' . mb_strtolower(preg_quote($needle)) . '/i', mb_strtolower($option), $matches)) {
-                                $results[] = [
-                                    'propertyName' => $field->getPropertyName(),
-                                    'key' => $key,
-                                    'isCheckBox' => ($field instanceof CheckboxField),
-                                    'needle' => $needle,
-                                ];
-                            }
+                        if (preg_match('/' . mb_strtolower(preg_quote($needle)) . '/i', mb_strtolower($option), $matches)) {
+                            $results[] = [
+                                'propertyName' => $field->getPropertyName(),
+                                'key' => $key,
+                                'isCheckBox' => ($field instanceof CheckboxField),
+                                'needle' => $needle,
+                            ];
                         }
                     }
                 }
@@ -166,20 +168,22 @@ class SearchManager
     /**
      * Build the SQL fields conditions for keywords.
      *
-     * @param string                                                                                              $pKeywords     the keywords search string in the format:
-     *                                                                                                                           <keywords>       = ( <token> | <exluded token> )+ [ "|" <keywords> ]
-     *                                                                                                                           <token>          = <string without space>	|
-     *                                                                                                                           "'" <string with spaces between single quotes> "'" |
-     *                                                                                                                           '"' <string with spaces between double quotes> '"'
-     *                                                                                                                           <excluded token> = "-" <token>
-     *                                                                                                                           example : toto -"tata tutu" | "titi tutu" tete -tyty
-     *                                                                                                                           =
-     *                                                                                                                           "toto" AND ("titi tutu" OR "tete") AND NOT "tata tutu" AND NOT "tyty"
-     *                                                                                                                           NOTE : position of excluded fields has no signification
+     * @param string                                                                                              $pKeywords          the keywords search string in the format:
+     *                                                                                                                                <keywords>       = ( <token> | <exluded token> )+ [ "|" <keywords> ]
+     *                                                                                                                                <token>          = <string without space>	|
+     *                                                                                                                                "'" <string with spaces between single quotes> "'" |
+     *                                                                                                                                '"' <string with spaces between double quotes> '"'
+     *                                                                                                                                <excluded token> = "-" <token>
+     *                                                                                                                                example : toto -"tata tutu" | "titi tutu" tete -tyty
+     *                                                                                                                                =
+     *                                                                                                                                "toto" AND ("titi tutu" OR "tete") AND NOT "tata tutu" AND NOT "tyty"
+     *                                                                                                                                NOTE : position of excluded fields has no signification
      * @param array<string, array{descriptors: array<string, array<string, mixed>>, hasMultipleStructures: bool}> $pSearchFields
-     *                                                                                                                           field name => its descriptors. The shape was undocumented and the tag
-     *                                                                                                                           that stood here was unparseable, so nothing downstream of it was checked
-     *                                                                                                                           (ticket 40).
+     *                                                                                                                                field name => its descriptors. The shape was undocumented and the tag
+     *                                                                                                                                that stood here was unparseable, so nothing downstream of it was checked
+     *                                                                                                                                (ticket 40).
+     * @param int|null                                                                                            $pMinKeywordsLength
+     *                                                                                                                                the shortest keyword worth searching for; null asks the configuration
      *
      * @return SqlFragment fields conditions for keywords, and the values they bind
      */
@@ -367,8 +371,10 @@ class SearchManager
     /**
      * Build the SQL fields conditions for queries.
      *
-     * @param array<int|string, mixed> $pQueries
-     *                                           <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     * @param array<int|string, mixed>                                                                            $pQueries
+     *                                                                                                                      <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     * @param array<string, array{descriptors: array<string, array<string, mixed>>, hasMultipleStructures: bool}> $pFields
+     *                                                                                                                      field name => its descriptors, as prepareSearchRequest() builds them
      *
      * @return SqlFragment fields conditions for queries, and the values they bind
      */
@@ -564,7 +570,7 @@ class SearchManager
     /**
      * Return the request for searching entries in database.
      *
-     * @param array &$params
+     * @param array<string, mixed> &$params
      *
      * @return SqlFragment the whole statement and the values it binds (ticket 31). An empty
      *                     fragment means "this search cannot match anything" -- the caller must
@@ -889,9 +895,9 @@ class SearchManager
     /**
      * Return an array of fiches based on search parameters.
      *
-     * @param array $params
+     * @param array<string, mixed> $params
      *
-     * @return mixed
+     * @return array<string, array<string, mixed>> the matching entries, keyed by tag
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
@@ -981,7 +987,7 @@ class SearchManager
      *                              (ie : an AND-array of OR-arrays)
      *                              - excludeds = <array> an array of excluded tokens
      */
-    private function parseKeywords($pKeywords, $pMinKeywordLength = null)
+    private function parseKeywords($pKeywords, ?int $pMinKeywordLength = null)
     {
         if ($pMinKeywordLength == null) {
             $vMinKeywordLength = $this->getMinSearchKeywordLength();
@@ -1120,7 +1126,10 @@ class SearchManager
         return $vMinimumSearchKeywordLength;
     }
 
-    public function paramsToURLSearchParams($pParameters)
+    /**
+     * @param array<string, mixed> $pParameters
+     */
+    public function paramsToURLSearchParams($pParameters): string
     {
         $vParameters = [];
 
@@ -1188,45 +1197,46 @@ class SearchManager
     /**
      * Transform a query to a string.
      *
-     * @param $pQuery array|string|null the query in different format :
-     *                new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
-     *                OR
-     *                old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
-     *                OR
-     *                new string format : bf_field == toto1 | bf_field2 <= tata
-     *                OR
-     *                old string format bf_field=toto1|bf_field2!=tata
+     * @param array<array-key, mixed>|string|null $pQuery the query in different format :
+     *                                                    new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
+     *                                                    OR
+     *                                                    old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
+     *                                                    OR
+     *                                                    new string format : bf_field == toto1 | bf_field2 <= tata
+     *                                                    OR
+     *                                                    old string format bf_field=toto1|bf_field2!=tata
      *
      * @return string the string representing the query
      */
-    public function queryToString($pQuery)
+    public function queryToString($pQuery): string
     {
         if ($pQuery === null) {
             return '';
         }
 
-        if (is_array($pQuery)) {
-            return implode(
-                '|',
-                array_map(
-                    function ($pKey) use ($pQuery) {
-                        if (is_int($pKey)) {
-                            return $pQuery[$pKey]['name'] . $pQuery[$pKey]['operator'] . (is_array($pQuery[$pKey]['values']) ? implode(',', $pQuery[$pKey]['values']) : $pQuery[$pKey]['values']);
-                        }
-
-                        return $pKey . '=' . $pQuery[$pKey];
-                    },
-                    array_keys($pQuery),
-                ),
-            );
-        } elseif (is_string($pQuery)) {
+        if (!is_array($pQuery)) {
             return $pQuery;
-        } else {
-            return '';
         }
+
+        return implode(
+            '|',
+            array_map(
+                function ($pKey) use ($pQuery) {
+                    if (is_int($pKey)) {
+                        return $pQuery[$pKey]['name'] . $pQuery[$pKey]['operator'] . (is_array($pQuery[$pKey]['values']) ? implode(',', $pQuery[$pKey]['values']) : $pQuery[$pKey]['values']);
+                    }
+
+                    return $pKey . '=' . $pQuery[$pKey];
+                },
+                array_keys($pQuery),
+            ),
+        );
     }
 
-    public function keywordsToString($pKeywords)
+    /**
+     * @param array<string, mixed>|string $pKeywords the parsed keywords, or an already-formatted search string
+     */
+    public function keywordsToString($pKeywords): string
     {
         if (is_string($pKeywords)) {
             return $pKeywords;

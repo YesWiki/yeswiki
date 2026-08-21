@@ -75,7 +75,7 @@ class FormManagerContentTest extends YesWikiTestCase
             ]);
 
             $byId = $formManager->getOne(self::FORM_ID);
-            $this->assertIsArray($byId);
+            $this->assertNotNull($byId);
 
             $byTag = $formManager->getOne($byId['tag']);
             $this->assertIsArray($byTag);
@@ -107,6 +107,8 @@ class FormManagerContentTest extends YesWikiTestCase
 
             $first = $formManager->getOne(self::FORM_ID);
             $second = $formManager->getOne(self::OTHER_FORM_ID);
+            $this->assertNotNull($first);
+            $this->assertNotNull($second);
 
             $this->assertNotSame($first['tag'], $second['tag']);
             $this->assertSame('samelabel', $first['tag']);
@@ -133,6 +135,7 @@ class FormManagerContentTest extends YesWikiTestCase
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($form);
             $metadata = $pageManager->getMetadata($form['tag']);
 
             $this->assertIsArray($metadata['acls'] ?? null);
@@ -155,19 +158,22 @@ class FormManagerContentTest extends YesWikiTestCase
                 'template' => '',
                 'condition' => '',
             ]);
-            $oldTag = $formManager->getOne(self::FORM_ID)['tag'];
+            $formBeforeRename = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($formBeforeRename);
+            $oldTag = $formBeforeRename['tag'];
 
             $entry = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Test entry',
                 'tag' => self::ENTRY_TAG,
             ]);
-            $this->assertIsArray($entry);
+            $this->assertNotEmpty($entry);
 
             $newTag = $formManager->renameTag(self::FORM_ID, 'RenamedTag');
             $this->assertSame('RenamedTag', $newTag);
 
             $byId = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($byId);
             $this->assertSame($newTag, $byId['tag']);
 
             $byOldTag = $formManager->getOne($oldTag);
@@ -176,6 +182,7 @@ class FormManagerContentTest extends YesWikiTestCase
 
             $this->assertTrue($entryManager->isEntry(self::ENTRY_TAG));
             $fetchedEntry = $entryManager->getOne(self::ENTRY_TAG);
+            $this->assertNotNull($fetchedEntry);
             $this->assertSame(self::FORM_ID, $fetchedEntry['form_id']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID, self::ENTRY_TAG);
@@ -206,6 +213,7 @@ class FormManagerContentTest extends YesWikiTestCase
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($form);
             $this->assertSame('Updated label', $form['label']);
             $this->assertSame('https://www.w3.org/ns/activitystreams', $form['sem_context']);
             $this->assertSame('Event', $form['sem_type']);
@@ -249,6 +257,7 @@ class FormManagerContentTest extends YesWikiTestCase
                 'activitypub_username' => 'someactor',
             ]);
             $updatedForm = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($updatedForm);
             $this->assertSame($form['activitypub_private_key'], $updatedForm['activitypub_private_key']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
@@ -270,12 +279,15 @@ class FormManagerContentTest extends YesWikiTestCase
                 'activitypub_enable' => '1',
                 'activitypub_username' => 'preexisting',
             ]);
-            $freshlyGeneratedKey = $formManager->getOne(self::FORM_ID)['activitypub_private_key'];
+            $regeneratedForm = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($regeneratedForm);
+            $freshlyGeneratedKey = $regeneratedForm['activitypub_private_key'];
             $this->assertNotSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $freshlyGeneratedKey);
 
             $formManager->setActivitypubKeypair(self::FORM_ID, 'PREVIOUSLY-PUBLISHED-PRIVATE-KEY', 'PREVIOUSLY-PUBLISHED-PUBLIC-KEY');
 
             $form = $formManager->getOne(self::FORM_ID);
+            $this->assertNotNull($form);
             $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['activitypub_private_key']);
             $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['activitypub_public_key']);
 

@@ -145,7 +145,8 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userManager = $wiki->services->get(UserManager::class);
 
         $users = $userManager->getAll();
-        $firstUser = $users[array_key_first($users)];
+        $firstUser = reset($users);
+        $this->assertInstanceOf(User::class, $firstUser);
         if ($name == 'newRandom') {
             do {
                 $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)

@@ -22,6 +22,9 @@ class ConsoleServiceTest extends YesWikiTestCase
         return $wiki->services->get(ConsoleService::class);
     }
 
+    /**
+     * @param list<int|string> $args
+     */
     #[Depends('testConsoleServiceExisting')]
     #[DataProvider('checkStartConsole')]
     public function testStartConsoleAsync(
@@ -39,7 +42,6 @@ class ConsoleServiceTest extends YesWikiTestCase
             $this->assertNotNull($process);
             $process->wait();
             $results = $consoleService->getProcessOut($process);
-            $this->assertNotNull($results);
             $result = $results[array_key_first($results)];
             if (!is_null($stdout)) {
                 $this->assertArrayHasKey('stdout', $result);
@@ -52,6 +54,9 @@ class ConsoleServiceTest extends YesWikiTestCase
         }
     }
 
+    /**
+     * @param list<int|string> $args
+     */
     #[Depends('testConsoleServiceExisting')]
     #[DataProvider('checkStartConsole')]
     public function testStartConsoleSync(

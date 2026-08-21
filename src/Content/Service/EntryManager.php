@@ -28,18 +28,18 @@ use YesWiki\Search\Service\SearchManager;
 class EntryManager
 {
     protected ContainerInterface $container;
-    protected $mailer;
-    protected $authenticationService;
-    protected $pageManager;
-    protected $tripleStore;
-    protected $aclService;
-    protected $userManager;
-    protected $dbService;
-    protected $semanticTransformer;
-    protected $hibernationService;
+    protected Mailer $mailer;
+    protected AuthenticationService $authenticationService;
+    protected PageManager $pageManager;
+    protected TripleStore $tripleStore;
+    protected AclService $aclService;
+    protected UserManager $userManager;
+    protected DbService $dbService;
+    protected SemanticTransformer $semanticTransformer;
+    protected HibernationService $hibernationService;
     protected AdministrativeLogService $administrativeLogService;
-    protected $params;
-    protected $searchManager;
+    protected ParameterBagInterface $params;
+    protected SearchManager $searchManager;
 
     public const VALIDATE_FLAG_ANTISPAM = 1 << 0;
     public const VALIDATE_FLAG_TITLE = 1 << 1;
@@ -97,8 +97,9 @@ class EntryManager
         ]);
     }
 
-    /** Returns true if the provided page is a Bazar fiche. */
     /**
+     * Returns true if the provided page is a Bazar fiche.
+     *
      * @param string $tag
      */
     public function isEntry($tag): bool
@@ -110,8 +111,9 @@ class EntryManager
         return $this->pageManager->isType((string)$tag, PageType::ENTRY);
     }
 
-    /** return array with list of page's tag for all entries. */
     /**
+     * return array with list of page's tag for all entries.
+     *
      * @return list<string>
      */
     public function getAllEntriesTags(): array
@@ -122,13 +124,14 @@ class EntryManager
     /**
      * Get one specified fiche.
      *
+     * @param string      $tag
      * @param bool        $semantic
      * @param string      $time                   pour consulter une fiche dans l'historique
      * @param bool        $cache                  if false, don't use the page cache
      * @param bool        $bypassAcls             if true, all fields are loaded regardless of acls
      * @param string|null $userNameForCheckingACL userName used to get entry, if empty uses the connected user
      *
-     * @return mixed|null
+     * @return array<string, mixed>|null the entry, or null when $tag names no entry
      *
      * @throws \Exception
      */
@@ -142,7 +145,7 @@ class EntryManager
         }
 
         $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
-        $data = $this->getDataFromPage($page, $semantic, $debug);
+        $data = $this->getDataFromPage($page ?? [], $semantic, $debug);
 
         if ($data !== [] && empty($data['created_at'])) {
             $data['created_at'] = $this->pageManager->getCreateTime($tag);
@@ -179,12 +182,11 @@ class EntryManager
     /**
      * getDataFromPage.
      *
-     * @param array                $page          , content of page from sql
-     * @param bool                 $debug,        to throw exception in case of error
-     * @param string               $fieldMapping, to pass fieldMapping parameter directly to appendDisplayData
-     * @param array<string, mixed> $page
+     * @param array<string, mixed> $page         content of page from sql
+     * @param bool                 $debug        to throw exception in case of error
+     * @param string               $fieldMapping to pass fieldMapping parameter directly to appendDisplayData
      *
-     * @return array data formated
+     * @return array<string, mixed> data formated
      */
     public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $fieldMapping = ''): array
     {
@@ -245,7 +247,7 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
+    public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL): void
     {
         if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
             if (!isset($data['antispam']) || !$data['antispam'] == 1) {
@@ -274,7 +276,7 @@ class EntryManager
      * @param int|string           $formId
      * @param array<string, mixed> $data
      *
-     * @return array
+     * @return array<string, mixed> the entry as it was stored
      *
      * @throws \Exception
      */
@@ -313,12 +315,14 @@ class EntryManager
             $this->authenticationService->logout();
 
             $user = $this->userManager->getOneByName((string)$justCreated->name());
-            $this->authenticationService->login($user);
+            if (!empty($user)) {
+                $this->authenticationService->login($user);
+            }
         }
 
         $ignoreAcls = true;
         if ($this->params->has('bazarIgnoreAcls')) {
-            $ignoreAcls = $this->params->get('bazarIgnoreAcls');
+            $ignoreAcls = (bool)$this->params->get('bazarIgnoreAcls');
         }
 
         $sendmail = $this->removeSendmail($data);
@@ -380,7 +384,7 @@ class EntryManager
      * @param string               $tag
      * @param array<string, mixed> $data
      *
-     * @return array
+     * @return array<string, mixed> the entry as it was stored
      *
      * @throws \Exception
      */
@@ -442,14 +446,11 @@ class EntryManager
     /**
      * Replace the field values which are restricted at reading and writing.
      *
-     * @param array                $data         the provided data to update
-     * @param array                $previousData the provided previousData to update
-     * @param array                $form         the entry form
-     * @param array<string, mixed> $data
-     * @param array<string, mixed> $previousData
-     * @param array<string, mixed> $form
+     * @param array<string, mixed> $data         the provided data to update
+     * @param array<string, mixed> $previousData the provided previousData to update
+     * @param array<string, mixed> $form         the entry form
      *
-     * @return array the data with the restricted values added
+     * @return array<string, mixed> the data with the restricted values added
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
@@ -487,14 +488,11 @@ class EntryManager
     /**
      * Add the $previousData attributes which match the actual form and which are not in $data.
      *
-     * @param array                $previousData the data saved in the entry
-     * @param array                $form         the entry form
-     * @param array                $data         the provided data to update
-     * @param array<string, mixed> $previousData
-     * @param array<string, mixed> $data
-     * @param array<string, mixed> $form
+     * @param array<string, mixed> $previousData the data saved in the entry
+     * @param array<string, mixed> $form         the entry form
+     * @param array<string, mixed> $data         the provided data to update
      *
-     * @return array the data with the merged values
+     * @return array<string, mixed> the data with the merged values
      *
      * @throws \Exception
      */
@@ -585,7 +583,7 @@ class EntryManager
      *
      * @param array<string, mixed> $data current raw entry values
      *
-     * @return array with extra calculated fields like tag, and time, and handled fields with acls
+     * @return array<string, mixed> with extra calculated fields like tag, and time, and handled fields with acls
      *
      * @throws \Exception
      */
@@ -835,6 +833,9 @@ class EntryManager
         return $tabparam;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function removeSendmail(array &$data): ?string
     {
         $sendmail = null;
@@ -869,7 +870,7 @@ class EntryManager
      *
      * @param array<mixed>|string|null $formsIds
      *
-     * @return array $forms
+     * @return array<int|string, mixed> $forms
      */
     private function getFormsFromIds($formsIds): array
     {
@@ -894,7 +895,6 @@ class EntryManager
     /**
      * remove attributes from entries only for admins !!!
      *
-     * @param array                $params
      * @param array<string, mixed> $params
      * @param list<string>         $attributesNames
      *
@@ -908,11 +908,10 @@ class EntryManager
     /**
      * remove attributes from entries only for admins !!!
      *
-     * @param array                $params
      * @param array<string, mixed> $params
      * @param list<string>         $attributesNames
      *
-     * @return array with entry's ids if attributesNames are found and replaced
+     * @return list<string> the tags of the entries whose attributes were removed
      */
     public function removeAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
@@ -922,10 +921,8 @@ class EntryManager
     /**
      * rename attributes from entries only for admins !!!
      *
-     * @param array                 $params
-     * @param array                 $attributesNames [$oldName => $newName]
      * @param array<string, mixed>  $params
-     * @param array<string, string> $attributesNames
+     * @param array<string, string> $attributesNames [$oldName => $newName]
      *
      * @return bool true if attributesNames are foond and replaced
      */
@@ -937,12 +934,10 @@ class EntryManager
     /**
      * rename attributes from entries only for admins !!!
      *
-     * @param array                 $params
-     * @param array                 $attributesNames [$oldName => $newName]
      * @param array<string, mixed>  $params
-     * @param array<string, string> $attributesNames
+     * @param array<string, string> $attributesNames [$oldName => $newName]
      *
-     * @return array with entry's ids if attributesNames are found and replaced
+     * @return list<string> the tags of the entries whose attributes were renamed
      */
     public function renameAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
@@ -952,11 +947,10 @@ class EntryManager
     /**
      * manage attributes from entries only for admins !!!
      *
-     * @param array                $params
      * @param array<string, mixed> $params
      * @param array<mixed>         $attributesNames
      *
-     * @return array with entry's ids if attributesNames are found and replaced
+     * @return list<string> the tags of the entries that changed
      */
     private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): array
     {
@@ -1027,16 +1021,18 @@ class EntryManager
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
-                            if (!empty($entry['tag']) && !in_array($entry['tag'], $entriesIds)) {
-                                $entriesIds[] = $entry['tag'];
+                            $tag = $entry['tag'] ?? null;
+                            if (is_string($tag) && $tag !== '' && !in_array($tag, $entriesIds, true)) {
+                                $entriesIds[] = $tag;
                             }
                         }
                     }
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
-                        if (!empty($entry['tag']) && !in_array($entry['tag'], $entriesIds)) {
-                            $entriesIds[] = $entry['tag'];
+                        $tag = $entry['tag'] ?? null;
+                        if (is_string($tag) && $tag !== '' && !in_array($tag, $entriesIds, true)) {
+                            $entriesIds[] = $tag;
                         }
                     }
                 }

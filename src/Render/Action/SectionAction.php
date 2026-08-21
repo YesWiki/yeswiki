@@ -502,10 +502,8 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
                 . (!empty($pattern) ? $pattern : '')
                 . $imageStyle . '"'
             ;
-            if (is_array($data)) {
-                foreach ($data as $key => $value) {
-                    echo ' data-' . $key . '="' . $value . '"';
-                }
+            foreach ($data as $key => $value) {
+                echo ' data-' . $key . '="' . $value . '"';
             }
             echo '>' . "\n";
 

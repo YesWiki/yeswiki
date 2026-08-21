@@ -20,7 +20,7 @@ class CleanBase64 extends YesWikiMigration
         $anchor = '%src=\\\\\\\\\\"data:image\\\\\\\\/%;base64,%';
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . ' ' .
-            "WHERE body LIKE '{$anchor}' " .
+            "WHERE {$this->dbService->jsonAsText('body')} LIKE '{$anchor}' " .
             'AND ' . $this->dbService->quoteIdentifier('type') . " = '" . PageType::ENTRY . "'";
 
         $pages = $this->dbService->loadAll($sql);

@@ -49,28 +49,29 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         'resetpass',
     ];
 
-    private $authenticationService;
-    private $captchaController;
-    private $csrfTokenChecker;
-    private $userOperationsService;
-    private $userManager;
+    private AuthenticationService $authenticationService;
+    private CaptchaController $captchaController;
+    private CsrfTokenChecker $csrfTokenChecker;
+    private UserOperationsService $userOperationsService;
+    private UserManager $userManager;
 
-    private $action;
-    private $adminIsActing;
-    private $error;
-    private $errorUpdate;
-    private $errorPasswordChange;
-    private $userLoggedIn;
-    private $referrer;
-    private $wantedEmail;
-    private $wantedUserName;
+    /** @var string one of self::ACTIONS, or '' when the request asked for none of them */
+    private string $action = '';
+    private bool $adminIsActing = false;
+    private string $error = '';
+    private string $errorUpdate = '';
+    private string $errorPasswordChange = '';
+    private bool $userLoggedIn = false;
+    private string $referrer = '';
+    private string $wantedEmail = '';
+    private string $wantedUserName = '';
 
     public function formatArguments($arg)
     {
         return [];
     }
 
-    public function run()
+    public function run(): string
     {
         $this->getServices();
 
@@ -87,7 +88,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return $this->displayForm($user);
     }
 
-    private function getServices()
+    private function getServices(): void
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
@@ -96,18 +97,24 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         $this->userManager = $this->getService(UserManager::class);
     }
 
-    private function setActionFromRequest(array $request)
+    /**
+     * @param array<string, mixed> $request
+     */
+    private function setActionFromRequest(array $request): void
     {
         $notTrustedAction = $request['usersettings_action'] ?? '';
         $this->action = in_array($notTrustedAction, self::ACTIONS, true) ? $notTrustedAction : '';
     }
 
+    /**
+     * @param array<string, mixed> $get
+     */
     private function getUser(array $get): ?User
     {
         $this->adminIsActing = false;
         $this->userLoggedIn = false;
         $this->wantedUserName = htmlspecialchars($get['user'] ?? '');
-        $this->wantedEmail = filter_var($get['email'] ?? '', FILTER_SANITIZE_EMAIL);
+        $this->wantedEmail = (string)filter_var($get['email'] ?? '', FILTER_SANITIZE_EMAIL);
         $user = null;
         if ($this->getService(AclService::class)->isAdmin() && (
             !empty($this->wantedUserName)
@@ -119,7 +126,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 if (empty($user)) {
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
-                $this->referrer = filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
+                $this->referrer = (string)filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
             } elseif (!empty($this->wantedEmail)) {
                 $this->adminIsActing = true;
 
@@ -140,7 +147,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         return $user;
     }
 
-    private function doPrerenderingActions(array $post, ?User &$user = null)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function doPrerenderingActions(array $post, ?User &$user = null): void
     {
         switch ($this->action) {
             case 'logout':
@@ -172,7 +182,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function displayForm(?User $user = null)
+    private function displayForm(?User $user = null): string
     {
         if ($this->adminIsActing || $this->userLoggedIn) {
             return $this->render('@core/usersettings.twig', [
@@ -306,14 +316,14 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function logout()
+    private function logout(): void
     {
         $this->authenticationService->logout();
         $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
     }
 
-    private function deleteByAdmin(?User &$user = null)
+    private function deleteByAdmin(?User &$user = null): void
     {
         if ($this->adminIsActing && !empty($this->wantedUserName)) {
             try {
@@ -321,7 +331,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 if (empty($user)) {
                     $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') . ' user not found';
 
-                    return null;
+                    return;
                 }
                 $this->userOperationsService->delete($user);
                 $user = null;
@@ -334,9 +344,17 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function update(array $post, User $user)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function update(array $post, ?User $user): void
     {
         if ($this->adminIsActing || $this->userLoggedIn) {
+            if ($user === null) {
+                $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' user not found';
+
+                return;
+            }
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-update', false);
 
@@ -349,7 +367,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     array_merge($sanitizedPost, $this->postedProfileValues($post, $user))
                 );
 
-                $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
+                $user = $this->userManager->getOneByEmail((string)($sanitizedPost['email'] ?? ''));
 
                 if (!empty($user)) {
                     if ($this->userLoggedIn) {
@@ -378,7 +396,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function changePassword(?User $user, array $post)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function changePassword(?User $user, array $post): void
     {
         if ($this->userLoggedIn && $user !== null) {
             if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) {
@@ -401,15 +422,23 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     throw $ex;
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException|\Throwable $ex) {
+                } catch (\Throwable $ex) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
             }
         }
     }
 
-    private function resetPassword(?User $user, array $post)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function resetPassword(?User $user, array $post): void
     {
+        if ($user === null) {
+            $this->error = _t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !';
+
+            return;
+        }
         $link = $this->userManager->sendPasswordRecoveryEmail($user);
         if (!boolval($this->getService(RuntimeConfig::class)['contact_disable_email_for_password'])) {
             Flash::success(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')));
@@ -418,15 +447,21 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         Flash::success("<a href='$link' target='_blank'>$resetText</a>");
     }
 
-    private function retrieveUsernameAndEmailFromPost(array $post)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function retrieveUsernameAndEmailFromPost(array $post): void
     {
         if (!$this->adminIsActing && !$this->userLoggedIn) {
-            $this->wantedEmail = filter_var($post['email'] ?? '', FILTER_SANITIZE_EMAIL);
+            $this->wantedEmail = (string)filter_var($post['email'] ?? '', FILTER_SANITIZE_EMAIL);
             $this->wantedUserName = htmlspecialchars($post['name'] ?? '');
         }
     }
 
-    private function signup(array $post)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function signup(array $post): void
     {
         if (!$this->adminIsActing && !$this->userLoggedIn) {
             $emptyInputsParametersNames = array_filter(['email', 'name', 'password', 'confpassword'], function ($key) use ($post) {
@@ -477,7 +512,10 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         }
     }
 
-    private function checklogged(array $post)
+    /**
+     * @param array<string, mixed> $post
+     */
+    private function checklogged(array $post): void
     {
         $this->error = _t('USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED') . '.';
     }

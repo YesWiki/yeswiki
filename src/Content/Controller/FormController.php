@@ -28,11 +28,11 @@ use YesWiki\Search\Service\SearchIndexQuery;
 
 class FormController extends YesWikiController
 {
-    protected $csrfTokenChecker;
-    protected $formManager;
-    protected $hibernationService;
-    protected $activityPubService;
-    protected $webfingerService;
+    protected CsrfTokenChecker $csrfTokenChecker;
+    protected FormManager $formManager;
+    protected HibernationService $hibernationService;
+    protected ActivityPubService $activityPubService;
+    protected WebfingerService $webfingerService;
 
     public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenChecker $csrfTokenChecker, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
@@ -43,33 +43,34 @@ class FormController extends YesWikiController
         $this->webfingerService = $webfingerService;
     }
 
+    /**
+     * @param string|null $message
+     *
+     * @return string
+     */
     public function displayAll($message)
     {
-        $forms = $this->formManager->getAll();
-
         $values = [];
-        if (is_array($forms)) {
-            foreach ($forms as $form) {
-                $values[$form['id']]['title'] = $form['label'];
-                $values[$form['id']]['description'] = $form['description'];
-                $values[$form['id']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->getService(AclService::class)->isAdmin();
-                $values[$form['id']]['isSemantic'] = !empty($form['sem_template']);
-                $values[$form['id']]['isActivityPubEnabled'] = $form['activitypub_enable'] === '1';
-                $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
-                    return $field instanceof MapField;
-                }));
-                $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
-                $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
-                // core's own Content types are listed apart from a webmaster's forms:
-                // they describe the wiki's pages, accounts and files rather than data
-                // someone designed, and they cannot be emptied or deleted (ticket 10)
-                $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
-                $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
-                $values[$form['id']]['contentType'] = $contentType;
-                // a built-in type's form creates Content like any other form (ticket 13)
-                $values[$form['id']]['canCreateContent'] = ContentCreator::supports($contentType);
-            }
+        foreach ($this->formManager->getAll() as $form) {
+            $values[$form['id']]['title'] = $form['label'];
+            $values[$form['id']]['description'] = $form['description'];
+            $values[$form['id']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+            $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->getService(AclService::class)->isAdmin();
+            $values[$form['id']]['isSemantic'] = !empty($form['sem_template']);
+            $values[$form['id']]['isActivityPubEnabled'] = $form['activitypub_enable'] === '1';
+            $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                return $field instanceof MapField;
+            }));
+            $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+            $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
+            // core's own Content types are listed apart from a webmaster's forms:
+            // they describe the wiki's pages, accounts and files rather than data
+            // someone designed, and they cannot be emptied or deleted (ticket 10)
+            $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
+            $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
+            $values[$form['id']]['contentType'] = $contentType;
+            // a built-in type's form creates Content like any other form (ticket 13)
+            $values[$form['id']]['canCreateContent'] = ContentCreator::supports($contentType);
         }
 
         $systemForms = array_filter($values, fn ($form) => $form['isSystem']);
@@ -148,6 +149,10 @@ class FormController extends YesWikiController
      * checkbox-gated nested objects become arrays-or-null, empty sub-values are
      * compacted away, the comments toggle becomes a real boolean. A null/empty value
      * means "cleared" -- FormManager::update() removes the property from the body.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
      */
     private function normalizeFormPropertiesPost(array $data): array
     {
@@ -179,6 +184,9 @@ class FormController extends YesWikiController
         return $data;
     }
 
+    /**
+     * @return string
+     */
     public function create()
     {
         if ($this->getService(AclService::class)->isAdmin()) {
@@ -214,8 +222,17 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
     }
 
+    /**
+     * @param int|string|null $id from the query string, so possibly absent
+     *
+     * @return string
+     */
     public function update($id)
     {
+        if ($id === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'NOT_FOUND'], false));
+        }
+
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
             $post = $this->getRequest()->request;
@@ -244,6 +261,11 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
     }
 
+    /**
+     * @param array<string, mixed> $form
+     *
+     * @return bool
+     */
     private function formIsValid($form)
     {
         // the entry title is computed from entry_title_template (ADR-0010): at least
@@ -352,8 +374,17 @@ class FormController extends YesWikiController
         return true;
     }
 
+    /**
+     * @param int|string|null $id from the query string, so possibly absent
+     *
+     * @return string
+     */
     public function delete($id)
     {
+        if ($id === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'NOT_FOUND'], false));
+        }
+
         if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
@@ -362,15 +393,24 @@ class FormController extends YesWikiController
 
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
             } catch (TokenNotFoundException $th) {
-                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => $th->getMessage()], false));
+                return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => $th->getMessage()], false));
             }
         } else {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
     }
 
+    /**
+     * @param int|string|null $id from the query string, so possibly absent
+     *
+     * @return string
+     */
     public function empty($id)
     {
+        if ($id === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'NOT_FOUND'], false));
+        }
+
         if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmEmptyToken', false);
@@ -378,15 +418,24 @@ class FormController extends YesWikiController
 
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
             } catch (TokenNotFoundException $th) {
-                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => $th->getMessage()], false));
+                return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => $th->getMessage()], false));
             }
         } else {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
     }
 
+    /**
+     * @param int|string|null $id from the query string, so possibly absent
+     *
+     * @return string
+     */
     public function clone($id)
     {
+        if ($id === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'NOT_FOUND'], false));
+        }
+
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $this->formManager->clone($id);
 
@@ -396,9 +445,17 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
     }
 
+    /**
+     * @param int|string|null $id from the query string, so possibly absent
+     *
+     * @return string
+     */
     public function manageAbonnements($id)
     {
-        $form = $this->formManager->getOne($id);
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+        }
 
         $post = $this->getRequest()->request;
         if ($post->has('actor_handle')) {
@@ -406,7 +463,7 @@ class FormController extends YesWikiController
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
             }
 
-            $actorHandle = $post->get('actor_handle');
+            $actorHandle = (string)$post->get('actor_handle');
             $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
 
             $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $recipientUri, 'to' => $recipientUri], $form);
@@ -428,26 +485,45 @@ class FormController extends YesWikiController
         ]);
     }
 
+    /**
+     * @param int|string|null $id       from the query string, so possibly absent
+     * @param string|null     $actorUri
+     *
+     * @return string
+     */
     public function addFollowing($id, $actorUri)
     {
         if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
         }
 
-        $form = $this->formManager->getOne($id);
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null || $actorUri === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+        }
 
         $this->activityPubService->postActivity(['type' => 'Follow', 'object' => $actorUri, 'to' => $actorUri], $form);
 
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'formid' => $id], false));
     }
 
+    /**
+     * @param int|string|null $id       from the query string, so possibly absent
+     * @param string|null     $actorUri
+     *
+     * @return string
+     */
     public function removeFollowing($id, $actorUri)
     {
         if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
         }
 
-        $form = $this->formManager->getOne($id);
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null || $actorUri === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+        }
+
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
         $this->activityPubService->removeFollowing($form, $actorUri);
@@ -466,13 +542,23 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'formid' => $id], false));
     }
 
+    /**
+     * @param int|string|null $id       from the query string, so possibly absent
+     * @param string|null     $actorUri
+     *
+     * @return string
+     */
     public function syncActorPosts($id, $actorUri)
     {
         if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
         }
 
-        $form = $this->formManager->getOne($id);
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null || $actorUri === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+        }
+
         $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
 
         Flash::success(sprintf(
@@ -485,13 +571,23 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'formid' => $id], false));
     }
 
+    /**
+     * @param int|string|null $id       from the query string, so possibly absent
+     * @param string|null     $actorUri
+     *
+     * @return string
+     */
     public function removeFollower($id, $actorUri)
     {
         if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'formid' => $id], false));
         }
 
-        $form = $this->formManager->getOne($id);
+        $form = $id === null ? null : $this->formManager->getOne($id);
+        if ($form === null || $actorUri === null) {
+            return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'NOT_FOUND', 'formid' => $id], false));
+        }
+
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
         $this->activityPubService->removeFollower($form, $actorUri);
@@ -515,6 +611,9 @@ class FormController extends YesWikiController
         return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'formid' => $id], false));
     }
 
+    /**
+     * @return string[]|null the names of every group, null when the reader is not an admin
+     */
     private function getGroupsListIfEnabled(): ?array
     {
         return $this->getService(AclService::class)->isAdmin()

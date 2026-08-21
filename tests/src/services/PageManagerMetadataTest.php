@@ -26,6 +26,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
 
             $pageManager->save(self::TAG, [PageBody::CONTENT => 'second body'], '', true);
             $page = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($page);
 
             $this->assertSame('second body', PageBody::content($page['body']));
             $this->assertSame('margot', $page['metadatas']['theme'] ?? null);
@@ -44,6 +45,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
             sleep(1);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $v1 = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($v1);
 
             sleep(1);
 
@@ -69,6 +71,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
             $pageManager->setMetadata(self::TAG, ['theme' => 'colibris']);
 
             $page = $pageManager->getOne(self::TAG);
+            $this->assertNotNull($page);
 
             $this->assertSame('colibris', $page['metadatas']['theme'] ?? null);
             $this->assertSame('default.css', $page['metadatas']['style'] ?? null, 'setMetadata() should merge, not replace, matching the pre-existing partial-update contract every caller relies on');

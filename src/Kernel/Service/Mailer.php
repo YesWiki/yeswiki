@@ -17,11 +17,11 @@ class Mailer
     private const BATCH_SIZE = 10;
 
     protected ContainerInterface $container;
-    protected $authenticationService;
-    protected $dbService;
-    protected $params;
-    protected $templateEngine;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected DbService $dbService;
+    protected ParameterBagInterface $params;
+    protected TemplateEngine $templateEngine;
+    protected UserManager $userManager;
 
     public function __construct(
         ContainerInterface $container,
@@ -39,7 +39,11 @@ class Mailer
         $this->userManager = $userManager;
     }
 
-    public function notifyAdmins($data, $new)
+    /**
+     * @param array<string, mixed> $data the entry that was just written
+     * @param bool                 $new  whether it is a creation rather than an edit
+     */
+    public function notifyAdmins($data, $new): void
     {
         $admins = $this->getAdminsList();
 
@@ -75,7 +79,10 @@ class Mailer
         }
     }
 
-    public function notifyAdminsListDeleted($id)
+    /**
+     * @param string $id the tag of the list that was deleted
+     */
+    public function notifyAdminsListDeleted($id): void
     {
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
@@ -107,6 +114,9 @@ class Mailer
         }
     }
 
+    /**
+     * @return list<\YesWiki\Identity\Entity\User>
+     */
     private function getAdminsList(): array
     {
         $adminsAcl = $this->container->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
@@ -126,11 +136,11 @@ class Mailer
         return $admins;
     }
 
-    public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = '')
+    public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = ''): void
     {
         $this->send(
-            $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
-            $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
+            $this->stringParam('BAZ_ADRESSE_MAIL_ADMIN'),
+            $this->stringParam('BAZ_ADRESSE_MAIL_ADMIN'),
             $address,
             StringUtilService::withoutDiacritics($subject),
             $text,
@@ -145,6 +155,8 @@ class Mailer
      * the container through `$GLOBALS['yeswikiServices']` fourteen times to read its own
      * configuration. Ticket 50 folded it in here, where the configuration is already injected.
      *
+     * @param string          $mailSender
+     * @param string          $nameSender
      * @param string|string[] $mailReceiver
      */
     public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
@@ -264,7 +276,12 @@ class Mailer
         return $this->container->get(RuntimeConfig::class);
     }
 
-    public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null)
+    /**
+     * @param string                    $email
+     * @param array<string, mixed>      $data          the entry that was just written
+     * @param array<string, mixed>|null $previousEntry the entry as it was before, on an edit
+     */
+    public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null): void
     {
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
@@ -314,7 +331,11 @@ class Mailer
         $this->sendEmailFromAdmin($email, $sujet, $text, $html);
     }
 
-    public function notifyNewUser($wikiName, $email)
+    /**
+     * @param string $wikiName
+     * @param string $email
+     */
+    public function notifyNewUser($wikiName, $email): void
     {
         $baseUrl = $this->getBaseUrl();
         $objetmail = $this->templateEngine->render(
@@ -336,7 +357,11 @@ class Mailer
         $this->sendEmailFromAdmin($email, $objetmail, $messagemail);
     }
 
-    public function subscribeToMailingList($email, $mailingList)
+    /**
+     * @param string $email
+     * @param string $mailingList the address of the list to subscribe to
+     */
+    public function subscribeToMailingList($email, $mailingList): void
     {
         $this->send(
             $email,
@@ -349,7 +374,15 @@ class Mailer
 
     public function getBaseUrl(): string
     {
-        return preg_replace('/(\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));
+        return (string)preg_replace('/(\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->stringParam('base_url'));
+    }
+
+    /** A configuration value the wiki always stores as text, read as text. */
+    private function stringParam(string $name): string
+    {
+        $value = $this->params->get($name);
+
+        return is_scalar($value) ? (string)$value : '';
     }
 
     /**

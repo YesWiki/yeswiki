@@ -16,10 +16,11 @@ class PageContentFieldHasNoLabel extends YesWikiMigration
         $db = $this->getService(DbService::class);
         $pages = $db->prefixTable('pages');
         $typeCol = $db->quoteIdentifier('type');
+        $bodyAsText = $db->jsonAsText('body');
 
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages} WHERE {$typeCol} = 'form'"
-            . " AND body LIKE '%\"content_type\":\"" . ContentTypeSchema::TYPE_PAGE . "\"%'"
+            . " AND {$bodyAsText} LIKE '%\"content_type\":\"" . ContentTypeSchema::TYPE_PAGE . "\"%'"
         );
 
         $fixed = [];

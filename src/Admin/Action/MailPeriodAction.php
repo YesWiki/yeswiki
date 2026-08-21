@@ -20,6 +20,7 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         return 'mailperiod';
     }
 
+    /** @return list<Component> */
     public function components(): array
     {
         return [
@@ -33,10 +34,10 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         ];
     }
 
-    protected $authenticationService;
-    protected $userManager;
+    protected AuthenticationService $authenticationService;
+    protected UserManager $userManager;
 
-    public function run()
+    public function run(): string
     {
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->userManager = $this->getService(UserManager::class);
@@ -73,6 +74,12 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         ]);
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $periods
+     * @param string                              $userName
+     *
+     * @return array<string, array<string, mixed>>
+     */
     private function updatePeriods($periods, $userName)
     {
         foreach ($periods as $period => $config) {
@@ -84,16 +91,25 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         return $periods;
     }
 
+    /** @param string $period */
     private function groupName($period): string
     {
         return "Mail{$this->getService(PageContext::class)->getTag()}" . ucfirst($period);
     }
 
+    /**
+     * @param string $userName
+     * @param string $group
+     */
     private function subscribeUserToGroup($userName, $group): void
     {
         $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $this->getService(GroupOperationsService::class)->getMembersText($group) . "\n" . $userName);
     }
 
+    /**
+     * @param string $userName
+     * @param string $group
+     */
     private function unsubscribeUserFromGroup($userName, $group): void
     {
         $newgroup = str_replace($userName, '', $this->getService(GroupOperationsService::class)->getMembersText($group));
@@ -104,7 +120,11 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction, Provid
         $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $newgroup);
     }
 
-    private function unsubscribUserFromAllGroups($userName, $periods)
+    /**
+     * @param string                              $userName
+     * @param array<string, array<string, mixed>> $periods
+     */
+    private function unsubscribUserFromAllGroups($userName, $periods): void
     {
         foreach ($periods as $period => $config) {
             if ($config['subscribed']) {

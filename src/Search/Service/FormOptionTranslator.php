@@ -106,9 +106,6 @@ class FormOptionTranslator
                     continue;
                 }
                 $options = $field->getOptions();
-                if (!is_array($options)) {
-                    continue;
-                }
                 foreach ($options as $key => $label) {
                     if (is_array($label)) {
                         $label = implode(' ', array_map('strval', $label));

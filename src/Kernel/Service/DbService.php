@@ -16,10 +16,13 @@ use YesWiki\Kernel\Database\SqlStatementSplitter;
 
 class DbService
 {
-    protected $params;
+    protected ParameterBagInterface $params;
 
+    /** @var \PDO */
     protected $link;
+    /** @var list<array{query: string, time: float}> */
     protected $queryLog;
+    /** @var string */
     protected $driver;
     /** Per-driver SQL fragments; see YesWiki\Kernel\Database\SqlDialect. */
     protected SqlDialect $dialect;
@@ -53,13 +56,13 @@ class DbService
     {
         $this->params = $params;
         $this->queryLog = [];
-        $this->driver = $this->params->has('db_driver') ? $this->params->get('db_driver') : 'mysql';
-        $this->dialect = SqlDialectFactory::forDriver((string)$this->driver);
+        $this->driver = $this->params->has('db_driver') ? (string)$this->params->get('db_driver') : 'mysql';
+        $this->dialect = SqlDialectFactory::forDriver($this->driver);
 
         $this->initSqlConnection();
     }
 
-    protected function initSqlConnection()
+    protected function initSqlConnection(): void
     {
         try {
             $dsn = $this->buildDsn();
@@ -68,8 +71,8 @@ class DbService
 
             // SQLite doesn't need username/password
             if ($this->driver !== 'sqlite') {
-                $username = $this->params->get('db_user');
-                $password = $this->params->get('db_password');
+                $username = $this->stringParam('db_user');
+                $password = $this->stringParam('db_password');
             }
 
             $options = [
@@ -103,27 +106,27 @@ class DbService
             case 'sqlite':
                 // SQLite uses a fixed path in the private directory
                 $dbPath = $this->params->has('db_database') && $this->params->get('db_database')
-                    ? $this->params->get('db_database')
+                    ? $this->stringParam('db_database')
                     : 'private/yeswiki.db';
 
                 return 'sqlite:' . $dbPath;
 
             case 'pgsql':
-                $dsn = 'pgsql:host=' . $this->params->get('db_host') . ';dbname=' . $this->params->get('db_database');
+                $dsn = 'pgsql:host=' . $this->stringParam('db_host') . ';dbname=' . $this->stringParam('db_database');
                 if ($this->params->has('db_port') && $this->params->get('db_port')) {
-                    $dsn .= ';port=' . $this->params->get('db_port');
+                    $dsn .= ';port=' . $this->stringParam('db_port');
                 }
 
                 return $dsn;
 
             case 'mysql':
             default:
-                $dsn = 'mysql:host=' . $this->params->get('db_host') . ';dbname=' . $this->params->get('db_database');
+                $dsn = 'mysql:host=' . $this->stringParam('db_host') . ';dbname=' . $this->stringParam('db_database');
                 if ($this->params->has('db_port') && $this->params->get('db_port')) {
-                    $dsn .= ';port=' . $this->params->get('db_port');
+                    $dsn .= ';port=' . $this->stringParam('db_port');
                 }
                 $charset = ($this->params->has('db_charset') && $this->params->get('db_charset'))
-                    ? $this->params->get('db_charset')
+                    ? $this->stringParam('db_charset')
                     : 'utf8mb4';
                 $dsn .= ';charset=' . $charset;
 
@@ -426,6 +429,9 @@ class DbService
         return $this->collation;
     }
 
+    /**
+     * @return list<array{query: string, time: float}>
+     */
     public function getQueryLog()
     {
         return $this->queryLog;
@@ -439,9 +445,11 @@ class DbService
      * log is there. That rendering is for reading only and is never executed --
      * SqlParameters::interpolateForDisplay() says so at more length.
      *
+     * @param string                  $query
+     * @param float                   $time
      * @param array<array-key, mixed> $params
      */
-    public function addQueryLog($query, $time, array $params = [])
+    public function addQueryLog($query, $time, array $params = []): void
     {
         $this->queryLog[] = [
             'query' => SqlParameters::interpolateForDisplay((string)$query, $params),
@@ -449,11 +457,29 @@ class DbService
         ];
     }
 
+    /**
+     * @param string $tableName
+     *
+     * @return string
+     */
     public function prefixTable($tableName)
     {
-        return ' ' . $this->params->get('table_prefix') . $tableName . ' ';
+        return ' ' . $this->stringParam('table_prefix') . $tableName . ' ';
     }
 
+    /** A connection setting the wiki always stores as text, read as text. */
+    private function stringParam(string $name): string
+    {
+        $value = $this->params->get($name);
+
+        return is_scalar($value) ? (string)$value : '';
+    }
+
+    /**
+     * @param mixed $string anything the caller has, cast to text below
+     *
+     * @return string
+     */
     public function escape($string)
     {
         // PDO::quote adds quotes around the string, so we strip them.
@@ -480,7 +506,10 @@ class DbService
      * Omitting $params runs exactly the statement it is given, unchanged: the parameterless
      * path below is byte-for-byte what it always was, so no existing caller is affected.
      *
+     * @param string                  $query
      * @param array<array-key, mixed> $params
+     *
+     * @return \PDOStatement
      */
     public function query($query, array $params = [])
     {
@@ -674,6 +703,9 @@ class DbService
         return mb_strlen($query) > 120 ? mb_substr($query, 0, 120) . ' [...]' : $query;
     }
 
+    /**
+     * @return float
+     */
     protected function getMicroTime()
     {
         list($usec, $sec) = explode(' ', microtime());
@@ -688,6 +720,8 @@ class DbService
      * $params is optional and behaves as in query(): supplied, the values are bound; omitted,
      * the statement runs exactly as given.
      *
+     * @param array<array-key, mixed> $params
+     * @param string                  $query
      * @param array<array-key, mixed> $params
      *
      * @return array<string, mixed>|null
@@ -705,18 +739,14 @@ class DbService
      * Fills and returns a table with the results of the query
      * Frees the SQL results set afterwards.
      *
+     * @param string                  $query
      * @param array<array-key, mixed> $params
      *
      * @return list<array<string, mixed>>
      */
     public function loadAll($query, array $params = []): array
     {
-        $stmt = $this->query($query, $params);
-        if ($stmt) {
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        }
-
-        return [];
+        return array_values($this->query($query, $params)->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -731,12 +761,7 @@ class DbService
      */
     public function countRows(string $query, array $params = []): int
     {
-        $stmt = $this->query($query, $params);
-        if ($stmt) {
-            return count($stmt->fetchAll(\PDO::FETCH_ASSOC));
-        }
-
-        return 0;
+        return count($this->query($query, $params)->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**

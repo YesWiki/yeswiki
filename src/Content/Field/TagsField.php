@@ -45,8 +45,8 @@ class TagsField extends EnumField
         $value = $this->getValue($entry);
 
         if (!isset($value)) {
-            if ($this->getRequest()->query->has($this->propertyName)) {
-                $value = stripslashes($this->getRequest()->query->get($this->propertyName));
+            if ($this->getRequest()->query->has((string)$this->propertyName)) {
+                $value = stripslashes((string)$this->getRequest()->query->get((string)$this->propertyName));
             } else {
                 $value = stripslashes($this->default);
             }
