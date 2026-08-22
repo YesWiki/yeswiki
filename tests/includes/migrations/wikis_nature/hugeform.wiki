@@ -1,0 +1,94 @@
+titre***Pilote {{bf_cityname}}***Titre Automatique***
+liste***ListeCities***Name of the city*** *** *** ***bf_cityname*** ***1*** *** *** * *** * *** *** *** ***
+radio***ListeYesNo***Department capital city*** *** *** ***bf_department_capital*** *** *** *** *** * *** * *** *** *** ***
+radio***ListeYesNo***Province capital city*** *** *** ***bf_province_capital*** *** *** *** *** * *** * *** *** *** ***
+tabs***Geographical context,Food policy and other policies,Characteristics of the local food system,Food logistics context,Description of the pilot*** ***Geographical context,Food policy and other policies,Characteristics of the local food system,Food logistics context,Description of the pilot*** *** *** ***btn-primary*** *** *** *** *** *** *** *** ***
+labelhtml*** *** ***<div class="large-block-in-entries">***
+image***bf_image***Insert a photo with an aerial view of the city***300***400***600***800***right*** *** ***Will be done by FAB'LIM for all partners*** * *** * *** *** *** ***
+texte***bf_text***Number of inhabitants of the city*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_text2***Rank of the city (regarding the number of inhabitants)*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_text1***Number of inhabitants of the city urban area*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+liste***ListeClimate***Climate*** *** *** ***bf_climate*** *** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***</div>***
+textelong***bf_description***Short description of the natural area / environnement*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description3***Main demographic caracteristics of the area*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description2***Main economic activities of the area*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description1***Poverty rate*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+radio***ListeYesNo***The city sign up the Milan urban food policy Pact*** *** *** ***bf_signed_pact*** *** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml*** *** ***<div class="lire-plus-conteneur">***
+labelhtml***<h4>Food Policy</h4>*** ***h4>Food Policy</h4>*** *** *** *** ***
+textelong***bf_description4***Food policy of the city*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***</div><div class="btn btn-xs btn-secondary-1 bouton-voir-plus float-right" onClick="event.target.previousElementSibling.classList.add('see-all');event.target.style.display='none'"><i class="fas fa-plus"></i> See more</div>***
+labelhtml*** *** ***<hr class="barre-bleu-ciel"/>***
+labelhtml*** *** ***<div class="lire-plus-conteneur">***
+textelong***bf_description5***Food policy of the city metropolis*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***</div><div class="btn btn-xs btn-secondary-1 bouton-voir-plus float-right" onClick="event.target.previousElementSibling.classList.add('see-all');event.target.style.display='none'"><i class="fas fa-plus"></i> See more</div>***
+textelong***bf_description6***Other local policies related to food, mobility, waste managment, air quality...*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml***<h4>Innovations</h4>*** ***<h4>Innovations</h4>***
+textelong***bf_description7***Innovations in agro-ecology and food, distribution channels and logistics, or in the management of packaging and co-products in the food sector, which can be inspiring*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+labelhtml***<h4>Agricultural production</h4>*** ***<h4>Agricultural production</h4>***
+textelong***bf_description8***Main agricultural production of the area (metropolis)*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+texte***bf_text3***Other agricultural production taken into account in the project (not from short and local circuits)*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml***<h4>Food transformation</h4>*** ***<h4>Food transformation</h4>***
+textelong***bf_description9***Main food operator using the local food production*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+texte***bf_text4***Other food operator taken into account in the project*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml***<h4>Food consumption</h4>*** ***<h4>Food consumption</h4>***
+textelong***bf_description11***Main sales outlets / shops distributing local and short distribution channels*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+texte***bf_text5***Other food distribution channels included in the project*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-bleu-ciel"/>***
+texte***bf_text6***Avergage proportion of food in household budgets (at national level)*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-bleu-ciel"/>***
+texte***bf_text11***Data on food insecurity*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_text10***Example of food solidarity initiatives*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml***<h4>Scientific research and formation</h4>*** ***<h4>Scientific research and formation</h4>***
+textelong***bf_description10***Formation and agri-food research*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+radio***ListeYesNo***Existence of a low-emission zone in the city area*** *** *** ***bf_low_emission*** *** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description12***Description of the implementation of the low-emission zone*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml***<h4>Operators</h4>*** ***<h4>Operators</h4>***
+checkbox***ListeEconomicOperatorTransporting***Economic operator transporting the food into the city*** *** *** ***id_economic_operator*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeEconomicOperatorTransportingid_economic_operator_8" style="display:none;">*** *** ***
+texte***bf_text12***Other, please specify*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div> <!-- fin de la condition -->*** *** ***
+texte***bf_text7***Specify and give exemple of operators*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-bleu-ciel"/>***
+checkbox***ListeOperatorsTransportingPackaging***Operators transporting packaging and food-related products into the city*** *** *** ***id_operators_transporting*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeOperatorsTransportingPackagingid_operators_transporting_7" style="display:none;">*** *** ***
+texte***bf_text14***Other, please specify*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div> <!-- fin de la condition -->*** *** ***
+texte***bf_text8***Specify and give exemple of operators*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+labelhtml*** *** ***<div class="large-block-in-entries">***
+texte***bf_text9***Name*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Full address*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***</div>***
+radio***ListeYesNo***Is the pilot located in a low-average zone / disadvantaged neighbourhood ?*** *** *** ***bf_low_average*** *** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+labelhtml*** *** ***<div class="lire-plus-conteneur">***
+textelong***bf_description15***Description of the organisation supporting the pilot*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***</div><div class="btn btn-xs btn-secondary-1 bouton-voir-plus float-right" onClick="event.target.previousElementSibling.classList.add('see-all');event.target.style.display='none'"><i class="fas fa-plus"></i> See more</div>***
+checkbox***ListeTargetStakeholdersOfTheProject***Target stakeholders of the project (who will benefit of the project)*** *** *** ***id_target_stakeholders*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***<div id="checkboxListeTargetStakeholdersOfTheProjectid_target_stakeholders_12" style="display:none;">*** *** ***
+texte***bf_text13***Other, please specify*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+labelhtml***</div> <!-- fin de la condition -->*** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description17***List the needs of each group of target stakeholders*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+textelong***bf_description18***Stakeholders who will support the pilot*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+labelhtml*** *** ***<hr class="barre-jaune"/>***
+textelong***bf_description21***Main objectives of the pilot*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+textelong***bf_description20***Description of the tecnical solution chosen, specifying how it have been chosen*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+textelong***bf_description19***How it will be implemented*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+textelong***bf_description23***The way in which regional consultations will be organised to devise economic and organisational models to support the deployment of such low-carbon transport solutions over the long term.*** *** *** *** ***wiki*** *** *** *** * *** * *** *** *** ***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+acls*** * ***+***comments-closed*** ***non***bf_commentaires*** *** *** *** ***

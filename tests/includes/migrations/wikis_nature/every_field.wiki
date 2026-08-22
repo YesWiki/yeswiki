@@ -1,0 +1,32 @@
+textelong***description***Une description intéressante*** *** ***c'est important*** ***html*** *** ***c'est la description***%***@Membre*** *** ***je ne sais pas à quoi ça sert***
+image***bf_image***logo***300***400***600***800***right*** *** *** *** * *** * ***light.svg|data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwbW0iIGhlaWdodD0iMjk3bW0iIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDIxMCAyOTciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiA8cmVjdCB4PSI0NC4wNjYiIHk9IjM3LjE4IiB3aWR0aD0iMTMxLjUxIiBoZWlnaHQ9IjcwLjkxOCIgZmlsbD0iIzA1MDUwNSIgc3Ryb2tlLXdpZHRoPSIuNDU4NTIiLz4KPC9zdmc+Cg==*** *** ***
+lien_internet***bf_url***Url***displayvideo*** *** ***4par3||***pull-left*** *** *** *** * *** * *** *** *** ***
+fichier***bf_file***Upload de fichier*** *** *** ***mon fichier : {filename}***.pdf,.webp*** *** *** *** * *** * *** *** *** ***
+champs_mail***bf_mail***Email*** ***%*** ***form*** *** ***1*** *** * ***%*** *** *** ***
+listefiche***9***Liste déroulante*** *** *** ***bf_select*** *** *** *** *** * *** * *** *** *** ***
+checkbox*** ***Cases à cocher*** *** *** ***bf_checkboxes***tags*** *** *** *** * *** * *** *** *** ***
+radio***ListThematiquesRessourcesUtilesIntranetGui***Boutons radio*** *** *** ***bf_choice*** *** *** *** *** * *** * *** *** *** ***
+listedatedeb***bf_date_debut_evenement***Champ Date*** *** ***today*** *** *** *** *** *** * *** * *** *** *** ***
+openinghours***horaires_ouverture***horaires d'ouverture*** *** *** *** *** *** *** *** *** * *** * *** *** *** ***
+tags***bf_tags***Mots clés*** *** *** ***bf_tags*** *** *** *** *** * *** * *** *** *** ***
+labelhtml***# un titre*** ***# un titre qui s'affiche*** * ***
+titre***{bf_select} : {bf_text1}***Titre Automatique***
+listefiches***5*** ***champs=bf_text***12***template=card***bf_choice***Liste des fiches liées*** *** ***ajout de fiche*** * *** * *** *** *** ***
+texte***bf_text***Texte court***5***50*** *** ***number*** *** *** *** * *** * *** *** *** ***
+texte***bf_text1***Texte court*** *** *** *** ***number*** *** *** *** * *** * *** *** *** ***
+calc***bf_calc***Calculs*** ***{value} …€***{bf_text} * {bf_text1}*** *** *** *** *** *** * *** *** *** *** ***
+tabs***Onglet 1,Onglet 2,Onglet 3*** ***premiere partie,deuxieme,troisieme*** ***moveSubmit*** ***btn-secondary-1*** ***btn-xs*** *** *** *** *** *** ***
+reactions***bf_reactions***oui-oui,non-non,peut-etre***oui,non,peut-être***mikone-j-aime,mikone-idee-noire,mikone-pas-compris***oui***c'est un test pour voir*** *** *** *** *** * *** * *** *** *** ***
+inscriptionliste***je ne sais pas***Inscription liste diffusion***bf_mail***inconnu***
+tabchange***formChange*** ***viewChange*** *** *** *** *** *** *** *** *** *** *** *** ***
+utilisateur_wikini***bf_titre***bf_mail*** *** *** ***test*** *** ***1*** *** *** *** *** *** ***
+tabchange***formChange*** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+acls***% ,@admins***+***@admins*** ***non***bf_commentaires***1*** *** *** ***
+metadatas***interface***2col.tpl.html***bootstrap.css***peppercarrot.jpg***red.css***
+tabchange***formChange*** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+bookmarklet***bf_bookmarklet***Bookmarklet***bf_url***bf_description***Glisser-déposer le bouton dans votre barre de favoris*** *** *** *** ***Glisser-déposer le bouton dans votre barre de navigateur***
+texte***ville***ville*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***codepostal***codepostal*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***rue***rue*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Adresse*** *** *** *** ***text*** *** *** *** * *** * *** *** *** ***
+map***bf_geolocation***Géolocalisation de l'adresse*** ***codepostal***ville***0|adresse|||region|pays***1*** ***marker, line*** *** * *** * ***50*** *** ***
