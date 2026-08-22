@@ -51,6 +51,71 @@ class MigrationFormManager extends FormManager
 
 class ConvertTableNature2Pages extends YesWikiMigration
 {
+
+    public function convertfield($element, $index, $existing_keys )
+    {
+        $classType = get_class($element);
+        if ($classType == "YesWiki\Bazar\Field\ImageField") {
+            var_dump($element->imageDefault);
+        }
+        $field = json_decode(json_encode($element), true);
+        $field['order'] = $index;
+        $fieldExploded = explode('\\', $classType);
+        $field['field_type'] = array_pop($fieldExploded);
+
+        switch ($field['field_type']) {
+            case 'SelectEntryField':
+                $key = 'listefiche'.$field['linkedObjectName'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+            case 'SelectListField':
+                $key = 'liste'.$field['linkedObjectName'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+            case 'CheckboxListField':
+                $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+            case 'CheckboxEntryField':
+                $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+            case 'RadioListField':
+                $key = 'radio'.$field['linkedObjectName'].$field['id'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+            case 'RadioEntryField':
+                $key = 'radio'.$field['linkedObjectName'].$field['id'];
+                if (in_array($key, $existing_keys)) {
+                    $field['name'] = $key;
+                }
+
+                break;
+        }
+        $field['name'] = empty($field['name']) ? $field['type'].'__'.$index : $field['name'];
+        $field['id'] = empty($field['id']) ? $field['name'] : $field['id'];
+        if (isset($field['options'])) {
+            unset($field['options']);
+        }
+
+        return $field;
+    }
+
     /**
      * This function get a form in old nature syntax and return a form in new json syntax.
      * @param string $form  formulaire with old nature syntax
@@ -73,62 +138,11 @@ class ConvertTableNature2Pages extends YesWikiMigration
             $tripleStore,
             $this->getService(AclService::class),
         );
+        $existing_keys = array_keys($fiche);
         $form = $formManager->getFromRawData($form);
         $form_array = [];
         foreach ($form['prepared'] as $i => $element) {
-            $classType = get_class($element);
-            $field = json_decode(json_encode($element), true);
-            $field['order'] = $i;
-            $fieldExploded = explode('\\', $classType);
-            $field['field_type'] = array_pop($fieldExploded);
-
-            switch ($field['field_type']) {
-                case 'SelectEntryField':
-                    $key = 'listefiche'.$field['linkedObjectName'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-
-                    break;
-                case 'SelectListField':
-                    $key = 'listeListe'.$field['linkedObjectName'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-
-                    break;
-                case 'CheckboxListField':
-                    $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-
-                    break;
-                case 'CheckboxEntryField':
-                    $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-
-                    break;
-                case 'RadioListField':
-                    $key = 'radio'.$field['linkedObjectName'].$field['id'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-                    break;
-                case 'RadioEntryField':
-                    $key = 'radio' . $field['linkedObjectName'].$field['id'];
-                    if (array_key_exists($key, $fiche)) {
-                        $field['name'] = $key;
-                    }
-
-                    break;
-            }
-            $field['id'] ??= $field['name'] ?? $field['type'].'__'.$i;
-            if (isset($field['options'])) {
-                unset($field['options']);
-            }
+            $field = $this->convertfield($element, $i, $existing_keys);
             $form_array[$field['id']] = $field;
         }
         $newform = [
@@ -163,10 +177,10 @@ class ConvertTableNature2Pages extends YesWikiMigration
         );
         foreach ($forms as $form) {
 
-            $fiche = $this->dbService->loadSingle("select body from {$this->dbService->prefixTable('nature')} where tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')} WHERE value = 'fiche_bazar') and JSON_VALUE(body, '$.id_typeannonce') = {$form['bn_id_nature']} limit 1");
-            $fiche = $fiche ? json_decode($fiche) : [];
+            $existing_keys = $this->dbService->loadSingle("select body from {$this->dbService->prefixTable('nature')} where tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')} WHERE value = 'fiche_bazar') and JSON_VALUE(body, '$.id_typeannonce') = {$form['bn_id_nature']} limit 1");
+            $existing_keys = $existing_keys ? json_decode($existing_keys) : [];
 
-            $newform = $this->convertform($pageManager, $tripleStore, $form, $fiche);
+            $newform = $this->convertform($pageManager, $tripleStore, $form, $existing_keys);
             $slug = getAvailableSlug($form['bn_label_nature']);
 
             $saved = $pageManager->save(
