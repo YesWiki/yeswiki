@@ -73,7 +73,7 @@ class FormManager
     {
         $basePath = $this->attach->GetUploadPath();
 
-        return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
+        return $basePath;
     }
 
     protected function cleanCacheDefaultImage($prefix)
@@ -527,7 +527,7 @@ class FormManager
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
             // on ignore les lignes vides ou commencant par # (commentaire)
-            if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
+            if (!empty($ligne) && !str_starts_with($ligne, '#')) {
                 // on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
