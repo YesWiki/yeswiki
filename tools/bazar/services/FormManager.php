@@ -228,9 +228,6 @@ class FormManager
     */
     public function getFromRawData($form)
     {
-        foreach ($form as $key => $value) {
-            $form[$key] = _convert($value, 'ISO-8859-15');
-        }
         if (isset($form['body'])) {
             $form = json_decode($form['body'], true);
             $form['bn_condition'] = $form['condition'];
@@ -576,8 +573,6 @@ class FormManager
     {
         $i = 0;
         $prepared = $result = [];
-
-        $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
             $classField = $this->fieldFactory->create($field);
