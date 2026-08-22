@@ -140,24 +140,51 @@ class FormManager
         $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
-                $modify = true;
-                $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$id_nature}_{$image_comp[1]}.jpg";
-                if (file_exists($default_image_filename)) {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
-                } else {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
-                }
-                $template_list[$temp_index] = $image_comp;
+
+                ['wikifield' => $wikifield,
+                  'modify' => $modify] = $this->manage_default_image_field($template_list[$temp_index], $id_nature);
+
+                $template_list[$temp_index] = $wikifield;
             }
         }
 
         return [$template_list, $modify];
     }
 
+    /**
+     * base64 encode default image in imageField if file not already done and file exists. Look for a default file with the following name :
+     *  $basePath . defaultimage{$formId}_{$wikifield[1]}.jpg
+     * @param $wikifield array encoded field
+     * @param $formId
+     *
+     * @return array with updated field and wether it has been modified or not : [ 'field' => updated_field, 'modifield' => bool ]
+     */
+    protected function manage_default_image_field($wikifield, $formId): array
+    {
+
+        // field already base64 encoded
+        if (str_contains($wikifield[ImageField::FIELD_IMAGE_DEFAULT], ';base64')) {
+            return [
+                'wikifield' => $wikifield,
+                'modify' => false,
+            ];
+        }
+        $basePath = $this->getBasePath();
+        $default_image_filename = $wikifield[ImageField::FIELD_IMAGE_DEFAULT] ?? $basePath."defaultimage{$formId}_{$wikifield[1]}.jpg";
+        if (file_exists($default_image_filename)) {
+            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = $wikifield[ImageField::FIELD_IMAGE_DEFAULT].'|data:image/jpg;base64,'.base64_encode(file_get_contents($default_image_filename));
+        } else {
+            $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = '';
+        }
+
+        return [
+            'wikifield' => $wikifield,
+            'modify' => true,
+        ];
+    }
+
     protected function prepare_with_special_parameters($form)
     {
-        $basePath = $this->getBasePath();
         if (isset($form['fields'])) {
             $template_list = $form;
         } else {
@@ -168,22 +195,15 @@ class FormManager
         $modify = false;
 
         $fields = $template_list['fields'];
-        foreach($fields as $key => $field) {
+        foreach ($fields as $key => $field) {
             $cname = "YesWiki\\Bazar\\Field\\".$field['field_type'];
             $wikifield = $cname::mapToFieldArray($field);
 
             if ($wikifield[0] == 'image') {
-                $modify = true;
-                $default_image_filename = $basePath . "defaultimage{$form['id']}_{$wikifield[1]}.jpg";
-                if (file_exists($default_image_filename)) {
-                    $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = $wikifield[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
-                } else {
-                    $wikifield[ImageField::FIELD_IMAGE_DEFAULT] = '';
-                }
+                ['wikifield' => $wikifield, 'modify' => $modify] = $this->manage_default_image_field($wikifield, $form['id']);
             }
             $prepared[] = $wikifield;
         }
-        //$template_list['fields'] = $prepared;
 
         return [$prepared, $modify];
     }
