@@ -42,8 +42,8 @@ class AclField extends BazarField
         $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $this->askIfActivateComments ? 'bf_commentaires' : null);
         $this->propertyName = $this->name;
 
-        $this->default = $this->filterNotEmptyString(['default' => $this->default], 'default', '');
-        $this->default = ($this->default === '' || in_array($this->default, array_keys(self::OPTIONS), true)) ? $this->default : '';
+        $this->default ??= '';
+        $this->default = in_array($this->default, array_keys(self::OPTIONS), true) ? $this->default : '';
 
         $this->label = $this->filterNotEmptyString($values, self::FIELD_LABEL, _t('BAZ_ACTIVATE_COMMENTS'));
         $this->hint = $this->filterNotEmptyString(['hint' => $this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
@@ -214,19 +214,19 @@ class AclField extends BazarField
     {
 
         $new = parent::mapToFieldArray($fieldProps);
-        $new = [
-            self::FIELD_TYPE => $fieldProps['type'],
-            self::FIELD_ENTRY_READ_RIGHT => $fieldProps['entryReadRight'],
-            self::FIELD_ENTRY_WRITE_RIGHT => $fieldProps['entryWriteRight'],
-            self::FIELD_ENTRY_COMMENT_RIGHT => $fieldProps['entryCommentRight'],
-            self::FIELD_NAME => $fieldProps['name'],
-            self::FIELD_LABEL => $fieldProps['label'],
-            self::FIELD_HINT => $fieldProps['hint'],
-            self::FIELD_DEFAULT => $fieldProps['default'],
-            self::FIELD_ASK_IF_ACTIVATE_COMMENTS => $fieldProps['askIfActivateComments'],
-        ];
-        $new = array_merge(parent::mapToFieldArray($fieldProps), $new);
+
+        $new[self::FIELD_TYPE] = $fieldProps['type'];
+        $new[self::FIELD_ENTRY_READ_RIGHT] = $fieldProps['entryReadRight'];
+        $new[self::FIELD_ENTRY_WRITE_RIGHT] = $fieldProps['entryWriteRight'];
+        $new[self::FIELD_ENTRY_COMMENT_RIGHT] = $fieldProps['entryCommentRight'];
+        $new[self::FIELD_LABEL] = $fieldProps['label'] == _t('BAZ_ACTIVATE_COMMENTS') ? '' : $fieldProps['label'] ;
+        $new[self::FIELD_DEFAULT] = $fieldProps['default'];
+        $new[self::FIELD_NAME] = $fieldProps['name'];
+        $new[self::FIELD_ASK_IF_ACTIVATE_COMMENTS] = $fieldProps['askIfActivateComments'];
+        $new[self::FIELD_HINT] = $fieldProps['hint'] == _t('BAZ_ACTIVATE_COMMENTS_HINT') ? '' : $fieldProps['hint'];
+
         ksort($new);
+
         return $new;
     }
 
