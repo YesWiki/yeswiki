@@ -59,19 +59,19 @@ class TabChangeField extends LabelField
     // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
-       $new = parent::mapToFieldArray($fieldProps);
-       if ($fieldProps['viewChange']) {
-           $new[self::FIELD_VIEW_CHANGE] = true;
-       } else {
-           unset($new[self::FIELD_VIEW_CHANGE]);
-       }
-       if ($fieldProps['formChange']) {
-           $new[self::FIELD_FORM_CHANGE] = true;
-       } else {
-           unset($new[self::FIELD_FORM_CHANGE]);
-       }
-
+        $new = parent::mapToFieldArray($fieldProps);
+        if ($fieldProps['viewChange']) {
+            $new[self::FIELD_VIEW_CHANGE] = 'viewChange';
+        } else {
+            unset($new[self::FIELD_VIEW_CHANGE]);
+        }
+        if ($fieldProps['formChange']) {
+            $new[self::FIELD_FORM_CHANGE] = 'formChange';
+        } else {
+            unset($new[self::FIELD_FORM_CHANGE]);
+        }
        ksort($new);
+
        return $new;
     }
 
@@ -79,9 +79,11 @@ class TabChangeField extends LabelField
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
-        return [
-            'formChange' => $this->getFormChange(),
-            'viewChange' => $this->getViewChange(),
-        ];
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'formChange' => $this->getFormChange(),
+                'viewChange' => $this->getViewChange(),
+            ] );
     }
 }

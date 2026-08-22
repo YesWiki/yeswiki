@@ -115,7 +115,11 @@ abstract class BazarField implements \JsonSerializable
         $new[self::FIELD_DEFAULT] = $fieldProps['default'] ?? '';
         $new[6] = '';
         $new[7] = '';
-        $new[self::FIELD_REQUIRED] = $fieldProps['required'] ? 1 : '';
+        if (isset($fieldProps['required']) and $fieldProps['required']) {
+            $new[self::FIELD_REQUIRED] = 1;
+        } else {
+            $new[self::FIELD_REQUIRED] = '';
+        };
         $new[self::FIELD_SEARCHABLE] = $fieldProps['searchable'] ?? '';
         $new[self::FIELD_HINT] = $fieldProps['helper'] ?? '';
         $new[self::FIELD_READ_ACCESS] = $fieldProps['read_acl'] ?? '';
@@ -124,6 +128,7 @@ abstract class BazarField implements \JsonSerializable
         $new[self::FIELD_SEMANTIC_PREDICATE] = $fieldProps['sem_type'] ?? '';
         $new[15] = '';
         $new[16] = '';
+
         return $new;
     }
 

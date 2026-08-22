@@ -348,6 +348,7 @@ class TextareaField extends BazarField
         $new[self::FIELD_NUM_ROWS] = $fieldProps['numRow'];
         $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
         $new[self::FIELD_SYNTAX] = $fieldProps['syntax'] ?? '';
+        $new[self::FIELD_PLACEHOLDER] = $fieldProps['placeholder'] ?? '';
         ksort($new);
 
         return $new;
@@ -364,6 +365,7 @@ class TextareaField extends BazarField
                 'numRow' => $this->numRows,
                 'maxChars' => $this->maxChars,
                 'syntax' => $this->syntax,
+                'placeholder' => $this->placeholder,
             ]
         );
     }
