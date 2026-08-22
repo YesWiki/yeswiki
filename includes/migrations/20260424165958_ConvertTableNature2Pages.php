@@ -55,9 +55,6 @@ class ConvertTableNature2Pages extends YesWikiMigration
     public function convertfield($element, $index, $existing_keys )
     {
         $classType = get_class($element);
-        if ($classType == "YesWiki\Bazar\Field\ImageField") {
-            var_dump($element->imageDefault);
-        }
         $field = json_decode(json_encode($element), true);
         $field['order'] = $index;
         $fieldExploded = explode('\\', $classType);

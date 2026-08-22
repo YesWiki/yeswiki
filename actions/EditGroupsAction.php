@@ -77,10 +77,8 @@ class EditGroupsAction extends YesWikiAction
         sort($users);
         $merged_list = array_merge(array_map(function ($el) { return '@' . $el; }, $list), $users);
         unset($merged_list[array_search('@' . $selectedGroupName, $merged_list)]);
-        error_log('selected_group_name ' . $selectedGroupName);
 
         $field = ['name' => '', 'propertyName' => '', 'required' => false, 'label' => $selectedGroupName];
-        error_log('render');
 
         return $this->render(
             '@core/actions/edit-group-action.twig',
