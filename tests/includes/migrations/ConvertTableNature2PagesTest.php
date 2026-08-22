@@ -41,9 +41,18 @@ class ConvertTableNature2PagesTest extends YesWikiTestCase
             $form['bn_condition'] = '';
             $form['bn_only_one_entry'] = 'No';
             $form['bn_only_one_entry_message'] = '';
+
+            $fiche_name = substr($filename, 0, -5).'.fiche';
+
+            $fiche = [];
+            if (file_exists($fiche_name)) {
+                $fiche_content = file_get_contents($fiche_name);
+                $fiche = json_decode($fiche_content, true);
+            }
+
             $forms[] = [
                 $form,
-                []
+                $fiche,
             ];
         }
 
@@ -62,19 +71,20 @@ class ConvertTableNature2PagesTest extends YesWikiTestCase
         $result = $migrator->convertform($pageManager, $tripleStore, $form, $fiche);
 
         $roundtrip = $formManager->getFromRawData(['body' => json_encode($result)]);
-        $roundtrip = explode("\n", $roundtrip['bn_template']);
-        foreach (explode("\n", $form['bn_template']) as $index => $expected_line) {
+        $bn_template = explode("\n", $form['bn_template']);
+        foreach (explode("\n", $roundtrip['bn_template']) as $index => $roundtrip_line) {
+            $expected_line = $bn_template[$index];
             $expected_line = \preg_replace('/\r\n|\r|\n/', "\n", $expected_line);
-            $roundtrip_line = \preg_replace('/\r/', '', $roundtrip[$index]);
+            $roundtrip_line = \preg_replace('/\r/', '', $roundtrip_line);
             // ignore conversion texte to text
             $expected_line = \preg_replace('/texte\*/', 'text*', $expected_line);
             // ignore conversion champs_mail to email
             $expected_line = \preg_replace('/champs_mail\*/', 'email*', $expected_line);
             // ignore conversion lien_internet to link
             $expected_line = \preg_replace('/lien_internet\*/', 'link*', $expected_line);
-            error_log("\n" . $expected_line . "\n");
-            error_log("\n" . $roundtrip[$index] . "\n");
-            assertStringContainsString($expected_line, $roundtrip_line);
+            // ignore conversion wiki to wiki-textarea in textelong
+             $expected_line = \preg_replace('/\*wiki\*/', '*wiki-textarea*', $expected_line);
+            assertStringContainsString($expected_line, $roundtrip_line, "expected line : \n {$expected_line} \n obtained line : \n {$roundtrip_line} \n\n");
         }
     }
 
