@@ -151,10 +151,12 @@ class LinkedEntryField extends BazarField
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_QUERY] = $fieldProps['query'];
         $new[self::FIELD_LIMIT] = $fieldProps['limit'];
-        $new[self::FIELD_LINK_TYPE] = $fieldProps['linkType'] ?? '';
+        $new[self::FIELD_LINK_TYPE] = $fieldProps['linkedId'] ?? '';
         $new[self::FIELD_TEMPLATE] = $fieldProps['template'];
         $new[self::FIELD_OTHER_PARAMS] = $fieldProps['otherParams'];
+        $new[self::FIELD_LABEL] = $fieldProps['label'] ?? '';
         ksort($new);
+
         return $new;
     }
 
@@ -171,6 +173,7 @@ class LinkedEntryField extends BazarField
                 'linkedId' => $this->linkedId,
                 'template' => $this->template,
                 'otherParams' => $this->otherParams,
+                'label' => $this->label,
             ]
         );
     }

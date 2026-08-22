@@ -88,7 +88,7 @@ class ReactionsField extends BazarField
         $this->size = null;
         $this->maxChars = null;
 
-        $this->ids = empty($this->ids) ? [] : explode(',', $this->ids);
+        $this->ids = empty($values[self::FIELD_IDS]) ? [] : explode(',', $values[self::FIELD_IDS]);
         $this->ids = array_map('trim', $this->ids);
 
         $labels = isset($values[self::FIELD_LABELS]) && is_string($values[self::FIELD_LABELS])
@@ -192,12 +192,13 @@ class ReactionsField extends BazarField
     // LANG_FIXME not sure about this function
     public static function mapToFieldArray($fieldProps): array
     {
-       $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_IDS] = join(',', $fieldProps['ids']);
-       $new[self::FIELD_LABELS] = $fieldProps['labels'];
-       $new[self::FIELD_IMAGES] = $fieldProps['images'];
-       ksort($new);
-       return $new;
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_IDS] = join(',', $fieldProps['ids']);
+        $new[self::FIELD_LABELS] = $fieldProps['labels'];
+        $new[self::FIELD_IMAGES] = $fieldProps['images'];
+        $new[self::FIELD_LABEL_REACTION] = $fieldProps['label_reaction'];
+        ksort($new);
+        return $new;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
@@ -211,6 +212,7 @@ class ReactionsField extends BazarField
                 'ids' => $this->getIds(),
                 'labels' => $this->getLabels(),
                 'images' => array_map('basename', $this->getImagesPath()),
+                'label_reaction' => $this->label,
             ]
         );
     }

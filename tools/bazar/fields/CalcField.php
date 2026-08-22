@@ -39,7 +39,7 @@ class CalcField extends BazarField
     {
         parent::__construct($values, $services);
         $this->calcFormula = $values[self::FIELD_CALCFORMULA];
-        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : $values[self::FIELD_DISPLAY_TEXT];
+        $this->displayText = $values[self::FIELD_DISPLAY_TEXT] ?? '{value}';
         $this->default = ''; // to prevent field 5 to change default value
         $this->maxChars = ''; // to prevent field 4 to change maxChars
         $this->formManager = null;

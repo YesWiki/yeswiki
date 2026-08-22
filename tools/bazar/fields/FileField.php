@@ -290,9 +290,9 @@ class FileField extends BazarField
     {
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_READ_LABEL] = $fieldProps['readLabel'] ?? '';
-        if (!empty($fieldProps['autorizedExts'])) {
+        if (!empty($fieldProps['authorizedExts'])) {
             $new[self::FIELD_AUTHORIZED_EXTS_LABEL] =
-            is_array($fieldProps['authorizedExts']) ? implode(',',$fieldProps['authorizedExts']) : $fieldProps['autorizedExts'];
+            is_array($fieldProps['authorizedExts']) ? implode(',',$fieldProps['authorizedExts']) : $fieldProps['authorizedExts'];
         } else {
             $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = '';
         }

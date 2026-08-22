@@ -41,41 +41,29 @@ class MapField extends BazarField
         parent::__construct($values, $services);
 
         $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
-        $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
-            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
 
-        $autocomplete = empty($this->autocomplete) ? '' : (
-            is_string($this->autocomplete)
-            ? $this->autocomplete
-            : (
-                is_array($this->autocomplete)
-                ? implode(',', $this->autocomplete)
-                : ''
-            )
-        );
-        $data = array_map('trim', explode(',', $autocomplete));
-        $postalCode = empty($data[0]) ? self::DEFAULT_FIELDNAME_POSTALCODE : $data[0];
-        $town = empty($data[1]) ? self::DEFAULT_FIELDNAME_TOWN : $data[1];
+        $autocomplete_other = [];
+        if (!empty($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
+            if (is_string($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
+                $autocomplete_other = explode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS]);
+            } else if (is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
+                $autocomplete_other = $values[self::FIELD_AUTOCOMPLETE_OTHERS];
+            }
+        }
 
-        $autocompleteFieldnames = empty($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-            ? ''
-            : (
-                is_string($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                ? $values[self::FIELD_AUTOCOMPLETE_OTHERS]
-                : (
-                    is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                    ? implode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                    : ''
-                )
-            );
-        $data = array_map('trim', explode('|', $autocompleteFieldnames));
+        $postalCode = $values[self::FIELD_AUTOCOMPLETE_POSTALCODE] ?? self::DEFAULT_FIELDNAME_POSTALCODE;
+        $town = $values[self::FIELD_AUTOCOMPLETE_TOWN] ?? self::DEFAULT_FIELDNAME_TOWN;
 
-        $this->geolocate = (empty($data[0]) || $data[0] != 1) ? 0 : 1;
-        $street = $data[1] ?? self::DEFAULT_FIELDNAME_STREET;
-        $street1 = $data[2] ?? self::DEFAULT_FIELDNAME_STREET1;
-        $street2 = $data[3] ?? self::DEFAULT_FIELDNAME_STREET2;
-        $county = $data[4] ?? self::DEFAULT_FIELDNAME_COUNTY;
-        $state = $data[5] ?? self::DEFAULT_FIELDNAME_STATE;
+        $this->autocomplete = implode(',', [trim($postalcode), trim($town)]);
+
+        $this->geolocate = (empty($autocomplete_other[0]) || $autocomplete_other[0] != 1) ? 0 : 1;
+        $street = trim($autocomplete_other[1]) ?? self::DEFAULT_FIELDNAME_STREET;
+        $street1 = trim($autocomplete_other[2]) ?? self::DEFAULT_FIELDNAME_STREET1;
+        $street2 = trim($autocomplete_other[3]) ?? self::DEFAULT_FIELDNAME_STREET2;
+        $county = trim($autocomplete_other[4]) ?? self::DEFAULT_FIELDNAME_COUNTY;
+        $state = trim($autocomplete_other[5]) ?? self::DEFAULT_FIELDNAME_STATE;
+
+
 
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
 
@@ -288,8 +276,11 @@ class MapField extends BazarField
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $fieldProps['autocompleteFieldnames']['postalCode'];
         $new[self::FIELD_AUTOCOMPLETE_TOWN] = $fieldProps['autocompleteFieldnames']['town'];
-        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $fieldProps['autocompleteFieldnames']);
-        $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'] ?? '';
+        $autocomplete_other = array_slice($fieldProps['autocompleteFieldnames'], 2);
+        array_unshift($autocomplete_other, $fieldProps['geolocate']);
+        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $autocomplete_other);
+        $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'] ? 1 : ' ';
+        $new[self::FIELD_MAX_GEOMETRIES] = $fieldProps['maxGeometries'] ?? ' ';
         ksort($new);
 
         return $new;
@@ -306,6 +297,8 @@ class MapField extends BazarField
                 'autocomplete' => $this->getAutocomplete(),
                 'geolocate' => $this->getGeolocate(),
                 'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),
+                'showMapInEntryView' => $this->showMapInEntryView,
+                'maxGeometries' => $this->max_geometries,
             ]
         );
     }

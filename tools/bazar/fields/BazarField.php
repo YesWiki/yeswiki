@@ -119,7 +119,7 @@ abstract class BazarField implements \JsonSerializable
             $new[self::FIELD_REQUIRED] = 1;
         } else {
             $new[self::FIELD_REQUIRED] = '';
-        };
+        }
         $new[self::FIELD_SEARCHABLE] = $fieldProps['searchable'] ?? '';
         $new[self::FIELD_HINT] = $fieldProps['helper'] ?? '';
         $new[self::FIELD_READ_ACCESS] = $fieldProps['read_acl'] ?? '';

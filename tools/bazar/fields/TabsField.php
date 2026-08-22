@@ -104,8 +104,8 @@ class TabsField extends LabelField
         $new[self::FIELD_BTN_COLOR] = array_filter(explode(' ', $fieldProps['btnClass']), function ($el) {
             return in_array(trim($el), self::BTN_COLOR_LIST);
         })[0];
-        $new[self::FIELD_BTN_SIZE] = str_contains(self::BTN_SIZE_SMALL, $fieldProps['btnClass']) ? self::BTN_SIZE_SMALL : '';
-        $new[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] = $fieldProps['moveSubmitButtonToLastTab'];
+        $new[self::FIELD_BTN_SIZE] = str_contains($fieldProps['btnClass'], self::BTN_SIZE_SMALL) ? self::BTN_SIZE_SMALL : '';
+        $new[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] = $fieldProps['moveSubmitButtonToLastTab'] ? 'moveSubmit' : ' ';
         ksort($new);
 
         return $new;

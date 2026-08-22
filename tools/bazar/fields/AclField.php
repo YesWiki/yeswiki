@@ -222,7 +222,7 @@ class AclField extends BazarField
         $new[self::FIELD_LABEL] = $fieldProps['label'] == _t('BAZ_ACTIVATE_COMMENTS') ? '' : $fieldProps['label'] ;
         $new[self::FIELD_DEFAULT] = $fieldProps['default'];
         $new[self::FIELD_NAME] = $fieldProps['name'];
-        $new[self::FIELD_ASK_IF_ACTIVATE_COMMENTS] = $fieldProps['askIfActivateComments'];
+        $new[self::FIELD_ASK_IF_ACTIVATE_COMMENTS] = $fieldProps['askIfActivateComments'] ? 1 : ' ';
         $new[self::FIELD_HINT] = $fieldProps['hint'] == _t('BAZ_ACTIVATE_COMMENTS_HINT') ? '' : $fieldProps['hint'];
 
         ksort($new);

@@ -401,15 +401,15 @@ class UserField extends BazarField
     }
 
     public static function mapToFieldArray($fieldProps): array
-        {
-           $new = parent::mapToFieldArray($fieldProps);
-           $new[self::FIELD_NAME_FIELD] = $fieldProps['nameField'];
-           $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
-           $new[self::FIELD_MAILING_LIST] = $fieldProps['mailingList'];
-           $new[self::FIELD_AUTO_ADD_TO_GROUP] = $fieldProps['autoAddToGroup'];
-           $new[self::FIELD_AUTO_UPDATE_MAIL] = $fieldProps['autoUpdateMail'];
-           ksort($new);
-           return $new;
-        }
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_NAME_FIELD] = $fieldProps['nameField'];
+        $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
+        $new[self::FIELD_MAILING_LIST] = $fieldProps['mailingList'];
+        $new[self::FIELD_AUTO_ADD_TO_GROUP] = $fieldProps['autoAddToGroup'];
+        $new[self::FIELD_AUTO_UPDATE_MAIL] = $fieldProps['autoUpdateMail'] ? 1 : ' ';
+        ksort($new);
 
+        return $new;
+    }
 }

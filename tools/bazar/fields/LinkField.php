@@ -74,7 +74,7 @@ class LinkField extends BazarField
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_DISPLAYVIDEO] = $fieldProps['displayVideo'];
+        $new[self::FIELD_DISPLAYVIDEO] = $fieldProps['displayVideo'] ? 'displayvideo' : ' ';
         if (empty($fieldProps['ratio']) and $fieldProps['maxWidth'] == 0 and $fieldProps['maxHeight'] == 0) {
             $new[self::FIELD_OPTIONS] = '';
         } else {
