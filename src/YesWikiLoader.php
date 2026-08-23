@@ -33,16 +33,7 @@ class YesWikiLoader
     } // prevent public usage
 
     /**
-     * Load per-instance environment variables from private/.env, read from private/
-     * because the YesWiki root is the web root: a top-level .env would be downloadable
-     * (private/ is deny-all, see bootstrap_paths.php). Real environment variables are
-     * never overridden by the file, so Docker/CI injected values keep priority.
-     * usePutenv() makes the values visible to the getenv() calls used across the
-     * codebase, not only to $_ENV/$_SERVER readers.
-     *
-     * Idempotent, so entry points needing env vars before getWiki() (e.g. the console
-     * script) can call it early. Callers must have loaded bootstrap_paths.php and the
-     * composer autoloader first.
+     * Load per-instance environment variables from private/.env, read from private/ because the YesWiki root is the web root: a top-level .env would be downloadable (private/ is deny-all, see bootstrap_paths.php).
      */
     public static function loadEnv(): void
     {
@@ -60,9 +51,6 @@ class YesWikiLoader
 
     /**
      * The raw entries parsed from private/.env, unfiltered by the real environment.
-     * Used by EnvironmentConfiguration: config overrides distinguish file-authored
-     * values (any config key allowed) from process environment values (known
-     * variables only), which getenv() alone cannot tell apart.
      *
      * @return array<string, string>
      */
@@ -92,7 +80,6 @@ class YesWikiLoader
                 self::checkAutoloaderIsCurrent();
             } catch (\Throwable $th) {
                 $message = $th->getMessage();
-                // echo message directly because TemplateEngine not ready here
                 echo "<div style=\"border:1px red solid;background-color: #FFCCCC;margin:3px;padding:5px;border-radius:5px;\">$message</div>";
                 exit;
             }
@@ -101,7 +88,6 @@ class YesWikiLoader
 
             $loadedRuntime = require_once __DIR__ . '/YesWikiRuntime.php';
             if ($loadedRuntime !== true || is_null(self::$runtime)) {
-                // params to succeed to instanciate wiki for tests
                 if ($test) {
                     $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '';
                     $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -115,26 +101,7 @@ class YesWikiLoader
         return self::$runtime;
     }
 
-    /**
-     * The generated autoloader knows every namespace `composer.json` declares.
-     *
-     * **Replacing the code is not enough on its own.** PSR-4 prefixes are baked into
-     * `vendor/composer/autoload_psr4.php` when composer runs; they are not read from
-     * `composer.json` at runtime. Ectoplasme introduced eleven prefixes Doryphore never had
-     * (`YesWiki\Import\`, `YesWiki\Render\`, `YesWiki\Content\` and the rest), so an
-     * instance whose files were swapped without `composer install` boots with an autoloader
-     * that cannot see half the application.
-     *
-     * What that failure looks like, unhelpfully, is a Symfony container error naming
-     * whichever file happens to sort first in the directory it gave up on:
-     *
-     *     Expected to find class "YesWiki\Import\Service\ImapImporter" in file
-     *     "…/src/Import/Service/ImapImporter.php" … but it was not found!
-     *
-     * That file is fine. It is simply the first one alphabetically in the first namespace the
-     * container tried to scan. Nothing in the message says "run composer", and the class it
-     * names is a red herring, which is the whole reason for checking here instead.
-     */
+    /** The generated autoloader knows every namespace `composer.json` declares. */
     private static function checkAutoloaderIsCurrent(): void
     {
         $generated = YESWIKI_PROGRAM_DIR . '/vendor/composer/autoload_psr4.php';

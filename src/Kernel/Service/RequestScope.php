@@ -4,16 +4,7 @@ namespace YesWiki\Kernel\Service;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * Starts a fresh request for every service that holds request state.
- *
- * The runtime calls this once, before serving. Under php-fpm the process dies with the request so
- * it changes nothing; under worker mode (ADR-0024) it is what stops one visitor's counters, flags
- * and stacks from becoming the next visitor's.
- *
- * The list of services comes from the container, built from who implements
- * `RequestScopedState` rather than written down anywhere.
- */
+/** Starts a fresh request for every service that holds request state. */
 class RequestScope
 {
     /**

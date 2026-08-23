@@ -149,7 +149,6 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
             unset($vField);
         }
-        // $vForm is still a reference into $vForms here, and the loop below assigns to it
         unset($vForm, $vTemplate);
 
         $this->report('----------------------');
@@ -158,8 +157,6 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
         $this->report('The entries of forms ' . implode(', ', $vFormsToProcess) . ' need to be updated');
 
-        // getOne() answers null for a form that no longer exists, and every read below assumes
-        // a form
         $vFormsToProcess = array_filter(array_map(function ($pID) use ($vFormManager) {
             return $vFormManager->getOne($pID);
         }, $vFormsToProcess));
@@ -292,7 +289,6 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vBody = json_encode($vEntry['body']);
                     if ($vBody === false) {
-                        // chop(false) is '', so this used to write an empty body over the entry
                         $this->report('Entry ' . $vEntry['id'] . ' could not be re-encoded and was left untouched');
 
                         continue;

@@ -10,13 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * There is one list action, and the presentations are its templates (ticket 49).
- *
- * `{{entrymap}}` used to be an action that formatted a few arguments and called
- * `{{entrylist}}`, which called it back with a class name in the arguments to stop the
- * recursion. What is left of it is a deprecated spelling and a preparer keyed on the template.
- */
+/** There is one list action, and the presentations are its templates (ticket 49). */
 class ListTemplateAliasesTest extends YesWikiTestCase
 {
     /**
@@ -100,13 +94,7 @@ class ListTemplateAliasesTest extends YesWikiTestCase
         $this->assertArrayHasKey('columnfieldsids', $prepared, 'the table preparer did not run');
     }
 
-    /**
-     * `{{entrytable}}` draws the bazar table.
-     *
-     * It used to draw the wiki's default list template, because the action of that name
-     * formatted arguments and passed no template of its own. `tableau` is the bazar table and
-     * is not the shared `table` Presentation, which is why the alias names it exactly.
-     */
+    /** `{{entrytable}}` draws the bazar table. */
     public function testEntrytableAsksForTheBazarTable(): void
     {
         [, $defaults] = self::getWiki()->services->get(ActionRegistry::class)->resolve('action', 'entrytable');

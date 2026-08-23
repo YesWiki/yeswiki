@@ -29,11 +29,8 @@ class DbCommand extends Command
     {
         $this
             ->setName('core:exportdb')
-            // the short description shown while running "./yeswicli list"
             ->setDescription('Manage database of the YesWiki.')
 
-            // the full command description shown when running the command with
-            // the "--help" option
             ->setHelp("Manage database of the YesWiki.\n" .
                 "To test use '--test'\n")
 
@@ -115,8 +112,6 @@ class DbCommand extends Command
     private function export(OutputInterface $output, string $filepath): int
     {
         $realFilePath = realpath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
-        // destructured, not `extract()`ed: extract() puts names into scope that no analyser
-        // can see, so every one of them read as possibly-undefined below (ticket 40)
         [
             'hostArg' => $hostArg,
             'databasename' => $databasename,
@@ -133,8 +128,8 @@ class DbCommand extends Command
                         "--user=$username",
                         "--password=$password",
                         "--result-file=$realFilePath",
-                        $databasename, // databasename
-                        "{$tablePrefix}pages", // tables
+                        $databasename,
+                        "{$tablePrefix}pages",
                         "{$tablePrefix}triples", // tables
                         "{$tablePrefix}links", // tables
                     ]
@@ -170,8 +165,6 @@ class DbCommand extends Command
      */
     private function test(OutputInterface $output): int
     {
-        // destructured, not `extract()`ed: extract() puts names into scope that no analyser
-        // can see, so every one of them read as possibly-undefined below (ticket 40)
         [
             'hostArg' => $hostArg,
             'databasename' => $databasename,
@@ -183,16 +176,14 @@ class DbCommand extends Command
             $results = $this->consoleService->findAndStartExecutableSync(
                 'mysqldump',
                 [
-                    '-V', // output version
-                ], // args
-                '', // subfolder
-                $this->getExtaDirs(), // extraDirsWhereSearch
-                10 // timeoutInSec
+                    '-V',
+                ],
+                '',
+                $this->getExtaDirs(),
+                10
             );
             $outputResult = $this->getOutput($results);
             if (preg_match("/^mysqldump(?:\.exe)?\s*Ver\s*\d+\.?\d*.*/i", $outputResult)) {
-                // test connecting to database
-
                 $results = $this->consoleService->findAndStartExecutableSync(
                     'mysqldump',
                     array_merge(
@@ -200,14 +191,14 @@ class DbCommand extends Command
                         [
                             "--user=$username",
                             "--password=$password",
-                            '-t', // no table info
-                            '-d', // no table data
-                            $databasename, // databasename
+                            '-t',
+                            '-d',
+                            $databasename,
                         ]
-                    ), // args
-                    '', // subfolder
-                    $this->getExtaDirs(), // extraDirsWhereSearch
-                    10 // timeoutInSec
+                    ),
+                    '',
+                    $this->getExtaDirs(),
+                    10
                 );
                 $outputResult = $this->getOutput($results);
                 if (empty($outputResult)) {

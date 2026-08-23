@@ -89,7 +89,6 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
 
             if ($icon !== '') {
-                // the space keeps the icon off the title it introduces
                 $icon = $icon . ' ';
             }
             $icons[$key] = $icon;
@@ -127,8 +126,6 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         }
 
         $navID = uniqid('nav_');
-        // built into its own variable: appending to $data while looping over it dropped every
-        // data-* attribute the `data` parameter asked for
         $dataAttributes = '';
         foreach ($data as $key => $value) {
             $dataAttributes .= ' data-' . $key . '="' . $value . '"';
@@ -142,9 +139,6 @@ class NavAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
 
     /**
      * A comma separated `nav` parameter as the list it is meant to be.
-     *
-     * Each of these used to stay a bare string when the parameter was absent, and `{{nav}}`
-     * with no `titles` then ran straight into `foreach` on a string.
      *
      * @return list<string>
      */

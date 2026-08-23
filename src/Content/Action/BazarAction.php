@@ -84,7 +84,6 @@ class BazarAction extends YesWikiAction implements RegisteredAction, ProvidesCom
 
     public function formatArguments($arg)
     {
-        // a URL, whatever shape the query string or the wiki markup handed it over in
         $redirecturl = (string)$this->sanitizedGet('redirecturl', function () use ($arg) {
             return $arg['redirecturl'] ?? '';
         });

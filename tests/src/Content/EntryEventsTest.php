@@ -71,12 +71,6 @@ class EntryEventsTest extends YesWikiTestCase
     /**
      * Create an entry carrying only a title, on this test's own form.
      *
-     * It used to walk the seeded forms looking for one that would accept a title and nothing
-     * else. Whether any does is a property of the wiki the suite happens to run against: every
-     * form in the default content requires a second field, so the search found nothing and
-     * three tests failed for a reason that had nothing to do with events. The form is a fixture
-     * now, like the admin login above.
-     *
      * @return array{array<string, mixed>, string, string} the entry, its form id, its title field
      */
     private static function createTitleOnlyEntry(string $title): array

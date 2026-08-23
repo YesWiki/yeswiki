@@ -143,7 +143,6 @@ class CaptchaController extends YesWikiController
          */
         $image = $this->createImage($this->imageWidth);
 
-        // background
         imagefilledrectangle($image, 0, 0, $this->imageWidth, self::IMAGE_HEIGHT, $this->getColorFromName($image, 'white'));
 
         $this->drawSomeElipses($image, $this->imageWidth);
@@ -155,7 +154,6 @@ class CaptchaController extends YesWikiController
 
         $this->drawtext($image, $this->imageWidth, $text);
 
-        /* output */
         imagepng($image);
     }
 
@@ -191,7 +189,6 @@ class CaptchaController extends YesWikiController
                 )) {
                     $error = _t('CAPTCHA_ERROR_WRONG_WORD');
                 }
-                // clean if error
                 if (!empty($error)) {
                     $_POST['submit'] = '';
                     if ($mode == 'entry') {
@@ -233,7 +230,6 @@ class CaptchaController extends YesWikiController
     {
         $captchaField = '';
         if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
-            // afficher les champs de formulaire et de l'image
             $hash = $this->generateHash();
             $captchaField = $this->render(
                 '@core/captcha-field.twig',
@@ -287,7 +283,6 @@ class CaptchaController extends YesWikiController
             }
         }
 
-        // back-up
         return $this->selectText();
     }
 
@@ -318,9 +313,6 @@ class CaptchaController extends YesWikiController
         if ($colorSet === null) {
             throw new \Exception('Not existing color\'s name !');
         }
-        // clamped for the analyser, which sees the two palettes' union as plain `int`. Every
-        // declared value is already in range, so this is a no-op on the palettes as they stand
-        // and a correction rather than a TypeError if one ever is not (ticket 40).
         $channel = static fn (int $value): int => max(0, min(255, $value));
         $color = imagecolorallocate($image, $channel($colorSet[0]), $channel($colorSet[1]), $channel($colorSet[2]));
         if ($color === false) {
@@ -358,10 +350,7 @@ class CaptchaController extends YesWikiController
      */
     protected function createImage(int $imageWidth)
     {
-        // The `is_resource()` half of this was for PHP 7, where GD returned a resource rather
-        // than a GdImage. composer.json has required ^8.3 since the rewrite, so that arm could
         // never run -- and the `@var string|bool` on phpversion() was making the analyser
-        // uncertain about a function that returns a string (ticket 40).
         $image = imagecreatetruecolor(max(1, $imageWidth), self::IMAGE_HEIGHT);
         if ($image === false) {
             throw new \Exception('Not possible to generate image');
@@ -477,7 +466,6 @@ class CaptchaController extends YesWikiController
              * @var int $randomSlope
              */
             $randomSlope = random_int(-self::CHAR_SLOPE_MAX_ANGLE, self::CHAR_SLOPE_MAX_ANGLE);
-            // shadow
             imagettftext(
                 $image,
                 self::TEXT_HEIGHT,
@@ -488,7 +476,6 @@ class CaptchaController extends YesWikiController
                 $this->fontFile,
                 $chars[$idx]
             );
-            // texte
             imagettftext(
                 $image,
                 self::TEXT_HEIGHT,

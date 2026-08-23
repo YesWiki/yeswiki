@@ -220,16 +220,6 @@ class MapField extends BazarField
     {
         $output = '';
 
-        // Which list, if any, is drawing this entry: the one that named this entry's form.
-        //
-        // This used to ask whether the action's name began with `bazar`, which stopped being
-        // true of any list when ticket 23 renamed `bazarliste` to `entrylist` and ticket 33
-        // rewrote the stored calls to match. The setting has been offered by the actions
-        // builder and had no effect ever since.
-        //
-        // The log holds the name as the page spells it, so a page still saying `{{entrymap}}`
-        // has to count too. Resolving through the registry is how Performer decides the same
-        // question, and it means a spelling added later needs no second list here (ticket 49).
         $registry = $this->getService(ActionRegistry::class);
         $filteredActions =
             array_filter($this->getService(ActionRunner::class)->actionsLog(), function ($v) use ($entry, $registry) {

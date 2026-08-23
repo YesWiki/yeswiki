@@ -1,12 +1,6 @@
 <?php
 
-/**
- * Translation keys the shipped JavaScript asks `_t()` for.
- *
- * GENERATED -- run `php src/build-js-lang-keys.php` after adding a `_t()` call to a
- * script. LanguageService copies each of these from the PHP catalog into the javascript
- * one, which is the only catalog `_t()` reads in the browser.
- */
+/** Translation keys the shipped JavaScript asks `_t()` for. */
 
 return [
     'ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE',

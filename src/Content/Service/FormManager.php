@@ -17,7 +17,6 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\KeyPairGenerator;
 use YesWiki\Kernel\Service\TripleStore;
-use YesWiki\Search\Service\SearchManager;
 
 class FormManager
 {
@@ -105,10 +104,7 @@ class FormManager
     }
 
     /**
-     * Write-side handling of image fields' default image: the designer posts the
-     * default as `filename|data:image/...;base64,...`; the base64 part is written to
-     * files/defaultimage{id}_{name}.jpg and only the filename stays in the stored
-     * field object. Operates on (and returns) the native array of field objects.
+     * Write-side handling of image fields' default image: the designer posts the default as `filename|data:image/...;base64,...`; the base64 part is written to files/defaultimage{id}_{name}.jpg and only the filename stays in the stored field object.
      *
      * @param array<int, array<string, mixed>> $template
      * @param int|string                       $id       the form's stable numeric id
@@ -208,12 +204,7 @@ class FormManager
         return $this->resolveTag($newerTag, $aliasHops + 1);
     }
 
-    /**
-     * Legacy `bn_*` body keys => their plain-English replacements (ticket 27,
-     * ADR-0010). The RenameFormBodyKeys migration converts stored latest revisions;
-     * this map is the read-side insurance for anything older (pre-migration bodies,
-     * old form revisions loaded for history views or reverts).
-     */
+    /** Legacy `bn_*` body keys => their plain-English replacements (ticket 27, ADR-0010). */
     public const LEGACY_BODY_KEYS = [
         'bn_id_nature' => 'id',
         'bn_ce_i18n' => 'lang',
@@ -242,11 +233,7 @@ class FormManager
     }
 
     /**
-     * Converts a fetched `pages` row (as returned by PageManager) for a form into the
-     * flat form array (plain-English keys, ADR-0010). ActivityPub credentials, which
-     * live in `metadata.activitypub` (not `body`, so they aren't echoed by generic
-     * JSON/API dumps of a page's body), are merged back in under `activitypub_*` keys
-     * so no consumer needs to know where they're actually stored.
+     * Converts a fetched `pages` row (as returned by PageManager) for a form into the flat form array (plain-English keys, ADR-0010).
      */
     /**
      * @param array<string, mixed> $page
@@ -258,7 +245,6 @@ class FormManager
         $body = $page['body'] ?? [];
         $activitypub = $page['metadatas']['activitypub'] ?? [];
 
-        // read-side legacy-key insurance (pre-migration bodies, old revisions)
         foreach (self::LEGACY_BODY_KEYS as $legacyKey => $key) {
             if (array_key_exists($legacyKey, $body) && !array_key_exists($key, $body)) {
                 $body[$key] = $body[$legacyKey];
@@ -266,17 +252,10 @@ class FormManager
             unset($body[$legacyKey]);
         }
 
-        // the template is a native JSON array of field objects; anything older (a
-        // legacy `***` or JSON string) is normalized through the codec
         if (!is_array($body['template'] ?? null)) {
             $body['template'] = json_decode($this->normalizeTemplate($body['template'] ?? ''), true) ?? [];
         }
 
-        // Locked fields are enforced on read as well as on write: a stored template can
-        // arrive without them by a route that never touches this service -- reverting a
-        // form page to a pre-lock revision, a migration, a direct PageManager::save().
-        // Enforcing here means such a template presents complete and is persisted
-        // complete by the next ordinary write (ticket 10).
         $body['template'] = ContentTypeSchema::enforce(
             $body['template'],
             $body[ContentTypeSchema::CONTENT_TYPE] ?? null
@@ -318,14 +297,7 @@ class FormManager
     /**
      * The form held by a page whose tag is already known.
      *
-     * Split out of getOne() for the caller that found the tag by querying `pages` in the
-     * first place: getOne() would put it through resolveTag(), whose non-numeric branch asks
-     * `SELECT 1 FROM pages WHERE tag = …` to find out whether the page exists -- about a page
-     * this caller has just read out of that table, and whose row is loaded on the next line
-     * regardless.
-     *
-     * @param int|string|null $alsoCacheAs the identifier the caller asked by, when it differs
-     *                                     from the form's own id (a tag, or a former tag)
+     * @param int|string|null $alsoCacheAs the identifier the caller asked by, when it differs from the form's own id (a tag, or a former tag)
      *
      * @return array<string, mixed>|null
      */
@@ -353,11 +325,7 @@ class FormManager
     }
 
     /**
-     * Builds the full in-memory form from raw data (a pageToFormArray() result, or a
-     * POST from the form editor): `template` normalized to the native array of field
-     * objects (with image defaults embedded for display), `prepared` built from it.
-     * The positional arrays feeding the field constructors stay internal -- they are
-     * neither stored on the form nor exposed by the API (ADR-0010).
+     * Builds the full in-memory form from raw data (a pageToFormArray() result, or a POST from the form editor): `template` normalized to the native array of field objects (with image defaults embedded for display), `prepared` built from it.
      *
      * @param array<string, mixed> $form
      *
@@ -375,16 +343,7 @@ class FormManager
     }
 
     /**
-     * The form describing a built-in Content type -- the Page form, the User form, the
-     * File form (ticket 10). There is exactly one per type, enforced by create(): which
-     * form applies to a row is decided by the row's `type` column (ticket 27), so Content
-     * does not carry a `form_id` the way a bazar entry does.
-     *
-     * **This is on the render path of every page in the wiki**, through
-     * ContentTypeResolver::formFor(). It used to scan `getAll()`, which fully prepares
-     * every form in the wiki -- 29 queries and ~23 ms on a 14-form wiki -- to find one.
-     * Now it asks which page holds that form and loads that one, so the cost is the form
-     * you asked for rather than all of them.
+     * The form describing a built-in Content type -- the Page form, the User form, the File form (ticket 10).
      *
      * @return array<string, mixed>|null
      */
@@ -395,9 +354,6 @@ class FormManager
         }
 
         if (!$this->cacheValidatedForAll) {
-            // memoised: this runs on every page render, and without it each caller re-asked
-            // which page holds the form. getOne() below has its own cache, so the lookup was
-            // the whole of what repeated
             if (!array_key_exists($contentType, $this->cachedContentTypeTags)) {
                 $this->cachedContentTypeTags[$contentType] = $this->tagOfContentTypeForm($contentType);
             }
@@ -426,7 +382,6 @@ class FormManager
                 }
                 $form = $this->getFromRawData($this->pageToFormArray($page));
                 if (!empty($form['id'])) {
-                    // save only not empty formId
                     $this->cachedForms[$form['id']] = $form;
                 }
             }
@@ -435,8 +390,6 @@ class FormManager
 
         return array_filter(
             $this->cachedForms,
-            // require a valid numeric-id key *and* an actual form array : consumers (e.g.
-            // SearchManager::searchWithLists()) expect every entry to be a real form
             function ($pForm, $pKey) {
                 return intval($pKey) . '' === $pKey . '';
             },
@@ -444,15 +397,7 @@ class FormManager
         );
     }
 
-    /**
-     * The tag of the single form describing $contentType, or null.
-     *
-     * Ordered by tag and limited to one so that a wiki which somehow holds two forms for
-     * the same built-in type picks the same one this method's getAll() branch would --
-     * create() refuses to make a second, but a restored revision or a hand-edited body can
-     * still produce one, and answering differently depending on which branch ran would be
-     * worse than answering arbitrarily but consistently.
-     */
+    /** The tag of the single form describing $contentType, or null. */
     private function tagOfContentTypeForm(string $contentType): ?string
     {
         $contentTypeExpr = $this->dbService->jsonExtract('body', '$.' . ContentTypeSchema::CONTENT_TYPE);
@@ -472,21 +417,7 @@ class FormManager
     /**
      * Every form's id and label, and nothing else -- `id => label`, ordered by tag.
      *
-     * `getAll()` is the wrong tool for a caller that only wants to name the forms. It loads
-     * each form's page row, normalises legacy body keys, runs the stored template through
-     * ContentTypeSchema::enforce(), re-reads every image field's default off disk to
-     * base64-encode it, and instantiates every field object through FieldFactory -- which
-     * for a `liste` or `checkbox` field loads the list behind it, costing more queries
-     * again. On this wiki's 14 forms that is 29 queries and ~24 ms.
-     *
-     * `{{linkrss}}` paid all of it on **every page load**, to print a `<link>` tag per form
-     * in the document head. This is one query, whatever the wiki holds.
-     *
-     * Reads the shared cache when `getAll()` has already been called this request, so a
-     * screen that genuinely needs whole forms does not pay for a second trip.
-     *
-     * @return array<int, string> id => label. Keyed like getAll(): the ids are numeric
-     *                            strings, so PHP has already coerced them to int.
+     * @return array<int, string> id => label. Keyed like getAll(): the ids are numeric strings, so PHP has already coerced them to int.
      */
     public function getAllLabels(): array
     {
@@ -500,9 +431,6 @@ class FormManager
             return $labels;
         }
 
-        // COALESCE onto the pre-ticket-27 key names for the same reason pageToFormArray()
-        // keeps its legacy-key insurance: a form page restored from an old revision can
-        // still be carrying `bn_id_nature` / `bn_label_nature`
         $id = $this->dbService->jsonExtract('body', '$.id');
         $legacyId = $this->dbService->jsonExtract('body', '$.bn_id_nature');
         $label = $this->dbService->jsonExtract('body', '$.label');
@@ -534,10 +462,6 @@ class FormManager
     /**
      * Every form's id.
      *
-     * One query, through the same projection getAllLabels() uses -- it was a `tagsOfType()`
-     * plus one `resolveIdFromTag()` per form, so a wiki with fifty forms asked fifty-one
-     * questions to list fifty numbers.
-     *
      * @return list<int>
      */
     public function getAllIds(): array
@@ -561,10 +485,6 @@ class FormManager
         foreach ($formsIds as $formId) {
             if (empty($this->cachedForms[$formId])) {
                 $form = $this->getOne($formId);
-                // don't persist a "form not found" result into the shared cache : a
-                // subsequent getAll() only overwrites cache entries for ids that actually
-                // exist as form pages, so a cached null here would otherwise leak into
-                // every later getAll() call for the rest of the request
                 if ($form !== null) {
                     $this->cachedForms[$formId] = $form;
                 }
@@ -578,13 +498,7 @@ class FormManager
     }
 
     /**
-     * Builds the storable `body` array (everything except ActivityPub credentials, which
-     * live in metadata -- see buildActivitypubMetadata()) from raw `bn_*`-keyed input
-     * (either an admin form submission or another form's data via clone()). Fields that
-     * aren't part of the admin-editable set (bn_sem_context/type/use_template, historically
-     * seeded, not exposed in the edit UI) are included only if present in $data, so that
-     * update()'s array_merge() over the existing body leaves them untouched rather than
-     * wiping them on every edit.
+     * Builds the storable `body` array (everything except ActivityPub credentials, which live in metadata -- see buildActivitypubMetadata()) from raw `bn_*`-keyed input (either an admin form submission or another form's data via clone()).
      */
     /**
      * @param array<string, mixed> $data
@@ -601,9 +515,6 @@ class FormManager
             ContentTypeSchema::CONTENT_TYPE => $contentType,
             'template' => $this->templateToStorage($data['template'] ?? '', $contentType),
             'description' => $data['description'] ?? '',
-            // entry_title_template can never be empty (ADR-0010). A built-in Content type
-            // names itself with one of its own locked fields; only a bazar form falls back
-            // to the historical implicit convention of a visitor-typed bf_titre field.
             'entry_title_template' => trim((string)($data['entry_title_template'] ?? ''))
                 ?: (ContentTypeSchema::defaultTitleTemplate($contentType) ?? FormPropertiesService::DEFAULT_TITLE_TEMPLATE),
             'sem_template' => $data['sem_template'] ?? '',
@@ -612,15 +523,11 @@ class FormManager
             'only_one_entry_message' => empty($data['only_one_entry_message']) ? '' : $data['only_one_entry_message'],
             'condition' => $data['condition'] ?? '',
         ];
-        // the other entry_* form properties are included when present, so update()'s
-        // array_merge over the existing body leaves unposted ones untouched
         foreach (FormPropertiesService::OPTIONAL_PROPERTIES as $property) {
             if (isset($data[$property])) {
                 $body[$property] = $data[$property];
             }
         }
-        // which field plays which role (ticket 11) -- like the entry_* properties above,
-        // included only when posted so an update leaves an unposted map alone
         if (isset($data[FieldRole::FORM_PROPERTY])) {
             $body[FieldRole::FORM_PROPERTY] = FieldRole::normalizeMap($data[FieldRole::FORM_PROPERTY]);
         }
@@ -646,9 +553,6 @@ class FormManager
      */
     private function buildActivitypubMetadata(array $data, array $existingActivitypub): array
     {
-        // the form's own metadata key, read directly: asking the ActivityPub service whether
-        // ActivityPub is enabled was the last thing making Content depend on Federation, and
-        // the question is about a value Content stores (ticket 39)
         $enabled = (int)(($data['activitypub_enable'] ?? null) === '1');
         $activitypub = [
             'enabled' => (string)$enabled,
@@ -687,17 +591,12 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        // If ID is not set or if it is already used, find a new ID
         if (empty($data['id']) || $this->getOne($data['id'])) {
             $data['id'] = $this->findNewId();
         }
 
-        // Canonicalize the template and process any posted default images
         $data[ContentTypeSchema::CONTENT_TYPE] = $this->resolveContentType($data);
 
-        // A built-in Content type has exactly one form: which form describes a row is
-        // decided by the row's TYPE_URI triple, so a second Page form would leave
-        // getByContentType() picking arbitrarily between them.
         $builtIn = $data[ContentTypeSchema::CONTENT_TYPE];
         if ($builtIn !== ContentTypeSchema::TYPE_ENTRY && $this->getByContentType($builtIn) !== null) {
             throw new \Exception("A '{$builtIn}' form already exists; there is exactly one per Content type");
@@ -724,13 +623,7 @@ class FormManager
         return $saved;
     }
 
-    /**
-     * Overwrites a form's stored ActivityPub keypair, keeping `enabled`/`username` as
-     * already set. Used by MigrateNatureToPages to restore a form's real, previously
-     * published keypair after create() -- which has no way to know a "new" form is actually
-     * an existing one being migrated, and so always generates a fresh keypair -- would
-     * otherwise silently rotate it out from under any already-federating form.
-     */
+    /** Overwrites a form's stored ActivityPub keypair, keeping `enabled`/`username` as already set. */
     /** @param int|string $formId */
     public function setActivitypubKeypair($formId, string $privateKey, string $publicKey): void
     {
@@ -800,18 +693,7 @@ class FormManager
     }
 
     /**
-     * A form is Content, so saving one already dispatches `page.updated` -- and a listener
-     * could sniff the type triple to tell which pages are forms. `form.updated` exists
-     * anyway because a form is a **schema**, and something changing a schema should say so
-     * rather than leave every listener to work it out.
-     *
-     * Ticket 18 is the first consumer: a form's template decides which fields exist, what
-     * each contributes to the search index and which Field ACL guards it, so a change here
-     * invalidates the indexed text of every entry under the form. Nothing about that is
-     * derivable from `page.updated` without re-deriving the type.
-     *
-     * Deliberately not wired to `webhooks`, which the CONTEXT decision scopes to comment and
-     * entry events.
+     * A form is Content, so saving one already dispatches `page.updated` -- and a listener could sniff the type triple to tell which pages are forms.
      */
     private function dispatchFormEvent(string $event, string $formId, string $tag): void
     {
@@ -822,11 +704,7 @@ class FormManager
     }
 
     /**
-     * Renames a form's tag (its identity in `pages.tag`), keeping its stable numeric id
-     * (and therefore its entries' association, image filenames, and ActivityPub actor URLs,
-     * all keyed off that id) untouched. The old tag is kept resolvable via a
-     * FORMER_TAG_URI triple. Returns the tag actually used (suggestFreeTag()-resolved if
-     * $desiredNewTag collided with existing Content).
+     * Renames a form's tag (its identity in `pages.tag`), keeping its stable numeric id (and therefore its entries' association, image filenames, and ActivityPub actor URLs, all keyed off that id) untouched.
      */
     /** @param int|string $formId */
     public function renameTag($formId, string $desiredNewTag): string
@@ -842,12 +720,9 @@ class FormManager
 
         $newTag = $this->pageManager->suggestFreeTag($desiredNewTag);
 
-        // renameTag() moves the row, and the type is a column on it, so the type moves with
-        // it -- nothing to delete and re-create the way the triple needed
         $this->pageManager->renameTag($oldTag, $newTag);
         $this->tripleStore->create($oldTag, self::FORMER_TAG_URI, $newTag, '', '');
 
-        // reset cache
         $this->cacheValidatedForAll = false;
         $this->cachedContentTypeTags = [];
         $this->cachedForms = [];
@@ -870,30 +745,17 @@ class FormManager
             return $this->create($data);
         }
 
-        // raise error?
         return false;
     }
 
     /**
-     * Delete every entry of a form, keeping the form itself -- the "empty this form"
-     * admin action.
-     *
-     * This existed as a call site without an implementation: FormController::empty() and
-     * ::delete() both called it, so both fataled with "Call to undefined method". delete()
-     * removes the entries itself, so its call was redundant as well as fatal.
+     * Delete every entry of a form, keeping the form itself -- the "empty this form" admin action.
      *
      * @param int|string $id the form's numeric id
      *
      * @return int the number of entries deleted
      */
-    /**
-     * Refuse an operation that would leave a built-in Content type without its form.
-     *
-     * Deleting the Page form does not delete a webmaster's data structure -- it removes
-     * the schema every page in the wiki is edited and listed through. There is no route
-     * back to it except re-running the migration, so this is not a confirmation dialog's
-     * job (ticket 10).
-     */
+    /** Refuse an operation that would leave a built-in Content type without its form. */
     private function refuseIfBuiltIn(string $id, string $operation): void
     {
         $form = $this->getOne($id);
@@ -936,7 +798,6 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
             return null;
         }
@@ -954,7 +815,6 @@ class FormManager
 
         $this->pageManager->deleteOrphaned($tag);
 
-        // reset cache
         $this->cacheValidatedForAll = false;
         $this->cachedContentTypeTags = [];
         unset($this->cachedForms[$id], $this->cachedForms[$tag]);
@@ -996,19 +856,7 @@ class FormManager
     }
 
     /**
-     * Parses a stored template into the internal positional field arrays consumed by the
-     * Field constructors (via their FIELD_* index constants).
-     *
-     * The canonical storage format is a JSON array of named-attribute field objects
-     * (`[{"type": "texte", "name": "bf_titre", "label": "..."}]`) -- attribute keys are
-     * the FIELD_* constant names of the handling field class (see
-     * FieldFactory::getAttributeIndexToKeyMap()); positions with no named constant
-     * round-trip as numeric string keys. Note the converse: a named key that is NOT
-     * in the handling class's map (e.g. a typo hand-edited into the code tab) has no
-     * positional slot and is silently dropped on the next write. The historical
-     * positional `***`-separated
-     * syntax is still READ here -- old page revisions, remote imports from older wikis --
-     * but is never written back: every write path re-encodes to JSON.
+     * Parses a stored template into the internal positional field arrays consumed by the Field constructors (via their FIELD_* index constants).
      *
      * @param string $raw stored template (JSON, or legacy `***` syntax)
      *
@@ -1036,18 +884,14 @@ class FormManager
 
                 return $tableau_template;
             }
-            // not valid JSON after all -- fall through to the legacy parser
         }
 
-        // Legacy positional syntax, one field per line, `***`-separated
         $tableau_template = [];
         $nblignes = 0;
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
-            // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
-                // on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 if (count($tablignechampsformulaire) > 3) {
@@ -1057,8 +901,6 @@ class FormManager
                             $tableau_template[$nblignes][$i] = '';
                         }
                     }
-                    // drop empty slots beyond the 16 the field constructors read, so a
-                    // line's trailing `***` separators parse identically to the JSON form
                     while (count($tableau_template[$nblignes]) > 16 && end($tableau_template[$nblignes]) === '') {
                         array_pop($tableau_template[$nblignes]);
                     }
@@ -1072,11 +914,7 @@ class FormManager
     }
 
     /**
-     * Serializes the internal positional field arrays to the canonical stored form: a
-     * pretty-printed JSON array of named-attribute field objects (the inverse of
-     * parseTemplate()'s JSON branch). Empty slots are omitted; slots with no named
-     * FIELD_* constant on the handling class keep their numeric position as a string
-     * key so unknown/extension data survives round-trips losslessly.
+     * Serializes the internal positional field arrays to the canonical stored form: a pretty-printed JSON array of named-attribute field objects (the inverse of parseTemplate()'s JSON branch).
      *
      * @param array<int, mixed> $template_list positional field arrays
      */
@@ -1092,9 +930,6 @@ class FormManager
 
         $json = json_encode($fieldObjects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        // json_encode() answers false only when the data cannot be encoded at all (invalid
-        // UTF-8 in a label, say). '' is what every caller already saw in that case, the
-        // string return type having coerced the false.
         return $json === false ? '' : $json;
     }
 
@@ -1160,21 +995,14 @@ class FormManager
         return $fieldObject;
     }
 
-    /**
-     * Re-encodes any template input (designer JSON or legacy `***` syntax, e.g. a form
-     * imported from an older remote wiki) to the canonical JSON storage format.
-     */
+    /** Re-encodes any template input (designer JSON or legacy `***` syntax, e.g. */
     /** @param mixed $template stored template: JSON, legacy `***` syntax, or an already-decoded array */
     public function normalizeTemplate($template): string
     {
         return $this->encodeTemplate($this->parseTemplate((string)$template));
     }
 
-    /**
-     * Native template (array of field objects) => list of positional arrays. For the
-     * few boundaries that still need the constructors' positional wire format
-     * (legacy migrations; ExternalBazarService was the other one, deleted by ticket 34).
-     */
+    /** Native template (array of field objects) => list of positional arrays. */
     /**
      * @param array<array-key, mixed> $template
      *
@@ -1225,23 +1053,17 @@ class FormManager
     /** @return array<int, array<string, mixed>> */
     private function templateToStorage(mixed $template, ?string $contentType = null): array
     {
-        // arrays go through the same positional round-trip canonicalization as
-        // string input (empty-slot dropping, key resolution) — no bypass
         if (is_array($template)) {
             $template = json_encode($template, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
         $stored = json_decode($this->normalizeTemplate($template), true) ?? [];
 
-        // Every write vector -- the designer, the API, CSV import, duplication, a
-        // hand-edited template -- lands here, so this is where a Content type's locked
-        // fields are put back if they went missing (ticket 10).
         return ContentTypeSchema::enforce($stored, $contentType);
     }
 
     /**
-     * Which Content type a form describes. Immutable once a form has one: retyping a
-     * User form into an ordinary entry form would be a way to unlock its core fields.
+     * Which Content type a form describes.
      *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $existingBody
@@ -1268,8 +1090,6 @@ class FormManager
         $prepared = [];
 
         foreach ($form['template'] as $fieldObject) {
-            // the field constructors consume positional arrays through their FIELD_*
-            // constants -- an internal wire format derived here and nowhere exposed
             $field = $this->namedToPositional($fieldObject);
             if ($field === null) {
                 continue;
@@ -1280,7 +1100,7 @@ class FormManager
                 $prepared[$i] = $classField;
             } elseif (function_exists($field[0])) {
                 $functionName = $field[0];
-                $field[0] = 'old'; // field name
+                $field[0] = 'old';
                 $field['functionName'] = $functionName;
                 $classField = $this->fieldFactory->create($field);
                 if ($classField) {
@@ -1311,7 +1131,6 @@ class FormManager
      */
     public function findFieldFromNameOrPropertyName(?string $name, ?string $formId): ?BazarField
     {
-        // check params
         if (empty($name) || empty($formId) || strval(intval($formId)) != strval($formId)) {
             return null;
         }

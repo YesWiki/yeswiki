@@ -62,7 +62,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
         $params = $this->filterParameters();
         if (is_string($params)) {
-            // an unusable `filter1`, and the message to show instead of a filter bar
             echo $params;
 
             return;
@@ -148,10 +147,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
     }
 
     /**
-     * The `filter1`, `filter2`, ... arguments read into one structure, or the error to show instead.
-     *
-     * Was the global `get_filtertags_parameters_recursive()`, which reached the container to read
-     * the arguments of the very action calling it (ticket 50).
+     * The `filter1`, `filter2`, ...
      *
      * @param array<mixed> $tab
      *

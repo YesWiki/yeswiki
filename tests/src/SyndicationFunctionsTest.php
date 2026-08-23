@@ -28,11 +28,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
     }
 
     /**
-     * `SyndicationAction` asks whether a feed item was already imported as an entry, by searching
-     * the entries it holds for one whose url matches. That search was the global
-     * `multiArraySearch()`, reachable only because `bazar.functions.php` was required
-     * unconditionally at boot; it is `StringUtilService::searchNested()` since ticket 50, so what
-     * is worth asserting is what it finds rather than whether it exists.
+     * `SyndicationAction` asks whether a feed item was already imported as an entry, by searching the entries it holds for one whose url matches.
      */
     public function testSearchNestedFindsAnEntryByOneOfItsFields(): void
     {

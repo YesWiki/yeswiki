@@ -38,14 +38,7 @@ class PerformableArguments implements RequestScopedState
         return $this->vars;
     }
 
-    /**
-     * Whatever the last action was given belongs to the request it was serving.
-     *
-     * The arguments are bound by reference as each performable runs, so at the end of a request
-     * this still points at the last one's. Under a worker the next request's first action would
-     * read them until something rebound (ADR-0024), which is how `{{editbar}}` came to draw
-     * itself differently on a second render of the same page.
-     */
+    /** Whatever the last action was given belongs to the request it was serving. */
     public function startNewRequest(): void
     {
         $this->vars = [];

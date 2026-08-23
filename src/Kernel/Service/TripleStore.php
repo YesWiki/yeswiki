@@ -233,8 +233,6 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        // DbService::query() throws on failure rather than returning false, so reaching the
-        // next line means the DELETE ran.
         $this->dbService->query($sql, [$res]);
 
         return true;
@@ -274,7 +272,6 @@ class TripleStore
 
         $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value) VALUES (?, ?, ?)';
 
-        // DbService::query() throws on failure, so there is no failure code to return here.
         $this->dbService->query($sql, [$res, $prop_prefix . $property, $value]);
 
         return 0;
@@ -323,7 +320,6 @@ class TripleStore
 
         $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = ? WHERE id = ?';
 
-        // DbService::query() throws on failure, so there is no failure code to return here.
         $this->dbService->query($sql, [$newvalue, $id]);
 
         return 0;

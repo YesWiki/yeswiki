@@ -12,26 +12,7 @@ use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * Runs actions (`{{name}}`) and handlers (`/PageName/name`).
- *
- * Two ways to find one, and that is deliberate:
- *
- *  - **core** performables are services, resolved by name through ActionRegistry;
- *  - **extension** performables are still discovered by scanning `actions/` and `handlers/`
- *    inside each extension, because an extension is installed at runtime and cannot be in
- *    the compiled container.
- *
- * Wave-two ticket 06 removed three things that used to live here:
- *
- *  - the `__name.php` / `name__.php` before/after callback convention. Core does not hook
- *    itself any more -- those callbacks were merged into the classes they wrapped -- and
- *    extensions hook through PerformableEvent, dispatched below.
- *  - procedural performables. Every action and handler is a class, so `runFileInBuffer()`
- *    and its output-buffer dispatch are gone.
- *  - the `formatter` type. `wakka` was the only one; Wiki::Format() calls
- *    MarkdownFormatterService directly.
- */
+/** Runs actions (`{{name}}`) and handlers (`/PageName/name`). */
 class Performer
 {
     public const TYPES = [
@@ -98,8 +79,6 @@ class Performer
                 continue;
             }
             $baseName = $matches[1];
-            // `__x.php` / `x__.php` used to mean a before/after callback. The convention is
-            // retired (ticket 06); such a file is now simply not a performable.
             if (str_starts_with($baseName, '__') || str_ends_with($baseName, '__')) {
                 continue;
             }
@@ -128,9 +107,7 @@ class Performer
     {
         require_once $object['filePath'];
         $className = $object['baseName'];
-        /* extract extension name from path to allow namespace */
         if (preg_match('/(?:extensions[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
-            // only the `(custom)` alternative leaves group 1 empty, and it is group 2
             $extensionName = empty($matches[1]) ? ($matches[2] ?? 'custom') : $matches[1];
             $classNameWithNamespace = 'YesWiki\\' . StringUtilService::folderToNamespace($extensionName) . '\\' . $object['baseName'];
             if (class_exists($classNameWithNamespace)) {
@@ -163,25 +140,15 @@ class Performer
         }
         $objectName = strtolower($objectName);
 
-        // A deprecated spelling becomes the name it aliases here, before anything else looks
-        // at it: the ACL below, the event dispatched to extensions and the arguments parsed
-        // downstream all belong to the canonical performable, never to the alias (ticket 49).
-        // The alias's own arguments are defaults, so a webmaster who wrote one explicitly
-        // still wins.
         [$objectName, $aliasDefaults] = $this->registry->resolve($objectType, $objectName);
         if ($aliasDefaults !== []) {
             $vars += $aliasDefaults;
         }
 
-        // Check if user is allowed to use this particular action or handler (see EditHandlersAclsAction EditActionsAclsAction)
-        // inline FQCN, not an import: ModuleAclService lives in Identity and Kernel may
-        // depend on no feature module (ArchitectureTest is import-based)
         if (!$this->container->get(\YesWiki\Identity\Service\ModuleAclService::class)->checkModuleAcl($objectName, $objectType)) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
 
-        // Extensions hook here rather than by dropping a __name.php next to ours. Dispatched
-        // around both resolution paths, since extension performables are the ones being hooked.
         $output = $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::BEFORE);
 
         $instance = $this->registry->get($objectType, $objectName);
@@ -199,8 +166,6 @@ class Performer
                 $this->prepare($instance, $vars, $output);
             }
 
-            // end() is declared on YesWikiAction, not on the YesWikiPerformable base: only
-            // graphical-element actions ({{col}}...{{end}}) have a closing form.
             $output .= ($end_elem && $instance instanceof YesWikiAction)
                 ? $instance->end()
                 : $instance->run();
@@ -231,15 +196,11 @@ class Performer
         $instance->setOutput($output);
         $instance->setTwig($this->twig);
 
-        // the request-global raw-argument channel (historic Wiki::$parameter)
         $this->performableArguments->bind($vars);
     }
 
     /**
      * Fire the performable events for one phase and fold the result back in.
-     *
-     * A `before` listener may rewrite $vars -- which is what most of the retired before-hooks
-     * actually did; they existed to adjust an argument, not to print.
      *
      * @param array<mixed> $vars
      */
@@ -263,11 +224,9 @@ class Performer
             'message' => $message,
         ];
         if ($objectType == 'handler') {
-            // display it with a header and a footer
             return $this->twig->renderFullPage('@core/alert-message-with-back.twig', $data);
         }
 
-        // display it inline
         return $this->twig->render('@core/alert-message.twig', $data);
     }
 

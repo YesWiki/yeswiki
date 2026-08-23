@@ -6,17 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
 
-/**
- * Who a `{{contact}}`, `{{subscribe}}` or `{{unsubscribe}}` form writes to, and whether it may send.
- *
- * The address is not in the form: it is in the page body, on the action call that drew the form,
- * which is why the Nth form on a page needs the Nth call (see MailFormCounter). A recipient list
- * may also name a group rather than an address, and a group has to be expanded to the addresses
- * of its members.
- *
- * Was `FindMailFromWikiPage()`, `parseMails()`, `ValidateEmail()` and `check_parameters_mail()`
- * in `Contact/contact.functions.php` (ticket 50).
- */
+/** Who a `{{contact}}`, `{{subscribe}}` or `{{unsubscribe}}` form writes to, and whether it may send. */
 class MailForm
 {
     public function __construct(private readonly ContainerInterface $services)

@@ -17,8 +17,6 @@ class RefactorListStruture extends YesWikiMigration
                 continue;
             }
 
-            // ticket 09 made a body a decoded array; before it, this column held the JSON text
-            // this migration was written against, and an upgrade can reach either shape
             $body = $page['body'] ?? [];
             $oldJson = is_array($body) ? $body : json_decode((string)$body, true);
             $newJson = $listManager->convertDataStructure(is_array($oldJson) ? $oldJson : []);

@@ -82,7 +82,6 @@ class PanelAction extends YesWikiAction implements RegisteredAction, ProvidesCom
         $accordionID = $elements->currentAccordion($pagetag);
         if ($accordionID !== '') {
             $collapsible = true;
-            // the first panel of an accordion is the open one
             $collapsed = $elements->accordionTakesAnotherPanel($pagetag);
         }
 

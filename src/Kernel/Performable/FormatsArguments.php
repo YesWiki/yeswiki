@@ -2,11 +2,7 @@
 
 namespace YesWiki\Kernel\Performable;
 
-/**
- * The two argument coercions a performable's `formatArguments()` is written in terms of.
- *
- * A trait rather than methods on `YesWikiPerformable`, because a template-data preparer (ticket 49) formats the same arguments and is not a performable: it is called by one.
- */
+/** The two argument coercions a performable's `formatArguments()` is written in terms of. */
 trait FormatsArguments
 {
     /**

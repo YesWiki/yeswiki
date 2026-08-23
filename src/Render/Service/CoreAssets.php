@@ -261,8 +261,6 @@ class CoreAssets implements RequestScopedState
 
     public function startNewRequest(): void
     {
-        // "register once per request" is instance state, and a worker's instance outlives the
-        // request: without this the second visitor's page carries no stylesheet at all.
         $this->registered = false;
     }
 }

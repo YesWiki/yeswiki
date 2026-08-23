@@ -119,9 +119,10 @@ class ExtensionManifestTest extends TestCase
         return $extension === false ? null : $extension;
     }
 
+    /** The extension a class name belongs to, asked without autoloading. */
     private function extensionOfClass(string $name): ?string
     {
-        if (!class_exists($name) && !interface_exists($name)) {
+        if (!class_exists($name, false) && !interface_exists($name, false)) {
             return null;
         }
         try {

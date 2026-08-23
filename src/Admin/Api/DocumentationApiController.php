@@ -11,12 +11,7 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * The /api discovery page. The monolithic ApiController hand-maintained an HTML
- * catalog here that drifted from reality (it still documented an endpoint that
- * never existed); this version enumerates the live RouteCollection instead, so
- * it cannot go stale (ticket 08).
- */
+/** The /api discovery page. */
 class DocumentationApiController extends YesWikiController
 {
     use DashboardShell;
@@ -24,12 +19,8 @@ class DocumentationApiController extends YesWikiController
     #[Route('/api', options: ['acl' => ['public']])]
     public function getDocumentation(): Response
     {
-        // the configured base URL, NOT href('', '') -- an empty tag there falls back to
-        // the *current* page's tag, which on this very route is `api`, so every URL on
-        // this page came out as `?apiapi/...`
         $baseUrl = (string)$this->getService(RuntimeConfig::class)['base_url'];
 
-        // group /api/* routes by their first path segment after /api
         $groups = [];
         foreach ($this->getService(RouteProvider::class)->get() as $route) {
             $path = $route->getPath();
@@ -53,7 +44,6 @@ class DocumentationApiController extends YesWikiController
 
         $output = '';
 
-        // extensions may still ship their own documentation hook
         foreach ($this->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
@@ -80,8 +70,6 @@ class DocumentationApiController extends YesWikiController
             }
         }
 
-        // the same shell as /doc, /dashboard/* and /admin/*: this list is one of the
-        // wiki's public routes, so it is reachable from their sidebar and shows it too
         $templateEngine = $this->getService(TemplateEngine::class);
 
         return new Response($templateEngine->renderPage($templateEngine->render('@core/dashboard/api.twig', $this->dashboardShell('api', [
@@ -92,10 +80,6 @@ class DocumentationApiController extends YesWikiController
 
     /**
      * The placeholders a route's path carries, with what the route says about each.
-     *
-     * A reader of this page has to know that `/api/forms/{formId}/entries/{output}` wants
-     * two values and which ones may be left out, and the route itself is the only thing
-     * that knows -- so it is read rather than restated.
      *
      * @return list<array{name: string, optional: bool, default: scalar|null, pattern: string|null}>
      */

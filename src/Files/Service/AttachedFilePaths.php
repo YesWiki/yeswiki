@@ -11,13 +11,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
  */
 class AttachedFilePaths
 {
-    /**
-     * Where uploads live, relative to the instance: `files/`.
-     *
-     * Was the global constant `BAZ_CHEMIN_UPLOAD`, defined by `Content/bazar.functions.php` and
-     * read by two services that already have this one injected (ticket 50). Distinct from
-     * `uploadPath()`, which answers the configured path and may differ.
-     */
+    /** Where uploads live, relative to the instance: `files/`. */
     public const UPLOAD_DIR = 'files/';
 
     /**

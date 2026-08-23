@@ -92,8 +92,6 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
      */
     private function getColumnInfo(string $tableName, string $columnName): array
     {
-        // DbService::query() throws on a failed statement rather than returning false, so the
-        // `if (!$result)` fallbacks this used to carry could never run
         if ($columnName == 'index') {
             $result = $this->dbService->query("SHOW INDEX FROM {$this->dbService->prefixTable($tableName)};");
 

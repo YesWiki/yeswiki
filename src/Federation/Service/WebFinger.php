@@ -32,12 +32,7 @@ class WebFinger
         }
     }
 
-    /**
-     * Set subject property.
-     *
-     * `mixed`, not `string`: this is handed a value decoded straight out of a remote
-     * server's JSON, and the guard below is the only thing that says so.
-     */
+    /** Set subject property. */
     public function setSubject(mixed $subject): void
     {
         if (!is_string($subject)) {
@@ -92,12 +87,7 @@ class WebFinger
         }
     }
 
-    /**
-     * Get ActivityPhp profile id URL, or null when the response declares no self link.
-     *
-     * Declared `@return string` and falling off the end of the loop, so "no such link" came
-     * back as null from something every caller treated as a string (ticket 40).
-     */
+    /** Get ActivityPhp profile id URL, or null when the response declares no self link. */
     public function getProfileId(): ?string
     {
         foreach ($this->links as $link) {
@@ -169,10 +159,7 @@ class WebFinger
         return $this->subject;
     }
 
-    /**
-     * Get subject handle fetched from profile, i.e. the subject with its `acct:` scheme
-     * stripped -- null when no response ever supplied a subject.
-     */
+    /** Get subject handle fetched from profile, i.e. */
     public function getHandle(): ?string
     {
         return $this->subject === null ? null : substr($this->subject, 5);

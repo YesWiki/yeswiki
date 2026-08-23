@@ -51,7 +51,6 @@ use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
@@ -97,12 +96,6 @@ class YesWikiRuntime
     /**
      * The service container, assigned from the kernel in boot().
      *
-     * Annotated rather than natively typed on purpose: a native non-nullable type would
-     * make any read before boot() a runtime Error instead of the null it returns today.
-     * Annotated non-null (ticket 08): every surviving read runs after boot() — the
-     * pre-boot paths (kernel build, constructor) were weaned off service-backed methods —
-     * and the property goes away with the locator when this class is deleted.
-     *
      * @var ContainerInterface
      */
     public $services;
@@ -126,8 +119,6 @@ class YesWikiRuntime
         $this->initialTag = $init->page;
         $this->initialMethod = $init->method;
 
-        // single source of truth for every environment-keyed cache
-        // (compiled container, see boot(); route collection, see getRoutes())
         $this->environment = defined('PHPUNIT_COMPOSER_INSTALL')
             ? 'test'
             : ($this->getConfigValue('debug') ? 'dev' : 'prod');
@@ -142,10 +133,7 @@ class YesWikiRuntime
     }
 
     /**
-     * Typed service lookup for the delegation shims: Symfony's ContainerInterface::get()
-     * is declared `?object`, so chaining a call on it fails static analysis even though
-     * every service asked for here is a compiled, always-present one. Dies with the
-     * locator when this class is deleted.
+     * Typed service lookup for the delegation shims: Symfony's ContainerInterface::get() is declared `?object`, so chaining a call on it fails static analysis even though every service asked for here is a compiled, always-present one.
      *
      * @template T of object
      *
@@ -183,9 +171,6 @@ class YesWikiRuntime
     public function purgePages()
     {
         if (($days = $this->getConfigValue('pages_purge_time')) && !$this->service(HibernationService::class)->isWikiHibernated()) {
-            // is purge active ?
-            // let's search which pages versions we have to remove
-            // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->getConfigValue('table_prefix') . 'pages';
             $dbService = $this->service(DbService::class);
             $dateExpr = $dbService->dateSubDays(intval($days));
@@ -201,15 +186,12 @@ class YesWikiRuntime
             $ids = $this->service(DbService::class)->loadAll($sql);
 
             if (count($ids)) {
-                // there are some versions to remove from DB
-                // let's build one big request, that's better...
                 $sql = 'DELETE FROM ' . $wnPages . ' WHERE id IN (';
                 foreach ($ids as $key => $line) {
-                    $sql .= ($key ? ', ' : '') . $line['id']; // NB.: id is an int, no need of quotes
+                    $sql .= ($key ? ', ' : '') . $line['id'];
                 }
                 $sql .= ')';
 
-                // ... and send it !
                 $this->service(DbService::class)->query($sql);
             }
         }
@@ -219,28 +201,11 @@ class YesWikiRuntime
     protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
     protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
 
-    /** When maintenance last ran, read before this run claimed the lock. Null if unknown. */
+    /** When maintenance last ran, read before this run claimed the lock. */
     private ?int $previousMaintenanceRun = null;
 
     /**
      * The wiki's housekeeping, and the one place an extension can hang its own on.
-     *
-     * `maintenance.before` fires before any of it and `maintenance.after` once all of it is
-     * done, both through `yesWikiDispatch()` -- which swallows whatever a listener throws.
-     * That is deliberate: this runs inside some visitor's page view, on a request that had
-     * nothing to do with any of this, and an extension with a bad afternoon must not turn
-     * their page into an error. It is the same bargain `drainSearchIndexQueue()` takes.
-     *
-     * For the same reason a listener is asked to be *quick*. There is no budget enforced
-     * here, but anything unbounded belongs in a command the wiki spawns, not on the clock
-     * of somebody who came to read a page.
-     *
-     * Both events carry:
-     *  - `startedAt`   unix time this run began
-     *  - `interval`    the seconds core waits between runs (MAINTENANCE_INTERVAL)
-     *  - `previousRun` unix time of the run before this one, or null when nothing recorded
-     *                  one -- which is what tells a listener how much time it is covering
-     * and `maintenance.after` adds `duration`, the seconds core's own housekeeping took.
      *
      * @return void
      */
@@ -256,13 +221,9 @@ class YesWikiRuntime
 
         $this->service(EventDispatcher::class)->yesWikiDispatch('maintenance.before', $context);
 
-        // purge old page revisions
         $this->purgePages();
-        // purge expired password recovery keys
         $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
-        // purge expired account-activation keys
         $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
-        // reindex a bounded slice of whatever is queued for search (ticket 18)
         $this->drainSearchIndexQueue();
 
         $this->service(EventDispatcher::class)->yesWikiDispatch(
@@ -271,27 +232,12 @@ class YesWikiRuntime
         );
     }
 
-    /**
-     * The search index's fallback drain.
-     *
-     * A form change queues its entries and spawns `search:reindex` to do the work out of
-     * band. That spawn needs `proc_open` and a findable PHP binary, and plenty of shared
-     * hosting has neither -- so this is what guarantees the queue eventually empties
-     * anywhere.
-     *
-     * Bounded twice over, by rows and by wall clock, because it runs inside somebody's page
-     * view. That also makes it honestly unsuitable for a first fill of a large wiki: at 200
-     * Contents per run, gated behind MAINTENANCE_INTERVAL, a million-row wiki would take
-     * years. On a host that cannot spawn, `./yeswicli search:reindex --drain` really does
-     * have to be run once by hand -- ticket 18 says so rather than pretending otherwise.
-     */
+    /** The search index's fallback drain. */
     protected function drainSearchIndexQueue(): void
     {
         try {
             $this->service(SearchIndexer::class)->drain(200, 5);
         } catch (\Throwable $failed) {
-            // maintenance is best-effort housekeeping on someone else's request; a search
-            // index that could not be drained must not turn their page view into an error
         }
     }
 
@@ -304,8 +250,6 @@ class YesWikiRuntime
         if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
             return false;
         }
-        // read before the touch below claims the lock, because afterwards the file says
-        // "now" and a listener asking how long it has been gets zero
         $this->previousMaintenanceRun = $lastRun ?: null;
         if (!is_dir('cache')) {
             mkdir('cache', 0777, true);
@@ -327,10 +271,6 @@ class YesWikiRuntime
         try {
             $this->doRun($tag, $method);
         } catch (ExitException $th) {
-            // Wiki::exit()/Redirect() unwinding outside of the HttpKernel dispatch (e.g. the
-            // empty-tag redirect below, or RunSpecialPages' early exits): reproduce the
-            // historical exit($message) behavior for web requests, keep throwing under CLI
-            // where tests/console rely on catching it
             if (YesWikiKernel::isCli()) {
                 throw $th;
             }
@@ -346,10 +286,6 @@ class YesWikiRuntime
      */
     private function doRun($tag, $method)
     {
-        // A request begins here. Under php-fpm the process dies with it and this changes
-        // nothing; under worker mode (ADR-0024) it is what stops one visitor's counters, flags
-        // and stacks from becoming the next visitor's. Which services those are comes from who
-        // implements RequestScopedState, not from a list anybody maintains.
         $this->service(RequestScope::class)->startNewRequest();
 
         if ($this->shouldRunMaintenance()) {
@@ -358,7 +294,6 @@ class YesWikiRuntime
 
         $pageContext = $this->service(PageContext::class);
 
-        // do our stuff!
         if ($tag == '') {
             $tag = $pageContext->getTag();
         }
@@ -373,14 +308,12 @@ class YesWikiRuntime
             $this->service(Redirector::class)->redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
         }
         $pageContext->setTag($tag);
-        // remembered separately, because setTag() moves with whatever is being rendered
         $pageContext->setRequestedTag($tag);
+
+        $this->applyPreferredLanguage();
 
         $this->service(AuthenticationService::class)->connectUser();
 
-        // Is this a routed name rather than a tag? (ticket 20 -- ReservedTags is the single
-        // declaration; this used to be a second hardcoded list that could drift from the one
-        // in YesWikiInit::getRoute(), and did.)
         if (ReservedTags::isReserved($tag)) {
             $this->runSpecialPages();
         } else {
@@ -391,7 +324,6 @@ class YesWikiRuntime
 
             $this->handleWithHttpKernel($request)->send();
 
-            // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
             if (!empty($_SESSION['redirects'])) {
                 unset($_SESSION['redirects']);
             }
@@ -404,9 +336,6 @@ class YesWikiRuntime
      */
     private function runSpecialPages()
     {
-        // We must manually parse the body data for the PUT or PATCH methods
-        // See https://www.php.net/manual/fr/features.file-upload.put-method.php
-        // TODO properly use the Symfony HttpFoundation component to avoid this
         if ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH') {
             if (empty($_POST)) {
                 $rawBody = file_get_contents('php://input');
@@ -416,7 +345,6 @@ class YesWikiRuntime
         $context = new RequestContext();
         $context->fromRequest($this->service(CurrentRequest::class)->get());
 
-        // Use query string as the path (part before '&')
         $pageContext = $this->service(PageContext::class);
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
@@ -442,10 +370,8 @@ class YesWikiRuntime
 
         $matcher = new UrlMatcher($this->getRoutes(), $context);
 
-        // start buffer to prevent bad formatting response
         ob_start();
         try {
-            // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
             if ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $request = $this->service(CurrentRequest::class)->get();
@@ -467,12 +393,7 @@ class YesWikiRuntime
         $response->send();
     }
 
-    /**
-     * Fold whatever a controller echoed straight to the output buffer into the response body.
-     *
-     * A JSON response keeps its shape: the stray output becomes a `rawOutput` key rather than
-     * being concatenated onto the JSON text, which would make it unparseable.
-     */
+    /** Fold whatever a controller echoed straight to the output buffer into the response body. */
     private function foldRawOutputInto(Response $response, string $rawOutput): void
     {
         if ($response instanceof JsonResponse) {
@@ -496,12 +417,7 @@ class YesWikiRuntime
     }
 
     /**
-     * The attribute routes of every controller (core + extensions), loaded lazily: only api/doc
-     * requests ever match against them (see RunSpecialPages()), so ordinary page views no longer
-     * pay for reflecting over every controller class on every request. The built collection is
-     * cached (serialized, per environment like the compiled container) and freshness-checked
-     * against the resources the attribute loaders register (controller file edits/additions)
-     * plus the extension set itself (see YesWikiKernel::extensionSetResources()).
+     * The attribute routes of every controller (core + extensions), loaded lazily: only api/doc requests ever match against them (see RunSpecialPages()), so ordinary page views no longer pay for reflecting over every controller class on every request.
      */
     public function getRoutes(): RouteCollection
     {
@@ -509,7 +425,6 @@ class YesWikiRuntime
             return $this->routes;
         }
 
-        // instance cache dir (cwd), same reasoning as YesWikiKernel::getCacheDir()
         $cache = new ConfigCache(getcwd() . '/cache/routes/' . $this->environment . '.php', true);
 
         if ($cache->isFresh()) {
@@ -548,20 +463,13 @@ class YesWikiRuntime
             new AttributeRouteControllerLoader()
         );
 
-        // Route discovery is directory-driven, so it does not follow a class into a new
-        // namespace: wave-two ticket 05 moved ApiController into src/Admin/Controller/ and
-        // every /api/* route silently disappeared -- the only symptom was an endpoint
-        // answering with an empty body. Module controller directories must be scanned too.
-        // Same trap as FieldFactory's field scan and the console's command glob.
         $controllersDirs = [];
-        // src/controllers/ is emptied as modules migrate (ticket 05) and eventually removed
         if (is_dir(__DIR__ . '/controllers')) {
             $controllersDirs[] = __DIR__ . '/controllers';
         }
         foreach (glob(__DIR__ . '/*/Controller', GLOB_ONLYDIR) ?: [] as $moduleControllersDir) {
             $controllersDirs[] = $moduleControllersDir;
         }
-        // /api/* resource controllers live in src/<Module>/Api/ (ticket 08 split)
         foreach (glob(__DIR__ . '/*/Api', GLOB_ONLYDIR) ?: [] as $moduleApiDir) {
             $controllersDirs[] = $moduleApiDir;
         }
@@ -587,17 +495,7 @@ class YesWikiRuntime
     }
 
     /**
-     * Resolve/invoke $request's _controller through a real Symfony\Component\HttpKernel\HttpKernel,
-     * so every request (api/doc's attribute-routed controllers via RunSpecialPages(), and ordinary
-     * wiki tag/method pages via LegacyPageController) goes through the standard
-     * kernel.controller/kernel.view/kernel.response/kernel.exception event flow instead of a
-     * hand-rolled controller-resolution + try/catch.
-     *
-     * Routing itself (matching $request's attributes) stays manual: for api/doc it's YesWiki's own
-     * ?wiki=Tag/method querystring scheme being translated to a path (see RunSpecialPages()), not
-     * something a standard Symfony\Component\HttpKernel\EventListener\RouterListener could do
-     * as-is; for ordinary pages there's no routing at all (see Run()). Either way $request already
-     * carries its route attributes by the time this is called, so there's no kernel.request listener.
+     * Resolve/invoke $request's _controller through a real Symfony\Component\HttpKernel\HttpKernel, so every request (api/doc's attribute-routed controllers via RunSpecialPages(), and ordinary wiki tag/method pages via LegacyPageController) goes through the standard kernel.controller/kernel.view/kernel.response/kernel.exception event flow instead of a hand-rolled controller-resolution + try/catch.
      */
     private function handleWithHttpKernel(Request $request): Response
     {
@@ -617,13 +515,7 @@ class YesWikiRuntime
     }
 
     /**
-     * kernel.exception listener for handleWithHttpKernel(): maps a controller-thrown exception to
-     * a Response the same way RunSpecialPages()'s try/catch used to for api/doc. For ordinary
-     * pages this is only reached for bugs outside of Performer::run()'s own scope - that already
-     * catches and renders exceptions from within actions/handlers/formatters as an inline "danger"
-     * alert (see Performer::run()) - so today's behavior for those is an uncaught PHP fatal error;
-     * this is a strict improvement (a real response instead of a blank/fatal error page), even
-     * though the JSON shape below is written with the api/doc case in mind.
+     * kernel.exception listener for handleWithHttpKernel(): maps a controller-thrown exception to a Response the same way RunSpecialPages()'s try/catch used to for api/doc.
      */
     public function onDispatchException(ExceptionEvent $event): void
     {
@@ -638,15 +530,7 @@ class YesWikiRuntime
         }
     }
 
-    /**
-     * The ExitException in a throwable, however deeply it was wrapped -- or null.
-     *
-     * A routed screen renders its actions through Twig, and Twig wraps ANYTHING that
-     * escapes a template in a `Twig\Error\RuntimeError` carrying the original as its
-     * previous. So the redirect that ends a login arrives here as a RuntimeError "an
-     * exception has been thrown during the rendering of a template", and a bare
-     * `instanceof` on the throwable itself never matches.
-     */
+    /** The ExitException in a throwable, however deeply it was wrapped -- or null. */
     private function exitExceptionIn(\Throwable $th): ?ExitException
     {
         for ($candidate = $th; $candidate !== null; $candidate = $candidate->getPrevious()) {
@@ -658,21 +542,7 @@ class YesWikiRuntime
         return null;
     }
 
-    /**
-     * `Redirector::redirect()`/`terminate()` unwinding out of a *routed* controller.
-     *
-     * Every action that ends a request does it by throwing this (the class comment on
-     * Redirector says why), and pages have always handled it -- LegacyPageController catches
-     * it around the handler. A route did not, so the exception reached the handler above and
-     * came back as a 500 carrying a stack trace. That is not an edge case: it is what a
-     * routed screen rendering `{{login}}`, `{{usersettings}}` or any admin action does the
-     * moment someone submits its form, which is to say the first time anyone uses it.
-     *
-     * `redirect()` has already called `header('Location: ...')`, and Response::send() writes
-     * its own 200 status line over that -- a Location header with a 200 is a blank page, not
-     * a redirect. So the header is read back and reflected as a real 302, exactly as
-     * LegacyPageController::toResponse() does for pages.
-     */
+    /** `Redirector::redirect()`/`terminate()` unwinding out of a *routed* controller. */
     private function exitToResponse(ExitException $th): Response
     {
         foreach (headers_list() as $header) {
@@ -683,7 +553,6 @@ class YesWikiRuntime
             }
         }
 
-        // a bare terminate($message): the message was the whole body under the old exit()
         return new Response(YesWikiKernel::isCli() ? '' : $th->getMessage());
     }
 
@@ -715,16 +584,9 @@ class YesWikiRuntime
      */
     private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
     {
-        // absolute paths: shared extensions come from the Program tree (farm-wide, an
-        // instance cannot write there), custom/extensions/ belongs to the instance -
-        // everything downstream ($pluginBase . 'file' concatenations) works unchanged.
-        // Loaded shared-first so an instance-local custom/extensions/{ext} shadows the
-        // shared extensions/{ext} in the array_merge (ticket 25, formerly tools/ and
-        // custom/tools/ with the exact same precedence).
         $this->loadExtensionsFromDir(YESWIKI_PROGRAM_DIR . '/extensions/');
         $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/extensions/');
-        // TODO refactor as custom is not an extension
-        $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/'; // Will load custom/actions, custom/handlers etc...
+        $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/';
 
         $this->includeExtensionsBootstrapFiles();
         $this->boot();
@@ -734,13 +596,7 @@ class YesWikiRuntime
     }
 
     /**
-     * Site-wide HTTP Basic Auth gate (ticket 21, formerly the herse extension's
-     * wiki.php bootstrap snippet): when herse_id/herse_password are configured,
-     * every web request must present them as Basic Auth credentials. Runs after
-     * loadLanguages() so _t() works (the extension had to manually include its
-     * lang file because it ran earlier). CLI is exempt — a console command
-     * cannot send Basic Auth; the extension version would have broken every
-     * console run on a herse-protected wiki (disclosed adaptation).
+     * Site-wide HTTP Basic Auth gate (ticket 21, formerly the herse extension's wiki.php bootstrap snippet): when herse_id/herse_password are configured, every web request must present them as Basic Auth credentials.
      */
     private function enforceHerseGate(): void
     {
@@ -748,8 +604,6 @@ class YesWikiRuntime
             return;
         }
         if (!self::herseGateAllows($this->config, $_SERVER)) {
-            // the extension read wakka_name for the realm; core renamed the key
-            // to yeswiki_name (old configs may still carry the legacy name)
             $realm = $this->config['yeswiki_name'] ?? $this->config['wakka_name'] ?? 'YesWiki';
             header('WWW-Authenticate: Basic realm="' . $realm . '"');
             header('HTTP/1.0 401 Unauthorized');
@@ -780,24 +634,15 @@ class YesWikiRuntime
     /**
      * Include each extension's wiki.php/vendor/autoload.php/libs/{key}.api.php.
      *
-     * These establish global constants/functions used by legacy procedural code
-     * (actions/handlers/formatters, Performer) - unlike service/parameter registration
-     * (see YesWikiKernel::build()), they have to run on every request even when the
-     * compiled container is served from cache, since build() is skipped on a cache hit.
-     *
      * @return void
      */
     private function includeExtensionsBootstrapFiles()
     {
-        // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
-        // TODO refactor all extensions to use the correct variable name
-        // TODO remove this when the retrocompatibility is no longer necessary
         $wiki = $this;
         $page = $this->initialTag;
         $yeswikiConfig = &$this->config;
 
         foreach ($this->extensions as $k => $pluginBase) {
-            // Load the initialization file (constants and includes)
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
             }
@@ -806,7 +651,6 @@ class YesWikiRuntime
                 include $pluginBase . 'vendor/autoload.php';
             }
 
-            // api functions
             if (file_exists($pluginBase . 'libs/' . $k . '.api.php')) {
                 include $pluginBase . 'libs/' . $k . '.api.php';
             }
@@ -824,9 +668,6 @@ class YesWikiRuntime
         $kernel = new YesWikiKernel($this, $this->environment);
         $kernel->boot();
         $container = $kernel->getContainer();
-        // `Kernel::getContainer()` is declared as returning the *interface*, which has no
-        // getParameterBag() -- that is the concrete Container's. Narrowing here says so once,
-        // instead of the call below sitting baselined as method.notFound (ticket 40).
         if (!$container instanceof Container) {
             throw new \RuntimeException('the kernel built a container with no parameter bag');
         }
@@ -836,17 +677,9 @@ class YesWikiRuntime
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
         $this->services->set(YesWikiRuntime::class, $this);
-        // **Deprecated, and the last write of its kind in core.** It was the explicit replacement
-        // for the implicit `$wiki` global that procedural code read, and ticket 45 removed every
-        // core reader: 77 of them, 51 inside the global-function files ticket 50 deleted. It is
-        // written and never read here, kept only because an extension in the wild may still read
-        // it. Nothing in core may read it again; remove it when extensions have had a release to
-        // move to constructor injection.
         $GLOBALS['yeswikiServices'] = $this->services;
 
-        // need to be executed after the container is compiled because the %paramName% are resolved there
         $this->config = $parameterBag->all();
-        // one storage: element writes through either side stay visible in both
         $this->service(RuntimeConfig::class)->bind($this->config);
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
@@ -856,35 +689,41 @@ class YesWikiRuntime
     }
 
     /**
-     * Load languages.
+     * Load the half of the catalogue that is the same for every reader.
      *
      * @return void
      */
     private function loadLanguages()
     {
-        // This must be done after service initialization, as it uses services
+        $languageService = $this->service(LanguageService::class);
+
+        foreach ($this->extensions as $k => $pluginBase) {
+            $languageService->loadCatalogueFile($pluginBase . 'lang/' . $k . '_fr.inc.php');
+            $languageService->loadCatalogueFile($pluginBase . 'lang/' . $k . 'js_fr.inc.php', true);
+        }
+
+        $languageService->rememberBaseline();
+        $this->applyPreferredLanguage();
+    }
+
+    /**
+     * Lay the reader's own language over the baseline, once per request.
+     *
+     * @return void
+     */
+    private function applyPreferredLanguage()
+    {
         $languageService = $this->service(LanguageService::class);
         $languageService->loadPreferredLanguage($this, $this->service(PageContext::class)->getTag());
 
-        // translations
+        $lang = $languageService->preferredLanguage();
+        if ($lang === 'fr') {
+            return;
+        }
+
         foreach ($this->extensions as $k => $pluginBase) {
-            // language files : first default language, then preferred language
-            if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
-                $languageService->loadTranslations($returnedArray);
-            }
-            if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
-                $languageService->loadTranslations($returnedArray, true);
-            }
-            if ($this->service(LanguageService::class)->preferredLanguage() != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php';
-                $languageService->loadTranslations($returnedArray);
-            }
-            if ($this->service(LanguageService::class)->preferredLanguage() != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $this->service(LanguageService::class)->preferredLanguage() . '.inc.php';
-                $languageService->loadTranslations($returnedArray, true);
-            }
+            $languageService->loadCatalogueFile($pluginBase . 'lang/' . $k . '_' . $lang . '.inc.php');
+            $languageService->loadCatalogueFile($pluginBase . 'lang/' . $k . 'js_' . $lang . '.inc.php', true);
         }
     }
 

@@ -2,15 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
-/**
- * Where this wiki is, and where this request is, derived from the web server's own variables.
- *
- * Static, and deliberately: `YesWikiInit` computes `base_url` and the rewrite mode **before the
- * container exists**, so anything that answers those questions cannot be a service. That is the
- * same reason `bootstrap_paths.php` is allowed to reach the filesystem directly. What it must not
- * be is a set of global functions in `Kernel/urlutils.inc.php` reaching for the container to read
- * one configuration value (ticket 50).
- */
+/** Where this wiki is, and where this request is, derived from the web server's own variables. */
 class WikiUrls
 {
     /** Scheme and host, with no path: `https://example.org`. */
@@ -82,12 +74,7 @@ class WikiUrls
         return true;
     }
 
-    /**
-     * `'iframe'` when $url is one of the iframe handlers, `''` otherwise.
-     *
-     * Reads as a question and answers with a string because that is what its sixteen callers
-     * pass straight into a template.
-     */
+    /** `'iframe'` when $url is one of the iframe handlers, `''` otherwise. */
     public static function iframeSuffixFor(string $url = ''): string
     {
         if (empty($url)) {
@@ -114,8 +101,6 @@ class WikiUrls
             throw new \InvalidArgumentException("URL de base invalide : $pageAbsoluteUrl");
         }
 
-        // was `$vPageParts['vPath']`, a key parse_url() never returns, so every relative
-        // link resolved against the domain root instead of the page's own directory
         $vBasePath = $vPageParts['path'] ?? '/';
 
         if (substr($vBasePath, -1) !== '/') {

@@ -305,9 +305,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         $themeManager = $this->getService(ThemeManager::class);
 
-        // SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME used to gate this on admin-or-owner; it is
-        // defined false in src/constants.php and nothing ever flips it, so the gate was
-        // write and read access all along -- said here instead of hidden behind a dead constant
         if (empty($this->getService(RuntimeConfig::class)['hide_action_template'])
             && $this->getService(AclService::class)->hasAccess('write')
             && $this->getService(AclService::class)->hasAccess('read')

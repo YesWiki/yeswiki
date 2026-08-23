@@ -116,12 +116,12 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             $peertubeinstance .= '/';
         }
         if (preg_match('/^'
-            . '(https?:\\/\\/.*)' // begin as url
-            . '(?:' // multiple options
-                . 'youtu\.be\/(.+)|youtube.*watch\?v=([^&]+)' // youtube
-                . '|vimeo\.com\/(.+)' // vimeo
-                . '|(?:dai\.?ly.*\/video\/|dai\.ly\/)(.+)' // dailymotion
-                . '|(?:\/videos\/embed\/|\/w\/)(.+)' // peertube
+            . '(https?:\\/\\/.*)'
+            . '(?:'
+                . 'youtu\.be\/(.+)|youtube.*watch\?v=([^&]+)'
+                . '|vimeo\.com\/(.+)'
+                . '|(?:dai\.?ly.*\/video\/|dai\.ly\/)(.+)'
+                . '|(?:\/videos\/embed\/|\/w\/)(.+)'
             . ')/', $url, $matches)) {
             if (!empty($matches[2])) {
                 $server = 'youtube';
@@ -149,7 +149,7 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             'ratio' => $arg['ratio'] ?? '',
             'maxwidth' => $arg['maxwidth'] ?? '',
             'maxheight' => $arg['maxheight'] ?? '',
-            'class' => str_replace('attached_file', '', $arg['class'] ?? ''), // to prevent errors
+            'class' => str_replace('attached_file', '', $arg['class'] ?? ''),
         ];
     }
 
@@ -180,7 +180,6 @@ class VideoAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             if (empty($maxHeight) || !is_numeric($maxHeight)) {
                 $maxHeight = ($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16);
             } else {
-                // calculte the minimum between width and height
                 $newMaxHeight = min(($this->arguments['ratio'] == '4par3') ? ($maxWidth * 3 / 4) : ($maxWidth * 9 / 16), $maxHeight);
                 $newMaxWidth = min(($this->arguments['ratio'] == '4par3') ? ($maxHeight * 4 / 3) : ($maxHeight * 16 / 9), $maxWidth);
                 $maxHeight = $newMaxHeight;

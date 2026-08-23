@@ -981,7 +981,6 @@ class EntryManager
         foreach ($pages as $page) {
             $entry = $this->decode(PageBody::decode($page['body']));
             if ($entry === null) {
-                // a revision whose body is not a document has no attributes to manage
                 continue;
             }
 

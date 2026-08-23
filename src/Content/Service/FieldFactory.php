@@ -49,8 +49,6 @@ class FieldFactory
             }
             $fieldName = $matches[1];
 
-            // a file named ...Field.php is not proof that it declares that class, let alone a
-            // field: a mismatched name used to reach ReflectionClass and throw
             $className = $namespace . $fieldName . 'Field';
             if (!class_exists($className) || !is_subclass_of($className, BazarField::class)) {
                 continue;

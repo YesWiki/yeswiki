@@ -8,17 +8,7 @@ use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
-/**
- * A page's title and its first picture, for the cards `{{filtertags}}` and friends draw.
- *
- * Neither is stored: the title is whatever the body's first big heading says when the page has
- * no title field, and the picture is the first `{{attach}}`, uploaded image or `<img>` the body
- * happens to contain. Both are guesses over markup, and both are wanted in four places.
- *
- * Was `get_title_from_body()` and `get_image_from_body()` in `Content/tags.functions.php`,
- * reaching the container through `$GLOBALS['yeswikiServices']` because a function has no other
- * way to (ticket 50).
- */
+/** A page's title and its first picture, for the cards `{{filtertags}}` and friends draw. */
 class PageSummary
 {
     public function __construct(private readonly ContainerInterface $services)

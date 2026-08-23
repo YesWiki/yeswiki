@@ -52,9 +52,7 @@ class SeededMigrationListTest extends TestCase
         return $names;
     }
 
-    /**
-     * The seeded list says every migration has already run, so nothing ever rewrites the seed. That only holds if the seed is written in the shape the migrations produce, and it was not: both seeded forms carried `{"type":"map","name":"bf_latitude","label":"bf_longitude"}` and all four seeded entries carried top-level `bf_latitude`/`bf_longitude` plus a legacy `geolocation` object, which is exactly what `20260203091701_BazarChangeModelForGeolocation` exists to convert. An upgraded wiki was therefore correct and a fresh one was not, and the map on the seeded `CartoAnnuaire` page had no markers on it.
-     */
+    /** The seeded list says every migration has already run, so nothing ever rewrites the seed. */
     public function testTheSeedCarriesNoPreMigrationGeolocation(): void
     {
         $stale = [];
@@ -80,7 +78,7 @@ class SeededMigrationListTest extends TestCase
     }
 
     /**
-     * Every seeded body, keyed by tag. Each row is `('Tag', [[ now ]], '<json>', '{{WikiName}}', ...)` with SQL's doubled single quotes.
+     * Every seeded body, keyed by tag.
      *
      * @return array<string, array<string, mixed>>
      */

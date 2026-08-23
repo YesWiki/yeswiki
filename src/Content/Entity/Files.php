@@ -46,8 +46,6 @@ class Files
             return $this->deleteFolder($path);
         }
 
-        // nothing is_file() or is_dir() can see, which is what a caller of delete() asked for.
-        // Falling off the end here used to return null, against the declared contract.
         return true;
     }
 

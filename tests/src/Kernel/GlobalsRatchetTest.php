@@ -4,19 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * A ceiling on `$GLOBALS`, which worker mode makes a correctness problem (ADR-0024).
- *
- * Under php-fpm the process dies with the request, so a per-request fact kept in a global is
- * merely ugly. Under a worker it is a bug: the counter that numbers mail forms climbs for the
- * life of the process, the flag that says "this is an import" is never unset, the panel stack is
- * handed on dirty. ADR-0024 rejected resetting them between requests, because a reset routine is
- * a list somebody has to remember to extend and the day it falls behind the symptom is
- * cross-visitor bleed rather than an error. So they are removed, and this stops them coming back.
- *
- * Per file rather than one total, for `PhpstanBaselineRatchetTest`'s reason: a file shedding ten
- * must not make room for one somewhere else.
- */
+/** A ceiling on `$GLOBALS`, which worker mode makes a correctness problem (ADR-0024). */
 class GlobalsRatchetTest extends TestCase
 {
     private const SRC = __DIR__ . '/../../../src';
@@ -24,24 +12,15 @@ class GlobalsRatchetTest extends TestCase
     /**
      * What each file has yet to convert, counted the day the rule was seeded (2026-08-21).
      *
-     * A number may only fall and a new file may not appear. **Every entry left is boot state**
-     * (the translation catalogues and the language lists, which ADR-0024 allows because they are
-     * identical for every request in a process) or the one deprecated write in `YesWikiRuntime`
-     * that core no longer reads. No request state remains, which is what the ADR asked for.
-     *
      * @var array<string, int>
      */
     private const REMAINING = [
-        'Admin/Action/EditConfigAction.php' => 4,
+        'Admin/Action/EditConfigAction.php' => 2,
         'Admin/Controller/DocumentationController.php' => 1,
-        'Admin/Controller/InstallationController.php' => 3,
         'Content/Controller/FormController.php' => 1,
-        'Kernel/Service/LanguageService.php' => 16,
+        'Kernel/Service/LanguageService.php' => 3,
         'Render/Service/CoreAssets.php' => 1,
-        'Render/Service/TemplateEngine.php' => 2,
-        'Render/Service/ThemeSelectorRenderer.php' => 2,
         'YesWikiRuntime.php' => 1,
-        'lang/languages_list.php' => 1,
     ];
 
     /**
@@ -65,14 +44,7 @@ class GlobalsRatchetTest extends TestCase
         return $counts;
     }
 
-    /**
-     * Uses of `$GLOBALS` in $source, counting code and not prose.
-     *
-     * Tokenised rather than grepped, so that a docblock saying which global a service replaced
-     * does not count against it. Recording that history is worth more than the simpler rule, and
-     * a number that can never reach zero while the history is written down is a number nobody
-     * can finish.
-     */
+    /** Uses of `$GLOBALS` in $source, counting code and not prose. */
     private function globalsIn(string $source): int
     {
         $found = 0;

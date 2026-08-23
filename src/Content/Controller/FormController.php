@@ -63,27 +63,19 @@ class FormController extends YesWikiController
             }));
             $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
-            // core's own Content types are listed apart from a webmaster's forms:
-            // they describe the wiki's pages, accounts and files rather than data
-            // someone designed, and they cannot be emptied or deleted (ticket 10)
             $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
             $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
             $values[$form['id']]['contentType'] = $contentType;
-            // a built-in type's form creates Content like any other form (ticket 13)
             $values[$form['id']]['canCreateContent'] = ContentCreator::supports($contentType);
         }
 
         $systemForms = array_filter($values, fn ($form) => $form['isSystem']);
-        // in the order the types are declared (Page, User, File) rather than by form id,
-        // which is just whatever order the migration happened to create them in
         $declaredOrder = array_flip(ContentTypeSchema::types());
         uasort(
             $systemForms,
             fn ($a, $b) => ($declaredOrder[$a['contentType']] ?? PHP_INT_MAX) <=> ($declaredOrder[$b['contentType']] ?? PHP_INT_MAX)
         );
 
-        // how much Content each form holds and when it last changed, in one grouped read
-        // of the search index rather than a query per form
         $stats = $this->getService(SearchIndexQuery::class)->contentStats();
         $withStats = function (array $forms) use ($stats): array {
             foreach ($forms as $id => $form) {
@@ -91,10 +83,6 @@ class FormController extends YesWikiController
                 $found = $isSystem
                     ? ($stats['byType'][(string)($form['contentType'] ?? '')] ?? null)
                     : ($stats['byForm'][(string)$id] ?? null);
-                // No rows means none of that Content exists -- but only once the index has
-                // been built at all. Before that (a fresh install, or between the migration
-                // and the first reindex) every form would read "0", which is a lie where
-                // "not counted yet" is the truth, so a wholly empty index says nothing.
                 $forms[$id]['stats'] = $found ?? [
                     'count' => $stats['total'] > 0 ? 0 : null,
                     'last' => '',
@@ -145,10 +133,7 @@ class FormController extends YesWikiController
     }
 
     /**
-     * Massages the form-edit POST into the stored entry_* property shapes (ADR-0010):
-     * checkbox-gated nested objects become arrays-or-null, empty sub-values are
-     * compacted away, the comments toggle becomes a real boolean. A null/empty value
-     * means "cleared" -- FormManager::update() removes the property from the body.
+     * Massages the form-edit POST into the stored entry_* property shapes (ADR-0010): checkbox-gated nested objects become arrays-or-null, empty sub-values are compacted away, the comments toggle becomes a real boolean.
      *
      * @param array<string, mixed> $data
      *
@@ -196,11 +181,6 @@ class FormController extends YesWikiController
                 $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
                     $this->formManager->create($this->normalizeFormPropertiesPost($post->all()));
-
-                    /* mrflos : i think this is not used */
-                    /* if ($this->activityPubService->isEnabled($form)) { */
-                    /*     $this->activityPubService->postCreateActivity($form); */
-                    /* } */
 
                     return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
                 }
@@ -268,9 +248,6 @@ class FormController extends YesWikiController
      */
     private function formIsValid($form)
     {
-        // the entry title is computed from entry_title_template (ADR-0010): at least
-        // one of its {{field}} references must exist in the template, otherwise every
-        // entry title would come out empty
         $titleTemplate = trim((string)($this->getRequest()->request->get('entry_title_template') ?? $form['entry_title_template'] ?? ''));
         if ($titleTemplate === '') {
             $titleTemplate = FormPropertiesService::DEFAULT_TITLE_TEMPLATE;
@@ -311,12 +288,7 @@ class FormController extends YesWikiController
     }
 
     /**
-     * A submitted role map has to name fields the form actually has, of a type that can
-     * play the role, and no two roles may name the same field (ticket 11).
-     *
-     * FieldRole::normalizeMap() drops what it cannot use, which is right for storage and
-     * wrong for a designer: a webmaster who picks an impossible mapping should be told,
-     * not quietly given the type default back.
+     * A submitted role map has to name fields the form actually has, of a type that can play the role, and no two roles may name the same field (ticket 11).
      *
      * @param array<string, mixed> $form
      */
@@ -388,7 +360,6 @@ class FormController extends YesWikiController
         if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
-                // delete() removes the form's entries itself
                 $this->formManager->delete($id);
 
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['view' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));

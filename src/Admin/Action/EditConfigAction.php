@@ -10,6 +10,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -186,9 +187,10 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
      */
     private function languageChoices(): array
     {
-        $names = (array)($GLOBALS['languages_list'] ?? []);
+        $language = $this->getService(LanguageService::class);
+        $names = $language->languagesList();
         $choices = [];
-        foreach ((array)($GLOBALS['installed_languages'] ?? []) as $code) {
+        foreach ($language->installedLanguages() as $code) {
             $choices[(string)$code] = (string)($names[$code]['nativeName'] ?? $code);
         }
 
@@ -457,7 +459,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
                 $keyName = $firstLevelKey . ($length > 1 ? '[' . implode('][', array_slice($keyAsArray, 1)) . ']' : '');
-                // the default this key would fall back to, when the container declares one
                 $hasDefault = $this->params->has($firstLevelKey);
                 $default = $hasDefault ? $this->params->get($firstLevelKey) : null;
                 switch ($length) {
@@ -587,7 +588,6 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
         $matches = [];
         if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/', $val, $matches)) {
             $val = $matches[1];
-            // preg_split() answers false only when PCRE itself fails; read the value as empty then
             $lines = preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val) ?: [];
             $result = [];
             foreach ($lines as $line) {

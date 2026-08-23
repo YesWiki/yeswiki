@@ -29,11 +29,6 @@ class RetireEntryListCategory extends YesWikiMigration
         $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
-        // Both spellings, so this does not depend on ticket 23's rename having run first.
-        //
-        // `jsonAsText()`, not a bare `body LIKE`: since ADR-0018 the column is the dialect's
-        // native JSON type, and `jsonb` has no LIKE operator at all. The earlier migrations
-        // this one is modelled on were written while it was still text.
         $bodyAsText = $db->jsonAsText('body');
         $rows = $db->loadAll(
             "SELECT id, tag, body FROM {$pages} WHERE {$bodyAsText} LIKE ?" . SqlParameters::LIKE_CLAUSE_SUFFIX
@@ -95,15 +90,7 @@ class RetireEntryListCategory extends YesWikiMigration
         }
     }
 
-    /**
-     * Action ACLs that no longer address anything.
-     *
-     * `entrylistcategory` has no action left to permit. The four aliases have one, but it is
-     * `entrylist`'s: a deprecated spelling resolves before the check, so a permission written
-     * against the spelling stopped being consulted. Moving it onto `entrylist` would restrict
-     * every list in the wiki because one map was restricted, so the rows are dropped and the
-     * webmaster is told which ones they were.
-     */
+    /** Action ACLs that no longer address anything. */
     private function cleanActionAcls(): void
     {
         $params = $this->services->get(ParameterBagInterface::class);

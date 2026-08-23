@@ -48,13 +48,7 @@ class PackageCore extends Package
 
     private ?ConfigurationService $configurationService = null;
 
-    /**
-     * The two facts this entity used to reach for through `$GLOBALS['yeswikiServices']`.
-     *
-     * A package is built from a class-string by PackageCollection, so its constructor signature
-     * is shared with the theme and tool packages and cannot carry these. The collection hands
-     * them over straight afterwards, from what the update flow already knew (ticket 45).
-     */
+    /** The two facts this entity used to reach for through `$GLOBALS['yeswikiServices']`. */
     public function updateContext(string $requestedVersion, ?ConfigurationService $configurationService): void
     {
         $this->requestedVersion = $requestedVersion;
@@ -93,7 +87,6 @@ class PackageCore extends Package
         if ($dirs === []) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
-        // array_filter keeps the original keys, so the first directory is rarely at offset 0
         $this->extractionPath = reset($dirs) . '/';
 
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();

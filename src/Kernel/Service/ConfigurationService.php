@@ -43,19 +43,13 @@ class ConfigurationService
     {
         $content = "<?php\n\n\$$arrayName = ";
 
-        // `_parameters` is protected on the entity and reachable only through its __get().
         $content .= $this->customVarExport($config->__get('_parameters'), true);
         $content .= ";\n";
 
         return $content;
     }
 
-    /**
-     * The path a ConfigurationFile was loaded from.
-     *
-     * `_file` is private to the entity and reachable only through its __get(), which is typed
-     * `mixed` -- this narrows it back to the string it always holds.
-     */
+    /** The path a ConfigurationFile was loaded from. */
     private function filePathOf(ConfigurationFile $config): string
     {
         $path = $config->__get('_file');

@@ -151,10 +151,6 @@ class Mailer
     /**
      * Generic send, the single seam every mail-sending caller in core goes through (ticket 18).
      *
-     * Was a wrapper around the global `send_mail()` in `Kernel/email.inc.php`, which reached for
-     * the container through `$GLOBALS['yeswikiServices']` fourteen times to read its own
-     * configuration. Ticket 50 folded it in here, where the configuration is already injected.
-     *
      * @param string          $mailSender
      * @param string          $nameSender
      * @param string|string[] $mailReceiver
@@ -184,8 +180,6 @@ class Mailer
                 $mailReceiver = filter_var($mailReceiver, FILTER_VALIDATE_EMAIL) ? [$mailReceiver] : [];
             }
 
-            // Sent in batches with a pause between them, which is what keeps a large mailing
-            // from looking like a burst to the receiving side.
             foreach (array_chunk($mailReceiver, self::BATCH_SIZE) as $batch) {
                 $mail->clearBCCs();
                 foreach ($batch as $bccEmail) {

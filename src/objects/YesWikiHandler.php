@@ -16,8 +16,6 @@ abstract class YesWikiHandler extends YesWikiPerformable
 
     protected function denyAccessUnlessGranted(string $role, ?string $tag = null): void
     {
-        // hasAccess() reads '' as "the current page", which is what a caller that names no
-        // tag means; it is declared string, so the null default cannot be handed over as-is
         if (!$this->getService(AclService::class)->hasAccess($role, $tag ?? '')) {
             throw new AccessDeniedHttpException(_t(self::ROLE_ERRORS[$role] ?? 'DENY_READ'));
         }

@@ -129,8 +129,6 @@ class ContactApiController extends YesWikiController
         if ($message['class'] == 'success') {
             $mailingList = (string)$request->request->get('mailinglist', '');
             if (!empty($mailingList)) {
-                // a mailing list has one address; the page-body form yields a string and
-                // the recipient list an array, and only the second has anything to pop
                 $mailReceiver = is_array($mailReceiver) ? array_pop($mailReceiver) : $mailReceiver;
                 if ($mailingList == 'ezmlm') {
                     $mailReceiver = str_replace('@', '-' . str_replace('@', '=', $mailSender) . '@', $mailReceiver);

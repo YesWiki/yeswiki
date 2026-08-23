@@ -75,8 +75,6 @@ class ImportFilesManager
 
         $fp = fopen($to, 'wb');
         if ($fp === false) {
-            // without this the handle went to curl_setopt() as `false`, which curl reads as
-            // "write to stdout": the download landed in the page instead of in the file
             throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $to);
         }
         $ch = curl_init($from);
@@ -106,16 +104,11 @@ class ImportFilesManager
     public function getTextFieldsFromWikiPage(array $wikiPage): array
     {
         $fields = [];
-        // an entry carries a `tag` of its own, so the entry test has to come first and has to
-        // be the one that tells the two apart: both arms used to read `!empty($wikiPage['tag'])`,
-        // which made the entry arm unreachable and left every long-text field of every imported
-        // entry unscanned for attachments
         if (!empty($wikiPage['form_id'])) {
             $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($wikiPage['form_id']);
 
             foreach ($form['prepared'] ?? [] as $field) {
-                // an unnamed field addresses no key of the entry, so there is nothing to scan
                 if ($field instanceof TextareaField && $field->getName() !== null) {
                     $fields[] = $field->getName();
                 }
@@ -147,9 +140,6 @@ class ImportFilesManager
             $rawContent,
             $attachments
         );
-        // used to be built inside an `if (is_array($attachments[1]))` that is always true, and
-        // returned below whether or not that branch ran -- a page whose content had no
-        // `{{attach}}` at all reached the return with the variable never assigned
         $filesMatched = [];
         foreach ($attachments[1] as $a) {
             $ext = pathinfo($a, PATHINFO_EXTENSION);
@@ -276,9 +266,6 @@ class ImportFilesManager
      */
     public function downloadAttachments(string $remoteUrl, array &$wikiPage, bool $overwrite = false): void
     {
-        // findDirectLinkAttachements() takes a page tag and nothing else; it was called with
-        // the remote url and two arguments it does not have, so it looked up a page named
-        // after the url, found none, and every `{{attach}}` went undownloaded
         $directLinks = $this->findDirectLinkAttachements((string)($wikiPage['tag'] ?? ''));
 
         foreach ($directLinks as $directLink) {

@@ -103,8 +103,6 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction, Pro
                         if ($curday) {
                             echo "<br>\n";
                         }
-                        // a date PHP cannot parse is shown as it was stored, rather than
-                        // handing date() the false strtotime() returns -- a TypeError in PHP 8
                         $dayTimestamp = strtotime($day);
                         echo '<strong>' . ($dayTimestamp === false ? $day : date('d.m.Y', $dayTimestamp)) . '&nbsp;:</strong><br>' . "\n";
                         $curday = $day;

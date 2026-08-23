@@ -40,7 +40,6 @@ class ThemeSelectorRenderer extends YesWikiController
         $favoritePreset = $this->themeManager->getFavoritePreset();
         $squelettes = $templates[$favoriteTheme]['squelette'];
         $styles = $templates[$favoriteTheme]['style'];
-        // getPresetsData() is declared nullable; the selector still has to render without presets
         $presetsData = $this->themeManager->getPresetsData() ?? [
             'themePresets' => [],
             'selectedPresetName' => null,
@@ -123,9 +122,9 @@ class ThemeSelectorRenderer extends YesWikiController
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
             'showAdminActions' => $this->getService(AclService::class)->isAdmin(),
-            'availableLanguages' => $GLOBALS['available_languages'],
+            'availableLanguages' => $this->getService(LanguageService::class)->availableLanguages(),
             'preferedLanguage' => $this->getService(LanguageService::class)->preferredLanguage(),
-            'languagesList' => $GLOBALS['languages_list'],
+            'languagesList' => $this->getService(LanguageService::class)->languagesList(),
             'page' => $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),
         ]);

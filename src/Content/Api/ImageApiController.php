@@ -76,10 +76,7 @@ class ImageApiController extends YesWikiController
     }
 
     /**
-     * The width and height arrive from the URL as strings and every later step wants them as
-     * integers. They used to be converted in place through `&$width` / `&$height`, which asked
-     * a string-typed reference to hold an int; returning the converted pair says the same thing
-     * without lying about the parameter types.
+     * The width and height arrive from the URL as strings and every later step wants them as integers.
      *
      * @return array{width: int, height: int}
      */

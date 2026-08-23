@@ -4,20 +4,12 @@ namespace YesWiki\Content\TemplateData;
 
 use YesWiki\Content\Service\FormManager;
 
-/**
- * The columns the Vue table draws, which only the form knows (was `EntryTableAction::formatArguments()`).
- *
- * Unlike the map's, this one needs a service rather than only the arguments: "every column"
- * means every field of the form being listed, and the form has to be read to say which.
- */
+/** The columns the Vue table draws, which only the form knows (was `EntryTableAction::formatArguments()`). */
 #[\PreparesTemplate(['map-and-table'])]
 class PrepareDataTable extends PrepareData
 {
     public function prepare(array $arguments): array
     {
-        // `table` is a shared Presentation and renders server-side (ticket 37), where the
-        // columns are the template's business rather than an argument. Only the Vue table
-        // needs them computed, so only it pays for reading the form.
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)($arguments['template'] ?? ''));
         if (empty($arguments['dynamic']) && $bareTemplate !== 'map-and-table') {
             return [];

@@ -49,9 +49,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
      */
     private function extractOldCarto(array $entry): bool
     {
-        // ADR-0010 renamed `id_fiche` to `tag` and `id_typeannonce` to `form_id`, and
-        // EntryManager::decode() unsets the old spellings: reading only those made this
-        // migration return false for every entry on any wiki running current code
         $tag = $entry['tag'] ?? $entry['id_fiche'] ?? '';
         $formId = $entry['form_id'] ?? $entry['id_typeannonce'] ?? '';
         if (
@@ -122,8 +119,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
         if (YW_CHARSET != 'UTF-8') {
             $data = array_map(function ($value) {
-                // an entry holds numbers and nested arrays too, and only a string has an
-                // encoding to convert
                 return is_string($value) ? mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1') : $value;
             }, $data);
         }
@@ -158,9 +153,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
     {
         $value = $entry[$field->getPropertyName()] ?? $field->getDefault();
 
-        // the flat keys the pre-map carto wrote. This used to ask `is_callable([$field,
-        // 'getLatitudeField'])` first, and no field class in the codebase has ever had that
-        // method, so the fallback was the only answer the guard could give
         $vLatitudeField = 'bf_latitude';
         $vLongitudeField = 'bf_longitude';
 
@@ -174,8 +166,6 @@ class CleanOldCartoGoogle extends YesWikiMigration
                         $vLongitudeField => $coordinates[1],
                     ];
                 }
-            // called $field->getLatitudeField() unguarded, which is a fatal on a method
-            // that does not exist; the two lines below already read the same flat keys
             } elseif (!empty($entry[$vLatitudeField]) && !empty($entry[$vLongitudeField])) {
                 $returnValue = [
                     $vLatitudeField => $entry[$vLatitudeField],

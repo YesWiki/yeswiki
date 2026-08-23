@@ -2,9 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
-use DateInterval;
 use Exception;
-use PDO;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Database\PreparedStatement;
 use YesWiki\Kernel\Database\SchemaManager;
@@ -27,23 +25,10 @@ class DbService
     /** Per-driver SQL fragments; see YesWiki\Kernel\Database\SqlDialect. */
     protected SqlDialect $dialect;
 
-    /**
-     * How many nested `transactional()` scopes are open; only the outermost one is real.
-     *
-     * PDO::beginTransaction() throws if a transaction is already active, and these writes nest
-     * for real -- AclService::writeMetadataAcls() and PageManager::save() both revision a row,
-     * and either can be reached from inside the other. Counting scopes lets an inner one say
-     * "all of this together" without needing to know whether it is the outermost.
-     */
+    /** How many nested `transactional()` scopes are open; only the outermost one is real. */
     private int $transactionDepth = 0;
 
-    /**
-     * Set when an inner scope rolled back, so the outermost commit refuses.
-     *
-     * Without this, an inner failure whose exception something swallowed would be committed by
-     * the outer scope -- which is the one outcome a transaction exists to prevent, and it would
-     * look like success.
-     */
+    /** Set when an inner scope rolled back, so the outermost commit refuses. */
     private bool $transactionRollbackOnly = false;
 
     /** Lazily built by schema(); see there for why it is not injected. */
@@ -70,7 +55,6 @@ class DbService
             $username = null;
             $password = null;
 
-            // SQLite doesn't need username/password
             if ($this->driver !== 'sqlite') {
                 $username = $this->stringParam('db_user');
                 $password = $this->stringParam('db_password');
@@ -81,9 +65,6 @@ class DbService
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                 \PDO::ATTR_EMULATE_PREPARES => false,
             ];
-            // PDO::connect() (PHP >= 8.4) returns a driver-specific subclass (e.g.
-            // Pdo\Sqlite), needed to call createFunction() without a deprecation
-            // notice. The minimum supported PHP version (8.3) doesn't have it.
             $this->link = method_exists(\PDO::class, 'connect')
                 ? \PDO::connect($dsn, $username, $password, $options)
                 : new \PDO($dsn, $username, $password, $options);
@@ -91,7 +72,6 @@ class DbService
                 throw new \Exception('Not connected to database');
             }
 
-            // Driver-specific initialization
             $this->initDriverSpecific();
         } catch (\Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
@@ -105,7 +85,6 @@ class DbService
     {
         switch ($this->driver) {
             case 'sqlite':
-                // SQLite uses a fixed path in the private directory
                 $dbPath = $this->params->has('db_database') && $this->params->get('db_database')
                     ? $this->stringParam('db_database')
                     : 'private/yeswiki.db';
@@ -148,11 +127,9 @@ class DbService
                 break;
 
             case 'sqlite':
-                // Enable foreign keys for SQLite
                 $this->link->exec('PRAGMA foreign_keys = ON');
                 $this->link->exec('PRAGMA journal_mode = WAL');
                 $this->link->exec('PRAGMA busy_timeout = 5000');
-                // Add REGEXP function for SQLite (not built-in)
                 $regexp = function ($pattern, $value) {
                     if ($pattern === null || $value === null) {
                         return false;
@@ -160,9 +137,6 @@ class DbService
 
                     return preg_match('/' . $pattern . '/iu', $value) === 1;
                 };
-                // PDO::sqliteCreateFunction() is deprecated since PHP 8.5 in favor of
-                // Pdo\Sqlite::createFunction() (available since PHP 8.4), but the minimum
-                // supported PHP version (8.3) only has the former.
                 if (method_exists($this->link, 'createFunction')) {
                     $this->link->createFunction('REGEXP', $regexp, 2);
                 } else {
@@ -171,7 +145,6 @@ class DbService
                 break;
 
             case 'pgsql':
-                // Set client encoding for PostgreSQL
                 $this->link->exec("SET client_encoding TO 'UTF8'");
                 break;
         }
@@ -190,15 +163,6 @@ class DbService
 
     /**
      * Drop this wiki's tables and replay $sqlContent into them.
-     *
-     * Ticket 17: archive restore used to hand the whole dump to `mysqli_multi_query()` over a
-     * second, raw connection -- which is why it only ever worked on MySQL, and why an SQLite
-     * install could take a backup it could never put back. It runs here now, on the ordinary
-     * PDO connection, one statement at a time (see SqlStatementSplitter), with the
-     * driver-specific parts coming from the dialect.
-     *
-     * Lives on DbService rather than ArchiveService so it can be exercised against a scratch
-     * database: a test for this must never be able to point it at the running wiki.
      *
      * @throws \Exception
      */
@@ -232,8 +196,6 @@ class DbService
                 try {
                     $this->query($statement);
                 } catch (\Throwable $th) {
-                    // the statement number and its opening are what make this diagnosable;
-                    // a single INSERT can be megabytes long
                     $excerpt = substr((string)preg_replace('/\s+/', ' ', $statement), 0, 200);
 
                     throw new \Exception('SQL restore failed on statement ' . ($index + 1) . ' of ' . count($statements) . ' (' . $excerpt . '): ' . $th->getMessage(), 0, $th);
@@ -250,12 +212,6 @@ class DbService
     /**
      * Refuse a dump produced by a different database driver.
      *
-     * A dump carries CREATE TABLE statements in its own driver's syntax, so replaying a MySQL
-     * dump on SQLite fails somewhere in the middle -- after the tables have already been
-     * dropped. Refusing up front leaves the wiki as it was; the alternative is a half-restored
-     * database and no way back. Dumps written before ticket 17 carry no marker and are assumed
-     * to be MySQL, the only driver that could produce one.
-     *
      * @throws \Exception
      */
     private function assertDumpMatchesDriver(string $sqlContent): void
@@ -271,7 +227,6 @@ class DbService
 
     /**
      * Returns a SQL expression for the current timestamp.
-     * This is database-driver agnostic.
      *
      * @return string SQL expression
      */
@@ -306,12 +261,7 @@ class DbService
         return $this->dialect->dateSubHours($hours);
     }
 
-    /**
-     * The column type a JSON document is declared as on this driver (ADR-0018).
-     *
-     * `JSON`, `JSONB` or `TEXT`. Used by the installer and by the migration that converts an
-     * existing wiki, so the type is written down once rather than in both.
-     */
+    /** The column type a JSON document is declared as on this driver (ADR-0018). */
     public function jsonColumnType(): string
     {
         return $this->dialect->jsonColumnType();
@@ -320,13 +270,8 @@ class DbService
     /**
      * SQL expression extracting a value from a column declared as `jsonColumnType()`.
      *
-     * There are two: `pages.body` and `pages.metadata`. For JSON that lives in an ordinary text
-     * column, use `jsonExtractText()`, which guards the read. Mixing them up is a type error on
-     * PostgreSQL rather than a wrong answer.
-     *
      * @param string $column The column, declared as jsonColumnType()
-     * @param string $path   The JSON path (e.g., '$.fieldname'), passed RAW: the dialect owns
-     *                       the escaping, because only it knows what syntax the path lands in
+     * @param string $path   The JSON path (e.g., '$.fieldname'), passed RAW: the dialect owns the escaping, because only it knows what syntax the path lands in
      *
      * @return string SQL expression
      */
@@ -335,35 +280,20 @@ class DbService
         return $this->dialect->jsonExtract($column, $path);
     }
 
-    /**
-     * A JSON column as text, for the string operators (`LIKE`) that have no JSON equivalent.
-     *
-     * Required on PostgreSQL, where `jsonb` has no `LIKE` at all. Ask this of `body` before
-     * applying one, and prefer `jsonExtract()` whenever the predicate is really about a
-     * particular field -- `body LIKE '%"form_id":"3"%'` was how several places asked that
-     * question, and it is both slower and one storage-normalisation away from being wrong.
-     */
+    /** A JSON column as text, for the string operators (`LIKE`) that have no JSON equivalent. */
     public function jsonAsText(string $column): string
     {
         return $this->dialect->jsonAsText($column);
     }
 
-    /**
-     * The same read, for JSON stored in a column that is not declared as JSON.
-     *
-     * A text column may hold something that is not a document, so the extraction is guarded.
-     * Core has no caller since ADR-0018 made both its JSON columns native; see
-     * `SqlDialect::jsonExtractText()` for why it is kept.
-     */
+    /** The same read, for JSON stored in a column that is not declared as JSON. */
     public function jsonExtractText(string $column, string $path): string
     {
         return $this->dialect->jsonExtractText($column, $path);
     }
 
     /**
-     * Returns a SQL expression aggregating the distinct values of a column
-     * into a single comma-separated string, ordered by $orderBy.
-     * This is database-driver agnostic.
+     * Returns a SQL expression aggregating the distinct values of a column into a single comma-separated string, ordered by $orderBy.
      *
      * @param string      $column  The column whose distinct values are aggregated
      * @param string|null $orderBy The column to order values by (defaults to $column)
@@ -377,7 +307,6 @@ class DbService
 
     /**
      * Quotes an identifier (table or column name) for the current database driver.
-     * Use this for reserved keywords like 'user', 'time', 'order', etc.
      *
      * @param string $identifier The identifier to quote
      *
@@ -390,7 +319,6 @@ class DbService
 
     /**
      * Returns the collation clause for case-insensitive string comparisons.
-     * This is database-driver agnostic.
      *
      * @return string SQL collation clause (empty string for drivers that don't need it)
      */
@@ -401,7 +329,6 @@ class DbService
 
     /**
      * Returns the REGEXP operator for the current database driver.
-     * This is database-driver agnostic.
      *
      * @param bool $not Whether to negate the condition (NOT REGEXP)
      *
@@ -414,7 +341,6 @@ class DbService
 
     /**
      * Returns a SQL expression for FIND_IN_SET (checking if a value exists in a comma-separated list).
-     * This is database-driver agnostic.
      *
      * @param string $needle   The value to search for (should be already escaped/quoted)
      * @param string $haystack The column or expression containing comma-separated values
@@ -437,11 +363,6 @@ class DbService
 
     /**
      * Record a query for the debug footer.
-     *
-     * A parameterised statement is logged with its values spliced back in, because a footer
-     * showing `WHERE tag = ?` and never saying which tag would take away the only reason the
-     * log is there. That rendering is for reading only and is never executed --
-     * SqlParameters::interpolateForDisplay() says so at more length.
      *
      * @param string                  $query
      * @param float                   $time
@@ -480,9 +401,6 @@ class DbService
      */
     public function escape($string)
     {
-        // PDO::quote adds quotes around the string, so we strip them.
-        // Cast first: callers legitimately pass null for an absent filter (e.g.
-        // TripleStore::delete() with no value), and PDO::quote(null) is deprecated.
         $quoted = $this->link->quote((string)$string);
 
         return substr($quoted, 1, -1);
@@ -490,19 +408,6 @@ class DbService
 
     /**
      * Returns a PDOStatement on success, throws Exception on failure.
-     * For SELECT, SHOW, DESCRIBE or EXPLAIN queries, returns a PDOStatement that can be used to fetch results.
-     * For other queries (INSERT, UPDATE, DELETE), returns a PDOStatement (use rowCount() for affected rows).
-     *
-     * Pass $params to send values as values instead of splicing them into the SQL text. A
-     * query with placeholders is not merely safer than one built with escape() -- the values
-     * also reach the database as the types they are, which escape()'s `(string)` cast cannot
-     * do (see SqlParameters). Both placeholder styles work:
-     *
-     *     query('... WHERE tag = ? AND latest = ?', [$tag, 'Y'])
-     *     query('... WHERE tag = :tag', ['tag' => $tag])
-     *
-     * Omitting $params runs exactly the statement it is given, unchanged: the parameterless
-     * path below is byte-for-byte what it always was, so no existing caller is affected.
      *
      * @param string                  $query
      * @param array<array-key, mixed> $params
@@ -529,10 +434,6 @@ class DbService
                 throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
             }
         } catch (\PDOException $failed) {
-            // PDO is in ERRMODE_EXCEPTION, so query() throws rather than returning false and
-            // the branch above never runs: every database failure reached the operator as a
-            // bare "SQLSTATE[42S21]: Duplicate column name 'tag'" with no hint of which
-            // statement, in which table, from which migration. Say what failed.
             throw new \Exception($failed->getMessage() . ' -- while running: ' . $this->describeQuery($query, $params !== []), (int)$failed->getCode(), $failed);
         } finally {
             if ($this->params->get('debug')) {
@@ -545,24 +446,6 @@ class DbService
 
     /**
      * Run $work as one atomic unit: commit if it returns, roll back if it throws.
-     *
-     * Every write that revisions a `pages` row is two statements -- mark the current revision
-     * `latest = 'N'`, then INSERT the new one. A failure between them leaves the row with **no
-     * `latest = 'Y'` revision at all**, which is not a visibly broken page but an invisible one:
-     * every read filters on `latest = 'Y'`, so the Content simply stops existing while all its
-     * history is still there. That is the failure this exists to prevent (PageManager::save(),
-     * PageManager::setMetadata(), AclService::writeMetadataAcls(), SearchIndexer::index()).
-     *
-     * Nests. An inner scope joins the outer one rather than starting a second transaction, so a
-     * caller does not have to know whether it is the outermost -- see $transactionDepth.
-     *
-     * Keep DDL out of it. MySQL commits implicitly on CREATE/ALTER/DROP, so a migration that
-     * mixed schema changes into a transaction would get a silent partial commit rather than an
-     * error; migrations are not wrapped for that reason.
-     *
-     * What this does NOT undo is anything outside the database: a rolled-back scope has still
-     * sent whatever mail its listeners sent and still mutated whatever per-request cache it
-     * touched. So cache updates and event dispatch belong *after* the scope, not inside it.
      *
      * @template T
      *
@@ -589,7 +472,7 @@ class DbService
         return $result;
     }
 
-    /** Open a scope. Prefer transactional(), which cannot forget to close it. */
+    /** Open a scope. */
     public function beginTransaction(): void
     {
         if ($this->transactionDepth === 0) {
@@ -613,7 +496,6 @@ class DbService
 
         $this->transactionDepth--;
         if ($this->transactionDepth > 0) {
-            // an inner scope: whether this is kept is the outermost scope's decision
             return;
         }
 
@@ -627,12 +509,10 @@ class DbService
         $this->link->commit();
     }
 
-    /** Undo a scope. An inner one marks the whole transaction rollback-only. */
+    /** Undo a scope. */
     public function rollBack(): void
     {
         if ($this->transactionDepth === 0) {
-            // nothing open: a caller unwinding after a failure that happened before the scope
-            // started should not itself fail
             return;
         }
 
@@ -652,12 +532,7 @@ class DbService
         return $this->transactionDepth > 0;
     }
 
-    /**
-     * A statement prepared once, to be executed many times with different values.
-     *
-     * For loops only -- a one-off query should call query($sql, $params), which prepares and
-     * executes in one step. See PreparedStatement for why a loop wants the difference.
-     */
+    /** A statement prepared once, to be executed many times with different values. */
     public function prepare(string $query): PreparedStatement
     {
         $statement = $this->link->prepare($query);
@@ -678,19 +553,7 @@ class DbService
         );
     }
 
-    /**
-     * A failing statement, in a form that is safe to put in front of whoever is looking.
-     *
-     * Schema statements go in whole -- they are the ones worth reading, and they carry no
-     * data. Anything else is cut to its opening clause: an operator needs to know that an
-     * UPDATE on `pages` failed, not what was being written into it, and this message reaches
-     * the browser of whoever tripped over it. In debug the whole query goes, as it already
-     * does in the query log at the foot of every page.
-     *
-     * A parameterised statement needs none of that care and gets none: its text holds
-     * placeholders where the data would be, so there is nothing in it to withhold. That is
-     * the second thing bindings buy -- an error message that names the whole query.
-     */
+    /** A failing statement, in a form that is safe to put in front of whoever is looking. */
     private function describeQuery(string $query, bool $parameterised = false): string
     {
         $query = trim((string)preg_replace('/\s+/', ' ', $query));
@@ -712,11 +575,7 @@ class DbService
     }
 
     /**
-     * Returns the first result of the query
-     * If query fails returns null.
-     *
-     * $params is optional and behaves as in query(): supplied, the values are bound; omitted,
-     * the statement runs exactly as given.
+     * Returns the first result of the query If query fails returns null.
      *
      * @param array<array-key, mixed> $params
      * @param string                  $query
@@ -750,11 +609,6 @@ class DbService
     /**
      * How many ROWS the query returned.
      *
-     * Named `countRows` and not `count` because the short name invited exactly the mistake the
-     * old docblock had to warn about: handed a `SELECT COUNT(*)` this returns **1**, that query
-     * having returned one row -- and 1 is plausible enough to survive review. `scalar()` reads an
-     * aggregate. A warning is weaker than a name that cannot be misread.
-     *
      * @param array<array-key, mixed> $params
      */
     public function countRows(string $query, array $params = []): int
@@ -764,12 +618,6 @@ class DbService
 
     /**
      * The single value of a one-row, one-column query: `SELECT COUNT(*)`, `SELECT MAX(id)`.
-     *
-     * Added by ticket 18, whose "result counts are exact" claim rests on actually reading the
-     * aggregate rather than counting the row it arrives in (see count() above).
-     *
-     * $params comes last here rather than second, because $default was already there. The rule
-     * across all of these is the same read either way: the values are the final argument.
      *
      * @param array<array-key, mixed> $params
      */
@@ -783,13 +631,7 @@ class DbService
         return reset($row);
     }
 
-    /**
-     * The database's own shape -- which tables exist, which columns, of what type.
-     *
-     * Was six methods and 216 lines of `switch ($this->driver)` on this class, which is three
-     * jobs too many for the thing that runs statements (see SchemaManager). Constructed lazily
-     * and memoised: it needs this service, so injecting it would be a cycle.
-     */
+    /** The database's own shape -- which tables exist, which columns, of what type. */
     public function schema(): SchemaManager
     {
         return $this->schemaManager ??= new SchemaManager($this);
@@ -808,7 +650,6 @@ class DbService
     {
         switch ($this->driver) {
             case 'sqlite':
-                // SQLite doesn't have timezone support, use PHP's timezone
                 return ini_get('date.timezone') ?: null;
 
             case 'pgsql':
@@ -833,11 +674,8 @@ class DbService
                         $tz = null;
                     } else {
                         $diff = (new \DateTime())->diff(new \DateTime($result['time']));
-                        // TODO use Carbon
                         $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
-                        // convert to UTC
                         $diffInMinutes += intval(floor((new \DateTime())->getOffset() / 60));
-                        // convert in DateInterval
                         $diff = new \DateInterval('PT0S');
                         $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                         $diff->i = abs($diffInMinutes) % 60;

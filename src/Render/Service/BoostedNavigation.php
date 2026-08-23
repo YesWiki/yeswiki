@@ -88,12 +88,7 @@ class BoostedNavigation implements RequestScopedState
         }
     }
 
-    /**
-     * "This response went through renderPage()" is true of one request, not of a process.
-     *
-     * Left set, every later response in a worker would claim to be swappable, including the ones
-     * that must force a full load (ADR-0024).
-     */
+    /** "This response went through renderPage()" is true of one request, not of a process. */
     public function startNewRequest(): void
     {
         $this->renderedAPage = false;

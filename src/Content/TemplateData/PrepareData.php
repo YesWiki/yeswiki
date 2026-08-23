@@ -8,20 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Kernel\Performable\FormatsArguments;
 use YesWiki\Kernel\Service\CurrentRequest;
 
-/**
- * Arguments in, transformed arguments out, for one list template (ticket 49).
- *
- * `{{entrylist}}` parses everything every template shares. What is left is the handful of
- * templates that need more: a map turns marker settings into leaflet's vocabulary, a table
- * has to know the form's columns. That used to be a separate action per template, which
- * `{{entrylist}}` called and which called `{{entrylist}}` back with a class name in the
- * arguments to stop the loop. A preparer is the same work with the recursion removed, and it
- * composes: `map-and-table` runs the map's and the table's, in that order, over one array.
- *
- * Which template a preparer is for comes from its class name (`PrepareDataMap` prepares
- * `map`), plus `#[PreparesTemplate([...])]` for names a class name cannot hold. An extension
- * ships one for its own template by putting it in `<extension>/templatedata/`.
- */
+/** Arguments in, transformed arguments out, for one list template (ticket 49). */
 abstract class PrepareData
 {
     use FormatsArguments;

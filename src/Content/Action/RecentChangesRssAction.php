@@ -41,10 +41,6 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         $aclService = $this->getService(AclService::class);
         $pageManager = $this->getService(PageManager::class);
 
-        // A wiki with nothing recently changed still owes its readers a feed: the bare
-        // `return;` that used to stand here handed back null, which reached the caller as an
-        // empty body under an XML content type -- a parse error in every feed reader. Falling
-        // through renders the same feed with no items in it.
         $pagesList = $pageManager->getRecentlyChanged($max) ?? [];
         $pages = [];
         foreach ($pagesList as $page) {
@@ -124,8 +120,6 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         $release = $this->params->get('yeswiki_release');
         $yesWikiRevision = trim((is_string($version) ? $version : '') . ' ' . (is_string($release) ? $release : ''));
         $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : '';
-        // was `empty($decription)`, a typo that made this always true, so the configured
-        // meta_description never reached the feed and every wiki's RSS described itself by name
         $description = empty($description) ? $yeswikiName : $description;
 
         return $this->render(
@@ -134,13 +128,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         );
     }
 
-    /**
-     * What changed between two revisions of $tag, as the markup an RSS item carries.
-     *
-     * Was the global `rssdiff()` in `Content/rss.functions.php`, which reached the container
-     * through `$GLOBALS['yeswikiServices']` because a function has no other way to (ticket 50).
-     * This action is its only caller.
-     */
+    /** What changed between two revisions of $tag, as the markup an RSS item carries. */
     private function revisionDiff(string $tag, int|string $idfirst, int|string $idlast): string
     {
         $output = '';
@@ -155,7 +143,6 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
                 [$tag, $idfirst]
             );
             if (!$previousdiff) {
-                // the first revision a page ever had has nothing to be compared with
                 return '';
             }
             $idlast = $previousdiff['id'];
@@ -164,7 +151,6 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         $pageA = $this->getService(PageManager::class)->getById($idfirst);
         $pageB = $this->getService(PageManager::class)->getById($idlast);
         if ($pageA === null || $pageB === null) {
-            // a revision the page no longer has: nothing to compare, and nothing to say
             return '';
         }
 

@@ -45,9 +45,7 @@ class MigrationService
         $tripleStore = $this->container->get(TripleStore::class);
         $completedMigrations = $this->getCompletedMigrations();
 
-        // Get all Php files in migrations folder (in root or in any extension)
-        // Run the file if it was not already run in the past
-        $folders = array_merge([YESWIKI_PROGRAM_DIR . '/src/'], $this->container->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
+        $folders = array_merge([YESWIKI_PROGRAM_DIR . '/src/'], $this->container->get(ExtensionRegistry::class)->all());
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
@@ -59,7 +57,7 @@ class MigrationService
                     }
 
                     if (preg_match("/^([a-zA-Z0-9_-]+)\.php$/", $file, $matches)) {
-                        $fileName = $matches[1]; // 2024040500000_TestMigration
+                        $fileName = $matches[1];
 
                         if (in_array($fileName, $completedMigrations)) {
                             continue;
@@ -74,18 +72,17 @@ class MigrationService
                 foreach ($vFiles as $vFile) {
                     $vFilename = $vFile . '.php';
 
-                    $filePath = $folder . $vFilename; // extensions/publication/2024040500000_TestMigration.php
+                    $filePath = $folder . $vFilename;
                     require_once $filePath;
 
                     preg_match("/^([\d]*)/", $vFile, $vMatches);
                     $vDate = $vMatches[1] ?? 'unknow date';
 
-                    $className = preg_replace('/^[\d_]*/', '', $vFile) ?? ''; // TestMigration
+                    $className = preg_replace('/^[\d_]*/', '', $vFile) ?? '';
                     if (!class_exists($className)) {
                         throw new \Exception("Error while loading $filePath. The class inside should be $className");
                     }
 
-                    // Run Migration
                     try {
                         /** @var \YesWiki\Core\YesWikiMigration $instance */
                         $instance = new $className();

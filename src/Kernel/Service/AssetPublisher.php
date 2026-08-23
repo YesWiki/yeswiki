@@ -55,7 +55,6 @@ class AssetPublisher
             return;
         }
 
-        // parse_url() returns false, not null, on a malformed request URI
         $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
         $uriPath = rawurldecode(is_string($requestPath) ? $requestPath : '');
 

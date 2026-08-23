@@ -143,11 +143,6 @@ abstract class YesWikiPerformable
     /**
      * Run another action from inside this one.
      *
-     * Used to stamp the caller's class short name into `calledBy`, which the entry-list
-     * actions read to break the recursion they were built on: `{{entrylist template="map"}}`
-     * called `{{entrymap}}`, which called `{{entrylist}}` back. Ticket 49 replaced that with
-     * template preparers, and the flag went with it. Nothing needs to know who called it.
-     *
      * @param array<string, mixed> $arguments
      */
     protected function callAction(string $action, $arguments = []): string
@@ -162,10 +157,6 @@ abstract class YesWikiPerformable
 
     /**
      * The arguments this performable was written with, normalised for its own use.
-     *
-     * Every action overrides this to give its parameters defaults and types; the base hands them
-     * back untouched. `setArguments()` merges what comes back over what came in, so a return
-     * value need only carry the keys it wants to change.
      *
      * @param array<string, mixed> $arguments
      *

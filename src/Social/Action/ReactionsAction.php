@@ -104,7 +104,6 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction, Provide
 
         return $this->render('@core/reactions.twig', [
             'reactionId' => $idreaction,
-            // run() returns early when there is no title, so there is nothing to fall back to here
             'title' => $this->arguments['title'],
             'connected' => !empty($username),
             'reactionItems' => $reactionItems,

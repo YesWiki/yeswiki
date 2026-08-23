@@ -370,9 +370,10 @@ class TemplateEngine
     /** The viewer's own controls at the end of the bar: Colour scheme, and language. */
     private function renderChromeTools(): string
     {
-        $current = (string)($this->container->get(LanguageService::class)->preferredLanguage() ?? '');
-        $available = (array)($GLOBALS['available_languages'] ?? []);
-        $names = (array)($GLOBALS['languages_list'] ?? []);
+        $language = $this->container->get(LanguageService::class);
+        $current = (string)($language->preferredLanguage() ?? '');
+        $available = $language->availableLanguages();
+        $names = $language->languagesList();
 
         $languages = [];
         foreach ($available as $code) {

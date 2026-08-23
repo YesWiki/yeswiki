@@ -27,7 +27,7 @@ class Storage
     public const RUNTIME_TIER = 'runtime';
 
     /**
-     * Which tier a path belongs to. A pattern ending in `/` matches a subtree, one holding `*` is a glob, anything else is that exact file -- and the longest pattern wins, which is what puts `custom/extensions/` in Runtime while the rest of `custom/` is Public.
+     * Which tier a path belongs to.
      *
      * @var array<string, string>
      */
@@ -348,7 +348,7 @@ class Storage
     }
 
     /**
-     * A real file on a real disk for the libraries that cannot take a stream, and nothing kept afterwards. A passthrough on a local tier, where the file already is one.
+     * A real file on a real disk for the libraries that cannot take a stream, and nothing kept afterwards.
      *
      * @template T
      *
@@ -464,8 +464,6 @@ class Storage
 
     /**
      * Where a reader gets this file, which only a Public path has: a URL is exactly what an access check exists to withhold.
-     *
-     * Whole, not relative: on a bucket it points at the bucket, on this disk at this wiki, and a caller that had to know which would be the second place the answer lives.
      */
     public function url(string $path): string
     {
@@ -492,9 +490,7 @@ class Storage
     }
 
     /**
-     * Make sure the bucket exists, because the first thing a wiki does with one is ask whether
-     * a file is in it, and a missing bucket answers that with an error rather than a "no".
-     * Nothing to do on a local tier, and nothing to do twice.
+     * Make sure the bucket exists, because the first thing a wiki does with one is ask whether a file is in it, and a missing bucket answers that with an error rather than a "no".
      */
     public function createBucketIfMissing(): bool
     {
@@ -573,9 +569,7 @@ class Storage
     }
 
     /**
-     * Asking whether something is there, where a bucket that does not exist is a truthful "no"
-     * rather than a fatal: it is what lets a wiki configured for a bucket nobody has created yet
-     * still boot, and `storage:sync` create it. Every other operation still throws.
+     * Asking whether something is there, where a bucket that does not exist is a truthful "no" rather than a fatal: it is what lets a wiki configured for a bucket nobody has created yet still boot, and `storage:sync` create it.
      *
      * @param callable(): bool $question
      */

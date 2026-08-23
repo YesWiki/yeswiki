@@ -42,7 +42,6 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         $this->errorType = null;
         $this->typeOfRendering = 'emailForm';
 
-        // both are read unconditionally by the switch below, whichever branch got us there
         $message = '';
         $user = null;
 

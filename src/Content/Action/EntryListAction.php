@@ -53,16 +53,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /**
      * The deprecated spellings of `{{entrylist}}` that stored pages still contain (ticket 49).
      *
-     * Each of these was an action of its own whose whole job was to format a few arguments
-     * and call this one, which called it back. The formatting lives in a `PrepareData…` class
-     * keyed on the template now, so what is left of each is the argument its name implies.
-     * Defaults rather than pins: `{{entrymap template="gogomap"}}` still means gogomap.
-     *
-     * `entrytable` pins `tableau`, the bazar table, which is not the shared `table`
-     * Presentation. Written bare it used to render the wiki's default list template, because
-     * the action it named formatted arguments and passed no template of its own: an action
-     * called `entrytable` that drew an accordion. Pinning the template is the fix.
-     *
      * @return array<string, array<string, string>>
      */
     public static function performableAliases(): array
@@ -80,14 +70,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return _t('SOURCE_ENTRYLIST');
     }
 
-    /**
-     * The form whose entries are listed.
-     *
-     * Since ADR-0011 that includes the Page, User and File forms, so "which Content?" and
-     * "which form?" are one question. Declared by every component that lists entries --
-     * `needFormField: true` on the whole `entrylist` YAML group is what this replaces, and
-     * a group is no longer a thing a component belongs to.
-     */
+    /** The form whose entries are listed. */
     public static function formSetting(): Setting
     {
         return Setting::form('id')
@@ -100,18 +83,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     {
         return [
             self::formSetting(),
-            // ...and which of that form's fields fill an Item's slots. This is the mapping
-            // `displayfields` always was; it belongs to the Source because only a form has
-            // fields to map, and a feed has nothing to say here.
-            // Paired, because the panel draws them two to a row and they read as pairs:
-            // the two lines of text at the top, then the picture beside the prose, then
-            // the two things that sit on top of a card rather than in it.
             Setting::fieldMapping('displayfields')
                 ->subSettings(
-                    // The Content's own computed title (ADR-0010) is what a list shows
-                    // when nothing is mapped -- so that is what the control says, rather
-                    // than an empty select the reader has to guess the meaning of. Every
-                    // form has one; `bf_titre` is a convention of some of them.
                     Setting::formField('title')
                         ->label(_t('AB_bazarliste_displayfields_title_label'))
                         ->extraFields(['title'])
@@ -133,10 +106,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                         ->label(_t('AB_bazarliste_displayfields_floating_label'))
                         ->default('')
                         ->extraFields(['owner']),
-                    // ...and the button, which is a slot like the others -- the sixth
-                    // thing a card can show -- even though what fills it is a choice
-                    // rather than one of the form's fields. It rides in `displayfields`
-                    // because that IS the list of what goes where on an Item.
                     Setting::choice('cta', [
                         '' => _t('AB_bazarliste_cta_none'),
                         'entry' => _t('AB_bazarliste_cta_entry'),
@@ -144,15 +113,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     ])
                         ->label(_t('AB_bazarliste_cta_label'))
                         ->default(''),
-                    // ...and the date, which used to be drawn whether or not anybody had
-                    // asked for one: an Item always carried its Content's creation date, so
-                    // every card in every list wore a date in a corner. A slot like the
-                    // others now -- nothing is shown until a field is named for it.
                     Setting::formField('date')
                         ->label(_t('AB_bazarliste_displayfields_date_label'))
                         ->default('')
-                        // `jour` is a date on its own; the other two are the pair an
-                        // agenda form has (DateField answers to all three)
                         ->ofTypes(['jour', 'listedatedeb', 'listedatefin'])
                         ->extraFields(['created_at', 'updated_at']),
                 ),
@@ -165,17 +128,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return self::selectionSettings();
     }
 
-    /**
-     * `query`, as conditions rather than as a string.
-     *
-     * The parameter has always existed and the palette has never offered it: writing one
-     * by hand means knowing the field names, the seven operators, and that `|` between
-     * conditions is AND while `,` inside one is OR. A composite input like the mappings,
-     * captioned with `intro` because a multi-input draws no label of its own.
-     *
-     * Shared by the Sources and by the entrylist family, which have no settings in common
-     * to declare it in -- one call site each, one declaration.
-     */
+    /** `query`, as conditions rather than as a string. */
     private static function querySetting(): Setting
     {
         return Setting::query('query')
@@ -205,18 +158,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /**
      * Which entries, how many, in what order.
      *
-     * A Source's own concern, not a Presentation's: what a card looks like is the same
-     * question over a feed, but "only the entries whose `bf_type` is 3, the ten most
-     * recent" is a question only a form can answer. So a Presentation gets these the way
-     * it gets the form picker -- from the Source, shown when that Source is the one chosen
-     * (ticket 37) -- and `Cards` over a form can be told everything `{{entrylist}}` could.
-     *
      * @return list<Setting>
      */
     private static function selectionSettings(): array
     {
-        // Declaration order is layout: the rail lays its settings on a six-column grid and
-        // an ordinary one takes half a row, so these read as the pairs they are written in.
         return [
             Setting::number('pagination')
                 ->label(_t('AB_bazar_commons_pagination_label'))
@@ -228,10 +173,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->hint(_t('AB_bazar_commons2_nb_hint'))
                 ->withIcon('list-numbers')
                 ->min(0),
-            // What to sort on, and which way -- offered only while the order is not
-            // random. `showIf` rather than a disabled control: a sort field beside "in a
-            // random order" is a setting that does nothing, which is worse than one that
-            // is not offered.
             Setting::formField('field')
                 ->label(_t('AB_bazar_sort_field_label'))
                 ->default('')
@@ -249,8 +190,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->label(_t('AB_bazar_random_label'))
                 ->withIcon('arrows-shuffle')
                 ->checkedValues('1', ''),
-            // the reader's own search box over this list, which the server-rendered
-            // presentations draw as readily as the old templates (`entries/index.twig`)
             Setting::choice('search', [
                 '' => _t('AB_attach_no'),
                 'true' => _t('AB_attach_yes'),
@@ -266,20 +205,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /**
      * The boxes a reader narrows the list with, and how they are laid out.
      *
-     * Declared here as well as in the entrylist family's own panel (`commonDisplaySettings`)
-     * because they are a Source's question -- the boxes are that form's fields -- and because
-     * the presentations render them: `entries/index.twig` wraps whatever `renderEntries`
-     * produced, a card list included. They were offered on the old templates only, so the
-     * shared presentations had facets nobody could turn on.
-     *
      * @return list<Setting>
      */
     private static function facetSettings(): array
     {
         return [
             Setting::facets('facets')
-                // a multi-input draws no label of its own, and unlabelled it reads as an
-                // "add" button with nothing to say what it adds
                 ->raw('intro', '<h4>' . _t('AB_bazar_facettes_intro') . '</h4>')
                 ->hint(_t('AB_bazar_facettes_hint'))
                 ->raw('btn-label-add', _t('AB_bazar_facettes_btn-label-add'))
@@ -295,13 +226,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     Setting::icon('icon')
                         ->label('Icone'),
                 ),
-            // Everything below is shown once there is a facet, and the value that says so is
-            // `groups` -- what the facets input writes. `showIf('facets')` is what they all
-            // said, and `facets` is the name of the *input*, not of a value any of them
-            // writes: not one of these had ever appeared in the rail.
-            //
-            // `top` is the horizontal layout: the boxes in a row above the list rather than
-            // in a column beside it, which is the only one that fits a narrow page
             Setting::choice('filterposition', [
                 'left' => _t('AB_LEFT'),
                 'right' => _t('AB_RIGHT'),
@@ -315,15 +239,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             ])
                 ->label(_t('AB_bazar_commons2_groupsexpanded_label'))
                 ->showIf('groups'),
-            // ...and how wide that column is, which a row has no use for
             Setting::range('filtercolsize')
                 ->label(_t('AB_bazar_commons2_filtercolsize_label'))
                 ->min(1)
                 ->max(12)
-                // "anything but the horizontal one", as a pattern rather than as a list of
-                // the others: an unset setting reads as the string `false` in the rail, and
-                // a list that spelled out `left|right` would hide this one until the position
-                // had been touched
                 ->showIf(['groups' => 'notNull', 'filterposition' => '^(?!top)']),
             Setting::checkbox('filtersresultnb')
                 ->label(_t('AB_bazar_commons2_filtersresultnb_label'))
@@ -339,12 +258,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
     /**
      * The entries, as Items (ticket 37).
-     *
-     * `displayfields` is what does the work, and it always did: it is the declared mapping
-     * from a form's own field names -- which a webmaster chose and core cannot know -- onto
-     * the handful of slots a list actually draws. Naming the result an Item is most of what
-     * this ticket was: the mapping existed, the shape it produced had no name, so every
-     * presentation was written against entries instead.
      *
      * @return list<Item>
      */
@@ -380,12 +293,9 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             $tag = (string)($entry['tag'] ?? '');
             $items[] = new Item(
                 id: (string)($entry['id_fiche'] ?? $entry['tag'] ?? ''),
-                // every Content carries the computed `title` (ADR-0010), so a form whose
-                // mapping names nothing still has a name to show
                 title: $field($entry, $slots['title'] ?? null) ?? (string)($entry['title'] ?? $entry['tag'] ?? ''),
                 subtitle: $field($entry, $slots['subtitle'] ?? null),
                 description: $field($entry, $slots['description'] ?? null),
-                // resolved here, because only this Source knows what an entry's picture is
                 image: $this->imageUrl($image),
                 url: $this->getService(UrlFormatter::class)->href('', $tag),
                 date: self::asDate($field($entry, $slots['date'] ?? null)),
@@ -398,19 +308,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return $items;
     }
 
-    /**
-     * An entry's picture, as something an `<img>` can point at.
-     *
-     * Three shapes reach this, and only the last one used to be handled -- so a card whose
-     * `visual` named an ordinary image field showed no picture at all, which is most of
-     * them:
-     *
-     *  - a file in the upload directory, which is what an image field holds and what every
-     *    other template reads as `files/{value}`;
-     *  - a URL, for an entry pointing at a picture on another site (ImageField accepts one);
-     *  - an attachment written by `{{attach}}`, whose name carries two timestamps that only
-     *    `fullFilename()` can match back to a file on disk.
-     */
+    /** An entry's picture, as something an `<img>` can point at. */
     private function imageUrl(?string $value): ?string
     {
         if ($value === null || $value === '') {
@@ -431,13 +329,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return $attached === '' ? null : $attached;
     }
 
-    /**
-     * Where an item's button goes, if the list asked for one.
-     *
-     * Resolved by the Source, not by the template: "open it" and "edit it" are URLs only
-     * whatever supplied the item knows how to build, which is the same reason the image is
-     * resolved here.
-     */
+    /** Where an item's button goes, if the list asked for one. */
     private function ctaUrl(string $mode, string $tag): ?string
     {
         if ($tag === '' || !in_array($mode, ['entry', 'edit'], true)) {
@@ -472,10 +364,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return [
             ...$this->customTemplateComponents(),
 
-            // The fallback for the tag itself. Every presentation is pinned on a template,
-            // so a `{{entrylist}}` written by hand -- or one naming a template nobody
-            // declares -- would match none of them and the rail would open on nothing.
-            // Not offered: what the palette offers is the presentations.
             Component::for('entrylist-any')
                 ->writes('entrylist')
                 ->category(Category::Lists)
@@ -492,10 +380,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->pin('template', 'liste_accordeon')
                 ->description(_t('AB_bazarliste_description'))
                 ->previewHeight('450px')
-                // the accordion list. Not offered: the palette's list is the shared
-                // Presentation now (ticket 37), and a second card called "Liste" was the
-                // duplication this ticket set out to remove. Still recognised, so a page
-                // that says `template="liste_accordeon"` opens on all of its settings.
                 ->notOffered()
                 ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
@@ -532,9 +416,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                             ]),
                         ),
                 ),
-            // `entrymap` is a deprecated spelling of this action, not a component of its own
-            // (ticket 49). The palette recognises a stored `{{entrymap}}` through the pinned
-            // template below and writes `{{entrylist}}`.
             Component::for('entrymap')
                 ->writes('entrylist')
                 ->category(Category::Lists)
@@ -857,8 +738,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 ->pin('template', 'tableau.tpl.html')
                 ->description(_t('AB_bazartableau_description'))
                 ->previewHeight('450px')
-                // likewise the bazar table, which is not the shared `table` Presentation:
-                // it has its own renderer, its own columns and its own export buttons.
                 ->notOffered()
                 ->settings(self::formSetting())
                 ->group(self::commonSettings(), self::commonDisplaySettings())
@@ -1162,15 +1041,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /**
      * A presentation for every list template this wiki has added of its own.
      *
-     * `custom/templates/bazar/` is where a webmaster drops a Twig file to render a list
-     * their own way, and it has always shown up in the palette -- but as a special case
-     * inside the palette service, which had to know that entrylist was the group to put it
-     * in. It is this action's business: they are its templates.
-     *
-     * The key is built from the filename, which is the one place in this repo a `_t()` key
-     * is not a literal -- and legitimately so: the name is user data, so there is no key to
-     * write down. A file nobody has translated falls back to being named after itself.
-     *
      * @return list<Component>
      */
     private function customTemplateComponents(): array
@@ -1178,7 +1048,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $components = [];
         foreach (glob('custom/templates/bazar/*.twig') ?: [] as $path) {
             $file = str_replace('custom/templates/bazar/', '', $path);
-            // `fiche*` renders one entry, not a list of them
             if (str_starts_with($file, 'fiche')) {
                 continue;
             }
@@ -1202,21 +1071,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         return $components;
     }
 
-    /**
-     * The settings every presentation of a list shares.
-     *
-     * These were two YAML entries called `commons` and `commons2`, declared as if they were
-     * components of their own and recognised by the browser on the strength of their NAMES
-     * -- `actionName.startsWith('common')`. They are blocks of settings handed to the
-     * components that use them now, which is the same sharing said out loud.
-     */
+    /** The settings every presentation of a list shares. */
     private static function commonSettings(): SettingGroup
     {
         return SettingGroup::named(
             _t('AB_bazar_commons_title'),
-            // which entries at all, before anything about how they are shown. The same
-            // builder the Sources offer -- `{{entrylist template="liste_accordeon"}}` reads
-            // `query` exactly as a Presentation does, and could not be told it either.
             self::querySetting(),
             Setting::choice('search', [
                 'true' => _t('AB_attach_yes'),
@@ -1452,10 +1311,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $entryManager = $this->getService(EntryManager::class);
 
         $get = $this->getRequest()->query;
-        // ICONS FIELD
         $iconField = $get->get('iconfield') ?? $arg['iconfield'] ?? null;
 
-        // ICONS
         $icon = $get->get('icon') ?? $arg['icon'] ?? $get->get('icons') ?? $arg['icons'] ?? null;
         $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon));
         if (!$iconAlreadyDefined) {
@@ -1463,7 +1320,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 try {
                     $tabparam = $entryManager->getMultipleParameters($icon, ',', '=');
                     if (count($tabparam) > 0 && !empty($iconField)) {
-                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key => $data) {
                             $tabparam[$data] = $key;
                         }
@@ -1479,10 +1335,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             }
         }
 
-        // COLORS FIELD
         $colorField = $get->get('colorfield') ?? $arg['colorfield'] ?? null;
 
-        // COLORS
         $color = $get->get('color') ?? $get->get('colors') ?? $arg['colors'] ?? $arg['color'] ?? null;
         $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color));
         if (!$colorAlreadyDefined) {
@@ -1490,7 +1344,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 try {
                     $tabparam = $entryManager->getMultipleParameters($color, ',', '=');
                     if (count($tabparam) > 0 && !empty($colorField)) {
-                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key => $data) {
                             $tabparam[$data] = $key;
                         }
@@ -1510,19 +1363,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         if ($template) {
             $template = htmlspecialchars($template);
         }
-        // The configured default is as much a choice as an explicit one, and it has to be
-        // made here rather than at the end: the dynamic mapping below is what turns a
-        // template name into one of the JS views, and it was reading a `$template` that was
-        // still null whenever nobody passed one. `{{entrylist dynamic="true"}}` therefore
-        // kept `default_bazar_template` -- which ships as `liste_accordeon.twig`, extension
-        // included -- and the dynamic renderer appends `.twig` of its own, asking for
-        // `liste_accordeon.twig.twig` and failing with "template not found".
         $configuredTemplate = $this->params->get('default_bazar_template');
         $template = $template ?: (is_string($configuredTemplate) ? $configuredTemplate : '');
-        // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
-        if (isset($arg['displayfields']) && is_array($arg['displayfields'])) { // with entrymap this method is run twice
+        if (isset($arg['displayfields']) && is_array($arg['displayfields'])) {
             $displayFields = $arg['displayfields'];
         } else {
             $displayFields = [];
@@ -1534,14 +1379,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             }
         }
 
-        // compared without its extension: the same template is written `liste_accordeon` in
-        // page content and `liste_accordeon.twig` in the config, and both must map
         $bareTemplate = (string)preg_replace('/\.(twig|tpl\.html)$/', '', (string)$template);
-        // `map-and-table` has no server-rendered form, so it still has to be dynamic. The
-        // other four are shared Presentations now (ticket 37) and render server-side unless
-        // `dynamic` is asked for -- which is what makes `template="card"` the same card here
-        // as on a feed. Ticking Dynamic brings back the search, filters and pagination that
-        // are the Vue renderer's, and only its.
         if ($bareTemplate === 'map-and-table') {
             $dynamic = true;
         }
@@ -1552,15 +1390,10 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             $template = 'table';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
-        // every Content carries the computed `title` (ADR-0010); bf_titre is only a field
-        // some forms happen to have, and naming it here made the default search miss on
-        // every form that does not (ticket 11)
         $searchfields = empty($searchfields) ? [PageBody::TITLE] : $searchfields;
-        // End dynamic
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || str_starts_with($template, 'agenda'));
 
-        // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
         $search = !isset($arg['search'])
             ? null
             : (
@@ -1573,13 +1406,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 )
             );
 
-        // Ordre du tri (asc ou desc)
         $order = $get->get('order') ?? $arg['order'] ?? ((empty($arg['field']) && $agendaMode) ? 'desc' : 'asc');
-        // Champ du formulaire utilisé pour le tri
-        // sorted by the computed title (ADR-0010) rather than by bf_titre, a field only
-        // some forms have. The agenda default still names a field, because sorting happens
-        // before this action knows which form(s) it is listing and so before the start_date
-        // role can be asked -- an entry without it simply sorts last, as it always did.
         $sortField = $get->get('field') ?? $arg['field'] ?? ($agendaMode ? 'bf_date_debut_evenement' : PageBody::TITLE);
 
         $vSearchManager = $this->getService(SearchManager::class);
@@ -1587,146 +1414,81 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $this->getRequest()->get('q'), $this->getRequest()->get('keywords'));
 
         $formatted = [
-            // //////////////////
-            // USER PARAMETERS
-            // ////////////////
-
-            // SELECTION DES FICHES
-
-            // sélectionner seulement les fiches d'un utilisateur
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
                 $this->getService(AuthenticationService::class)->getLoggedUserName() : null),
 
-            // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            // ticket 22: `id` was already the primary spelling; the French `idtypeannonce`
-            // alias it also accepted is dropped rather than translated
             'id' => $arg['id'] ?? $get->get('id') ?? null,
 
-            // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($get->all(), false, 'refresh'),
 
-            // Paramètres pour une requete specifique
             'queries' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get->all())),
-            // filtrer sur des mots clefs
             'keywords' => $vKeywords,
-            // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($get->get('period') ?? $arg['period'] ?? null),
 
-            // Afficher les fiches dans un ordre aléatoire
             'random' => $this->formatBoolean($arg, false, 'random'),
-            // Ordre du tri (asc ou desc)
             'order' => $order,
-            // Champ du formulaire utilisé pour le tri
             'field' => $sortField,
-            // les tris disponibles par le bouton "Trier par"
             'sortfields' => $this->formatArray($get->get('sortfields') ?? $arg['sortfields'] ?? []),
             'sortfieldstitles' => $this->formatArray($get->get('sortfieldstitles') ?? $arg['sortfieldstitles'] ?? []),
 
-            // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
 
-            // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
             'pagination' => $arg['pagination'] ?? null,
 
-            // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'fieldmapping' => $arg['fieldmapping'] ?? null,
 
-            // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
 
-            // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
-            // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
             'displayfields' => $displayFields,
 
-            // fields that will be used in dynamic views
             'necessary_fields' => $this->formatArray($get->get('necessaryfields') ?? $arg['necessaryfields'] ?? $get->get('necessary_fields') ?? $arg['necessary_fields'] ?? []),
-            // get comments , reactions and metadatas with entry
             'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
 
-            // AFFICHAGE
-
-            // Template pour l'affichage de la liste de fiches
             'template' => $template,
 
-            // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
             'managementbar' => $this->formatBoolean($arg, true, 'managementbar'),
 
-            // bouton de réinitialisation des filtres
             'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
 
-            // ajout des options pour exporter les fiches
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
 
-            // Affiche le formulaire de recherche en haut
             'search' => $search,
             'searchfields' => $searchfields,
 
-            // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
 
-            // affichage du nombre de fiches trouvées par les filtres
             'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
 
-            // classe css a ajouter en rendu des templates liste
             'class' => $arg['class'] ?? '',
 
-            // Number of columns for card template
             'columns' => $arg['columns'] ?? null,
 
-            // FACETTES
-            // Identifiants des champs utilisés pour les facettes
-            // Plusieures valeurs possibles, séparées par des virgules, "all" pour toutes les facettes possibles
-            // Exemple : {{entrylist groups="bf_ce_titre,bf_ce_pays,etc."..}}
             'groups' => $this->formatArray($get->get('groups') ?? $arg['groups'] ?? null),
-            // Titres des boite de facettes. Plusieures valeurs possibles, séparées par des virgules
-            // Exemple : {{entrylist titles="Titre,Pays,etc."..}}
             'titles' => $this->formatArray($get->get('groupstitles') ?? $arg['groupstitles'] ?? $get->get('titles') ?? $arg['titles'] ?? null),
 
-            // déplier toutes les facettes
             'groupsexpanded' => $this->formatBoolean($get->get('groupsexpanded') ?? $arg, true, 'groupsexpanded'),
 
             'groupicons' => $this->formatArray($arg['groupicons'] ?? null),
 
-            // ajout d'un filtre pour chercher du texte dans les resultats pour les facettes
             'filtertext' => $this->formatBoolean($arg, false, 'filtertext'),
 
-            // facette à gauche ou à droite
             'filterposition' => $get->get('filterposition') ?? $arg['filterposition'] ?? 'right',
-            // largeur colonne facettes
             'filtercolsize' => $get->get('filtercolsize') ?? $arg['filtercolsize'] ?? '3',
 
-            // ICONS
-
-            // Prefixe des classes CSS utilisees pour la carto et calendrier
             'iconprefix' => $get->has('iconprefix') ? trim($get->getString('iconprefix')) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
-            // Champ utilise pour les icones des marqueurs
             'iconfield' => $iconField,
-            // icone des marqueurs
             'icon' => $icon,
 
-            // COLORS
-
-            // Champ utilise pour la couleur des marqueurs
             'colorfield' => $colorField,
-            // couleur des marqueurs
             'color' => $color,
 
-            // ////////////////////
-            // SYSTEM PARAMETERS
-            // //////////////////
-
-            // Iframe ?
             'isInIframe' => WikiUrls::iframeSuffixFor(),
 
             'selectedID' => $get->get('selectedID'),
         ];
 
-        // Everything above is what every template shares. A template that needs more says so
-        // with a `PrepareData…` class of its own (ticket 49) -- the map's marker vocabulary,
-        // the table's columns -- rather than with an action of its own that called this one
-        // back with a class name in the arguments to stop the recursion.
         return $this->getService(TemplateDataFactory::class)->prepare(
             (string)$formatted['template'],
             array_merge($arg, $formatted)
@@ -1748,7 +1510,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
 
             return $this->render("@core/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
-                'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
+                'param' => $this->arguments,
                 'params' => $this->arguments,
                 'keywords' => $this->arguments['keywords'],
                 'forms' => $vForms,
@@ -1794,14 +1556,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     /**
      * Where checking a facet goes, in the two spellings the form needs.
      *
-     * `url` is this same page with the facet selection -- and the page of it we are on --
-     * taken out, which is what htmx appends the checked boxes to and what "reset" links to.
-     * `action`/`params` are the same URL split for a plain submit, because a browser drops
-     * the query string of a GET form's action and would lose the page with it.
-     *
-     * Textual rather than rebuilt from `query->all()`: a YesWiki URL carries its page as a
-     * bare key (`?PageName&facet[x][]=y`), which `http_build_query()` would not write back.
-     *
      * @return array{url: string, action: string, params: array<string, string>}
      */
     private function facetForm(): array
@@ -1845,14 +1599,11 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
         $data['resultsInfo'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['entries']) . ' ' . (count($data['entries']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
         $data['params'] = $this->arguments;
         $data['pager_links'] = '';
-        $data['filters'] = $filters; // in case some template need it
+        $data['filters'] = $filters;
         $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
             $query = $this->getRequest()->query->all();
-            // Preserved from the PEAR-Pager call this replaced (ticket 02), including the
-            // `wiki` strip -- which looks like it drops the page tag outside rewrite mode,
-            // but changing URL semantics is out of scope for a dead-code purge.
             unset($query['wiki']);
             $paginationUrl = $this->getService(UrlFormatter::class)->getBaseUrl() . '/' . basename((string)($_SERVER['PHP_SELF'] ?? 'index.php'));
 
@@ -1875,16 +1626,8 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
         try {
             $templateBaseName = preg_replace('/\.(twig|tpl\.html)$/', '', $templateName);
-            // a display that needs a role no form can answer renders nothing at all, with
-            // nothing to explain it -- say which role is missing instead (ticket 11)
             $warning = $this->missingRoleWarning((string)$templateBaseName, $pForms);
-            // the shared Presentations (ticket 37): rendered from Items by the same code
-            // that renders a feed, so `template="card"` is one card and not two. Everything
-            // around it -- the search form, the facets, the pager -- is still this action's.
             if (PresentationRenderer::knows($templateName)) {
-                // ...the pager included: `pagination` cuts the entries down to one page
-                // above, and a page of a list with no way to reach page two is a list
-                // that silently lost most of itself.
                 return $warning . $this->getService(PresentationRenderer::class)
                     ->render($templateName, $this->itemsFrom($data['entries']), $this->arguments)
                     . $data['pager_links'];
@@ -1920,9 +1663,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
     /**
      * An alert naming the roles none of the listed forms can answer, or '' when they can.
-     *
-     * Only complains when *no* form has the role: listing several forms together, one of
-     * which has no dates, is not a misconfiguration -- those entries simply do not show.
      *
      * @param array<int|string, mixed>|string $forms
      */
@@ -2023,7 +1763,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 }
 
                 if (empty($columnFieldsIdsRaw)) {
-                    // if no explicit column list, display all fields
                     foreach ($fields as $field) {
                         foreach ($this->tableauFieldCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                             $columnsInfo[] = $col;
@@ -2077,7 +1816,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     }
                 }
 
-                // mask emails and unreadable values for non-admins
                 if (!$this->getService(AclService::class)->isAdmin()) {
                     foreach ($entries as $index => $entry) {
                         $entryFormId = $entry['form_id'];
@@ -2119,8 +1857,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
             'infoRes' => $data['resultsInfo'],
             'params' => $params,
             'columnsInfo' => $columnsInfo,
-            // which column carries the link to the entry: the field the form names its
-            // entries with, not whichever one happens to be called bf_titre (ticket 11)
             'titleFieldName' => $this->getService(FormPropertiesService::class)->titleFieldName($form ?? null),
             'entries' => $entries,
             'sumFieldsIds' => $sumFieldsIds,
@@ -2202,15 +1938,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                 $vGeometries
             );
 
-            // couleur de marqueur
             $color = $this->getService(EntryDisplay::class)->customValueFor($params['color'], $params['colorfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_color']);
 
-            // icone de marqueur
             $icon = $params['iconprefix']
                     . $this->getService(EntryDisplay::class)->customValueFor($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
 
             if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
-                // on genere le point marqueur sur la carte
                 $markersjs .= '
 				i++;
 				var markerLocation = new L.LatLng(' . $vLatitude . ', ' . $vLongitude . ');
@@ -2239,8 +1972,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                     $markersjs .= 'map' . $params['listindex'] . '.addLayer(marker[i]);' . "\n";
                 }
             } elseif (!empty($vGeometries)) {
-                // fake marker for facetted search
-                // TODO: this is way too hacky, need to find a way to search on marker and geometries in a better way
                 $geometriesWithoutMarker[$entry['tag']] = '<div class="bazar-entry" ' . str_replace('\'', '', $entry['html_data']) . '></div>';
             }
             if (!empty($vGeometries)) {
@@ -2260,15 +1991,12 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 				iconAnchor:   [6, 20]
 		});';
 
-        // Pas de L.control.layers
         if (empty($params['providers']) && empty($params['layers'])) {
             $js .=
                 '
 			var provider = L.tileLayer.provider("' . $params['provider'] . '"' . $params['provider_credentials'] . ');
 			';
         } else {
-            // Avec un L.control.layers
-            // Si param['provider'] existe, ce sera le baseLayer activé par défaut, sinon ce sera le 1er de la liste $params['providers'].
             $js .= 'var provider; var baseLayers = {};';
             if (empty($params['providers'])) {
                 $params['providers'] = [$params['provider']];
@@ -2300,11 +2028,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                             $js .= 'layers["' . $layerLabel . '"] = L.tileLayer("' . $layerUrl . '");';
                             break;
                         case 'geojson':
-                            // URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
-                            // Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
-                            // STYLE:
-                            //	http://leafletjs.com/reference.html#path-options
-                            //	http://leafletjs.com/reference.html#marker-options
                             if (!$leafletajaxIncluded) {
                                 $leafletajaxIncluded = true;
                                 $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js');
@@ -2313,7 +2036,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
                             $styleJs = '';
                             $isVisibleByDefault = false;
                             if ($layerOptions != null) {
-                                // extract 'visiblebydefault'
                                 if (preg_match_all('/visiblebydefault\\s*;?/i', $layerOptions, $matches)) {
                                     $isVisibleByDefault = true;
                                     foreach ($matches[0] as $key => $value) {
@@ -2388,7 +2110,6 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 							}
 						} );';
                             if ($isVisibleByDefault) {
-                                // add layer to the map
                                 $js .= 'layers["' . $layerLabel . '"].addTo(map' . $params['listindex'] . ');';
                             }
                             break;
@@ -2517,11 +2238,7 @@ ywInitEach(\'#osmmap' . $params['listindex'] . '\', function() {
     }
 
     /** The oldest date a `period=` argument admits, or null when it names no period at all. */
-    /**
-     * `BAZ_DELTA` is a configuration value, so it arrives as whatever the config file holds.
-     * 12 is what `YesWikiInit` seeds it with, and it is a saner page size than the 0 a bad
-     * cast would produce.
-     */
+    /** `BAZ_DELTA` is a configuration value, so it arrives as whatever the config file holds. */
     private function configuredDelta(): int
     {
         $delta = $this->params->get('BAZ_DELTA');

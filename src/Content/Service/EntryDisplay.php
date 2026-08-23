@@ -9,17 +9,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * The three questions a list template asks about an entry it is drawing.
- *
- * What data-attributes does its row carry, what does a `color=` or `icon=` parameter resolve to
- * for *this* entry, and what does the entry itself look like when rendered whole. Plus the
- * form-and-list names the actions builder offers, which is the same question asked of the wiki
- * rather than of an entry.
- *
- * Was `getHtmlDataAttributes()`, `getCustomValueForEntry()`, `renderEntryView()` and
- * `formAndListIds()` in `Content/bazar.functions.php` (ticket 50).
- */
+/** The three questions a list template asks about an entry it is drawing. */
 class EntryDisplay
 {
     public function __construct(private readonly ContainerInterface $services)
@@ -43,11 +33,6 @@ class EntryDisplay
                         in_array(
                             $key,
                             [
-                                // bf_latitude/bf_longitude used to be emitted here as
-                                // data-attributes: they are not entry metadata, they were two
-                                // fields of one particular French form, nothing reads the
-                                // attributes, and geolocation has lived in a map field since
-                                // 20260203091701_BazarChangeModelForGeolocation (ticket 11)
                                 'form_id',
                                 'owner',
                                 'created_at',
@@ -91,10 +76,6 @@ class EntryDisplay
     /**
      * A display parameter (`color=`, `icon=`) resolved for one entry.
      *
-     * When the parameter is a value map and a field is named, the entry's own value picks the
-     * entry in that map; a checkbox value holding several picks the first that matches. Anything
-     * else is the default.
-     *
      * @param array<mixed>|string|null $parameter
      * @param array<string, mixed>     $entry
      */
@@ -102,17 +83,14 @@ class EntryDisplay
     {
         if (is_array($parameter) && !empty($field)) {
             if (isset($entry[$field])) {
-                // pour les checkbox, on teste les differentes valeurs et on renvoie la premiere qui va bien
                 if (!isset($parameter[$entry[$field]]) && strpos($entry[$field], ',') !== false) {
                     $tab = explode(',', $entry[$field]);
                     foreach ($tab as $value) {
                         if (isset($parameter[$value])) {
-                            // on retourne la premiere valeur trouvee
                             return $parameter[$value];
                         }
                     }
 
-                    // on n a pas trouve de valeur, on renvoie la valeur par defaut
                     return $default;
                 }
 
@@ -120,11 +98,9 @@ class EntryDisplay
                     $parameter[$entry[$field]] : $default;
             }
 
-            // si la valeur n existe pas, on met l icone par defaut
             return $default;
         }
 
-        // si le parametre n'est pas un tableau, il contient la valeur par defaut
         return $default;
     }
 

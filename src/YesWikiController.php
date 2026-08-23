@@ -55,8 +55,6 @@ abstract class YesWikiController
      */
     protected function denyAccessUnlessGranted($role, $tag)
     {
-        // hasAccess() reads '' as "the current page", which is what a caller that names no
-        // tag means; it is declared string, so null cannot be handed over as-is
         if (!$this->getService(AclService::class)->hasAccess($role, $tag ?? '')) {
             throw new AccessDeniedHttpException();
         }

@@ -102,7 +102,6 @@ class EntryExtraFieldsService
         foreach ($linkedData as $fieldName => $entries) {
             foreach ($entries as $entry) {
                 if ($entry === null) {
-                    // the linked entry no longer exists: nothing to hang data attributes on
                     continue;
                 }
                 $htmlData .= str_replace(

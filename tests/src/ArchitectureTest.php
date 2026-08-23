@@ -31,7 +31,7 @@ class ArchitectureTest extends TestCase
     ];
 
     /**
-     * Ticket 41: files go through `Storage`, so the functions that address a path directly are banned. These three may keep calling them: two run before, or entirely without, a container, and the third is the implementation.
+     * Ticket 41: files go through `Storage`, so the functions that address a path directly are banned.
      *
      * @var list<string>
      */
@@ -48,9 +48,7 @@ class ArchitectureTest extends TestCase
     ];
 
     /**
-     * What each file has yet to convert, counted the day the rule was seeded. A number may only shrink and a new file may not appear -- reads count as much as writes, because on object storage a `file_exists('custom/styles/custom.css')` that answers false makes a stylesheet vanish with nobody told.
-     *
-     * Two entries the ticket listed as Data are Runtime by ADR-0022's own rule and stay here: `Content/Entity/Files.php` copies release trees into `custom/extensions/` and over the Program tree, and `Admin/Service/ArchiveService.php` walks and rewrites that source tree on restore. Its backups themselves are Data and went through Storage in ticket 42, which also removed `archive[privatePath]` -- the setting that used to be the reason this file was deferred.
+     * What each file has yet to convert, counted the day the rule was seeded.
      *
      * @var array<string, int>
      */
@@ -107,7 +105,7 @@ class ArchitectureTest extends TestCase
         'Kernel/Service/ConfigurationService.php' => 1,
         'Kernel/Service/ConsoleService.php' => 1,
         'Kernel/Service/HtmlPurifierService.php' => 6,
-        'Kernel/Service/LanguageService.php' => 5,
+        'Kernel/Service/LanguageService.php' => 3,
         'Kernel/Service/Mailer.php' => 3,
         'Kernel/Service/MigrationService.php' => 2,
         'Kernel/Service/Performer.php' => 2,
@@ -129,7 +127,7 @@ class ArchitectureTest extends TestCase
         'YesWikiKernel.php' => 3,
         'YesWikiLoader.php' => 6,
         'YesWikiPlugins.php' => 4,
-        'YesWikiRuntime.php' => 17,
+        'YesWikiRuntime.php' => 13,
         'assets/pdf-viewer.php' => 2,
         'autoload.inc.php' => 4,
         'build-js-lang-keys.php' => 1,
@@ -142,7 +140,7 @@ class ArchitectureTest extends TestCase
         'migrations/20260817160000_ADarkBarMatchesItsDarkPage.php' => 3,
     ];
 
-    /** Functions that take a path. Handle-takers (`fwrite`, `fgetcsv`) are not here: the seam is the path, not the stream. */
+    /** Functions that take a path. */
     private const FS_FUNCTIONS = [
         'file_put_contents', 'file_get_contents', 'fopen', 'unlink', 'mkdir', 'rmdir', 'rename',
         'copy', 'touch', 'move_uploaded_file', 'file_exists', 'is_file', 'is_dir', 'is_readable',
@@ -150,11 +148,7 @@ class ArchitectureTest extends TestCase
         'getimagesize', 'chmod', 'symlink', 'realpath', 'disk_free_space', 'tempnam', 'umask',
     ];
 
-    /**
-     * Every direct call to a path-taking function in $file, by name.
-     *
-     * `fopen('php://…')` is not one: it addresses no file.
-     */
+    /** Every direct call to a path-taking function in $file, by name. */
     private function rawFileCallsIn(string $file): int
     {
         $tokens = token_get_all((string)file_get_contents($file));

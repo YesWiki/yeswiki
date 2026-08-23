@@ -132,8 +132,6 @@ class ReactionManager
      */
     public function getActionParameters(string $page, ?string $idReaction = null): array
     {
-        // `$idReaction = null` used to stand where the argument goes, which assigned over the
-        // caller's value and asked for every reaction each time (ticket 40)
         if ($this->entryManager->isEntry($page)) {
             return $this->getActionParametersFromEntry($page, $idReaction);
         }
@@ -204,10 +202,6 @@ class ReactionManager
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
                 if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"|\s*/U', $paramText, $paramMatches)) {
-                    // three arrays of strings, kept in step: what each parameter is called, what
-                    // it was written as, and the whole `name="value"` it came from. The computed
-                    // labels/images maps used to be written back over $names' string values,
-                    // which is why explode() below could be handed an array (ticket 40).
                     $names = $paramMatches[1];
                     $written = $paramMatches[2];
                     $declarations = $paramMatches[0];
@@ -244,7 +238,6 @@ class ReactionManager
                     $htmlImages = [];
                     foreach (array_map('trim', explode(',', $written[$k])) as $i => $img) {
                         if (!isset($ids[$i])) {
-                            // more images than labels: nothing to attach this one to
                             continue;
                         }
                         $htmlImages[$ids[$i]] = empty($img)

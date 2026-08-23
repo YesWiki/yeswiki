@@ -144,8 +144,6 @@ class ButtonAction extends YesWikiAction implements RegisteredAction, ProvidesCo
 
         $nobtn = $this->getService(PerformableArguments::class)->get('nobtn');
         if (!empty($nobtn) && $nobtn == '1') {
-            // cast because preg_replace() returns null on error, and a null class would then
-            // be handed back to preg_replace() as its subject
             $class = (string)preg_replace('/\byw-btn(?:--\w+)?\b/i', '', $class);
             $class = trim((string)preg_replace('/\s{2,}/', ' ', $class));
         }

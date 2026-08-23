@@ -4,14 +4,7 @@ namespace YesWiki\Content\TemplateData;
 
 use YesWiki\Search\Service\SearchManager;
 
-/**
- * Leaflet's vocabulary, from the marker settings a webmaster set (was `EntryMapAction::formatArguments()`).
- *
- * `renderMap()` in EntryListAction reads `iconSize`, `smallmarker`, `provider_credentials`
- * and the rest; until ticket 49 nothing that produced them lived in the same class, which is
- * why `{{entrylist template="map"}}` had to make a round trip through `{{entrymap}}` to work
- * at all.
- */
+/** Leaflet's vocabulary, from the marker settings a webmaster set (was `EntryMapAction::formatArguments()`). */
 #[\PreparesTemplate(['gogomap', 'gogocarto', 'map-and-table'])]
 class PrepareDataMap extends PrepareData
 {
@@ -50,8 +43,6 @@ class PrepareDataMap extends PrepareData
             ? ($arguments['cluster'] ?? 'false')
             : $this->formatBoolean($arguments, false, 'cluster');
 
-        // The retired GoGoCarto integration (ticket 34) still has its template name written
-        // in stored pages; it renders as an ordinary map rather than as nothing.
         $template = $arguments['template'] ?? ($dynamic ? 'map' : 'map.twig');
         if (strpos($template, 'gogomap') !== false || strpos($template, 'gogocarto') !== false) {
             $template = $dynamic ? 'map' : 'map.twig';

@@ -7,18 +7,7 @@ use YesWiki\Content\Service\PageSummary;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\Mailer;
 
-/**
- * The daily, weekly and monthly digests, sent to the groups that asked for them.
- *
- * A group called `MailNewsWeek` means "send the page `News` to these members every week". The
- * period is in the name and so is the page, which is why this reads group names rather than a
- * configuration table.
- *
- * Was five global functions in `Contact/contact.functions.php`, four of them invoked **by name
- * through a string callback** -- which is why a reachability sweep called them dead and ticket 05
- * had to correct itself. They are closures now, and a closure cannot be missed by a grep for its
- * caller because it has no name to grep for (ticket 50).
- */
+/** The daily, weekly and monthly digests, sent to the groups that asked for them. */
 class MailingListDigest
 {
     public function __construct(private readonly ContainerInterface $services)

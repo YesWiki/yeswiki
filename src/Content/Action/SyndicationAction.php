@@ -339,8 +339,6 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
                     ): ?string {
                         $feedError = $feed->error();
                         if (!empty($feedError)) {
-                            // a multifeed reports one error per source, as an array: concatenating
-                            // that straight into the message printed the word "Array" instead
                             $feedError = is_array($feedError) ? implode(' ', $feedError) : $feedError;
 
                             return '<div class="yw-alert yw-alert--danger">' . _t('ERROR') . ' ' . $feedError . '</div>' . "\n";

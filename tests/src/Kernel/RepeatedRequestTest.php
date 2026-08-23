@@ -4,6 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RequestScope;
@@ -11,20 +12,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-/**
- * The same request, ten times in one process, ten identical answers.
- *
- * This is the test ADR-0024 asks for, and the only one that can see what it is about. Every leak
- * the ADR names is sequential rather than concurrent: request two inherits what request one left
- * in a global, so a single-request test passes on a wiki that is quietly broken for everybody
- * after the first visitor. Worker mode is what makes that reachable, and this suite runs under
- * php-fpm where the process dies with the request -- so rendering repeatedly inside one PHP
- * process is how the failure is made visible without waiting for the binary to ship.
- *
- * It is a canary rather than a proof: it catches state that leaks through the services this test
- * touches. What makes the guarantee is `GlobalsRatchetTest`, which says there is no request state
- * in a global to leak.
- */
+/** The same request, ten times in one process, ten identical answers. */
 class RepeatedRequestTest extends YesWikiTestCase
 {
     private const REPEATS = 10;
@@ -62,11 +50,6 @@ class RepeatedRequestTest extends YesWikiTestCase
 
     public function testRenderingThePageTenTimesGivesTheSameAnswerEveryTime(): void
     {
-        // The very first render in a process is not one of the ten. Services are instantiated
-        // lazily, so it is the one that builds them, and in a suite that shares its process with
-        // 1,300 other tests it inherits whatever they left warm -- neither of which a worker
-        // serving its second visitor does. What ADR-0024 is about is request N inheriting from
-        // request N-1, and that is exactly what the ten below compare.
         $this->render();
 
         $renders = [];
@@ -89,12 +72,7 @@ class RepeatedRequestTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * The counters specifically, so a failure says which one rather than "the html differs".
-     *
-     * Mail forms are numbered from one per page and entry lists likewise; the numbers appear in
-     * the markup, so the same page rendered twice must contain the same ones.
-     */
+    /** The counters specifically, so a failure says which one rather than "the html differs". */
     public function testTheCountersStartFromOneOnEveryRender(): void
     {
         $this->render();
@@ -116,20 +94,8 @@ class RepeatedRequestTest extends YesWikiTestCase
         );
     }
 
-    /**
-     * One request: the scope starts, then the page renders.
-     *
-     * `YesWikiRuntime::doRun()` opens every request with exactly this call, so simulating a
-     * second visitor means making it here too. `testTheRuntimeStartsEveryRequest()` is what keeps
-     * the two in step, because a test that started the scope while production forgot to would
-     * pass on a wiki that leaks.
-     */
-    /**
-     * The page with the values that are *supposed* to differ taken out.
-     *
-     * A CSRF token is a nonce and a `uniqid()` element id is a nonce; two renders that agreed on
-     * those would be the bug. Everything else must match, and that is what this test is about.
-     */
+    /** One request: the scope starts, then the page renders. */
+    /** The page with the values that are *supposed* to differ taken out. */
     private function withoutNonces(string $html): string
     {
         return (string)preg_replace(
@@ -137,11 +103,6 @@ class RepeatedRequestTest extends YesWikiTestCase
                 '/"antiCsrfToken":"[^"]*"/',
                 '/value="[^"]*\.[\w-]{20,}[^"]*"/',
                 '/\b(heading|collapse|accordion_|nav_)[0-9a-f.]+/',
-                // A line that holds only spaces. The first render of a process indents one of
-                // them two spaces wider than every render after it, in the gap where
-                // `{{editbar}}` sits in the squelette. It is whitespace between block-level
-                // elements, no reader or parser can tell, and chasing it would say nothing about
-                // request state -- renders two through ten are byte-identical to each other.
                 '/\n[ \t]+\n/',
             ],
             ['"antiCsrfToken":"…"', 'value="…"', '$1…', "\n\n"],
@@ -155,6 +116,47 @@ class RepeatedRequestTest extends YesWikiTestCase
         $wiki->services->get(RequestScope::class)->startNewRequest();
 
         return $wiki->services->get(Performer::class)->run('show', 'handler', []);
+    }
+
+    /** A French visitor after an English one still reads French (ADR-0024, ticket 06). */
+    public function testALanguageIsNotInheritedFromTheVisitorBefore(): void
+    {
+        $wiki = self::getWiki();
+        $language = $wiki->services->get(LanguageService::class);
+
+        $key = 'AB_bazar_commons2_filter_on_date_today';
+
+        $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
+        unset($_GET['lang'], $_COOKIE[LanguageService::COOKIE]);
+
+        try {
+            $readings = [];
+            foreach (['fr', 'en', 'fr'] as $visitor) {
+                $_SERVER['HTTP_ACCEPT_LANGUAGE'] = $visitor;
+                $wiki->services->get(RequestScope::class)->startNewRequest();
+                $language->loadPreferredLanguage($wiki, '');
+                $readings[] = $language->translate($key);
+            }
+        } finally {
+            if ($accept === null) {
+                unset($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            } else {
+                $_SERVER['HTTP_ACCEPT_LANGUAGE'] = $accept;
+            }
+        }
+
+        $this->assertNotSame(
+            $readings[0],
+            $readings[1],
+            'the two catalogues must actually differ on this key, or the test proves nothing'
+        );
+        $this->assertSame(
+            $readings[0],
+            $readings[2],
+            'the second French visitor read "' . $readings[2] . '" where the first read "'
+            . $readings[0] . '". A request inherited the language of the request before it, '
+            . 'which under worker mode is every visitor after the first (ADR-0024).'
+        );
     }
 
     /** The mechanism is only worth anything if the runtime uses it. */

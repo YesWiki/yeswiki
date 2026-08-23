@@ -39,7 +39,6 @@ class CalcFieldToString extends YesWikiMigration
 
                         $commentOnCol = $this->dbService->quoteIdentifier('parent');
                         $bodyCol = $this->dbService->quoteIdentifier('body');
-                        // ADR-0018: `body` is native JSON, and `jsonb` has neither LIKE nor a regexp operator
                         $bodyAsText = $this->dbService->jsonAsText('body');
                         $typeCol = $this->dbService->quoteIdentifier('type');
                         $entryType = PageType::ENTRY;

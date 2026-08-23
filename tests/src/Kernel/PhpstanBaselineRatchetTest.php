@@ -4,13 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * The PHPStan baseline is empty, and this is what keeps it that way.
- *
- * It used to be a per-identifier ceiling over 3,398 suppressions, lowered pass by pass until
- * `analyse` came out clean. There is nothing left to ratchet: the only number a baseline can
- * hold now is zero.
- */
+/** The PHPStan baseline is empty, and this is what keeps it that way. */
 class PhpstanBaselineRatchetTest extends TestCase
 {
     private const BASELINE = __DIR__ . '/../../../phpstan/baseline.neon';

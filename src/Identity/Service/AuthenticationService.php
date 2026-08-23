@@ -329,8 +329,6 @@ class AuthenticationService extends YesWikiController
         $sessionName = session_name();
         $sessionId = session_id();
         if ($sessionName === false || $sessionId === false) {
-            // no session is active, so there is no session cookie to re-date. Sending one
-            // anyway would set a cookie named '' on the visitor.
             return;
         }
 

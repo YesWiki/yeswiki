@@ -27,16 +27,7 @@ class ImageResizer
         $this->acl = $acl;
     }
 
-    /**
-     * The resized copy of $source, made once and reused after that.
-     *
-     * `?refresh=1` from an admin throws the cached copy away first, which is how a picture
-     * replaced under the same name gets its thumbnails rebuilt. Answers $source unchanged when
-     * the resize fails, so a template still has something to show, and '' when there is no
-     * source to resize.
-     *
-     * Was the global `resizeImage()` in `Content/bazar.functions.php` (ticket 50).
-     */
+    /** The resized copy of $source, made once and reused after that. */
     public function cached(string $source, string $width, string $height, string $method = 'fit'): string
     {
         if (!file_exists($source)) {

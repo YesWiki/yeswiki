@@ -11,12 +11,7 @@ class PackageCollection extends Collection
     public const TOOL_CLASS = 'YesWiki\Admin\Entity\PackageTool';
     public const CORE_CLASS = 'YesWiki\Admin\Entity\PackageCore';
 
-    /**
-     * The version an admin asked for, when they asked for one, and the service that reads the
-     * configuration file. Only PackageCore wants either; it used to reach for both through
-     * `$GLOBALS['yeswikiServices']` because an entity built from a class-string has nowhere else
-     * to look (ticket 45).
-     */
+    /** The version an admin asked for, when they asked for one, and the service that reads the configuration file. */
     protected string $requestedVersion = '';
     protected ?ConfigurationService $configurationService = null;
 

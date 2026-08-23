@@ -4,49 +4,28 @@ namespace YesWiki\Kernel\Service;
 
 class StringUtilService
 {
-    /**
-     * $string with its accents and every other HTML entity removed.
-     *
-     * Distinct from withoutAccents(), which keeps the string HTML-encoded because its callers
-     * are writing a CSS class. This one is for text a human reads.
-     *
-     * Was the global `removeAccents()` in `Content/bazar.functions.php` (ticket 50).
-     */
+    /** $string with its accents and every other HTML entity removed. */
     public static function withoutDiacritics(string $str, string $charset = YW_CHARSET): string
     {
-        // every preg_replace() below returns `string|null`, and each fed the next: a failure at any
-        // step made the rest operate on null (ticket 40)
         $str = htmlentities($str, ENT_NOQUOTES, $charset);
         $str = (string)preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
-        $str = (string)preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
-        $str = (string)preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+        $str = (string)preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str);
+        $str = (string)preg_replace('#&[^;]+;#', '', $str);
 
         return $str;
     }
 
-    /**
-     * $string as a filename: no accents, no dangerous characters, lowercase, single dashes.
-     *
-     * Was the global `sanitizeFilename()` (ticket 50).
-     */
+    /** $string as a filename: no accents, no dangerous characters, lowercase, single dashes. */
     public static function asFilename(string $string = ''): string
     {
-        // our list of "dangerous characters", add/remove characters if necessary
         $dangerous_characters = [' ', '"', "'", '&', '/', '\\', '?', '#', '(', ')', '+'];
-        // every forbidden character is replace by an underscore
-        // (string) around the whole thing: str_replace() returns an array when given one, and
-        // nothing here ever passes one -- but the signature says it might
         $string = (string)str_replace($dangerous_characters, '-', self::withoutDiacritics((string)$string));
 
-        // Only allow one dash separator at a time (and make string lowercase)
         return mb_strtolower((string)preg_replace('/--+/u', '-', $string), YW_CHARSET);
     }
 
     /**
      * Every sub-array of $array, at any depth, whose $key is $value.
-     *
-     * Was the global `multiArraySearch()` (ticket 50). Its callers span Content and Import, so
-     * it belongs to neither.
      *
      * @return list<mixed>
      */
@@ -67,11 +46,7 @@ class StringUtilService
         return $results;
     }
 
-    /**
-     * $string with its accented characters folded to the bare letter, for a CSS class or a filter key.
-     *
-     * Was the global `sanitizeEntity()` in `Content/tags.functions.php` (ticket 50).
-     */
+    /** $string with its accented characters folded to the bare letter, for a CSS class or a filter key. */
     public static function withoutAccents(string $string): string
     {
         return (string)preg_replace(
@@ -81,12 +56,7 @@ class StringUtilService
         );
     }
 
-    /**
-     * $string cut at the last whole word that fits in $width characters.
-     *
-     * Unlike truncate() this appends nothing and counts the separators, which is what a card's
-     * description needs. Was the global `tokenTruncate()` (ticket 50).
-     */
+    /** $string cut at the last whole word that fits in $width characters. */
     public static function truncateOnWord(string $string, int $width): string
     {
         $parts = preg_split('/([\s\n\r]+)/', $string, 0, PREG_SPLIT_DELIM_CAPTURE);
@@ -104,12 +74,7 @@ class StringUtilService
         return implode(array_slice($parts, 0, $lastPart));
     }
 
-    /**
-     * Cut $text to $length characters on a word boundary, appending $append when it had to cut.
-     *
-     * Was the global `truncate()` in `Content/syndication.functions.php`, which had no state and
-     * no dependencies and so had no reason to be global (ticket 50).
-     */
+    /** Cut $text to $length characters on a word boundary, appending $append when it had to cut. */
     public static function truncate(string $text, int $length = 100, string $append = '&hellip;'): string
     {
         $string = trim($text);

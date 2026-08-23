@@ -45,7 +45,6 @@ class LinkedEntryField extends BazarField
     protected function renderInput($entry)
     {
         if (!isset($entry['tag'])) {
-            // nothing to link to yet: the entry has not been saved
             return '';
         }
 

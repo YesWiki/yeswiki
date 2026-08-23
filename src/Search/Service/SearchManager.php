@@ -716,10 +716,6 @@ class SearchManager
 
                         $vFieldFound = true;
 
-                        // the `else` used to hang off a second copy of the same condition
-                        // nested inside the first, so it could never run: a path segment the
-                        // field's structure does not have left $vFieldFound true and handed the
-                        // parent structure on as the descriptor, instead of MISSING_FIELD
                         foreach ($vJSONPath as $vJSONPathSegment) {
                             if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray)) {
                                 $vCurrentArray = $vCurrentArray[$vJSONPathSegment];
@@ -1191,7 +1187,6 @@ class SearchManager
             $vParameters[] = 'field=' . trim($pParameters['field']);
         }
 
-        // every entry above is a `name=` prefix plus a value, so none of them can be empty
         return implode('&', $vParameters);
     }
 
@@ -1350,8 +1345,6 @@ class SearchManager
     {
         if (!mb_check_encoding($s, 'UTF-8')) {
             $converted = mb_convert_encoding($s, 'UTF-8', 'auto');
-            // false when no encoding could be detected; the string as given is a better
-            // answer than passing false down to mb_strtolower()
             if (is_string($converted)) {
                 $s = $converted;
             }
@@ -1465,10 +1458,6 @@ class SearchManager
      */
     private function buildFieldDescriptorHash($pStructure)
     {
-        // `.` binds tighter than `??`, so this read as `_mode_ ?? ('#|' . _type_ ?? '#')`:
-        // a descriptor that had a `_mode_` -- every descriptor built here -- hashed to its
-        // mode alone, and two forms whose field agreed on `single` but differed on
-        // `string` vs `number` were merged into one descriptor carrying the first form's type
         return ($pStructure['_mode_'] ?? '#') . '|' . ($pStructure['_type_'] ?? '#');
     }
 

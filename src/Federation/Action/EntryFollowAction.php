@@ -37,8 +37,6 @@ class EntryFollowAction extends YesWikiAction implements RegisteredAction
             return $this->getService(Redirector::class)->redirect($interactionUrl);
         }
 
-        // a form that does not federate has nothing to follow: the action renders nothing
-        // rather than falling off the end and handing Performer an implicit null
         if (!$activityPubService->isEnabled($form)) {
             return '';
         }

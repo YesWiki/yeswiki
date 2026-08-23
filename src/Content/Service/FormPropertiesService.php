@@ -100,10 +100,6 @@ class FormPropertiesService
             foreach ($this->referencedFieldNames($value) as $fieldName) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
                 if ($field instanceof EnumField || $field instanceof FileField) {
-                    // BazarField::getValue() is protected -- calling it from here was a fatal
-                    // error for every title template naming an enum or file field. Read the
-                    // stored value the way FieldRoleResolver::value() does, flattening the
-                    // list shape a tags field stores.
                     $fieldValue = $entry[(string)$field->getPropertyName()] ?? null;
                     if (is_array($fieldValue)) {
                         $fieldValue = implode(',', array_filter($fieldValue, 'is_string'));
@@ -403,7 +399,6 @@ class FormPropertiesService
                     );
                 }
                 if ($value !== $loggedUser['name'] && $this->aclService->isAdmin()) {
-                    // the name an admin typed may belong to nobody
                     $associatedUser = $userManager->getOneByName($value);
                 }
                 $associatedEmail = $associatedUser['email'] ?? '';

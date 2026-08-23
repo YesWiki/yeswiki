@@ -90,7 +90,6 @@ class AutoUpdateService
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
 
-        // the core is not a package anybody can delete, and an unknown name names none at all
         if (!$package instanceof PackageExt) {
             $messages->add('AU_DELETE', 'AU_ERROR');
 

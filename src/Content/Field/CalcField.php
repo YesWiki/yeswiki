@@ -90,8 +90,6 @@ class CalcField extends BazarField
                     $formula .= $this->getEntryValue($entry, $matches[6][$key]);
                 }
             }
-            // preg_replace() answers null only on a PCRE failure; the unsqueezed formula is
-            // still the best thing to hand the parser if that ever happens.
             $formula = preg_replace('/\s+/', '', $formula) ?? $formula;
             try {
                 $value = $this->evaluateFormula($formula);

@@ -6,14 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\TemplateData\PrepareData;
 use YesWiki\Kernel\Service\ClassDirectoryScanner;
 
-/**
- * Finds the `PrepareData…` class for a list template, the way FieldFactory finds a field (ticket 49).
- *
- * Scanned rather than tagged in the container, and for FieldFactory's reason: an extension is
- * installed at runtime and cannot be in the compiled container, so a convention that only
- * core can follow is not a convention. A template's preparer therefore ships next to the
- * template that needs it.
- */
+/** Finds the `PrepareData…` class for a list template, the way FieldFactory finds a field (ticket 49). */
 class TemplateDataFactory
 {
     /** @var array<string, list<class-string<PrepareData>>> template name => the classes that prepare it, in scan order */
@@ -26,10 +19,6 @@ class TemplateDataFactory
 
     /**
      * Run every preparer this template has, over one argument array.
-     *
-     * Composed rather than dispatched: `map-and-table` is prepared by the map's and the
-     * table's, in that order. Each sees what the one before it returned, so the later one can
-     * read a key the earlier one wrote.
      *
      * @param array<string, mixed> $arguments
      *
@@ -56,7 +45,6 @@ class TemplateDataFactory
      */
     private function preparersFor(string $template): array
     {
-        // the same template is written `map` in page content and `map.twig` in a config value
         $bare = (string)preg_replace('/\.(twig|tpl\.html)$/', '', $template);
 
         return $this->preparers[strtolower($bare)] ?? [];
@@ -86,8 +74,6 @@ class TemplateDataFactory
                 continue;
             }
 
-            // The class name names one template; the attribute names any whose spelling a
-            // class name cannot hold, `map-and-table` being the one that forced it.
             $templates = [strtolower($matches[1])];
             foreach ((new \ReflectionClass($class))->getAttributes(\PreparesTemplate::class) as $attribute) {
                 $templates = array_merge($templates, $attribute->newInstance()->templates);

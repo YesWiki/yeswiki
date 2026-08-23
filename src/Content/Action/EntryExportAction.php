@@ -44,8 +44,6 @@ class EntryExportAction extends YesWikiAction implements RegisteredAction
             return $aclMessage;
         }
 
-        // these were three lazily-filled properties, which said "this state outlives the call"
-        // about three container lookups that do not
         $csvManager = $this->getService(CSVManager::class);
 
         $vForms = $this->getService(FormManager::class)->getAll();

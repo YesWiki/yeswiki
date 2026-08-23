@@ -7,10 +7,10 @@ use YesWiki\Files\Exception\StorageException;
 /** Where an instance's Public and Protected bytes live when they do not live on this disk (ADR-0022). */
 class S3Settings
 {
-    /** What `YESWIKI_STORAGE` accepts. Anything else is a typo, and a typo must not quietly mean "local". */
+    /** What `YESWIKI_STORAGE` accepts. */
     public const BACKENDS = ['local', 's3'];
 
-    /** The tiers `YESWIKI_S3_TIERS` may name. Runtime is not among them, and asking is refused. */
+    /** The tiers `YESWIKI_S3_TIERS` may name. */
     public const REMOTABLE_TIERS = ['public', 'protected'];
 
     /**

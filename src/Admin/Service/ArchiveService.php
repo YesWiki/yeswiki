@@ -4,7 +4,6 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Process\Process;
 use YesWiki\Admin\Exception\StopArchiveException;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -58,9 +57,7 @@ class ArchiveService
     public const KEY_FOR_FOLDERS_TO_EXCLUDE = 'foldersToExclude';
     public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
 
-    /**
-     * Where an archive being made reports on itself. Runtime, and local for the same reason every Runtime path is: the web request polls what a separate process is writing, one line at a time, and neither of them wants a bucket in the middle.
-     */
+    /** Where an archive being made reports on itself. */
     public const PROGRESS_FOLDER = 'cache/archive';
     public const ARCHIVE_SUFFIX = '_archive';
     public const ARCHIVE_ONLY_FILES_SUFFIX = '_archive_only_files';
@@ -127,7 +124,6 @@ class ArchiveService
         $outputFile = '';
 
         if (!$vStatus['canArchive']) {
-            // if we cannot archive, we need to stop the process and inform the user so that he can handle the problem
             $vMessages = $this->getCannotArchiveDetails($vStatus);
 
             $this->unsetWikiStatus();
@@ -140,9 +136,6 @@ class ArchiveService
         if (!empty($uid)) {
             $info = $this->getInfoFromFile();
             if (isset($info[$uid])) {
-                // cast because the info file is decoded JSON, so every value is `mixed` as far
-                // as the analyser is concerned -- and $outputFile alone accounted for sixteen
-                // baselined argument.type entries downstream (ticket 40)
                 $inputFile = (string)$info[$uid]['input'];
                 $outputFile = (string)$info[$uid]['output'];
             }
@@ -151,7 +144,6 @@ class ArchiveService
             $this->storage->write($outputFile, '');
         }
 
-        // checking folder not available on the internet
         $this->storage->write("$privatePath/tmpTestFile000.txt", 'test');
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if ($this->storage->fileExists("$privatePath/tmpTestFile000.txt")) {
@@ -398,7 +390,6 @@ class ArchiveService
             }
         }
 
-        // test console
         try {
             $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
             if (!empty($results)) {
@@ -414,11 +405,9 @@ class ArchiveService
             $canExec = false;
         }
 
-        // test db
         if ($canExec) {
             $dB = $this->testDb();
         }
-        // free space
         try {
             $this->assertEnoughtSpace();
         } catch (\Throwable $th) {
@@ -565,7 +554,6 @@ class ArchiveService
     public function getFilePath(string $filename): string
     {
         $privatePath = $this->getPrivateFolder();
-        // sanitize $filename
         $filename = basename($filename);
         if (substr($filename, -4) != '.zip') {
             return '';
@@ -637,8 +625,6 @@ class ArchiveService
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
-            // getNameIndex() returns false for an unreadable entry; skipping it beats passing
-            // false to strpos() and treating it as the empty string
             if ($name === false) {
                 continue;
             }
@@ -700,13 +686,11 @@ class ArchiveService
         ];
         $privateFolder = $this->getPrivateFolder();
         $info = $this->getInfoFromFile();
-        // clean others uids because it should not be ever existing
         foreach ($info as $infoUid => $infoData) {
             if ($infoUid != $uid) {
                 $this->cleanUID($infoUid);
             }
         }
-        // refresh from file
         $info = $this->getInfoFromFile();
         if (!isset($info[$uid])) {
             return $results;
@@ -821,7 +805,6 @@ class ArchiveService
 
         $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
 
-        // open file
         $zip = new \ZipArchive();
 
         $vCanceled = false;
@@ -831,7 +814,6 @@ class ArchiveService
             return false;
         }
 
-        // register cancel callback if available
         if (method_exists($zip, 'registerCancelCallback')) {
             $zip->registerCancelCallback(function () use ($inputFile, &$vCanceled) {
                 $vNeedStop = $this->checkIfNeedStop($inputFile);
@@ -846,7 +828,6 @@ class ArchiveService
             });
         }
 
-        // register progress callback if available
         if (method_exists($zip, 'registerProgressCallback')) {
             $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
                 $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
@@ -854,7 +835,6 @@ class ArchiveService
         }
 
         if (!$vCanceled && !$onlyDb) {
-            // add empty cache folder
             $zip->addEmptyDir('cache');
 
             while (count($dirs)) {
@@ -869,8 +849,6 @@ class ArchiveService
                     }
 
                     $dh = opendir($dir);
-                    // a directory we cannot open contributes nothing rather than making
-                    // readdir() throw on a false handle
                     if ($dh === false) {
                         array_shift($dirs);
                         continue;
@@ -999,8 +977,6 @@ class ArchiveService
         foreach ($list as $filePath) {
             if (is_string($filePath)) {
                 $filePath = trim($filePath);
-                // remove path containing '/../' to be sure to keep in root folder of the wiki
-                // or begining by '/' or 'c:\' to be sure to keep relative to root folder of website
                 if (!empty($filePath) && !preg_match('/^(?:\\/|\\\\)|[A-Za-z]:\\\\|(?:\\/|\\\\|^)\\.\\.(?:\\/|\\\\|$)/', $filePath)) {
                     $formattedFilePath = (string)preg_replace("/(\/|\\\\)$/", '', $filePath);
                     if (!in_array($formattedFilePath, $outputList)) {
@@ -1063,11 +1039,7 @@ class ArchiveService
         return true;
     }
 
-    /**
-     * Whether the backups are out of a reader's reach. In a bucket they are not under the wiki's
-     * address at all, so what answers this is the bucket policy rather than a HEAD request -- the
-     * one thing this check could prove there is that a wrong policy is not this code's doing.
-     */
+    /** Whether the backups are out of a reader's reach. */
     private function localPrivateFolderNotAvailableOnInternet(string $localPath, string $testFileName): bool
     {
         if ($this->storage->isRemote($localPath)) {
@@ -1152,7 +1124,6 @@ class ArchiveService
      */
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
-        // get yeswiki.config.php content
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
@@ -1177,7 +1148,6 @@ class ArchiveService
         $config[self::PARAMS_KEY_IN_WAKKA] = $data;
 
         $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_HIDE_CONFIG_VALUES], $config);
-        // remove current wiki_status
         unset($config['wiki_status']);
 
         return $this->configurationService->getContentToWrite($config);
@@ -1260,7 +1230,6 @@ class ArchiveService
                     "--filepath=$resultFile",
                 ]);
 
-                // get content
                 if ($this->storage->fileExists($resultFile)) {
                     $sqlContent = $this->storage->read($resultFile);
                     $this->forget($resultFile);
@@ -1277,7 +1246,6 @@ class ArchiveService
                     }
                 }
             }
-            // backup
             $results = $this->dbService->dumper()->dump();
             if (empty($results['sql'])) {
                 throw new \Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
@@ -1310,7 +1278,7 @@ class ArchiveService
         if (!in_array('custom', $blacklistedRootFolders)) {
             $estimateZipSize += $this->folderSize('custom');
         }
-        $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
+        $estimateZipSize += 300 * 1024 * 1024;
 
         $freeSpace = disk_free_space(YESWIKI_INSTANCE_DIR);
         if ($freeSpace < $estimateZipSize) {
@@ -1373,16 +1341,12 @@ class ArchiveService
         $maxNBFiles = $this->getMaxNbFiles();
         $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {
-            // there are files to remove
-            // keep at least one file more than 1 day and other more than 2 days to prevent
-            // full deletion if attack on api
             $indexesToRemove = range($maxNBFiles, count($archives) - 1);
             $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
             $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
 
             $notDeletedArchivesMoreThan2Days = array_diff($archivesIndexesMoreThan2days, $indexesToRemove);
             if (!empty($archivesIndexesMoreThan2days) && empty($notDeletedArchivesMoreThan2Days)) {
-                // we should kept the most recent 2 days old
                 $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
                 if (empty($indexesToRemove)) {
                     $indexesToRemove = [min($archivesIndexesMoreThan2days) - 1];
@@ -1393,7 +1357,6 @@ class ArchiveService
             $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
             $notDeletedArchivesBetween1and2days = array_diff($archivesIndexesBetween1and2days, $indexesToRemove);
             if (!empty($archivesIndexesBetween1and2days) && empty($notDeletedArchivesBetween1and2days)) {
-                // we should kept the most recent 1 day old
                 $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
                 if (empty($indexesToRemove)) {
                     $indexesToRemove = [min($archivesIndexesBetween1and2days) - 1];
@@ -1464,9 +1427,6 @@ class ArchiveService
     /**
      * get a unique id for the current PID with input and output files created.
      *
-     * Declared nullable and never returning null: it either builds the two log files or throws.
-     * The fiction cost seven baselined offset errors at its two call sites (ticket 40).
-     *
      * @return array{uid: string, input: string|false, output: string|false}
      */
     private function getUID(): array
@@ -1528,9 +1488,6 @@ class ArchiveService
      */
     private function getRunningUIDdata(string $uid, array $info): array
     {
-        // `return false` from a method declared `: array`, straight into a keyed list()
-        // destructuring at the only call site -- a TypeError the moment the output file is
-        // missing, which is exactly when this is asked (ticket 40)
         if (empty($info['output']) || !$this->storage->fileExists((string)$info['output'])) {
             return ['running' => false, 'finished' => false, 'stopped' => false, 'output' => ''];
         }
@@ -1564,7 +1521,6 @@ class ArchiveService
                 $list[] = $folderName;
             }
         }
-        // merge `foldersToInclude` or `foldersToExclude` from yeswiki.config.php
         $archiveParams = $this->getArchiveParams();
         $key = ($type == 'white') ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
         if (

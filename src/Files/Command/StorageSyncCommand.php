@@ -14,7 +14,7 @@ use YesWiki\Files\Service\Storage;
 class StorageSyncCommand extends Command
 {
     /**
-     * What an instance owns, from the most important to the least. Backups are opt-in: they are usually the largest thing here and the least urgent to have remote.
+     * What an instance owns, from the most important to the least.
      *
      * @var array<string, bool> path => whether `--with-backups` is needed for it
      */

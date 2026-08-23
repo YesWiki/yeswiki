@@ -380,7 +380,6 @@ class UserOperationsServiceTest extends YesWikiTestCase
                 'email' => $email,
                 'password' => $password,
             ]);
-            // the non-string case must be rejected by create(); only a string name can be read back
             $user = is_string($name) ? $userManager->getOneByName($name) : null;
         } catch (\Throwable $ex) {
             $exceptionThrown = true;

@@ -109,7 +109,6 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
             $users = $this->addGroups($users);
         }
 
-        // an anonymous visitor gets '' rather than an array, and that has no 'name' offset
         $connectedUser = $this->authenticationService->getLoggedUser();
         $connectedUserName = is_array($connectedUser) ? strval($connectedUser['name'] ?? '') : '';
 

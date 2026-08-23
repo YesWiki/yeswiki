@@ -96,9 +96,6 @@ class HtmlPurifierService
 
         $cleaned = $extension === 'svg' ? $this->sanitizeSVG($content) : $this->cleanHTML($content);
         if ($cleaned === false) {
-            // svg-sanitize could not parse the document. Emptying the file would destroy the
-            // upload and writing it back unchanged would keep whatever script it carries, so
-            // the file is left alone and the caller told the clean failed.
             return false;
         }
 

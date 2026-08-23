@@ -6,14 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Content\Service\EntryListCategoryRewriter;
 
-/**
- * `{{entrylistcategory}}` becomes a grouped entry list (ticket 49).
- *
- * The calls being rewritten are broken as they stand: the action read one argument as both
- * the form and the grouping field, so whichever spelling a page uses it prints "Undefined
- * array key" where the list should be. What the rewrite has to preserve is therefore what the
- * call *means*, not what the class did with it.
- */
+/** `{{entrylistcategory}}` becomes a grouped entry list (ticket 49). */
 class EntryListCategoryRewriterTest extends TestCase
 {
     /**

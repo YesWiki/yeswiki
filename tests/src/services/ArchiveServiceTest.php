@@ -163,8 +163,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                             array_shift($dirs);
                         }
                         $files = array_map(function (string $path) use ($tmpFolderName): string {
-                            // preg_replace() answers null only on a PCRE failure, and an
-                            // unstripped path still names the file that was found
                             $stripped = preg_replace("/^cache(?:\/|\\\\)" . preg_quote($tmpFolderName, '/') . "(?:\/|\\\\)/", '', $path) ?? $path;
 
                             return str_replace('\\', '/', $stripped);
@@ -175,9 +173,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/yeswiki.config.php");
                             $config->load();
-                            // The whole parameter array, through the magic accessor that
-                            // ConfigurationFile exposes for it: iterating the object instead
-                            // would stop at the first null value (its valid() uses isset()).
                             $data['wakkaContent'] = $config->__get('_parameters');
                             unset($config);
                         }
@@ -247,8 +242,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         $params = $services['wiki']->services->get(ParameterBagInterface::class);
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
-        // a parameter bag answers with any scalar, an array or an enum; only a string is a
-        // status this test could put back
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $previousStatus = is_string($previousStatus) ? $previousStatus : '';
         $this->setWikiStatus($configService, $status);
@@ -265,8 +258,6 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->setWikiStatus($configService, $previousStatus);
         }
         $this->assertNotNull($results, 'the archive command produced no output at all');
-        // the key is always there; what makes this a failure is something having been written
-        // to it, and asking isset() made the assertion below pass whatever happened (ticket 40)
         $atLeastOneStdErr = false;
         foreach ($results as $result) {
             if (!empty($result['stderr'])) {

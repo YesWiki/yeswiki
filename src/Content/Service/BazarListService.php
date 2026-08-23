@@ -248,7 +248,6 @@ class BazarListService
                 $linkedField = [];
                 if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
                     $linkedField = $this->formManager->findFieldWithId($formIdsUsed, $idLinkedData[0]);
-                    // only an EnumField names another form; findFieldWithId() answers any field
                     if ($linkedField instanceof EnumField) {
                         $linkedFormId = $linkedField->getLinkedObjectName();
                         $finalField = $this->formManager->findFieldWithId([$linkedFormId], $idLinkedData[1]);

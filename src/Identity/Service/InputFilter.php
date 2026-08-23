@@ -5,15 +5,7 @@ namespace YesWiki\Identity\Service;
 use YesWiki\Core\YesWikiController;
 
 /**
- * What remains here after ticket 15's split (hibernation -> HibernationService,
- * password-for-editing -> PasswordForEditingService, captcha ->
- * CaptchaController): a generic, dependency-free input-sanitization utility that
- * doesn't belong to any single security sub-concern, plus the edit-page submit-value
- * constant referenced across the whole codebase.
- *
- * Was `SecurityController` until wave-two ticket 03: it declares no route and its only
- * public method is filterInput(), so "controller" described where the file sat rather
- * than what the class does.
+ * What remains here after ticket 15's split (hibernation -> HibernationService, password-for-editing -> PasswordForEditingService, captcha -> CaptchaController): a generic, dependency-free input-sanitization utility that doesn't belong to any single security sub-concern, plus the edit-page submit-value constant referenced across the whole codebase.
  */
 class InputFilter extends YesWikiController
 {
@@ -89,8 +81,6 @@ class InputFilter extends YesWikiController
         string $format = '',
         $options = 0
     ) {
-        // emulating FILTER_SANITIZE_STRING means reading the value raw and sanitizing it
-        // here, so the caller's filter is deliberately not the one handed to filter_input()
         $sanitizedFilter = $emulateFilterSanitizeString ? FILTER_UNSAFE_RAW : $filter;
         $sanitizedFormat = $emulateFilterSanitizeString ? 'string' : $format;
 

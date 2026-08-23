@@ -221,7 +221,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                             }
                         }
                     } elseif ($formId !== 'comments') {
-                        // no such form is as good a reason to refuse as a non-semantic one
                         $form = $this->formManager->getOne($formId);
                         if (empty($form['sem_type'])) {
                             $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
@@ -464,8 +463,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 return $data;
         }
 
-        // a format nobody recognises (an old triple, a webmaster's typo) is sent as-is,
-        // the same as FORMAT_RAW -- better a delivered webhook than a silent null body
         return $data;
     }
 
@@ -489,7 +486,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                     parse_str($query, $queries);
 
                     if (isset($queries['bearer'])) {
-                        // parse_str() answers an array for `bearer[]=...`, which is not a token
                         if (!empty($queries['bearer']) && is_string($queries['bearer'])) {
                             $options['headers'] = ['Authorization' => 'Bearer ' . $queries['bearer']];
                         }

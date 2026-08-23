@@ -41,7 +41,6 @@ class ListController extends YesWikiController
             if ($this->mayCreate()) {
                 foreach ($post->all('imported-list') as $listRaw) {
                     $list = is_string($listRaw) ? json_decode($listRaw, true) : null;
-                    // a list that does not decode to {title, nodes} is not one this can import
                     if (!is_array($list) || !isset($list['title'])) {
                         continue;
                     }
@@ -60,7 +59,6 @@ class ListController extends YesWikiController
         );
 
         foreach ($lists as $key => $list) {
-            // getAll() yields null for a list whose body will not load; it has nothing to show
             if ($list === null) {
                 unset($lists[$key]);
                 continue;

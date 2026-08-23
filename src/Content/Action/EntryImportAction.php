@@ -57,8 +57,6 @@ class EntryImportAction extends YesWikiAction implements RegisteredAction
             return $this->getMessageWhenHibernated();
         }
 
-        // these were four lazily-filled properties, which said "this state outlives the call"
-        // about four container lookups that do not
         $csvManager = $this->getService(CSVManager::class);
         $entryController = $this->getService(EntryController::class);
         $bazarListService = $this->getService(BazarListService::class);

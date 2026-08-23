@@ -83,7 +83,7 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             'ratio' => $arg['ratio'] ?? '',
             'maxwidth' => $arg['maxwidth'] ?? '',
             'maxheight' => $arg['maxheight'] ?? '',
-            'class' => str_replace('attached_file', '', $arg['class'] ?? ''), // to prevent errors
+            'class' => str_replace('attached_file', '', $arg['class'] ?? ''),
         ];
     }
 
@@ -131,7 +131,6 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
                 $ratio = 1.38;
         }
 
-        // size
         $maxWidth = $this->arguments['maxwidth'];
         $maxHeight = $this->arguments['maxheight'];
         $manageSize = false;
@@ -140,7 +139,6 @@ class PdfAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             if (empty($maxHeight) || !is_numeric($maxHeight)) {
                 $maxHeight = $maxWidth * $ratio;
             } else {
-                // calculte the minimum between width and height
                 $newMaxHeight = min($maxWidth * $ratio, $maxHeight);
                 $newMaxWidth = min($maxHeight / $ratio, $maxWidth);
                 $maxHeight = $newMaxHeight;

@@ -10,9 +10,6 @@ class ContentAssetScanner
     /**
      * marker => assets to register when the marker appears in rendered output.
      *
-     * A method rather than a `const` because a constant is read as its literal value: while no
-     * rule happens to carry a `js` key, scan()'s `js` branch would be taken for dead code.
-     *
      * @return array<string, array{css?: list<string>, js?: list<string>, jsInline?: string}>
      */
     private static function rules(): array

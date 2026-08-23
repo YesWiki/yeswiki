@@ -11,20 +11,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use YesWiki\Content\Service\PageBodyMigrator;
 use YesWiki\Kernel\Service\DbService;
 
-/**
- * Operator-facing front end for ticket 09's body migration.
- *
- * `./yeswicli migrate` runs the migration unattended as part of an upgrade. This command
- * exists for the case that actually worries us -- a large wiki whose operator wants to
- * look before leaping:
- *
- *     ./yeswicli content:migrate-bodies --dry-run    # report only, writes nothing
- *     ./yeswicli content:migrate-bodies              # asks about backups, then converts
- *     ./yeswicli content:migrate-bodies --verify     # re-read every row and check it
- *
- * The conversion is idempotent, so running it here and then letting `migrate` run it
- * again is harmless -- the second pass finds nothing left to do.
- */
+/** Operator-facing front end for ticket 09's body migration. */
 class MigrateBodiesCommand extends Command
 {
     private ContainerInterface $services;
@@ -94,12 +81,7 @@ class MigrateBodiesCommand extends Command
         return $this->report($output, $migrator->verify());
     }
 
-    /**
-     * The backup gate. This rewrites every revision of the central table, so it asks
-     * rather than assuming -- and it says where the backup should come from, because the
-     * built-in archive command only produces a usable dump on MySQL (on SQLite the
-     * honest backup is a copy of the database file).
-     */
+    /** The backup gate. */
     private function confirmBackup(InputInterface $input, OutputInterface $output): bool
     {
         $driver = $this->services->get(DbService::class)->getDriver();

@@ -85,7 +85,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayA
 
     public function offsetSet($offset, $value): void
     {
-        // $offset is null for `$user[] = ...`, which a User has no room for either
         if ($offset === null || !$this->offsetExists($offset)) {
             throw new UserNotAuthorizedToSetOffset();
         }

@@ -120,7 +120,6 @@ class ReactionsField extends BazarField
             $this->reactionsFormatter->getReactionItems(
                 $currentEntryTag,
                 $username,
-                // never null: the constructor names an unnamed reactions field 'reactions'
                 (string)$this->name,
                 $this->ids,
                 $this->labels,

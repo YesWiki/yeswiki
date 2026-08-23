@@ -183,13 +183,7 @@ class RemoteImageCacheTest extends YesWikiTestCase
         $this->assertSame([], glob('cache/remote/*.webp') ?: []);
     }
 
-    /**
-     * A Presentation asks for the size it will draw, and gets a local copy of that size.
-     *
-     * A syndicated Item carries the publisher's own URL; the shared image macro reaches it
-     * through `image_at`, which is where the fetching and the shrinking happen. A four-column
-     * card wall must not download the banner a one-column list would.
-     */
+    /** A Presentation asks for the size it will draw, and gets a local copy of that size. */
     public function testAPresentationGetsTheSizeItAsksFor(): void
     {
         $cache = $this->cache($this->png(3000, 1500));

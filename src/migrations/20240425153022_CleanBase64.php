@@ -45,9 +45,6 @@ class CleanBase64 extends YesWikiMigration
         if (empty($entry)) {
             return false;
         }
-        // EntryManager::decode() renames `id_typeannonce` to `form_id` and unsets the old key
-        // (ADR-0010), so reading only the old one made this migration a no-op on every wiki:
-        // the base64 images it exists to extract stayed in the body
         $formId = $entry['form_id'] ?? $entry['id_typeannonce'] ?? null;
         if (empty($formId)) {
             return false;
@@ -65,8 +62,6 @@ class CleanBase64 extends YesWikiMigration
                 if (isset($formatted[$field->getPropertyName()])) {
                     $oldValue = json_encode($entry[$field->getPropertyName()]);
                     $newValue = json_encode($formatted[$field->getPropertyName()]);
-                    // false when the value does not survive encoding; replacing on an empty
-                    // needle would splice the replacement between every character of the body
                     if ($oldValue === false || $newValue === false) {
                         continue;
                     }

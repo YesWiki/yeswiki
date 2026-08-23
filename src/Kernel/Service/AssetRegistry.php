@@ -8,16 +8,7 @@ use YesWiki\Kernel\Asset\AssetEntry;
 use YesWiki\Kernel\Asset\AssetSet;
 
 /**
- * The request-scoped registry of declared assets, and the capture scopes that let a render
- * hand its assets back instead of leaving them in a global for a footer to flush.
- *
- * Ticket 14 replaced `$GLOBALS['css']` / `$GLOBALS['js']`. Those worked for exactly one
- * shape of response -- a whole page ending in `{{linkjavascript}}` -- and silently lost the
- * assets of anything else, which is why the form designer's map preview arrived as markup
- * with no leaflet behind it. Two places had already hand-rolled the missing mechanism rather
- * than fix it: the preview endpoint diffed `strlen($GLOBALS['css'])` across a render, and the
- * text-search action saved and restored `$GLOBALS['js']` to *discard* the assets of the
- * entries it rendered into its results. Both wanted a scope; neither could have one.
+ * The request-scoped registry of declared assets, and the capture scopes that let a render hand its assets back instead of leaving them in a global for a footer to flush.
  *
  * @see AssetEntry
  * @see AssetSet
@@ -79,15 +70,6 @@ class AssetRegistry implements RequestScopedState
     /**
      * Render $render with a fresh scope, and return what it declared.
      *
-     * The scope is isolating and non-propagating: assets registered inside do not reach the
-     * page. A fragment is therefore self-contained by construction -- it re-declares leaflet
-     * even when the surrounding page already has it, and the browser-side registry is what
-     * decides not to load it twice. The server states needs; the client states what it has.
-     *
-     * Rendering and discarding is *ignoring the return value*, which is how the text-search
-     * action expresses "do not drag every matched entry's field libraries onto the results
-     * page" -- previously a save/restore pair whose intent had to be inferred.
-     *
      * @template T
      *
      * @param callable():T $render
@@ -127,12 +109,7 @@ class AssetRegistry implements RequestScopedState
     }
 
     /**
-     * The URL a file would be served from, for callers that need the address rather than a
-     * tag -- a screen handing paths to its JavaScript, say. Null when there is no such file.
-     *
-     * The same resolution every other method here uses, so a farm instance gets its
-     * cache/assets/{version}/ path and not a source-tree one that only exists on the shared
-     * code tree.
+     * The URL a file would be served from, for callers that need the address rather than a tag -- a screen handing paths to its JavaScript, say.
      */
     public function urlFor(string $file): ?string
     {
@@ -182,15 +159,6 @@ class AssetRegistry implements RequestScopedState
 
     /**
      * Take the matching declared assets out of the registry and hand them to the caller.
-     *
-     * Draining rather than marking-as-emitted, because that is what the two emission points
-     * have always done: {{linkstyle}} emptied $GLOBALS['css'] so that {{linkjavascript}}
-     * would pick up whatever the page body declared afterwards. Anything registered again
-     * after a drain is emitted again -- which is how a second {{linkjavascript}} in one
-     * request still renders the core scripts.
-     *
-     * Two emission points exist until ticket 15 folds them into the skeleton's head block:
-     * the head takes the stylesheets, the foot takes the rest. $filter is how they divide.
      *
      * @param callable(AssetEntry):bool|null $filter
      */
@@ -248,12 +216,9 @@ class AssetRegistry implements RequestScopedState
                 return null;
             }
 
-            // no ?v= : the published path already embeds the version
             return $this->urlFormatter->getBaseUrl() . '/' . $published;
         }
 
-        // NB: the source-tree check covers files absent from the instance docroot - the
-        // URL still works there thanks to AssetPublisher's direct-path interception
         if (!file_exists($file) && !file_exists(YESWIKI_PROGRAM_DIR . '/' . $file)) {
             return null;
         }
@@ -284,12 +249,6 @@ class AssetRegistry implements RequestScopedState
         $config = $this->container->get(RuntimeConfig::class);
         $revision = $config->getValue('yeswiki_release', null);
 
-        // In debug, bust on the file's own mtime instead of the release string. `?v={release}`
-        // is right for a released instance and actively wrong on a working copy: the release
-        // does not change when a file does, so an edited script keeps being served from cache
-        // under an unchanged URL. That is not merely stale -- ticket 14 made ~25 initialisers
-        // depend on helpers defined in another file, and a cached copy of *that* file breaks
-        // every one of them with a ReferenceError. Caching is worth nothing in debug anyway.
         if ($config->getValue('debug')) {
             $localPath = file_exists($file) ? $file : YESWIKI_PROGRAM_DIR . '/' . $file;
             $mtime = @filemtime($localPath);
@@ -304,10 +263,7 @@ class AssetRegistry implements RequestScopedState
     }
 
     /**
-     * Farm instances (shared sources outside the instance docroot) get their css/js published
-     * into the instance's cache/assets/{version}/ folder and referenced from there, so they
-     * need no symlinks/aliases to the YesWiki sources (see AssetPublisher). Standalone
-     * installs serve the source files directly.
+     * Farm instances (shared sources outside the instance docroot) get their css/js published into the instance's cache/assets/{version}/ folder and referenced from there, so they need no symlinks/aliases to the YesWiki sources (see AssetPublisher).
      */
     private function publishToCache(): bool
     {
@@ -316,18 +272,7 @@ class AssetRegistry implements RequestScopedState
     }
 
     /**
-     * The folder published assets live under, and with it the cache key every browser holds
-     * them by -- they are served immutable, so a URL that does not move is a file that never
-     * changes again as far as a returning visitor is concerned.
-     *
-     * The release string alone is that key only for an instance that follows releases. On one
-     * following a branch it never moves: the wiki republishes the updated file on disk, keeps
-     * offering it at the same URL, and every browser that has been there goes on running the
-     * code it cached. A fix that is deployed, correct, and invisible.
-     *
-     * So the release carries a stamp that AssetPublisher bumps when it finds a published file
-     * older than its source, i.e. when the sources were updated. Memoized: within one request
-     * every URL must name the same folder, or the imports resolving between them break.
+     * The folder published assets live under, and with it the cache key every browser holds them by -- they are served immutable, so a URL that does not move is a file that never changes again as far as a returning visitor is concerned.
      */
     private function assetsVersion(): string
     {
@@ -346,12 +291,10 @@ class AssetRegistry implements RequestScopedState
 
     private function mapFilePath(string $file): string
     {
-        // Handle backward compatibility
         if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) {
             $file = self::BACKWARD_PATH_MAPPING[$file];
         }
 
-        // Handle production environment
         if (!$this->container->get(RuntimeConfig::class)->getValue('debug')) {
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
                 $file = self::PRODUCTION_PATH_MAPPING[$file];
@@ -363,7 +306,6 @@ class AssetRegistry implements RequestScopedState
 
     public function startNewRequest(): void
     {
-        // what a page declared belongs to that page (ticket 14)
         $this->page = new AssetSet();
         $this->scopes = [];
     }

@@ -94,7 +94,6 @@ class ApiService
         $route = $routes->all()[$routeName];
         $acl = $route->hasOption('acl') ? $route->getOption('acl') : [];
 
-        // a route declaring `acl` as anything but a list is not something this can read
         return is_array($acl) ? $acl : [];
     }
 
@@ -110,7 +109,6 @@ class ApiService
             return false;
         }
         $user = null;
-        // a list of keys rather than a name => key map answers an int here, which names no user
         $userName = array_search($bearerToken, $apiAllowedKeys);
         if (is_string($userName) && $userName !== '') {
             $user = $this->userManager->getOneByName($userName);

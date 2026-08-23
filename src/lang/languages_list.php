@@ -1,6 +1,6 @@
 <?php
 
-$GLOBALS['languages_list'] = [
+return [
     'ab' => [
         'name' => 'Abkhaz',
         'nativeName' => 'аҧсуа',

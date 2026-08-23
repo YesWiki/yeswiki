@@ -104,8 +104,8 @@ class InstallationController
             'env' => $this->env,
             'locale' => LanguageService::getInstance()->preferredLanguage(),
 
-            'installedLanguages' => $GLOBALS['installed_languages'] ?? $GLOBALS['available_languages'],
-            'languagesList' => $GLOBALS['languages_list'],
+            'installedLanguages' => LanguageService::getInstance()->installedLanguages(),
+            'languagesList' => LanguageService::getInstance()->languagesList(),
             'availableDrivers' => InstallationService::availableDrivers(),
             'yeswikiVersion' => ucfirst(YESWIKI_VERSION) . ' ' . YESWIKI_RELEASE,
             'pattern' => WN_CAMEL_CASE_EVOLVED,

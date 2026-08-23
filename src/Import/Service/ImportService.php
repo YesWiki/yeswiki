@@ -84,8 +84,6 @@ class ImportService
         try {
             $headers = $this->getHeaders($inputUrl);
         } catch (CurlTimeoutException $th) {
-            // `$intputUrl` -- a typo for the parameter, so a timed-out HEAD returned the empty
-            // string and the import failed with "no wiki here" instead of trying the url as given
             return $inputUrl;
         }
         $outputUrl = $inputUrl;
@@ -127,8 +125,6 @@ class ImportService
         $fp = fopen($destPath, 'wb');
         $fph = fopen($destPathHeaders, 'wb');
         if ($fp === false || $fph === false) {
-            // curl reads a `false` handle as "write to stdout": the response body and its
-            // headers used to be printed into the page instead of captured
             throw new \Exception("Error getting content from $url (temporary file could not be opened)");
         }
         $ch = curl_init($url);

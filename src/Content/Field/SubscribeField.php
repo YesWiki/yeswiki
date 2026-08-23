@@ -63,8 +63,6 @@ class SubscribeField extends BazarField
                 return [$this->propertyName => $value];
             }
 
-            // an imported value that is neither address subscribes nobody and unsubscribes
-            // nobody; this fell off the end and contributed null instead
             return [];
         }
         if (isset($value)) {

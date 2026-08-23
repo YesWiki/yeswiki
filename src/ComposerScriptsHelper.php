@@ -231,7 +231,6 @@ class ComposerScriptsHelper
             return self::deleteFolder($path);
         }
 
-        // neither a file nor a directory: nothing was deleted
         return false;
     }
 }

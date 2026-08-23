@@ -18,16 +18,7 @@ class UrlFormatter
         $this->pageContext = $pageContext;
     }
 
-    /**
-     * Every internal link in $body pointed at the iframe handler, unless it opens a new window.
-     *
-     * The iframe handlers render a page inside somebody else's page, and a link out of one has to
-     * stay inside it or the frame navigates away from the wiki. A link that says `target="_blank"`
-     * or carries `new-window` is asking to leave and is left alone.
-     *
-     * Was the global `replaceLinksWithIframe()` in `Kernel/urlutils.inc.php`, which reached the
-     * container to read the one configuration value this class is built on (ticket 50).
-     */
+    /** Every internal link in $body pointed at the iframe handler, unless it opens a new window. */
     public function throughIframeHandler(string $body): string
     {
         $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:' . preg_quote($this->rawBaseUrl(), '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(\2)([^>]*>)~i';

@@ -282,7 +282,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
         $db = $this->getService(DbService::class);
         $pages = $db->prefixTable('pages');
         $metadata = $db->quoteIdentifier('metadata');
-        // ADR-0018: `metadata` is native JSON, and `jsonb` has no LIKE
         $metadataAsText = $db->jsonAsText('metadata');
 
         $rows = $db->loadAll(

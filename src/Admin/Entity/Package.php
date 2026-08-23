@@ -269,8 +269,6 @@ abstract class Package extends Files
     {
         $namePlusDate = explode('-', basename($this->address, '.zip'), 2)[1];
 
-        // preg_replace() answers null only when PCRE itself fails; keep the un-stripped name then
-        // rather than handing a null package name to everything downstream.
         $withoutDate = preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate) ?? $namePlusDate;
 
         return preg_replace('/-' . SEMVER . '$/', '', $withoutDate) ?? $withoutDate;
@@ -284,7 +282,6 @@ abstract class Package extends Files
         $this->md5File = $this->download($this->address . '.md5');
         $checksum = file_get_contents($this->md5File);
 
-        // an unreadable checksum file must fail the integrity check, not abort the update
         if ($checksum === false) {
             return '';
         }

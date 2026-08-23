@@ -93,8 +93,6 @@ class EntryApiController extends YesWikiController
             $acceptHeader = (string)$this->getRequest()->headers->get('accept', '');
             if ($output == 'json-ld' || strpos($acceptHeader, 'application/ld+json') !== false) {
                 if (is_array($formId)) {
-                    // json-ld answers with one form's ldp:Container; there is no such
-                    // container spanning every form, so asking for one is a bad request
                     throw new BadRequestHttpException();
                 }
 
@@ -108,8 +106,6 @@ class EntryApiController extends YesWikiController
             } elseif ($output == 'ical') {
                 return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $get->all());
             } elseif ($get->has('fields')) {
-                // explode() never yields an empty array -- `?fields=` gives [''] -- so the
-                // guard below only means something once the blank names are dropped
                 $fields = array_filter(
                     explode(',', (string)$get->get('fields')),
                     fn (string $fieldName): bool => $fieldName !== ''
@@ -174,8 +170,6 @@ class EntryApiController extends YesWikiController
     {
         $form = $this->getService(FormManager::class)->getOne($formId);
         if ($form === null) {
-            // this is the body of a routed answer (getAllFormEntries returns it straight
-            // through), so an unknown form has to be a 404 and not a bare array
             throw new NotFoundHttpException();
         }
 
@@ -197,8 +191,6 @@ class EntryApiController extends YesWikiController
                 'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
-            // a name => value pair, not one colon-joined string: written as a list it named a
-            // header called "0" and the JSON-LD container went out as plain application/json
             ['Content-Type' => 'application/ld+json; charset=UTF-8']
         );
     }

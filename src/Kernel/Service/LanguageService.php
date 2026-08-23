@@ -2,7 +2,7 @@
 
 namespace YesWiki\Kernel\Service {
     /** Language detection and translation loading. */
-    class LanguageService
+    class LanguageService implements RequestScopedState
     {
         public const SUPPORTED_LANGUAGES = ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro'];
 
@@ -12,14 +12,25 @@ namespace YesWiki\Kernel\Service {
 
         private static ?LanguageService $instance = null;
 
-        /**
-         * The language this request is being served in.
-         *
-         * Was `$GLOBALS['prefered_language']`. On a container that survives the request the
-         * first visitor's language became everyone's (ADR-0024), and a global is the one place
-         * a value like this can be set from anywhere and read from anywhere without anybody
-         * being able to say who did it.
-         */
+        /** @var array<string, array<string, string>> catalogue file => its array */
+        private array $catalogues = [];
+
+        /** @var list<string> */
+        private array $availableLanguages = [];
+
+        /** @var list<string>|null */
+        private ?array $installedLanguages = null;
+
+        /** @var array<string, array<string, string>>|null */
+        private ?array $languagesList = null;
+
+        /** @var array<string, string>|null */
+        private ?array $baselineTranslations = null;
+
+        /** @var array<string, string>|null */
+        private ?array $baselineTranslationsJs = null;
+
+        /** The language this request is being served in. */
         private string $preferredLanguage = 'fr';
 
         /** The language this request is being served in. */
@@ -28,16 +39,7 @@ namespace YesWiki\Kernel\Service {
             return $this->preferredLanguage;
         }
 
-        /**
-         * The part of $body written for the language this request is being served in.
-         *
-         * A page body may hold several `{{lang="xx"}}` sections; the reader sees one. Falls back
-         * to $defaultLanguage, and returns the body untouched when it holds no sections at all.
-         *
-         * Was the global `filterBodyByLanguage()` in `Kernel/lang.functions.php`, which both its
-         * callers handed the same two arguments: this service's own preferred language, and the
-         * configured default. It only ever needed the second (ticket 50).
-         */
+        /** The part of $body written for the language this request is being served in. */
         public function sectionFor(string $body, string $defaultLanguage): string
         {
             $chunks = preg_split('/({{lang="[a-zA-Z][a-zA-Z]*"}})/ms', $body, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -63,14 +65,7 @@ namespace YesWiki\Kernel\Service {
             return $body;
         }
 
-        /**
-         * Serve the rest of this request in $language.
-         *
-         * `loadPreferredLanguage()` is what decides this for a real request, from the reader's
-         * cookie, the page and the configuration. This is the same decision stated outright,
-         * which is what a test asserting language-dependent output needs and what nothing else
-         * should want: it is a fact about the request being served, not a setting.
-         */
+        /** Serve the rest of this request in $language. */
         public function serveIn(string $language): void
         {
             $this->preferredLanguage = $language;
@@ -87,34 +82,19 @@ namespace YesWiki\Kernel\Service {
         public function initialize(): void
         {
             if (!defined('YW_CHARSET')) {
-                // `$GLOBALS['wiki']->config['charset']` until ticket 45, and **dead since ticket
-                // 08 deleted the Wiki class**: nothing has assigned `$GLOBALS['wiki']` since, so
-                // the fallback was always what ran. This is that fallback, stated. It runs at
-                // load time, before any configuration is read, so the configured `charset` has
-                // no way to reach it -- which means a wiki configured as anything but UTF-8 has
-                // silently been served as UTF-8. Worth a decision of its own: either the config
-                // key goes, or this constant stops being defined this early.
                 define('YW_CHARSET', 'UTF-8');
             }
             if (!defined('SUPPORTED_LANGS')) {
                 define('SUPPORTED_LANGS', self::SUPPORTED_LANGUAGES);
             }
 
-            require_once $this->langDir() . '/languages_list.php';
+            $this->loadCatalogueFile($this->langDir() . '/yeswiki_fr.php');
+            $this->loadCatalogueFile($this->langDir() . '/yeswikijs_fr.php', true);
 
-            $this->loadTranslations(require_once $this->langDir() . '/yeswiki_fr.php');
-            if (file_exists($this->langDir() . '/yeswikijs_fr.php')) {
-                $this->loadTranslations(require_once $this->langDir() . '/yeswikijs_fr.php', true);
-            }
-
-            // '' is the documented "before boot" argument, and the only one reachable here:
-            // this runs at load time. `loadPreferredLanguage()` redoes the detection with the
-            // runtime once it exists (YesWikiRuntime::boot()), which is what actually decides.
             $wiki = '';
 
-            $GLOBALS['installed_languages'] = $this->installedLanguages();
-            $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
-            $this->preferredLanguage = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages']);
+            $this->availableLanguages = $this->offeredLanguages($wiki, $this->installedLanguages());
+            $this->preferredLanguage = $this->detectPreferredLanguage($wiki, $this->availableLanguages);
         }
 
         /**
@@ -127,7 +107,7 @@ namespace YesWiki\Kernel\Service {
          */
         public function translate($textKey, array $params = []): string
         {
-            $result = $GLOBALS['translations'][$textKey] ?? $textKey;
+            $result = $this->translations()[$textKey] ?? $textKey;
             foreach ($params as $transKey => $value) {
                 $result = str_replace('%{' . $transKey . '}', $value, $result);
             }
@@ -136,12 +116,37 @@ namespace YesWiki\Kernel\Service {
         }
 
         /**
+         * The languages this reader may be offered.
+         *
+         * @return list<string>
+         */
+        public function availableLanguages(): array
+        {
+            return $this->availableLanguages;
+        }
+
+        /**
+         * Every language's name and native name.
+         *
+         * @return array<string, array<string, string>>
+         */
+        public function languagesList(): array
+        {
+            if ($this->languagesList === null) {
+                $loaded = require $this->langDir() . '/languages_list.php';
+                $this->languagesList = is_array($loaded) ? $loaded : [];
+            }
+
+            return $this->languagesList;
+        }
+
+        /**
          * The languages this wiki offers its readers: its own, plus any it has turned on.
          *
          * @param \YesWiki\YesWikiRuntime|object|string $wiki      the runtime, an object exposing ->config, or '' before boot
-         * @param string[]                              $installed what is available to offer
+         * @param list<string>                          $installed what is available to offer
          *
-         * @return string[]
+         * @return list<string>
          */
         public function offeredLanguages($wiki, array $installed): array
         {
@@ -166,10 +171,14 @@ namespace YesWiki\Kernel\Service {
         /**
          * Automatically detects the languages installed in the lang dir, filtered by officially supported languages.
          *
-         * @return string[] installed languages
+         * @return list<string> installed languages
          */
         public function installedLanguages(): array
         {
+            if ($this->installedLanguages !== null) {
+                return $this->installedLanguages;
+            }
+
             $availableLanguages = [];
             if ($d = @opendir($this->langDir())) {
                 while (($f = readdir($d)) !== false) {
@@ -183,7 +192,7 @@ namespace YesWiki\Kernel\Service {
                 sort($availableLanguages);
             }
 
-            return $availableLanguages;
+            return $this->installedLanguages = $availableLanguages;
         }
 
         /**
@@ -286,18 +295,15 @@ namespace YesWiki\Kernel\Service {
          */
         public function loadPreferredLanguage($wiki, ?string $page = ''): void
         {
-            $GLOBALS['installed_languages'] ??= $this->installedLanguages();
-            $GLOBALS['available_languages'] = $this->offeredLanguages($wiki, $GLOBALS['installed_languages']);
+            $this->availableLanguages = $this->offeredLanguages($wiki, $this->installedLanguages());
 
-            $lang = $this->detectPreferredLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
+            $lang = $this->detectPreferredLanguage($wiki, $this->availableLanguages, 'auto', $page);
             $this->preferredLanguage = $lang;
-            $this->rememberChoice($lang, $GLOBALS['available_languages']);
+            $this->rememberChoice($lang, $this->availableLanguages);
 
-            if ($lang != 'fr' && file_exists($this->langDir() . '/yeswiki_' . $lang . '.php')) {
-                $this->loadTranslations(include_once $this->langDir() . '/yeswiki_' . $lang . '.php');
-            }
-            if ($lang != 'fr' && file_exists($this->langDir() . '/yeswikijs_' . $lang . '.php')) {
-                $this->loadTranslations(include_once $this->langDir() . '/yeswikijs_' . $lang . '.php', true);
+            if ($lang != 'fr') {
+                $this->loadCatalogueFile($this->langDir() . '/yeswiki_' . $lang . '.php');
+                $this->loadCatalogueFile($this->langDir() . '/yeswikijs_' . $lang . '.php', true);
             }
 
             $this->projectJavascriptKeys();
@@ -342,8 +348,8 @@ namespace YesWiki\Kernel\Service {
             }
 
             $wanted = array_flip((array)require $keysFile);
-            $fromPhp = array_intersect_key($GLOBALS['translations'] ?? [], $wanted);
-            $GLOBALS['translations_js'] = array_merge($fromPhp, $GLOBALS['translations_js'] ?? []);
+            $fromPhp = array_intersect_key($this->translations(), $wanted);
+            $GLOBALS['translations_js'] = array_merge($fromPhp, $this->translations(true));
         }
 
         /**
@@ -353,18 +359,60 @@ namespace YesWiki\Kernel\Service {
          *                            the lang files return true when already included once)
          * @param bool  $jsMode       merge into the javascript translations instead
          */
-        public function loadTranslations($translations, bool $jsMode = false): void
+        public function loadTranslations($translations, bool $jsMode = false, bool $replace = false): void
         {
             $translationName = $jsMode ? 'translations_js' : 'translations';
             if (is_array($translations)) {
-                $GLOBALS[$translationName] = array_merge($GLOBALS[$translationName] ?? [], $translations);
+                $GLOBALS[$translationName] = $replace ? $translations : array_merge($this->translations($jsMode), $translations);
             }
+        }
+
+        /**
+         * The catalogue as it stands.
+         *
+         * @return array<string, string>
+         */
+        private function translations(bool $jsMode = false): array
+        {
+            return $GLOBALS[$jsMode ? 'translations_js' : 'translations'] ?? [];
+        }
+
+        /** Merge a catalogue file, reading it from disk once per process. */
+        public function loadCatalogueFile(string $file, bool $jsMode = false): void
+        {
+            if (!file_exists($file)) {
+                return;
+            }
+            if (!isset($this->catalogues[$file])) {
+                $loaded = include $file;
+                $this->catalogues[$file] = is_array($loaded) ? $loaded : [];
+            }
+
+            $this->loadTranslations($this->catalogues[$file], $jsMode);
+        }
+
+        /** Freeze the catalogue every request starts from. */
+        public function rememberBaseline(): void
+        {
+            $this->baselineTranslations = $this->translations();
+            $this->baselineTranslationsJs = $this->translations(true);
+        }
+
+        /** Put the catalogue back to the baseline, dropping the last reader's language. */
+        public function startNewRequest(): void
+        {
+            if ($this->baselineTranslations === null) {
+                return;
+            }
+
+            $this->loadTranslations($this->baselineTranslations, false, true);
+            $this->loadTranslations($this->baselineTranslationsJs ?? [], true, true);
         }
 
         /** Copy named keys from the PHP catalog into the javascript one. */
         public function loadJavascriptTranslations(string ...$keys): void
         {
-            $wanted = array_intersect_key($GLOBALS['translations'] ?? [], array_flip($keys));
+            $wanted = array_intersect_key($this->translations(), array_flip($keys));
             $this->loadTranslations($wanted, true);
         }
 

@@ -37,7 +37,6 @@ class AdminReactionsAction extends YesWikiAction implements RegisteredAction, Pr
         if ($this->getService(AclService::class)->isAdmin()) {
             $allReactions = $this->getService(ReactionManager::class)->getReactions();
             foreach (array_keys($allReactions) as $k) {
-                // sort in place: sorting the `foreach` copy left the table in insertion order
                 usort($allReactions[$k]['reactions'], function ($a, $b) {
                     return strnatcasecmp($a['user'], $b['user']);
                 });

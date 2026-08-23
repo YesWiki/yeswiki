@@ -74,7 +74,6 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
             $params = $this->checkParamActionSetTemplate($themes);
 
             if (!is_null($params)) {
-                // through ArrayAccess, the interface ConfigurationFile actually declares
                 $config['favorite_theme'] = $params['theme'];
                 $config['favorite_squelette'] = $params['squelette'];
                 $config['favorite_style'] = $params['style'];

@@ -37,9 +37,6 @@ class YesWikiPerformableCompilerPass implements CompilerPassInterface
                 $name = strtolower($class::performableName());
                 $map[$type][$name] = $id;
 
-                // A deprecated spelling resolves to the canonical name before the ACL check
-                // and before anything is parsed, so an alias cannot drift from what it
-                // aliases (ticket 49).
                 if (is_subclass_of($class, AliasesPerformable::class)) {
                     foreach ($class::performableAliases() as $alias => $defaults) {
                         $aliases[$type][strtolower($alias)] = ['name' => $name, 'defaults' => $defaults];

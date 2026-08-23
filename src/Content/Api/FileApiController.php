@@ -119,9 +119,6 @@ class FileApiController extends YesWikiController
 
     /**
      * The WebP copy this request asked for, generated on first use, or null when it asked for none or the file is not a raster image.
-     *
-     * A source already inside the box is not enlarged to fill it, but is still re-encoded: the
-     * format is the point, not only the size.
      */
     private function resizedCopy(Request $request, string $path): ?string
     {

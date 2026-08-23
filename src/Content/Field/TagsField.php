@@ -73,9 +73,6 @@ class TagsField extends EnumField
 
         $value = $this->getValue($entry);
 
-        // once per entry per request: a second tags field on the same form must not delete what
-        // the first one just wrote, and a second entry saved in the same request must still have
-        // its own keywords cleared, which the flag this replaces got wrong (ticket 45)
         if (!empty($entry['tag']) && $this->getService(EntryTagsCleared::class)->needsClearing($entry['tag'])) {
             $tripleStore->delete($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
         }

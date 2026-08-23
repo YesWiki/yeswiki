@@ -4,22 +4,7 @@ namespace YesWiki\Render\Service;
 
 use YesWiki\Kernel\Service\RequestScopedState;
 
-/**
- * What `{{panel}}`, `{{accordion}}` and `{{end}}` have to remember while one page renders.
- *
- * Two different things, both keyed by page tag because an `{{include}}` renders another page's
- * body inside this one:
- *
- *  - **a memo**: does this body contain a closing `{{end elem="…"}}` for this element? Scanning
- *    the body answers it, and the answer cannot change while the body is being rendered.
- *  - **a stack**: `{{panel}}` decides its shape from whether it sits inside an accordion, and
- *    `{{end}}` has to close whatever shape was opened, in order.
- *
- * All of it was `$GLOBALS['check_' . $pagetag]`. The stack half is the one ADR-0024 calls out:
- * keyed by page tag and not by request, two visitors on one page share it, and a request that
- * ends mid-stack hands the next one a dirty one, so somebody else's panel closes with the wrong
- * tag. This service is built per request, which is the whole fix.
- */
+/** What `{{panel}}`, `{{accordion}}` and `{{end}}` have to remember while one page renders. */
 class GraphicalElementState implements RequestScopedState
 {
     /** @var array<string, array<string, bool>> page tag => element => has a closing tag */
@@ -72,12 +57,7 @@ class GraphicalElementState implements RequestScopedState
         return $this->accordionIds[$pageTag] ?? '';
     }
 
-    /**
-     * Whether the accordion has already taken a panel, marking it as having one from now on.
-     *
-     * The first panel in an accordion opens and the rest start closed, so this answers false
-     * exactly once per accordion.
-     */
+    /** Whether the accordion has already taken a panel, marking it as having one from now on. */
     public function accordionTakesAnotherPanel(string $pageTag): bool
     {
         $already = $this->accordionHasFirstPanel[$pageTag] ?? false;

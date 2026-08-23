@@ -33,9 +33,6 @@ class HttpSignatureService
     {
         $privateKey = $form['activitypub_private_key'];
 
-        // THROW_ON_ERROR because the alternative is `false`, and digesting `false` would
-        // produce a well-formed signature over an empty body that the receiver rejects
-        // with nothing to say why
         $message = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $digest = $this->getDigest($message);
 

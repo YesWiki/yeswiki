@@ -20,9 +20,6 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
     {
         $this->_file = $file;
         $this->_parameters = [];
-        // The service is passed in, always: ConfigurationService builds these itself, and
-        // PackageCore is handed one by the collection that builds it. The `$GLOBALS` fallback
-        // this replaces existed for PackageCore alone (ticket 45).
         $this->configurationService = $configurationService;
     }
 

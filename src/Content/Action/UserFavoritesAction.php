@@ -120,8 +120,6 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             $imagefile = mb_convert_encoding(
                 (string)preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
-                    // was the global `encodingFromUTF8()`, reached by name through a string
-                    // callback -- which is why no grep for its name found a caller (ticket 50)
                     static fn (array $matches): string => (string)iconv('UCS-4LE', 'UTF-8', pack('V', hexdec($matches[1]))),
                     $image[1][0]
                 ),
@@ -132,7 +130,6 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             return $imagefile;
         }
         preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $body, $image);
-        // no `!= ''` here, unlike the other branches: this pattern cannot match an empty string
         if (isset($image[1][0])) {
             return $image[1][0];
         }

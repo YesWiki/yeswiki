@@ -34,12 +34,6 @@ class ActionRegistry
     /**
      * The canonical name $name is a spelling of, and the arguments that spelling implies.
      *
-     * Returns $name lowercased when it is not an alias, so every caller can resolve first and
-     * ask questions afterwards, and so a name compared against the result needs no case handling
-     * of its own. Resolution has to happen before the ACL check: an alias
-     * answers to what it aliases, and a permission of its own would be a permission nobody
-     * knew they were granting (ticket 49).
-     *
      * @return array{0: string, 1: array<string, string>}
      */
     public function resolve(string $type, string $name): array

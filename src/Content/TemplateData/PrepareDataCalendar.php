@@ -4,12 +4,7 @@ namespace YesWiki\Content\TemplateData;
 
 use YesWiki\Render\Service\TemplateEngine;
 
-/**
- * The calendar's own classes, and its fall back to the Vue view (was `CalendarAction::formatArguments()`).
- *
- * `minical` is a class a webmaster may write directly or ask for by parameter, and both have
- * to end up in the same place, which is the whole of why this template needs a preparer.
- */
+/** The calendar's own classes, and its fall back to the Vue view (was `CalendarAction::formatArguments()`). */
 class PrepareDataCalendar extends PrepareData
 {
     public function prepare(array $arguments): array
@@ -29,8 +24,6 @@ class PrepareDataCalendar extends PrepareData
         $template = !empty($arguments['template']) ? basename((string)$arguments['template']) : 'calendar';
         $dynamic = $this->formatBoolean($arguments, false, 'dynamic');
 
-        // There is no server-rendered calendar unless a theme or an extension supplies one,
-        // so asking for the shipped name means asking for the Vue view.
         if (
             in_array($template, ['calendar', 'calendar.tpl.html', 'calendar.twig'], true)
             && !$this->getService(TemplateEngine::class)->hasTemplate('@core/calendar.twig')

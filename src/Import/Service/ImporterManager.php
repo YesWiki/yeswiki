@@ -34,17 +34,6 @@ class ImporterManager
     /**
      * Every importer this wiki has, core's and any extension's, as [short name => class].
      *
-     * Discovery is by service id rather than by a registry an importer has to enrol in: a
-     * service that extends Importer is one, wherever it is declared. Those services are never
-     * *fetched* from the container -- an importer is constructed per data source with that
-     * source's key (see findImporterClass()), which no container can do -- so they are
-     * declared without autowiring, purely to be found here.
-     *
-     * The name alone would not do. Plenty of code calls something an "importer" without
-     * meaning a data source: `yeswiki-extension-fulltextsearch` registers `SealImporter` and
-     * `SealBatchImporter`, which feed a search index and take a completely different
-     * constructor -- listing them here would offer an admin importers that cannot be built.
-     *
      * @return array<string, class-string<Importer>>
      */
     public function getAvailableImporters(): array
@@ -57,8 +46,6 @@ class ImporterManager
             if (!is_subclass_of($serviceId, Importer::class)) {
                 continue;
             }
-            // service ids are class names here, but not necessarily under a "…\Service\…"
-            // namespace, so derive the short name from the last segment
             $parts = explode('\\', $serviceId);
             $shortName = substr((string)end($parts), 0, -strlen('Importer'));
             if ($shortName === '') {
@@ -120,9 +107,7 @@ class ImporterManager
     }
 
     /**
-     * All the admin fields of $importer: its own, plus the common ones. Single source of truth
-     * for the admin page and the mapping-fields endpoint, which must read the posted input the
-     * very same way.
+     * All the admin fields of $importer: its own, plus the common ones.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -135,10 +120,7 @@ class ImporterManager
     }
 
     /**
-     * Build a dataSources entry for $importer from the generic "{key}{importer}" input fields
-     * declared by that importer's getAdminFields(). $input is a plain array keyed the same way
-     * whether it comes from $_POST (AdminImportersAction) or a Symfony Request's ParameterBag
-     * (the AJAX field-mapping endpoint), so both callers share this logic.
+     * Build a dataSources entry for $importer from the generic "{key}{importer}" input fields declared by that importer's getAdminFields().
      *
      * @param array<string, array<string, array<string, mixed>>> $importerFields
      * @param array<string, mixed>                               $input
@@ -179,10 +161,7 @@ class ImporterManager
     }
 
     /**
-     * Build the remote/local field lists for the mapping table when $importer is pointed at an
-     * existing local form: fields come from the importer's fixed getOwnFields() list, or (e.g.
-     * YesWikiToYesWiki) are fetched from the remote form referenced in $sourceOptions. Returns
-     * null if there's nothing to map against (no own fields and the remote fetch failed).
+     * Build the remote/local field lists for the mapping table when $importer is pointed at an existing local form: fields come from the importer's fixed getOwnFields() list, or (e.g.
      *
      * @param array<string, mixed> $sourceOptions
      * @param array<string, mixed> $localForm
@@ -206,8 +185,7 @@ class ImporterManager
     }
 
     /**
-     * Log into the remote wiki and fetch its form's fields (key + label), to build the
-     * field-mapping table. Returns null on any failure.
+     * Log into the remote wiki and fetch its form's fields (key + label), to build the field-mapping table.
      *
      * @param array<string, mixed> $sourceOptions
      *
@@ -260,7 +238,6 @@ class ImporterManager
     {
         $result = [];
         foreach ($fields as $field) {
-            // skip layout-only fields (tabs, labelhtml, acls, ...): they have no property name
             if ($field && !empty($field->getPropertyName())) {
                 $result[] = ['key' => $field->getPropertyName(), 'label' => $field->getLabel()];
             }
@@ -278,7 +255,6 @@ class ImporterManager
         try {
             $importer = $this->findImporterClass($sourceOptions['importer'], $source);
             if (!$importer) {
-                // return [Command::INVALID, 'Importer ' . $sourceOptions['importer'] . ' not found'];
                 return 'Importer ' . $sourceOptions['importer'] . ' not found';
             }
             $data = $importer->getData();
@@ -286,11 +262,9 @@ class ImporterManager
             $importer->syncFormModel();
             $importer->syncData($data);
         } catch (\Throwable $th) {
-            // return [Command::INVALID, $th->getMessage()];
             return $th->getMessage() . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]);
         }
 
-        // return [Command::SUCCESS, _t('SOURCE_SUCCESSFULLY_SYNCED', $source)];
         return _t('SOURCE_SUCCESSFULLY_SYNCED', ['source' => $source])
             . ' ' . _t('IMPORTER_ELAPSED_TIME', ['duration' => $this->formatDuration($startTime)]);
     }
@@ -326,7 +300,6 @@ class ImporterManager
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POST, $isPost);
-        // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         if ($postData) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         }
@@ -337,8 +310,6 @@ class ImporterManager
         $response = curl_exec($ch);
         $errors = curl_error($ch);
         if (!empty($errors)) {
-            // a sync can run from a page view: report it the way every other step reports,
-            // rather than var_dump()ing into whatever page happened to trigger it
             echo 'Erreur de connexion à "' . $url . '" : ' . $errors . "\n";
         }
 
@@ -346,12 +317,7 @@ class ImporterManager
     }
 
     /**
-     * Download $sourceUrl into the wiki's upload directory and return the local file name to
-     * store in an entry's file/image field (empty string on failure).
-     * $destFileName lets the caller keep the source's own file name (e.g. a YesWiki to YesWiki
-     * import, where reusing the remote name keeps the sync idempotent and keeps YesWiki's
-     * "{tag}_{field}_{name}" convention readable); it is always sanitized here, since it comes
-     * from a remote source. Without it, the name is derived from the url as before.
+     * Download $sourceUrl into the wiki's upload directory and return the local file name to store in an entry's file/image field (empty string on failure).
      */
     public function downloadFile(
         string $sourceUrl,
@@ -374,9 +340,6 @@ class ImporterManager
         if (file_exists($destPath) && !$replaceExisting) {
             return $destFile;
         }
-        // download to a temporary file first: a failed request (404 html page, timeout, ssl
-        // error) must not leave a truncated or bogus file behind under the name we are about
-        // to store in the entry, where it would then look like a successful download forever
         $tmpPath = $destPath . '.part';
         $fp = fopen($tmpPath, 'wb');
         if ($fp === false) {
@@ -429,10 +392,7 @@ class ImporterManager
     }
 
     /**
-     * Keep a downloaded file's name usable as a plain file name inside the upload directory:
-     * it comes from a remote source, so it must not escape that directory nor land there with
-     * an extension the wiki would refuse on a regular upload (a server-side executable one
-     * above all). Returns '' when the name can't be made safe.
+     * Keep a downloaded file's name usable as a plain file name inside the upload directory: it comes from a remote source, so it must not escape that directory nor land there with an extension the wiki would refuse on a regular upload (a server-side executable one above all).
      */
     private function sanitizeDownloadedFileName(string $fileName): string
     {
@@ -442,8 +402,6 @@ class ImporterManager
         if ($fileName === '' || strlen($fileName) > 200) {
             return '';
         }
-        // YesWiki itself stores some attachments with a trailing "_" on the extension, and
-        // strips it back before checking it: do the same, so ".php_" can't slip through
         $extension = (string)preg_replace('/_+$/', '', strtolower((string)pathinfo($fileName, PATHINFO_EXTENSION)));
         $forbiddenExts = [
             'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phps', 'phtml', 'phar',
@@ -452,8 +410,6 @@ class ImporterManager
         if (in_array($extension, $forbiddenExts, true)) {
             return '';
         }
-        // when the wiki declares its authorized extensions (not all YesWiki versions do),
-        // hold downloads to the very same list as a manual upload through a bazar field
         $authorizedExts = $this->params->has('authorized-extensions') ? $this->params->get('authorized-extensions') : null;
         if (is_array($authorizedExts) && $extension !== '' && !array_key_exists($extension, $authorizedExts)) {
             return '';
