@@ -6,7 +6,8 @@ repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # ext-imap is not thread safe, so it cannot be in a ZTS build and the binary has no IMAP importer.
 NOT_IN_A_THREADED_BINARY="imap"
 
-# What `php -m` calls an extension, where that is not its composer name.
+# What the binary calls an extension, where that is not its composer name. `php-cli` takes a
+# script or `-r` and reads any other flag as a filename, so `-m` is not available here.
 module_name() {
     case "$1" in
         opcache) printf 'Zend OPcache' ;;
@@ -30,7 +31,7 @@ audited_extensions() {
 main() {
     local binary="${1:?usage: check-binary.sh <binary>}"
     local modules missing=()
-    modules="$("$binary" php-cli -m)"
+    modules="$("$binary" php-cli -r 'echo implode(PHP_EOL, get_loaded_extensions());')"
     printf '%s\n' "$modules"
 
     for extension in $(audited_extensions); do

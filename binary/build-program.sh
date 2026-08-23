@@ -3,7 +3,7 @@
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-target="$repo/binary/caddy/program"
+target="$repo/binary/program"
 
 keep="$(cat "$target/.gitkeep" 2>/dev/null || true)"
 rm -rf "$target"

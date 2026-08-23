@@ -28,11 +28,26 @@ EXTENSION_LIBS="freetype,libjpeg,libwebp,libavif"
 
 # Caddy modules. Setting XCADDY_ARGS at all drops the three FrankenPHP includes by default,
 # so they are named again here, next to ours.
+# Two constraints, and getting either wrong fails 16 minutes in, at the xcaddy link.
+#
+# The path has to be a container path: the replacement is resolved inside the build, not here. The
+# Dockerfile's `COPY --link . ./` puts the context at /go/src/app, so staging the module at
+# <context>/$PLUGIN_DIR makes it /go/src/app/$PLUGIN_DIR there.
+#
+# And what `--with` names has to be a *module* whose root holds the plugin package, because xcaddy
+# turns it into both a `require` and an `import`. That is why this package sits at the module root
+# rather than in a caddy/ subdirectory: `github.com/YesWiki/yeswiki/binary/caddy` was a package
+# inside module `github.com/YesWiki/yeswiki/binary`, and go resolved it to a module rooted at a
+# directory with no .go files in it. Splitting caddy/ off into its own module does not work either
+# -- it would depend on the parent module, and a `replace` in a dependency is ignored, so xcaddy
+# would go to the network for a module that is not published.
+PLUGIN_DIR="yeswiki-binary"
+
 CADDY_MODULES=(
     "--with github.com/dunglas/caddy-cbrotli"
     "--with github.com/dunglas/mercure/caddy"
     "--with github.com/dunglas/vulcain/caddy"
-    "--with github.com/YesWiki/yeswiki/binary/caddy=$repo/binary"
+    "--with github.com/YesWiki/yeswiki/binary=/go/src/app/${PLUGIN_DIR}"
 )
 
 # The extension set, read out of composer.json so it cannot drift from the audit (ticket 47).
@@ -71,6 +86,7 @@ main() {
     printf 'frankenphp %s, php %s, %s\n' "$FRANKENPHP_VERSION" "$PHP_VERSION" "$TARGETARCH"
     printf 'extensions: %s\n' "$extensions"
     printf 'extension libs: %s\n' "$EXTENSION_LIBS"
+    printf 'downloads go through %s\n' "${BUILD_PROXY:-no proxy}"
 
     "$repo/binary/build-program.sh" >/dev/null
 
@@ -81,13 +97,19 @@ main() {
     git -C "$FRANKENPHP_SRC" fetch --depth 1 origin "refs/tags/v${FRANKENPHP_VERSION}:refs/tags/v${FRANKENPHP_VERSION}" >/dev/null 2>&1 || true
     git -C "$FRANKENPHP_SRC" checkout --quiet "v${FRANKENPHP_VERSION}"
 
+    # Excluding this checkout, which lives under the module being copied, and dist/.
+    local staged="$FRANKENPHP_SRC/$PLUGIN_DIR"
+    rm -rf "$staged"
+    mkdir -p "$staged"
+    tar -C "$repo/binary" --exclude=./.frankenphp --exclude=./dist -cf - . | tar -C "$staged" -xf -
+    printf 'staged the caddy plugin and the Program into %s\n' "$staged"
+
     local image="yeswiki-static-builder-${TARGETARCH}"
     local golang_base network=()
     golang_base="$(cd "$FRANKENPHP_SRC" && docker buildx bake --print static-builder-musl 2>/dev/null \
         | php -r '$j = json_decode(stream_get_contents(STDIN), true); echo $j["target"]["static-builder-musl"]["contexts"]["golang-base"];')"
 
     if [ -n "$BUILD_PROXY" ]; then
-        printf 'downloads go through %s\n' "$BUILD_PROXY"
         network=(--network=host --allow=network.host
             --build-arg "HTTP_PROXY=${BUILD_PROXY}"
             --build-arg "HTTPS_PROXY=${BUILD_PROXY}"

@@ -1,5 +1,5 @@
-caddy/program/*
-!caddy/program/.gitkeep
-yeswiki
+program/*
+!program/.gitkeep
+/yeswiki
 dist/
 .frankenphp/
