@@ -174,8 +174,10 @@ class ConvertTableNature2Pages extends YesWikiMigration
         );
         foreach ($forms as $form) {
 
-            $existing_keys = $this->dbService->loadSingle("select body from {$this->dbService->prefixTable('nature')} where tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')} WHERE value = 'fiche_bazar') and JSON_VALUE(body, '$.id_typeannonce') = {$form['bn_id_nature']} limit 1");
-            $existing_keys = $existing_keys ? json_decode($existing_keys) : [];
+            $sql_query = "select body from {$this->dbService->prefixTable('pages')} where tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')} WHERE value = 'fiche_bazar') and JSON_VALUE(body, '$.id_typeannonce') = {$form['bn_id_nature']} limit 1";
+            $existing_keys = $this->dbService->loadSingle($sql_query);
+
+            $existing_keys = empty($existing_keys) ? [] : json_decode($existing_keys['body'], true);
 
             $newform = $this->convertform($pageManager, $tripleStore, $form, $existing_keys);
             $slug = getAvailableSlug($form['bn_label_nature']);
