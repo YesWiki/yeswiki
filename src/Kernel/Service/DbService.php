@@ -4,6 +4,7 @@ namespace YesWiki\Kernel\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Kernel\Database\PreparedStatement;
 use YesWiki\Kernel\Database\SchemaManager;
 use YesWiki\Kernel\Database\SqlDialect;
@@ -178,6 +179,139 @@ class DbService
     public function dialect(): SqlDialect
     {
         return $this->dialect;
+    }
+
+    /**
+     * Replay a dump beside this wiki's tables and put it in their place only once it is all there.
+     *
+     * @throws \Exception when the dump cannot be read, or fails before the swap
+     */
+    public function restoreStagedFromDump(string $sqlContent): void
+    {
+        $livePrefix = trim($this->prefixTable(''));
+        if ($livePrefix === '') {
+            throw new \Exception('Table prefix is empty — refusing to restore');
+        }
+
+        $this->assertDumpMatchesDriver($sqlContent);
+
+        $statements = SqlStatementSplitter::split($sqlContent);
+        if ($statements === []) {
+            throw new \Exception('SQL restore failed: the dump contains no statements');
+        }
+
+        $tables = DumpRewriter::tables($sqlContent);
+        $sourcePrefix = DumpRewriter::prefixOf($tables);
+        if ($sourcePrefix === '') {
+            throw new \Exception('SQL restore failed: no table in the dump names a prefix, so it is not a wiki backup');
+        }
+
+        $staging = $this->isolatedPrefix($livePrefix, 'staging');
+        $replaced = $this->isolatedPrefix($livePrefix, 'replaced');
+        $renames = DumpRewriter::renames($tables, $sourcePrefix, $staging);
+        if ($renames === []) {
+            throw new \Exception("SQL restore failed: no table in the dump starts with '$sourcePrefix'");
+        }
+
+        $this->dropTablesWithPrefix($staging);
+        $this->dropTablesWithPrefix($replaced);
+
+        $disable = $this->dialect->foreignKeyChecks(false);
+        if ($disable !== null) {
+            $this->query($disable);
+        }
+
+        try {
+            foreach ($statements as $index => $statement) {
+                try {
+                    $this->query(DumpRewriter::rewrite($statement, $renames));
+                } catch (\Throwable $th) {
+                    $excerpt = substr((string)preg_replace('/\s+/', ' ', $statement), 0, 200);
+
+                    throw new \Exception('SQL restore failed on statement ' . ($index + 1) . ' of ' . \count($statements) . ' (' . $excerpt . '): ' . $th->getMessage(), 0, $th);
+                }
+            }
+
+            $this->swapTables($livePrefix, $staging, $replaced);
+        } catch (\Throwable $th) {
+            $this->dropTablesWithPrefix($staging);
+
+            throw $th;
+        } finally {
+            $enable = $this->dialect->foreignKeyChecks(true);
+            if ($enable !== null) {
+                $this->query($enable);
+            }
+        }
+
+        $this->dropTablesWithPrefix($replaced);
+    }
+
+    /**
+     * Put the imported tables in place of the wiki's own, all at once.
+     *
+     * @throws \Exception when the dump created no table
+     */
+    private function swapTables(string $livePrefix, string $staging, string $replaced): void
+    {
+        $staged = $this->tablesWithPrefix($staging);
+        if ($staged === []) {
+            throw new \Exception('The backup created no table.');
+        }
+
+        $renames = [];
+        foreach ($this->tablesWithPrefix($livePrefix) as $table) {
+            $renames[$table] = $replaced . substr($table, \strlen($livePrefix));
+        }
+        foreach ($staged as $table) {
+            $renames[$table] = $livePrefix . substr($table, \strlen($staging));
+        }
+
+        $statements = $this->dialect->renameTables($renames);
+        if (\count($statements) > 1) {
+            $this->transactional(function () use ($statements): void {
+                foreach ($statements as $statement) {
+                    $this->query($statement);
+                }
+            });
+
+            return;
+        }
+
+        foreach ($statements as $statement) {
+            $this->query($statement);
+        }
+    }
+
+    /** A prefix of its own, that no prefix-wide operation can confuse with the wiki's own tables. */
+    private function isolatedPrefix(string $livePrefix, string $tag): string
+    {
+        $prefix = 'yw' . $tag . substr(sha1($livePrefix), 0, 6) . '_';
+        while (str_starts_with($prefix, $livePrefix) || str_starts_with($livePrefix, $prefix)) {
+            $prefix = "x$prefix";
+        }
+
+        return $prefix;
+    }
+
+    /** @return list<string> */
+    private function tablesWithPrefix(string $prefix): array
+    {
+        $found = [];
+        foreach ($this->schema()->getTables() as $table) {
+            if (str_starts_with($table, $prefix)) {
+                $found[] = $table;
+            }
+        }
+
+        return $found;
+    }
+
+    private function dropTablesWithPrefix(string $prefix): void
+    {
+        foreach ($this->tablesWithPrefix($prefix) as $table) {
+            $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($table));
+        }
     }
 
     /**

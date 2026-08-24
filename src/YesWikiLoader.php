@@ -50,21 +50,23 @@ class YesWikiLoader
     }
 
     /**
-     * The raw entries parsed from private/.env, unfiltered by the real environment.
+     * The raw entries parsed from an instance's private/.env, unfiltered by the real environment.
      *
      * @return array<string, string>
      */
-    public static function envFileValues(): array
+    public static function envFileValues(?string $instanceDir = null): array
     {
-        static $values = null;
-        if ($values === null) {
-            $envFile = YESWIKI_INSTANCE_DIR . '/private/.env';
-            $values = is_file($envFile)
+        static $byInstance = [];
+
+        $instanceDir ??= YESWIKI_INSTANCE_DIR;
+        if (!isset($byInstance[$instanceDir])) {
+            $envFile = $instanceDir . '/private/.env';
+            $byInstance[$instanceDir] = is_file($envFile)
                 ? (new Dotenv())->parse((string)file_get_contents($envFile), $envFile)
                 : [];
         }
 
-        return $values;
+        return $byInstance[$instanceDir];
     }
 
     public static function getWiki(bool $test = false): YesWikiRuntime

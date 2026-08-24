@@ -68,7 +68,7 @@ class Storage
     public function __construct(?UrlFormatter $urlFormatter = null)
     {
         $this->root = \defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd();
-        $this->remote = S3Settings::fromEnvironment();
+        $this->remote = S3Settings::forInstance($this->root);
         $this->urlFormatter = $urlFormatter;
     }
 
@@ -505,6 +505,125 @@ class Storage
         $client->createBucket(['Bucket' => $settings->bucket]);
 
         return true;
+    }
+
+    /** Whether the bucket already holds anything under this wiki's prefix. */
+    public function bucketHolds(): bool
+    {
+        $settings = $this->remote;
+        if ($settings === null) {
+            return false;
+        }
+        $request = ['Bucket' => $settings->bucket, 'MaxKeys' => 1];
+        if ($settings->prefix !== '') {
+            $request['Prefix'] = $settings->prefix . '/';
+        }
+        $listed = $this->s3Client($settings)->listObjectsV2($request);
+
+        foreach ($listed->getContents() as $object) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Write one object, read it back and delete it, to prove the credentials work.
+     *
+     * @throws StorageException when the round trip does not come back
+     */
+    public function proveWritable(): void
+    {
+        $settings = $this->remote;
+        if ($settings === null) {
+            return;
+        }
+        $client = $this->s3Client($settings);
+        $key = ($settings->prefix !== '' ? $settings->prefix . '/' : '') . '.yeswiki-write-test';
+        $written = 'yeswiki';
+
+        $client->putObject(['Bucket' => $settings->bucket, 'Key' => $key, 'Body' => $written]);
+
+        try {
+            $read = $client->getObject(['Bucket' => $settings->bucket, 'Key' => $key])->getBody()->getContentAsString();
+            if ($read !== $written) {
+                throw new StorageException("The bucket gave back '$read' where '$written' was written to $key.");
+            }
+        } finally {
+            $client->deleteObject(['Bucket' => $settings->bucket, 'Key' => $key]);
+        }
+    }
+
+    /**
+     * The other buckets these credentials can see, which a key scoped to one bucket cannot.
+     *
+     * @return list<string>
+     */
+    public function otherBucketsInReach(): array
+    {
+        $settings = $this->remote;
+        if ($settings === null) {
+            return [];
+        }
+
+        try {
+            $buckets = [];
+            foreach ($this->s3Client($settings)->listBuckets()->getBuckets() as $bucket) {
+                $name = (string)$bucket->getName();
+                if ($name !== '' && $name !== $settings->bucket) {
+                    $buckets[] = $name;
+                }
+            }
+
+            return $buckets;
+        } catch (\Throwable $refused) {
+            return [];
+        }
+    }
+
+    /**
+     * Delete everything this wiki keeps in the bucket, and the bucket itself when it is the wiki's.
+     *
+     * @return array{objects: int, bucket: bool} how many objects went, and whether the bucket did
+     */
+    public function dropRemote(): array
+    {
+        $settings = $this->remote;
+        if ($settings === null) {
+            return ['objects' => 0, 'bucket' => false];
+        }
+
+        $client = $this->s3Client($settings);
+        $prefix = $settings->prefix !== '' ? $settings->prefix . '/' : '';
+        $gone = 0;
+
+        while (true) {
+            $request = ['Bucket' => $settings->bucket, 'MaxKeys' => 1000];
+            if ($prefix !== '') {
+                $request['Prefix'] = $prefix;
+            }
+
+            $keys = [];
+            foreach ($client->listObjectsV2($request)->getContents() as $object) {
+                $keys[] = (string)$object->getKey();
+            }
+            if ($keys === []) {
+                break;
+            }
+
+            foreach ($keys as $key) {
+                $client->deleteObject(['Bucket' => $settings->bucket, 'Key' => $key]);
+                $gone++;
+            }
+        }
+
+        if ($prefix !== '') {
+            return ['objects' => $gone, 'bucket' => false];
+        }
+
+        $client->deleteBucket(['Bucket' => $settings->bucket]);
+
+        return ['objects' => $gone, 'bucket' => true];
     }
 
     /** The home this path's tier has: the bucket when it is configured for that tier, this disk otherwise. */

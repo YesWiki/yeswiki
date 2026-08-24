@@ -189,4 +189,14 @@ class SqliteDialect implements SqlDialect
 
         return "\"{$table}\".\"id\" IN (SELECT rowid FROM \"{$table}_fts\" WHERE \"{$table}_fts\" MATCH '{$query}')";
     }
+
+    public function renameTables(array $renames): array
+    {
+        $statements = [];
+        foreach ($renames as $from => $to) {
+            $statements[] = 'ALTER TABLE ' . $this->quoteIdentifier($from) . ' RENAME TO ' . $this->quoteIdentifier($to);
+        }
+
+        return $statements;
+    }
 }

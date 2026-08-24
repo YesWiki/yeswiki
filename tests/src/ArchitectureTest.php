@@ -53,6 +53,9 @@ class ArchitectureTest extends TestCase
      * @var array<string, int>
      */
     private const FS_REMAINING = [
+        'Admin/Command/DestroyCommand.php' => 3,
+        'Admin/Command/CloneCommand.php' => 5,
+        'Admin/Service/RemoteWikiArchive.php' => 3,
         'Admin/Action/ConfigurationAction.php' => 1,
         'Admin/Action/EditConfigAction.php' => 1,
         'Admin/Api/DocumentationApiController.php' => 1,

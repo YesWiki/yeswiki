@@ -11,7 +11,8 @@ use YesWiki\Core\YesWikiController;
 
 class ArchiveApiController extends YesWikiController
 {
-    #[Route('/api/archives/{id}', methods: ['GET'], options: ['acl' => ['@admins']])]
+    /** An archive is a zip, so this route does not swallow the named ones beside it. */
+    #[Route('/api/archives/{id}', methods: ['GET'], requirements: ['id' => '.+\.zip'], options: ['acl' => ['@admins']])]
     public function getArchive(string $id): Response
     {
         return $this->getService(ArchiveController::class)->getArchive($id);
@@ -59,7 +60,7 @@ class ArchiveApiController extends YesWikiController
         );
     }
 
-    #[Route('/api/archives/{id}', methods: ['POST'], options: ['acl' => ['@admins']])]
+    #[Route('/api/archives/{id}', methods: ['POST'], requirements: ['id' => '.+\.zip'], options: ['acl' => ['@admins']])]
     public function archiveAction(string $id): ApiResponse
     {
         return $this->getService(ArchiveController::class)->manageArchiveAction($id);

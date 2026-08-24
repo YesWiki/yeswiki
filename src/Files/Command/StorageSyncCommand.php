@@ -45,14 +45,14 @@ class StorageSyncCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $settings = S3Settings::fromEnvironment();
+        $root = \defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd();
+        $settings = S3Settings::forInstance($root);
         if ($settings === null) {
-            $output->writeln('<comment>YESWIKI_STORAGE is local: this wiki keeps its files here, and there is nothing to sync.</comment>');
+            $output->writeln('<comment>This wiki is configured for local storage: it keeps its files here, and there is nothing to sync.</comment>');
 
             return Command::SUCCESS;
         }
 
-        $root = \defined('YESWIKI_INSTANCE_DIR') ? YESWIKI_INSTANCE_DIR : (string)getcwd();
         $here = Storage::rootedAt($root);
         $there = Storage::rootedAtWith($root, $settings);
 

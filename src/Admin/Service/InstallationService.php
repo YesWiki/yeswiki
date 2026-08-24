@@ -512,6 +512,36 @@ class InstallationService
         $this->pass(_t('WRITE_ROBOT_TXT'));
     }
 
+    /**
+     * Write an instance's private/.env, which holds what the configuration file must never hold.
+     *
+     * @param array<string, string> $values variable name => value
+     *
+     * @throws \Exception when the file cannot be written
+     */
+    public static function writeEnvironmentFile(array $values): string
+    {
+        $directory = YESWIKI_INSTANCE_DIR . '/private';
+        if (!is_dir($directory) && !mkdir($directory, 0o700, true) && !is_dir($directory)) {
+            throw new \Exception("Could not create $directory.");
+        }
+
+        $lines = [];
+        foreach ($values as $name => $value) {
+            $lines[] = $name . '="' . str_replace(['\\', '"'], ['\\\\', '\\"'], $value) . '"';
+        }
+
+        $file = $directory . '/.env';
+        $kept = is_file($file) ? rtrim((string)file_get_contents($file)) . "\n" : '';
+
+        if (file_put_contents($file, $kept . implode("\n", $lines) . "\n") === false) {
+            throw new \Exception("Could not write $file.");
+        }
+        chmod($file, 0o600);
+
+        return $file;
+    }
+
     protected function writeConfigFile(): void
     {
         $this->config['yeswiki_version'] = YESWIKI_VERSION;

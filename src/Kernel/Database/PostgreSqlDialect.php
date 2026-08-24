@@ -175,4 +175,14 @@ class PostgreSqlDialect implements SqlDialect
 
         return "\"{$table}\".\"search_vector\" @@ to_tsquery('simple', '" . implode(' & ', $groups) . "')";
     }
+
+    public function renameTables(array $renames): array
+    {
+        $statements = [];
+        foreach ($renames as $from => $to) {
+            $statements[] = 'ALTER TABLE ' . $this->quoteIdentifier($from) . ' RENAME TO ' . $this->quoteIdentifier($to);
+        }
+
+        return $statements;
+    }
 }

@@ -35,6 +35,15 @@ interface SqlDialect
     /** Quote a table or column name, for reserved words like `user`, `time`, `order`. */
     public function quoteIdentifier(string $identifier): string;
 
+    /**
+     * Statements that rename tables, given `[oldName => newName]`.
+     *
+     * @param array<string, string> $renames
+     *
+     * @return list<string>
+     */
+    public function renameTables(array $renames): array;
+
     /** Collation clause for case-insensitive comparison ('' where the driver needs none). */
     public function collateClause(): string;
 

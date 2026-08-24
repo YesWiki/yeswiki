@@ -1218,8 +1218,9 @@ protégés, eux, continuent d'être servis par le wiki derrière son contrôle
 d'accès, et n'ont jamais d'URL.
 
 Le bucket doit exister avant la première écriture (sauf sur SeaweedFS, qui le
-crée tout seul), et sa politique doit autoriser la lecture anonyme des préfixes
-publics **et elle seule** :
+crée tout seul, et sauf si `core:install` l'a créé, voir plus bas), et sa
+politique doit autoriser la lecture anonyme des préfixes publics **et elle
+seule** :
 
 ```json
 {
@@ -1236,6 +1237,47 @@ publics **et elle seule** :
   }]
 }
 ```
+
+### Créer le bucket d'un wiki à l'installation
+
+`core:install` sait créer le bucket d'un wiki et écrire ses identifiants au bon
+endroit, ce qui est ce dont une ferme a besoin : **un bucket par wiki**, pour que
+l'isolation tienne à la frontière du bucket plutôt qu'à une politique IAM que
+personne ne relit.
+
+```bash
+S3_ADMIN_KEY=… S3_ADMIN_SECRET=… \
+./yeswicli core:install --no-interaction \
+  --driver=sqlite --base-url="https://mon-wiki.example/?" --admin-password=… \
+  --storage=s3 --s3-bucket=mon-wiki \
+  --s3-endpoint=https://s3.fr-par.scw.cloud --s3-region=fr-par \
+  --s3-key=… --s3-secret=… \
+  --s3-public-url=https://cdn.example/mon-wiki
+```
+
+`S3_ADMIN_KEY` crée le bucket ; c'est une clé qui a le droit de créer des
+buckets, elle n'est lue que pendant cette commande et **n'est écrite nulle
+part**. `--s3-key` est la clé que le wiki garde, et elle devrait être limitée à
+son propre bucket. Sans clé d'administration, c'est la clé du wiki qui crée le
+bucket, ce qui suppose qu'elle en a le droit.
+
+Ce que la commande vérifie, dans cet ordre :
+
+- le nom est bien un nom de bucket, avant toute connexion ;
+- si le bucket contient déjà des fichiers, elle **refuse** : quelque chose s'en
+  sert déjà, et deux wikis dans un bucket sont deux wikis qui se lisent l'un
+  l'autre. `--reuse-bucket` passe outre, ce qui est le cas quand on restaure un
+  wiki dans le bucket qu'il avait déjà ;
+- elle écrit puis relit un objet avec la clé du wiki, pour qu'une clé qui ne
+  fonctionne pas se voie maintenant et pas au premier envoi de fichier ;
+- si cette clé voit d'autres buckets, elle le **signale** : un wiki compromis
+  emmène alors les autres avec lui. Créer une clé limitée à un bucket ne se fait
+  pas par l'API S3 — c'est IAM chez AWS, `mc admin` chez MinIO, le fichier
+  d'identités chez SeaweedFS — donc c'est à vous de la créer, et YesWiki se
+  contente de vous dire quand vous ne l'avez pas fait.
+
+Les identifiants sont écrits dans `private/.env` en `0600`, jamais dans
+`yeswiki.config.php`.
 
 ### CORS : sans ça, les polices disparaissent
 

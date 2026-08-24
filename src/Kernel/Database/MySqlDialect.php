@@ -171,4 +171,18 @@ class MySqlDialect implements SqlDialect
 
         return "MATCH(`{$table}`.`title`, `{$table}`.`text`) AGAINST ('" . implode(' ', $groups) . "' IN BOOLEAN MODE)";
     }
+
+    public function renameTables(array $renames): array
+    {
+        if ($renames === []) {
+            return [];
+        }
+
+        $pairs = [];
+        foreach ($renames as $from => $to) {
+            $pairs[] = $this->quoteIdentifier($from) . ' TO ' . $this->quoteIdentifier($to);
+        }
+
+        return ['RENAME TABLE ' . implode(', ', $pairs)];
+    }
 }

@@ -8,7 +8,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use YesWiki\Admin\Service\DatabaseProvisioner;
 use YesWiki\Admin\Service\InstallationService;
+use YesWiki\Files\Service\BucketProvisioner;
 use YesWiki\Init;
 use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -31,6 +33,20 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
         'root-page' => 'root_page',
         'wiki-name' => 'yeswiki_name',
         'language' => 'default_language',
+    ];
+
+    /** Where this wiki keeps its files, as option name => config key. */
+    private const STORAGE_OPTIONS = [
+        'storage' => 'storage',
+        's3-bucket' => 's3_bucket',
+        's3-region' => 's3_region',
+        's3-endpoint' => 's3_endpoint',
+        's3-key' => 's3_key',
+        's3-secret' => 's3_secret',
+        's3-prefix' => 's3_prefix',
+        's3-path-style' => 's3_path_style',
+        's3-public-url' => 's3_public_url',
+        's3-tiers' => 's3_tiers',
     ];
 
     protected ?ContainerInterface $services;
@@ -60,6 +76,10 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
             $this->addOption($option, null, InputOption::VALUE_REQUIRED, "Configuration: $key");
         }
 
+        foreach (self::STORAGE_OPTIONS as $option => $key) {
+            $this->addOption($option, null, InputOption::VALUE_REQUIRED, "Configuration: $key (or YESWIKI_" . strtoupper($key) . ')');
+        }
+
         $this
             ->addOption('other-languages', null, InputOption::VALUE_REQUIRED, 'Further languages this wiki offers, comma separated')
             ->addOption('admin-name', null, InputOption::VALUE_REQUIRED, 'Name of the first account')
@@ -68,7 +88,117 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
             ->addOption('from-backup', null, InputOption::VALUE_NONE, 'Restore ' . InstallationService::BACKUP_SQL_FILE . ' instead of installing the default content')
             ->addOption('allow-robots', null, InputOption::VALUE_NONE, 'Let search engines index this wiki')
             ->addOption('allow-raw-html', null, InputOption::VALUE_NONE, 'Allow raw HTML in page content')
+            ->addOption('db-admin-user', null, InputOption::VALUE_REQUIRED, 'Create this wiki\'s database and account as this administrator (or DB_ADMIN_USER)')
+            ->addOption('db-admin-password', null, InputOption::VALUE_REQUIRED, 'Password of that administrator (or DB_ADMIN_PASSWORD, which keeps it out of ps)')
+            ->addOption('s3-admin-key', null, InputOption::VALUE_REQUIRED, 'Create this wiki\'s bucket with this key (or S3_ADMIN_KEY), leaving the wiki its own scoped one')
+            ->addOption('s3-admin-secret', null, InputOption::VALUE_REQUIRED, 'Secret of that key (or S3_ADMIN_SECRET, which keeps it out of ps)')
+            ->addOption('reuse-bucket', null, InputOption::VALUE_NONE, 'Install into a bucket that already holds files, which is what restoring a wiki does')
         ;
+    }
+
+    /**
+     * Create the database and account this wiki will own, when an administrator was named.
+     *
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>|null the configuration to install with, or null when it failed
+     */
+    private function provisionDatabase(SymfonyStyle $io, InputInterface $input, array $config): ?array
+    {
+        $adminUser = $this->value($input, 'db-admin-user', 'DB_ADMIN_USER', '');
+        if ($adminUser === '') {
+            return $config;
+        }
+
+        $driver = (string)($config['db_driver'] ?? '');
+        if (!DatabaseProvisioner::supports($driver)) {
+            $io->error("A $driver database is a file this wiki owns already: there is nothing to create for it.");
+
+            return null;
+        }
+
+        if (trim((string)($config['db_password'] ?? '')) === '') {
+            $config['db_password'] = DatabaseProvisioner::generatePassword();
+            $io->text('Generated a password for this wiki\'s database account.');
+        }
+
+        $provisioner = new DatabaseProvisioner();
+
+        try {
+            $provisioner->provision(
+                $adminUser,
+                $this->value($input, 'db-admin-password', 'DB_ADMIN_PASSWORD', ''),
+                $config
+            );
+        } catch (\Throwable $th) {
+            $io->error('Could not create the database: ' . $th->getMessage());
+
+            return null;
+        }
+
+        $io->success('Created ' . implode(', ', $provisioner->done()));
+
+        return $config;
+    }
+
+    /** Create the bucket this wiki will own, and write its storage settings where they belong. */
+    private function provisionBucket(SymfonyStyle $io, InputInterface $input): bool
+    {
+        $backend = trim((string)$input->getOption('storage'));
+        if ($backend === '') {
+            return true;
+        }
+
+        $stated = [];
+        $settings = [];
+        foreach (self::STORAGE_OPTIONS as $option => $key) {
+            $name = 'YESWIKI_' . strtoupper($key);
+            $value = $this->value($input, $option, $name, '');
+            if ($value !== '') {
+                $stated[$name] = $value;
+                $settings[$key] = $value;
+            }
+        }
+
+        try {
+            InstallationService::writeEnvironmentFile($stated);
+        } catch (\Throwable $th) {
+            $io->error($th->getMessage());
+
+            return false;
+        }
+
+        foreach ($stated as $name => $value) {
+            putenv("$name=$value");
+        }
+        $io->text('Wrote this wiki\'s storage settings to private/.env, which the configuration file never holds.');
+
+        if (strtolower($backend) === 'local') {
+            return true;
+        }
+
+        $provisioner = new BucketProvisioner();
+
+        try {
+            $provisioner->provision(
+                $this->value($input, 's3-admin-key', 'S3_ADMIN_KEY', ''),
+                $this->value($input, 's3-admin-secret', 'S3_ADMIN_SECRET', ''),
+                YESWIKI_INSTANCE_DIR,
+                $settings,
+                (bool)$input->getOption('reuse-bucket')
+            );
+        } catch (\Throwable $th) {
+            $io->error('Could not give this wiki a bucket: ' . $th->getMessage());
+
+            return false;
+        }
+
+        $io->success('Created ' . implode(', ', $provisioner->done()));
+        foreach ($provisioner->warnings() as $warning) {
+            $io->warning($warning);
+        }
+
+        return true;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -130,6 +260,15 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
         if (!isset($drivers[$config['db_driver']])) {
             $io->error("No pdo_{$config['db_driver']} here. Available: " . implode(', ', array_keys($drivers)) . '.');
 
+            return Command::FAILURE;
+        }
+
+        if (($provisioned = $this->provisionDatabase($io, $input, $config)) === null) {
+            return Command::FAILURE;
+        }
+        $config = $provisioned;
+
+        if (!$this->provisionBucket($io, $input)) {
             return Command::FAILURE;
         }
 

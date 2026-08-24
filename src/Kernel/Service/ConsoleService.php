@@ -11,6 +11,16 @@ class ConsoleService
 {
     protected const CONSOLE_BIN = 'src/commands/console';
 
+    /** The console, which lives in the Program and not in the Instance. */
+    public static function console(): string
+    {
+        if (\defined('YESWIKI_PROGRAM_DIR')) {
+            return YESWIKI_PROGRAM_DIR . DIRECTORY_SEPARATOR . self::CONSOLE_BIN;
+        }
+
+        return self::CONSOLE_BIN;
+    }
+
     protected ParameterBagInterface $params;
     protected ExecutableFinder $executableFinder;
     protected PhpExecutableFinder $phpBinaryFinder;
@@ -35,7 +45,7 @@ class ConsoleService
             return null;
         }
         $newCommand = $phpBinaryPath;
-        $newArgs = [self::CONSOLE_BIN, $command];
+        $newArgs = [self::console(), $command];
         foreach ($args as $arg) {
             $newArgs[] = $arg;
         }

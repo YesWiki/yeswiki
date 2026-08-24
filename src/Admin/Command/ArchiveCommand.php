@@ -67,7 +67,7 @@ class ArchiveCommand extends Command
         $uid = $input->getOption('uid');
         $uid = empty($uid) ? '' : $uid;
 
-        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
+        $location = $this->archiveService->synchronously()->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
 
         ob_end_clean();
 

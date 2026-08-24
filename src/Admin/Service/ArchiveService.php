@@ -79,6 +79,8 @@ class ArchiveService
     protected UrlFormatter $urlFormatter;
     protected Storage $storage;
 
+    private bool $needsAsync = true;
+
     public function __construct(
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
@@ -334,6 +336,14 @@ class ArchiveService
         return $result;
     }
 
+    /** Archive without needing to start a background job, for a caller that is already one. */
+    public function synchronously(): self
+    {
+        $this->needsAsync = false;
+
+        return $this;
+    }
+
     /**
      * retrieve the current status to archive.
      *
@@ -422,6 +432,7 @@ class ArchiveService
             && (
                 !$callAsync
                 || $canExec
+                || !$this->needsAsync
             )
             && $enoughSpace
         );
@@ -611,24 +622,87 @@ class ArchiveService
     /** Drop the wiki's tables and replay the dump into them (ticket 17: DbService owns the replay). */
     protected function restoreDatabase(string $sqlContent): void
     {
-        $this->dbService->restoreFromDump($sqlContent);
+        $this->dbService->restoreStagedFromDump($sqlContent);
     }
 
     /**
      * Extract wiki files from zip, skipping private/backups/ and wakka.config.php.
      */
+    /**
+     * Files that say where this wiki is and what it may reach.
+     *
+     * @return list<string>
+     */
+    public static function localOnlyFiles(): array
+    {
+        return [ConfigurationFileProvider::getConfigFileFromEnv(), 'private/.env'];
+    }
+
+    /**
+     * Configuration keys that say where this wiki is and what it may reach.
+     *
+     * @return list<string>
+     */
+    public static function localOnlyKeys(): array
+    {
+        return [
+            'base_url',
+            'db_driver',
+            'db_host',
+            'db_port',
+            'db_database',
+            'db_user',
+            'db_password',
+            'db_charset',
+            'table_prefix',
+        ];
+    }
+
+    /**
+     * This wiki's configuration with the remote one's taken over it, except what must stay local.
+     *
+     * @param array<string, mixed> $local  what this wiki has now
+     * @param array<string, mixed> $remote what the archive holds
+     *
+     * @return array<string, mixed>
+     */
+    public static function mergedSettings(array $local, array $remote): array
+    {
+        $keep = self::localOnlyKeys();
+
+        foreach ($remote as $key => $value) {
+            if (!in_array($key, $keep, true)) {
+                $local[$key] = $value;
+            }
+        }
+
+        return $local;
+    }
+
+    public static function isLocalOnly(string $name): bool
+    {
+        $name = ltrim(str_replace('\\', '/', $name), './');
+
+        foreach (self::localOnlyFiles() as $local) {
+            if ($name === ltrim(str_replace('\\', '/', $local), './') || $name === basename($local)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function restoreFilesFromZip(\ZipArchive $zip): void
     {
         $wikiRoot = YESWIKI_INSTANCE_DIR;
         $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
-        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             if ($name === false) {
                 continue;
             }
-            if (strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
+            if (strpos($name, $skipPrefix) === 0 || self::isLocalOnly($name) || strpos($name, '..') !== false) {
                 continue;
             }
             if (str_ends_with($name, '/')) {
