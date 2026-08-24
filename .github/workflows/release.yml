@@ -68,7 +68,7 @@ jobs:
 
   binary:
     permissions:
-      contents: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -110,8 +110,23 @@ jobs:
       - name: Check the binary carries what the manifest names
         run: ./binary/check-binary.sh "binary/dist/yeswiki-linux-${{ matrix.arch }}"
 
+      - name: Checksum
+        run: |
+          cd binary/dist
+          sha256sum "yeswiki-linux-${{ matrix.arch }}" > "yeswiki-linux-${{ matrix.arch }}.sha256"
+
       - uses: actions/upload-artifact@v4
         with:
           name: yeswiki-linux-${{ matrix.arch }}
-          path: binary/dist/yeswiki-linux-${{ matrix.arch }}
+          path: |
+            binary/dist/yeswiki-linux-${{ matrix.arch }}
+            binary/dist/yeswiki-linux-${{ matrix.arch }}.sha256
           retention-days: 7
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          files: |
+            binary/dist/yeswiki-linux-${{ matrix.arch }}
+            binary/dist/yeswiki-linux-${{ matrix.arch }}.sha256
