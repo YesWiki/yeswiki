@@ -124,10 +124,16 @@ class RepeatedRequestTest extends YesWikiTestCase
         $wiki = self::getWiki();
         $language = $wiki->services->get(LanguageService::class);
 
+        if (!in_array('en', $language->installedLanguages(), true)) {
+            $this->markTestSkipped('this wiki ships no English catalogue to alternate with');
+        }
+
         $key = 'AB_bazar_commons2_filter_on_date_today';
 
         $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
+        $others = $wiki->config['other_languages'] ?? null;
         unset($_GET['lang'], $_COOKIE[LanguageService::COOKIE]);
+        $wiki->config['other_languages'] = 'en';
 
         try {
             $readings = [];
@@ -143,6 +149,13 @@ class RepeatedRequestTest extends YesWikiTestCase
             } else {
                 $_SERVER['HTTP_ACCEPT_LANGUAGE'] = $accept;
             }
+            if ($others === null) {
+                unset($wiki->config['other_languages']);
+            } else {
+                $wiki->config['other_languages'] = $others;
+            }
+            $wiki->services->get(RequestScope::class)->startNewRequest();
+            $language->loadPreferredLanguage($wiki, '');
         }
 
         $this->assertNotSame(

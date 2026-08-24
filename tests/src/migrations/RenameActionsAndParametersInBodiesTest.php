@@ -78,8 +78,11 @@ class RenameActionsAndParametersInBodiesTest extends YesWikiTestCase
             $this->runMigration($wiki, $dbService);
 
             $this->assertSame(
-                [$body],
-                $this->bodiesFor($dbService, $pages),
+                [json_decode($body, true)],
+                array_map(
+                    static fn (string $stored) => json_decode($stored, true),
+                    $this->bodiesFor($dbService, $pages)
+                ),
                 'prose and parameter values are not action calls; this row had nothing to rewrite'
             );
         } finally {

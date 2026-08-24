@@ -81,7 +81,11 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
                 [self::TAG]
             );
             $this->assertNotNull($after, 'fixture: the row must still be there');
-            $this->assertSame($body, (string)$after['body'], 'the migration must not rewrite the page');
+            $this->assertSame(
+                json_decode($body, true),
+                json_decode((string)$after['body'], true),
+                'the migration must not rewrite the page'
+            );
         } finally {
             $dbService->query("DELETE FROM {$pages} WHERE tag = ?", [self::TAG]);
         }

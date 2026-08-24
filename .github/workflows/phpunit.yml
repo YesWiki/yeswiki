@@ -145,7 +145,11 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
           # Workers > 1 so a request that triggers a sub-request cannot deadlock the server.
+          # tests/ci-router.php denies private/, which .htaccess does for Apache and the
+          # built-in server honours nothing. Without it ArchiveService correctly refuses to
+          # archive a wiki whose backups answer 200 to anyone.
           PHP_CLI_SERVER_WORKERS=4 nohup php -S ${{ env.WIKI_HOST }} -t ${{ github.workspace }} \
+            ${{ github.workspace }}/tests/ci-router.php \
             > ${{ runner.temp }}/php-server.log 2>&1 &
           for _ in $(seq 20); do
             curl --silent --fail http://${{ env.WIKI_HOST }} > /dev/null && exit 0
