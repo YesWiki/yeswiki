@@ -54,7 +54,7 @@ class MapField extends BazarField
         $postalCode = $values[self::FIELD_AUTOCOMPLETE_POSTALCODE] ?? self::DEFAULT_FIELDNAME_POSTALCODE;
         $town = $values[self::FIELD_AUTOCOMPLETE_TOWN] ?? self::DEFAULT_FIELDNAME_TOWN;
 
-        $this->autocomplete = implode(',', [trim($postalcode), trim($town)]);
+        $this->autocomplete = implode(',', [trim($postalCode), trim($town)]);
 
         $this->geolocate = (empty($autocomplete_other[0]) || $autocomplete_other[0] != 1) ? 0 : 1;
         $street = trim($autocomplete_other[1]) ?? self::DEFAULT_FIELDNAME_STREET;
