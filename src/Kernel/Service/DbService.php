@@ -81,6 +81,25 @@ class DbService
         }
     }
 
+    /**
+     * A database path as the Instance's own, the way Storage anchors every other path.
+     *
+     * SQLite resolves a relative path against the process working directory, which is shared by
+     * every wiki a farm serves from one process (single-binary 08).
+     */
+    private function inInstance(string $dbPath): string
+    {
+        if ($dbPath === '' || $dbPath === ':memory:' || str_starts_with($dbPath, '/')) {
+            return $dbPath;
+        }
+
+        if (!\defined('YESWIKI_INSTANCE_DIR')) {
+            return $dbPath;
+        }
+
+        return YESWIKI_INSTANCE_DIR . '/' . $dbPath;
+    }
+
     protected function buildDsn(): string
     {
         switch ($this->driver) {
@@ -89,7 +108,7 @@ class DbService
                     ? $this->stringParam('db_database')
                     : 'private/yeswiki.db';
 
-                return 'sqlite:' . $dbPath;
+                return 'sqlite:' . $this->inInstance($dbPath);
 
             case 'pgsql':
                 $dsn = 'pgsql:host=' . $this->stringParam('db_host') . ';dbname=' . $this->stringParam('db_database');

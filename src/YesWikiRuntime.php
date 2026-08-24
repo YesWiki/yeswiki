@@ -74,6 +74,9 @@ class YesWikiRuntime
     /** @var array<string, mixed> */
     public $config;
 
+    /** @var Init the boot-time reader of configuration, kept so a request can start its own session */
+    private Init $init;
+
     /** @var Request */
     public $request;
 
@@ -113,7 +116,8 @@ class YesWikiRuntime
      */
     public function __construct($config = [])
     {
-        $init = new Init($config);
+        $this->init = new Init($config);
+        $init = $this->init;
         $this->config = $init->config;
         $this->CookiePath = $init->initCookies();
         $this->initialTag = $init->page;
@@ -287,6 +291,7 @@ class YesWikiRuntime
     private function doRun($tag, $method)
     {
         $this->service(RequestScope::class)->startNewRequest();
+        $this->readThisRequest();
 
         if ($this->shouldRunMaintenance()) {
             $this->maintenance();
@@ -686,6 +691,29 @@ class YesWikiRuntime
         $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
         $this->service(PageContext::class)->setTag($this->initialTag);
         $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
+    }
+
+    /**
+     * Re-read everything derived from the request rather than from the configuration.
+     *
+     * A worker boots once and serves many requests, so a value read in the constructor belongs to
+     * whoever arrived first: the page asked for, the request object and the session were all being
+     * settled at boot and reused for every visitor afterwards (ADR-0024, single-binary 07).
+     *
+     * @return void
+     */
+    private function readThisRequest()
+    {
+        $this->request = Request::createFromGlobals();
+        $this->service(CurrentRequest::class)->replace($this->request);
+
+        $this->init->getRoute();
+        $this->initialTag = $this->init->page;
+        $this->initialMethod = $this->init->method;
+        $this->service(PageContext::class)->setTag($this->initialTag);
+        $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
+
+        $this->CookiePath = $this->init->initCookies();
     }
 
     /**

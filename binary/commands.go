@@ -91,6 +91,7 @@ func init() {
 		CobraFunc: func(command *cobra.Command) {
 			command.Flags().String("program-root", "", "Where to write the program ("+program.EnvRoot+")")
 			command.Flags().Int("port", 0, "Serve on this port of localhost (default 8080)")
+			command.Flags().String("admin", "", "Expose Caddy's admin API here, for diagnosis only (default off)")
 			command.Flags().String("listen", "", "Full address to listen on, when --port is not enough")
 			command.Flags().String("domain", "", "Serve this domain publicly, with a certificate Caddy obtains")
 			command.Flags().Bool("classic", false, "Serve without workers, rebuilding the wiki on every request")
@@ -165,6 +166,7 @@ func runServe(flags caddycmd.Flags) (int, error) {
 	server := caddyServer{
 		listen:  Listen{Address: address, Domain: flags.String("domain")},
 		workers: Workers{Classic: flags.Bool("classic"), Count: flags.Int("workers")},
+		admin:   flags.String("admin"),
 	}
 	if err := commands.Serve(options(flags, directory), server); err != nil {
 		return caddy.ExitCodeFailedStartup, err
@@ -222,6 +224,7 @@ func (phpConsole) Console(instance, programDir string, arguments []string) error
 type caddyServer struct {
 	listen  Listen
 	workers Workers
+	admin   string
 }
 
 // Serve runs the wiki from inside its own directory, which is where a relative path in its
@@ -248,8 +251,9 @@ func (c caddyServer) Serve(instance, programDir string) error {
 
 	workers := c.workers
 	workers.Program = programDir
+	workers.Instance = instance
 
-	caddyfile, err := CaddyfileFor(instance, c.listen, workers)
+	caddyfile, err := CaddyfileFor(instance, c.listen, workers, Admin(c.admin))
 	if err != nil {
 		return err
 	}

@@ -45,12 +45,34 @@ func ProvisionInstance(instance, programDir string) error {
 		}
 	}
 
-	entry := filepath.Join(instance, "index.php")
-	if _, err := os.Stat(entry); err == nil {
-		return nil
+	for name, content := range map[string]string{
+		"index.php":  IndexPHP(programDir),
+		"worker.php": WorkerPHP(programDir),
+	} {
+		entry := filepath.Join(instance, name)
+		if _, err := os.Stat(entry); err == nil {
+			continue
+		}
+		if err := os.WriteFile(entry, []byte(content), 0o644); err != nil {
+			return err
+		}
 	}
 
-	return os.WriteFile(entry, []byte(IndexPHP(programDir)), 0o644)
+	return nil
+}
+
+// WorkerPHP is the Instance entry point a worker runs, and what try_files resolves to under worker
+// mode: FrankenPHP matches a worker to a request by resolved script path, so the two must be the
+// same file. It cannot be index.php doing both, because FRANKENPHP_WORKER is set in a worker's
+// request environment and so is not visible when the worker script first runs (single-binary 07).
+func WorkerPHP(programDir string) string {
+	return fmt.Sprintf(`<?php
+
+define('%s', %s);
+putenv('%s=' . __DIR__);
+putenv('%s=' . __DIR__ . '/yeswiki.config.php');
+require %s . '/worker.php';
+`, EnvProgram, phpString(programDir), EnvInstance, EnvConfigFile, EnvProgram)
 }
 
 // IndexPHP is the Instance entry point, stating both roots the way CreateInstanceCommand does.

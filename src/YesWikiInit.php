@@ -588,6 +588,15 @@ class Init
      *
      * @return string $CookiePath path to the cookie
      */
+    /**
+     * The cookie path, and this request's session.
+     *
+     * Called once per request, not once per process: a worker outlives the visitor whose session
+     * it opened, so starting one at boot would serve every later visitor the first one's
+     * `$_SESSION` (ADR-0024, single-binary 07).
+     *
+     * @return string
+     */
     public function initCookies()
     {
         $urlParsed = parse_url(is_string($this->config['base_url'] ?? null) ? $this->config['base_url'] : '');
@@ -610,7 +619,7 @@ class Init
             $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
-        if (!isset($_SESSION)) {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
@@ -621,9 +630,29 @@ class Init
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();
+            $this->seedSessionKeysVendorSingletonsAssume();
         }
 
         return $CookiePath;
+    }
+
+    /**
+     * Keys a once-constructed vendor object believes it created, seeded on every session.
+     *
+     * `Tamtamchik\SimpleFlash`'s SessionManager sets `$_SESSION['flash_messages']` in a
+     * constructor that a static facade runs once per process. Under php-fpm that is once per
+     * request; under a worker (ADR-0024) the object outlives the session it initialised, so every
+     * request after the first reads a key nothing put back.
+     *
+     * @return void
+     */
+    private function seedSessionKeysVendorSingletonsAssume()
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+
+        $_SESSION['flash_messages'] ??= [];
     }
 
     /**

@@ -8,7 +8,7 @@ import (
 )
 
 func TestABareServeReachesNoCertificateAuthority(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{})
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{}, "")
 
 	if !strings.Contains(file, "auto_https off") {
 		t.Fatal("a first run must not involve a certificate authority")
@@ -19,7 +19,7 @@ func TestABareServeReachesNoCertificateAuthority(t *testing.T) {
 }
 
 func TestNamingADomainTurnsCertificatesOn(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{Domain: "wiki.example.org"}, Workers{})
+	file := Caddyfile("/wikis/mine", Listen{Domain: "wiki.example.org"}, Workers{}, "")
 
 	if strings.Contains(file, "auto_https off") {
 		t.Fatal("a named domain is the one case where Caddy should get a certificate")
@@ -30,10 +30,10 @@ func TestNamingADomainTurnsCertificatesOn(t *testing.T) {
 }
 
 func TestTheRulesThatMustSurviveAreThere(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{})
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{}, "")
 
 	for what, expected := range map[string]string{
-		"the front controller fallback":  "try_files {path} {path}/index.php index.php",
+		"the front controller fallback":  "try_files {path} {path}/worker.php worker.php",
 		"the webfinger redirect":         "redir * /?api/webfinger&{query} 301",
 		"the actor rewrite":              `^/actors/(\d+)(/(?:outbox|inbox|followers|following))?$`,
 		"the actor query string":         "env QUERY_STRING api/forms/{re.actor.1}/actor{re.actor.2}",
@@ -57,7 +57,7 @@ func TestAnInstanceCanOverrideTheWholeThing(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	file, err := CaddyfileFor(instance, Listen{}, Workers{})
+	file, err := CaddyfileFor(instance, Listen{}, Workers{}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestAnInstanceCanOverrideTheWholeThing(t *testing.T) {
 }
 
 func TestWithoutAnOverrideTheShippedRulesAreUsed(t *testing.T) {
-	file, err := CaddyfileFor(t.TempDir(), Listen{}, Workers{})
+	file, err := CaddyfileFor(t.TempDir(), Listen{}, Workers{}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestWithoutAnOverrideTheShippedRulesAreUsed(t *testing.T) {
 }
 
 func TestPrivateIsRefusedBeforeAnythingRewritesTheRequest(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{})
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{}, "")
 
 	private := strings.Index(file, "handle @private")
 	actor := strings.Index(file, "handle @actor")
@@ -91,19 +91,48 @@ func TestPrivateIsRefusedBeforeAnythingRewritesTheRequest(t *testing.T) {
 	}
 }
 
-func TestWorkersAreOnByDefaultAndPointAtTheProgram(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/opt/yeswiki/program-4.5.0"})
+func TestWorkersAreOnByDefaultAndPointAtTheScriptRequestsResolveTo(t *testing.T) {
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{
+		Program:  "/opt/yeswiki/program-4.5.0",
+		Instance: "/wikis/mine",
+	}, "")
 
 	if !strings.Contains(file, "frankenphp {") {
 		t.Fatalf("worker mode is the reason to use FrankenPHP at all:\n%s", file)
 	}
-	if !strings.Contains(file, "file /opt/yeswiki/program-4.5.0/worker.php") {
-		t.Fatalf("the worker script is not the Program's:\n%s", file)
+	if !strings.Contains(file, "file /wikis/mine/worker.php") {
+		t.Fatalf("the worker names a script no request resolves to, so it receives none:\n%s", file)
+	}
+	if strings.Contains(file, "file /opt/yeswiki/program-4.5.0/worker.php") {
+		t.Fatalf("the Program's worker.php is not what try_files lands on:\n%s", file)
+	}
+}
+
+// The bug this pairing exists to prevent: FrankenPHP looks a worker up by resolved script path
+// (workersByPath[fc.scriptFilename]), so a worker whose file is not the front controller boots,
+// holds an interpreter and serves nothing, while every request goes to a regular thread.
+func TestTheWorkerFileIsTheFrontController(t *testing.T) {
+	workers := Workers{Program: "/opt/yeswiki/program-4.5.0", Instance: "/wikis/mine"}
+	file := Caddyfile("/wikis/mine", Listen{}, workers, "")
+
+	if !strings.Contains(file, "file /wikis/mine/"+workers.FrontController()) {
+		t.Fatalf("the worker does not name the front controller:\n%s", file)
+	}
+	if !strings.Contains(file, "try_files {path} {path}/"+workers.FrontController()+" "+workers.FrontController()) {
+		t.Fatalf("try_files does not resolve to the worker's file:\n%s", file)
+	}
+}
+
+func TestClassicModeServesTheOrdinaryEntryPoint(t *testing.T) {
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true, Instance: "/wikis/mine"}, "")
+
+	if !strings.Contains(file, "try_files {path} {path}/index.php index.php") {
+		t.Fatalf("without a worker there is nothing to route to worker.php:\n%s", file)
 	}
 }
 
 func TestClassicModeStaysAvailable(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true, Program: "/opt/yeswiki/program-4.5.0"})
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true, Program: "/opt/yeswiki/program-4.5.0"}, "")
 
 	if strings.Contains(file, "frankenphp {") {
 		t.Fatalf("--classic must rebuild the wiki per request, which is how a field report gets compared:\n%s", file)
@@ -111,12 +140,12 @@ func TestClassicModeStaysAvailable(t *testing.T) {
 }
 
 func TestTheWorkerCountIsStatedOnlyWhenAsked(t *testing.T) {
-	file := Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/p", Count: 4})
+	file := Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/p", Count: 4}, "")
 	if !strings.Contains(file, "num 4") {
 		t.Fatalf("the count was not carried:\n%s", file)
 	}
 
-	file = Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/p"})
+	file = Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/p"}, "")
 	if strings.Contains(file, "num ") {
 		t.Fatalf("with no count, FrankenPHP picks one for the machine:\n%s", file)
 	}
@@ -154,14 +183,14 @@ func TestCaddyfileServesTheChosenPort(t *testing.T) {
 		t.Fatalf("listenAddress: %v", err)
 	}
 
-	config := Caddyfile("/wikis/mine", Listen{Address: address}, Workers{Classic: true})
+	config := Caddyfile("/wikis/mine", Listen{Address: address}, Workers{Classic: true}, "")
 	if !strings.Contains(config, "http://localhost:8099 {") {
 		t.Errorf("the Caddyfile does not serve the chosen port:\n%s", config)
 	}
 }
 
 func TestTheFrontControllerIsPhpServersOwn(t *testing.T) {
-	config := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true})
+	config := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true}, "")
 
 	if strings.Contains(config, "try_files {path} {path}/ ") {
 		t.Error("`{path}/` is nginx's idiom, where a matched directory falls through to the " +
@@ -170,5 +199,21 @@ func TestTheFrontControllerIsPhpServersOwn(t *testing.T) {
 	}
 	if !strings.Contains(config, "try_files {path} {path}/index.php index.php") {
 		t.Errorf("the front controller fallback is not php_server's own:\n%s", config)
+	}
+}
+
+// Caddy's local admin API is unauthenticated by design, and under FrankenPHP the PHP that would
+// abuse it runs inside this very process. It is off unless somebody asks.
+func TestTheAdminApiIsOffUnlessAskedFor(t *testing.T) {
+	if !strings.Contains(Caddyfile("/wikis/mine", Listen{}, Workers{}, ""), "admin off") {
+		t.Error("a served wiki must not expose an admin API every wiki's PHP can reach")
+	}
+
+	asked := Caddyfile("/wikis/mine", Listen{}, Workers{}, "127.0.0.1:2019")
+	if !strings.Contains(asked, "admin 127.0.0.1:2019") {
+		t.Error("--admin must be honoured, or single-binary 07 cannot assert what served a request")
+	}
+	if strings.Contains(asked, "admin off") {
+		t.Error("--admin and admin off must not both be emitted")
 	}
 }

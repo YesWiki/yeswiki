@@ -6,6 +6,16 @@
  * The wiki is booted once and then serves request after request, instead of being rebuilt for
  * each one. Everything that must not outlive a request is reset by `RequestScope` at the top of
  * `YesWikiRuntime::doRun()`, which is why this loop can be as short as it is.
+ *
+ * The wiki reads its own entry point out of `$_SERVER` to work out which page was asked for, and
+ * under worker mode that is `worker.php` rather than `index.php` -- so every request rendered a
+ * page of that name. The script is described to the wiki as the front controller it would have
+ * been under php-fpm, which is what makes the two modes agree (single-binary 07).
+ *
+ * The session is the exception `RequestScope` cannot own: it belongs to PHP's session extension
+ * rather than to a service, and under php-fpm the process ending is what closed it. A worker
+ * outlives the request, so it is closed here or the next request finds one already open and reads
+ * the last visitor's `$_SESSION` (single-binary 07).
  */
 
 use YesWiki\Core\YesWikiLoader;
@@ -27,8 +37,21 @@ $requestsBeforeRestart = (int)(getenv('YESWIKI_WORKER_REQUESTS') ?: 500);
 $served = 0;
 
 $handler = static function () use ($wiki): void {
+    foreach (['SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF'] as $describesTheScript) {
+        if (isset($_SERVER[$describesTheScript]) && is_string($_SERVER[$describesTheScript])) {
+            $_SERVER[$describesTheScript] = str_replace('worker.php', 'index.php', $_SERVER[$describesTheScript]);
+        }
+    }
+
     AssetPublisher::interceptAssetRequest();
-    $wiki->run();
+
+    try {
+        $wiki->run();
+    } finally {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
 };
 
 while ($served < $requestsBeforeRestart) {

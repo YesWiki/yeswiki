@@ -172,6 +172,44 @@ class RepeatedRequestTest extends YesWikiTestCase
         );
     }
 
+    /** Under a worker the wiki must be told its entry point is the front controller, not worker.php. */
+    public function testTheWorkerDescribesItselfAsTheFrontController(): void
+    {
+        $worker = (string)file_get_contents(\YESWIKI_PROGRAM_DIR . '/worker.php');
+
+        $this->assertStringContainsString(
+            "str_replace('worker.php', 'index.php'",
+            $worker,
+            'the wiki reads its entry point out of $_SERVER to work out which page was asked for, '
+            . 'so a worker that leaves worker.php there serves a page of that name for every URL'
+        );
+    }
+
+    /** Anything derived from the request has to be derived again for the next one. */
+    public function testTheRuntimeRereadsEachRequest(): void
+    {
+        $runtime = (string)file_get_contents(\YESWIKI_PROGRAM_DIR . '/src/YesWikiRuntime.php');
+
+        $this->assertStringContainsString(
+            '$this->readThisRequest();',
+            $runtime,
+            'the page asked for, the request object and the session were all settled in the '
+            . 'constructor, which under a worker runs once: every visitor after the first got the '
+            . "first one's (ADR-0024)"
+        );
+
+        $position = strpos($runtime, '$this->readThisRequest();');
+        $scope = strpos($runtime, 'RequestScope::class)->startNewRequest()');
+        $this->assertNotFalse($position);
+        $this->assertNotFalse($scope);
+        $this->assertGreaterThan(
+            $scope,
+            $position,
+            'the request is re-read after the scope is reset, or it is read into state the reset '
+            . 'is about to throw away'
+        );
+    }
+
     /** The mechanism is only worth anything if the runtime uses it. */
     public function testTheRuntimeStartsEveryRequest(): void
     {

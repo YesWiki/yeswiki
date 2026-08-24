@@ -25,10 +25,6 @@ if (!defined('YESWIKI_INSTANCE_DIR')) {
 }
 unset($yeswikiStatedDir);
 
-if (getcwd() !== YESWIKI_INSTANCE_DIR) {
-    @chdir(YESWIKI_INSTANCE_DIR);
-}
-
 foreach (['cache', 'custom', 'files', 'private'] as $yeswikiDataFolder) {
     $yeswikiDataDir = YESWIKI_INSTANCE_DIR . '/' . $yeswikiDataFolder;
     if (!is_dir($yeswikiDataDir)) {
