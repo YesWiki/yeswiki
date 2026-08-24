@@ -16,6 +16,8 @@ for entry in src vendor templates themes javascripts styles extensions docs comp
     fi
 done
 
+printf '%s\n' "$(git -C "$repo" describe --tags --always --dirty 2>/dev/null || echo dev)" > "$target/VERSION"
+
 rm -rf "$target/extensions"/*/node_modules
 find "$target" -name '.git' -prune -exec rm -rf {} + 2>/dev/null || true
 

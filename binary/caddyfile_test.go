@@ -33,7 +33,7 @@ func TestTheRulesThatMustSurviveAreThere(t *testing.T) {
 	file := Caddyfile("/wikis/mine", Listen{}, Workers{})
 
 	for what, expected := range map[string]string{
-		"the front controller fallback":  "try_files {path} {path}/ /index.php",
+		"the front controller fallback":  "try_files {path} {path}/index.php index.php",
 		"the webfinger redirect":         "redir * /?api/webfinger&{query} 301",
 		"the actor rewrite":              `^/actors/(\d+)(/(?:outbox|inbox|followers|following))?$`,
 		"the actor query string":         "env QUERY_STRING api/forms/{re.actor.1}/actor{re.actor.2}",
@@ -119,5 +119,56 @@ func TestTheWorkerCountIsStatedOnlyWhenAsked(t *testing.T) {
 	file = Caddyfile("/wikis/mine", Listen{}, Workers{Program: "/p"})
 	if strings.Contains(file, "num ") {
 		t.Fatalf("with no count, FrankenPHP picks one for the machine:\n%s", file)
+	}
+}
+
+func TestListenAddressFromPort(t *testing.T) {
+	address, err := listenAddress("", 8099)
+	if err != nil {
+		t.Fatalf("--port 8099: %v", err)
+	}
+	if address != "localhost:8099" {
+		t.Errorf("--port 8099 gave %q, want localhost:8099", address)
+	}
+}
+
+func TestListenAddressKeepsAnExplicitListen(t *testing.T) {
+	address, err := listenAddress("0.0.0.0:9000", 0)
+	if err != nil {
+		t.Fatalf("--listen 0.0.0.0:9000: %v", err)
+	}
+	if address != "0.0.0.0:9000" {
+		t.Errorf("--listen gave %q, want 0.0.0.0:9000", address)
+	}
+}
+
+func TestListenAddressRefusesBoth(t *testing.T) {
+	if _, err := listenAddress("0.0.0.0:9000", 8099); err == nil {
+		t.Error("--port and --listen together must be refused, so neither silently wins")
+	}
+}
+
+func TestCaddyfileServesTheChosenPort(t *testing.T) {
+	address, err := listenAddress("", 8099)
+	if err != nil {
+		t.Fatalf("listenAddress: %v", err)
+	}
+
+	config := Caddyfile("/wikis/mine", Listen{Address: address}, Workers{Classic: true})
+	if !strings.Contains(config, "http://localhost:8099 {") {
+		t.Errorf("the Caddyfile does not serve the chosen port:\n%s", config)
+	}
+}
+
+func TestTheFrontControllerIsPhpServersOwn(t *testing.T) {
+	config := Caddyfile("/wikis/mine", Listen{}, Workers{Classic: true})
+
+	if strings.Contains(config, "try_files {path} {path}/ ") {
+		t.Error("`{path}/` is nginx's idiom, where a matched directory falls through to the " +
+			"`index` directive. Caddy has no such fallthrough, so a request for / stops at the " +
+			"directory and answers 404 instead of reaching index.php.")
+	}
+	if !strings.Contains(config, "try_files {path} {path}/index.php index.php") {
+		t.Errorf("the front controller fallback is not php_server's own:\n%s", config)
 	}
 }

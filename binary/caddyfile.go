@@ -121,7 +121,7 @@ func Caddyfile(instance string, listen Listen, workers Workers) string {
 
 	handle {
 		php_server {
-			try_files {path} {path}/ /index.php
+			try_files {path} {path}/index.php index.php
 		}
 	}
 }

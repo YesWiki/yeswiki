@@ -91,3 +91,14 @@ fix-js: ## Auto-fix JS lint rules (correctness, not formatting)
 	$(YARN) run fix-js
 fix-format: ## Format JS/CSS/JSON/MD/YAML
 	$(YARN) run fix-format
+
+## —— Binary ——————————————————————————————
+
+binary-local: ## Build against the machine's libphp (minutes; serves a real wiki, not shippable)
+	nix-shell binary/dev-shell.nix --run ./binary/build-dynamic.sh
+
+binary: ## Build the shipped static binary (half an hour; needs Docker)
+	./binary/build-static.sh
+
+binary-check: ## Assert a built binary carries every extension composer.json names
+	./binary/check-binary.sh binary/dist/yeswiki-linux-$(shell uname -m)
