@@ -53,7 +53,7 @@ func hideEverythingButTheWiki() {
 	for _, command := range root.Commands() {
 		if command.Name() == "version" {
 			command.RunE = func(cmd *cobra.Command, _ []string) error {
-				cmd.Printf("%s\n", wikiVersion())
+				fmt.Fprintln(cmd.OutOrStdout(), wikiVersion())
 
 				return nil
 			}
@@ -100,8 +100,16 @@ restoring -- but it cannot undo a migration that has already run.`,
 	root.AddCommand(upgrade)
 }
 
+// engine is what the build stamped into Caddy's version, read before init() replaces it.
+var engine = strings.TrimSpace(caddy.CustomVersion)
+
+// wikiVersion names YesWiki first and the engine after, which static-php-cli's smoke test greps for.
 func wikiVersion() string {
-	return "YesWiki " + Version
+	if engine == "" {
+		return "YesWiki " + Version
+	}
+
+	return "YesWiki " + Version + " (" + engine + ")"
 }
 
 func init() {

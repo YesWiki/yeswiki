@@ -217,3 +217,25 @@ func TestTheAdminApiIsOffUnlessAskedFor(t *testing.T) {
 		t.Error("--admin and admin off must not both be emitted")
 	}
 }
+
+// static-php-cli's smoke test runs `frankenphp version` and refuses a build whose output does not
+// contain "FrankenPHP", so the engine has to be named even though the wiki comes first.
+func TestTheVersionNamesTheWikiAndTheEngine(t *testing.T) {
+	kept := engine
+	defer func() { engine = kept }()
+
+	engine = "FrankenPHP v1.12.7 PHP 8.4.24 Caddy"
+	stamped := wikiVersion()
+	if !strings.HasPrefix(stamped, "YesWiki ") {
+		t.Errorf("the wiki comes first: %q", stamped)
+	}
+	if !strings.Contains(stamped, "FrankenPHP") {
+		t.Errorf("static-php-cli refuses a build whose version does not name FrankenPHP: %q", stamped)
+	}
+
+	engine = ""
+	bare := wikiVersion()
+	if strings.Contains(bare, "(") {
+		t.Errorf("an unstamped build has no engine to name: %q", bare)
+	}
+}
