@@ -7,7 +7,7 @@
   "prefer-stable": true,
   "scripts": {
     "test": "bash tests/tests.sh",
-    "analyse": "phpstan analyse -c phpstan/phpstan.neon --no-progress",
+    "analyse": "phpstan analyse -c phpstan/phpstan.neon --no-progress --memory-limit=1G",
     "post-install-cmd": [
       "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
     ],

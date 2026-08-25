@@ -445,6 +445,12 @@ class DbService
         return $this->dialect->jsonExtractText($column, $path);
     }
 
+    /** An expression read as a number, so an ORDER BY on it sorts 9 before 10. */
+    public function castToInteger(string $expression): string
+    {
+        return $this->dialect->castToInteger($expression);
+    }
+
     /**
      * Returns a SQL expression aggregating the distinct values of a column into a single comma-separated string, ordered by $orderBy.
      *

@@ -1,6 +1,12 @@
 <?php
 
-/** Translation keys the shipped JavaScript asks `_t()` for. */
+/**
+ * Translation keys the shipped JavaScript asks `_t()` for.
+ *
+ * GENERATED -- run `php src/build-js-lang-keys.php` after adding a `_t()` call to a
+ * script. LanguageService copies each of these from the PHP catalog into the javascript
+ * one, which is the only catalog `_t()` reads in the browser.
+ */
 
 return [
     'ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE',
@@ -39,6 +45,13 @@ return [
     'ADMIN_BACKUPS_UID_STATUS_RUNNING',
     'ADMIN_BACKUPS_UID_STATUS_STOP',
     'ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR',
+    'ADMIN_FILES_COPY_URL',
+    'ADMIN_FILES_DELETE',
+    'ADMIN_FILES_DELETE_CONFIRM',
+    'ADMIN_FILES_TOTAL',
+    'ADMIN_FILES_UPLOADED',
+    'ADMIN_FILES_UPLOADING',
+    'ADMIN_FILES_UPLOAD_FAILED',
     'ALERT',
     'ALERT_DANGER',
     'ALERT_INFO',

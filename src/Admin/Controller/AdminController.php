@@ -397,6 +397,12 @@ class AdminController extends YesWikiController
         return $file;
     }
 
+    #[Route('/admin/files', options: ['acl' => self::ADMIN_ACL])]
+    public function files(): Response
+    {
+        return $this->page('@core/admin/files.twig', 'admin/files');
+    }
+
     #[Route('/admin/users', options: ['acl' => self::ADMIN_ACL])]
     public function users(): Response
     {

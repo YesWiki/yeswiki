@@ -89,9 +89,239 @@
   grid-column: 1 / -1;
 }
 
-.yw-dashboard__card > h2 {
+.yw-dashboard__card > h2,
+.yw-dashboard__card > h3 {
   margin-top: 0;
   font-size: 1.05rem !important;
+}
+
+.yw-dashboard__heading {
+  margin-top: var(--yw-space-lg-y);
+}
+
+.yw-dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin: var(--yw-space-lg-y) 0;
+}
+
+.yw-stat {
+  position: relative;
+  display: block;
+  padding: var(--yw-space-md-y) var(--yw-space-lg-x) var(--yw-space-md-y)
+    var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-sunken);
+  color: inherit;
+  text-decoration: none;
+}
+
+.yw-stat:hover,
+.yw-stat:focus-visible {
+  border-color: var(--yw-primary);
+  color: inherit;
+}
+
+.yw-stat__figure {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1.1;
+  color: var(--yw-primary);
+}
+
+.yw-stat__label {
+  display: block;
+  font-weight: bold;
+}
+
+.yw-stat__note {
+  display: block;
+  font-size: 0.85em;
+  color: var(--yw-text);
+}
+
+.yw-stat__go {
+  position: absolute;
+  top: var(--yw-space-md-y);
+  right: var(--yw-space-md-x);
+  opacity: 0.4;
+}
+
+.yw-table-scroll {
+  overflow-x: auto;
+}
+
+.yw-source__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  flex-wrap: wrap;
+}
+
+.yw-source__origin {
+  margin: 0;
+  font-size: 1.05rem !important;
+  overflow-wrap: anywhere;
+}
+
+.yw-source__count {
+  flex: 0 0 auto;
+  padding: 0 var(--yw-space-md-x);
+  border-radius: var(--yw-radius-full);
+  background: var(--yw-surface-raised);
+  font-variant-numeric: tabular-nums;
+}
+
+.yw-source__last {
+  margin: var(--yw-space-sm-y) 0 var(--yw-space-md-y);
+  font-size: 0.9em;
+  color: var(--yw-text);
+}
+
+.yw-source__entries summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.yw-source__entries code {
+  font-size: 0.8em;
+  word-break: break-all;
+}
+
+.yw-files__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  flex-wrap: wrap;
+}
+
+.yw-files__head h1 {
+  margin: 0;
+}
+
+.yw-files__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  flex-wrap: wrap;
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-files__search {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.yw-files__total {
+  margin-left: auto;
+  font-size: 0.9em;
+  color: var(--yw-text);
+}
+
+.yw-files__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-file {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-sunken);
+  overflow: hidden;
+}
+
+.yw-file--copied {
+  border-color: var(--yw-success);
+}
+
+.yw-file__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 130px;
+  background: var(--yw-surface-raised);
+  overflow: hidden;
+}
+
+.yw-file__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.yw-file__glyph .yw-icon {
+  width: 40px;
+  height: 40px;
+  opacity: 0.5;
+}
+
+.yw-file__meta {
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  min-width: 0;
+}
+
+.yw-file__name {
+  display: block;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-file__facts,
+.yw-file__from {
+  display: block;
+  font-size: 0.8em;
+  color: var(--yw-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yw-file__tools {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  visibility: hidden;
+}
+
+.yw-file:hover .yw-file__tools,
+.yw-file:focus-within .yw-file__tools {
+  visibility: visible;
+}
+
+.yw-files__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+  margin-top: var(--yw-space-lg-y);
+}
+
+/* a class that sets `display` outranks the attribute, so say it again */
+.yw-files__pager[hidden],
+.yw-files__toolbar[hidden] {
+  display: none;
+}
+
+.yw-files__empty {
+  padding: var(--yw-space-lg-y) 0;
+  text-align: center;
+  color: var(--yw-text);
 }
 
 .yw-dashboard__links {

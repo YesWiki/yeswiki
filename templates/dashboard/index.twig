@@ -1,0 +1,123 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_TITLE') }}</h1>
+
+  <div class="yw-dashboard__stats">
+    <a class="yw-stat" href="{{ url({ tag: 'dashboard/forms' }) }}">
+      <span class="yw-stat__figure">{{ counts.form|default(0) }}</span>
+      <span class="yw-stat__label">{{ _t('DASHBOARD_FORMS') }}</span>
+      <span class="yw-stat__note">
+        {{ _t('DASHBOARD_STAT_ENTRIES')|replace({'{count}': counts.entry|default(0)}) }}
+      </span>
+      <span class="yw-stat__go">{{ icon('briefcase') }}</span>
+    </a>
+
+    <a class="yw-stat" href="{{ url({ tag: 'dashboard/lists' }) }}">
+      <span class="yw-stat__figure">{{ counts.liste|default(0) }}</span>
+      <span class="yw-stat__label">{{ _t('DASHBOARD_ADMIN_LISTS') }}</span>
+      <span class="yw-stat__note">{{ _t('DASHBOARD_STAT_LISTS_NOTE') }}</span>
+      <span class="yw-stat__go">{{ icon('list') }}</span>
+    </a>
+
+    <a class="yw-stat" href="{{ url({ tag: 'dashboard/sources' }) }}">
+      <span class="yw-stat__figure">{{ counts.page|default(0) }}</span>
+      <span class="yw-stat__label">{{ _t('DASHBOARD_STAT_PAGES') }}</span>
+      <span class="yw-stat__note">
+        {{ _t('DASHBOARD_STAT_FILES')|replace({'{count}': counts.file|default(0)}) }}
+      </span>
+      <span class="yw-stat__go">{{ icon('file') }}</span>
+    </a>
+  </div>
+
+  <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_ACTIVITY') }}</h2>
+
+  <div class="yw-dashboard__grid">
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_PAGES') }}</h3>
+      {{ renderAction('recentchanges', { max: 15 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_USERS') }}</h3>
+      {{ renderAction('listusers', { last: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_COMMENTS') }}</h3>
+      {{ renderAction('recentcomments', { max: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_COMMENTED') }}</h3>
+      {{ renderAction('recentlycommented', { max: 12 })|raw }}
+    </section>
+
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_KEYWORDS') }}</h3>
+      {{ renderAction('tagcloud')|raw }}
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_ACTIVITY_INDEX') }}</h3>
+      {{ renderAction('pageindex')|raw }}
+    </section>
+  </div>
+
+  <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_EXPORT') }}</h2>
+  <p class="yw-dashboard__intro">{{ _t('DASHBOARD_EXPORT_INTRO') }}</p>
+
+  <div class="yw-dashboard__grid">
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_EXPORT_FEEDS') }}</h3>
+      <ul class="yw-dashboard__links">
+        {% for feed in feeds %}
+          <li>
+            <a href="{{ feed.url }}">{{ icon('rss') }} {{ feed.label }}</a>
+            <code>{{ feed.url }}</code>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="yw-dashboard__card">
+      <h3>{{ _t('DASHBOARD_EXPORT_FILES') }}</h3>
+      <ul class="yw-dashboard__links">
+        {% for link in fileLinks %}
+          <li>
+            <a href="{{ link.url }}">{{ icon(link.icon) }} {{ link.label }}</a>
+            <code>{{ link.url }}</code>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="yw-dashboard__card yw-dashboard__card--wide">
+      <h3>{{ _t('DASHBOARD_EXPORT_FORMS') }}</h3>
+      {% if forms is empty %}
+        <p class="yw-text-muted">{{ _t('DASHBOARD_EXPORT_NO_FORM') }}</p>
+      {% else %}
+        <div class="yw-table-scroll">
+          <table class="yw-table">
+            <thead>
+              <tr>
+                <th>{{ _t('DASHBOARD_EXPORT_FORM') }}</th>
+                {% for format in formats %}<th>{{ format.label }}</th>{% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in forms %}
+                <tr>
+                  <td>{{ form.label }}</td>
+                  {% for format in formats %}
+                    <td><a href="{{ form.baseUrl ~ format.output }}">{{ format.label }}</a></td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

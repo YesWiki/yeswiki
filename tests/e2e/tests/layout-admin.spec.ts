@@ -176,7 +176,7 @@ test('the bar height is saved, and beats what a stylesheet says', async ({
     'the number on the slider is the height of the bar',
   ).toBeGreaterThanOrEqual(88)
 
-  await page.goto('/?dashboard/activity')
+  await page.goto('/?dashboard')
   const railTop = await page.evaluate(() =>
     Math.round(
       document.querySelector('.yw-dashboard__sidebar').getBoundingClientRect()

@@ -1,0 +1,89 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <div class="yw-files__head">
+    <h1>{{ _t('DASHBOARD_ADMIN_FILES') }}</h1>
+
+    <button type="button" class="yw-btn yw-btn--primary" data-yw-modal-target="#yw-files-upload">
+      {{ icon('plus') }} {{ _t('ADMIN_FILES_ADD') }}
+    </button>
+  </div>
+
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_FILES_INTRO') }}</p>
+
+  <div class="yw-files" id="yw-files"
+       data-yw-files-url="{{ url({ tag: 'api/admin/files' }) }}"
+       data-yw-files-max="{{ uploadMaxSize|default(0) }}">
+
+    <div class="yw-files__toolbar">
+      <input type="search" class="yw-input yw-files__search" data-yw-files-search
+             autocomplete="off" placeholder="{{ _t('ADMIN_FILES_SEARCH') }}"
+             aria-label="{{ _t('ADMIN_FILES_SEARCH') }}">
+
+      <select class="yw-input yw-files__family" data-yw-files-family
+              aria-label="{{ _t('ADMIN_FILES_FAMILY') }}">
+        <option value="">{{ _t('ADMIN_FILES_FAMILY_ALL') }}</option>
+        <option value="image">{{ _t('ADMIN_FILES_FAMILY_IMAGE') }}</option>
+        <option value="document">{{ _t('ADMIN_FILES_FAMILY_DOCUMENT') }}</option>
+        <option value="archive">{{ _t('ADMIN_FILES_FAMILY_ARCHIVE') }}</option>
+        <option value="audio">{{ _t('ADMIN_FILES_FAMILY_AUDIO') }}</option>
+        <option value="video">{{ _t('ADMIN_FILES_FAMILY_VIDEO') }}</option>
+        <option value="other">{{ _t('ADMIN_FILES_FAMILY_OTHER') }}</option>
+      </select>
+
+      <select class="yw-input yw-files__sort" data-yw-files-sort aria-label="{{ _t('ADMIN_FILES_SORT') }}">
+        <option value="time.desc">{{ _t('ADMIN_FILES_SORT_NEWEST') }}</option>
+        <option value="time.asc">{{ _t('ADMIN_FILES_SORT_OLDEST') }}</option>
+        <option value="name.asc">{{ _t('ADMIN_FILES_SORT_NAME') }}</option>
+        <option value="size.desc">{{ _t('ADMIN_FILES_SORT_BIGGEST') }}</option>
+      </select>
+
+      <span class="yw-files__total" data-yw-files-total role="status"></span>
+    </div>
+
+    <ul class="yw-files__grid" data-yw-files-grid></ul>
+
+    <p class="yw-files__empty" data-yw-files-empty hidden>{{ _t('ADMIN_FILES_NONE') }}</p>
+
+    <div class="yw-files__pager" data-yw-files-pager hidden>
+      <button type="button" class="yw-btn yw-btn--sm" data-yw-files-prev>
+        {{ icon('chevron-left') }} {{ _t('BAZ_PRECEDENT') }}
+      </button>
+      <span data-yw-files-page></span>
+      <button type="button" class="yw-btn yw-btn--sm" data-yw-files-next>
+        {{ _t('BAZ_SUIVANT') }} {{ icon('chevron-right') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="yw-modal" id="yw-files-upload" tabindex="-1" role="dialog"
+       aria-labelledby="yw-files-upload-title">
+    <div class="yw-modal__dialog">
+      <div class="yw-modal__content">
+        <form data-yw-files-upload-form>
+          <div class="yw-modal__header">
+            <h3 class="yw-modal__title" id="yw-files-upload-title">{{ _t('ADMIN_FILES_ADD') }}</h3>
+            <button type="button" class="yw-close" data-yw-dismiss="modal" aria-label="close">&times;</button>
+          </div>
+
+          <div class="yw-modal__body">
+            <p class="yw-form-hint">{{ _t('ADMIN_FILES_ADD_HINT') }}</p>
+            <div class="yw-form-group">
+              <label class="yw-form-label" for="yw-files-upload-input">{{ _t('UPLOAD_FILE') }}</label>
+              <input type="file" class="yw-input" id="yw-files-upload-input" name="upFile" multiple required>
+            </div>
+            <p class="yw-files__result" data-yw-files-result role="status" hidden></p>
+          </div>
+
+          <div class="yw-modal__footer">
+            <button type="submit" class="yw-btn yw-btn--primary">
+              {{ icon('upload') }} {{ _t('ADMIN_FILES_ADD') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {{ include_javascript('javascripts/admin-files.js', false, true) }}
+{% endblock %}

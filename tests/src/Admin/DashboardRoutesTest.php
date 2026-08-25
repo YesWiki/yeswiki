@@ -78,10 +78,10 @@ class DashboardRoutesTest extends YesWikiTestCase
         try {
             $dashboard = $wiki->services->get(DashboardController::class);
             foreach ([
-                'activity' => 'DASHBOARD_ACTIVITY',
+                'index' => 'DASHBOARD_TITLE',
                 'forms' => 'DASHBOARD_FORMS',
                 'lists' => 'DASHBOARD_ADMIN_LISTS',
-                'export' => 'DASHBOARD_EXPORT',
+                'sources' => 'DASHBOARD_SOURCES',
             ] as $method => $key) {
                 $body = (string)$dashboard->{$method}()->getContent();
                 $this->assertStringContainsString('yw-dashboard__sidebar', $body, "/dashboard/{$method} renders the rail");
@@ -99,7 +99,7 @@ class DashboardRoutesTest extends YesWikiTestCase
 
             $adminController = $wiki->services->get(AdminController::class);
             $screens = [
-                'content', 'imports', 'keywords',
+                'content', 'files', 'imports', 'keywords',
 
                 'layout', 'preset', 'customCss', 'customTemplates',
                 'users', 'groups', 'reactions', 'spam', 'config', 'updates', 'backups',
@@ -147,9 +147,14 @@ class DashboardRoutesTest extends YesWikiTestCase
             }
 
             $this->assertSame(
-                ['dashboard/forms', 'dashboard/lists', 'dashboard/export'],
-                $this->railOrder($rail, ['dashboard/export', 'dashboard/lists', 'dashboard/forms']),
-                'the lists sit with the forms they belong to'
+                ['dashboard', 'doc', 'dashboard/sources'],
+                $this->railOrder($rail, ['dashboard/sources', 'doc', 'dashboard']),
+                'the public rail is the dashboard, the documentation and where content came from'
+            );
+            $this->assertStringNotContainsString(
+                'dashboard/forms"',
+                $rail,
+                'the forms screen is reached from the dashboard, not from a rail entry'
             );
 
             $this->assertStringContainsString(_t('DASHBOARD_SECTION_APPEARANCE'), $rail);
@@ -167,9 +172,9 @@ class DashboardRoutesTest extends YesWikiTestCase
             );
 
             $this->assertSame(
-                ['admin/content', 'admin/users', 'admin/groups', 'admin/keywords', 'admin/reactions'],
+                ['admin/content', 'admin/files', 'admin/users', 'admin/groups', 'admin/keywords', 'admin/reactions'],
                 $this->railOrder($rail, [
-                    'admin/reactions', 'admin/keywords', 'admin/groups', 'admin/users', 'admin/content',
+                    'admin/reactions', 'admin/keywords', 'admin/groups', 'admin/users', 'admin/files', 'admin/content',
                 ]),
                 'Administration reads from the content to the people to what they leave on it'
             );
@@ -187,8 +192,8 @@ class DashboardRoutesTest extends YesWikiTestCase
             );
 
             $authentication->logout();
-            $visitor = (string)$wiki->services->get(DashboardController::class)->activity()->getContent();
-            $this->assertStringContainsString('dashboard/lists', $visitor);
+            $visitor = (string)$wiki->services->get(DashboardController::class)->index()->getContent();
+            $this->assertStringContainsString('dashboard/sources', $visitor);
             $this->assertStringNotContainsString(_t('DASHBOARD_SECTION_ADMIN'), $visitor, 'and none of the admin half');
         } finally {
             $authentication->logout();

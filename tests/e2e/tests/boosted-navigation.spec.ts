@@ -271,9 +271,9 @@ test.describe('boosted navigation', () => {
     ).toBeGreaterThan(0)
 
     for (let round = 0; round < 2; round += 1) {
-      await railLink('dashboard/export').click()
+      await railLink('dashboard/sources').click()
       await page.waitForFunction(
-        () => window.location.href.includes('export'),
+        () => window.location.href.includes('sources'),
         null,
         { timeout: 10000 },
       )

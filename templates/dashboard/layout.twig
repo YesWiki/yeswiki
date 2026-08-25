@@ -16,11 +16,9 @@
     scope: 'wiki',
     admin: false,
     items: [
-      { route: 'dashboard/activity', icon: 'history',   label: _t('DASHBOARD_ACTIVITY') },
-      { route: 'dashboard/forms',    icon: 'briefcase', label: _t('DASHBOARD_FORMS') },
-      { route: 'dashboard/lists',    icon: 'list',      label: _t('DASHBOARD_ADMIN_LISTS') },
-      { route: 'dashboard/export',   icon: 'download',  label: _t('DASHBOARD_EXPORT') },
-      { route: 'doc',                icon: 'help',      label: _t('DASHBOARD_DOC') }
+      { route: 'dashboard',         icon: 'layout-rows', label: _t('DASHBOARD_TITLE') },
+      { route: 'doc',               icon: 'help',        label: _t('DASHBOARD_DOC') },
+      { route: 'dashboard/sources', icon: 'link',        label: _t('DASHBOARD_SOURCES') }
     ]
   },
   {
@@ -40,6 +38,7 @@
     admin: true,
     items: [
       { route: 'admin/content',       icon: 'file',        label: _t('DASHBOARD_ADMIN_CONTENT') },
+      { route: 'admin/files',         icon: 'paperclip',   label: _t('DASHBOARD_ADMIN_FILES') },
       { route: 'admin/users',         icon: 'user',        label: _t('DASHBOARD_ADMIN_USERS') },
       { route: 'admin/groups',        icon: 'users',       label: _t('DASHBOARD_ADMIN_GROUPS') },
       { route: 'admin/keywords',      icon: 'tags',        label: _t('DASHBOARD_ADMIN_KEYWORDS') },

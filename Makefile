@@ -53,14 +53,14 @@ test-e2e-all: ## Every browser test, including the ones that require the docker 
 
 ## —— Static analysis ————————————————————
 analyse: ## Run PHPStan (level 8, errors outside phpstan/baseline.neon fail)
-	./vendor/bin/phpstan analyse -c phpstan/phpstan.neon --no-progress
+	./vendor/bin/phpstan analyse -c phpstan/phpstan.neon --no-progress --memory-limit=1G
 
 # There is deliberately no `analyse-baseline` target any more. The baseline is empty (ticket 40)
 # and PhpstanBaselineRatchetTest fails if anything is added to it, so regenerating it would only
 # hide a fresh error behind a suppression nobody reads. Fix the code instead. To work on a few
 # files at a time without the rest of the project's reports in the way:
 #
-#   ./vendor/bin/phpstan analyse -c phpstan/onefile.neon --no-progress src/Some/File.php
+#   ./vendor/bin/phpstan analyse -c phpstan/onefile.neon --no-progress --memory-limit=1G src/Some/File.php
 
 wave-counters: ## Report the ectoplasme wave-two progress counters
 	php phpstan/wave-counters.php
