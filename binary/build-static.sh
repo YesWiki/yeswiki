@@ -84,6 +84,36 @@ php_extensions() {
     printf '%s\n' "$(IFS=,; echo "${extensions[*]}")"
 }
 
+# static-php-cli asks the GitHub API for the current version of most of its dependencies, and
+# anonymous callers get 60 requests an hour per address. A build uses most of them, so the second
+# build of an afternoon fails part-way with a wall of `curl: (22) ... 403` and then a type error
+# out of Downloader::downloadFile -- which reads like a broken toolchain rather than a quota.
+#
+# CI passes a token (`release.yml`, `e2e.yml`) and never sees this. A laptop does. Say it before
+# the build starts rather than twenty minutes in.
+warn_about_the_github_rate_limit() {
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+        printf 'github api: authenticated\n'
+
+        return
+    fi
+
+    local remaining
+    remaining="$(curl -fsS --max-time 10 https://api.github.com/rate_limit 2>/dev/null \
+        | php -r '$j = json_decode(stream_get_contents(STDIN), true); echo $j["resources"]["core"]["remaining"] ?? "";' 2>/dev/null)"
+
+    if [ -z "$remaining" ]; then
+        printf 'github api: could not be asked about its rate limit; carrying on\n'
+
+        return
+    fi
+
+    printf 'github api: %s anonymous requests left this hour\n' "$remaining"
+    if [ "$remaining" -lt 40 ]; then
+        printf 'that is not enough for a build. Export GITHUB_TOKEN, or wait for the hour to roll over.\n' >&2
+    fi
+}
+
 main() {
     local extensions
     extensions="$(php_extensions)"
@@ -92,6 +122,7 @@ main() {
     printf 'extensions: %s\n' "$extensions"
     printf 'extension libs: %s\n' "$EXTENSION_LIBS"
     printf 'downloads go through %s\n' "${BUILD_PROXY:-no proxy}"
+    warn_about_the_github_rate_limit
 
     "$repo/binary/build-program.sh" >/dev/null
     write_build_manifest "$repo" "$FRANKENPHP_VERSION" "$PHP_VERSION" "$TARGETARCH" \
