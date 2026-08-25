@@ -4,8 +4,6 @@ define('YESWIKI_VERSION', 'doryphore');
 define('YESWIKI_RELEASE', '2020-01-22-1');
 define('T_START', microtime(true));
 
-define('MINIMUM_PHP_VERSION_FOR_CORE', '8.2.0');
-
 define('WN_UPPER', '[A-Z]');
 define('WN_LOWER', '[a-z]');
 define('WN_UPPER_NUM', '[A-Z0-9]');

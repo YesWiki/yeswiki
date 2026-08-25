@@ -14,4 +14,8 @@
 
 set -e
 
-exec phpunit --do-not-cache-result --stderr tests "$@"
+# memory_limit is raised here rather than left to php.ini: the suite peaks around 180 MB, so a
+# stock 128 MB php.ini kills it with a fatal a few percent in. That is worse than a failed run --
+# the fatal also takes down YesWikiTestCase's shutdown sweep, so every fixture account and group
+# created up to that point stays behind in the developer's own wiki.
+exec php -d memory_limit=512M vendor/bin/phpunit --do-not-cache-result --stderr tests "$@"

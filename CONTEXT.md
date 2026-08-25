@@ -169,6 +169,26 @@ _Avoid_: treating an upload, a backup or a preset as derived; using `storeDerive
 Anything whose right value belongs to one visitor's request: the preferred language, a Bazar list index, the panel nesting stack, a form counter, whether the current write came from an import. Under worker mode the PHP process outlives the request, so Request state parked in a global or on a long-lived service becomes the next visitor's. The rule is that it lives in a request-scoped service and nowhere else, checked by a ratchet over `$GLOBALS` writes that may only shrink (ADR-0024). Distinct from **boot state**, which is identical for every request and may stay global: `available_languages`, `installed_languages`, `translations`.
 _Avoid_: "session" (a visitor's state _across_ requests, a different problem with a different fix), resetting it between requests rather than removing it, calling the service container "request scope".
 
+**Journal**:
+The wiki's own durable record of things that happened, held as rows in its own database and shown at `/admin/logs`. Per wiki always, because a wiki holds credentials to its own database and nothing else (first-class-binary 01) — a shared journal would hand back the blast radius that isolation exists to bound. Distinct from **the log**, which is the stderr stream a process manager collects: everything reaches the log first and unconditionally, and the Journal write is best-effort on top, so a database that is down loses the copy rather than the event.
+_Avoid_: calling the Journal "the log" or the log "the journal", the retired `LogDesActionsAdministratives{Ymd}` pages, "history" (a Content's revisions are its history; the Journal records the act, never the content).
+
+**Journal entry**:
+One row of the Journal: `at`, `channel`, `level`, `actor`, `action`, `target`, `context`, plus `last_at` and `repeat`. `action` is a dotted code — `content.delete`, `acl.change`, `migration.applied` — rendered through a translation key at read time, never a stored sentence, so a wiki that changes language does not end up with a bilingual trail. An entry is an immutable fact about the past; anything that can stop being true is a **Health check**, not an entry.
+_Avoid_: storing a rendered message, a diff or a body (the revision is the content), a stack trace (see **Type-only frame**).
+
+**Channel**:
+Which kind of thing a **Journal entry** records: `audit` (a person did something) or `diagnostic` (the runtime hit something). Independent of `level`, which is PSR-3 severity — "refused permission to delete X" is `audit` at `warning`, and collapsing the two would file it under errors. The two channels share a table and nothing else: they have their own retention (`journal_audit_purge_time`, `journal_diagnostic_purge_time`) and only `diagnostic` entries ever collapse.
+_Avoid_: using `level` to tell audit from diagnostic, a third channel for advice (that is a **Health check**).
+
+**Type-only frame**:
+How a stack frame is written down: `Class::method(string, int, array<3>)` — names and shapes, never values. Safe by construction rather than by a pattern list, which is the point: a redactor that matches `/pass|token/` protects `$password`, misses `$p`, and misses the whole `$_POST` arriving as one `$data` array. Exception messages are stored as authored, because scrubbing free text is that same false promise; not putting a secret in a message is a code rule.
+_Avoid_: "redacted" without saying how, name-based redaction, a full trace anywhere.
+
+**Health check**:
+A named claim about the wiki's present state, re-derived every time it is asked rather than recorded: an extension is missing, Runtime is nearly full, a bucket is unreachable, an update this instance may actually apply is waiting. Declared by the module that owns it, the way a **Component** is, so no controller has to know about every module. Never a **Journal entry** — a claim that stops being true has no place in an immutable record, which is how a migration's advice used to sit in a wiki page for years after it was acted on.
+_Avoid_: logging a finding, a check nobody can act on (an update a farm instance may not apply is not a finding), pass/fail without severity — *broken* and *degraded* are different answers.
+
 ## Decisions so far
 
 - No blanket rule on in-place migration of existing installs' data during this rewrite — decided pragmatically per ticket, not deferred wholesale. `acls` was dropped without migrating (reconfigurable via the UI after a reset). `nature` → `pages` (ticket 05) IS migrated in place, since forms are load-bearing content bazar entries depend on to render at all — losing them silently breaks every existing entry, not just access control. Each future ticket should make its own call on whether dropping without migrating is an acceptable reset (like `acls`) or would silently break things (like `nature`), and write a migration when it would.

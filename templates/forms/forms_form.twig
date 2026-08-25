@@ -41,18 +41,25 @@
       {{ _t('BAZ_TEMPLATE') }}
       <span class="symbole_obligatoire"></span>
     </label>
-    <ul class="yw-nav" role="tablist">
-      <li role="presentation" class="active">
-        <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
-          {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
-        </a>
-      </li>
-      <li role="presentation">
-        <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
-          {{ _t('BAZ_FORM_WIKI_CODE') }}
-        </a>
-      </li>
-    </ul>
+    <div class="yw-fb__tabs">
+      <ul class="yw-nav" role="tablist">
+        <li role="presentation" class="active">
+          <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
+            {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
+            {{ _t('BAZ_FORM_WIKI_CODE') }}
+          </a>
+        </li>
+      </ul>
+
+      <button type="button" class="yw-btn yw-fb__rail-open" data-yw-fb-open>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
+        {{ _t('FORM_BUILDER_ADD_FIELDS') }}
+      </button>
+    </div>
 
     <div class="yw-tabs__content">
       <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">

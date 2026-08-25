@@ -1,88 +1,157 @@
+<div class="yw-groups">
+  <div class="yw-groups__head">
+    {% if selectedGroupName is not empty %}
+      <h2 class="yw-groups__title">{{ selectedGroupName }}</h2>
+    {% endif %}
 
+    <button type="button" class="yw-btn yw-groups__open" data-yw-groups-open>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#users"/></svg>
+      {{ _t('ADMIN_GROUPS_LIST') }}
+    </button>
+  </div>
 
-{% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
-    {% block formcontent %}
-        <label>{{ _t('EDIT_EXISTING_GROUP')}}</label>
-        <p>
-            <select class="yw-input" name="groupname">
-              {% for group in list %}
-                <option value="{{ group|e('html_attr') }}"
-                    {%- if selectedGroupName == group %} selected="selected"{% endif -%}
-                    >{{ group }}</option>
-              {% endfor %}
-            </select>
-            <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-            <input class="btn btn-primary btn-edit-group" name="action-view" type="submit" value="{{ _t('SEE_EDIT') }}" />
-            <input class="btn btn-danger btn-delete-group" type="submit" name="action-delete" value="{{ _t('DELETE') }}" /></p>
-        </p>
-    {% endblock formcontent %}
-{% endembed %}
-{% if error_message is not empty %}
-{% include '@core/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
-{% endif %}
-{% if selectedGroupName is not empty %}
+  {% if error_message is not empty %}
+    {% include '@core/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
+  {% endif %}
+
+  {% if selectedGroupName is empty %}
+    <p class="yw-groups__empty">{{ _t('ADMIN_GROUPS_PICK_HINT') }}</p>
+  {% else %}
     {% embed '@core/form.twig' with {formMethod: 'post'} %}
-        {% block formcontent %}
+      {% block formcontent %}
 
-            {% embed '@core/inputs/checkbox_drag_and_drop.twig' %}
-            {% block list_options %}
-			{% for item_id, item in options %}
-				{% if item not in selectedOptionsId %}
-					{% set selected = false %}
-					{% block li_item %}
-					<li class="list-group-item">						
-						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-vertical"/></svg></span>
-						<div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
-							<div class="checkbox-icons-up btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-up"/></svg></div>
-							<div class="checkbox-icons-down btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-down"/></svg></div>
-						</div>
-						<div class="checkbox-icon-column-left">
-							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-horizontal"/></svg></span>
-							{%~ block link_for_entry ~%}
-							{%~ endblock ~%}
-						</div>
-						<input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="{{ item }}" name="members[]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
-						<span class="list-item-text">{{ item|striptags }}</span>
-						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
-							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
-						</a>
-						<a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
-							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#minus"/></svg>
-						</a>
-					</li>
-					{% endblock %}
-				{% endif %}
-			{% endfor %}
-		{% endblock %}
-		{% block list_selected %}
-			  {% for item in selectedOptionsId %}
-				{% set selected = true %}
-				{{ block('li_item') }}
-			  {% endfor %}
-		{% endblock %}
-        {% block submit %}
-        <input type="hidden" name="groupname" value="{{ selectedGroupName }}"/> 
-        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-        <div style='display:flex;flex-direction:column;margin-top: 1em;margin-bottom: 1em;'>
-        <input class="btn btn-primary btn-edit-group" name="action-update" type="submit" value="{{ _t('SAVE') }}" />
+        {% embed '@core/inputs/checkbox_drag_and_drop.twig' %}
+          {% block list_options %}
+            {% for item_id, item in options %}
+              {% if item not in selectedOptionsId %}
+                {% set selected = false %}
+                {% block li_item %}
+                  <li class="list-group-item">
+                    <span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-vertical"/></svg></span>
+                    <div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
+                      <div class="checkbox-icons-up btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-up"/></svg></div>
+                      <div class="checkbox-icons-down btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-down"/></svg></div>
+                    </div>
+                    <div class="checkbox-icon-column-left">
+                      <span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-horizontal"/></svg></span>
+                      {%~ block link_for_entry ~%}
+                      {%~ endblock ~%}
+                    </div>
+                    <input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="{{ item }}" name="members[]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
+                    <span class="list-item-text">{{ item|striptags }}</span>
+                    <a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
+                      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
+                    </a>
+                    <a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
+                      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#minus"/></svg>
+                    </a>
+                  </li>
+                {% endblock %}
+              {% endif %}
+            {% endfor %}
+          {% endblock %}
+
+          {% block list_selected %}
+            {% for item in selectedOptionsId %}
+              {% set selected = true %}
+              {{ block('li_item') }}
+            {% endfor %}
+          {% endblock %}
+
+          {% block submit %}
+            <input type="hidden" name="groupname" value="{{ selectedGroupName }}"/>
+            <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+            <div class="yw-groups__save">
+              <button type="submit" class="yw-btn yw-btn--primary btn-edit-group" name="action-update" value="1">{{ _t('SAVE') }}</button>
             </div>
-            {% endblock %}
-            {% endembed %}
-        {% endblock formcontent %}
-{% endembed %}
-{% endif %}
+          {% endblock %}
+        {% endembed %}
 
-{% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
-    {% block formcontent %}
-        <label>{{ _t('CREATE_NEW_GROUP')}}</label>
-        <p>
-            <input type="text" name="groupname" placeholder="{{ _t('GROUP_NAME') }}" class="yw-input" />
-        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-            <input class="btn btn-primary btn-create-group" name='action-create' type="submit" value="{{ _t('DEFINE') }}" />
-        </p>
-    {% endblock formcontent %}
-{% endembed %}
+      {% endblock formcontent %}
+    {% endembed %}
+  {% endif %}
+</div>
 
-{% if message is not empty %}
-    {{ include('@core/alert-message.twig',{message:message,type:type ?? 'info'}) }}
-{% endif %}
+<aside class="yw-designer__sidebar yw-groups-rail" id="yw-groups-rail">
+
+  <div class="yw-groups-rail__screen" data-yw-groups-screen="list">
+    <div class="yw-rail__header">
+      <h2 class="yw-rail__title">{{ _t('ADMIN_GROUPS_LIST') }}</h2>
+      <button type="button" class="yw-close" data-yw-groups-close aria-label="close">&times;</button>
+    </div>
+
+    <button type="button" class="yw-btn yw-btn--primary yw-btn--block" data-yw-groups-new>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
+      {{ _t('ADMIN_GROUPS_NEW') }}
+    </button>
+
+    {% if groups is empty %}
+      <p class="yw-groups-rail__empty">{{ _t('ADMIN_GROUPS_NONE') }}</p>
+    {% else %}
+      <ul class="yw-rail-cards">
+        {% for group in groups %}
+          <li class="yw-rail-card{{ selectedGroupName == group.name ? ' yw-rail-card--current' : '' }}"
+              data-yw-group-card="{{ group.name }}">
+            <form method="post" action="" class="yw-rail-card__form" hx-boost="false"
+                  data-yw-groups-form
+                  data-confirm="{{ _t('ADMIN_GROUPS_DELETE_CONFIRM')|replace({'{group}': group.name}) }}">
+              <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+              <input type="hidden" name="groupname" value="{{ group.name|e('html_attr') }}">
+
+              <button type="submit" name="action-view" value="1" class="yw-rail-card__choose">
+                <span class="yw-rail-card__label">
+                  <span class="yw-rail-card__name">{{ group.name }}</span>
+                  <span class="yw-rail-card__badge">
+                    {{ _t('ADMIN_GROUPS_MEMBER_COUNT')|replace({'{count}': group.members}) }}
+                  </span>
+                </span>
+              </button>
+
+              <div class="yw-rail-card__tools">
+                <button type="submit" name="action-view" value="1" class="yw-btn yw-btn--sm"
+                        title="{{ _t('ADMIN_GROUPS_EDIT') }}">
+                  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
+                </button>
+                <button type="submit" name="action-delete" value="1" class="yw-btn yw-btn--sm yw-btn--danger"
+                        data-yw-groups-delete title="{{ _t('ADMIN_GROUPS_DELETE') }}">
+                  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
+                </button>
+              </div>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <div class="yw-groups-rail__screen" data-yw-groups-screen="new" hidden>
+    <form method="post" action="" hx-boost="false">
+      <div class="yw-rail__header">
+        <button type="button" class="yw-btn yw-btn--sm yw-rail__back" data-yw-groups-back
+                aria-label="{{ _t('ADMIN_GROUPS_LIST') }}">
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-left"/></svg>
+        </button>
+        <h2 class="yw-rail__title">{{ _t('ADMIN_GROUPS_NEW') }}</h2>
+      </div>
+
+      <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+
+      <p class="yw-groups-rail__hint">{{ _t('ADMIN_GROUPS_NEW_HINT') }}</p>
+
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="yw-groups-new-name">{{ _t('GROUP_NAME') }}</label>
+        <input type="text" class="yw-input" id="yw-groups-new-name" name="groupname" required
+               autocomplete="off" pattern="[A-Za-z0-9]+" placeholder="{{ _t('GROUP_NAME') }}">
+      </div>
+
+      <div class="yw-rail__footer">
+        <button type="submit" name="action-create" value="1" class="yw-btn yw-btn--primary btn-create-group">
+          {{ _t('DEFINE') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</aside>
+
+{{ include_css('styles/yw-admin.css') }}
+{{ include_javascript('javascripts/admin-groups.js', false, true) }}

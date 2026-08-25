@@ -206,20 +206,33 @@ let paletteEl
 let settingsEl
 let canvasEl
 let errorEl
+let railEl
+let railTitleEl
+let railBackEl
+let railWanted = true
 
 function boot() {
   container.classList.add('yw-fb')
   container.innerHTML = ''
   errorEl = el('<div class="yw-fb__error hide"></div>')
   paletteEl = el(`<div class="yw-fb__palette">
-    <h3 class="yw-fb__sidebar-title">${_t('FORM_BUILDER_ADD_FIELDS')}</h3>
     <div class="yw-fb__palette-grid"></div>
   </div>`)
   settingsEl = el('<div class="yw-fb__settings hide"></div>')
   canvasEl = el('<div class="yw-fb__canvas"></div>')
-  const sidebar = el('<aside class="yw-fb__sidebar"></aside>')
-  sidebar.append(paletteEl, settingsEl)
-  container.append(errorEl, sidebar, canvasEl)
+  railEl = el(`<aside class="yw-designer__sidebar yw-fb__rail" id="yw-fb-rail">
+    <div class="yw-rail__header">
+      <button type="button" class="yw-btn yw-btn--sm yw-rail__back yw-fb__back hide"
+        aria-label="${esc(_t('FORM_BUILDER_BACK'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-left"/></svg></button>
+      <h2 class="yw-rail__title">${esc(_t('FORM_BUILDER_ADD_FIELDS'))}</h2>
+      <button type="button" class="yw-close" data-fb-close-rail aria-label="close">&times;</button>
+    </div>
+  </aside>`)
+  railTitleEl = railEl.querySelector('.yw-rail__title')
+  railBackEl = railEl.querySelector('.yw-fb__back')
+  railEl.append(paletteEl, settingsEl)
+  container.append(errorEl, canvasEl)
+  document.body.append(railEl)
 
   renderPalette()
   if (!loadFromTextarea()) {
@@ -230,7 +243,7 @@ function boot() {
   initCanvasSort()
   bindTabsAndSubmit()
   bindTitleSelect()
-  initDrawer()
+  initRail()
 }
 
 function showError(message) {
@@ -287,15 +300,25 @@ function renderPalette() {
   }
 }
 
-function initDrawer() {
-  const toggle =
-    el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
-    aria-expanded="false" title="${esc(_t('FORM_BUILDER_ADD_FIELDS'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg></button>`)
-  toggle.addEventListener('click', () => {
-    const open = container.classList.toggle('yw-fb--drawer-open')
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false')
+function initRail() {
+  railBackEl.addEventListener('click', closeSettings)
+  railEl
+    .querySelector('[data-fb-close-rail]')
+    .addEventListener('click', () => showRail(false))
+  document.querySelectorAll('[data-yw-fb-open]').forEach((button) => {
+    button.addEventListener('click', () => showRail(true))
   })
-  container.append(toggle)
+}
+
+/**
+ * Open or shut the rail, remembering which the author asked for.
+ *
+ * The code tab hides the rail without going through here: a JSON textarea has no field to
+ * add to, but the author never asked for the drawer to be gone, so switching back reopens it.
+ */
+function showRail(open) {
+  railWanted = open
+  railEl.hidden = !open
 }
 
 function addFromPalette(type, index = fields.length) {
@@ -569,12 +592,17 @@ function selectField(id) {
   renderSettings()
   paletteEl.classList.add('hide')
   settingsEl.classList.remove('hide')
+  railBackEl.classList.remove('hide')
+  showRail(true)
+  railEl.scrollTop = 0
 }
 
 function closeSettings() {
   selectedId = null
   settingsEl.classList.add('hide')
   paletteEl.classList.remove('hide')
+  railBackEl.classList.add('hide')
+  railTitleEl.textContent = _t('FORM_BUILDER_ADD_FIELDS')
   canvasEl
     .querySelectorAll('.yw-fb__card--selected')
     .forEach((card) => card.classList.remove('yw-fb__card--selected'))
@@ -648,16 +676,8 @@ function renderSettings() {
   const advanced = config.advancedAttributes || []
 
   settingsEl.innerHTML = ''
-  const title = (config.field || config.set || {}).label || field.type
-  settingsEl.append(
-    el(`<div class="yw-fb__settings-header">
-    <button type="button" class="yw-btn yw-btn--sm yw-fb__back">← ${_t('FORM_BUILDER_BACK')}</button>
-    <h3 class="yw-fb__sidebar-title">${esc(title)}</h3>
-  </div>`),
-  )
-  settingsEl
-    .querySelector('.yw-fb__back')
-    .addEventListener('click', closeSettings)
+  railTitleEl.textContent =
+    (config.field || config.set || {}).label || field.type
 
   if (config.editorHint) {
     settingsEl.append(el(`<div class="yw-fb__hint">${config.editorHint}</div>`))
@@ -835,9 +855,15 @@ function bindTabsAndSubmit() {
         showError(`${_t('FORM_BUILDER_INVALID_JSON')}`)
       }
     })
+    link.addEventListener('click', () => {
+      railEl.hidden = !railWanted
+    })
   })
   document.querySelectorAll('a[href="#code"]').forEach((link) => {
-    link.addEventListener('click', () => syncToTextarea())
+    link.addEventListener('click', () => {
+      syncToTextarea()
+      railEl.hidden = true
+    })
   })
   textarea.form?.addEventListener('submit', () => {
     const designerPane = document.getElementById('formbuilder')

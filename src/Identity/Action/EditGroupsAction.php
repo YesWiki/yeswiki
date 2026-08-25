@@ -101,15 +101,20 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction, Provid
         $users = array_map(function ($user) { return $user['name']; }, $userManager->getAll());
         sort($users);
         $merged_list = array_merge(array_map(function ($el) { return '@' . $el; }, $list), $users);
-        unset($merged_list[array_search('@' . $selectedGroupName, $merged_list)]);
-        error_log('selected_group_name ' . $selectedGroupName);
+        $ownEntry = array_search('@' . $selectedGroupName, $merged_list);
+        if ($ownEntry !== false) {
+            unset($merged_list[$ownEntry]);
+        }
+
+        $groups = array_map(function ($name) use ($groupOperationsService) {
+            return ['name' => $name, 'members' => count($groupOperationsService->getMembers($name))];
+        }, $list);
 
         $field = ['name' => '', 'propertyName' => '', 'required' => false, 'label' => $selectedGroupName];
-        error_log('render');
 
         return $this->render(
             '@core/actions/edit-group-action.twig',
-            ['error_message' => $error_message, 'list' => $list, 'selectedGroupName' => $selectedGroupName, 'field' => $field, 'options' => $merged_list, 'selectedOptionsId' => $currentGroupAcl, 'formName' => _t('USERS_GROUPS_LIST'), 'name' => _t('GROUP_SELECTION')]
+            ['error_message' => $error_message, 'list' => $list, 'groups' => $groups, 'selectedGroupName' => $selectedGroupName, 'field' => $field, 'options' => $merged_list, 'selectedOptionsId' => $currentGroupAcl, 'formName' => _t('USERS_GROUPS_LIST'), 'name' => _t('GROUP_SELECTION')]
         );
     }
 

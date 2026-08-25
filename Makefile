@@ -33,7 +33,7 @@ watch-theme: ## Same, but recompile on every save
 
 ## —— Tests ———————————————
 test: ## Launch PHP unit tests
-	./vendor/bin/phpunit --do-not-cache-result --stderr tests
+	bash tests/tests.sh
 
 test-js: ## Launch JS unit tests (Node's built-in runner, no browser)
 	$(YARN) run test-js

@@ -56,12 +56,12 @@ class UrlFormatter
         return is_scalar($baseUrl) ? (string)$baseUrl : '';
     }
 
-    /** base_url without its index.php/trailing separator part. */
+    /** base_url without its index.php/trailing separator part, `/?wiki=` included. */
     public function getBaseUrl(): string
     {
         $url = explode('index.php', $this->rawBaseUrl());
 
-        return preg_replace(['/\/\?$/', '/\/$/'], '', $url[0]) ?? '';
+        return preg_replace(['/\/\?wiki=$/', '/\/\?$/', '/\/$/'], '', $url[0]) ?? '';
     }
 
     /** Just `PageName[/method]`, defaulting to the current page (historic MiniHref()). */

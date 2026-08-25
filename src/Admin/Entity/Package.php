@@ -202,7 +202,7 @@ abstract class Package extends PackageTree
     /**
      * get needed PHP version from json file from repository.
      *
-     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
+     * @return string formatted as '7.3.0', or '' when nothing states one
      */
     public function getNeededPHPversion(): string
     {
@@ -211,7 +211,27 @@ abstract class Package extends PackageTree
             return $this->minimalPhpVersion;
         }
 
-        return MINIMUM_PHP_VERSION_FOR_CORE;
+        return $this->phpVersionFromComposer(YESWIKI_PROGRAM_DIR . '/composer.json');
+    }
+
+    /** The `require.php` constraint of a composer.json as a plain version, or '' when it has none. */
+    protected function phpVersionFromComposer(string $jsonPath): string
+    {
+        if (!$this->exists($jsonPath)) {
+            return '';
+        }
+        $composerData = json_decode($this->read($jsonPath), true);
+        if (empty($composerData['require']['php'])) {
+            return '';
+        }
+        $matches = [];
+        if (!preg_match('/^(\^|>=|>)?([0-9]*)(?:\.([0-9\*]*))?(?:\.([0-9\*]*))?/', $composerData['require']['php'], $matches)) {
+            return '';
+        }
+        $minor = ($matches[3] ?? 0) === '*' ? 0 : ($matches[3] ?? 0);
+        $fix = ($matches[4] ?? 0) === '*' ? 0 : ($matches[4] ?? 0);
+
+        return $matches[2] . '.' . $minor . '.' . $fix;
     }
 
     /**
@@ -221,29 +241,9 @@ abstract class Package extends PackageTree
      */
     public function getNeededPHPversionFromExtractedFolder(): string
     {
-        $jsonPath = $this->extractionPath . 'composer.json';
-        if ($this->exists($jsonPath)) {
-            $jsonFile = $this->read($jsonPath);
-            if (!empty($jsonFile)) {
-                $composerData = json_decode($jsonFile, true);
-                if (!empty($composerData['require']['php'])) {
-                    $rawNeededPHPRevision = $composerData['require']['php'];
-                    $matches = [];
+        $declared = $this->phpVersionFromComposer($this->extractionPath . 'composer.json');
 
-                    if (preg_match('/^(\^|>=|>)?([0-9]*)(?:\.([0-9\*]*))?(?:\.([0-9\*]*))?/', $rawNeededPHPRevision, $matches)) {
-                        $major = $matches[2];
-                        $minor = $matches[3] ?? 0;
-                        $minor = ($minor == '*') ? 0 : $minor;
-                        $fix = $matches[4] ?? 0;
-                        $fix = ($fix == '*') ? 0 : $fix;
-
-                        return $major . '.' . $minor . '.' . $fix;
-                    }
-                }
-            }
-        }
-
-        return $this->getNeededPHPversion();
+        return $declared !== '' ? $declared : $this->getNeededPHPversion();
     }
 
     /**

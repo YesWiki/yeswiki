@@ -108,13 +108,18 @@ class YesWikiTestCase extends TestCase
         }
     }
 
+    /**
+     * The address is the whole test, deliberately: no signuptime window.
+     *
+     * A run that dies on a fatal -- an out-of-memory, a segfault -- takes this sweep down with it
+     * and strands everything it had created. Gating on "created since this run started" meant
+     * those accounts were nobody's business ever again, and they piled up in the developer's own
+     * wiki one crashed run at a time. Sweeping by address alone makes the next run clean them up.
+     * Nothing real is at risk: example.com and example.tld are reserved for documentation, and
+     * xyz.earth is this suite's own invention.
+     */
     private static function isLeakedTestUser(mixed $user): bool
     {
-        $signupTime = (string)($user['signuptime'] ?? '');
-        if ($signupTime === '' || $signupTime < self::$runStartedAt) {
-            return false;
-        }
-
         $email = (string)($user['email'] ?? '');
         foreach (self::TEST_EMAIL_DOMAINS as $domain) {
             if (str_ends_with($email, $domain)) {

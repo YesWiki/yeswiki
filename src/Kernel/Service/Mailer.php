@@ -179,7 +179,7 @@ class Mailer
 
     public function getBaseUrl(): string
     {
-        return (string)preg_replace('/(\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->stringParam('base_url'));
+        return $this->container->get(UrlFormatter::class)->getBaseUrl();
     }
 
     /** A configuration value the wiki always stores as text, read as text. */
