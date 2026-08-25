@@ -1427,7 +1427,6 @@ return [
     'FILEMANAGER_ACTION_NEED_ACCESS' => 'Solo el propietario de esta página puede acceder al gestor de archivos adjuntos',
     'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'No se han enviado archivos.',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar este archivo',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

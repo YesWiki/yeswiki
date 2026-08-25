@@ -174,11 +174,10 @@ document.querySelectorAll('[data-yw-layout-rows]').forEach((list) => {
   suggestPagesIn(list)
 })
 
-const logo = document.querySelector('[data-yw-layout-logo]')
-const preview = document.querySelector('[data-yw-layout-logo-preview]')
-const removeLogo = document.querySelector('[data-yw-layout-logo-remove]')
+ywInitEach('[data-yw-layout-logo]', (logo) => {
+  const preview = document.querySelector('[data-yw-layout-logo-preview]')
+  const removeLogo = document.querySelector('[data-yw-layout-logo-remove]')
 
-if (logo) {
   const show = () => {
     const chosen = logo.value.trim() !== ''
     if (preview) {
@@ -195,12 +194,11 @@ if (logo) {
     logo.value = ''
     logo.dispatchEvent(new Event('change', { bubbles: true }))
   })
-}
+})
 
-const height = document.querySelector('[data-yw-layout-height]')
-const heightValue = document.querySelector('[data-yw-layout-height-value]')
+ywInitEach('[data-yw-layout-height]', (height) => {
+  const heightValue = document.querySelector('[data-yw-layout-height-value]')
 
-if (height) {
   const apply = () => {
     const px = `${height.value}px`
     document.documentElement.style.setProperty('--yw-navbar-height', px)
@@ -208,4 +206,4 @@ if (height) {
   }
   apply()
   height.addEventListener('input', apply)
-}
+})

@@ -1393,7 +1393,6 @@ return [
     'ATTACH_DATE_OF_MODIFICATION' => 'Data alterada',
     'ATTACH_RESTORE' => 'Restaurar',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar este ficheiro',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

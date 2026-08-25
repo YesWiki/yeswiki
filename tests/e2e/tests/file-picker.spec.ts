@@ -61,12 +61,8 @@ const uploadThroughPicker = async (
 ) => {
   await backToList(page)
   await page
-    .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
-    .click()
-  await page
     .locator('#YesWikiFilePickerPanel input[name="upFile"]')
     .setInputFiles({ name, mimeType, buffer })
-  await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
     storedName(name, mimeType),
   )
@@ -115,7 +111,7 @@ test('the picker lists the files already uploaded, and filters them', async ({
 })
 
 /** The rail shows one thing at a time. */
-test('the rail shows the list, the upload or the choice -- never two at once', async ({
+test('the rail shows the list or the choice, and uploading needs no second click', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
@@ -123,7 +119,6 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
 
   const panel = page.locator('#YesWikiFilePickerPanel')
   const list = panel.locator('[data-yw-file-picker-pane="existing"]')
-  const uploadPane = panel.locator('[data-yw-file-picker-pane="upload"]')
   const uploadOpen = panel.locator('[data-yw-file-picker-upload-open]')
   const back = panel.locator('[data-yw-file-picker-back]')
 
@@ -138,14 +133,11 @@ test('the rail shows the list, the upload or the choice -- never two at once', a
     /#upload$/,
   )
 
-  await uploadOpen.click()
-  await expect(uploadPane).toBeVisible()
-  await expect(list).toBeHidden()
-  await expect(back).toBeVisible()
-
-  await back.click()
-  await expect(list).toBeVisible()
-  await expect(uploadPane).toBeHidden()
+  await expect(
+    panel.locator('[data-yw-file-picker-pane="upload"]'),
+  ).toHaveCount(0)
+  await expect(panel.locator('.btn-do-upload')).toHaveCount(0)
+  await expect(panel.locator('[data-yw-file-picker-input]')).toBeHidden()
 
   const searchBox = panel.locator('.file-picker-search input[name="search"]')
   const extensions = panel.locator('[data-yw-file-picker-extensions]')
@@ -366,9 +358,6 @@ test('the picker takes the rail slot, and keeps it until it is done', async ({
 test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)
-  await page
-    .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
-    .click()
 
   const original = await page.evaluate(async () => {
     const canvas = document.createElement('canvas')
@@ -399,7 +388,6 @@ test('an oversized photo is uploaded as a capped WebP', async ({ page }) => {
   })
   expect(original.size).toBeGreaterThan(200 * 1024)
 
-  await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
     'photo.webp',
     { timeout: 30000 },
@@ -444,9 +432,6 @@ test('every raster image is stored as WebP, however small', async ({
 test('an animated GIF keeps its frames, and its format', async ({ page }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await openPicker(page)
-  await page
-    .locator('#YesWikiFilePickerPanel [data-yw-file-picker-upload-open]')
-    .click()
 
   await page.evaluate(() => {
     const gif = Uint8Array.from(
@@ -463,7 +448,6 @@ test('an animated GIF keeps its frames, and its format', async ({ page }) => {
     input.files = transfer.files
     input.dispatchEvent(new Event('change', { bubbles: true }))
   })
-  await page.locator('#YesWikiFilePickerPanel .btn-do-upload').click()
 
   await expect(page.locator('[data-yw-file-picker-selected-name]')).toHaveText(
     'wave.gif',

@@ -1448,7 +1448,6 @@ Conținutul filei "{tabName}"
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Dimensiunea maximă a fișierelor încărcate - bytes (ex: Dimensiunea maximă a fișierelor încărcate (ex: 2097152, 2048k, 2m)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Inserare media (imagini, videouri)',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Trimite acest fișier',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

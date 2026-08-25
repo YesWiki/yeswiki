@@ -1274,6 +1274,16 @@ input[type='range'] {
   display: none;
 }
 
+#YesWikiFilePickerPanel .file-picker-upload-busy {
+  margin: calc(-1 * var(--yw-space-sm-y)) 0 var(--yw-space-md-y);
+  text-align: center;
+  color: var(--yw-text);
+}
+
+#YesWikiFilePickerPanel .file-picker-upload-busy[hidden] {
+  display: none;
+}
+
 #YesWikiFilePickerPanel .file-picker-filters {
   display: flex;
   align-items: center;
@@ -1417,12 +1427,55 @@ input[type='range'] {
 }
 
 #YesWikiFilePickerPanel .file-picker-selected {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
   margin: 0 0 var(--yw-space-md-y);
   padding: var(--yw-space-md-y) var(--yw-space-md-x);
   background: var(--yw-surface-sunken);
   border-left: 3px solid var(--yw-primary);
   border-radius: var(--yw-radius-sm);
   overflow-wrap: anywhere;
+}
+
+#YesWikiFilePickerPanel .file-picker-selected[hidden] {
+  display: none;
+}
+
+#YesWikiFilePickerPanel .file-picker-selected__label {
+  min-width: 0;
+}
+
+#YesWikiFilePickerPanel .file-picker-selected__preview {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 6rem;
+  overflow: hidden;
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-raised);
+}
+
+#YesWikiFilePickerPanel .file-picker-selected__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-image: conic-gradient(
+    from 90deg,
+    var(--yw-surface-sunken) 25%,
+    var(--yw-surface-raised) 0 50%,
+    var(--yw-surface-sunken) 0 75%,
+    var(--yw-surface-raised) 0
+  );
+  background-size: 16px 16px;
+}
+
+#YesWikiFilePickerPanel .file-picker-selected__preview .yw-icon {
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.5;
 }
 
 #YesWikiFilePickerPanel .yw-rail__footer .btn-insert-upload {

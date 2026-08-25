@@ -1389,7 +1389,6 @@ return [
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு - பைட்டுகள் (எ.கா. சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு (எ.கா: 2097152, 2048 கே, 2 மீ)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'மீடியா செருகல் (படங்கள், வீடியோக்கள்)',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'இந்தக் கோப்பை அனுப்பு',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

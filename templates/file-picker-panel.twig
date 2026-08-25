@@ -13,6 +13,12 @@
           {{ _t('ATTACH_FILE_PICKER_UPLOAD_NEW') }}
         </button>
 
+        <input type="file" name="upFile" hidden data-yw-file-picker-input
+               aria-hidden="true" tabindex="-1">
+
+        <p class="file-picker-upload-busy" hidden>{{ _t('ATTACH_FILE_PICKER_UPLOADING') }}</p>
+        <div class="file-picker-upload-error yw-text-danger" hidden></div>
+
         <button type="button" class="yw-btn file-picker-back" data-yw-file-picker-back hidden>
           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg>
           {{ _t('GO_BACK') }}
@@ -36,20 +42,12 @@
           <p class="file-picker-empty" data-yw-file-picker-empty hidden>{{ _t('ATTACH_FILE_PICKER_NO_RESULT') }}</p>
         </div>
 
-        <div data-yw-file-picker-pane="upload" hidden>
-          <div class="yw-form-group">
-            <input type="file" name="upFile" class="yw-input">
-          </div>
-          <div class="file-picker-upload-error yw-text-danger" hidden></div>
-
-          <button type="button" class="yw-btn yw-btn--primary yw-btn--block btn-do-upload">
-            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg>
-            {{ _t('ATTACH_FILE_PICKER_DO_UPLOAD') }}
-          </button>
-        </div>
-
         <div class="file-picker-selected" hidden>
-          <strong>{{ _t('ATTACH_FILE_PICKER_SELECTED') }}</strong> <span data-yw-file-picker-selected-name></span>
+          <span class="file-picker-selected__preview" data-yw-file-picker-selected-preview></span>
+          <span class="file-picker-selected__label">
+            <strong>{{ _t('ATTACH_FILE_PICKER_SELECTED') }}</strong>
+            <span data-yw-file-picker-selected-name></span>
+          </span>
         </div>
 
         <form role="form" class="file-picker-options" hidden>

@@ -1,6 +1,12 @@
-const root = document.getElementById('yw-files')
-
-if (root) {
+/**
+ * The file manager, re-bound every time htmx swaps it in.
+ *
+ * A `type="module"` script is evaluated once per document, and boosted navigation swaps the body
+ * without making a new one -- so leaving the screen and coming back used to give an empty grid,
+ * because nothing ran the second time. `ywInitEach` is the codebase's answer: it fires on load,
+ * on `htmx:load` and on `yw:assets-ready`, once per element.
+ */
+ywInitEach('#yw-files', (root) => {
   const endpoint = root.dataset.ywFilesUrl
   const grid = root.querySelector('[data-yw-files-grid]')
   const empty = root.querySelector('[data-yw-files-empty]')
@@ -10,9 +16,9 @@ if (root) {
   const search = root.querySelector('[data-yw-files-search]')
   const family = root.querySelector('[data-yw-files-family]')
   const sort = root.querySelector('[data-yw-files-sort]')
-  const modal = document.getElementById('yw-files-upload')
-  const uploadForm = modal?.querySelector('[data-yw-files-upload-form]')
-  const result = modal?.querySelector('[data-yw-files-result]')
+  const addButton = document.querySelector('[data-yw-files-add]')
+  const input = document.querySelector('[data-yw-files-input]')
+  const result = root.querySelector('[data-yw-files-result]')
 
   const FAMILY_ICONS = {
     image: 'photo',
@@ -163,31 +169,42 @@ if (root) {
     load()
   })
 
-  uploadForm?.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const input = uploadForm.querySelector('input[type=file]')
-    const files = [...(input.files || [])]
-    if (files.length === 0) return
+  // One click: the button opens the file browser, and choosing is the upload.
+  addButton?.addEventListener('click', () => input.click())
 
+  input?.addEventListener('change', async () => {
+    const chosen = [...(input.files || [])]
+    if (chosen.length === 0) return
+
+    addButton.disabled = true
     result.hidden = false
+    result.className = 'yw-files__result'
     result.textContent = _t('ADMIN_FILES_UPLOADING')
 
     let failed = 0
-    for (const file of files) {
+    for (const file of chosen) {
       const body = new FormData()
       body.append('upFile', file)
-      const response = await fetch(endpoint, { method: 'POST', body })
-      if (!response.ok) failed += 1
+      try {
+        const response = await fetch(endpoint, { method: 'POST', body })
+        if (!response.ok) failed += 1
+      } catch {
+        failed += 1
+      }
     }
 
+    input.value = ''
+    addButton.disabled = false
+    result.classList.add(
+      failed === 0 ? 'yw-files__result--ok' : 'yw-files__result--failed',
+    )
     result.textContent =
       failed === 0
-        ? _t('ADMIN_FILES_UPLOADED').replace('{count}', String(files.length))
+        ? _t('ADMIN_FILES_UPLOADED').replace('{count}', String(chosen.length))
         : _t('ADMIN_FILES_UPLOAD_FAILED').replace('{count}', String(failed))
 
-    input.value = ''
     reload()
   })
 
   load()
-}
+})

@@ -1039,7 +1039,6 @@ return [
     'EDIT_CONFIG_HINT_ATTACH_CONFIG[MAX_FILE_SIZE]' => 'Maximum grootte van uploadde bestanden - bytes - Maximum grootte van uploadde bestanden (ex) 2097152, 2048k, 2m',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Media Insertion (pictures, video\'s)',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Dit bestand versturen',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

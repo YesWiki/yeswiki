@@ -324,6 +324,27 @@
   color: var(--yw-text);
 }
 
+.yw-files__result {
+  margin: 0 0 var(--yw-space-md-y);
+  padding: var(--yw-space-sm-y) var(--yw-space-md-x);
+  border-radius: var(--yw-radius-sm);
+  background: var(--yw-surface-sunken);
+}
+
+.yw-files__result[hidden] {
+  display: none;
+}
+
+.yw-files__result--ok {
+  color: var(--yw-success-text);
+  background: var(--yw-success-surface);
+}
+
+.yw-files__result--failed {
+  color: var(--yw-danger-text);
+  background: var(--yw-danger-surface);
+}
+
 .yw-dashboard__links {
   list-style: none;
   margin: 0;

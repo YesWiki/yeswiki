@@ -4,16 +4,20 @@
   <div class="yw-files__head">
     <h1>{{ _t('DASHBOARD_ADMIN_FILES') }}</h1>
 
-    <button type="button" class="yw-btn yw-btn--primary" data-yw-modal-target="#yw-files-upload">
+    <button type="button" class="yw-btn yw-btn--primary" data-yw-files-add>
       {{ icon('plus') }} {{ _t('ADMIN_FILES_ADD') }}
     </button>
+
+    <input type="file" name="upFile" multiple hidden data-yw-files-input
+           aria-hidden="true" tabindex="-1">
   </div>
 
   <p class="yw-dashboard__intro">{{ _t('ADMIN_FILES_INTRO') }}</p>
 
   <div class="yw-files" id="yw-files"
-       data-yw-files-url="{{ url({ tag: 'api/admin/files' }) }}"
-       data-yw-files-max="{{ uploadMaxSize|default(0) }}">
+       data-yw-files-url="{{ url({ tag: 'api/admin/files' }) }}">
+
+    <p class="yw-files__result" data-yw-files-result role="status" hidden></p>
 
     <div class="yw-files__toolbar">
       <input type="search" class="yw-input yw-files__search" data-yw-files-search
@@ -53,35 +57,6 @@
       <button type="button" class="yw-btn yw-btn--sm" data-yw-files-next>
         {{ _t('BAZ_SUIVANT') }} {{ icon('chevron-right') }}
       </button>
-    </div>
-  </div>
-
-  <div class="yw-modal" id="yw-files-upload" tabindex="-1" role="dialog"
-       aria-labelledby="yw-files-upload-title">
-    <div class="yw-modal__dialog">
-      <div class="yw-modal__content">
-        <form data-yw-files-upload-form>
-          <div class="yw-modal__header">
-            <h3 class="yw-modal__title" id="yw-files-upload-title">{{ _t('ADMIN_FILES_ADD') }}</h3>
-            <button type="button" class="yw-close" data-yw-dismiss="modal" aria-label="close">&times;</button>
-          </div>
-
-          <div class="yw-modal__body">
-            <p class="yw-form-hint">{{ _t('ADMIN_FILES_ADD_HINT') }}</p>
-            <div class="yw-form-group">
-              <label class="yw-form-label" for="yw-files-upload-input">{{ _t('UPLOAD_FILE') }}</label>
-              <input type="file" class="yw-input" id="yw-files-upload-input" name="upFile" multiple required>
-            </div>
-            <p class="yw-files__result" data-yw-files-result role="status" hidden></p>
-          </div>
-
-          <div class="yw-modal__footer">
-            <button type="submit" class="yw-btn yw-btn--primary">
-              {{ icon('upload') }} {{ _t('ADMIN_FILES_ADD') }}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 

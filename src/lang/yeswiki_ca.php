@@ -1054,7 +1054,6 @@ return [
     'ATTACH_DELETED_ON' => ' - Suprimit el: {data}',
     'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'El fitxer està buit.',
 
-    'ATTACH_FILE_PICKER_DO_UPLOAD' => 'Enviar aquest fitxer',
     'ATTACH_FILE_PICKER_UPLOAD_NEW' => 'Upload a new file',
     'ATTACH_FILE_PICKER_SEARCH_PLACEHOLDER' => 'Search files...',
     'ATTACH_FILE_PICKER_SELECTED' => 'Selected file:',

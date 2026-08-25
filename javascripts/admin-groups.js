@@ -1,6 +1,5 @@
-const rail = document.getElementById('yw-groups-rail')
-
-if (rail) {
+/** The groups rail, re-bound on every htmx swap -- see the note in admin-files.js. */
+ywInitEach('#yw-groups-rail', (rail) => {
   const screens = [...rail.querySelectorAll('[data-yw-groups-screen]')]
 
   /** Which face of the drawer is showing. The other is `hidden`, and that is the whole state. */
@@ -39,4 +38,4 @@ if (rail) {
       if (!window.confirm(form.dataset.confirm)) event.preventDefault()
     })
   })
-}
+})

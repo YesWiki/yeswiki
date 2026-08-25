@@ -69,9 +69,6 @@ export default class {
   get paneExisting() {
     return this.panel.querySelector('[data-yw-file-picker-pane="existing"]')
   }
-  get paneUpload() {
-    return this.panel.querySelector('[data-yw-file-picker-pane="upload"]')
-  }
   get searchInput() {
     return this.panel.querySelector('input[name="search"]')
   }
@@ -88,13 +85,19 @@ export default class {
     return this.panel.querySelector('[data-yw-file-picker-empty]')
   }
   get uploadInput() {
-    return this.panel.querySelector('input[name="upFile"]')
+    return this.panel.querySelector('[data-yw-file-picker-input]')
+  }
+  get uploadBusy() {
+    return this.panel.querySelector('.file-picker-upload-busy')
   }
   get uploadError() {
     return this.panel.querySelector('.file-picker-upload-error')
   }
   get selectedBox() {
     return this.panel.querySelector('.file-picker-selected')
+  }
+  get selectedPreview() {
+    return this.panel.querySelector('[data-yw-file-picker-selected-preview]')
   }
   get selectedName() {
     return this.panel.querySelector('[data-yw-file-picker-selected-name]')
@@ -123,9 +126,14 @@ export default class {
         this.close()
       }),
     )
+    // One click: the button opens the file browser, and choosing is the upload.
     this.uploadOpenBtn.addEventListener(
       'click',
-      () => this.isOpen && this.showView('upload'),
+      () => this.isOpen && this.uploadInput.click(),
+    )
+    this.uploadInput.addEventListener(
+      'change',
+      () => this.isOpen && this.uploadNewFile(),
     )
     this.backBtn.addEventListener('click', () => this.isOpen && this.goBack())
     this.searchInput.addEventListener(
@@ -136,9 +144,6 @@ export default class {
       'change',
       () => this.isOpen && this.applyFilters(),
     )
-    this.panel
-      .querySelector('.btn-do-upload')
-      .addEventListener('click', () => this.isOpen && this.uploadNewFile())
   }
 
   /** Two kinds of caller, and they want different things back. */
@@ -199,18 +204,23 @@ export default class {
     this.isOpen = false
   }
 
-  /** The rail is in exactly one of three states, and each one owns the whole panel. */
+  /** The rail is browsing or looking at a choice, and each state owns the whole panel. */
   showView(view) {
     this.view = view
     this.paneExisting.hidden = view !== 'browse'
-    this.paneUpload.hidden = view !== 'upload'
     this.uploadOpenBtn.hidden = view !== 'browse'
     this.backBtn.hidden = view === 'browse'
     this.selectedBox.hidden = view !== 'chosen'
     this.optionsForm.hidden = view !== 'chosen' || this.onPick !== null
   }
 
-  /** Back out of uploading, or out of a choice -- which unmakes it. */
+  /** Let the button be pressed again, whatever the upload did. */
+  finishUploading() {
+    this.uploadOpenBtn.disabled = false
+    this.uploadBusy.hidden = true
+  }
+
+  /** Back out of a choice, which unmakes it. */
   goBack() {
     if (this.view === 'chosen') {
       this.clearSelection()
@@ -223,6 +233,7 @@ export default class {
   clearSelection() {
     this.selectedTag = null
     this.selectedEntry = null
+    this.selectedPreview.innerHTML = ''
     this.insertBtn.disabled = true
     this.optionsForm.reset()
   }
@@ -410,13 +421,18 @@ export default class {
       return
     }
 
-    const button = this.panel.querySelector('.btn-do-upload')
-    button.disabled = true
+    this.uploadOpenBtn.disabled = true
+    this.uploadBusy.hidden = false
     let toUpload
     try {
       toUpload = await prepareImageForUpload(file)
-    } finally {
-      button.disabled = false
+    } catch {
+      this.finishUploading()
+      this.uploadError.textContent = _t('ERROR_NO_FILE_UPLOADED')
+      this.uploadError.hidden = false
+      this.uploadInput.value = ''
+
+      return
     }
 
     const formData = new FormData()
@@ -435,10 +451,14 @@ export default class {
       response = null
     }
 
+    this.finishUploading()
+
     if (!response || !response.ok) {
       this.uploadError.textContent =
         (body && body.error) || _t('ERROR_NO_FILE_UPLOADED')
       this.uploadError.hidden = false
+      this.uploadInput.value = ''
+
       return
     }
 
@@ -454,10 +474,41 @@ export default class {
     this.selectedTag = entry.tag
     this.selectedEntry = entry
     this.selectedName.textContent = entry.original_filename
+    this.showPreview(entry)
     this.insertBtn.disabled = false
     if (!this.onPick) this.configureOptionsFor(entry)
     this.applyFilters()
     this.showView('chosen')
+  }
+
+  /**
+   * What the chosen file looks like, at a size worth looking at.
+   *
+   * An image is the case that matters -- picking the wrong photo out of a list of thumbnails is
+   * easy, and the name alone does not catch it. Anything else shows its family glyph, so the box
+   * keeps its shape rather than jumping between two layouts.
+   */
+  showPreview(entry) {
+    const holder = this.selectedPreview
+    holder.innerHTML = ''
+    holder.classList.toggle(
+      'file-picker-selected__preview--image',
+      entry.family === 'image',
+    )
+
+    if (entry.family === 'image') {
+      const image = document.createElement('img')
+      image.src = wiki.url(
+        `api/files/${encodeURIComponent(entry.tag)}/download`,
+      )
+      image.alt = ''
+      holder.appendChild(image)
+
+      return
+    }
+
+    holder.innerHTML =
+      legacyIconToSprite(FAMILY_ICONS[entry.family] || FAMILY_ICONS.other) || ''
   }
 
   configureOptionsFor(entry) {

@@ -1,6 +1,30 @@
-const rail = document.getElementById('yw-preset-rail')
+/**
+ * Every palette popover on the page, so one pair of document listeners serves them all.
+ *
+ * A popover that only closes by its own button is one people leave open over the field they were
+ * trying to look at, so a click elsewhere and Escape both shut it. These sit on `document` and are
+ * registered once for the page: htmx swaps the rail in and out, and a listener added per swap
+ * would pile up, each one holding a box that is no longer in the document. `isConnected` retires
+ * those instead.
+ */
+const palettes = []
 
-if (rail) {
+const livePalettes = () => palettes.filter(({ box }) => box.isConnected)
+
+document.addEventListener('click', (event) => {
+  livePalettes().forEach(({ box, close }) => {
+    if (!box.hidden && !box.contains(event.target)) close()
+  })
+})
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return
+  livePalettes().forEach(({ box, close }) => {
+    if (!box.hidden) close()
+  })
+})
+
+/** The preset rail, re-bound on every htmx swap -- see the note in admin-files.js. */
+ywInitEach('#yw-preset-rail', (rail) => {
   const form = rail.querySelector('form')
   const screens = [...rail.querySelectorAll('[data-yw-preset-screen]')]
   const schemeBlocks = [...rail.querySelectorAll('[data-scheme]')]
@@ -604,13 +628,7 @@ if (rail) {
       ?.addEventListener('click', closePalette)
     // anywhere else, and Escape: a popover that only closes by its own button is one people
     // leave open over the field they were trying to look at
-    document.addEventListener('click', (event) => {
-      if (!paletteBox.hidden && !paletteBox.contains(event.target))
-        closePalette()
-    })
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !paletteBox.hidden) closePalette()
-    })
+    palettes.push({ box: paletteBox, close: closePalette })
   }
 
   function open(button, { isNew }) {
@@ -803,4 +821,4 @@ if (rail) {
         if (!window.confirm(deleteForm.dataset.confirm)) event.preventDefault()
       })
     })
-}
+})
