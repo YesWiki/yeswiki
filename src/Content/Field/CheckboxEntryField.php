@@ -3,9 +3,10 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FormManager;
 
-#[\Field(['checkboxfiche'])]
+#[Field(['checkboxfiche'])]
 class CheckboxEntryField extends CheckboxField
 {
     public function __construct(array $values, ContainerInterface $services)

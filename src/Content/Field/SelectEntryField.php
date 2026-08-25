@@ -3,9 +3,10 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Controller\EntryController;
 
-#[\Field(['listefiche'])]
+#[Field(['listefiche'])]
 class SelectEntryField extends EnumField
 {
     /** @var mixed the form definition's rendering choice for this list */

@@ -3,10 +3,11 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\ImportContext;
 use YesWiki\Kernel\Service\Mailer;
 
-#[\Field(['inscriptionliste'])]
+#[Field(['inscriptionliste'])]
 class SubscribeField extends BazarField
 {
     /** @var string the list address subscriptions are sent to */

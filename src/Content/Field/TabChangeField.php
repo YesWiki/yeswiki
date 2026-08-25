@@ -3,9 +3,10 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Render\Service\TabsRenderer;
 
-#[\Field(['tabchange'])]
+#[Field(['tabchange'])]
 class TabChangeField extends LabelField
 {
     protected const FIELD_FORM_CHANGE = 1;

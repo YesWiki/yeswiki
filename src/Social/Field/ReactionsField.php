@@ -3,11 +3,12 @@
 namespace YesWiki\Social\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Social\Service\ReactionsFormatter;
 
-#[\Field(['reactions'])]
+#[Field(['reactions'])]
 class ReactionsField extends BazarField
 {
     protected const FIELD_IDS = 2;

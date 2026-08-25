@@ -3,11 +3,12 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /** The bytes of a file Content (`contenu_fichier`, ticket 13). */
-#[\Field(['contenu_fichier'])]
+#[Field(['contenu_fichier'])]
 class FileContentField extends BazarField
 {
     use ContributesNoSearchableText;

@@ -3,9 +3,10 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
-#[\Field(['labelhtml'])]
+#[Field(['labelhtml'])]
 class LabelField extends BazarField
 {
     /** @var string|null */

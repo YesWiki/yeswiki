@@ -3,8 +3,9 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 
-#[\Field(['champs_cache'])]
+#[Field(['champs_cache'])]
 class HiddenField extends BazarField
 {
     use ContributesNoSearchableText;

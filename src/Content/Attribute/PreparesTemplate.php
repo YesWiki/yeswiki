@@ -1,7 +1,9 @@
 <?php
 
+namespace YesWiki\Content\Attribute;
+
 /** The templates a `PrepareData…` class prepares, beyond the one its filename names (ticket 49). */
-#[Attribute(Attribute::TARGET_CLASS)]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 final class PreparesTemplate
 {
     /** @var list<string> */

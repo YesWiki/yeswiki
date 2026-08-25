@@ -2,10 +2,11 @@
 
 namespace YesWiki\Content\TemplateData;
 
+use YesWiki\Content\Attribute\PreparesTemplate;
 use YesWiki\Content\Service\FormManager;
 
 /** The columns the Vue table draws, which only the form knows (was `EntryTableAction::formatArguments()`). */
-#[\PreparesTemplate(['map-and-table'])]
+#[PreparesTemplate(['map-and-table'])]
 class PrepareDataTable extends PrepareData
 {
     public function prepare(array $arguments): array

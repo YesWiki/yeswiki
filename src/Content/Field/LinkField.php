@@ -3,8 +3,9 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 
-#[\Field(['lien_internet'])]
+#[Field(['lien_internet'])]
 class LinkField extends BazarField
 {
     use ContributesNoSearchableText;

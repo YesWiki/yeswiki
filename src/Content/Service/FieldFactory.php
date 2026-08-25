@@ -2,8 +2,8 @@
 
 namespace YesWiki\Content\Service;
 
-use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Kernel\Service\ClassDirectoryScanner;
 
@@ -29,8 +29,6 @@ class FieldFactory
 
     private function loadAvailableField(): void
     {
-        require_once YESWIKI_PROGRAM_DIR . '/src/annotations/Field.php';
-
         $scanner = $this->container->get(ClassDirectoryScanner::class);
         foreach ($scanner->directories('Field', 'fields') as $namespace => $dir) {
             $this->scanFieldsDir($scanner->filesIn($dir), $namespace);
@@ -55,7 +53,7 @@ class FieldFactory
             }
             $fieldClass = new \ReflectionClass($className);
 
-            $attributes = $fieldClass->getAttributes(\Field::class);
+            $attributes = $fieldClass->getAttributes(Field::class);
 
             if (!empty($attributes)) {
                 $fieldAttribute = $attributes[0]->newInstance();

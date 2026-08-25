@@ -2,10 +2,11 @@
 
 namespace YesWiki\Content\Field;
 
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Kernel\Service\DateService as CoreDateService;
 
-#[\Field(['jour', 'listedatedeb', 'listedatefin'])]
+#[Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
 {
     use ContributesNoSearchableText;

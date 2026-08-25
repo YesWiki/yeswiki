@@ -1,6 +1,8 @@
 <?php
 
-#[Attribute(Attribute::TARGET_CLASS)]
+namespace YesWiki\Content\Attribute;
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
 final class Field
 {
     /** @var list<string> the keywords this field class is registered under */

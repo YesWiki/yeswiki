@@ -3,12 +3,13 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\FormManager;
 
 /**
  * @phpstan-type CalcToken array{type: 'number', value: float}|array{type: 'op', value: string}|array{type: 'name', value: string}
  */
-#[\Field(['calc'])]
+#[Field(['calc'])]
 class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;

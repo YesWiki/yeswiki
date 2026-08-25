@@ -2,10 +2,11 @@
 
 namespace YesWiki\Content\TemplateData;
 
+use YesWiki\Content\Attribute\PreparesTemplate;
 use YesWiki\Search\Service\SearchManager;
 
 /** Leaflet's vocabulary, from the marker settings a webmaster set (was `EntryMapAction::formatArguments()`). */
-#[\PreparesTemplate(['gogomap', 'gogocarto', 'map-and-table'])]
+#[PreparesTemplate(['gogomap', 'gogocarto', 'map-and-table'])]
 class PrepareDataMap extends PrepareData
 {
     public function prepare(array $arguments): array

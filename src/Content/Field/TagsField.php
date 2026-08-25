@@ -3,11 +3,12 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\EntryTagsCleared;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-#[\Field(['tags'])]
+#[Field(['tags'])]
 class TagsField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)

@@ -2,7 +2,9 @@
 
 namespace YesWiki\Content\Field;
 
-#[\Field(['openinghours'])]
+use YesWiki\Content\Attribute\Field;
+
+#[Field(['openinghours'])]
 class OpeningHoursField extends BazarField
 {
     use ContributesNoSearchableText;

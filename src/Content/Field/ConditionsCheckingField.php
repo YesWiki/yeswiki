@@ -3,8 +3,9 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 
-#[\Field(['conditionschecking'])]
+#[Field(['conditionschecking'])]
 class ConditionsCheckingField extends LabelField
 {
     private string $condition = '';

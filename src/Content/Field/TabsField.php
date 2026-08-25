@@ -3,10 +3,11 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Render\Service\TabsRenderer;
 
-#[\Field(['tabs'])]
+#[Field(['tabs'])]
 class TabsField extends LabelField
 {
     /** @var array<int, string> */

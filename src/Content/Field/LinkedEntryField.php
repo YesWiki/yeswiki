@@ -3,11 +3,12 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TabsService;
 
-#[\Field(['listefichesliees', 'listefiches'])]
+#[Field(['listefichesliees', 'listefiches'])]
 class LinkedEntryField extends BazarField
 {
     protected string $query;

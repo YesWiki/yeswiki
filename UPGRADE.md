@@ -305,6 +305,34 @@ dropped tables and the deleted `Wiki` class.
 > silently relocating third-party code is a worse default than telling you to. Tracker ticket 33
 > covers whether this should warn rather than move.
 
+One rename you will hit immediately if your extension declares a **custom field type**: the
+attribute that registers a field's keywords is namespaced now. `#[\Field([...])]` no longer
+resolves, and a field class with no attribute the factory can read is **not registered under any
+name at all** — `FieldFactory::create()` returns `false` for that type, so the field vanishes from
+every form that used it.
+
+```diff
+  namespace YesWiki\MyExtension\Field;
+
++ use YesWiki\Content\Attribute\Field;
+  use YesWiki\Content\Field\BazarField;
+
+- #[\Field(['myfield'])]
++ #[Field(['myfield'])]
+  class MyField extends BazarField
+```
+
+The same applies to `#[\PreparesTemplate([...])]` on a `PrepareData…` class, which becomes
+`use YesWiki\Content\Attribute\PreparesTemplate;`. Both attributes live with the service that
+reads them instead of in the global namespace, so an extension can no longer break core by
+declaring a class of the same name. `extensions/helloworld/fields/AlertField.php` is the worked
+example.
+
+> **Not automatable, and it fails silently.** A migration cannot edit third-party PHP, and nothing
+> throws when the attribute is unreadable — the field is skipped during the scan, not rejected at
+> use. So the symptom is a field type that has stopped existing rather than an error naming it.
+> Check your form still renders that field after upgrading.
+
 ### 3. Custom `.tpl.html` templates must be ported to Twig
 
 The `tpl.html` engine is gone. Stored _names_ alias to `.twig` (above), which means your

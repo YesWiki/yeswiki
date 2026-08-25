@@ -3,11 +3,12 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 
 /** A password input inside a form (`mot_de_passe`). */
-#[\Field(['mot_de_passe'])]
+#[Field(['mot_de_passe'])]
 class PasswordField extends BazarField
 {
     use ContributesNoSearchableText;

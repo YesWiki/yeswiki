@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\Storage;
@@ -12,7 +13,7 @@ use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\StringUtilService;
 
-#[\Field(['textelong'])]
+#[Field(['textelong'])]
 class TextareaField extends BazarField
 {
     /** @var int|string rows of the textarea, as the form definition spells it */

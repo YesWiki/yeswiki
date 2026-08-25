@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Files\Service\FileBrowser;
 use YesWiki\Files\Service\ImageResizer;
 use YesWiki\Kernel\Service\AssetRegistry;
@@ -12,7 +13,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
-#[\Field(['image'])]
+#[Field(['image'])]
 class ImageField extends FileField
 {
     /** @var int|string|null */

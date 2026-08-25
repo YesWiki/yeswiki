@@ -3,8 +3,9 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 
-#[\Field(['liste'])]
+#[Field(['liste'])]
 class SelectListField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)

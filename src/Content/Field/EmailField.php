@@ -3,10 +3,11 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Service\EntryFastAccessService;
 use YesWiki\Identity\Service\AclService;
 
-#[\Field(['champs_mail'])]
+#[Field(['champs_mail'])]
 class EmailField extends BazarField
 {
     use ContributesNoSearchableText;

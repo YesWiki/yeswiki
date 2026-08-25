@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\PreparesTemplate;
 use YesWiki\Content\TemplateData\PrepareData;
 use YesWiki\Kernel\Service\ClassDirectoryScanner;
 
@@ -52,8 +53,6 @@ class TemplateDataFactory
 
     private function load(): void
     {
-        require_once YESWIKI_PROGRAM_DIR . '/src/annotations/PreparesTemplate.php';
-
         $scanner = $this->container->get(ClassDirectoryScanner::class);
         foreach ($scanner->directories('TemplateData', 'templatedata') as $namespace => $dir) {
             $this->scan($scanner->filesIn($dir), $namespace);
@@ -75,7 +74,7 @@ class TemplateDataFactory
             }
 
             $templates = [strtolower($matches[1])];
-            foreach ((new \ReflectionClass($class))->getAttributes(\PreparesTemplate::class) as $attribute) {
+            foreach ((new \ReflectionClass($class))->getAttributes(PreparesTemplate::class) as $attribute) {
                 $templates = array_merge($templates, $attribute->newInstance()->templates);
             }
 

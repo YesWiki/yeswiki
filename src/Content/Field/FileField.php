@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
@@ -18,7 +19,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-#[\Field(['fichier'])]
+#[Field(['fichier'])]
 class FileField extends BazarField
 {
     use ContributesNoSearchableText;

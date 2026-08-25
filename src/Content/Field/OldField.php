@@ -2,12 +2,12 @@
 
 namespace YesWiki\Content\Field;
 
-use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Render\Service\TemplateEngine;
 
 /** Ensure backwardompatibility with old format field. */
-#[\Field(['old'])]
+#[Field(['old'])]
 class OldField extends BazarField
 {
     /** @var string|null the legacy `formulaire_*` function this field delegates to */

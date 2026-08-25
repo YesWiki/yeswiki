@@ -5,10 +5,11 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Action\EntryListAction;
+use YesWiki\Content\Attribute\Field;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Render\Service\ActionRunner;
 
-#[\Field(['map', 'carte_google'])]
+#[Field(['map', 'carte_google'])]
 class MapField extends BazarField
 {
     use ContributesNoSearchableText;
