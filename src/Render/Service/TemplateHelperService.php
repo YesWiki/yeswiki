@@ -9,6 +9,8 @@ use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\ProgramFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -30,6 +32,11 @@ class TemplateHelperService
         $this->urlFormatter = $urlFormatter;
         $this->params = $params;
         $this->container = $container;
+    }
+
+    private function storage(): Storage
+    {
+        return $this->container->get(Storage::class);
     }
 
     /**
@@ -55,13 +62,13 @@ class TemplateHelperService
             } else {
                 $imageFileName = $body['imagebf_image'] ?? '';
                 if (!empty($imageFileName)) {
-                    if (file_exists("files/$imageFileName")) {
+                    if ($this->storage()->exists("files/$imageFileName")) {
                         $image = $this->getResizedFilename("files/$imageFileName", $page, $page['tag'], $width, $height, false);
                     }
                 } else {
                     $images = [];
                     if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $content, $images)) {
-                        if (file_exists('files/' . basename($images[1]))) {
+                        if ($this->storage()->exists('files/' . basename($images[1]))) {
                             $image = $this->getResizedFilename('files/' . basename($images[1]), $page, $page['tag'], $width, $height, false);
                         }
                     }
@@ -82,7 +89,7 @@ class TemplateHelperService
             $opengraphImage = $this->params->get('opengraph_image');
             if (!empty($opengraphImage)
                 && is_string($opengraphImage)
-                && file_exists($opengraphImage)
+                && $this->storage()->exists($opengraphImage)
             ) {
                 $image = "{$this->urlFormatter->getBaseUrl()}/$opengraphImage";
             }
@@ -108,11 +115,11 @@ class TemplateHelperService
                 $fileName = $this->container->get(AttachedFilePaths::class)->fullFilename($fileName, false);
             }
         }
-        if (!empty($fileName) && file_exists($fileName)) {
+        if (!empty($fileName) && $this->storage()->exists($fileName)) {
             $imageDest = $resizer->resizedFilename($fileName, $width, $height, 'crop');
 
             if (!empty($imageDest)) {
-                if (!file_exists($imageDest)) {
+                if (!$this->storage()->exists($imageDest)) {
                     $resizedImage = $resizer->resize(
                         $fileName,
                         $imageDest,
@@ -157,67 +164,88 @@ class TemplateHelperService
     }
 
     /**
-     * Parcours des dossiers a la recherche de templates.
+     * Every theme in one tree, with the stylesheets, squelettes and presets it offers.
      *
-     * @param string $directory chemin relatif vers le dossier contenant les templates
+     * `$isCustom` says which tree, and now decides which service is asked rather than only how the
+     * answer is labelled: a wiki's own themes are Instance data and live in `custom/themes`, the
+     * shipped ones are code and live in the Program. That was the same `opendir` for both, which
+     * is why a wiki on object storage listed its own themes off a disk that has none.
      *
-     * @return array<string, array<string, mixed>> les themes trouves, ranges par ordre alphabetique
+     * @return array<string, array<string, mixed>> themes by name, alphabetically
      */
-    public function searchTemplateFiles($directory, bool $isCustom = false)
+    public function searchTemplateFiles(string $directory, bool $isCustom = false): array
     {
-        $tab_themes = [];
-        $dir = opendir($directory);
-        if ($dir === false) {
-            return [];
-        }
+        $themes = [];
 
-        while (($file = readdir($dir)) !== false) {
-            if ($file != '.' && $file != '..' && $file != 'CVS' && is_dir($directory . DIRECTORY_SEPARATOR . $file)) {
-                $pathToStyles = $directory . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . 'styles';
-                if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
-                    while (false !== ($file2 = readdir($dir2))) {
-                        if (substr($file2, -4, 4) == '.css') {
-                            $tab_themes[$file]['isCustom'] = $isCustom;
-                            $tab_themes[$file]['style'][$file2] = $this->removeExtension($file2);
-                        }
-                    }
-                    closedir($dir2);
-                }
+        foreach ($this->directoriesIn($directory, $isCustom) as $themePath) {
+            $name = basename($themePath);
+            if ($name === 'CVS') {
+                continue;
+            }
 
-                $pathToSquelettes = $directory . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . 'squelettes';
-                if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
-                    while (false !== ($file3 = readdir($dir3))) {
-                        if (str_ends_with($file3, '.twig')) {
-                            $tab_themes[$file]['isCustom'] = $isCustom;
-                            $tab_themes[$file]['squelette'][$file3] = $this->removeExtension($file3, true);
-                        }
-                    }
-                    closedir($dir3);
-                }
-
-                $pathToPresets = $directory . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . 'presets';
-                if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
-                    while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -4, 4) == '.css' && file_exists($pathToPresets . '/' . $file4)) {
-                            $css = file_get_contents($pathToPresets . '/' . $file4);
-                            if (!empty($css)) {
-                                $tab_themes[$file]['isCustom'] = $isCustom;
-                                $tab_themes[$file]['presets'][$file4] = $css;
-                            }
-                        }
-                    }
-                    closedir($dir4);
-                    if (isset($tab_themes[$file]['presets'])) {
-                        ksort($tab_themes[$file]['presets']);
-                    }
+            foreach ($this->filesIn($themePath . '/styles', $isCustom) as $style) {
+                if (str_ends_with($style, '.css')) {
+                    $themes[$name]['isCustom'] = $isCustom;
+                    $themes[$name]['style'][basename($style)] = $this->removeExtension(basename($style));
                 }
             }
+
+            foreach ($this->filesIn($themePath . '/squelettes', $isCustom) as $squelette) {
+                if (str_ends_with($squelette, '.twig')) {
+                    $themes[$name]['isCustom'] = $isCustom;
+                    $themes[$name]['squelette'][basename($squelette)] = $this->removeExtension(basename($squelette), true);
+                }
+            }
+
+            foreach ($this->filesIn($themePath . '/presets', $isCustom) as $preset) {
+                if (!str_ends_with($preset, '.css')) {
+                    continue;
+                }
+                $css = $this->readIn($preset, $isCustom);
+                if ($css !== '') {
+                    $themes[$name]['isCustom'] = $isCustom;
+                    $themes[$name]['presets'][basename($preset)] = $css;
+                }
+            }
+            if (isset($themes[$name]['presets'])) {
+                ksort($themes[$name]['presets']);
+            }
         }
-        closedir($dir);
 
-        ksort($tab_themes);
+        ksort($themes);
 
-        return $tab_themes;
+        return $themes;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function directoriesIn(string $directory, bool $isCustom): array
+    {
+        return $isCustom
+            ? $this->container->get(Storage::class)->directories($directory)
+            : $this->container->get(ProgramFiles::class)->directories($directory);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function filesIn(string $directory, bool $isCustom): array
+    {
+        return $isCustom
+            ? $this->container->get(Storage::class)->files($directory)
+            : $this->container->get(ProgramFiles::class)->files($directory);
+    }
+
+    private function readIn(string $path, bool $isCustom): string
+    {
+        if (!$isCustom) {
+            return $this->container->get(ProgramFiles::class)->read($path);
+        }
+
+        return $this->container->get(Storage::class)->exists($path)
+            ? $this->container->get(Storage::class)->read($path)
+            : '';
     }
 
     /**

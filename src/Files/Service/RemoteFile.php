@@ -18,7 +18,12 @@ class RemoteFile
     /** Download $url to $localPath, or report why not. */
     public static function download(string $url, string $localPath): bool
     {
-        if (file_exists($localPath)) {
+        // Static, so both services are built here rather than injected: they hold nothing, and
+        // this is called from places that have no container to hand.
+        $storage = new Storage();
+        $localFiles = new LocalFiles();
+
+        if ($storage->exists($localPath)) {
             return true;
         } elseif ($ch = curl_init($url)) {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -28,8 +33,8 @@ class RemoteFile
             if (PHP_VERSION_ID < 80500) {
                 curl_close($ch);
             }
-            $file = is_string($imgcontent) ? fopen($localPath, 'w+') : false;
-            if ($file !== false) {
+            $file = is_string($imgcontent) ? $localFiles->openForWriting($localPath) : null;
+            if ($file !== null) {
                 fputs($file, (string)$imgcontent);
                 fclose($file);
             }

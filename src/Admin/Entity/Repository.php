@@ -2,7 +2,7 @@
 
 namespace YesWiki\Admin\Entity;
 
-use YesWiki\Content\Entity\Files;
+use YesWiki\Admin\Service\PackageTree;
 use YesWiki\Kernel\Service\ConfigurationService;
 
 class Repository extends PackageCollection
@@ -12,13 +12,13 @@ class Repository extends PackageCollection
     /** @var string base URL of the repository, with a trailing slash */
     private $address;
 
-    /** @var Files */
+    /** @var PackageTree */
     private $fileHandler;
 
     public function __construct(string $address, string $requestedVersion = '', ?ConfigurationService $configurationService = null)
     {
         $this->address = $address . '/';
-        $this->fileHandler = new Files();
+        $this->fileHandler = new PackageTree();
         $this->requestedVersion = $requestedVersion;
         $this->configurationService = $configurationService;
     }
@@ -33,11 +33,11 @@ class Repository extends PackageCollection
         }
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
         $file = $this->fileHandler->download($repoInfosFile);
-        $json = file_get_contents($file);
+        $json = $this->fileHandler->read($file);
 
-        unlink($file);
+        $this->fileHandler->remove($file);
 
-        if ($json === false) {
+        if ($json === '') {
             return false;
         }
         $data = json_decode($json, true);

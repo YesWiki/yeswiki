@@ -3,6 +3,8 @@
 namespace YesWiki\Social\Service;
 
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\ProgramFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class ReactionsFormatter extends YesWikiController
@@ -13,7 +15,9 @@ class ReactionsFormatter extends YesWikiController
 
     public function __construct(
         ReactionManager $reactionManager,
-        UrlFormatter $urlFormatter
+        UrlFormatter $urlFormatter,
+        private readonly Storage $storage,
+        private readonly ProgramFiles $programFiles,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->reactionManager = $reactionManager;
@@ -70,14 +74,14 @@ class ReactionsFormatter extends YesWikiController
                 ? (
                     (array_key_exists($id, $defaultImages))
                     ? (
-                        file_exists($defaultImages[$id])
+                        $this->programFiles->exists($defaultImages[$id])
                         ? "$baseUrl/{$defaultImages[$id]}"
                         : $defaultImages[$id]
                     )
                     : (
                         (array_key_exists($k, $defaultImages))
                         ? (
-                            file_exists($defaultImages[$k])
+                            $this->programFiles->exists($defaultImages[$k])
                             ? "$baseUrl/{$defaultImages[$k]}"
                             : $defaultImages[$k]
                         )
@@ -90,10 +94,10 @@ class ReactionsFormatter extends YesWikiController
                     : (
                         (preg_match('/\\.(gif|jpeg|png|jpg|svg|webp)$/i', $rawImages[$k]))
                         ? (
-                            file_exists("custom/images/{$rawImages[$k]}")
+                            $this->storage->exists("custom/images/{$rawImages[$k]}")
                             ? "$baseUrl/custom/images/{$rawImages[$k]}"
                             : (
-                                file_exists("files/{$rawImages[$k]}")
+                                $this->storage->exists("files/{$rawImages[$k]}")
                                 ? "$baseUrl/files/{$rawImages[$k]}"
                                 : (
                                     file_exists(YESWIKI_PROGRAM_DIR . "/styles/images/{$rawImages[$k]}")

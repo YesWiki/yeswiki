@@ -2,6 +2,7 @@
 
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Files\Service\Storage;
 
 /**
  * Repaints a copied preset's dark top bar with its dark page colour, as its light scheme already does.
@@ -13,8 +14,8 @@ class ADarkBarMatchesItsDarkPage extends YesWikiMigration
         $touched = [];
 
         foreach ($this->files() as $path) {
-            $css = @file_get_contents($path);
-            if ($css === false) {
+            $css = $this->getService(Storage::class)->read($path);
+            if ($css === '') {
                 throw new RuntimeException("preset $path could not be read");
             }
 
@@ -22,7 +23,9 @@ class ADarkBarMatchesItsDarkPage extends YesWikiMigration
             if ($rewritten === $css) {
                 continue;
             }
-            if (@file_put_contents($path, $rewritten) === false) {
+            try {
+                $this->getService(Storage::class)->write($path, $rewritten);
+            } catch (Throwable) {
                 throw new RuntimeException("preset $path could not be written: check the permissions on " . dirname($path));
             }
             $touched[] = basename($path);
@@ -46,7 +49,7 @@ class ADarkBarMatchesItsDarkPage extends YesWikiMigration
     {
         $paths = [];
         foreach (['custom/css-presets/*.css', 'custom/themes/*/presets/*.css'] as $pattern) {
-            foreach (glob($pattern) ?: [] as $path) {
+            foreach ($this->getService(Storage::class)->glob($pattern) as $path) {
                 $paths[] = $path;
             }
         }

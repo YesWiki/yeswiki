@@ -9,6 +9,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -36,7 +37,8 @@ class AvatarService
         AttachedFilePaths $paths,
         ImageResizer $resizer,
         PageContext $pageContext,
-        UrlFormatter $urlFormatter
+        UrlFormatter $urlFormatter,
+        private readonly Storage $storage,
     ) {
         $this->pageManager = $pageManager;
         $this->userManager = $userManager;
@@ -98,13 +100,13 @@ class AvatarService
 
         try {
             $source = $this->paths->uploadPath() . '/' . $fileName;
-            if (!file_exists($source)) {
+            if (!$this->storage->exists($source)) {
                 return null;
             }
 
             $base = $this->urlFormatter->getBaseUrl() . '/';
             $thumbnail = $this->resizer->resizedFilename($source, (string)self::SIZE, (string)self::SIZE, 'crop');
-            if (file_exists($thumbnail)) {
+            if ($this->storage->exists($thumbnail)) {
                 return $base . $thumbnail;
             }
 

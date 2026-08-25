@@ -3,6 +3,7 @@
 namespace YesWiki\Kernel\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Asset\AssetEntry;
 use YesWiki\Kernel\Asset\AssetSet;
@@ -219,7 +220,9 @@ class AssetRegistry implements RequestScopedState
             return $this->urlFormatter->getBaseUrl() . '/' . $published;
         }
 
-        if (!file_exists($file) && !file_exists(YESWIKI_PROGRAM_DIR . '/' . $file)) {
+        // An asset is either the wiki's own (`custom/`, which may be in a bucket) or the
+        // release's, and both sides have to be asked before this says there is no such file.
+        if (!$this->container->get(ProgramFiles::class)->findExists($file, $file)) {
             return null;
         }
 
@@ -250,9 +253,11 @@ class AssetRegistry implements RequestScopedState
         $revision = $config->getValue('yeswiki_release', null);
 
         if ($config->getValue('debug')) {
-            $localPath = file_exists($file) ? $file : YESWIKI_PROGRAM_DIR . '/' . $file;
-            $mtime = @filemtime($localPath);
-            if ($mtime !== false) {
+            $programFiles = $this->container->get(ProgramFiles::class);
+            $mtime = $programFiles->instanceHas($file)
+                ? $this->container->get(Storage::class)->lastModified($file)
+                : $programFiles->modifiedAt($file);
+            if ($mtime > 0) {
                 $revision = $revision . '-' . $mtime;
             }
         }

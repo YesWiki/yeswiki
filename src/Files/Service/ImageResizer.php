@@ -30,7 +30,7 @@ class ImageResizer
     /** The resized copy of $source, made once and reused after that. */
     public function cached(string $source, string $width, string $height, string $method = 'fit'): string
     {
-        if (!file_exists($source)) {
+        if (!$this->storage->exists($source)) {
             return '';
         }
 
@@ -38,15 +38,15 @@ class ImageResizer
 
         if (
             !$this->hibernation->isWikiHibernated()
-            && file_exists($target)
+            && $this->storage->exists($target)
             && isset($_GET['refresh'])
             && $_GET['refresh'] == 1
             && $this->acl->isAdmin()
         ) {
-            unlink($target);
+            $this->storage->delete($target);
         }
 
-        if (!file_exists($target)) {
+        if (!$this->storage->exists($target)) {
             return $this->resize($source, $target, $width, $height, $method) === $target ? $target : $source;
         }
 

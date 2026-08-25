@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\ConsoleService;
 
 class TestConsoleServiceCommand extends Command
@@ -44,7 +45,7 @@ class TestConsoleServiceCommand extends Command
         $text = $input->getOption('text');
         $wait = abs(intval($input->getOption('wait')));
 
-        if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)) {
+        if (empty($file) || empty($text) || $this->services->get(LocalFiles::class)->isDirectory("cache/$file") || empty($wait)) {
             $output->writeln([
                 '',
                 'ERROR : required arguments are missing (file or text or wait).',
@@ -68,6 +69,6 @@ class TestConsoleServiceCommand extends Command
 
     private function writeToFile(string $file, string $content): void
     {
-        file_put_contents($file, $content, FILE_APPEND);
+        $this->services->get(LocalFiles::class)->append($file, $content);
     }
 }

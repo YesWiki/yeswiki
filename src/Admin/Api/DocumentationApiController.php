@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
@@ -46,7 +47,7 @@ class DocumentationApiController extends YesWikiController
 
         foreach ($this->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
             $response = null;
-            if (file_exists($pluginBase . 'controllers/ApiController.php')) {
+            if ($this->getService(LocalFiles::class)->exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
                 if (!class_exists($apiClassName, false)) {
                     include $pluginBase . 'controllers/ApiController.php';

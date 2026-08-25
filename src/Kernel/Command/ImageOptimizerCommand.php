@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Files\Service\Storage;
 
 class ImageOptimizerCommand extends Command
 {
@@ -32,9 +33,17 @@ class ImageOptimizerCommand extends Command
     {
         $optimizerChain = OptimizerChainFactory::create();
         $toWebp = $input->getOption('forcewebp');
-        $images = glob('files/*.{jpg,jpeg,png,gif,webp,bmp,svg}', GLOB_BRACE) ?: [];
+        // The optimiser shells out to jpegoptim, pngquant and friends, so it needs real files.
+        // On an instance whose Public tier is a bucket this command has nothing local to hand
+        // them, and that is a gap rather than a decision -- `storage:sync` is how those wikis
+        // move bytes today.
+        $storage = $this->services->get(Storage::class);
+        $images = array_filter(
+            $storage->files('files'),
+            static fn (string $path) => in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'], true)
+        );
         foreach ($images as $image) {
-            $beforeSize = $this->humanFilesize(filesize($image) ?: 0);
+            $beforeSize = $this->humanFilesize($storage->fileSize($image));
             echo "Image $image initial size: $beforeSize\n";
             if ($toWebp) {
                 $destImage = str_replace('.' . pathinfo($image, PATHINFO_EXTENSION), '.webp', $image);
@@ -44,12 +53,12 @@ class ImageOptimizerCommand extends Command
                     $optimizerChain->optimize($image);
                 } else {
                     $optimizerChain->optimize($image, $destImage);
-                    unlink($image);
+                    $storage->delete($image);
                 }
-                $afterSize = $this->humanFilesize(filesize($destImage) ?: 0);
+                $afterSize = $this->humanFilesize($storage->fileSize($destImage));
             } else {
                 $optimizerChain->optimize($image);
-                $afterSize = $this->humanFilesize(filesize($image) ?: 0);
+                $afterSize = $this->humanFilesize($storage->fileSize($image));
             }
             echo "Image size after optimisation: $afterSize\n---\n";
         }

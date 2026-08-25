@@ -27,7 +27,8 @@ class LayoutServiceTest extends YesWikiTestCase
             new ForcedParameterBag($services->get(ParameterBagInterface::class), $config),
             $services->get(ConfigurationService::class),
             $services->get(PageManager::class),
-            $services->get(PageContext::class)
+            $services->get(PageContext::class),
+            $services->get(\YesWiki\Files\Service\Storage::class),
         );
     }
 

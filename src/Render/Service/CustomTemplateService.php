@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Service;
 
 use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
 
 /**
@@ -11,6 +12,9 @@ use YesWiki\Files\Service\Storage;
 class CustomTemplateService
 {
     /** Instance-relative, matching the paths TemplateEngine adds to its loader. */
+    /** Where the shipped templates live in the Program tree. */
+    public const SHIPPED_DIRECTORY = 'templates';
+
     public const DIRECTORY = 'custom/templates';
 
     /** Where the shipped originals are. */
@@ -24,6 +28,7 @@ class CustomTemplateService
     public function __construct(
         protected TemplateEngine $templateEngine,
         protected Storage $storage,
+        protected ProgramFiles $programFiles,
     ) {
     }
 
@@ -63,10 +68,11 @@ class CustomTemplateService
      */
     public function shipped(): array
     {
-        $root = YESWIKI_PROGRAM_DIR . '/templates';
         $names = [];
-        foreach ($this->twigFilesIn($root) as $path) {
-            $names[] = substr($path, strlen($root) + 1);
+        foreach ($this->programFiles->files(self::SHIPPED_DIRECTORY, true) as $path) {
+            if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'twig') {
+                $names[] = substr($path, \strlen(self::SHIPPED_DIRECTORY) + 1);
+            }
         }
         sort($names);
 
@@ -90,7 +96,7 @@ class CustomTemplateService
         }
         $path = $this->shippedPath($target);
 
-        return $path === null ? null : (string)file_get_contents($path);
+        return $path === null ? null : $this->programFiles->read($path);
     }
 
     public function exists(string $relative): bool
@@ -155,7 +161,7 @@ class CustomTemplateService
             throw new \RuntimeException(sprintf('%s is already overridden', $target));
         }
 
-        $this->write($relative, (string)file_get_contents($source));
+        $this->write($relative, $this->programFiles->read($source));
 
         return $relative;
     }
@@ -205,18 +211,14 @@ class CustomTemplateService
         return self::DIRECTORY . '/' . $relative;
     }
 
-    /** The shipped file behind a `core/` override, or null. */
+    /** The shipped template behind a `core/` override, as a Program-relative path, or null. */
     private function shippedPath(string $target): ?string
     {
-        $root = YESWIKI_PROGRAM_DIR . '/templates';
-        $path = $root . '/' . $target;
-        $real = realpath($path);
+        $relative = self::SHIPPED_DIRECTORY . '/' . $target;
 
-        if ($real === false || !is_file($real) || !str_starts_with($real, (string)realpath($root) . '/')) {
-            return null;
-        }
-
-        return $real;
+        return $this->programFiles->realPath($relative) !== null && $this->programFiles->isFile($relative)
+            ? $relative
+            : null;
     }
 
     /**
@@ -231,29 +233,6 @@ class CustomTemplateService
         return $at === false
             ? ['custom', $relative]
             : [substr($relative, 0, $at), substr($relative, $at + 1)];
-    }
-
-    /**
-     * @return list<string> absolute-ish paths of every .twig under $root
-     */
-    private function twigFilesIn(string $root): array
-    {
-        if (!is_dir($root)) {
-            return [];
-        }
-
-        $files = [];
-        $walker = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
-        );
-        foreach ($walker as $file) {
-            if ($file instanceof \SplFileInfo && $file->isFile() && strtolower($file->getExtension()) === 'twig') {
-                $files[] = str_replace('\\', '/', $file->getPathname());
-            }
-        }
-        sort($files);
-
-        return $files;
     }
 
     /** Twig compiles to `cache/templates/`, keyed on the path. */

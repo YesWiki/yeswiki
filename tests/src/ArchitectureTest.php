@@ -46,6 +46,10 @@ class ArchitectureTest extends TestCase
         // ADR-0022 puts outside the tiers because they hold code rather than data. One place
         // reads them, so fields and template-data preparers no longer each carry their own
         // glob and scandir (ticket 49).
+        'Files/Service/LocalFiles.php',
+        'Files/Service/ProgramFiles',
+        'Files/Service/RuntimeLock.php',
+        'Render/Service/TwigSearchPath.php',
         'Kernel/Service/ClassDirectoryScanner.php',
         'Admin/Service/InstallationService.php',
 
@@ -54,99 +58,68 @@ class ArchitectureTest extends TestCase
         // booting the wiki -- that is the whole point of it, and it is why serving a woff2 costs
         // nothing in worker mode. A rule it cannot obey is not a rule it is breaking.
         'Kernel/Service/AssetPublisher.php',
+
+        // Boot: these run before there is a container to ask for `Storage`, and two of them run
+        // before `vendor/autoload.php` has been required at all. `YesWikiLoader` decides whether
+        // the autoloader is current, `autoload.inc.php` is the autoloader, `YesWikiKernel` and
+        // `YesWikiRuntime` build the container and compile the routes, `YesWikiPlugins` and
+        // `YesWikiInit` are what the wiki reads to know it is a wiki, and
+        // `ConfigurationFileProvider` decides which file that is. Storage cannot be the answer to
+        // a question asked to work out whether Storage can be constructed.
+        'YesWikiLoader.php',
+        'YesWikiRuntime.php',
+        'YesWikiKernel.php',
+        'YesWikiPlugins.php',
+        'YesWikiInit.php',
+        'autoload.inc.php',
+        'Kernel/Service/ConfigurationFileProvider.php',
+        'Kernel/Entity/ConfigurationFile.php',
+
+        // A singleton with a `getInstance()`, initialised before the container so that `_t()`
+        // works while the container is still being built. Its catalogues are `require`d PHP in the
+        // Program tree, which is why it reads them itself rather than asking a service it cannot
+        // reach yet.
+        'Kernel/Service/LanguageService.php',
+
+        // Installing a package writes the Program: a downloaded zip is extracted and copied into
+        // `src/`, `themes/`, `vendor/` or an extension's own folder. That is code, not a wiki's
+        // data, `ZipArchive` ignores stream wrappers (ADR-0022 rejects `yeswiki://` for exactly
+        // that), and what lands is PHP that gets included -- the same reason `custom/extensions/`
+        // is Runtime rather than Public. `PackageCore`, `PackageExt` and `Package` extend this and
+        // ask it rather than the filesystem.
+        'Admin/Service/PackageTree.php',
+
+        // Standalone scripts, run by a person or a webserver with no wiki around them.
+        // `build-js-lang-keys` is a build step somebody runs from a terminal, and
+        // `javascript-keys-builder` is the function it calls; `pdf-viewer` is served straight from
+        // the assets directory and never loads the application. None of them has a container, an
+        // Instance, or a reason to.
+        'build-js-lang-keys.php',
+        'lang/javascript-keys-builder.php',
+        'assets/pdf-viewer.php',
+
+        // Creating an Instance, which is the one moment there is no Instance for Storage to be
+        // rooted at. `core:create-instance` makes the directory, its data folders and its entry
+        // points; everything it writes is the thing Storage would need to already exist.
+        'Kernel/Command/CreateInstanceCommand.php',
     ];
 
     /**
-     * What each file has yet to convert.
+     * What each file has yet to convert. Nothing.
      *
-     * Seeded at 82 files and 478 calls, and this number now means something narrower than it did:
-     * a call that names the Program tree is no longer counted (see addressesTheProgram), because
-     * Storage is rooted at an Instance and the Program is not an Instance's to own. What is left
-     * is a wiki's own data reached without going through the service that knows where it lives.
+     * Seeded at 82 files and 478 calls when ticket 41 introduced the rule, and empty now. Getting
+     * here needed the rule to say something true rather than something strict: a call is exempt if
+     * it addresses the Program tree, a stream, or somebody else's URL, and a handful of files are
+     * exempt as a whole because they run before the container exists or because a library demands
+     * a real path. Those are in FS_ALLOWED, each with the reason next to it.
+     *
+     * Keep it empty. An entry here is a file allowed to reach a wiki's data without going through
+     * the service that knows whether that data is on a disk or in a bucket, and the whole point of
+     * ADR-0022 is that nothing gets to decide that for itself.
      *
      * @var array<string, int>
      */
-    private const FS_REMAINING = [
-        'Admin/Action/ConfigurationAction.php' => 1,
-        'Admin/Action/EditConfigAction.php' => 1,
-        'Admin/Api/DocumentationApiController.php' => 1,
-        'Admin/Command/CloneCommand.php' => 5,
-        'Admin/Command/DestroyCommand.php' => 3,
-        'Admin/Controller/DocumentationController.php' => 2,
-        'Admin/Controller/InstallationController.php' => 2,
-        'Admin/Entity/Package.php' => 5,
-        'Admin/Entity/PackageCore.php' => 8,
-        'Admin/Entity/PackageExt.php' => 8,
-        'Admin/Entity/Repository.php' => 2,
-        'Admin/Service/ArchiveService.php' => 16,
-        'Admin/Service/AutoUpdateService.php' => 1,
-        'Admin/Service/RemoteWikiArchive.php' => 3,
-        'Contact/Api/ContactApiController.php' => 2,
-        'Content/Action/EntryListAction.php' => 2,
-        'Content/Action/FiltertagsAction.php' => 1,
-        'Content/Action/SyndicationAction.php' => 2,
-        'Content/Action/ValueAction.php' => 1,
-        'Content/Entity/Files.php' => 27,
-        'Content/Field/TextareaField.php' => 3,
-        'Content/Service/ActionCallRewriter.php' => 1,
-        'Content/Service/ActionsBuilderService.php' => 2,
-        'Content/Service/BazarListService.php' => 1,
-        'Content/Service/DuplicationManager.php' => 9,
-        'Content/Service/FormManager.php' => 10,
-        'Content/Service/PageSummary.php' => 2,
-        'Files/Service/AttachedFilePaths.php' => 7,
-        'Files/Service/ImageResizer.php' => 4,
-        'Files/Service/RemoteFile.php' => 2,
-        'Identity/Service/AvatarService.php' => 2,
-        'Identity/Service/HashCashService.php' => 4,
-        'Import/Action/AdminImportersAction.php' => 1,
-        'Import/Service/ImapImporter.php' => 2,
-        'Import/Service/ImportFilesManager.php' => 6,
-        'Import/Service/ImportService.php' => 8,
-        'Import/Service/ImporterManager.php' => 7,
-        'Kernel/Command/CreateInstanceCommand.php' => 11,
-        'Kernel/Command/DbCommand.php' => 2,
-        'Kernel/Command/GenerateMigrationCommand.php' => 4,
-        'Kernel/Command/ImageOptimizerCommand.php' => 5,
-        'Kernel/Command/TestConsoleServiceCommand.php' => 2,
-        'Kernel/Entity/ConfigurationFile.php' => 2,
-        'Kernel/Service/AssetRegistry.php' => 3,
-        'Kernel/Service/ConfigurationFileProvider.php' => 2,
-        'Kernel/Service/ConfigurationService.php' => 1,
-        'Kernel/Service/ConsoleService.php' => 1,
-        'Kernel/Service/HtmlPurifierService.php' => 6,
-        'Kernel/Service/LanguageService.php' => 3,
-        'Kernel/Service/MigrationService.php' => 2,
-        'Render/Action/FaviconAction.php' => 1,
-        'Render/Action/SetWikiDefaultThemeAction.php' => 1,
-        'Render/Action/TranslationAction.php' => 1,
-        'Render/Service/CoreAssets.php' => 5,
-        'Render/Service/CustomTemplateService.php' => 6,
-        'Render/Service/LayoutService.php' => 1,
-        'Render/Service/Performer.php' => 2,
-        'Render/Service/PresetService.php' => 6,
-        'Render/Service/TemplateEngine.php' => 7,
-        'Render/Service/TemplateHelperService.php' => 15,
-        'Render/Service/ThemeManager.php' => 1,
-        'Render/Service/ThemeSelectorRenderer.php' => 3,
-        'Search/Command/ReindexCommand.php' => 1,
-        'Social/Service/ReactionsFormatter.php' => 4,
-        'YesWikiInit.php' => 5,
-        'YesWikiKernel.php' => 3,
-        'YesWikiLoader.php' => 5,
-        'YesWikiPlugins.php' => 4,
-        'YesWikiRuntime.php' => 10,
-        'assets/pdf-viewer.php' => 2,
-        'autoload.inc.php' => 4,
-        'build-js-lang-keys.php' => 1,
-        'lang/javascript-keys-builder.php' => 1,
-        'migrations/20260726000000_MigrateAttachmentsToPages.php' => 7,
-        'migrations/20260802130000_RewriteRetiredSearchActions.php' => 2,
-        'migrations/20260811120000_RenameActionsAndParametersInBodies.php' => 5,
-        'migrations/20260816100000_PresetsBecomeTokenSets.php' => 3,
-        'migrations/20260817120000_PresetsLoseTheirDerivedTokens.php' => 3,
-        'migrations/20260817160000_ADarkBarMatchesItsDarkPage.php' => 3,
-    ];
+    private const FS_REMAINING = [];
 
     /** Functions that take a path. */
     private const FS_FUNCTIONS = [
@@ -179,12 +152,12 @@ class ArchitectureTest extends TestCase
             if ($after !== '(') {
                 continue;
             }
-            if (strtolower($token[1]) === 'fopen') {
-                $argument = $this->meaningfulToken($tokens, $i + 1, 1);
-                if (is_array($argument) && $argument[0] === T_CONSTANT_ENCAPSED_STRING
-                    && str_starts_with(trim($argument[1], '\'"'), 'php://')) {
-                    continue;
-                }
+            // A stream is not a path. `php://input` is the request body, and `$url . '/html'` is
+            // somebody else's website -- neither is this instance's filesystem, and neither has a
+            // storage tier to go through. The exemption used to be `fopen`-only, so
+            // `file_get_contents('php://input')` counted as reaching the disk.
+            if ($this->addressesAStream($tokens, $i + 1)) {
+                continue;
             }
             if ($this->addressesTheProgram($tokens, $i + 1)) {
                 continue;
@@ -193,6 +166,25 @@ class ArchitectureTest extends TestCase
         }
 
         return $count;
+    }
+
+    /**
+     * Whether this call addresses a stream or a remote URL rather than a path on disk.
+     *
+     * @param list<array{int, string, int}|string> $tokens
+     */
+    private function addressesAStream(array $tokens, int $openParen): bool
+    {
+        $argument = $this->firstArgument($tokens, $openParen);
+
+        foreach (["'php://", '"php://', "'http://", '"http://', "'https://", '"https://'] as $scheme) {
+            if (str_contains($argument, $scheme)) {
+                return true;
+            }
+        }
+
+        // `$url . '/html'`: the scheme is in the variable, and the name is the only clue there is.
+        return (bool)preg_match('/\$(url|uri|endpoint|address|remote)\b/i', $argument);
     }
 
     /**
@@ -213,12 +205,29 @@ class ArchitectureTest extends TestCase
      */
     private function addressesTheProgram(array $tokens, int $openParen): bool
     {
+        $argument = $this->firstArgument($tokens, $openParen);
+
+        foreach (['YESWIKI_PROGRAM_DIR', '__DIR__', 'YESWIKI_PROGRAM_ROOT'] as $namesTheProgram) {
+            if (str_contains($argument, $namesTheProgram)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * The source text of a call's first argument, which is the one that names the path.
+     *
+     * @param list<array{int, string, int}|string> $tokens
+     */
+    private function firstArgument(array $tokens, int $openParen): string
+    {
         $depth = 0;
         $argument = '';
 
         for ($i = $openParen; isset($tokens[$i]); $i++) {
-            $token = $tokens[$i];
-            $text = is_array($token) ? $token[1] : $token;
+            $text = is_array($tokens[$i]) ? $tokens[$i][1] : $tokens[$i];
 
             if ($text === '(') {
                 $depth++;
@@ -228,20 +237,13 @@ class ArchitectureTest extends TestCase
                     break;
                 }
             }
-            // The first argument is the path; a comma at depth 1 ends it.
             if ($text === ',' && $depth === 1) {
                 break;
             }
             $argument .= $text;
         }
 
-        foreach (['YESWIKI_PROGRAM_DIR', '__DIR__', 'YESWIKI_PROGRAM_ROOT'] as $namesTheProgram) {
-            if (str_contains($argument, $namesTheProgram)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $argument;
     }
 
     /**
@@ -275,7 +277,9 @@ class ArchitectureTest extends TestCase
                 }
             }
             $found = $this->rawFileCallsIn($file);
-            $budget = self::FS_REMAINING[$relative] ?? 0;
+            /** @var array<string, int> $remaining */
+            $remaining = self::FS_REMAINING;
+            $budget = $remaining[$relative] ?? 0;
             if ($found > $budget) {
                 $over[] = "$relative: $found raw calls, $budget allowed";
             }
@@ -284,9 +288,12 @@ class ArchitectureTest extends TestCase
             }
         }
 
-        $this->assertSame([], $over, "A file must not reach the filesystem directly: use YesWiki\\Files\\Service\\Storage.\n"
+        $this->assertSame([], $over, "A file must not reach the filesystem directly.\n"
+            . "A wiki's own data goes through YesWiki\\Files\\Service\\Storage, which knows whether it is on a disk or in a bucket.\n"
+            . "The release's own files go through ProgramFiles. A path a library insists on opening itself goes through LocalFiles,\n"
+            . "and that is a decision to argue for in FS_ALLOWED rather than take here.\n"
             . 'Reads count as much as writes -- on object storage a read that answers false is a file that silently vanished.');
-        $this->assertSame([], $gone, "The ratchet may only shrink, and these files have: lower their number in FS_REMAINING.\n"
+        $this->assertSame([], $gone, "FS_REMAINING is empty and has to stay that way: these entries are for files that no longer need them.\n"
             . 'A budget nobody spends is a rule nobody enforces.');
     }
 

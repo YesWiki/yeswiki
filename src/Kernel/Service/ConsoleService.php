@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
+use YesWiki\Files\Service\LocalFiles;
 
 class ConsoleService
 {
@@ -25,7 +26,7 @@ class ConsoleService
     protected ExecutableFinder $executableFinder;
     protected PhpExecutableFinder $phpBinaryFinder;
 
-    public function __construct(ParameterBagInterface $params)
+    public function __construct(ParameterBagInterface $params, private readonly LocalFiles $localFiles = new LocalFiles())
     {
         $this->params = $params;
         $this->executableFinder = new ExecutableFinder();
@@ -95,7 +96,7 @@ class ConsoleService
         if (empty($command)) {
             return null;
         }
-        if (!empty($subfolder) && !is_dir(basename($subfolder))) {
+        if (!empty($subfolder) && !$this->localFiles->isDirectory(basename($subfolder))) {
             return null;
         }
         $folder = getcwd() . (empty($subfolder) ? '' : (DIRECTORY_SEPARATOR . basename($subfolder)));

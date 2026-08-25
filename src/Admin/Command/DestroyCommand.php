@@ -13,6 +13,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\DatabaseProvisioner;
 use YesWiki\Files\Entity\S3Settings;
 use YesWiki\Files\Service\BucketProvisioner;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 
 /** Take a wiki's archive and then drop the database, the account and the bucket it owned (first-class-binary 05). */
@@ -21,6 +22,12 @@ class DestroyCommand extends Command
     public function __construct(protected ContainerInterface $services)
     {
         parent::__construct();
+    }
+
+    /** Resolved rather than injected: `src/commands/console` builds commands with the container alone. */
+    private function localFiles(): LocalFiles
+    {
+        return $this->services->get(LocalFiles::class);
     }
 
     protected function configure(): void
@@ -108,10 +115,10 @@ class DestroyCommand extends Command
             return null;
         }
 
-        if (is_dir($destination)) {
+        if ($this->localFiles()->isDirectory($destination)) {
             $destination = rtrim($destination, '/') . '/' . basename($made);
         }
-        if (!is_dir(\dirname($destination))) {
+        if (!$this->localFiles()->isDirectory(\dirname($destination))) {
             $io->error(\dirname($destination) . ' is not a directory. Nothing was destroyed.');
 
             return null;
@@ -136,9 +143,9 @@ class DestroyCommand extends Command
     private function copyOut(string $archive, string $destination): void
     {
         $from = $this->services->get(Storage::class)->readStream($archive);
-        $to = fopen($destination, 'wb');
+        $to = $this->localFiles()->openForWriting($destination);
 
-        if ($to === false) {
+        if ($to === null) {
             throw new \Exception("could not open $destination for writing");
         }
 

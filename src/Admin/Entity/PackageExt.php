@@ -45,7 +45,7 @@ abstract class PackageExt extends Package
 
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
-            $textAction = strtolower((is_dir($desPath)) ? _t('AU_UPDATE') : _t('AU_INSTALL'));
+            $textAction = strtolower($this->isDirectory($desPath) ? _t('AU_UPDATE') : _t('AU_INSTALL'));
             trigger_error(_t('AU_PHP_TOO_LOW_ERROR', [
                 'textAction' => $textAction,
                 'NEEDEDPHPVERSION' => $neededPHPVersion,
@@ -57,14 +57,14 @@ abstract class PackageExt extends Package
         }
 
         $this->deletePackage();
-        mkdir($desPath);
+        $this->makeDirectory($desPath);
 
         if ($this->extractionPath === null) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
 
-        $entries = glob($this->extractionPath . '/*');
-        $dirs = ($entries === false) ? [] : array_filter($entries, 'is_dir');
+        $entries = $this->matching($this->extractionPath . '/*');
+        $dirs = array_filter($entries, fn (string $path) => $this->isDirectory($path));
         if ($dirs === []) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
@@ -85,8 +85,7 @@ abstract class PackageExt extends Package
             'name' => $this->name,
             'release' => (string)$this->release,
         ];
-        $json = json_encode($infos);
-        file_put_contents($this->infosFilePath(), $json);
+        $this->write($this->infosFilePath(), (string)json_encode($infos));
 
         return true;
     }
@@ -96,7 +95,7 @@ abstract class PackageExt extends Package
     {
         $desPath = $this->localPath();
 
-        if (is_dir($desPath)) {
+        if ($this->isDirectory($desPath)) {
             $vDeleteStatus = $this->delete($desPath);
 
             if ($vDeleteStatus === true) {
@@ -117,9 +116,9 @@ abstract class PackageExt extends Package
         }
 
         $this->infos = [];
-        if (is_file($this->infosFilePath())) {
-            $json = file_get_contents($this->infosFilePath());
-            $decoded = ($json === false) ? null : json_decode($json, true);
+        if ($this->isFile($this->infosFilePath())) {
+            $json = $this->read($this->infosFilePath());
+            $decoded = json_decode($json, true);
             if (is_array($decoded)) {
                 $this->infos = $decoded;
             }
@@ -143,7 +142,7 @@ abstract class PackageExt extends Package
 
     private function installed(): bool
     {
-        if (is_dir($this->localPath())) {
+        if ($this->isDirectory($this->localPath())) {
             return true;
         }
 

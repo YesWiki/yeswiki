@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Controller;
 
 use YesWiki\Admin\Service\InstallationService;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\WikiUrls;
@@ -53,7 +54,7 @@ class InstallationController
         $postedContentSQL = $_POST['contentSQL'] ?? null;
         $this->contentSQL = is_string($postedContentSQL)
             ? $postedContentSQL
-            : (file_exists(InstallationService::backupFile()) ? InstallationService::BACKUP_SQL_FILE : 'default');
+            : ($this->storage()->exists(InstallationService::backupFile()) ? InstallationService::BACKUP_SQL_FILE : 'default');
 
         $this->step = trim($_REQUEST['installAction'] ?? '') ?: 'default';
         $this->baseUrl = WikiUrls::baseUrl(true);
@@ -109,7 +110,7 @@ class InstallationController
             'availableDrivers' => InstallationService::availableDrivers(),
             'yeswikiVersion' => ucfirst(YESWIKI_VERSION) . ' ' . YESWIKI_RELEASE,
             'pattern' => WN_CAMEL_CASE_EVOLVED,
-            'backupFound' => file_exists(InstallationService::backupFile()),
+            'backupFound' => $this->storage()->exists(InstallationService::backupFile()),
             'backupSqlFile' => InstallationService::BACKUP_SQL_FILE,
             'contentSQL' => $this->contentSQL,
             'adminName' => $this->adminName ?: 'WikiAdmin',
@@ -161,5 +162,11 @@ class InstallationController
         }));
 
         return $twig;
+    }
+
+    /** Built here rather than injected: the installer runs before the container is usable. */
+    private function storage(): Storage
+    {
+        return new Storage();
     }
 }

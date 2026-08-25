@@ -13,6 +13,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -68,8 +69,10 @@ class ContactApiController extends YesWikiController
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
 
+                // A squelette is a shipped template unless the wiki has its own under `custom/`,
+                // which is exactly what ProgramFiles::find() is: Instance first, Program after.
                 $pageContent = PageBody::content($page['body'] ?? []);
-                $fileContent = file_exists($chemin) ? (string)file_get_contents($chemin) : '';
+                $fileContent = $this->getService(ProgramFiles::class)->find('custom/' . $chemin, $chemin);
                 $body = preg_replace('/\{\{\s*page_content[^}]*\}\}/', $pageContent, $fileContent, 1, $replaced);
                 if (!$replaced) {
                     $body = $fileContent . "\n" . $pageContent;

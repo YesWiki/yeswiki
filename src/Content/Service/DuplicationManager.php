@@ -7,6 +7,8 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\TripleStore;
@@ -22,7 +24,7 @@ class DuplicationManager
      *
      * @param ContainerInterface $container service container
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, private readonly Storage $storage, private readonly LocalFiles $localFiles)
     {
         $this->container = $container;
         $this->uploadPath = $this->getLocalFileUploadPath();
@@ -83,11 +85,10 @@ class DuplicationManager
     private function findFilesInUploadField($fieldValue)
     {
         $f = $this->uploadPath . '/' . $fieldValue;
-        if ($f !== $this->uploadPath . '/' && file_exists($f)) {
-            $size = filesize($f) ?: 0;
-            $humanSize = $this->humanFilesize($size);
+        if ($f !== $this->uploadPath . '/' && $this->storage->exists($f)) {
+            $size = $this->storage->fileSize($f);
 
-            return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
+            return ['path' => $f, 'size' => $size, 'humanSize' => $this->humanFilesize($size)];
         }
 
         return [];
@@ -115,17 +116,10 @@ class DuplicationManager
             $filename = pathinfo($a, PATHINFO_FILENAME);
             $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_(\d{14})\.' . $ext . '_?$`';
             $path = $this->getLocalFileUploadPath();
-            $fh = opendir($path);
-            if ($fh === false) {
-                continue;
-            }
-            while (($file = readdir($fh)) !== false) {
-                if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
-                    continue;
-                }
+            foreach ($this->storage->files($path) as $filePath) {
+                $file = basename($filePath);
                 if (preg_match($searchPattern, $file, $matches)) {
-                    $filePath = $path . '/' . $file;
-                    $size = filesize($filePath) ?: 0;
+                    $size = $this->storage->fileSize($filePath);
                     $humanSize = $this->humanFilesize($size);
                     if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
                         continue;
@@ -133,7 +127,6 @@ class DuplicationManager
                     $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
                 }
             }
-            closedir($fh);
         }
         $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']), '#') .
             '(' . $this->uploadPath . '/.*\.[a-zA-Z0-9]{1,16}\b([-a-zA-Z0-9!@:%_\+.~\#?&\/\/=]*))#Ui';
@@ -143,10 +136,9 @@ class DuplicationManager
             $fileUrls
         );
         foreach ($fileUrls[1] as $f) {
-            if (file_exists($f)) {
-                $size = filesize($f) ?: 0;
-                $humanSize = $this->humanFilesize($size);
-                $filesMatched[] = ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
+            if ($this->storage->exists($f)) {
+                $size = $this->storage->fileSize($f);
+                $filesMatched[] = ['path' => $f, 'size' => $size, 'humanSize' => $this->humanFilesize($size)];
             }
         }
 
@@ -210,7 +202,7 @@ class DuplicationManager
             if ($f['path'] == $newPath) {
                 $newPath = str_replace($this->uploadPath . '/', $this->uploadPath . '/' . $toTag . '_', $newPath);
             }
-            copy($f['path'], $newPath);
+            $this->storage->copy($f['path'], $newPath);
             $doneFiles[] = [
                 'originalFile' => str_replace($this->uploadPath . '/', '', $f['path']),
                 'duplicatedFile' => str_replace($this->uploadPath . '/', '', $newPath),
@@ -367,24 +359,32 @@ class DuplicationManager
         $t = explode('/', $sourceUrl);
         $fileName = array_pop($t);
         $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
-        $fp = fopen($destPath, 'wb');
-        if ($fp === false) {
-            throw new \RuntimeException("could not open $destPath for writing");
-        }
-        $ch = curl_init($sourceUrl);
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, false);
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-        curl_exec($ch);
-        curl_close($ch);
-        fclose($fp);
+        // Downloaded to a scratch file and then handed to Storage: curl fills a stream, the
+        // destination may be a bucket, and a failed download must not leave a half-written
+        // attachment under a name the wiki already treats as one.
+        return $this->storage->withTemporaryFile(pathinfo($destPath, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $timeoutInSec) {
+            $fp = $this->localFiles->openForWriting($tmpPath);
+            if ($fp === null) {
+                throw new \RuntimeException("could not open $tmpPath for writing");
+            }
+            $ch = curl_init($sourceUrl);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, false);
 
-        return $destPath;
+            curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
+            curl_exec($ch);
+            curl_close($ch);
+            fclose($fp);
+
+            $this->storage->writeFrom($destPath, $tmpPath);
+
+            return $destPath;
+        });
     }
 
     /**

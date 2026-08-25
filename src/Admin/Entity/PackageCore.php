@@ -82,8 +82,8 @@ class PackageCore extends Package
             $this->extractionPath .= '/';
         }
 
-        $entries = glob($this->extractionPath . '*');
-        $dirs = ($entries === false) ? [] : array_filter($entries, 'is_dir');
+        $entries = $this->matching($this->extractionPath . '*');
+        $dirs = array_filter($entries, fn (string $path) => $this->isDirectory($path));
         if ($dirs === []) {
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
@@ -102,29 +102,26 @@ class PackageCore extends Package
             return false;
         }
 
-        if ($res = opendir($this->extractionPath)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, self::IGNORED_FILES)) {
-                    $this->copy(
-                        $this->extractionPath . '/' . $file,
-                        $desPath . '/' . $file
-                    );
-                }
+        foreach ($this->entriesIn($this->extractionPath) as $file) {
+            if (!in_array($file, self::IGNORED_FILES)) {
+                $this->copy(
+                    $this->extractionPath . '/' . $file,
+                    $desPath . '/' . $file
+                );
             }
-            closedir($res);
-            foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
-                if (is_file($this->extractionPath . '/' . $file) or is_dir($this->extractionPath . '/' . $file)) {
-                    $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
-                }
-            }
-            foreach (self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS as $file) {
+        }
+        foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
+            if ($this->exists($this->extractionPath . '/' . $file)) {
                 $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
             }
         }
+        foreach (self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS as $file) {
+            $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
+        }
 
         foreach (['cache', 'files'] as $dirName) {
-            if (!is_dir($desPath . '/' . $dirName)) {
-                mkdir($desPath . '/' . $dirName);
+            if (!$this->isDirectory($desPath . '/' . $dirName)) {
+                $this->makeDirectory($desPath . '/' . $dirName);
             }
         }
 
@@ -135,14 +132,8 @@ class PackageCore extends Package
     {
         $src = $this->extractionPath . '/themes/' . THEME_PAR_DEFAUT;
         $desPath = $this->localPath . '/themes/' . THEME_PAR_DEFAUT;
-        $file2ignore = ['.', '..'];
-        if ($res = opendir($src)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    $this->copy($src . '/' . $file, $desPath . '/' . $file);
-                }
-            }
-            closedir($res);
+        foreach ($this->entriesIn($src) as $file) {
+            $this->copy($src . '/' . $file, $desPath . '/' . $file);
         }
 
         return true;
@@ -152,14 +143,8 @@ class PackageCore extends Package
     {
         $src = $this->extractionPath . '/extensions';
         $desPath = $this->localPath . '/extensions';
-        $file2ignore = ['.', '..'];
-        if ($res = opendir($src)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    $this->copy($src . '/' . $file, $desPath . '/' . $file);
-                }
-            }
-            closedir($res);
+        foreach ($this->entriesIn($src) as $file) {
+            $this->copy($src . '/' . $file, $desPath . '/' . $file);
         }
 
         return true;

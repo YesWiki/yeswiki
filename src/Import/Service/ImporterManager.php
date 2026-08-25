@@ -8,6 +8,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 
 class ImporterManager
 {
@@ -22,7 +24,9 @@ class ImporterManager
         ContainerInterface $services,
         EntryManager $entryManager,
         FormManager $formManager,
-        ListManager $listManager
+        ListManager $listManager,
+        private readonly Storage $storage,
+        private readonly LocalFiles $localFiles,
     ) {
         $this->params = $params;
         $this->services = $services;
@@ -337,49 +341,54 @@ class ImporterManager
             return '';
         }
         $destPath = $this->uploadPath() . '/' . $destFile;
-        if (file_exists($destPath) && !$replaceExisting) {
+        if ($this->storage->exists($destPath) && !$replaceExisting) {
             return $destFile;
         }
-        $tmpPath = $destPath . '.part';
-        $fp = fopen($tmpPath, 'wb');
-        if ($fp === false) {
-            echo 'Impossible d\'écrire dans "' . $this->uploadPath() . '".' . "\n";
 
-            return '';
-        }
-        $ch = curl_init($sourceUrl);
-        if ($ch === false) {
+        // Downloaded to a scratch file first and only then handed to Storage. curl writes into a
+        // stream and the destination may be a bucket, so the two cannot be the same thing -- and
+        // writing straight to the destination would publish a half-downloaded file under a name
+        // the wiki already treats as an attachment.
+        return $this->storage->withTemporaryFile(pathinfo($destFile, PATHINFO_EXTENSION), function (string $tmpPath) use ($sourceUrl, $destPath, $destFile, $timeoutInSec, $noSSLCheck) {
+            $fp = $this->localFiles->openForWriting($tmpPath);
+            if ($fp === null) {
+                echo 'Impossible d\'écrire dans "' . $this->uploadPath() . '".' . "\n";
+
+                return '';
+            }
+
+            $ch = curl_init($sourceUrl);
+            if ($ch === false) {
+                fclose($fp);
+
+                return '';
+            }
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            if ($noSSLCheck) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            }
+            curl_exec($ch);
+            $errors = curl_error($ch);
+            $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
             fclose($fp);
-            @unlink($tmpPath);
 
-            return '';
-        }
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if ($noSSLCheck) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        }
-        curl_exec($ch);
-        $errors = curl_error($ch);
-        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        fclose($fp);
+            clearstatcache(true, $tmpPath);
+            if (!empty($errors) || ($httpCode >= 400) || $this->storage->readForeign($tmpPath) === '') {
+                echo 'Téléchargement de "' . $sourceUrl . '" échoué'
+                    . (!empty($errors) ? ' : ' . $errors : ($httpCode ? ' (code http ' . $httpCode . ')' : '')) . '.' . "\n";
 
-        clearstatcache(true, $tmpPath);
-        if (!empty($errors) || ($httpCode >= 400) || filesize($tmpPath) === 0) {
-            unlink($tmpPath);
-            echo 'Téléchargement de "' . $sourceUrl . '" échoué'
-                . (!empty($errors) ? ' : ' . $errors : ($httpCode ? ' (code http ' . $httpCode . ')' : '')) . '.' . "\n";
+                return '';
+            }
 
-            return '';
-        }
-        rename($tmpPath, $destPath);
-        chmod($destPath, 0755);
+            $this->storage->writeFrom($destPath, $tmpPath);
 
-        return $destFile;
+            return $destFile;
+        });
     }
 
     private function uploadPath(): string

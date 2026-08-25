@@ -3,6 +3,8 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Render\Component\ComponentRegistry;
 use YesWiki\Render\Service\TemplateEngine;
@@ -58,12 +60,12 @@ class ActionsBuilderService
     {
         $extra = [];
         foreach ($this->container->get(ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
-            foreach (glob($pluginPath . 'javascripts/components/actions-builder/*.js') ?: [] as $filePath) {
+            foreach ($this->container->get(LocalFiles::class)->matching($pluginPath . 'javascripts/components/actions-builder/*.js') as $filePath) {
                 $filename = pathinfo($filePath)['filename'];
                 $extra[$filename] = "../../../$pluginName/javascripts/components/actions-builder/$filename.js";
             }
         }
-        foreach (glob('custom/javascripts/components/actions-builder/*.js') ?: [] as $filePath) {
+        foreach ($this->container->get(Storage::class)->glob('custom/javascripts/components/actions-builder/*.js') as $filePath) {
             $filename = pathinfo($filePath)['filename'];
             $extra[$filename] = "../../../../custom/javascripts/components/actions-builder/$filename.js";
         }

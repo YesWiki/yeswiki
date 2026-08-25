@@ -9,7 +9,9 @@ use YesWiki\Content\Entity\SuppliesItems;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FeedLoader;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\RemoteImageCache;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
@@ -452,10 +454,10 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction, Provi
         $fileName = array_pop($t);
         $destFile = sha1($sourceUrl) . '_' . $fileName;
         $destPath = 'files/' . $destFile;
-        if (!file_exists($destPath) || $replaceExisting) {
-            $fp = fopen($destPath, 'wb');
+        if (!$this->getService(Storage::class)->exists($destPath) || $replaceExisting) {
+            $fp = $this->getService(LocalFiles::class)->openForWriting($destPath);
             $ch = curl_init($sourceUrl);
-            if ($fp === false || $ch === false) {
+            if ($fp === null || $ch === false) {
                 return '';
             }
             curl_setopt($ch, CURLOPT_FILE, $fp);

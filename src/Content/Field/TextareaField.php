@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -225,11 +226,11 @@ class TextareaField extends BazarField
                     'user' => '',
                 ]);
                 $newFileName = $paths->fullFilename($newFile, true);
-                $dirRealPath = realpath(dirname($previousFileName));
-                if (rename(
-                    $dirRealPath . DIRECTORY_SEPARATOR . basename($previousFileName),
-                    $dirRealPath . DIRECTORY_SEPARATOR . basename($newFileName)
-                )) {
+                $directory = \dirname($previousFileName);
+                $storage = $this->getService(Storage::class);
+                $from = $directory . '/' . basename($previousFileName);
+                $to = $directory . '/' . basename($newFileName);
+                if ($storage->exists($from) && $this->moved($storage, $from, $to)) {
                     $text = str_replace($matches[0][$key], $matches[1][$key] . $matches[4][$key] . $matches[5][$key], $text);
                 }
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
@@ -280,7 +281,7 @@ class TextareaField extends BazarField
                 $newFilePath = $paths->fullFilename($fileName, true);
 
                 if (!empty($newFilePath)) {
-                    file_put_contents($newFilePath, $imageContent);
+                    $this->getService(Storage::class)->write($newFilePath, $imageContent);
 
                     $newText = $matches[1][$index];
                     $newText .= "src=\"$newFilePath\">";
@@ -336,5 +337,17 @@ class TextareaField extends BazarField
     private function sanitizeHTML(string $value): string
     {
         return $this->getService(HtmlPurifierService::class)->cleanHTML($value);
+    }
+
+    /** Storage throws where `rename` returned false, and this caller only wants to know. */
+    private function moved(Storage $storage, string $from, string $to): bool
+    {
+        try {
+            $storage->move($from, $to);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
     }
 }

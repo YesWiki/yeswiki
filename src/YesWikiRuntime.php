@@ -250,15 +250,14 @@ class YesWikiRuntime
      */
     protected function shouldRunMaintenance(): bool
     {
-        $lastRun = @filemtime(self::MAINTENANCE_LOCK_FILE) ?: 0;
+        $locks = new Files\Service\RuntimeLock();
+
+        $lastRun = $locks->lastTaken(self::MAINTENANCE_LOCK_FILE);
         if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
             return false;
         }
         $this->previousMaintenanceRun = $lastRun ?: null;
-        if (!is_dir('cache')) {
-            mkdir('cache', 0777, true);
-        }
-        touch(self::MAINTENANCE_LOCK_FILE);
+        $locks->stamp(self::MAINTENANCE_LOCK_FILE);
 
         return true;
     }

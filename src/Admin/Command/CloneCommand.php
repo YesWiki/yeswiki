@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\RemoteWikiArchive;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -20,6 +21,12 @@ class CloneCommand extends Command
     public function __construct(protected ContainerInterface $services)
     {
         parent::__construct();
+    }
+
+    /** Resolved rather than injected: `src/commands/console` builds commands with the container alone. */
+    private function localFiles(): LocalFiles
+    {
+        return $this->services->get(LocalFiles::class);
     }
 
     protected function configure(): void
@@ -179,13 +186,13 @@ class CloneCommand extends Command
      */
     private static function readConfig(string $stated): array
     {
-        $file = tempnam(sys_get_temp_dir(), 'yeswiki-remote-config');
-        if ($file === false) {
-            throw new \Exception('nowhere to put it while it is read');
-        }
+        // Static, so LocalFiles is built here: it holds nothing and this reads a remote wiki's
+        // configuration before there is a wiki to ask about it.
+        $localFiles = new LocalFiles();
+        $file = $localFiles->temporaryFile('yeswiki-remote-config');
 
         try {
-            file_put_contents($file, $stated);
+            $localFiles->write($file, $stated);
             $configuration = (new ConfigurationService())->getConfiguration($file);
             $configuration->load();
 
@@ -198,14 +205,14 @@ class CloneCommand extends Command
 
             return $read;
         } finally {
-            unlink($file);
+            $localFiles->remove($file);
         }
     }
 
     private function forget(string $path): void
     {
-        if (is_file($path)) {
-            unlink($path);
+        if ($this->localFiles()->isFile($path)) {
+            $this->localFiles()->remove($path);
         }
     }
 }

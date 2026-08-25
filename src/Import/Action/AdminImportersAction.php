@@ -4,6 +4,7 @@ namespace YesWiki\Import\Action;
 
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Import\Service\ImporterManager;
 use YesWiki\Import\Service\SyncScheduler;
@@ -30,7 +31,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
         }
 
         $configFile = ConfigurationFileProvider::getConfigFileFromEnv();
-        if (!is_writable($configFile)) {
+        if (!$this->getService(Storage::class)->isWritable($configFile)) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED'),

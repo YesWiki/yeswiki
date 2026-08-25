@@ -3,6 +3,7 @@
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
@@ -85,7 +86,7 @@ class RewriteRetiredSearchActions extends YesWikiMigration
     {
         $found = [];
         foreach (['themes', 'custom/themes'] as $dir) {
-            if (!is_dir($dir)) {
+            if (!$this->getService(LocalFiles::class)->isDirectory($dir)) {
                 continue;
             }
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
@@ -93,7 +94,7 @@ class RewriteRetiredSearchActions extends YesWikiMigration
                 if (!$file->isFile() || !in_array($file->getExtension(), ['twig', 'html', 'php'], true)) {
                     continue;
                 }
-                $contents = (string)@file_get_contents($file->getPathname());
+                $contents = $this->getService(LocalFiles::class)->read($file->getPathname());
                 if (preg_match('/\{\{\s*(searchform|newtextsearch)\b/i', $contents)) {
                     $found[] = $file->getPathname();
                 }

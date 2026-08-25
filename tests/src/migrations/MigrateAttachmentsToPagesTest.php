@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -64,11 +65,14 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         $pageManager->save(self::OWNER_PAGE_TAG, [PageBody::CONTENT => $body], '', true);
         $aclService->save(self::OWNER_PAGE_TAG, 'read', '@admins');
 
-        $fixtureDir = sys_get_temp_dir() . '/MigrateAttachmentsToPagesTest-' . uniqid();
-        mkdir($fixtureDir);
+        // Under `files/`, not in the system temp directory. The migration reads a wiki's upload
+        // path through Storage now, and a directory the wiki does not own has no tier -- so a
+        // fixture in /tmp was testing a case this migration will never meet.
+        $storage = $wiki->services->get(Storage::class);
+        $fixtureDir = 'files/MigrateAttachmentsToPagesTest-' . uniqid();
         $rawFilename = self::OWNER_PAGE_TAG . '_my_report_20250101000000_20250101000000.txt';
         $physicalPath = $fixtureDir . '/' . $rawFilename;
-        file_put_contents($physicalPath, 'hello migration');
+        $storage->write($physicalPath, 'hello migration');
 
         $migration = new \MigrateAttachmentsToPages();
         $migration->setServices($wiki->services);
@@ -90,7 +94,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
             $this->assertNotNull($entry, 'the migrated file must be readable back as a file entry');
             $this->assertSame('my_report.txt', $entry['original_filename']);
             $this->assertSame(self::OWNER_PAGE_TAG, $entry['uploaded_from']);
-            $this->assertFileDoesNotExist($physicalPath, 'the legacy physical file should have been moved, not copied');
+            $this->assertFalse($storage->exists($physicalPath), 'the legacy physical file should have been moved, not copied');
             $this->assertNotNull($fileManager->getPhysicalPath($newTag));
 
             $readAcl = $aclService->load($newTag, 'read');
@@ -105,11 +109,11 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
             if (!is_null($newTag)) {
                 $fileManager->delete($newTag);
             }
-            if (file_exists($physicalPath)) {
-                unlink($physicalPath);
+            if ($storage->exists($physicalPath)) {
+                $storage->delete($physicalPath);
             }
-            if (is_dir($fixtureDir)) {
-                rmdir($fixtureDir);
+            if ($storage->directoryExists($fixtureDir)) {
+                $storage->deleteDirectory($fixtureDir);
             }
         }
     }

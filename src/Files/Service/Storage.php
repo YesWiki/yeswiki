@@ -203,6 +203,24 @@ class Storage
         $this->guard(fn () => $this->filesystem($path)->delete($this->normalise($path)), $path);
     }
 
+    /**
+     * Make a directory, and say whether it is there afterwards.
+     *
+     * Most writes create their parents on the way, so this is for the callers that need the
+     * directory to exist before anything is written into it -- an attachments folder an importer
+     * is about to fill, for instance.
+     */
+    public function makeDirectory(string $path): bool
+    {
+        try {
+            $this->guard(fn () => $this->filesystem($path)->createDirectory($this->normalise($path)), $path);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $this->directoryExists($path);
+    }
+
     public function deleteDirectory(string $path): void
     {
         $this->guard(fn () => $this->filesystem($path)->deleteDirectory($this->normalise($path)), $path);
@@ -484,8 +502,20 @@ class Storage
     /**
      * The path as the machine running this sees it, for the leases and for nothing else.
      */
-    private function absolutePath(string $path): string
+    /**
+     * Where a local path actually is, for the libraries that will not take anything else.
+     *
+     * Public because HTMLPurifier's serialiser and Twig's loader open paths themselves. It throws
+     * for a remote path rather than answering a local one that is not there: a caller that needs a
+     * real file and is on a bucket wants `withLocalCopy()`, and a wrong answer here is the silent
+     * failure ADR-0022 exists to prevent.
+     */
+    public function absolutePath(string $path): string
     {
+        if ($this->isRemote($path)) {
+            throw new StorageException("'$path' is on the object store, so it has no local path. Use withLocalCopy() or withLocalTarget().");
+        }
+
         return $this->root . '/' . $this->normalise($path);
     }
 

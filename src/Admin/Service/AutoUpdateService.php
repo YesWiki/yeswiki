@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Admin\Entity\PackageCore;
 use YesWiki\Admin\Entity\PackageExt;
 use YesWiki\Admin\Entity\Repository;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\ConfigurationService;
 
@@ -19,7 +20,8 @@ class AutoUpdateService
     private ContainerInterface $container;
 
     public function __construct(
-        ContainerInterface $container
+        ContainerInterface $container,
+        private readonly LocalFiles $localFiles,
     ) {
         $this->container = $container;
     }
@@ -27,7 +29,7 @@ class AutoUpdateService
     /** Whether this is the instance allowed to trigger a farm-wide update (ADR-0007). */
     public function isDesignatedUpdateInstance(?string $instanceDir = null, ?string $programDir = null): bool
     {
-        return realpath($instanceDir ?? YESWIKI_INSTANCE_DIR) === realpath($programDir ?? YESWIKI_PROGRAM_DIR);
+        return $this->localFiles->realPath($instanceDir ?? YESWIKI_INSTANCE_DIR) === $this->localFiles->realPath($programDir ?? YESWIKI_PROGRAM_DIR);
     }
 
     /** Whether this instance may install or upgrade this package: only a core update mutates the shared Program. */

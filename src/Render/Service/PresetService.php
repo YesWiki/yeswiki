@@ -4,6 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -272,6 +273,7 @@ class PresetService
         private readonly ParameterBagInterface $params,
         private readonly AssetRegistry $assets,
         private readonly Storage $storage,
+        private readonly ProgramFiles $programFiles,
     ) {
     }
 
@@ -395,10 +397,7 @@ class PresetService
     public function googleFonts(): array
     {
         if ($this->catalogue === null) {
-            $path = defined('YESWIKI_PROGRAM_DIR')
-                ? YESWIKI_PROGRAM_DIR . '/' . self::GOOGLE_FONTS_FILE
-                : self::GOOGLE_FONTS_FILE;
-            $decoded = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
+            $decoded = json_decode($this->programFiles->read(self::GOOGLE_FONTS_FILE), true);
             $this->catalogue = is_array($decoded) ? array_values(array_filter($decoded, 'is_string')) : [];
         }
 
@@ -640,7 +639,7 @@ class PresetService
 
     public function isConfigWritable(): bool
     {
-        return is_writable(ConfigurationFileProvider::getConfigFileFromEnv());
+        return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
     }
 
     public function arePresetsWritable(): bool
@@ -1043,11 +1042,7 @@ class PresetService
     public function coreDefaults(): array
     {
         if ($this->defaults === null) {
-            $path = defined('YESWIKI_PROGRAM_DIR')
-                ? YESWIKI_PROGRAM_DIR . '/' . self::CORE_TOKENS_FILE
-                : self::CORE_TOKENS_FILE;
-            $css = is_file($path) ? (string)file_get_contents($path) : '';
-            $this->defaults = $this->valuesOf($css);
+            $this->defaults = $this->valuesOf($this->programFiles->read(self::CORE_TOKENS_FILE));
         }
 
         return $this->defaults;
@@ -1219,13 +1214,15 @@ class PresetService
     /** A stylesheet from wherever it is: the Program tree ships presets and tokens, the instance stores its own. */
     private function cssAt(string $path): string
     {
-        return $this->isSourcePath($path)
-            ? (string)@file_get_contents($path)
-            : $this->storage->read($path);
+        if (!$this->isSourcePath($path)) {
+            return $this->storage->read($path);
+        }
+
+        return $this->programFiles->read(substr($path, \strlen(YESWIKI_PROGRAM_DIR) + 1));
     }
 
     private function isSourcePath(string $path): bool
     {
-        return defined('YESWIKI_PROGRAM_DIR') && str_starts_with($path, YESWIKI_PROGRAM_DIR . '/');
+        return \defined('YESWIKI_PROGRAM_DIR') && str_starts_with($path, YESWIKI_PROGRAM_DIR . '/');
     }
 }

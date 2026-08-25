@@ -8,7 +8,13 @@ FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.12.7}"
 # current on the day, so a minor here means two builds of the same tag ship two interpreters.
 PHP_VERSION="${PHP_VERSION:-8.4.24}"
 TARGETARCH="${TARGETARCH:-$(uname -m)}"
-COMPRESS="${COMPRESS:-1}"
+# Upstream tests `[ -n "$COMPRESS" ]`, so **any** non-empty value means yes -- `COMPRESS=0` packs
+# the binary with UPX, which is the opposite of what it reads like and costs ten minutes. Normalise
+# here so this script's own contract is the obvious one: 1 compresses, anything falsy does not.
+case "${COMPRESS:-1}" in
+    ''|0|no|false|off) COMPRESS='' ;;
+    *) COMPRESS=1 ;;
+esac
 DEBUG_SYMBOLS="${DEBUG_SYMBOLS:-}"
 OUTPUT="${OUTPUT:-$repo/binary/dist}"
 FRANKENPHP_SRC="${FRANKENPHP_SRC:-$repo/binary/.frankenphp}"
@@ -126,7 +132,7 @@ main() {
 
     "$repo/binary/build-program.sh" >/dev/null
     write_build_manifest "$repo" "$FRANKENPHP_VERSION" "$PHP_VERSION" "$TARGETARCH" \
-        "$extensions" "$EXTENSION_LIBS" "${CADDY_MODULES[*]}" "$COMPRESS" "static-musl" \
+        "$extensions" "$EXTENSION_LIBS" "${CADDY_MODULES[*]}" "${COMPRESS:-0}" "static-musl" \
         > "$repo/binary/program/BUILD.json"
 
     if [ ! -d "$FRANKENPHP_SRC/.git" ]; then

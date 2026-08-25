@@ -51,7 +51,9 @@ class ImporterDiscoveryTest extends YesWikiTestCase
             $container,
             $wiki->services->get(EntryManager::class),
             $wiki->services->get(FormManager::class),
-            $wiki->services->get(ListManager::class)
+            $wiki->services->get(ListManager::class),
+            $wiki->services->get(\YesWiki\Files\Service\Storage::class),
+            $wiki->services->get(\YesWiki\Files\Service\LocalFiles::class),
         );
 
         $this->assertSame(['YesWikiToYesWiki'], array_keys($importerManager->getAvailableImporters()));

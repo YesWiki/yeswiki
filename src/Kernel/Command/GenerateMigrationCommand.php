@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Files\Service\LocalFiles;
 
 class GenerateMigrationCommand extends Command
 {
@@ -17,6 +18,12 @@ class GenerateMigrationCommand extends Command
     {
         parent::__construct();
         $this->services = $services;
+    }
+
+    /** Resolved rather than injected: `src/commands/console` builds commands with the container alone. */
+    private function localFiles(): LocalFiles
+    {
+        return $this->services->get(LocalFiles::class);
     }
 
     protected function configure()
@@ -37,13 +44,13 @@ class GenerateMigrationCommand extends Command
         $migrationTemplate = "<?php\n\nuse YesWiki\\Core\\YesWikiMigration;\n\nclass $className extends YesWikiMigration\n{\n    public function run()\n    {\n\n    }\n}";
 
         $folderPath = (!empty($tool) ? "extensions/$tool/migrations/" : 'src/migrations/');
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath);
+        if (!$this->localFiles()->isDirectory($folderPath)) {
+            $this->localFiles()->makeDirectory($folderPath);
         }
         $filePath = $folderPath . $migrationFileName;
 
-        if (!file_exists($filePath)) {
-            file_put_contents($filePath, $migrationTemplate);
+        if (!$this->localFiles()->exists($filePath)) {
+            $this->localFiles()->write($filePath, $migrationTemplate);
             $output->writeln("Migration file created successfully: $filePath");
 
             return Command::SUCCESS;

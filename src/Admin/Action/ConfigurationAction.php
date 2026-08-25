@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -98,7 +99,7 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction, Pro
                     break;
                 case 'theme_path':
                     $theme = $themeManager->getFavoriteTheme();
-                    echo (is_dir('custom/themes/' . $theme)) ?
+                    echo ($this->getService(Storage::class)->directoryExists('custom/themes/' . $theme)) ?
                         "custom/themes/$theme/" :
                         "themes/$theme/";
                     break;

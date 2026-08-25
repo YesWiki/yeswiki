@@ -2,6 +2,9 @@
 
 namespace YesWiki\Content\Service;
 
+use YesWiki\Files\Service\ProgramFiles;
+use YesWiki\Files\Service\Storage;
+
 /**
  * Rewrites `{{action param="..."}}` calls in stored wiki syntax from the French names to the English ones (tickets 22 and 23, migrated by ticket 33).
  */
@@ -155,9 +158,12 @@ class ActionCallRewriter
      */
     private static function readMap(string $file): array
     {
-        $path = YESWIKI_PROGRAM_DIR . '/docs/' . $file;
-        $raw = @file_get_contents($path);
-        if ($raw === false) {
+        // A shipped map, read out of the Program: `docs/action-name-renames.json` is part of the
+        // release, not of any wiki. Static because the constructor loads it before there is an
+        // instance to ask, so ProgramFiles is built here rather than injected -- it holds nothing.
+        $path = 'docs/' . $file;
+        $raw = (new ProgramFiles(new Storage()))->read($path);
+        if ($raw === '') {
             throw new \RuntimeException("Cannot read the rename map {$path}. The action rename migration cannot run " . 'without it, and skipping it would leave stored content calling actions that no longer exist.');
         }
 

@@ -2,11 +2,13 @@
 
 namespace YesWiki\Import\Service;
 
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Exception\CurlTimeoutException;
 
 class ImportService
 {
-    public function __construct()
+    public function __construct(private readonly Storage $storage, private readonly LocalFiles $localFiles)
     {
     }
 
@@ -117,34 +119,31 @@ class ImportService
      */
     private function getHeaders(string $url): array
     {
-        $destPath = tempnam('cache', 'tmp_to_delete_');
-        $destPathHeaders = tempnam('cache', 'tmp_headers_to_delete_');
-        if ($destPath === false || $destPathHeaders === false) {
-            throw new \Exception("Error getting content from $url (no temporary file could be created in cache/)");
-        }
-        $fp = fopen($destPath, 'wb');
-        $fph = fopen($destPathHeaders, 'wb');
-        if ($fp === false || $fph === false) {
-            throw new \Exception("Error getting content from $url (temporary file could not be opened)");
-        }
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_WRITEHEADER, $fph);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
-        curl_exec($ch);
-        $error = curl_errno($ch);
-        curl_close($ch);
-        fclose($fp);
-        fclose($fph);
-        $content = '';
-        if (!$error && file_exists($destPathHeaders)) {
-            $content = (string)file_get_contents($destPathHeaders);
-        }
-        unlink($destPath);
-        unlink($destPathHeaders);
+        // Two scratch files, and neither ever becomes the wiki's: curl writes the body into one
+        // and the headers into the other, and only the headers are read back. Storage owns the
+        // making and the removing, including when this throws part-way through.
+        [$error, $content] = $this->storage->withTemporaryFile('body', fn (string $bodyPath) => $this->storage->withTemporaryFile('headers', function (string $headerPath) use ($url, $bodyPath) {
+            $body = $this->localFiles->openForWriting($bodyPath);
+            $headers = $this->localFiles->openForWriting($headerPath);
+            if ($body === null || $headers === null) {
+                throw new \Exception("Error getting content from $url (temporary file could not be opened)");
+            }
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_FILE, $body);
+            curl_setopt($ch, CURLOPT_WRITEHEADER, $headers);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+            curl_exec($ch);
+            $failed = curl_errno($ch);
+            curl_close($ch);
+            fclose($body);
+            fclose($headers);
+
+            return [$failed, $failed ? '' : $this->storage->readForeign($headerPath)];
+        }));
         if ($error) {
             $errorStr = curl_strerror($error);
             if (in_array($error, [12, 28])) {

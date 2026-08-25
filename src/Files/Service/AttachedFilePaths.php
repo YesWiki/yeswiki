@@ -28,6 +28,7 @@ class AttachedFilePaths
         ParameterBagInterface $params,
         RuntimeConfig $runtimeConfig,
         PageContext $pageContext,
+        private readonly Storage $storage,
     ) {
         $this->params = $params;
         $this->runtimeConfig = $runtimeConfig;
@@ -82,7 +83,7 @@ class AttachedFilePaths
             return $base;
         }
         $path = $base . '/' . $this->pageContext->getTag();
-        if (!is_dir($path)) {
+        if (!$this->storage->directoryExists($path)) {
             $this->mkdirRecursive($path);
         }
 
@@ -94,11 +95,10 @@ class AttachedFilePaths
         if (strlen($dir) === 0) {
             return false;
         }
-        if (is_dir($dir) || dirname($dir) === $dir) {
-            return true;
-        }
 
-        return $this->mkdirRecursive(dirname($dir)) && mkdir($dir, 0755);
+        // Storage creates the parents on the way, so the recursion this method is named for is
+        // gone; the name stays because callers all over the wiki use it.
+        return $this->storage->directoryExists($dir) || $this->storage->makeDirectory($dir);
     }
 
     /**
@@ -171,7 +171,7 @@ class AttachedFilePaths
     {
         $decoded = [];
         $decoded['realname'] = basename($filename);
-        $decoded['size'] = file_exists($filename) ? filesize($filename) : null;
+        $decoded['size'] = $this->storage->exists($filename) ? $this->storage->fileSize($filename) : null;
         $decoded['path'] = dirname($filename);
         if (preg_match('`^(.*)_(\d{14})_(\d{14})\.(.*)(trash\d{14})?$`', $decoded['realname'], $m)) {
             $decoded['name'] = $m[1];
@@ -196,19 +196,11 @@ class AttachedFilePaths
     {
         $matched = [];
         $startDir = rtrim($startDir, '\/');
-        $fh = opendir($startDir);
-        if ($fh === false) {
-            return $matched;
-        }
-        while (($file = readdir($fh)) !== false) {
-            if ($file === '.' || $file === '..' || is_dir($file)) {
-                continue;
-            }
-            if (preg_match($filePattern, $file)) {
-                $matched[] = $this->decodeLongFilename($startDir . '/' . $file);
+        foreach ($this->storage->files($startDir) as $path) {
+            if (preg_match($filePattern, basename($path))) {
+                $matched[] = $this->decodeLongFilename($path);
             }
         }
-        closedir($fh);
 
         return $matched;
     }

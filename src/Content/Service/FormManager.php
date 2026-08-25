@@ -11,6 +11,8 @@ use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
@@ -61,6 +63,8 @@ class FormManager
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
+        private readonly Storage $storage,
+        private readonly LocalFiles $localFiles,
     ) {
         $this->container = $container;
         $this->dbService = $dbService;
@@ -90,15 +94,10 @@ class FormManager
     /** @param string $prefix */
     protected function cleanCacheDefaultImage($prefix): void
     {
-        $cache_path = $this->paths->cachePath();
-        $cache_path = $cache_path . (substr($cache_path, -1) != '/' ? '/' : '');
-        $scan_cache_files = scandir($cache_path);
-        if ($scan_cache_files === false) {
-            return;
-        }
-        foreach ($scan_cache_files as $scan_cache_file) {
-            if (str_starts_with($scan_cache_file, $prefix)) {
-                unlink($cache_path . $scan_cache_file);
+        $cachePath = rtrim($this->paths->cachePath(), '/');
+        foreach ($this->storage->files($cachePath) as $path) {
+            if (str_starts_with(basename($path), $prefix)) {
+                $this->storage->delete($path);
             }
         }
     }
@@ -125,24 +124,22 @@ class FormManager
             if (count($default_image) == 2) {
                 $fieldObject['image_default'] = $default_image[0];
                 $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
-                $tmpFile = tempnam('cache', 'dfltimg');
-                $tempFile = $tmpFile . '.' . $imgext;
-                rename($tmpFile, $tempFile);
-                try {
-                    $ifp = fopen($tempFile, 'wb');
-                    if ($ifp === false) {
+                // The decoded upload is a scratch file: the resizer wants a real path (ADR-0022
+                // lists Zebra_Image among the libraries that do), and the result is what the wiki
+                // keeps. Storage makes it and removes it, including when the resize throws.
+                $this->storage->withTemporaryFile($imgext, function (string $tempFile) use ($default_image, $default_image_filename, $fieldObject) {
+                    $ifp = $this->localFiles->openForWriting($tempFile);
+                    if ($ifp === null) {
                         throw new \RuntimeException("could not open $tempFile for writing");
                     }
                     fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                     fclose($ifp);
                     $this->resizer->resize($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
-                } finally {
-                    unlink($tempFile);
-                }
+                });
             } else {
                 unset($fieldObject['image_default']);
-                if (file_exists($default_image_filename)) {
-                    unlink($default_image_filename);
+                if ($this->storage->exists($default_image_filename)) {
+                    $this->storage->delete($default_image_filename);
                 }
             }
             $template[$index] = $fieldObject;
@@ -169,7 +166,7 @@ class FormManager
                 continue;
             }
             $default_image_filename = $basePath . "defaultimage{$form['id']}_" . ($fieldObject['name'] ?? '') . '.jpg';
-            $storedImage = file_exists($default_image_filename) ? file_get_contents($default_image_filename) : false;
+            $storedImage = $this->storage->exists($default_image_filename) ? $this->storage->read($default_image_filename) : false;
             if ($storedImage !== false) {
                 $fieldObject['image_default'] = ($fieldObject['image_default'] ?? '') . '|data:image/jpg;base64,' . base64_encode($storedImage);
             } else {

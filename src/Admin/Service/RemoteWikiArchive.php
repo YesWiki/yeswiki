@@ -4,6 +4,7 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use YesWiki\Files\Service\LocalFiles;
 
 /** Asks a remote wiki for a full archive and brings it back (first-class-binary 06). */
 class RemoteWikiArchive
@@ -25,8 +26,10 @@ class RemoteWikiArchive
     /** @var callable(string): void */
     private $say;
 
-    public function __construct(?callable $say = null)
-    {
+    public function __construct(
+        ?callable $say = null,
+        private readonly LocalFiles $localFiles = new LocalFiles(),
+    ) {
         $this->say = $say ?? static function (string $message): void {};
     }
 
@@ -274,8 +277,8 @@ class RemoteWikiArchive
         }
 
         $part = $destination . '.part';
-        $handle = fopen($part, 'wb');
-        if ($handle === false) {
+        $handle = $this->localFiles->openForWriting($part);
+        if ($handle === null) {
             throw new \Exception("Cannot write $part.");
         }
 
@@ -292,13 +295,13 @@ class RemoteWikiArchive
 
         $zip = new \ZipArchive();
         if ($zip->open($part) !== true) {
-            unlink($part);
+            $this->localFiles->remove($part);
 
             throw new \Exception('What came back is not a readable zip archive.');
         }
         $zip->close();
 
-        if (!rename($part, $destination)) {
+        if (!$this->localFiles->rename($part, $destination)) {
             throw new \Exception("Cannot put the archive at $destination.");
         }
     }

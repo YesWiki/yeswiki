@@ -40,7 +40,9 @@ class TemplateEngine
         ParameterBagInterface $config,
         AssetRegistry $assetRegistry,
         CsrfTokenManager $csrfTokenManager,
-        UrlFormatter $urlFormatter
+        UrlFormatter $urlFormatter,
+        private readonly TwigSearchPath $searchPath,
+        private readonly Storage $storage,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
@@ -49,7 +51,7 @@ class TemplateEngine
 
         $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_PROGRAM_DIR]);
 
-        if (file_exists('custom/templates/')) {
+        if ($this->searchPath->exists('custom/templates/')) {
             $this->twigLoader->addPath('custom/templates/', 'custom');
         }
 
@@ -83,10 +85,8 @@ class TemplateEngine
 
             $paths[] = YESWIKI_PROGRAM_DIR . "/extensions/$extensionName/presentation/templates/";
 
-            foreach ($paths as $path) {
-                if (file_exists($path)) {
-                    $this->twigLoader->addPath($path, $extensionName);
-                }
+            foreach ($this->searchPath->existing($paths) as $path) {
+                $this->twigLoader->addPath($path, $extensionName);
             }
         }
 
@@ -97,10 +97,8 @@ class TemplateEngine
             $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
         $corePaths[] = YESWIKI_PROGRAM_DIR . '/templates/';
-        foreach ($corePaths as $path) {
-            if (file_exists($path)) {
-                $this->twigLoader->addPath($path, 'core');
-            }
+        foreach ($this->searchPath->existing($corePaths) as $path) {
+            $this->twigLoader->addPath($path, 'core');
         }
 
         $this->twigLoader->addPath(YESWIKI_PROGRAM_DIR . '/templates/', 'shipped');
@@ -235,10 +233,10 @@ class TemplateEngine
             $resizer = $this->container->get(ImageResizer::class);
             $image_dest = $resizer->resizedFilename($options['fileName'], (string)$options['width'], (string)$options['height'], $options['mode']);
             $safeRefresh = !$this->container->get(HibernationService::class)->isWikiHibernated()
-                && file_exists($image_dest)
+                && $this->storage->fileExists($image_dest)
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
                 && $this->container->get(AclService::class)->isAdmin();
-            if (!file_exists($image_dest) || $safeRefresh) {
+            if (!$this->storage->fileExists($image_dest) || $safeRefresh) {
                 $result = $resizer->resize($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
                     return $basePath . $options['fileName'];
@@ -323,12 +321,12 @@ class TemplateEngine
             return StringUtilService::withoutDiacritics((string)$text);
         });
         $this->addTwigHelper('fileExists', function ($path) {
-            return file_exists((string)$path);
+            return $this->storage->exists((string)$path);
         });
 
         $this->addTwigHelper('qrCode', function ($content, $prefix = 'qrcode') {
             $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '-' . md5($content) . '.svg';
-            if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
+            if (!$this->storage->exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
                 $this->container->get(\YesWiki\Content\Service\QrCodeService::class)->generateToFile($content, $cacheImage);
             }
 

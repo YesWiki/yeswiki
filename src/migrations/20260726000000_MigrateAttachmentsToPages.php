@@ -4,6 +4,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Files\Service\Storage;
 
 /**
  * Ticket 17: uploaded files become their own Content type (a `pages` row per file, own ACL, see FileManager).
@@ -14,8 +15,9 @@ class MigrateAttachmentsToPages extends YesWikiMigration
 
     public function run()
     {
+        $storage = $this->getService(Storage::class);
         $uploadPath = rtrim($this->getUploadPath(), '/');
-        if (!is_dir($uploadPath)) {
+        if (!$storage->directoryExists($uploadPath)) {
             return;
         }
 
@@ -43,25 +45,20 @@ class MigrateAttachmentsToPages extends YesWikiMigration
     {
         $renameMapByOwnerPage = [];
 
-        foreach (scandir($uploadPath) as $entry) {
-            if ($entry === '.' || $entry === '..') {
+        $storage = $this->getService(Storage::class);
+
+        foreach ($storage->directories($uploadPath) as $entryPath) {
+            $entry = basename($entryPath);
+            if (!$pageManager->tagExists($entry)) {
                 continue;
             }
-            $entryPath = $uploadPath . '/' . $entry;
-
-            if (is_dir($entryPath)) {
-                if (!$pageManager->tagExists($entry)) {
-                    continue;
-                }
-                foreach (scandir($entryPath) as $subEntry) {
-                    if ($subEntry === '.' || $subEntry === '..') {
-                        continue;
-                    }
-                    $this->migrateOneFile($entryPath . '/' . $subEntry, $subEntry, $entry, $fileManager, $renameMapByOwnerPage);
-                }
-                continue;
+            foreach ($storage->files($entryPath) as $subPath) {
+                $this->migrateOneFile($subPath, basename($subPath), $entry, $fileManager, $renameMapByOwnerPage);
             }
+        }
 
+        foreach ($storage->files($uploadPath) as $entryPath) {
+            $entry = basename($entryPath);
             $ownerPageTag = $fileManager->guessOwnerPageTagFromLegacyFilename($entry);
             if (is_null($ownerPageTag)) {
                 continue;
@@ -88,16 +85,20 @@ class MigrateAttachmentsToPages extends YesWikiMigration
             return;
         }
 
-        $size = filesize($physicalPath);
-        $mimeType = mime_content_type($physicalPath) ?: 'application/octet-stream';
+        $storage = $this->getService(Storage::class);
+
+        $size = $storage->fileSize($physicalPath);
+        $mimeType = $storage->withLocalCopy($physicalPath, static fn (string $local) => mime_content_type($local) ?: 'application/octet-stream');
 
         $storedFilename = $fileManager->suggestFreeFilename($fileManager->sanitizeFilename($originalFilename));
-        if (!copy($physicalPath, FileManager::STORAGE_DIR . '/' . $storedFilename)) {
+        try {
+            $storage->copy($physicalPath, FileManager::STORAGE_DIR . '/' . $storedFilename);
+        } catch (Throwable) {
             return;
         }
 
         $entry = $fileManager->create($originalFilename, $storedFilename, $ownerPageTag, (int)$size, $mimeType);
-        unlink($physicalPath);
+        $storage->delete($physicalPath);
 
         $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = (string)$entry['tag'];
     }

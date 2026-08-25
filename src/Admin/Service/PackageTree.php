@@ -1,9 +1,91 @@
 <?php
 
-namespace YesWiki\Content\Entity;
+namespace YesWiki\Admin\Service;
 
-class Files
+/**
+ * The local filesystem work of installing a package: unzip here, copy there, delete afterwards.
+ *
+ * This was `Content\Entity\Files`, which was neither content nor an entity. It is the tree
+ * manipulation behind `PackageCore`, `PackageExt` and `PackageTheme`: a downloaded zip is
+ * extracted into a scratch directory and its contents are copied into the code the wiki runs --
+ * `src/`, `themes/`, `vendor/`, an extension's own folder.
+ *
+ * **None of that is an Instance's data, and none of it can go through `Storage`.** ADR-0022's
+ * tiers describe what a wiki owns; this writes the Program. `ZipArchive` ignores stream wrappers
+ * and needs real paths (the ADR says so when it rejects `yeswiki://`), and what lands here is PHP
+ * that will be `include`d, which is the same reason `custom/extensions/` is Runtime rather than
+ * Public. A package installer that went through a bucket would install code nothing can execute.
+ *
+ * So it addresses the filesystem directly, on purpose, in one place, with that written down.
+ */
+class PackageTree
 {
+    public function exists(string $path): bool
+    {
+        return file_exists($path);
+    }
+
+    public function isFile(string $path): bool
+    {
+        return is_file($path);
+    }
+
+    public function isDirectory(string $path): bool
+    {
+        return is_dir($path);
+    }
+
+    public function makeDirectory(string $path): bool
+    {
+        return is_dir($path) || mkdir($path, 0o755, true);
+    }
+
+    /** The bytes, or the empty string when the file is not there. */
+    public function read(string $path): string
+    {
+        return is_file($path) ? (string)file_get_contents($path) : '';
+    }
+
+    public function write(string $path, string $contents): bool
+    {
+        return file_put_contents($path, $contents) !== false;
+    }
+
+    public function remove(string $path): bool
+    {
+        return !file_exists($path) || @unlink($path);
+    }
+
+    /**
+     * What is directly inside a directory, without the two entries nobody means.
+     *
+     * @return list<string> names, not paths
+     */
+    public function entriesIn(string $directory): array
+    {
+        if (!is_dir($directory)) {
+            return [];
+        }
+
+        $names = [];
+        foreach ((array)scandir($directory) as $name) {
+            if (is_string($name) && $name !== '.' && $name !== '..') {
+                $names[] = $name;
+            }
+        }
+        sort($names);
+
+        return $names;
+    }
+
+    /**
+     * @return list<string> paths matching a shell pattern
+     */
+    public function matching(string $pattern): array
+    {
+        return glob($pattern) ?: [];
+    }
+
     /**
      * @return string the path of a fresh, empty temporary directory
      */

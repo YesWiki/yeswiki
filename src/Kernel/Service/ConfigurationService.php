@@ -2,11 +2,17 @@
 
 namespace YesWiki\Kernel\Service;
 
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 
 class ConfigurationService
 {
-    public function __construct()
+    /**
+     * `LocalFiles` has a default because five callers build this with `new ConfigurationService()`
+     * -- the installer and the clone command among them, both of which run before there is a
+     * container to ask. It has no state, so a fresh one costs nothing.
+     */
+    public function __construct(private readonly LocalFiles $localFiles = new LocalFiles())
     {
     }
 
@@ -27,7 +33,7 @@ class ConfigurationService
         }
         $content = $this->getContentToWrite($config, $arrayName);
 
-        if (file_put_contents($file, $content) === false) {
+        if (!$this->localFiles->write($file, $content)) {
             return false;
         }
 

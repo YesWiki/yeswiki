@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use YesWiki\Files\Service\RuntimeLock;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\SearchIndexSchema;
 
@@ -106,12 +107,14 @@ class ReindexCommand extends Command
      */
     private function acquireLock()
     {
-        $handle = @fopen(self::LOCK_FILE, 'c');
-        if ($handle === false) {
+        $locks = $this->services->get(RuntimeLock::class);
+
+        $handle = $locks->acquire(self::LOCK_FILE);
+        if ($handle === null) {
             return self::LOCK_UNAVAILABLE;
         }
-        if (!flock($handle, LOCK_EX | LOCK_NB)) {
-            fclose($handle);
+        if (!$locks->tryLock($handle)) {
+            $locks->release($handle);
 
             return self::LOCK_HELD_ELSEWHERE;
         }
@@ -124,10 +127,6 @@ class ReindexCommand extends Command
      */
     private function releaseLock($handle): void
     {
-        if (!is_resource($handle)) {
-            return;
-        }
-        flock($handle, LOCK_UN);
-        fclose($handle);
+        $this->services->get(RuntimeLock::class)->release($handle);
     }
 }

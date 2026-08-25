@@ -8,6 +8,8 @@ use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class ImportFilesManager
@@ -22,7 +24,7 @@ class ImportFilesManager
      *
      * @param ContainerInterface $container service container
      */
-    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter)
+    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter, private readonly Storage $storage, private readonly LocalFiles $localFiles)
     {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
@@ -63,7 +65,7 @@ class ImportFilesManager
     private function cURLDownload(string $from, string $to, bool $overwrite = false): string
     {
         $output = '';
-        if (file_exists($to)) {
+        if ($this->storage->exists($to)) {
             if ($overwrite) {
                 $output .= _t('FILE') . ' ' . $to . ' ' . _t('FILE_OVERWRITE') . '.';
             } else {
@@ -73,25 +75,31 @@ class ImportFilesManager
             }
         }
 
-        $fp = fopen($to, 'wb');
-        if ($fp === false) {
-            throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $to);
-        }
-        $ch = curl_init($from);
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_exec($ch);
-        $err = curl_error($ch);
-        curl_close($ch);
-        fclose($fp);
+        // A scratch file, then Storage: curl needs a stream and the destination may be a bucket.
+        // It also means a download that fails leaves nothing behind rather than a corrupted
+        // attachment somebody has to notice and delete.
+        return $this->storage->withTemporaryFile(pathinfo($to, PATHINFO_EXTENSION), function (string $tmpPath) use ($from, $to, $output) {
+            $fp = $this->localFiles->openForWriting($tmpPath);
+            if ($fp === null) {
+                throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $to);
+            }
+            $ch = curl_init($from);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
+            curl_exec($ch);
+            $err = curl_error($ch);
+            curl_close($ch);
+            fclose($fp);
 
-        if ($err) {
-            unlink($to);
-            throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $err . "\n" . _t('REMOVING_CORRUPTED_FILE') . ' ' . $to);
-        }
+            if ($err) {
+                throw new \Exception($output . _t('ERROR_DOWNLOADING') . ' ' . $from . ': ' . $err . "\n" . _t('REMOVING_CORRUPTED_FILE') . ' ' . $to);
+            }
 
-        return $output;
+            $this->storage->writeFrom($to, $tmpPath);
+
+            return $output;
+        });
     }
 
     /**
@@ -146,22 +154,13 @@ class ImportFilesManager
             $filename = pathinfo($a, PATHINFO_FILENAME);
             $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_\d{14}\.' . $ext . '_?$`';
             $path = $this->getLocalFileUploadPath();
-            $fh = opendir($path);
-            if ($fh === false) {
-                continue;
-            }
-            while (($file = readdir($fh)) !== false) {
-                if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
+            foreach ($this->storage->files($path) as $filePath) {
+                if (!preg_match($searchPattern, basename($filePath))) {
                     continue;
                 }
-                if (preg_match($searchPattern, $file)) {
-                    $filePath = $path . '/' . $file;
-                    $size = filesize($filePath) ?: 0;
-                    $humanSize = $this->humanFilesize($size);
-                    $filesMatched[] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize];
-                }
+                $size = $this->storage->fileSize($filePath);
+                $filesMatched[] = ['path' => $filePath, 'size' => $size, 'humanSize' => $this->humanFilesize($size)];
             }
-            closedir($fh);
         }
 
         return $filesMatched;

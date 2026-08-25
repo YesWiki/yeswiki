@@ -173,7 +173,9 @@ class CustomTemplateServiceTest extends YesWikiTestCase
                 $services->get(\Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class),
                 $services->get(\YesWiki\Kernel\Service\AssetRegistry::class),
                 $services->get(\Symfony\Component\Security\Csrf\CsrfTokenManager::class),
-                $services->get(\YesWiki\Kernel\Service\UrlFormatter::class)
+                $services->get(\YesWiki\Kernel\Service\UrlFormatter::class),
+                $services->get(\YesWiki\Render\Service\TwigSearchPath::class),
+                $services->get(\YesWiki\Files\Service\Storage::class),
             );
 
             $this->assertStringContainsString(

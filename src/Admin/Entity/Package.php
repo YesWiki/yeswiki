@@ -2,9 +2,9 @@
 
 namespace YesWiki\Admin\Entity;
 
-use YesWiki\Content\Entity\Files;
+use YesWiki\Admin\Service\PackageTree;
 
-abstract class Package extends Files
+abstract class Package extends PackageTree
 {
     public const PREFIX_FILENAME = 'yeswiki_';
 
@@ -117,7 +117,7 @@ abstract class Package extends Files
 
         foreach ($file2check as $f) {
             $path = $this->localPath . DIRECTORY_SEPARATOR . $f;
-            if (file_exists($path)) {
+            if ($this->exists($path)) {
                 $vNotWritables = $this->isWritable($path);
 
                 if ($vNotWritables !== true) {
@@ -156,7 +156,7 @@ abstract class Package extends Files
     {
         $this->downloadedFile = $this->download($this->address, null, 30);
 
-        if (is_file($this->downloadedFile)) {
+        if ($this->isFile($this->downloadedFile)) {
             return $this->downloadedFile;
         }
         $this->downloadedFile = null;
@@ -222,8 +222,8 @@ abstract class Package extends Files
     public function getNeededPHPversionFromExtractedFolder(): string
     {
         $jsonPath = $this->extractionPath . 'composer.json';
-        if (file_exists($jsonPath)) {
-            $jsonFile = file_get_contents($jsonPath);
+        if ($this->exists($jsonPath)) {
+            $jsonFile = $this->read($jsonPath);
             if (!empty($jsonFile)) {
                 $composerData = json_decode($jsonFile, true);
                 if (!empty($composerData['require']['php'])) {
@@ -280,9 +280,9 @@ abstract class Package extends Files
     private function getMD5()
     {
         $this->md5File = $this->download($this->address . '.md5');
-        $checksum = file_get_contents($this->md5File);
+        $checksum = $this->read($this->md5File);
 
-        if ($checksum === false) {
+        if ($checksum === '') {
             return '';
         }
 

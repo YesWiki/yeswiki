@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Service;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Exception\StopArchiveException;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -88,7 +89,8 @@ class ArchiveService
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         UrlFormatter $urlFormatter,
-        Storage $storage
+        Storage $storage,
+        private readonly LocalFiles $localFiles,
     ) {
         $this->storage = $storage;
         $this->urlFormatter = $urlFormatter;
@@ -707,8 +709,8 @@ class ArchiveService
             }
             if (str_ends_with($name, '/')) {
                 $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0755, true);
+                if (!$this->localFiles->isDirectory($dir)) {
+                    $this->localFiles->makeDirectory($dir);
                 }
                 continue;
             }
@@ -838,14 +840,14 @@ class ArchiveService
      */
     protected function assertArchivableFrom(string $instanceDir, string $programDir): void
     {
-        if (!file_exists($instanceDir . '/index.php')) {
+        if (!$this->localFiles->exists($instanceDir . '/index.php')) {
             throw new \Exception("no index.php in \"$instanceDir\": that is not a wiki instance");
         }
-        if (!file_exists(ConfigurationFileProvider::getConfigFileFromEnv())) {
+        if (!$this->storage->exists(ConfigurationFileProvider::getConfigFileFromEnv())) {
             throw new \Exception('the wiki has no configuration file: nothing to archive');
         }
         foreach (['composer.json', 'composer.lock'] as $manifest) {
-            if (!file_exists($programDir . '/' . $manifest)) {
+            if (!$this->localFiles->exists($programDir . '/' . $manifest)) {
                 throw new \Exception("no $manifest in \"$programDir\": that is not a yeswiki program tree");
             }
         }
@@ -922,33 +924,24 @@ class ArchiveService
                         $zip->addEmptyDir($baseDirName);
                     }
 
-                    $dh = opendir($dir);
-                    if ($dh === false) {
-                        array_shift($dirs);
-                        continue;
-                    }
-                    while (false !== ($file = readdir($dh))) {
-                        if ($file != '.' && $file != '..') {
-                            $localName = $dir . DIRECTORY_SEPARATOR . $file;
-                            $relativeName = (empty($baseDirName) ? '' : "$baseDirName/") . $file;
-                            if (empty($baseDirName) && $file == ConfigurationFileProvider::getConfigFileFromEnv()) {
-                                $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
-                            } elseif (is_file($localName)) {
-                                $zip->addFile($localName, $relativeName);
-                            } elseif (is_dir($localName)) {
-                                if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders, $blacklistedRootFolders)) {
-                                    $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
-                                }
-                                if ($this->checkIfNeedStop($inputFile)) {
-                                    $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
-                                    $vCanceled = true;
-                                    break;
-                                }
+                    foreach ($this->localFiles->entriesIn($dir) as $file) {
+                        $localName = $dir . DIRECTORY_SEPARATOR . $file;
+                        $relativeName = (empty($baseDirName) ? '' : "$baseDirName/") . $file;
+                        if (empty($baseDirName) && $file == ConfigurationFileProvider::getConfigFileFromEnv()) {
+                            $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
+                        } elseif ($this->localFiles->isFile($localName)) {
+                            $zip->addFile($localName, $relativeName);
+                        } elseif ($this->localFiles->isDirectory($localName)) {
+                            if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders, $blacklistedRootFolders)) {
+                                $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
+                            }
+                            if ($this->checkIfNeedStop($inputFile)) {
+                                $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
+                                $vCanceled = true;
+                                break;
                             }
                         }
                     }
-
-                    closedir($dh);
                 }
 
                 if ($vCanceled) {
@@ -1012,7 +1005,7 @@ class ArchiveService
             }
         }
 
-        @unlink($zipPath);
+        $this->localFiles->remove($zipPath);
 
         return false;
     }
@@ -1129,8 +1122,8 @@ class ArchiveService
         );
         $basePath = YESWIKI_INSTANCE_DIR;
         $realLocalPath = $isAbsolutePath
-            ? realpath($localPath)
-            : realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath));
+            ? $this->localFiles->realPath($localPath)
+            : $this->localFiles->realPath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $localPath));
 
         if ($realLocalPath === false) {
             return true;
@@ -1354,7 +1347,7 @@ class ArchiveService
         }
         $estimateZipSize += 300 * 1024 * 1024;
 
-        $freeSpace = disk_free_space(YESWIKI_INSTANCE_DIR);
+        $freeSpace = $this->localFiles->freeSpace(YESWIKI_INSTANCE_DIR);
         if ($freeSpace < $estimateZipSize) {
             throw new \Exception('Not enough free space for a new archive!');
         }
@@ -1367,14 +1360,11 @@ class ArchiveService
      */
     private function folderSize(string $folderPath): int
     {
-        $contents = array_filter(scandir($folderPath), function ($path) {
-            return !in_array($path, ['.', '..']);
-        });
         $bytes = 0;
-        foreach ($contents as $name) {
-            if (is_file("$folderPath/$name")) {
-                $bytes += filesize("$folderPath/$name");
-            } elseif (is_dir("$folderPath/$name")) {
+        foreach ($this->localFiles->entriesIn($folderPath) as $name) {
+            if ($this->localFiles->isFile("$folderPath/$name")) {
+                $bytes += $this->localFiles->size("$folderPath/$name");
+            } elseif ($this->localFiles->isDirectory("$folderPath/$name")) {
                 $bytes += $this->folderSize("$folderPath/$name");
             }
         }

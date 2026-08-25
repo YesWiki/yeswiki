@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\LanguageService;
@@ -28,6 +29,7 @@ class CoreAssets implements RequestScopedState
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly LanguageService $languages,
         private readonly Storage $storage,
+        private readonly ProgramFiles $programFiles,
     ) {
     }
 
@@ -108,10 +110,10 @@ class CoreAssets implements RequestScopedState
         }
 
         $styleFile = 'themes/' . $theme . '/styles/' . $favoriteStyle;
-        if (file_exists('custom/' . $styleFile)) {
+        if ($this->storage->exists('custom/' . $styleFile)) {
             $styleFile = 'custom/' . $styleFile;
         }
-        if ($presetsActivated && !$presetIsCustom && file_exists('custom/' . $presetFile)) {
+        if ($presetsActivated && !$presetIsCustom && $this->storage->exists('custom/' . $presetFile)) {
             $presetFile = 'custom/' . $presetFile;
         }
 
@@ -123,7 +125,7 @@ class CoreAssets implements RequestScopedState
         }
 
         $customCss = $this->customCss->path();
-        foreach ($this->filesIn(CustomCssService::DIRECTORY, '.css') as $file) {
+        foreach ($this->filesInInstance(CustomCssService::DIRECTORY, '.css') as $file) {
             if ($file !== $customCss) {
                 $this->assets->addCssFile($file);
             }
@@ -175,11 +177,13 @@ class CoreAssets implements RequestScopedState
         $this->assets->addJsFile('javascripts/yw-init.js', true);
         $this->assets->addJsFile('javascripts/yeswiki-base-no-defer.js', true);
 
+        // A wiki's own copy of a theme's scripts wins over the shipped one, and the two live in
+        // different filesystems: `custom/` is the Instance's and may be a bucket, `themes/` is the
+        // Program's and never is. Which one this is has to be decided before anything is listed.
         $themeJsDir = 'themes/' . $this->themeManager->getFavoriteTheme() . '/javascripts';
-        if (!$this->themeManager->getUseFallbackTheme() && is_dir('custom/' . $themeJsDir)) {
-            $themeJsDir = 'custom/' . $themeJsDir;
-        }
-        $themeScripts = $this->filesIn($themeJsDir, '.js');
+        $themeScripts = !$this->themeManager->getUseFallbackTheme() && $this->storage->directoryExists('custom/' . $themeJsDir)
+            ? $this->filesInInstance('custom/' . $themeJsDir, '.js')
+            : $this->filesInProgram($themeJsDir, '.js');
         sort($themeScripts);
         $themeShipsYesWikiJs = false;
         foreach ($themeScripts as $script) {
@@ -200,7 +204,7 @@ class CoreAssets implements RequestScopedState
         $this->assets->addJsFile('javascripts/yw-datatable.js');
         $this->assets->addJsFile('javascripts/yw-autocomplete.js');
 
-        foreach ($this->filesIn('custom/javascripts', '.js') as $file) {
+        foreach ($this->filesInInstance('custom/javascripts', '.js') as $file) {
             $this->assets->addJsFile($file);
         }
     }
@@ -242,21 +246,25 @@ class CoreAssets implements RequestScopedState
     }
 
     /**
-     * @return list<string> paths of $extension files directly in $dir, or [] when it is absent
+     * @return list<string> paths of $extension files directly in a wiki's own $dir
      */
-    private function filesIn(string $dir, string $extension): array
+    private function filesInInstance(string $dir, string $extension): array
     {
-        if (!is_dir($dir)) {
-            return [];
-        }
-        $found = [];
-        foreach ((array)scandir($dir) as $file) {
-            if (is_string($file) && str_ends_with($file, $extension)) {
-                $found[] = $dir . '/' . $file;
-            }
-        }
+        return array_values(array_filter(
+            $this->storage->files($dir),
+            static fn (string $path) => str_ends_with($path, $extension)
+        ));
+    }
 
-        return $found;
+    /**
+     * @return list<string> paths of $extension files directly in a shipped $dir
+     */
+    private function filesInProgram(string $dir, string $extension): array
+    {
+        return array_values(array_filter(
+            $this->programFiles->files($dir),
+            static fn (string $path) => str_ends_with($path, $extension)
+        ));
     }
 
     public function startNewRequest(): void

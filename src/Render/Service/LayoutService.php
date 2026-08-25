@@ -4,6 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\PageContext;
@@ -37,6 +38,7 @@ class LayoutService
         protected ConfigurationService $configurationService,
         protected PageManager $pageManager,
         protected PageContext $pageContext,
+        protected Storage $storage,
     ) {
     }
 
@@ -243,7 +245,7 @@ class LayoutService
      */
     public function isConfigWritable(): bool
     {
-        return is_writable(ConfigurationFileProvider::getConfigFileFromEnv());
+        return $this->storage->isWritable(ConfigurationFileProvider::getConfigFileFromEnv());
     }
 
     /**

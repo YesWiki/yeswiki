@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
@@ -35,7 +36,7 @@ class DocumentationController extends YesWikiController
         foreach ($this->getService(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extName => $extPath) {
             $localizedPath = "{$extPath}docs/{$this->getService(LanguageService::class)->preferredLanguage()}/README.md";
             $path = "{$extPath}docs/README.md";
-            $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;
+            $docPath = $this->getService(LocalFiles::class)->matching($localizedPath)[0] ?? $this->getService(LocalFiles::class)->matching($path)[0] ?? null;
             if ($docPath) {
                 $extensions[] = ['name' => $extName, 'docPath' => $docPath];
             }

@@ -20,7 +20,7 @@ class FaviconAction extends YesWikiAction implements RegisteredAction
 
         if (!$favicon) {
             $favicon = "themes/{$this->getService(RuntimeConfig::class)->getValue('favorite_theme')}/images/favicon.png";
-            if (file_exists("custom/$favicon")) {
+            if ($this->getService(\YesWiki\Files\Service\Storage::class)->exists("custom/$favicon")) {
                 $favicon = "custom/$favicon";
             }
         }

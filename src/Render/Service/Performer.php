@@ -10,6 +10,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\PerformableEvent;
+use YesWiki\Kernel\Service\ClassDirectoryScanner;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -75,10 +76,11 @@ class Performer
      */
     private function findObjectInPath(string $dir, string $objectType): void
     {
-        if (!file_exists($dir) || !($dh = opendir($dir))) {
-            return;
-        }
-        while (($file = readdir($dh)) !== false) {
+        // Through the scanner rather than opendir: these are code directories -- a module's own
+        // `Action/`, or an extension's -- which ADR-0022 keeps outside Storage's tiers because
+        // they hold PHP that gets included rather than a wiki's data. One place reads them
+        // (ticket 49), and this was the last one that did not.
+        foreach ($this->container->get(ClassDirectoryScanner::class)->filesIn($dir) as $file) {
             if (!preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
                 continue;
             }
@@ -95,7 +97,6 @@ class Performer
                 'baseName' => $baseName,
             ];
         }
-        closedir($dh);
     }
 
     /**

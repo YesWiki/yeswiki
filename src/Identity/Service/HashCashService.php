@@ -3,6 +3,7 @@
 namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class HashCashService
@@ -14,16 +15,17 @@ class HashCashService
 
     protected ContainerInterface $container;
 
-    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter)
+    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter, private readonly Storage $storage)
     {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
     }
 
     /** Absorbed from src/wp-hashcash.lib by wave-two ticket 05 (CP3). */
+    /** Runtime tier by ADR-0022, and a Storage path like any other. */
     private function secretFile(): string
     {
-        return YESWIKI_INSTANCE_DIR . '/cache/hashcash.key';
+        return 'cache/hashcash.key';
     }
 
     /**
@@ -50,21 +52,27 @@ class HashCashService
     /** The current secret key, or '' when there is none to be had. */
     private function secretValue(): string
     {
-        return (string)@file_get_contents($this->secretFile());
+        return $this->storage->exists($this->secretFile()) ? $this->storage->read($this->secretFile()) : '';
     }
 
     /** Write a fresh secret, and say whether it could be written at all. */
     private function refreshSecret(): bool
     {
-        return @file_put_contents($this->secretFile(), (string)rand(21474836, 2126008810)) !== false;
+        try {
+            $this->storage->write($this->secretFile(), (string)rand(21474836, 2126008810));
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
     }
 
     /** Whether there is a usable puzzle -- a secret this wiki can read and refresh. */
     private function hasSecret(): bool
     {
         $file = $this->secretFile();
-        $current = @file_get_contents($file);
-        if ($current === false || $current === '' || (time() - (int)@filemtime($file)) > self::REFRESH) {
+        $current = $this->secretValue();
+        if ($current === '' || (time() - $this->storage->lastModified($file)) > self::REFRESH) {
             return $this->refreshSecret();
         }
 

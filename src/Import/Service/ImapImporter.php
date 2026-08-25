@@ -9,6 +9,7 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\StringUtilService;
 
 class ImapImporter extends Importer
@@ -73,8 +74,8 @@ EOT,
     {
         $config = parent::checkConfig($config);
         $this->config['attachments_folder'] = $this->config['attachments_folder'] ?? null;
-        if (!empty($this->config['attachments_folder']) && !is_dir($this->config['attachments_folder'])) {
-            if (!mkdir($this->config['attachments_folder'], 0755, true)) {
+        if (!empty($this->config['attachments_folder']) && !$this->services->get(Storage::class)->directoryExists($this->config['attachments_folder'])) {
+            if (!$this->services->get(Storage::class)->makeDirectory($this->config['attachments_folder'])) {
                 throw new \Exception("Folder for attachments {$this->config['attachments_folder']} could'nt be created.");
             }
         }

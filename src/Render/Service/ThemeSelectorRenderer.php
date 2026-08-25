@@ -5,6 +5,7 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -139,13 +140,14 @@ class ThemeSelectorRenderer extends YesWikiController
     {
         $backgrounds = [];
         $backgroundsdir = 'files/backgrounds';
-        $dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
-        while ($dir && ($file = readdir($dir)) !== false) {
+        $storage = $this->getService(Storage::class);
+        foreach ($storage->files($backgroundsdir) as $path) {
+            $file = basename($path);
             $imgextension = strtolower(substr($file, -4, 4));
 
             if ($imgextension == '.jpg') {
                 $thumbnail = $backgroundsdir . '/thumbs/' . $file;
-                if (!is_file($thumbnail)) {
+                if (!$storage->fileExists($thumbnail)) {
                     if ($this->getService(ImageResizer::class)->resize($backgroundsdir . '/' . $file, $thumbnail, 100, 75)) {
                         $backgrounds[] = $thumbnail;
                     }
@@ -155,9 +157,6 @@ class ThemeSelectorRenderer extends YesWikiController
             } elseif ($imgextension == '.png') {
                 $backgrounds[] = $backgroundsdir . '/' . $file;
             }
-        }
-        if ($dir) {
-            closedir($dir);
         }
 
         return $backgrounds;

@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Search\Service\SearchManager;
 
@@ -89,7 +90,7 @@ class BazarListService
             );
             foreach ($image_names as $image_name) {
                 $default_image_filename = "defaultimage{$id}_{$image_name}.jpg";
-                if (file_exists($basePath . $default_image_filename)) {
+                if ($this->container->get(Storage::class)->exists($basePath . $default_image_filename)) {
                     $image_key = 'image' . $image_name;
                     foreach ($entries as $key => $entry) {
                         if (array_key_exists($image_key, $entry) && ($entry[$image_key] == null)) {

@@ -8,6 +8,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Exception\StorageException;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -72,7 +73,8 @@ class ThemeManager implements EventSubscriberInterface
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         TemplateHelperService $utils,
-        Storage $storage
+        Storage $storage,
+        private readonly ProgramFiles $programFiles,
     ) {
         $this->container = $container;
         $this->errorMessage = '';
@@ -270,7 +272,7 @@ class ThemeManager implements EventSubscriberInterface
         $this->templates = [];
 
         if (is_dir(YESWIKI_PROGRAM_DIR . '/themes')) {
-            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles(YESWIKI_PROGRAM_DIR . '/themes', false));
+            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes', false));
         }
         if ($this->storage->directoryExists('custom/themes')) {
             $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes', true));
@@ -318,10 +320,12 @@ class ThemeManager implements EventSubscriberInterface
             return false;
         }
         $fromInstance = !$this->useFallbackTheme && $this->storage->exists('custom/' . $filePath);
-        $filePath = $fromInstance ? 'custom/' . $filePath : YESWIKI_PROGRAM_DIR . '/' . $filePath;
 
-        $fileContent = $fromInstance ? $this->storage->read($filePath) : file_get_contents($filePath);
-        if ($fileContent === false) {
+        // Two trees, two services, and the path stays relative to whichever one answers: a wiki's
+        // own copy is Instance data and may be in a bucket, the shipped one is code and is not.
+        $fileContent = $fromInstance ? $this->storage->read('custom/' . $filePath) : $this->programFiles->read($filePath);
+        $filePath = $fromInstance ? 'custom/' . $filePath : $this->programFiles->path($filePath);
+        if ($fileContent === '') {
             $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_ERROR_GETTING_FILE') . $filePath,

@@ -4,6 +4,7 @@ use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\ActionCallRewriter;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
@@ -81,8 +82,14 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
         $pattern = '/(\{\{\s*(' . $alternation . ')\b)|(\baction\s*\(\s*[\'"](' . $alternation . ')\b)/i';
 
         $found = [];
+        // A one-shot diagnostic over the deployment as it stands on disk, so it reads the local
+        // filesystem rather than Storage: `themes/` and `extensions/` are the Program's, and the
+        // point is to tell the operator which files they still have to edit by hand. On a wiki
+        // whose `custom/` is in a bucket this sees the Program half only, which is a limit of the
+        // warning rather than of the migration.
+        $localFiles = $this->getService(LocalFiles::class);
         foreach (['themes', 'custom', 'extensions'] as $dir) {
-            if (!is_dir($dir)) {
+            if (!$localFiles->isDirectory($dir)) {
                 continue;
             }
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
@@ -90,7 +97,7 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
                 if (!$file->isFile() || !in_array($file->getExtension(), ['twig', 'html', 'php'], true)) {
                     continue;
                 }
-                if (preg_match($pattern, (string)@file_get_contents($file->getPathname())) === 1) {
+                if (preg_match($pattern, $localFiles->read($file->getPathname())) === 1) {
                     $found[] = $file->getPathname();
                 }
             }
@@ -110,12 +117,13 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
     /** The other silent upgrade failure: extensions left in `tools/`. */
     private function reportLeftoverToolsDirectory(AdministrativeLogService $log): void
     {
-        if (!is_dir('tools')) {
+        $localFiles = $this->getService(LocalFiles::class);
+        if (!$localFiles->isDirectory('tools')) {
             return;
         }
         $entries = array_values(array_filter(
-            (array)scandir('tools'),
-            fn ($entry) => !in_array($entry, ['.', '..'], true) && is_dir('tools/' . $entry)
+            $localFiles->entriesIn('tools'),
+            fn ($entry) => $localFiles->isDirectory('tools/' . $entry)
         ));
         if ($entries === []) {
             return;

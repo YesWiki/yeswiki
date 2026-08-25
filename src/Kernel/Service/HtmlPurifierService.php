@@ -5,6 +5,8 @@ namespace YesWiki\Kernel\Service;
 use enshrined\svgSanitize\Sanitizer;
 use HTMLPurifier;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Files\Service\Storage;
 
 class HtmlPurifierService
 {
@@ -14,8 +16,11 @@ class HtmlPurifierService
     protected ?Sanitizer $sanitizer;
     private ?\HTMLPurifier $purifier;
 
-    public function __construct(ParameterBagInterface $params)
-    {
+    public function __construct(
+        ParameterBagInterface $params,
+        private readonly Storage $storage,
+        private readonly LocalFiles $localFiles,
+    ) {
         $this->params = $params;
         $this->purifier = null;
         $this->sanitizer = null;
@@ -36,10 +41,12 @@ class HtmlPurifierService
                 '_top',
             ]);
 
-            if (!is_dir(self::HTMLPURIFIER_CACHE_FOLDER)) {
-                mkdir(self::HTMLPURIFIER_CACHE_FOLDER, 0777, true);
-            }
-            $config->set('Cache.SerializerPath', realpath(self::HTMLPURIFIER_CACHE_FOLDER));
+            // HTMLPurifier writes its serialised definitions itself, with PHP's own filesystem
+            // functions, so it needs a real directory rather than a Storage path. That is why
+            // `cache/` is Runtime and not Public (ADR-0022): a bucket would be a cache it cannot
+            // write to.
+            $this->storage->makeDirectory(self::HTMLPURIFIER_CACHE_FOLDER);
+            $config->set('Cache.SerializerPath', $this->localFiles->realPath($this->storage->absolutePath(self::HTMLPURIFIER_CACHE_FOLDER)));
 
             $safeIframeRegexp = $this->params->get('htmlPurifierSafeIframeRegexp');
             if (!empty($safeIframeRegexp)) {
@@ -83,14 +90,17 @@ class HtmlPurifierService
      */
     public function cleanFile(string $filename, string $extension)
     {
-        if (!file_exists($filename)) {
+        // $filename is a leased local path: every caller comes through
+        // `Storage::withLocalTarget()`, because HTMLPurifier::cleanFile wants a filename rather
+        // than a stream (ADR-0022 names it among the four libraries that do).
+        if (!$this->localFiles->isFile($filename)) {
             return false;
         }
         if (!in_array($extension, ['svg', 'html', 'htm'])) {
             return true;
         }
-        $content = file_get_contents($filename);
-        if ($content === false) {
+        $content = $this->localFiles->read($filename);
+        if ($content === '') {
             return false;
         }
 
@@ -99,6 +109,6 @@ class HtmlPurifierService
             return false;
         }
 
-        return file_put_contents($filename, $cleaned);
+        return $this->localFiles->write($filename, $cleaned) ? \strlen($cleaned) : false;
     }
 }

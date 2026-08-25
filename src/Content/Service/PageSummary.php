@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /** A page's title and its first picture, for the cards `{{filtertags}}` and friends draw. */
@@ -88,13 +89,13 @@ class PageSummary
     /** A resized `<img>` for a file already on disk, or '' when it cannot be produced. */
     private function thumbnail(string $fileName, string $description, string $class): string
     {
-        if ($fileName === '' || !file_exists($fileName)) {
+        if ($fileName === '' || !$this->services->get(Storage::class)->exists($fileName)) {
             return '';
         }
 
         $resizer = $this->services->get(ImageResizer::class);
         $thumbnail = $resizer->resizedFilename($fileName, '300', '225', 'fit');
-        if (!file_exists($thumbnail) && $resizer->resize($fileName, $thumbnail, 300, 225) !== $thumbnail) {
+        if (!$this->services->get(Storage::class)->exists($thumbnail) && $resizer->resize($fileName, $thumbnail, 300, 225) !== $thumbnail) {
             $thumbnail = $fileName;
         }
 

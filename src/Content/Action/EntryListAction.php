@@ -23,6 +23,7 @@ use YesWiki\Content\Service\ListIndex;
 use YesWiki\Content\Service\TemplateDataFactory;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Files\Service\AttachedFilePaths;
+use YesWiki\Files\Service\Storage;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Component\Category;
@@ -320,7 +321,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
 
         $paths = $this->getService(AttachedFilePaths::class);
         $inUploads = rtrim($paths->uploadPath(), '/') . '/' . $value;
-        if (file_exists($inUploads)) {
+        if ($this->getService(Storage::class)->exists($inUploads)) {
             return $inUploads;
         }
 
@@ -1046,7 +1047,7 @@ class EntryListAction extends YesWikiAction implements AliasesPerformable, Regis
     private function customTemplateComponents(): array
     {
         $components = [];
-        foreach (glob('custom/templates/bazar/*.twig') ?: [] as $path) {
+        foreach ($this->getService(Storage::class)->glob('custom/templates/bazar/*.twig') as $path) {
             $file = str_replace('custom/templates/bazar/', '', $path);
             if (str_starts_with($file, 'fiche')) {
                 continue;

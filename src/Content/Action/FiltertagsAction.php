@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -56,7 +57,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         }
 
         $template = $this->getService(PerformableArguments::class)->get('template');
-        if (empty($template) || !file_exists('templates/' . $template)) {
+        if (empty($template) || !$this->getService(ProgramFiles::class)->isFile('templates/' . $template)) {
             $template = 'pages_grid_filter.twig';
         }
 

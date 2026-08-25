@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 
@@ -23,6 +24,12 @@ class DbCommand extends Command
         $this->consoleService = $services->get(ConsoleService::class);
         $this->params = $services->get(ParameterBagInterface::class);
         $this->services = $services;
+    }
+
+    /** Resolved rather than injected: `src/commands/console` builds commands with the container alone. */
+    private function localFiles(): LocalFiles
+    {
+        return $this->services->get(LocalFiles::class);
     }
 
     protected function configure()
@@ -111,7 +118,7 @@ class DbCommand extends Command
      */
     private function export(OutputInterface $output, string $filepath): int
     {
-        $realFilePath = realpath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
+        $realFilePath = $this->localFiles()->realPath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
         [
             'hostArg' => $hostArg,
             'databasename' => $databasename,
@@ -140,7 +147,7 @@ class DbCommand extends Command
             );
             $err = $this->getErr($results);
             try {
-                $fileContent = file_get_contents($realFilePath);
+                $fileContent = $this->localFiles()->read($realFilePath);
             } catch (\Throwable $th) {
                 $fileContent = '';
             }

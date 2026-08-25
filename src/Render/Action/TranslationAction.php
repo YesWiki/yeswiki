@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -39,7 +40,7 @@ class TranslationAction extends YesWikiAction implements RegisteredAction
 
         $flagfile = 'styles/lang/flags/' . $destination . '.png';
 
-        if (!file_exists($flagfile)) {
+        if (!$this->getService(ProgramFiles::class)->exists($flagfile)) {
             $img = $destination;
         } else {
             $img = '<img loading="lazy" src="' . $flagfile . '" title="' . $destination . '" alt="' . $destination . ' language">';
