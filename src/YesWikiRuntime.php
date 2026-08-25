@@ -35,6 +35,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Action\LoginAction;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -54,6 +55,8 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Search\Service\SearchIndexer;
 
@@ -466,7 +469,7 @@ class YesWikiRuntime
                 $request->attributes->add($attributes);
                 $response = $this->handleWithHttpKernel($request);
             } else {
-                $response = new Response('Not enough access rights', Response::HTTP_UNAUTHORIZED);
+                $response = $this->accessRefused($context->getPathInfo());
             }
         } catch (ResourceNotFoundException $exception) {
             $response = new Response('', Response::HTTP_NOT_FOUND);
@@ -479,6 +482,41 @@ class YesWikiRuntime
             $this->foldRawOutputInto($response, $rawOutput);
         }
         $response->send();
+    }
+
+    /**
+     * A routed screen refusing whoever asked for it.
+     *
+     * `/admin/*` answered a signed-out visitor with the words "Not enough access rights" on a blank
+     * page: no chrome, no way in, and no clue that signing in was the answer. A visitor with no
+     * session is sent to the sign-in screen carrying where they were going, so signing in takes
+     * them there. Somebody already signed in is told they may not, because offering them a sign-in
+     * form for an account they are already using explains nothing.
+     *
+     * `/api/*` keeps the bare 401. A client asking for JSON wants a status code, not a page.
+     */
+    private function accessRefused(string $path): Response
+    {
+        $route = ltrim($path, '/');
+        if ($route === 'api' || str_starts_with($route, 'api/')) {
+            return new Response('Not enough access rights', Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($this->service(AuthenticationService::class)->getLoggedUser()) {
+            return new Response(
+                $this->service(TemplateEngine::class)->renderFullPage('@core/alert-message-with-back.twig', [
+                    'type' => 'danger',
+                    'message' => _t('ERROR_NO_ACCESS'),
+                ]),
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        return new Response('', Response::HTTP_FOUND, [
+            'Location' => $this->service(UrlFormatter::class)->href('', 'user', [
+                LoginAction::RETURN_PARAM => WikiUrls::absoluteUrl(),
+            ], false),
+        ]);
     }
 
     /** Fold whatever a controller echoed straight to the output buffer into the response body. */
