@@ -6,7 +6,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
-use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

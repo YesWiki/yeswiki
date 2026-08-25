@@ -126,6 +126,25 @@ class EntryDisplay
     }
 
     /**
+     * One entry rendered whole, or nothing at all.
+     *
+     * The difference from renderEntry() is what a failure means to the caller. A page that renders
+     * an entry wants to see the error. Something deriving text *about* an entry -- a meta
+     * description, a summary, a search excerpt -- does not: an alert box stripped of its tags
+     * would become the description, which is worse than having none.
+     *
+     * @param mixed $entryId the entry, by tag or already loaded
+     */
+    public function renderEntryOrNothing($entryId): string
+    {
+        try {
+            return (string)$this->services->get(EntryController::class)->view($entryId, '', 0);
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
+    /**
      * Every form and every list this wiki has, by name, for a picker to offer.
      *
      * @return array{lists: array<mixed>, forms: array<mixed>}

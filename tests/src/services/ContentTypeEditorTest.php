@@ -67,7 +67,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
         $_POST = [];
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
 
-        return $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
+        return $wiki->services->get(\YesWiki\Render\Service\Performer::class)->run('edit', 'handler', []);
     }
 
     public function testTheResolverAnswersWithEachRowsOwnForm(): void
@@ -130,7 +130,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
             ];
             $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
             try {
-                $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
+                $wiki->services->get(\YesWiki\Render\Service\Performer::class)->run('edit', 'handler', []);
             } catch (ExitException $e) {
             }
 

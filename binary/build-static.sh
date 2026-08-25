@@ -4,13 +4,18 @@ set -euo pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 FRANKENPHP_VERSION="${FRANKENPHP_VERSION:-1.12.7}"
-PHP_VERSION="${PHP_VERSION:-8.4}"
+# Pinned to a patch, not a minor. `spc download --with-php=8.4` resolves to whatever 8.4.x is
+# current on the day, so a minor here means two builds of the same tag ship two interpreters.
+PHP_VERSION="${PHP_VERSION:-8.4.24}"
 TARGETARCH="${TARGETARCH:-$(uname -m)}"
 COMPRESS="${COMPRESS:-1}"
 DEBUG_SYMBOLS="${DEBUG_SYMBOLS:-}"
 OUTPUT="${OUTPUT:-$repo/binary/dist}"
 FRANKENPHP_SRC="${FRANKENPHP_SRC:-$repo/binary/.frankenphp}"
 BUILD_PROXY="${BUILD_PROXY:-${HTTPS_PROXY:-${https_proxy:-}}}"
+
+# shellcheck source=binary/build-manifest.sh
+. "$(dirname "${BASH_SOURCE[0]}")/build-manifest.sh"
 
 # Extensions PHP always compiles in, which static-php-cli therefore does not name.
 ALWAYS_COMPILED_IN="hash json pcre"
@@ -89,6 +94,9 @@ main() {
     printf 'downloads go through %s\n' "${BUILD_PROXY:-no proxy}"
 
     "$repo/binary/build-program.sh" >/dev/null
+    write_build_manifest "$repo" "$FRANKENPHP_VERSION" "$PHP_VERSION" "$TARGETARCH" \
+        "$extensions" "$EXTENSION_LIBS" "${CADDY_MODULES[*]}" "$COMPRESS" "static-musl" \
+        > "$repo/binary/program/BUILD.json"
 
     if [ ! -d "$FRANKENPHP_SRC/.git" ]; then
         rm -rf "$FRANKENPHP_SRC"
@@ -141,8 +149,15 @@ main() {
     docker rm "$container" >/dev/null
 
     chmod +x "$OUTPUT/yeswiki-linux-${TARGETARCH}"
+
+    # The same manifest beside the artefact, plus what only exists once it is built. This is what
+    # the repository index serves and what a field report can be checked against.
+stamp_build_manifest "$repo/binary/program/BUILD.json" "$OUTPUT/yeswiki-linux-${TARGETARCH}" \
+        > "$OUTPUT/yeswiki-linux-${TARGETARCH}.build.json"
+
     printf 'built %s\n' "$OUTPUT/yeswiki-linux-${TARGETARCH}"
     ls -lh "$OUTPUT/yeswiki-linux-${TARGETARCH}"
+    cat "$OUTPUT/yeswiki-linux-${TARGETARCH}.build.json"
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then

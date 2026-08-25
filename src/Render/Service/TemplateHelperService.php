@@ -4,8 +4,8 @@ namespace YesWiki\Render\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Files\Service\ImageResizer;
@@ -408,7 +408,7 @@ class TemplateHelperService
                 }
             }
             if ($desc == '') {
-                $desc = $this->container->get(EntryController::class)->view($entry, '', 0);
+                $desc = $this->container->get(EntryDisplay::class)->renderEntryOrNothing($entry);
             }
         }
 

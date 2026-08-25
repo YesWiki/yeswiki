@@ -4,12 +4,12 @@ namespace YesWiki\Content\Controller;
 
 use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Field\EnumField;
+use YesWiki\Content\Service\ContentNotifier;
 use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -181,7 +181,7 @@ class ListController extends YesWikiController
         $this->listManager->delete($id);
 
         if ($this->getService(RuntimeConfig::class)['BAZ_ENVOI_MAIL_ADMIN']) {
-            $this->getService(Mailer::class)->notifyAdminsListDeleted($id);
+            $this->getService(ContentNotifier::class)->notifyAdminsListDeleted($id);
         }
 
         $this->getService(Redirector::class)->redirect(

@@ -43,7 +43,7 @@ class PageonlyindexActionTest extends YesWikiTestCase
         );
 
         $wiki->services->get(PageContext::class)->assignPage($pageManager->getOne(self::PAGE_TAG));
-        $html = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)
+        $html = $wiki->services->get(\YesWiki\Render\Service\Performer::class)
             ->run('pageonlyindex', 'action', []);
 
         $this->assertStringContainsString(self::PAGE_TAG, $html, 'a page must appear in the page-only index');

@@ -4,106 +4,94 @@ namespace YesWiki\Test\Kernel\Database;
 
 use PHPUnit\Framework\TestCase;
 
-/** A ratchet on `DbService::escape()`: the count may fall, never rise. */
+/**
+ * `DbService::escape()` builds SQL by string interpolation, and new code does not get to.
+ *
+ * This began as a ratchet with a per-file ceiling and a running total, which is what a burn-down
+ * needs. The burn-down is over: 99 call sites became 60, and all but one of the 60 are in
+ * migrations that have already run on every wiki and will never be edited again. Counting them
+ * every run was maintaining a number that could only change by hand.
+ *
+ * What is left is a rule with two named exemptions, and it is a stronger statement than the
+ * ceiling was: not "no more than six here", but "not at all, except where quoting is the job".
+ */
 class EscapeRatchetTest extends TestCase
 {
     private const SRC = __DIR__ . '/../../../../src';
 
     /**
-     * Every file that still builds SQL with escape(), and how many calls it may have.
+     * The two places that may still interpolate, and why.
      *
-     * @var array<string, int>
+     * `SqlDumper` is not a leftover and never will be: it writes `INSERT` statements into a text
+     * file, so there is no query to bind a value to. Quoting a literal into SQL text *is* what it
+     * does.
+     *
+     * Migrations are frozen history. Each of these has already run on every wiki that will ever
+     * run it, and editing one to bind its values changes nothing anybody executes. A migration
+     * written from today binds like everything else, which is why this is a list of the ones that
+     * exist rather than a wildcard on the directory.
+     *
+     * @var list<string>
      */
-    private const CEILING = [
-        'Kernel/Database/SqlDumper.php' => 1,
-        'migrations/00000000000002_PageTypeAndParentColumns.php' => 6,
-        'migrations/20240425000000_CalcFieldToString.php' => 2,
-        'migrations/20240425000000_CheckSQLTablesThenFixThem.php' => 1,
-        'migrations/20240425153022_CleanBase64.php' => 3,
-        'migrations/20240425172243_CleanOldCartoGoogle.php' => 6,
-        'migrations/20251012095130_RemoveLoginTplTemplate.php' => 1,
-        'migrations/20260203091701_BazarChangeModelForGeolocation.php' => 4,
-        'migrations/20260727000000_ConvertFormTemplatesToJson.php' => 3,
-        'migrations/20260727100000_RenameFormBodyKeys.php' => 3,
-        'migrations/20260727110000_ExtractFormPropertiesFromTemplate.php' => 3,
-        'migrations/20260727120000_RenameEntryBodyKeys.php' => 3,
-        'migrations/20260730160000_FileAttributesIntoBody.php' => 4,
-        'migrations/20260801000000_RenameContentOffReservedTags.php' => 7,
-        'migrations/20260802140000_RenameContentOffSearchTag.php' => 6,
-        'migrations/20260803120000_RenameContentOffDashboardTags.php' => 6,
-        'migrations/20260806110000_LookWikiIsRetired.php' => 1,
+    private const ALLOWED = [
+        'Kernel/Database/SqlDumper.php',
+        'migrations/00000000000002_PageTypeAndParentColumns.php',
+        'migrations/20240425000000_CalcFieldToString.php',
+        'migrations/20240425000000_CheckSQLTablesThenFixThem.php',
+        'migrations/20240425153022_CleanBase64.php',
+        'migrations/20240425172243_CleanOldCartoGoogle.php',
+        'migrations/20251012095130_RemoveLoginTplTemplate.php',
+        'migrations/20260203091701_BazarChangeModelForGeolocation.php',
+        'migrations/20260727000000_ConvertFormTemplatesToJson.php',
+        'migrations/20260727100000_RenameFormBodyKeys.php',
+        'migrations/20260727110000_ExtractFormPropertiesFromTemplate.php',
+        'migrations/20260727120000_RenameEntryBodyKeys.php',
+        'migrations/20260730160000_FileAttributesIntoBody.php',
+        'migrations/20260801000000_RenameContentOffReservedTags.php',
+        'migrations/20260802140000_RenameContentOffSearchTag.php',
+        'migrations/20260803120000_RenameContentOffDashboardTags.php',
+        'migrations/20260806110000_LookWikiIsRetired.php',
     ];
 
-    /** Lower this when you convert a call site. */
-    private const TOTAL = 60;
+    public function testNothingOutsideTheTwoExemptionsBuildsSqlByInterpolation(): void
+    {
+        $offenders = array_values(array_diff($this->filesThatInterpolate(), self::ALLOWED));
+
+        $this->assertSame([], $offenders, "These build SQL with escape(), and nothing new may.\n"
+            . "Pass the value instead: query(\$sql, [\$value]) or prepare(\$sql). SearchIndexer is a converted file.\n"
+            . 'A new migration binds like anything else -- the exempt ones are exempt because they have already run.');
+    }
+
+    public function testAnExemptionThatIsNoLongerUsedIsRemoved(): void
+    {
+        $stale = array_values(array_diff(self::ALLOWED, $this->filesThatInterpolate()));
+
+        $this->assertSame([], $stale, 'These no longer call escape(), so they are not exemptions any more. '
+            . 'Delete them from ALLOWED and the rule gets stricter for free.');
+    }
 
     /**
-     * @return array<string, int> relative path => number of ->escape( calls
+     * @return list<string> paths relative to src/, sorted
      */
-    private function currentCounts(): array
+    private function filesThatInterpolate(): array
     {
-        $counts = [];
-        $it = new \RecursiveIteratorIterator(
+        $found = [];
+        $files = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(self::SRC, \FilesystemIterator::SKIP_DOTS)
         );
-        foreach ($it as $file) {
+
+        foreach ($files as $file) {
             if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
-            $n = substr_count((string)file_get_contents($file->getPathname()), '->escape(');
-            if ($n > 0) {
-                $rel = str_replace('\\', '/', substr($file->getPathname(), strlen(self::SRC) + 1));
-                $counts[$rel] = $n;
+            if (!str_contains((string)file_get_contents($file->getPathname()), '->escape(')) {
+                continue;
             }
-        }
-        ksort($counts);
-
-        return $counts;
-    }
-
-    public function testNoFileGainsAnEscapeCall(): void
-    {
-        $grown = [];
-        foreach ($this->currentCounts() as $file => $count) {
-            $allowed = self::CEILING[$file] ?? 0;
-            if ($count > $allowed) {
-                $grown[] = "{$file}: {$count} > {$allowed}";
-            }
+            $found[] = str_replace('\\', '/', substr($file->getPathname(), \strlen(self::SRC) + 1));
         }
 
-        $this->assertSame([], $grown, "These files build more SQL by string interpolation than they used to.\n"
-            . 'Pass the value instead: query($sql, [$value]). See SearchIndexer for a converted file.');
-    }
+        sort($found);
 
-    public function testAFileWithNoneDoesNotAcquireAny(): void
-    {
-        $new = array_diff(array_keys($this->currentCounts()), array_keys(self::CEILING));
-
-        $this->assertSame([], array_values($new), "New code must not use escape() to build SQL.\n"
-            . 'Use query($sql, $params) / prepare($sql) -- both take values separately.');
-    }
-
-    /** The total, asserted exactly so that lowering it is part of converting a call site. */
-    public function testTheTotalMatchesWhatIsRecorded(): void
-    {
-        $total = array_sum($this->currentCounts());
-
-        $this->assertSame(
-            self::TOTAL,
-            $total,
-            $total < self::TOTAL
-                ? "Good -- {$total} escape() calls left, down from " . self::TOTAL . '. Lower TOTAL (and the '
-                    . "file's entry in CEILING) to match, so the list keeps telling the truth."
-                : "escape() usage grew to {$total}."
-        );
-    }
-
-    /** A file that has been fully converted should leave the list, not sit on it at zero. */
-    public function testTheListHasNoStaleEntries(): void
-    {
-        $stale = array_diff(array_keys(self::CEILING), array_keys($this->currentCounts()));
-
-        $this->assertSame([], array_values($stale), 'These files no longer call escape() at all -- '
-            . 'delete them from CEILING.');
+        return $found;
     }
 }

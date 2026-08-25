@@ -2,8 +2,6 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Kernel\Service\Performer;
-
 /**
  * Executes an "action" module from its page syntax — the string between `{{` and `}}` (historic Wiki::Action()): parses the attribute string, keeps a log of every action executed, and hands off to Performer.
  */

@@ -12,9 +12,9 @@ use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\TemplateEngine;
 
 class EditIframeHandler extends YesWikiHandler implements RegisteredHandler

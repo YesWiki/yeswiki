@@ -6,8 +6,8 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RequestScope;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

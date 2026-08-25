@@ -147,7 +147,8 @@ class ContactApiController extends YesWikiController
                     $messageTxt = $messageHtml = 'dummy message';
                 }
             }
-            if ($this->getService(Mailer::class)->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml)) {
+            $mailer = $this->getService(Mailer::class);
+            if ($mailer->send($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml)) {
                 if (empty($type) || $type == 'contact' || $type == 'mail') {
                     $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
                 } elseif ($type == 'subscribe') {
@@ -158,6 +159,12 @@ class ContactApiController extends YesWikiController
             } else {
                 $message['class'] = 'danger';
                 $message['message'] = _t('CONTACT_MESSAGE_NOT_SENT');
+                // Mailer used to print the relay's complaint into the page when an admin was
+                // looking, which put an Identity lookup inside the transport. The decision belongs
+                // here, where there is a response to put it in and someone who can act on it.
+                if ($this->getService(AclService::class)->isAdmin() && $mailer->lastError() !== '') {
+                    $message['message'] .= ' — ' . $mailer->lastError();
+                }
             }
         }
 

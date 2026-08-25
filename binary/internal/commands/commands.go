@@ -175,9 +175,48 @@ func Serve(options Options, server Server) error {
 	if !program.Configured(instance) {
 		return fmt.Errorf("%s is not a wiki yet: run `yeswiki setup` there first", instance)
 	}
+
+	// The third refusal: a wiki that was last migrated against another Program has a schema that
+	// may be behind this code, and serving it half-migrated is worse than not serving it.
+	if pointed, found := program.NamedBy(instance); found && pointed != programDir {
+		return fmt.Errorf("%s was last migrated against %s and this is %s, so its schema may be behind this code: run `yeswiki migrate` before serving it",
+			instance, filepath.Base(pointed), filepath.Base(programDir))
+	}
+
 	options.say(fmt.Sprintf("serving %s from %s", instance, programDir))
+	pruneAround(options, programDir, named(instance))
 
 	return server.Serve(instance, programDir)
+}
+
+// named is the Program an Instance points at, or nothing.
+func named(instance string) string {
+	pointed, found := program.NamedBy(instance)
+	if !found {
+		return ""
+	}
+
+	return pointed
+}
+
+// pruneAround removes Programs nothing is using, keeping the one about to be served, the ones
+// wikis point at, and one spare for `upgrade --back-to`. It never fails a serve: a Program that
+// could not be removed costs disk, and refusing to serve over it would cost the wiki.
+func pruneAround(options Options, keep ...string) {
+	root, err := program.Root(options.ProgramRoot, options.Env, options.Home)
+	if err != nil {
+		return
+	}
+
+	removed, err := program.Prune(root, keep)
+	if err != nil {
+		options.say("could not prune old programs: " + err.Error())
+
+		return
+	}
+	for _, name := range removed {
+		options.say("pruned " + name)
+	}
 }
 
 // ServeFarm writes the Program if needed and serves every wiki one level under a directory.
@@ -196,6 +235,12 @@ func ServeFarm(options Options, server FarmServer) error {
 	if err != nil {
 		return err
 	}
+
+	keep := []string{programDir}
+	for _, wiki := range wikis {
+		keep = append(keep, named(wiki.Directory))
+	}
+	pruneAround(options, keep...)
 
 	return server.ServeFarm(root, wikis, programDir)
 }

@@ -121,6 +121,7 @@ jobs:
           path: |
             binary/dist/yeswiki-linux-${{ matrix.arch }}
             binary/dist/yeswiki-linux-${{ matrix.arch }}.sha256
+            binary/dist/yeswiki-linux-${{ matrix.arch }}.build.json
           retention-days: 7
 
       - name: Upload release asset
@@ -130,3 +131,24 @@ jobs:
           files: |
             binary/dist/yeswiki-linux-${{ matrix.arch }}
             binary/dist/yeswiki-linux-${{ matrix.arch }}.sha256
+            binary/dist/yeswiki-linux-${{ matrix.arch }}.build.json
+
+      # The signing key is held offline and is deliberately not a repository secret: a key CI can
+      # read is a key anyone with write access to this workflow can read, and this one owns every
+      # installed binary (single-binary 05, ADR-0016). CI therefore publishes an unsigned artefact
+      # and the release is not installable until somebody signs it on their own machine.
+      - name: Say what is still owed before this release can be installed
+        run: |
+          {
+            echo "### yeswiki-linux-${{ matrix.arch }} is built and unsigned"
+            echo
+            echo 'No installed binary will accept it until it is signed offline:'
+            echo
+            echo '```'
+            echo "gh release download ${{ github.event.inputs.tag || github.event.release.tag_name }} -p 'yeswiki-linux-${{ matrix.arch }}*'"
+            echo "yeswiki sign --key ~/.yeswiki-signing/yeswiki-release.key yeswiki-linux-${{ matrix.arch }}"
+            echo "gh release upload ${{ github.event.inputs.tag || github.event.release.tag_name }} yeswiki-linux-${{ matrix.arch }}.sig"
+            echo '```'
+            echo
+            echo 'Then build the repository, which picks up the binary, its signature and its checksum.'
+          } >> "$GITHUB_STEP_SUMMARY"

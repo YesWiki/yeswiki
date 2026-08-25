@@ -7,8 +7,8 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\GraphicalElementState;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /** `{{end}}` -- converted from the procedural actions/end.php by ticket 06. */

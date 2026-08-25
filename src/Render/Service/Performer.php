@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Kernel\Service;
+namespace YesWiki\Render\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -10,7 +10,11 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\PerformableEvent;
-use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\ExtensionRegistry;
+use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Kernel\Service\ThrowableFormatter;
 
 /** Runs actions (`{{name}}`) and handlers (`/PageName/name`). */
 class Performer

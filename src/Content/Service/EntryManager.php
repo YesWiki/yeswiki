@@ -20,7 +20,6 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -28,7 +27,6 @@ use YesWiki\Search\Service\SearchManager;
 class EntryManager
 {
     protected ContainerInterface $container;
-    protected Mailer $mailer;
     protected AuthenticationService $authenticationService;
     protected PageManager $pageManager;
     protected TripleStore $tripleStore;
@@ -50,7 +48,6 @@ class EntryManager
 
     public function __construct(
         ContainerInterface $container,
-        Mailer $mailer,
         AuthenticationService $authenticationService,
         PageManager $pageManager,
         TripleStore $tripleStore,
@@ -66,7 +63,6 @@ class EntryManager
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
-        $this->mailer = $mailer;
         $this->authenticationService = $authenticationService;
         $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
@@ -78,6 +74,15 @@ class EntryManager
         $this->searchManager = $searchManager;
         $this->hibernationService = $hibernationService;
         $this->administrativeLogService = $administrativeLogService;
+    }
+
+    /**
+     * Resolved when it is needed rather than injected: the notifier renders an entry through
+     * EntryController, which is built on this, so asking for it in the constructor is a cycle.
+     */
+    private function notifier(): ContentNotifier
+    {
+        return $this->container->get(ContentNotifier::class);
     }
 
     /**
@@ -368,7 +373,7 @@ class EntryManager
         $this->sendMailToNotifiedEmails($sendmail, $data, true);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
-            $this->mailer->notifyAdmins($data, true);
+            $this->notifier()->notifyAdmins($data, true);
         }
 
         $this->announce('entry.created', $form, $data, (bool)$sourceUrl);
@@ -434,7 +439,7 @@ class EntryManager
         $this->sendMailToNotifiedEmails($sendmail, $data, false, $previousData);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
-            $this->mailer->notifyAdmins($data, false);
+            $this->notifier()->notifyAdmins($data, false);
         }
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['tag'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
@@ -856,7 +861,7 @@ class EntryManager
             $emailsFieldnames = array_unique(explode(',', $sendmail));
             foreach ($emailsFieldnames as $emailFieldName) {
                 if (!empty($data[$emailFieldName])) {
-                    $this->mailer->notifyEmail($data[$emailFieldName], $data, $isCreation, $previousEntry);
+                    $this->notifier()->notifyEmail($data[$emailFieldName], $data, $isCreation, $previousEntry);
                 }
             }
         }

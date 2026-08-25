@@ -35,7 +35,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
-        $performer = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class);
+        $performer = $wiki->services->get(\YesWiki\Render\Service\Performer::class);
         $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 
@@ -121,7 +121,7 @@ class PageEditFormFieldsTest extends YesWikiTestCase
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
-        $performer = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class);
+        $performer = $wiki->services->get(\YesWiki\Render\Service\Performer::class);
         $currentRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class);
         $pageContext = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class);
 

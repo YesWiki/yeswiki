@@ -2,6 +2,7 @@
 package yeswiki
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -21,9 +22,10 @@ import (
 
 	"github.com/YesWiki/yeswiki/binary/internal/commands"
 	"github.com/YesWiki/yeswiki/binary/internal/program"
+	"github.com/YesWiki/yeswiki/binary/internal/release"
 )
 
-var wikiCommands = map[string]bool{"setup": true, "serve": true, "upgrade": true, "destroy": true, "unit": true, "version": true, "help": true}
+var wikiCommands = map[string]bool{"setup": true, "serve": true, "upgrade": true, "migrate": true, "sign": true, "destroy": true, "unit": true, "version": true, "help": true}
 
 var firstRegistered *cobra.Command
 
@@ -52,7 +54,11 @@ func hideEverythingButTheWiki() {
 
 	for _, command := range root.Commands() {
 		if command.Name() == "version" {
+			command.Flags().Bool("build", false, "Print what this binary was built from, as JSON")
 			command.RunE = func(cmd *cobra.Command, _ []string) error {
+				if wanted, _ := cmd.Flags().GetBool("build"); wanted {
+					return printBuild(cmd)
+				}
 				fmt.Fprintln(cmd.OutOrStdout(), wikiVersion())
 
 				return nil
@@ -62,6 +68,22 @@ func hideEverythingButTheWiki() {
 			command.Hidden = true
 		}
 	}
+}
+
+// printBuild answers `version --build` with the manifest build-static.sh wrote into the Program.
+func printBuild(cmd *cobra.Command) error {
+	build, stated := BuildInfo()
+	if !stated {
+		return errors.New("this binary carries no build manifest: it was not produced by binary/build-static.sh")
+	}
+
+	encoded, err := json.MarshalIndent(build, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), string(encoded))
+
+	return nil
 }
 
 // displaceCaddysUpgrade replaces Caddy's `upgrade` with the one `yeswiki upgrade` means.
@@ -87,6 +109,18 @@ one and all of them come back together on the next reload. A wiki whose migratio
 fails keeps its door closed and is named, the rest are unaffected, and running this
 again picks up where it stopped.
 
+Before any of that, this binary asks its repository whether a newer one has been
+published, and replaces itself with it: the release is signed with a key whose public
+half is compiled in here, verified offline with no certificate authority involved, and
+a download that does not verify is deleted rather than installed. The new executable
+then does the migrating, because writing the new program means reading it.
+
+A deployment whose program root is not writable does not replace itself. That is
+decided by writing to the directory rather than by sniffing for a container, and the
+refusal names the path -- there, the image or the package owns this binary and
+"yeswiki migrate" is the half that still applies. Use --no-download to skip the
+self-replacement on a machine that upgrades some other way.
+
 Use --back-to <program directory> to point every wiki at a program it was on before.
 Programs are kept by version, so going back is repointing and reloading rather than
 restoring -- but it cannot undo a migration that has already run.`,
@@ -95,10 +129,40 @@ restoring -- but it cannot undo a migration that has already run.`,
 	upgrade.Flags().String("program-root", "", "Where to write the program ("+program.EnvRoot+")")
 	upgrade.Flags().Bool("farm", false, "Upgrade every wiki one level under the directory")
 	upgrade.Flags().String("back-to", "", "Point every wiki at this program directory again, instead of upgrading")
+	upgrade.Flags().Bool("no-download", false, "Do not replace this executable; migrate with the program it already carries")
+	upgrade.Flags().String("repository", "", "Where releases come from (default: the wiki's own repository)")
+	upgrade.Flags().String("channel", releaseChannel, "Which channel of that repository to read")
 	upgrade.RunE = caddycmd.WrapCommandFuncForCobra(runUpgrade)
 
 	root.AddCommand(upgrade)
+
+	// Migration is separable and separately invocable: a container gets its executable from the
+	// image and needs migrations as a job that runs once, rather than something every replica
+	// attempts on boot. There is no migration-on-boot for the same reason.
+	migrate := &cobra.Command{
+		Use:   "migrate [<directory>] [--farm]",
+		Short: "Migrate a wiki, or every wiki in a farm, to this binary's program",
+		Long: `Migrate a wiki, or every wiki in a farm, without replacing this executable.
+
+This is the half of "yeswiki upgrade" that applies to a deployment whose binary comes
+from somewhere else: an image, a distribution package, a read-only mount. Run it once
+after the new executable is in place, as a job rather than on every replica's boot --
+two processes starting together would both try.`,
+		Args: cobra.MaximumNArgs(1),
+	}
+	migrate.Flags().String("program-root", "", "Where to write the program ("+program.EnvRoot+")")
+	migrate.Flags().Bool("farm", false, "Migrate every wiki one level under the directory")
+	migrate.Flags().String("back-to", "", "Point every wiki at this program directory again, instead of migrating")
+	migrate.RunE = caddycmd.WrapCommandFuncForCobra(runMigrate)
+
+	root.AddCommand(migrate)
+
+	root.AddCommand(signCommand())
 }
+
+// releaseChannel is the branch of the repository this binary reads, which is the one it was built
+// from. A binary built on ectoplasme does not silently take a wiki to another line of development.
+const releaseChannel = "ectoplasme"
 
 // engine is what the build stamped into Caddy's version, read before init() replaces it.
 var engine = strings.TrimSpace(caddy.CustomVersion)
@@ -309,6 +373,57 @@ func runServe(flags caddycmd.Flags) (int, error) {
 }
 
 func runUpgrade(flags caddycmd.Flags) (int, error) {
+	directory := ""
+	if arguments := flags.Args(); len(arguments) > 0 {
+		directory = arguments[0]
+	}
+
+	if back := flags.String("back-to"); strings.TrimSpace(back) != "" {
+		return runMigrate(flags)
+	}
+
+	if !flags.Bool("no-download") {
+		client := release.Client{
+			Repository: flags.String("repository"),
+			Channel:    flags.String("channel"),
+		}
+
+		// `migrate`, not `upgrade`: the new executable finishes the job, and asking it to
+		// upgrade would send it looking for a newer release than the one just installed.
+		rest := []string{"migrate"}
+		if directory != "" {
+			rest = append(rest, directory)
+		}
+		if flags.Bool("farm") {
+			rest = append(rest, "--farm")
+		}
+		if root := flags.String("program-root"); root != "" {
+			rest = append(rest, "--program-root", root)
+		}
+
+		handedOver, err := commands.ReplaceAndContinue(options(flags, directory), client, Version, rest)
+		switch {
+		case handedOver && err == nil:
+			// The new binary did the migrating, so there is nothing left to do here.
+			return caddy.ExitCodeSuccess, nil
+		case err == nil:
+			// Already current. Fall through and migrate: an upgrade that finds no new binary
+			// still has wikis to take across.
+		case errors.Is(err, release.ErrReadOnly), errors.Is(err, release.ErrNoKey):
+			// Not a failure: this deployment upgrades another way, and the migration below
+			// is the half that still applies to it.
+			fmt.Fprintln(os.Stderr, err.Error())
+		default:
+			return caddy.ExitCodeFailedStartup, err
+		}
+	}
+
+	return runMigrate(flags)
+}
+
+// runMigrate is the separable half: the program is written and the wikis are taken across, with
+// nothing fetched and nothing replaced.
+func runMigrate(flags caddycmd.Flags) (int, error) {
 	directory := ""
 	if arguments := flags.Args(); len(arguments) > 0 {
 		directory = arguments[0]

@@ -11,7 +11,7 @@ use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\Performer;
 
 class EditActionsAclsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {

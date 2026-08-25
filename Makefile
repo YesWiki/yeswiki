@@ -102,3 +102,12 @@ binary: ## Build the shipped static binary (half an hour; needs Docker)
 
 binary-check: ## Assert a built binary carries every extension composer.json names
 	./binary/check-binary.sh binary/dist/yeswiki-linux-$(shell uname -m)
+
+binary-smoke: ## Setup, serve, fetch, migrate and upgrade a throwaway wiki with the built binary
+	./binary/smoke.sh binary/dist/yeswiki-linux-$(shell uname -m)
+
+test-e2e-binary: ## Run the browser suite against the binary in worker mode, not against php-fpm
+	YESWIKI_TEST_RUNTIME=binary bash tests/e2e/reset.sh
+	YESWIKI_TEST_RUNTIME=binary bash tests/e2e/runtime.sh start
+	YESWIKI_BASE_URL=http://127.0.0.1:8081 yarn run test-e2e-all; \
+		status=$$?; bash tests/e2e/runtime.sh stop; exit $$status

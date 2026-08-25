@@ -19,7 +19,6 @@ use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;

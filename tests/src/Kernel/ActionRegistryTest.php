@@ -3,9 +3,9 @@
 namespace YesWiki\Test\Kernel;
 
 use YesWiki\Kernel\Performable\ActionRegistry;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Action\FaviconAction;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

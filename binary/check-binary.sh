@@ -28,6 +28,42 @@ audited_extensions() {
     ' "$repo/composer.json"
 }
 
+# What the manifest says this binary was built from. Empty for a binary built any other way.
+stated_build() {
+    "$1" version --build 2>/dev/null || true
+}
+
+# A binary that disagrees with its own manifest is worse than one with no manifest: the repository
+# index serves that manifest, so an upgrade would be decided on a claim nothing checked.
+check_against_its_manifest() {
+    local binary="$1" modules="$2" manifest="$3"
+    local disagreements=()
+
+    local statedPhp actualPhp
+    statedPhp="$(php -r '$b = json_decode(file_get_contents("php://stdin"), true); echo $b["php"] ?? "";' <<< "$manifest")"
+    actualPhp="$("$binary" php-cli -r 'echo PHP_VERSION;')"
+    if [ "$statedPhp" != "$actualPhp" ]; then
+        disagreements+=("manifest says php $statedPhp, the binary runs $actualPhp")
+    fi
+
+    local extension
+    for extension in $(php -r '$b = json_decode(file_get_contents("php://stdin"), true); echo implode(" ", $b["extensions"] ?? []);' <<< "$manifest"); do
+        if ! grep -qix -- "$(module_name "$extension")" <<< "$modules"; then
+            disagreements+=("manifest names $extension, which is not loaded")
+        fi
+    done
+
+    if [ ${#disagreements[@]} -gt 0 ]; then
+        printf 'the binary and its manifest disagree:\n' >&2
+        printf '  %s\n' "${disagreements[@]}" >&2
+        exit 1
+    fi
+
+    printf 'and it agrees with the manifest it carries (php %s, %s)\n' \
+        "$actualPhp" \
+        "$(php -r '$b = json_decode(file_get_contents("php://stdin"), true); echo $b["version"] ?? "?", " ", substr($b["commit"] ?? "", 0, 9);' <<< "$manifest")"
+}
+
 main() {
     local binary="${1:?usage: check-binary.sh <binary>}"
     local modules missing=()
@@ -49,6 +85,14 @@ main() {
     fi
 
     printf '\nevery audited extension is compiled in\n'
+
+    local manifest
+    manifest="$(stated_build "$binary")"
+    if [ -z "$manifest" ]; then
+        printf 'no build manifest: this binary did not come from build-static.sh\n' >&2
+        exit 1
+    fi
+    check_against_its_manifest "$binary" "$modules" "$manifest"
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then

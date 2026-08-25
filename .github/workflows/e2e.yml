@@ -1,0 +1,258 @@
+name: Browser suite
+
+# Single-binary 06: the binary is the recommended deployment, and until now CI never ran it.
+#
+# ADR-0015's amendment set this project's precedent and its warning in one paragraph: full-text
+# indexes are built *and exercised* on all three dialects, because phpunit running SQLite only meant
+# the suite exercised a query path no real wiki used, and that is the gap that hid ticket 25's seven
+# defects. Recommending a deployment CI never runs is the same mistake with a different subject.
+#
+# The full matrix is three drivers times two runtimes and one of the runtimes takes half an hour to
+# build, so it does not run on every push. A pull request gets the cheap default; the rest runs
+# nightly and before a release. Whatever is skipped is named in the job summary -- a silent gap
+# reads as coverage.
+
+on:
+  pull_request:
+    branches: [doryphore, doryphore-dev, ectoplasme]
+  push:
+    branches: [ectoplasme]
+  schedule:
+    # Nightly, so the combinations a pull request skips are never more than a day stale.
+    - cron: '0 3 * * *'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run every driver and runtime, not just the default combination'
+        type: boolean
+        default: true
+
+env:
+  YESWIKI_TEST_ROOT: ${{ github.workspace }}
+
+jobs:
+  # What this run decided to cover, said out loud before anything runs.
+  plan:
+    runs-on: ubuntu-26.04
+    outputs:
+      full: ${{ steps.decide.outputs.full }}
+    steps:
+      - id: decide
+        run: |
+          full=false
+          case "${{ github.event_name }}" in
+            schedule|release) full=true ;;
+            workflow_dispatch) full="${{ inputs.full }}" ;;
+          esac
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Browser suite coverage for this run"
+            echo
+            if [ "$full" = "true" ]; then
+              echo 'Running the full matrix: mysql, pgsql and sqlite, under php-fpm and under the binary.'
+            else
+              echo '| driver | runtime | this run |'
+              echo '| --- | --- | --- |'
+              echo '| mysql | fpm | **runs** |'
+              echo '| mysql | binary | **runs** |'
+              echo '| pgsql | fpm | skipped, runs nightly |'
+              echo '| pgsql | binary | skipped, runs nightly |'
+              echo '| sqlite | fpm | skipped, runs nightly |'
+              echo '| sqlite | binary | skipped, runs nightly |'
+              echo
+              echo 'The binary takes about half an hour to build, so a pull request covers one driver'
+              echo 'under both runtimes rather than three drivers under one.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Built once and shared, because building it per matrix leg would be three half-hour builds of
+  # the same artefact.
+  binary:
+    needs: plan
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - run: yarn install --frozen-lockfile
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the static binary
+        env:
+          TARGETARCH: x86_64
+          # Uncompressed: UPX costs minutes and saves disk nobody is short of here.
+          COMPRESS: '0'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./binary/build-static.sh
+
+      - name: Check the binary carries what the manifest names
+        run: ./binary/check-binary.sh binary/dist/yeswiki-linux-x86_64
+
+      - name: Packaging smoke
+        run: ./binary/smoke.sh binary/dist/yeswiki-linux-x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yeswiki-e2e-binary
+          path: binary/dist/yeswiki-linux-x86_64
+          retention-days: 1
+
+  browser:
+    needs: [plan, binary]
+    name: ${{ matrix.driver }} / ${{ matrix.runtime }}
+    runs-on: ubuntu-26.04
+
+    strategy:
+      # Which combination a change breaks is the information this matrix exists to produce, and
+      # fail-fast throws most of it away.
+      fail-fast: false
+      matrix:
+        # Spelled out rather than a product with exclusions: which legs exist and which are
+        # conditional is the thing a reader of this file needs to see at a glance.
+        include:
+          - { driver: mysql,  runtime: fpm }
+          - { driver: mysql,  runtime: binary }
+          - { driver: pgsql,  runtime: fpm,    only-when-full: true }
+          - { driver: pgsql,  runtime: binary, only-when-full: true }
+          - { driver: sqlite, runtime: fpm,    only-when-full: true }
+          - { driver: sqlite, runtime: binary, only-when-full: true }
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: yeswiki_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: yeswiki
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: yeswiki_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U yeswiki -d yeswiki_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Skip the combinations this run does not cover
+        id: covered
+        run: |
+          if [ "${{ matrix.only-when-full }}" = "true" ] && [ "${{ needs.plan.outputs.full }}" != "true" ]; then
+            echo "::notice::${{ matrix.driver }} / ${{ matrix.runtime }} is skipped on this event and runs nightly"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.covered.outputs.run == 'true'
+
+      - uses: shivammathur/setup-php@v2
+        if: steps.covered.outputs.run == 'true'
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, xml, xmlreader, zip
+          tools: composer:v2
+
+      - run: composer install --prefer-dist --no-progress
+        if: steps.covered.outputs.run == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.covered.outputs.run == 'true'
+        with:
+          node-version: '24'
+
+      - run: yarn install --frozen-lockfile
+        if: steps.covered.outputs.run == 'true'
+
+      - run: npx playwright install --with-deps chromium
+        if: steps.covered.outputs.run == 'true'
+
+      - uses: actions/download-artifact@v4
+        if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary'
+        with:
+          name: yeswiki-e2e-binary
+          path: binary/dist
+
+      - name: Make the binary executable
+        if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary'
+        run: chmod +x binary/dist/yeswiki-linux-x86_64
+
+      # php-fpm's stand-in is PHP's built-in server, the same one phpunit.yml uses: the SAPI is the
+      # matrix PHP by construction, which installing a distro php-fpm cannot promise.
+      - name: Start the fpm runtime
+        if: steps.covered.outputs.run == 'true' && matrix.runtime == 'fpm'
+        run: |
+          mkdir -p cache private/backups
+          PHP_CLI_SERVER_WORKERS=4 nohup php -S 127.0.0.1:8080 -t "${{ github.workspace }}" \
+            "${{ github.workspace }}/tests/ci-router.php" > "${{ runner.temp }}/fpm.log" 2>&1 &
+          for _ in $(seq 20); do
+            curl --silent --fail http://127.0.0.1:8080 > /dev/null && exit 0
+            sleep 1
+          done
+          echo "the fpm runtime did not come up"; cat "${{ runner.temp }}/fpm.log"; exit 1
+
+      - name: Install a fresh wiki
+        if: steps.covered.outputs.run == 'true'
+        env:
+          YESWIKI_TEST_DRIVER: ${{ matrix.driver }}
+          YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
+          YESWIKI_TEST_DB_HOST: 127.0.0.1
+          YESWIKI_TEST_DB_USER: ${{ matrix.driver == 'pgsql' && 'yeswiki' || 'root' }}
+          YESWIKI_TEST_DB_PASSWORD: ${{ matrix.driver == 'pgsql' && 'password' || 'root' }}
+          YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
+          YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081/?' || 'http://127.0.0.1:8080/?' }}
+        run: bash tests/e2e/reset.sh
+
+      - name: Start the runtime under test
+        if: steps.covered.outputs.run == 'true'
+        env:
+          YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
+          YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
+          YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
+        run: bash tests/e2e/runtime.sh start
+
+      - name: Run the browser suite
+        if: steps.covered.outputs.run == 'true'
+        env:
+          YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081' || 'http://127.0.0.1:8080' }}
+        run: yarn run test-e2e-all
+
+      - name: Dump the runtime log
+        if: failure() && steps.covered.outputs.run == 'true'
+        run: |
+          tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
+          tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: failure() && steps.covered.outputs.run == 'true'
+        with:
+          name: playwright-report-${{ matrix.driver }}-${{ matrix.runtime }}
+          path: playwright-report
+          retention-days: 7

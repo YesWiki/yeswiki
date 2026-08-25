@@ -6,134 +6,38 @@ use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use PHPMailer\PHPMailer\PHPMailer;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Content\Controller\EntryController;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\UserManager;
-use YesWiki\Render\Service\TemplateEngine;
 
+/**
+ * Sending an email, and nothing about what is in it.
+ *
+ * Composing a notification -- rendering an entry, looking a user up, picking a template -- moved
+ * to `Content\Service\ContentNotifier`, which is where every caller of it already was. What was
+ * left here is the transport: PHPMailer, the configured relay, the sender, and batching. That is
+ * the whole reason a Kernel service can now be one (ADR-0013).
+ */
 class Mailer
 {
     /** How many recipients one message carries before the next batch. */
     private const BATCH_SIZE = 10;
 
     protected ContainerInterface $container;
-    protected AuthenticationService $authenticationService;
-    protected DbService $dbService;
     protected ParameterBagInterface $params;
-    protected TemplateEngine $templateEngine;
-    protected UserManager $userManager;
+
+    /** Why the last send failed, for a caller that has somewhere to show it. */
+    private string $lastError = '';
 
     public function __construct(
         ContainerInterface $container,
-        AuthenticationService $authenticationService,
-        DbService $dbService,
-        ParameterBagInterface $params,
-        TemplateEngine $templateEngine,
-        UserManager $userManager
+        ParameterBagInterface $params
     ) {
         $this->container = $container;
-        $this->authenticationService = $authenticationService;
-        $this->dbService = $dbService;
         $this->params = $params;
-        $this->templateEngine = $templateEngine;
-        $this->userManager = $userManager;
     }
 
-    /**
-     * @param array<string, mixed> $data the entry that was just written
-     * @param bool                 $new  whether it is a creation rather than an edit
-     */
-    public function notifyAdmins($data, $new): void
+    /** The PHPMailer message from the last failed send, or nothing if the last one worked. */
+    public function lastError(): string
     {
-        $admins = $this->getAdminsList();
-
-        $baseUrl = $this->getBaseUrl();
-        $sujet = $this->templateEngine->render(
-            '@core/notify-admins-email-subject.twig',
-            [
-                'entry' => $data,
-                'baseUrl' => $baseUrl,
-                'new' => $new,
-            ]
-        );
-        $text = $this->templateEngine->render(
-            '@core/notify-admins-email-text.twig',
-            [
-                'entry' => $data,
-                'baseUrl' => $baseUrl,
-            ]
-        );
-        $userName = $admins[0]['name'] ?? null;
-        $html = $this->templateEngine->render(
-            '@core/notify-admins-email-html.twig',
-            [
-                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
-                'entry' => $data,
-                'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
-                'baseUrl' => $baseUrl,
-            ]
-        );
-
-        foreach ($admins as $admin) {
-            $this->sendEmailFromAdmin($admin['email'], $sujet, $text, $html);
-        }
-    }
-
-    /**
-     * @param string $id the tag of the list that was deleted
-     */
-    public function notifyAdminsListDeleted($id): void
-    {
-        $baseUrl = $this->getBaseUrl();
-        $sujet = $this->templateEngine->render(
-            '@core/notify-admins-list-deleted-email-subject.twig',
-            [
-                'baseUrl' => $baseUrl,
-                'listId' => $id,
-            ]
-        );
-        $text = $this->templateEngine->render(
-            '@core/notify-admins-list-deleted-email-text.twig',
-            [
-                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
-                'userName' => $this->authenticationService->getLoggedUserName(),
-            ]
-        );
-        $html = $this->templateEngine->render(
-            '@core/notify-admins-list-deleted-email-html.twig',
-            [
-                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
-                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
-                'userName' => $this->authenticationService->getLoggedUserName(),
-                'baseUrl' => $baseUrl,
-            ]
-        );
-
-        foreach ($this->getAdminsList() as $admin) {
-            $this->sendEmailFromAdmin($admin['email'], $sujet, $text, $html);
-        }
-    }
-
-    /**
-     * @return list<\YesWiki\Identity\Entity\User>
-     */
-    private function getAdminsList(): array
-    {
-        $adminsAcl = $this->container->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
-        $admins = [];
-        foreach (explode("\n", $adminsAcl) as $line) {
-            $line = trim($line);
-            if (!empty($line)
-                && substr($line, 0, 1) != '#'
-                && substr($line, 0, 1) != '@') {
-                $adminUser = $this->userManager->getOneByName($line);
-                if (!empty($adminUser)) {
-                    $admins[] = $adminUser;
-                }
-            }
-        }
-
-        return $admins;
+        return $this->lastError;
     }
 
     public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = ''): void
@@ -160,6 +64,7 @@ class Mailer
         $mail = new PHPMailer(true);
 
         try {
+            $this->lastError = '';
             $mail->set('CharSet', 'utf-8');
             $this->configureTransport($mail);
             $this->configureSender($mail, $mailSender, $nameSender);
@@ -191,9 +96,11 @@ class Mailer
 
             return true;
         } catch (PHPMailerException $e) {
-            if ($this->container->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) {
-                echo $e->errorMessage();
-            }
+            // Recorded rather than echoed. It used to ask AclService whether the visitor was an
+            // admin and print the error into the page, which put an Identity lookup and a
+            // rendering decision inside the transport. A caller with somewhere to show it asks
+            // lastError(); one with nowhere gets false, which is what it could act on anyway.
+            $this->lastError = $e->errorMessage();
 
             return false;
         }
@@ -268,102 +175,6 @@ class Mailer
     private function config(): RuntimeConfig
     {
         return $this->container->get(RuntimeConfig::class);
-    }
-
-    /**
-     * @param string                    $email
-     * @param array<string, mixed>      $data          the entry that was just written
-     * @param array<string, mixed>|null $previousEntry the entry as it was before, on an edit
-     */
-    public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null): void
-    {
-        $baseUrl = $this->getBaseUrl();
-        $sujet = $this->templateEngine->render(
-            '@core/notify-email-subject.twig',
-            [
-                'entry' => $data,
-                'baseUrl' => $baseUrl,
-                'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation,
-            ]
-        );
-        $text = $this->templateEngine->render(
-            '@core/notify-email-text.twig',
-            [
-                'entry' => $data,
-                'baseUrl' => $baseUrl,
-                'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation,
-            ]
-        );
-        $user = $this->userManager->getOneByEmail($email);
-        $currentUser = $this->authenticationService->getLoggedUser();
-        if (!empty($user['name'])) {
-            $userName = $user['name'];
-        } elseif (empty($currentUser)) {
-            $userName = null;
-        } else {
-            do {
-                $randomString = md5((string)rand());
-                $existingUser = $this->userManager->getOneByName($randomString);
-            } while (!empty($existingUser));
-            $userName = $randomString;
-        }
-        $html = $this->templateEngine->render(
-            '@core/notify-email-html.twig',
-            [
-                'style' => file_get_contents(YESWIKI_PROGRAM_DIR . '/styles/email.css'),
-                'entry' => $data,
-                'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
-                'baseUrl' => $baseUrl,
-                'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
-                'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation,
-            ]
-        );
-
-        $this->sendEmailFromAdmin($email, $sujet, $text, $html);
-    }
-
-    /**
-     * @param string $wikiName
-     * @param string $email
-     */
-    public function notifyNewUser($wikiName, $email): void
-    {
-        $baseUrl = $this->getBaseUrl();
-        $objetmail = $this->templateEngine->render(
-            '@core/notify-newuser-email-subject.twig',
-            [
-                'baseUrl' => $baseUrl,
-                'yeswikiName' => $this->params->get('yeswiki_name'),
-            ]
-        );
-        $messagemail = $this->templateEngine->render(
-            '@core/notify-newuser-email-text.twig',
-            [
-                'wikiName' => $wikiName,
-                'email' => $email,
-                'baseUrl' => $baseUrl,
-            ]
-        );
-
-        $this->sendEmailFromAdmin($email, $objetmail, $messagemail);
-    }
-
-    /**
-     * @param string $email
-     * @param string $mailingList the address of the list to subscribe to
-     */
-    public function subscribeToMailingList($email, $mailingList): void
-    {
-        $this->send(
-            $email,
-            $email,
-            $mailingList,
-            'inscription a la liste de discussion',
-            'inscription'
-        );
     }
 
     public function getBaseUrl(): string

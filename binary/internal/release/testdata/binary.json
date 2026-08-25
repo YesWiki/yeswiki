@@ -1,0 +1,12 @@
+{
+    "version": "5.0.0-alpha2",
+    "released": "2026-08-24",
+    "platforms": {
+        "linux-x86_64": {
+            "url": "https://repository.yeswiki.net/ectoplasme/binary/5.0.0-alpha2/yeswiki-linux-x86_64",
+            "sha256": "0eb410d8f3af9d3e5bf1cd33dff0d478c76398d4bac33469a8e595e690c515f5",
+            "signature": "https://repository.yeswiki.net/ectoplasme/binary/5.0.0-alpha2/yeswiki-linux-x86_64.sig",
+            "bytes": 26
+        }
+    }
+}

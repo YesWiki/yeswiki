@@ -19,7 +19,6 @@ use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
-use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
@@ -450,7 +449,7 @@ class FormPropertiesService
 
         $userOperationsService = $this->getService(UserOperationsService::class);
         $userManager = $this->getService(UserManager::class);
-        $mailer = $this->getService(Mailer::class);
+        $notifier = $this->getService(ContentNotifier::class);
         $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         $value = $entry[self::USER_PROPERTY_NAME] ?? '';
@@ -513,9 +512,9 @@ class FormPropertiesService
             $this->addUserToGroups($wikiName, $entry, $addToGroup);
 
             if (!$isImport) {
-                $mailer->notifyNewUser($wikiName, $entry[$emailField]);
+                $notifier->notifyNewUser($wikiName, $entry[$emailField]);
                 if ($mailingList !== '') {
-                    $mailer->subscribeToMailingList($entry[$emailField], $mailingList);
+                    $notifier->subscribeToMailingList($entry[$emailField], $mailingList);
                 }
             }
         }

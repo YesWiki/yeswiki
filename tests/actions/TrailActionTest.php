@@ -5,7 +5,7 @@ namespace YesWiki\Test\Actions;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

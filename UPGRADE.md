@@ -90,6 +90,58 @@ error ...`, and the migration stays pending, so fixing the cause and re-running 
 Migrations are idempotent and re-runnable. `./yeswicli migrate` on an up-to-date wiki prints
 `No migrations to run`.
 
+### If you run the self-contained binary
+
+The binary does all six steps as one command, and it replaces itself on the way:
+
+```bash
+yeswiki upgrade
+yeswiki upgrade --farm     # every wiki one level under the directory
+```
+
+It asks `repository.yeswiki.net` — and nowhere else — whether a newer release has been published,
+verifies it offline against a signing key compiled into the binary, renames the new executable over
+the old one, and then hands the migration to the binary that just arrived. There is no separate
+`composer install`: the code is inside the executable.
+
+**A download that does not verify is deleted rather than installed**, and the running binary is
+untouched. That check is not transport security: an ed25519 signature made offline by the project
+is the only thing that says a release came from us, and a binary that rewrites its own executable
+needs more than a TLS handshake to decide that.
+
+**A read-only deployment does not replace itself**, and says so by name:
+
+```
+this binary cannot replace itself: /opt/yeswiki is not writable, so the image or the package
+owns this binary. Roll the image, or upgrade the package, and run `yeswiki migrate` afterwards
+```
+
+That is decided by writing to the Program root rather than by sniffing for a container, because
+`/.dockerenv` and `KUBERNETES_SERVICE_HOST` have both been wrong before and answer wrongly for a
+writable container somebody genuinely wants to self-update.
+
+Which leads to the half that applies to every image and package deployment:
+
+```bash
+yeswiki migrate            # write the program, migrate, replace nothing
+yeswiki migrate --farm
+```
+
+Run it **once**, as a job, after the new executable is in place. There is no migration-on-boot:
+it would happen inside some visitor's page request, and two replicas starting together would both
+try. `yeswiki upgrade --no-download` is the same thing spelled for a machine that upgrades some
+other way.
+
+Old programs are kept, so going back is repointing rather than restoring:
+
+```bash
+yeswiki upgrade --back-to ~/.local/share/yeswiki/program-5.0.0-alpha1 --farm
+```
+
+They are pruned the next time the new version serves, and never below one spare — that spare is
+what `--back-to` needs. **Repointing cannot undo a migration that has already run**, which is why
+step 1 is still a backup.
+
 ---
 
 ## What migrations do for you

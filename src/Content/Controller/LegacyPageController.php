@@ -8,9 +8,9 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\PageContext;
-use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\BoostedNavigation;
 use YesWiki\Render\Service\CoreAssets;
+use YesWiki\Render\Service\Performer;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters - unchanged, see Wiki::Method()) go through the same HttpKernel/event pipeline as the attribute-routed api/doc controllers (see Wiki::handleWithHttpKernel()), instead of the echo-straight-to-stdout dispatch this used to be.
