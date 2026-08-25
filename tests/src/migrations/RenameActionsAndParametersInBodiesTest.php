@@ -90,7 +90,7 @@ class RenameActionsAndParametersInBodiesTest extends YesWikiTestCase
         }
     }
 
-    private function runMigration(\YesWiki\YesWikiRuntime $wiki, DbService $dbService): void
+    private function runMigration(\YesWiki\Core\YesWikiRuntime $wiki, DbService $dbService): void
     {
         $migration = new \RenameActionsAndParametersInBodies();
         $migration->setServices($wiki->services);

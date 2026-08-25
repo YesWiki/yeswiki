@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki;
+namespace YesWiki\Core;
 
 require_once __DIR__ . '/bootstrap_paths.php';
 require_once __DIR__ . '/constants.php';
@@ -10,8 +10,6 @@ require_once __DIR__ . '/Kernel/Service/LanguageService.php';
 require_once __DIR__ . '/YesWikiInit.php';
 require_once __DIR__ . '/YesWikiKernel.php';
 require_once __DIR__ . '/YesWikiPerformable.php';
-require_once __DIR__ . '/objects/YesWikiAction.php';
-require_once __DIR__ . '/objects/YesWikiHandler.php';
 
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
@@ -37,8 +35,6 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Core\ApiResponse;
-use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -60,7 +56,7 @@ use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Search\Service\SearchIndexer;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
-// time, before anything (Init, the installer, error paths) calls _t()
+// time, before anything (YesWikiInit, the installer, error paths) calls _t()
 LanguageService::getInstance()->initialize();
 
 /**
@@ -74,13 +70,13 @@ class YesWikiRuntime
     /** @var array<string, mixed> */
     public $config;
 
-    /** @var Init the boot-time reader of configuration, kept so a request can start its own session */
-    private Init $init;
+    /** @var YesWikiInit the boot-time reader of configuration, kept so a request can start its own session */
+    private YesWikiInit $init;
 
     /** @var Request */
     public $request;
 
-    // what Init derived from the URL, seeded into PageContext at boot()
+    // what YesWikiInit derived from the URL, seeded into PageContext at boot()
     /** @var string */
     private $initialTag;
 
@@ -116,7 +112,7 @@ class YesWikiRuntime
      */
     public function __construct($config = [])
     {
-        $this->init = new Init($config);
+        $this->init = new YesWikiInit($config);
         $init = $this->init;
         $this->config = $init->config;
         $this->CookiePath = $init->initCookies();
@@ -250,7 +246,7 @@ class YesWikiRuntime
      */
     protected function shouldRunMaintenance(): bool
     {
-        $locks = new Files\Service\RuntimeLock();
+        $locks = new \YesWiki\Files\Service\RuntimeLock();
 
         $lastRun = $locks->lastTaken(self::MAINTENANCE_LOCK_FILE);
         if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
@@ -570,7 +566,7 @@ class YesWikiRuntime
     private function loadExtensionsFromDir($pPluginsRoot)
     {
         include_once __DIR__ . '/YesWikiPlugins.php';
-        $objPlugins = new Plugins($pPluginsRoot);
+        $objPlugins = new YesWikiPlugins($pPluginsRoot);
         $objPlugins->getPlugins(true);
         $vExtensions = $objPlugins->getPluginsList();
 

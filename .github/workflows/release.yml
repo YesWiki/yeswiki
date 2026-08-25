@@ -32,7 +32,7 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -91,7 +91,7 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -115,7 +115,7 @@ jobs:
           cd binary/dist
           sha256sum "yeswiki-linux-${{ matrix.arch }}" > "yeswiki-linux-${{ matrix.arch }}.sha256"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: yeswiki-linux-${{ matrix.arch }}
           path: |

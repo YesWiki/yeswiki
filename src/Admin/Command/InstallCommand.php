@@ -10,8 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use YesWiki\Admin\Service\DatabaseProvisioner;
 use YesWiki\Admin\Service\InstallationService;
+use YesWiki\Core\YesWikiInit;
 use YesWiki\Files\Service\BucketProvisioner;
-use YesWiki\Init;
 use YesWiki\Kernel\Command\RunsOutsideAnInstance;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
@@ -417,7 +417,7 @@ class InstallCommand extends Command implements RunsOutsideAnInstance
 
         LanguageService::getInstance()->initialize();
 
-        $init = (new \ReflectionClass(Init::class))->newInstanceWithoutConstructor();
+        $init = (new \ReflectionClass(YesWikiInit::class))->newInstanceWithoutConstructor();
         $init->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
         return $init->getConfig($stated);

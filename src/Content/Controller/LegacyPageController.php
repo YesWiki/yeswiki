@@ -38,7 +38,7 @@ class LegacyPageController extends YesWikiController
         } catch (ExitException $th) {
             ob_end_clean();
 
-            return $this->toResponse(\YesWiki\YesWikiKernel::isCli() ? '' : $th->getMessage(), $boosted);
+            return $this->toResponse(\YesWiki\Core\YesWikiKernel::isCli() ? '' : $th->getMessage(), $boosted);
         }
 
         return $this->toResponse((string)ob_get_clean(), $boosted);

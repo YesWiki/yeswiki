@@ -8,9 +8,9 @@ use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

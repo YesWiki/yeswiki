@@ -3,10 +3,10 @@
 namespace YesWiki\Test\Content;
 
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Import\Service\MaintenanceSyncSubscriber;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

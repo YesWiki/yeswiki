@@ -8,7 +8,7 @@ use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\WikiUrls;
 
-/** Web installer, run by Init::doInstall() when the configuration file does not exist yet. */
+/** Web installer, run by YesWikiInit::doInstall() when the configuration file does not exist yet. */
 class InstallationController
 {
     /** @var array<string, mixed> */
@@ -29,7 +29,7 @@ class InstallationController
     protected string $contentSQL;
 
     /**
-     * @param array<string, mixed> $config     configuration from Init::getConfig() (defaults + environment overrides)
+     * @param array<string, mixed> $config     configuration from YesWikiInit::getConfig() (defaults + environment overrides)
      * @param string               $configFile path of the yeswiki.config.php file to create
      */
     public function __construct(array $config, string $configFile)

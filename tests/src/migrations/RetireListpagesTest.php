@@ -91,7 +91,7 @@ class RetireListpagesTest extends YesWikiTestCase
         }
     }
 
-    private function runMigration(\YesWiki\YesWikiRuntime $wiki, DbService $dbService): void
+    private function runMigration(\YesWiki\Core\YesWikiRuntime $wiki, DbService $dbService): void
     {
         $migration = new \RetireListpages();
         $migration->setServices($wiki->services);

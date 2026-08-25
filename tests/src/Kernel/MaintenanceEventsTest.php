@@ -2,11 +2,11 @@
 
 namespace YesWiki\Test\Kernel;
 
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

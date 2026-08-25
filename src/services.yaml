@@ -13,7 +13,7 @@ services:
     synthetic: true
 
   # Manually set at boot (see YesWikiRuntime::boot())
-  YesWiki\YesWikiRuntime:
+  YesWiki\Core\YesWikiRuntime:
     synthetic: true
 
   # Ticket 06: actions and handlers that have become real services tag themselves by

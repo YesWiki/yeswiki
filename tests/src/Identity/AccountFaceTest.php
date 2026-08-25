@@ -10,6 +10,7 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Files\Service\AttachedFilePaths;
 use YesWiki\Identity\Action\LoginAction;
 use YesWiki\Identity\Entity\User;
@@ -21,7 +22,6 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

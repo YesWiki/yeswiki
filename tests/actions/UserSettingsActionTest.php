@@ -6,12 +6,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

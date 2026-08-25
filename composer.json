@@ -90,6 +90,10 @@
     "classmap": [
       "src/ComposerScriptsHelper.php"
     ],
+    "exclude-from-classmap": [
+      "src/migrations/",
+      "src/annotations/"
+    ],
     "psr-4": {
       "YesWiki\\Core\\": "src/",
       "YesWiki\\Search\\": "src/Search/",

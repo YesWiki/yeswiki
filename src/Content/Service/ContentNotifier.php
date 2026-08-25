@@ -115,7 +115,7 @@ class ContentNotifier
     /** Nothing on the command line, where a deletion has no visitor behind it. */
     private function clientIp(): string
     {
-        if (\YesWiki\YesWikiKernel::isCli()) {
+        if (\YesWiki\Core\YesWikiKernel::isCli()) {
             return '';
         }
 

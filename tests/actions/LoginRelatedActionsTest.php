@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
@@ -12,7 +13,6 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -13,7 +14,6 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

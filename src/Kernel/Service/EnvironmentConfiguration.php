@@ -8,7 +8,7 @@ use YesWiki\Core\YesWikiLoader;
 class EnvironmentConfiguration
 {
     /**
-     * Config keys whose UPPER(key) variable is honored from the real environment, and that may be created even when absent from the current configuration (some have their defaults in extension config.yaml files, loaded after Init::getConfig()).
+     * Config keys whose UPPER(key) variable is honored from the real environment, and that may be created even when absent from the current configuration (some have their defaults in extension config.yaml files, loaded after YesWikiInit::getConfig()).
      */
     public const KNOWN_KEYS = [
         'db_driver',

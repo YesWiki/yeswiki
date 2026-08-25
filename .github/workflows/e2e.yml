@@ -83,7 +83,7 @@ jobs:
 
       - run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -105,7 +105,7 @@ jobs:
       - name: Packaging smoke
         run: ./binary/smoke.sh binary/dist/yeswiki-linux-x86_64
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: yeswiki-e2e-binary
           path: binary/dist/yeswiki-linux-x86_64
@@ -183,7 +183,7 @@ jobs:
       - run: composer install --prefer-dist --no-progress
         if: steps.covered.outputs.run == 'true'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: steps.covered.outputs.run == 'true'
         with:
           node-version: '24'
@@ -194,7 +194,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
         if: steps.covered.outputs.run == 'true'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         if: steps.covered.outputs.run == 'true' && matrix.runtime == 'binary'
         with:
           name: yeswiki-e2e-binary
@@ -250,7 +250,7 @@ jobs:
           tail -200 /tmp/yeswiki-e2e-serve.log 2>/dev/null || true
           tail -200 "${{ runner.temp }}/fpm.log" 2>/dev/null || true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure() && steps.covered.outputs.run == 'true'
         with:
           name: playwright-report-${{ matrix.driver }}-${{ matrix.runtime }}

@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\YesWikiRuntime;
+use YesWiki\Core\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

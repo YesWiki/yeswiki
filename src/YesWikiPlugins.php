@@ -1,8 +1,8 @@
 <?php
 
-namespace YesWiki;
+namespace YesWiki\Core;
 
-class Plugins
+class YesWikiPlugins
 {
     public ?string $location = null;
     public string $type;

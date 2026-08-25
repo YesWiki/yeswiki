@@ -5,12 +5,12 @@ namespace YesWiki\Test\Actions;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

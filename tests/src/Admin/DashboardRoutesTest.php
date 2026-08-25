@@ -6,13 +6,13 @@ use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Admin\Api\DocumentationApiController;
 use YesWiki\Admin\Controller\AdminController;
 use YesWiki\Admin\Controller\DashboardController;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

@@ -5,12 +5,12 @@ namespace YesWiki\Test\Core;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
-use YesWiki\YesWikiRuntime;
 
 class YesWikiTestCase extends TestCase
 {

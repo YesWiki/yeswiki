@@ -4,11 +4,11 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';

@@ -3,8 +3,8 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

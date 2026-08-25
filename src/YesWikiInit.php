@@ -2,29 +2,16 @@
 
 /** Yeswiki initialization class file. */
 
-namespace YesWiki;
+namespace YesWiki\Core;
 
-use Symfony\Component\Routing\Loader\AttributeClassLoader;
-use Symfony\Component\Routing\Route;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Kernel\Service\WikiUrls;
 
-class AttributeRouteControllerLoader extends AttributeClassLoader
-{
-    /**
-     * @param \ReflectionClass<object> $class
-     */
-    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
-    {
-        $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
-    }
-}
-
 /** Yeswiki initialization class. */
-class Init
+class YesWikiInit
 {
     public string $page = '';
     public string $method = '';
@@ -35,7 +22,7 @@ class Init
     public string $configFile;
 
     /**
-     * Create a new Init instance.
+     * Create a new YesWikiInit instance.
      *
      * @param array<string, mixed> $config initial config array (empty by default)
      */
@@ -662,7 +649,7 @@ class Init
      */
     public function doInstall()
     {
-        $controller = new Admin\Controller\InstallationController($this->config, $this->configFile);
+        $controller = new \YesWiki\Admin\Controller\InstallationController($this->config, $this->configFile);
         $controller->run();
     }
 }

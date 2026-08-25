@@ -3,11 +3,11 @@
 namespace YesWiki\Test\Render;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\DebugReport;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Twig\Error\RuntimeError;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Controller\AccountController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -15,7 +16,6 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

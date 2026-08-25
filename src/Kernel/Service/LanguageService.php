@@ -143,14 +143,14 @@ namespace YesWiki\Kernel\Service {
         /**
          * The languages this wiki offers its readers: its own, plus any it has turned on.
          *
-         * @param \YesWiki\YesWikiRuntime|object|string $wiki      the runtime, an object exposing ->config, or '' before boot
-         * @param list<string>                          $installed what is available to offer
+         * @param \YesWiki\Core\YesWikiRuntime|object|string $wiki      the runtime, an object exposing ->config, or '' before boot
+         * @param list<string>                               $installed what is available to offer
          *
          * @return list<string>
          */
         public function offeredLanguages($wiki, array $installed): array
         {
-            if (!$wiki instanceof \YesWiki\YesWikiRuntime) {
+            if (!$wiki instanceof \YesWiki\Core\YesWikiRuntime) {
                 return $installed;
             }
 
@@ -198,10 +198,10 @@ namespace YesWiki\Kernel\Service {
         /**
          * Determine which language out of an available set the user prefers most.
          *
-         * @param \YesWiki\YesWikiRuntime|object|string $wiki               the runtime, an object exposing ->config, or '' before boot
-         * @param array<array-key, string>              $availableLanguages language-tag-strings (must be lowercase) that are available
-         * @param string                                $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
-         * @param string                                $page               name of WikiPage to check for informations on language
+         * @param \YesWiki\Core\YesWikiRuntime|object|string $wiki               the runtime, an object exposing ->config, or '' before boot
+         * @param array<array-key, string>                   $availableLanguages language-tag-strings (must be lowercase) that are available
+         * @param string                                     $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
+         * @param string                                     $page               name of WikiPage to check for informations on language
          */
         public function detectPreferredLanguage($wiki, array $availableLanguages, string $httpAcceptLanguage = 'auto', ?string $page = ''): string
         {
@@ -211,7 +211,7 @@ namespace YesWiki\Kernel\Service {
                 : '';
 
             $pageMetadataLang = '';
-            if ($page != '' && $wiki instanceof \YesWiki\YesWikiRuntime) {
+            if ($page != '' && $wiki instanceof \YesWiki\Core\YesWikiRuntime) {
                 $metadata = $wiki->services->get(\YesWiki\Content\Service\PageManager::class)->getMetadata($page);
                 $wiki->services->get(PageContext::class)->setMetadata(is_array($metadata) ? $metadata : []);
                 if (isset($metadata['lang']) && in_array($metadata['lang'], $availableLanguages)) {
@@ -290,8 +290,8 @@ namespace YesWiki\Kernel\Service {
         /**
          * Update the translations, based on the information from current page.
          *
-         * @param \YesWiki\YesWikiRuntime|object|string $wiki the runtime, an object exposing ->config, or '' before boot
-         * @param string                                $page name of current WikiPage to check for informations on language
+         * @param \YesWiki\Core\YesWikiRuntime|object|string $wiki the runtime, an object exposing ->config, or '' before boot
+         * @param string                                     $page name of current WikiPage to check for informations on language
          */
         public function loadPreferredLanguage($wiki, ?string $page = ''): void
         {

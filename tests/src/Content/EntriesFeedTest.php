@@ -6,9 +6,9 @@ use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

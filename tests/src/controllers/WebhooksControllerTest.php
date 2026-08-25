@@ -5,9 +5,9 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Admin\Controller\WebhooksController;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

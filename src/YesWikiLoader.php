@@ -15,7 +15,6 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\Dotenv\Dotenv;
-use YesWiki\YesWikiRuntime;
 
 class YesWikiLoader
 {

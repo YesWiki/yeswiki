@@ -35,7 +35,7 @@ class AuthenticationService extends YesWikiController
     /** Overridable seam: tests exercise the non-CLI branches under the CLI SAPI. */
     protected function isCli(): bool
     {
-        return \YesWiki\YesWikiKernel::isCli();
+        return \YesWiki\Core\YesWikiKernel::isCli();
     }
 
     protected ContainerInterface $container;

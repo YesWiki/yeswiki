@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -16,7 +17,6 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\Performer;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 

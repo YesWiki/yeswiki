@@ -139,7 +139,7 @@ class LanguageResolutionTest extends YesWikiTestCase
         $installed = ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro'];
         $service = $this->service();
 
-        $wiki = new \YesWiki\YesWikiRuntime();
+        $wiki = new \YesWiki\Core\YesWikiRuntime();
         $wiki->config = ['default_language' => 'fr', 'other_languages' => ['en', 'es']];
         $this->assertSame(['fr', 'en', 'es'], $service->offeredLanguages($wiki, $installed));
 

@@ -6,11 +6,11 @@ use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
