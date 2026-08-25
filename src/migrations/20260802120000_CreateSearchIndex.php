@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Search\Service\SearchIndexer;
@@ -23,8 +22,7 @@ class CreateSearchIndex extends YesWikiMigration
         } catch (Throwable $unavailable) {
         }
 
-        $this->getService(AdministrativeLogService::class)->log(
-            'migration',
+        $this->say(
             "search index created; {$queued} Content(s) queued for indexing "
             . '(run `./yeswicli search:reindex --drain` to finish now)'
         );

@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -17,7 +16,6 @@ class ReportExternalContentCalls extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $bodyAsText = $db->jsonAsText('body');
@@ -57,8 +55,7 @@ class ReportExternalContentCalls extends YesWikiMigration
             $described[] = $tag . ' (' . implode(', ', array_unique($sources)) . ')';
         }
 
-        $log->log(
-            'migration',
+        $this->say(
             'Ticket 34: these pages ask another wiki for entries at display time, which no longer '
             . 'happens -- they now show an explanation instead of a list. Import the content '
             . 'instead (admin importers screen), then point the list at the local form. '

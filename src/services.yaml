@@ -40,6 +40,10 @@ services:
       tags: ['yeswiki.entry_fields']
     YesWiki\Content\Entity\AppendsToPageView:
       tags: ['yeswiki.page_view_appendix']
+    # Ticket 52: what a module knows how to check about itself. Tagged the same way, so a module
+    # can add a check without any core file changing (ADR-0026).
+    YesWiki\Kernel\Health\ProvidesHealthChecks:
+      tags: ['yeswiki.health_check_provider']
 
   YesWiki\Kernel\Performable\ActionRegistry:
     arguments:
@@ -50,6 +54,14 @@ services:
   # service lazily and break a circular dependency), matching Symfony's own
   # convention of aliasing the PSR container interface to service_container.
   Psr\Container\ContainerInterface: '@service_container'
+
+  # Ticket 51 / ADR-0025: the log is a typed seam, so an operator wanting Sentry or Loki
+  # substitutes one service and nothing else changes.
+  Psr\Log\LoggerInterface: '@YesWiki\Kernel\Service\Journal'
+
+  # Who is acting, asked by Kernel without Kernel knowing how a wiki authenticates anyone
+  # (ADR-0013). Identity answers it.
+  YesWiki\Kernel\Service\ActorSource: '@YesWiki\Identity\Service\AuthenticationService'
 
   # Wave-two ticket 05: modules migrate to Composer PSR-4 one at a time. A module's
   # namespace maps to its own directory (YesWiki\Search\Service\X -> src/Search/Service/X.php),
@@ -255,3 +267,7 @@ services:
   YesWiki\Content\Service\PageViewAppendices:
     arguments:
       $appendices: !tagged_iterator yeswiki.page_view_appendix
+
+  YesWiki\Kernel\Service\HealthService:
+    arguments:
+      $providers: !tagged_iterator yeswiki.health_check_provider

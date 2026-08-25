@@ -8,5 +8,6 @@
   {% endfor %}
   {% if account %}{{ action('login')|raw }}{% endif %}
 
+  {{ healthBadge|default('')|raw }}
   {{ editChrome|default('')|raw }}
 </div>

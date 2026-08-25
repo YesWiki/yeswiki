@@ -329,14 +329,26 @@ class LoginAction extends YesWikiAction implements RegisteredAction, ProvidesCom
             }
 
             if (empty($user)) {
+                // Whatever they typed, not just the name field: signing in by email alone is
+                // offered, and recording an empty target for it would make the busiest kind of
+                // guessing the one the Journal says nothing about.
+                $this->authenticationService->recordFailedLogin(
+                    (string)($post->get('name') ?: $emailFallback),
+                    'unknown-user'
+                );
+
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
 
             $password = $this->inputFilter->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
             if (!$this->authenticationService->checkPassword($password, $user)) {
                 if ($this->authenticationService->requiresPasswordReset($user)) {
+                    $this->authenticationService->recordFailedLogin((string)$user['name'], 'password-format-obsolete');
+
                     throw new LoginException(boolval($this->params->get('contact_disable_email_for_password')) ? _t('LOGIN_PASSWORD_FORMAT_OBSOLETE_ASK_ADMIN') : _t('LOGIN_PASSWORD_FORMAT_OBSOLETE'));
                 }
+
+                $this->authenticationService->recordFailedLogin((string)$user['name'], 'wrong-password');
 
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }

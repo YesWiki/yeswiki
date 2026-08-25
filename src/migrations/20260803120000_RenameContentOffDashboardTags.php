@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
@@ -15,7 +14,6 @@ class RenameContentOffDashboardTags extends YesWikiMigration
     {
         $db = $this->getService(DbService::class);
         $pageManager = $this->getService(PageManager::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
         $triples = $db->prefixTable('triples');
 
@@ -35,8 +33,7 @@ class RenameContentOffDashboardTags extends YesWikiMigration
 
                 $this->getService(SearchIndexer::class)->rename($oldTag, $newTag);
 
-                $log->log(
-                    'migration',
+                $this->say(
                     "reserved tag '{$oldTag}' is now the /{$reserved} route; its Content was renamed to '{$newTag}'"
                 );
             }

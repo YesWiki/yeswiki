@@ -1,9 +1,7 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Search\Service\SearchIndexer;
 
@@ -19,7 +17,6 @@ class RewriteRetiredSearchActions extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $bodyAsText = $db->jsonAsText('body');
@@ -46,15 +43,16 @@ class RewriteRetiredSearchActions extends YesWikiMigration
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
         foreach (array_keys($rewritten) as $tag) {
-            $log->log(
-                'migration',
+            $this->say(
                 "searchform/newtextsearch are retired (ticket 26); page '{$tag}' was rewritten to "
                 . 'a button linking to /search, or to the search action. Any template, class or '
                 . 'url parameter on the old call could not be carried over.'
             );
         }
 
-        $this->reportThemesStillCallingRetiredActions($log);
+        // Ticket 53: what the themes still say is a claim about the present, so the migration
+        // runs Render's check rather than writing a line that goes stale.
+        $this->reportCheck('themes-call-retired-search-actions');
     }
 
     /**
@@ -79,35 +77,5 @@ class RewriteRetiredSearchActions extends YesWikiMigration
         });
 
         return $changed ? $body : null;
-    }
-
-    /** Themes are files, not rows. */
-    private function reportThemesStillCallingRetiredActions(AdministrativeLogService $log): void
-    {
-        $found = [];
-        foreach (['themes', 'custom/themes'] as $dir) {
-            if (!$this->getService(LocalFiles::class)->isDirectory($dir)) {
-                continue;
-            }
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
-            foreach ($iterator as $file) {
-                if (!$file->isFile() || !in_array($file->getExtension(), ['twig', 'html', 'php'], true)) {
-                    continue;
-                }
-                $contents = $this->getService(LocalFiles::class)->read($file->getPathname());
-                if (preg_match('/\{\{\s*(searchform|newtextsearch)\b/i', $contents)) {
-                    $found[] = $file->getPathname();
-                }
-            }
-        }
-
-        if ($found !== []) {
-            $log->log(
-                'migration',
-                'These theme files still call a retired search action (ticket 26) and were NOT '
-                . 'rewritten -- files on disk are yours to edit: ' . implode(', ', $found),
-                ''
-            );
-        }
     }
 }

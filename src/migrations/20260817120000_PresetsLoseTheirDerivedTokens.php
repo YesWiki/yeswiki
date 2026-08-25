@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -41,7 +40,6 @@ class PresetsLoseTheirDerivedTokens extends YesWikiMigration
 
     public function run()
     {
-        $log = $this->getService(AdministrativeLogService::class);
         $presets = $this->getService(PresetService::class);
 
         $migrated = [];
@@ -68,8 +66,7 @@ class PresetsLoseTheirDerivedTokens extends YesWikiMigration
         $navbarWasColoured = $this->forgetColouredNavbarStyle();
 
         if ($migrated !== [] || $navbarWasColoured) {
-            $log->log(
-                'migration',
+            $this->say(
                 'presets simplified (ADR-0021): what core can derive -- hover colours, muted'
                 . ' text, border shades, the panel and ink of each status colour, the focus'
                 . ' ring, the shadow colours, the corner radii -- is no longer declared, and'

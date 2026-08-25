@@ -2356,3 +2356,118 @@ body > button.primary {
     margin-top: var(--yw-space-md-y);
   }
 }
+
+/* ---- The Journal (ticket 51) and Health (ticket 52) ---- */
+
+.yw-dashboard__count {
+  margin-left: auto;
+  min-width: 1.5em;
+  padding: 0 var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-full);
+  background: var(--yw-danger);
+  color: var(--yw-on-danger);
+  font-size: 0.8em;
+  text-align: center;
+}
+
+.yw-health-badge {
+  background: var(--yw-danger);
+  color: var(--yw-on-danger);
+}
+
+.yw-health-badge__count {
+  margin-left: 0.35em;
+  font-variant-numeric: tabular-nums;
+}
+
+.yw-health {
+  display: grid;
+  gap: var(--yw-space-md-y);
+  padding: 0;
+  list-style: none;
+}
+
+.yw-health__item {
+  padding: var(--yw-space-md-y) var(--yw-space-md-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-left-width: 4px;
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-raised);
+}
+
+.yw-health__item--broken {
+  border-left-color: var(--yw-danger);
+}
+
+.yw-health__item--degraded {
+  border-left-color: var(--yw-warning);
+}
+
+.yw-health__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--yw-space-sm-x);
+  margin: 0 0 var(--yw-space-sm-y);
+}
+
+.yw-health__severity {
+  padding: 0 var(--yw-space-sm-x);
+  border-radius: var(--yw-radius-sm);
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.yw-health__item--broken .yw-health__severity {
+  background: var(--yw-danger-surface);
+  color: var(--yw-danger-text);
+}
+
+.yw-health__item--degraded .yw-health__severity {
+  background: var(--yw-warning-surface);
+  color: var(--yw-warning-text);
+}
+
+.yw-health__detail {
+  margin: 0 0 var(--yw-space-sm-y);
+  word-break: break-word;
+}
+
+.yw-health__says,
+.yw-health__well {
+  margin: 0;
+  color: var(--yw-text-muted);
+}
+
+.yw-logs__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-x);
+  align-items: flex-end;
+  margin-bottom: var(--yw-space-md-y);
+}
+
+.yw-logs__range {
+  color: var(--yw-text-muted);
+}
+
+/* Six columns of variable-length text: the table scrolls inside its own box rather than
+   pushing the whole dashboard sideways. */
+.yw-logs__scroll {
+  overflow-x: auto;
+}
+
+.yw-logs__table td {
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.yw-logs__row--diagnostic {
+  background: color-mix(in srgb, var(--yw-danger) 5%, transparent);
+}
+
+.yw-logs__frames pre {
+  overflow-x: auto;
+  max-width: 60ch;
+  font-family: var(--yw-font-mono);
+  font-size: 0.85em;
+}

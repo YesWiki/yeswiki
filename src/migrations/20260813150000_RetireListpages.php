@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\FormManager;
@@ -16,13 +15,11 @@ class RetireListpages extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $form = $this->getService(FormManager::class)->getByContentType(PageType::PAGE);
         if ($form === null || ($form['id'] ?? null) === null) {
-            $log->log(
-                'migration',
+            $this->say(
                 'listpages could not be retired: this wiki has no Pages form to list the pages of. '
                 . 'Any listpages call in a page body now renders an error; run this migration again '
                 . 'once the built-in forms are installed.'
@@ -65,8 +62,7 @@ class RetireListpages extends YesWikiMigration
 
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
-        $log->log(
-            'migration',
+        $this->say(
             'listpages is retired -- a page is an entry of the Pages form, so its list is an '
             . 'entry list. Rewritten onto entrylist id="' . $pagesFormId . '" in '
             . count($rewritten) . ' page(s), across all revisions: '
@@ -78,8 +74,7 @@ class RetireListpages extends YesWikiMigration
             foreach ($lost as $tag => $parameters) {
                 $described[] = $tag . ' (' . implode(', ', $parameters) . ')';
             }
-            $log->log(
-                'migration',
+            $this->say(
                 'These lists asked for something an entry list cannot be told, so they now show '
                 . 'more pages than they did: ' . implode('; ', $described)
                 . '. Excluding pages by name and filtering on who took part in them have no '

@@ -60,3 +60,25 @@ whenever they are asked — run by the migration at migrate time and re-runnable
 - **The checks welded into migration `up()` methods have to come out** to be runnable twice. That
   is real work beyond replacing a log, and it phases: findings to stdout at migrate time first,
   the screen after.
+
+## Amendments
+
+**An available update is degraded, never broken (2026-08-26, ticket 52).** The decision recorded
+which update checks to run and when they are actionable, but not how severe they are. A wiki a
+release behind is not broken, and the reason matters twice: an update check costs a round trip to
+the repository, and the badge runs on every page view. So `HealthService::findings()` takes a
+severity and `brokenCount()` asks for `Broken` only — a degraded check is run by `/admin/health`
+and by nothing else, which is what makes "checks run on render" affordable.
+
+**Each optional extension is its own check, declared where the loss is (2026-08-26, ticket 52).**
+The plan's table had one "optional extensions" row reading `composer.json`'s `suggest`. That would
+have been one provider knowing about every module's dependencies — the shape this ADR rejected for
+the checks themselves. Instead Search declares `intl`, Import declares `imap` and Kernel declares
+OPcache, each naming only *which* extension it is about and reading the consequence out of
+`suggest`. No requirement is written down twice, and the module that loses something is the one
+that says so.
+
+**The configured driver's `pdo_*` is broken, not degraded (2026-08-26, ticket 52).** `pdo_mysql`,
+`pdo_pgsql` and `pdo_sqlite` are `suggest` entries because only one of them matters per wiki. For
+the wiki that is configured for it, it is not optional at all, so Kernel declares one check over
+whichever driver `db_driver` names.

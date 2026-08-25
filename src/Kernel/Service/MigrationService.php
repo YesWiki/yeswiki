@@ -93,6 +93,12 @@ class MigrationService
                     $instance->setParams($this->params);
                     $instance->run();
                     $messages->add("Migration $className ($vDate)", 'AU_OK');
+                    foreach ($instance->notes() as $note) {
+                        $messages->add($note, 'AU_NOTE');
+                    }
+                    // The act, and the whole of it. What a migration did in detail is what it just
+                    // said to the operator; the Journal records that it ran (ticket 53).
+                    $this->container->get(Journal::class)->audit(Journal::MIGRATION_APPLIED, $vFile, [], 'migration');
                     $tripleStore->create($vFile, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
                 } catch (\Exception $e) {
                     $messages->add("Migration $className ($vDate) failed with error {$e->getMessage()}", 'AU_ERROR');

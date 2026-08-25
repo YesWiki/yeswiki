@@ -1,0 +1,67 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_LOGS') }}</h1>
+
+  {# Said once, at the boundary. Without it, an audit trail that goes back a year beside errors
+     that go back a fortnight reads as errors having been hidden. #}
+  <p class="yw-dashboard__intro">
+    {{ _t('ADMIN_LOGS_INTRO')|replace({'%{audit}': auditDays, '%{diagnostic}': diagnosticDays}) }}
+  </p>
+
+  <div class="yw-logs" id="yw-logs">
+    <form id="yw-logs-filters" class="yw-logs__filters" autocomplete="off">
+      <div class="yw-form-group">
+        <label for="yw-logs-channel">{{ _t('ADMIN_LOGS_CHANNEL') }}</label>
+        <select id="yw-logs-channel" name="channel" class="yw-input">
+          <option value="">{{ _t('ADMIN_LOGS_CHANNEL_ALL') }}</option>
+          <option value="audit">{{ _t('ADMIN_LOGS_CHANNEL_AUDIT') }}</option>
+          <option value="diagnostic">{{ _t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC') }}</option>
+        </select>
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-level">{{ _t('ADMIN_LOGS_LEVEL') }}</label>
+        <select id="yw-logs-level" name="level" class="yw-input">
+          <option value="">{{ _t('ADMIN_LOGS_LEVEL_ALL') }}</option>
+          {% for level in levels %}<option value="{{ level }}">{{ level }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-actor">{{ _t('ADMIN_LOGS_ACTOR') }}</label>
+        <input id="yw-logs-actor" name="actor" type="search" class="yw-input"
+               placeholder="{{ _t('ADMIN_LOGS_ACTOR_PLACEHOLDER') }}">
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-action">{{ _t('ADMIN_LOGS_ACTION') }}</label>
+        <input id="yw-logs-action" name="action" type="search" class="yw-input"
+               placeholder="{{ _t('ADMIN_LOGS_ACTION_PLACEHOLDER') }}">
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-from">{{ _t('ADMIN_LOGS_FROM') }}</label>
+        <input id="yw-logs-from" name="from" type="date" class="yw-input">
+      </div>
+
+      <div class="yw-form-group">
+        <label for="yw-logs-to">{{ _t('ADMIN_LOGS_TO') }}</label>
+        <input id="yw-logs-to" name="to" type="date" class="yw-input">
+      </div>
+
+      <input type="hidden" name="page" value="1">
+      <input type="hidden" name="sort" value="at">
+      <input type="hidden" name="dir" value="desc">
+    </form>
+
+    <div id="yw-logs-table"
+         hx-get="{{ url({ tag: 'api/admin/logs' }) }}"
+         hx-trigger="load, change from:#yw-logs-filters, input changed delay:400ms from:#yw-logs-filters, ywLogsReload from:body"
+         hx-include="#yw-logs-filters"
+         hx-swap="innerHTML"></div>
+  </div>
+
+  {{ include_javascript('javascripts/admin-logs.js', false, true) }}
+  {{ include_css('styles/yw-admin.css') }}
+{% endblock %}

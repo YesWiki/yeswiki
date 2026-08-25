@@ -296,7 +296,7 @@ class TagsManager
         }
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
-        $sql .= " WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
+        $sql .= " WHERE latest='Y' AND parent='' ";
 
         $params = [];
         if ($type == 'wiki') {

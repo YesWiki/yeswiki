@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -40,8 +39,7 @@ class ADefaultLanguageIsALanguage extends YesWikiMigration
             throw new RuntimeException("could not write {$file}: default_language is still '{$current}'");
         }
 
-        $this->getService(AdministrativeLogService::class)->log(
-            'migration',
+        $this->say(
             "default_language was '{$current}', which names no language, and is now '{$default}'."
             . ' The languages this wiki offers were set to ' . implode(', ', $others)
             . ' so that a visitor still gets their own language when the wiki has it --'

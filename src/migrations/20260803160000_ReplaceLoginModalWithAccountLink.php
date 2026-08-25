@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
@@ -18,7 +17,6 @@ class ReplaceLoginModalWithAccountLink extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $bodyAsText = $db->jsonAsText('body');
@@ -45,8 +43,7 @@ class ReplaceLoginModalWithAccountLink extends YesWikiMigration
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
         foreach (array_keys($rewritten) as $tag) {
-            $log->log(
-                'migration',
+            $this->say(
                 "the login modal is replaced by the /user route; page '{$tag}' was rewritten to "
                 . 'the account link template. A custom modal template or an anchor to '
                 . 'LoginModal could not be carried over.'

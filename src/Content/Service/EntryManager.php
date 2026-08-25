@@ -5,7 +5,6 @@ namespace YesWiki\Content\Service;
 use Exception;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
@@ -20,6 +19,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -35,7 +35,7 @@ class EntryManager
     protected DbService $dbService;
     protected SemanticTransformer $semanticTransformer;
     protected HibernationService $hibernationService;
-    protected AdministrativeLogService $administrativeLogService;
+    protected Journal $journal;
     protected ParameterBagInterface $params;
     protected SearchManager $searchManager;
 
@@ -58,7 +58,7 @@ class EntryManager
         ParameterBagInterface $params,
         SearchManager $searchManager,
         HibernationService $hibernationService,
-        AdministrativeLogService $administrativeLogService,
+        Journal $journal,
         UrlFormatter $urlFormatter,
     ) {
         $this->urlFormatter = $urlFormatter;
@@ -73,7 +73,7 @@ class EntryManager
         $this->params = $params;
         $this->searchManager = $searchManager;
         $this->hibernationService = $hibernationService;
-        $this->administrativeLogService = $administrativeLogService;
+        $this->journal = $journal;
     }
 
     /**
@@ -541,10 +541,6 @@ class EntryManager
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
         $this->pageManager->deleteOrphaned($tag);
-        $this->administrativeLogService->log(
-            $this->authenticationService->getLoggedUserName(),
-            'Suppression de la page ->""' . $tag . '""'
-        );
         $this->announce('entry.deleted', $form, $entryToDelete, $isExternalEntry);
     }
 
@@ -1037,7 +1033,7 @@ class EntryManager
     public function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->administrativeLogService->log($this->authenticationService->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
+        $this->journal->audit('content.duplicate', $destinationTag, ['from' => $sourceTag]);
 
         return $result;
     }

@@ -2,19 +2,23 @@
 
 namespace YesWiki\Identity\Service;
 
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\TripleStore;
 
 class GroupManager
 {
     protected TripleStore $tripleStore;
     protected UserManager $userManager;
+    protected Journal $journal;
 
     public function __construct(
         TripleStore $tripleStore,
-        UserManager $userManager
+        UserManager $userManager,
+        Journal $journal
     ) {
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
+        $this->journal = $journal;
     }
 
     /** Check if group already exists or name used by user. */
@@ -31,12 +35,14 @@ class GroupManager
     public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
+        $this->journal->audit('group.create', $group_name, ['members' => count($members)]);
 
         return $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
     }
 
     public function delete(string $group_name): void
     {
+        $this->journal->audit('group.delete', $group_name);
         $group_list = $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%@' . $group_name . '%', 'LIKE', '=', 'LIKE');
         $this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX);
         $prefix_len = strlen(GROUP_PREFIX);
@@ -105,6 +111,7 @@ class GroupManager
     /** @param string[] $members the new member list, replacing the current one */
     public function updateMembers(string $group_name, array $members): void
     {
+        $this->journal->audit('group.update', $group_name, ['members' => count($members)]);
         $stored_members = implode("\n", $this->getMembers($group_name));
         $new_members = implode("\n", $members);
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {

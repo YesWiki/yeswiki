@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryListCategoryRewriter;
 use YesWiki\Core\YesWikiMigration;
@@ -26,7 +25,6 @@ class RetireEntryListCategory extends YesWikiMigration
     private function rewriteStoredCalls(): void
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $bodyAsText = $db->jsonAsText('body');
@@ -63,8 +61,7 @@ class RetireEntryListCategory extends YesWikiMigration
 
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
-        $log->log(
-            'migration',
+        $this->say(
             'entrylistcategory is retired: an entry list grouped on a field is what it drew, so it '
             . 'is written {{entrylist groups="..." template="' . EntryListCategoryRewriter::TEMPLATE
             . '"}} now. Rewritten in ' . count($rewritten) . ' page(s), across all revisions: '
@@ -78,8 +75,7 @@ class RetireEntryListCategory extends YesWikiMigration
             foreach ($lost as $tag => $parameters) {
                 $described[] = $tag . ' (' . implode(', ', $parameters) . ')';
             }
-            $log->log(
-                'migration',
+            $this->say(
                 'These calls said something a grouped entry list has no way to say: '
                 . implode('; ', $described)
                 . '. "list" named the page holding the list values, which a facet reads from the '
@@ -120,8 +116,7 @@ class RetireEntryListCategory extends YesWikiMigration
         $config['permissions'] = $stored;
         $config->write();
 
-        $this->getService(AdministrativeLogService::class)->log(
-            'migration',
+        $this->say(
             'These action permissions no longer address anything and were removed: '
             . implode(', ', $dropped)
             . '. entrylistcategory is retired; entrymap, entrytable, entryuserpage and calendar are '

@@ -4,7 +4,7 @@ Ectoplasme is a **major** release. It removes legacy subsystems, renames every F
 identifier a page body or a template can contain, and moves data between tables. Upgrading a
 Doryphore wiki is not a file swap.
 
-**The goal is that `migrate` does all of it.** Most of it already does — 35 migrations ship with
+**The goal is that `migrate` does all of it.** Most of it already does — 66 migrations ship with
 this release and they cover every schema and stored-content change listed below. What is left in
 [Still by hand](#still-by-hand) is the residue, and each entry there says whether a migration can
 absorb it and what is tracked to do so. If you find yourself doing something by hand that is not
@@ -213,6 +213,32 @@ and friends map to `db_host`, `wakka_name` to `yeswiki_name`; `debug: 'yes'` bec
 finds `liste.twig`. The name is user data and was left alone deliberately — only the engine
 behind it changed.
 
+**The administrative log becomes the Journal.** `LogDesActionsAdministratives{Ymd}` was a wiki
+page per day, one full page revision per logged event, in whatever language the wiki spoke that
+day. It is a table now, read at **`/admin/logs`**: filterable by who, what, when, and whether it
+was an act or an error, and phrased in the language you are reading it in. Your existing log pages
+are **imported before they are deleted** — every line, with its date and its author, and the
+French sentence kept verbatim — and the tags they held come back to the namespace.
+
+Two things to know about it. **It keeps a year of acts and a fortnight of errors**
+(`journal_audit_purge_time` and `journal_diagnostic_purge_time`): if you want more of your old
+trail than a year, raise the first setting *before* you migrate, because the next housekeeping pass
+applies it. And **every event also goes to stderr as a JSON line**, which is where to look when the
+database is the thing that is broken — `journalctl`, `docker logs`, or whatever collects your
+process's output.
+
+**Errors stop being a blank page.** There was no exception handler at all: on a production wiki an
+uncaught exception went wherever your host happened to point PHP. There is one now, and what broke
+is in `/admin/logs` and on stderr. No stack trace is stored anywhere — frames are written
+`Class::method(string, array<7>)`, types only, never values — so an aggregated log cannot leak a
+password somebody passed to a function.
+
+**A wiki can tell you it is unwell.** `/admin/health` runs a set of checks fresh every time you
+open it — PHP version, the extensions `composer.json` says are needed, room on the disk, whether
+the bucket answers, whether an update *you are allowed to apply* is waiting. Nothing is recorded
+and nothing needs acknowledging: fix something and it stops being listed. A red badge appears in
+the top bar only when something is genuinely broken and you can do something about it.
+
 ---
 
 ## Still by hand
@@ -223,14 +249,15 @@ Twenty action names and forty-five parameter names became English.
 
 **In page bodies this is migrated for you** — `RenameActionsAndParametersInBodies` rewrites every
 revision of every row, resolving each call's parameters against the action name as it finds it,
-and leaves parameter values and template filenames alone. It names the rewritten pages in the
-administrative log. Nothing to do.
+and leaves parameter values and template filenames alone. It names the rewritten pages in
+`yeswicli migrate`'s output. Nothing to do.
 
 **In files, it is not.** A squelette, theme template or custom template that calls an action by
 its French name — as wiki syntax or through Twig's `action('...')` helper — is yours to fix:
 silently editing your theme from a database migration is not something an upgrade should do. The
-migration **reports** every such file to the administrative log, so check there after upgrading,
-and use `docs/action-name-renames.json` as the mapping.
+migration **names** every such file, and keeps naming them: it is a Health check, so `/admin/health`
+still lists them after the upgrade and stops the moment you have fixed them. Use
+`docs/action-name-renames.json` as the mapping.
 
 The renames, for reference when fixing those files:
 
@@ -261,8 +288,8 @@ from there being one action rather than five:
 
 - **They answer to `entrylist`'s permission.** A permission set on the old name is not consulted
   any more, and the upgrade removes it rather than leaving it to look effective. If one of them was
-  restricting who may list entries, set that permission on `entrylist`. The removal is written to
-  the administrative log with the value it had.
+  restricting who may list entries, set that permission on `entrylist`. The removal is printed by
+  `yeswicli migrate` with the value it had.
 - **The actions builder writes `{{entrylist template="…"}}`**, never a deprecated name. Opening a
   page that contains one still opens the right settings.
 - **`{{entrytable}}` now draws a table.** Written without a template it used to render the wiki's
@@ -301,9 +328,11 @@ Check each extension is Ectoplasme-compatible before trusting it: extensions wer
 of scope for the core rename work, so one written for Doryphore will refer to French action names,
 dropped tables and the deleted `Wiki` class.
 
+It does warn, and it keeps warning: `/admin/health` lists whatever is still in `tools/`, and stops
+listing it once the directory is empty.
+
 > **Automatable.** Moving directories is something a migration can do; it is not done because
-> silently relocating third-party code is a worse default than telling you to. Tracker ticket 33
-> covers whether this should warn rather than move.
+> silently relocating third-party code is a worse default than telling you to.
 
 One rename you will hit immediately if your extension declares a **custom field type**: the
 attribute that registers a field's keywords is namespaced now. `#[\Field([...])]` no longer
@@ -504,7 +533,7 @@ Check whether any page or template of yours depends on these, because nothing re
   always wrong and the action printed `Undefined array key` where the list should have been. The
   rewrite reads what the call means rather than what the class did with it, so these pages should
   show more than they did, not less. Two parameters have no equivalent and the migration names the
-  pages that used them in the administrative log: `list` named the page holding the list's values,
+  pages that used them as it runs: `list` named the page holding the list's values,
   which a facet reads from the field itself, and `template` named the template each group was drawn
   with, which is the accordion now.
 - **GoGoCarto** integration — removed.
@@ -593,7 +622,7 @@ offending path named: the SQLite database and the search index, and everything P
 
 **`archive[privatePath]` is gone.** A wiki's backups are in `private/backups`, which is where
 every wiki already put them, and there is no setting to move them. A migration removes the key
-and writes what it did to the administrative log; if yours pointed somewhere else, the archives
+and says what it did as it runs; if yours pointed somewhere else, the archives
 already there are left alone — move them into `private/backups` if you want them listed. On an
 S3 instance the backups go to the bucket with everything else Protected.
 

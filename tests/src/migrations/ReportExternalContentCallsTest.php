@@ -91,18 +91,11 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
         }
     }
 
-    /** A wiki with nothing to report must produce no log entry at all, not an empty one. */
-    public function testAWikiWithNoExternalCallsLogsNothing(): void
+    /** A wiki with nothing to report must say nothing at all, not say it emptily. */
+    public function testAWikiWithNoExternalCallsSaysNothing(): void
     {
         $wiki = $this->getWiki();
         $dbService = $wiki->services->get(DbService::class);
-
-        $logTag = 'LogDesActionsAdministratives' . date('Ymd');
-        $pageManager = $wiki->services->get(\YesWiki\Content\Service\PageManager::class);
-        /**
-         * @var array<string, mixed>|null $before
-         */
-        $before = $pageManager->getOne($logTag);
 
         $migration = new \ReportExternalContentCalls();
         $migration->setServices($wiki->services);
@@ -110,11 +103,6 @@ class ReportExternalContentCallsTest extends YesWikiTestCase
         $migration->setParams($wiki->services->get(ParameterBagInterface::class));
         $migration->run();
 
-        $after = $pageManager->getOne($logTag);
-        $this->assertSame(
-            is_array($before) ? ($before['body'] ?? null) : null,
-            is_array($after) ? ($after['body'] ?? null) : null,
-            'nothing to report means nothing written'
-        );
+        $this->assertSame([], $migration->notes(), 'nothing to report means nothing said');
     }
 }

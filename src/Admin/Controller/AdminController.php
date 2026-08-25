@@ -8,11 +8,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Admin\Api\AdminLogsApiController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Kernel\Service\HealthService;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -45,6 +48,28 @@ class AdminController extends YesWikiController
     public function imports(): Response
     {
         return $this->page('@core/admin/imports.twig', 'admin/imports');
+    }
+
+    /** The Journal: what happened, and what broke (ticket 51). */
+    #[Route('/admin/logs', options: ['acl' => self::ADMIN_ACL])]
+    public function logs(): Response
+    {
+        $config = $this->getService(RuntimeConfig::class);
+
+        return $this->page('@core/admin/logs.twig', 'admin/logs', [
+            'levels' => AdminLogsApiController::levels(),
+            'auditDays' => (int)($config[Journal::AUDIT_PURGE_SETTING] ?? 365),
+            'diagnosticDays' => (int)($config[Journal::DIAGNOSTIC_PURGE_SETTING] ?? 14),
+        ]);
+    }
+
+    /** What is wrong with this wiki right now, re-derived every time it is asked (ticket 52). */
+    #[Route('/admin/health', options: ['acl' => self::ADMIN_ACL])]
+    public function health(): Response
+    {
+        return $this->page('@core/admin/health.twig', 'admin/health', [
+            'findings' => $this->getService(HealthService::class)->findings(),
+        ]);
     }
 
     #[Route('/admin/keywords', options: ['acl' => self::ADMIN_ACL])]

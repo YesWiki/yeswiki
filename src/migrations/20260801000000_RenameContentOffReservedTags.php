@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Routing\ReservedTags;
@@ -11,7 +10,6 @@ class RenameContentOffReservedTags extends YesWikiMigration
     public function run()
     {
         $pageManager = $this->getService(PageManager::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $this->dbService->prefixTable('pages');
         $triples = $this->dbService->prefixTable('triples');
 
@@ -40,8 +38,7 @@ class RenameContentOffReservedTags extends YesWikiMigration
                     . " WHERE resource = '{$this->dbService->escape($oldTag)}'"
                 );
 
-                $log->log(
-                    'migration',
+                $this->say(
                     "reserved tag '{$oldTag}' was unreachable; its Content was renamed to '{$newTag}' (ticket 20)"
                 );
             }

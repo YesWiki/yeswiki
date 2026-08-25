@@ -77,6 +77,33 @@ interface SqlDialect
     public function supportsDump(): bool;
 
     /**
+     * Every statement needed to create the Journal table and its indexes, in execution order (ticket 51 / ADR-0025).
+     *
+     * @param string $table already prefixed, unquoted
+     *
+     * @return list<string>
+     */
+    public function journalDdl(string $table): array;
+
+    /**
+     * Every statement needed to remove what journalDdl() created, in execution order.
+     *
+     * @return list<string>
+     */
+    public function journalDropDdl(string $table): array;
+
+    /**
+     * An INSERT that, when the unique key over $conflictColumns is already taken, applies $assignments to the row that is there instead of failing.
+     *
+     * @param string                $table           already prefixed, unquoted
+     * @param array<string, string> $values          column => the SQL expression to write, `?` for a bound one
+     * @param list<string>          $conflictColumns the columns the unique key is over
+     * @param array<string, string> $assignments     column => SQL expression, where `:new.<column>`
+     *                                               stands for the value the insert would have written
+     */
+    public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string;
+
+    /**
      * Every statement needed to create the search index table, its ordinary indexes, its full-text index and the queue of Contents awaiting reindexing, in execution order.
      *
      * @param string $table      already prefixed, unquoted

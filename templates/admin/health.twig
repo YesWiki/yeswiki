@@ -1,0 +1,39 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <h1>{{ _t('DASHBOARD_ADMIN_HEALTH') }}</h1>
+
+  <p class="yw-dashboard__intro">{{ _t('ADMIN_HEALTH_INTRO') }}</p>
+
+  {% if findings is empty %}
+    <p class="yw-health__well">{{ icon('circle-check') }} {{ _t('ADMIN_HEALTH_ALL_WELL') }}</p>
+  {% else %}
+    <ul class="yw-health">
+      {% for finding in findings %}
+        {% set broken = finding.isBroken %}
+        <li class="yw-health__item yw-health__item--{{ broken ? 'broken' : 'degraded' }}">
+          <p class="yw-health__head">
+            <span class="yw-health__severity">
+              {{ broken ? _t('ADMIN_HEALTH_BROKEN') : _t('ADMIN_HEALTH_DEGRADED') }}
+            </span>
+            <strong>{{ finding.check.labelText }}</strong>
+          </p>
+
+          <p class="yw-health__detail">{{ finding.detail }}</p>
+
+          {% if finding.check.sentence %}
+            <p class="yw-health__says">{{ finding.check.sentence }}</p>
+          {% endif %}
+
+          {% if finding.check.route %}
+            <p><a class="yw-btn yw-btn--sm" href="{{ url({ tag: finding.check.route }) }}">
+              {{ _t('ADMIN_HEALTH_FIX') }}
+            </a></p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {{ include_css('styles/yw-admin.css') }}
+{% endblock %}

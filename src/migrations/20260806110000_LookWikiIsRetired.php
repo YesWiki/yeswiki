@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
@@ -22,7 +21,6 @@ class LookWikiIsRetired extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $revisions = $db->loadAll(
@@ -34,8 +32,7 @@ class LookWikiIsRetired extends YesWikiMigration
         }
 
         if (count($revisions) > 1) {
-            $log->log(
-                'migration',
+            $this->say(
                 "the page 'LookWiki' has been edited since this wiki was installed, so it was KEPT"
                 . ' (ticket 30) -- what it does is the Personnalisation screen now (?admin/preset),'
                 . ' but the content on that page is yours, and links to it still work.'
@@ -47,8 +44,7 @@ class LookWikiIsRetired extends YesWikiMigration
         $this->getService(PageManager::class)->deleteOrphaned(self::TAG);
         $rewritten = $this->rewriteLinks($db, $pages);
 
-        $log->log(
-            'migration',
+        $this->say(
             "the seeded page 'LookWiki' was removed (ticket 30): it held the theme selector and a"
             . ' component gallery, which are the Personnalisation screen now (?admin/preset). It was'
             . ' still exactly as the installer wrote it, so nothing of yours was in it.'

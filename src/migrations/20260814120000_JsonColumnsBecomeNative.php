@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
 
@@ -16,11 +15,10 @@ class JsonColumnsBecomeNative extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
 
         $type = $db->jsonColumnType();
         if ($type === 'TEXT') {
-            $log->log('migration', 'body and metadata stay TEXT on ' . $db->getDriver()
+            $this->say('body and metadata stay TEXT on ' . $db->getDriver()
                 . ': this dialect has no JSON column type (ADR-0018).');
 
             return;
@@ -37,11 +35,11 @@ class JsonColumnsBecomeNative extends YesWikiMigration
 
         $pages = $db->prefixTable('pages');
         foreach (array_keys($pending) as $column) {
-            $this->refuseBecauseOfNonJsonValues($db, $log, $pages, $column, $type);
+            $this->refuseBecauseOfNonJsonValues($db, $pages, $column, $type);
         }
 
         $rows = (int)$db->scalar("SELECT COUNT(*) FROM {$pages}", 0);
-        $log->log('migration', sprintf(
+        $this->say(sprintf(
             'Converting %s (%s) from text to %s: %d revisions, expect roughly %.0fs (ADR-0018).',
             trim($pages),
             implode(', ', array_keys($pending)),
@@ -54,19 +52,19 @@ class JsonColumnsBecomeNative extends YesWikiMigration
             try {
                 $db->schema()->modifyColumn('pages', $column, $type, $notNull, "{$column}::jsonb");
             } catch (Throwable $failure) {
-                $this->refuse($log, $this->diagnose($db, $pages, $column, $type, $failure));
+                $this->refuse($this->diagnose($db, $pages, $column, $type, $failure));
             }
         }
     }
 
     /**
-     * Log it, then throw -- because MigrationService only records a migration as run when it returns, and a refusal that returns normally would mark this one done forever.
+     * Say it, then throw -- because MigrationService only records a migration as run when it returns, and a refusal that returns normally would mark this one done forever.
      *
      * @throws Exception always
      */
-    private function refuse(AdministrativeLogService $log, string $message): never
+    private function refuse(string $message): never
     {
-        $log->log('migration', $message);
+        $this->say($message);
 
         throw new Exception($message);
     }
@@ -80,7 +78,7 @@ class JsonColumnsBecomeNative extends YesWikiMigration
     }
 
     /** Refuse before rebuilding the table, where the dialect can say so cheaply. */
-    private function refuseBecauseOfNonJsonValues(DbService $db, AdministrativeLogService $log, string $pages, string $column, string $type): void
+    private function refuseBecauseOfNonJsonValues(DbService $db, string $pages, string $column, string $type): void
     {
         $predicate = match ($db->getDriver()) {
             'mysql' => "JSON_VALID({$column}) = 0",
@@ -96,7 +94,7 @@ class JsonColumnsBecomeNative extends YesWikiMigration
             return;
         }
 
-        $this->refuse($log, $this->refusalMessage($column, $type, array_map('strval', $tags)));
+        $this->refuse($this->refusalMessage($column, $type, array_map('strval', $tags)));
     }
 
     private function postgresUnderstandsIsJson(DbService $db): bool

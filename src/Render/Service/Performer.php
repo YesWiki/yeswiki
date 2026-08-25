@@ -174,11 +174,19 @@ class Performer
             $output .= ($end_elem && $instance instanceof YesWikiAction)
                 ? $instance->end()
                 : $instance->run();
-        } catch (ExitException $t) {
-            throw $t;
         } catch (HttpException $exception) {
             return $this->renderError($exception->getMessage(), $objectType);
         } catch (\Throwable $t) {
+            // A redirect is not an error, and by the time it gets here it is usually not an
+            // ExitException either: an action that redirects runs inside a Twig render, and Twig
+            // re-throws whatever a template threw as a RuntimeError. Catching the wrapper as a
+            // failure re-rendered the whole page as an error page -- running every action in the
+            // chrome a second time, so a failed sign-in was recorded twice and its password
+            // checked twice.
+            if (ExitException::in($t) !== null) {
+                throw $t;
+            }
+
             return $this->renderError(
                 _t('PERFORMABLE_ERROR') . '<br/>' . $this->throwableFormatter->dump($t),
                 $objectType

@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Database\SqlDialectFactory;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Render\Service\LayoutService;
 use YesWiki\Search\Service\SearchIndexSchema;
 
@@ -398,6 +399,24 @@ class InstallationService
         $this->pass(_t('INSERTION_OF_PAGES'));
 
         $this->installSearchIndex();
+        $this->installJournal();
+    }
+
+    /** Create the Journal, so a fresh wiki records its first act rather than its first migration (ticket 51 / ADR-0025). */
+    private function installJournal(): void
+    {
+        $db = $this->dbLink;
+        if ($db === null) {
+            throw new \Exception('no database connection');
+        }
+
+        $dialect = SqlDialectFactory::forDriver((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
+
+        foreach ($dialect->journalDdl($this->config['table_prefix'] . JournalSchema::TABLE) as $statement) {
+            $db->exec($statement);
+        }
+
+        $this->pass(_t('CREATION_OF_JOURNAL'));
     }
 
     /** Create the search index and queue the seeded content for it (ticket 18 / ADR-0015). */

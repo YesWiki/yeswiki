@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
@@ -19,7 +18,6 @@ class LoginDefaultsToTheAccountButton extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $bodyAsText = $db->jsonAsText('body');
@@ -43,8 +41,7 @@ class LoginDefaultsToTheAccountButton extends YesWikiMigration
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
         foreach (array_keys($rewritten) as $tag) {
-            $log->log(
-                'migration',
+            $this->say(
                 '{{login}} now renders the account button rather than the sign-in form; page '
                 . "'{$tag}' was rewritten so that it keeps showing what it showed before."
             );

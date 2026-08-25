@@ -9,6 +9,7 @@ use YesWiki\Admin\Entity\Repository;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\Journal;
 
 class AutoUpdateService
 {
@@ -106,6 +107,7 @@ class AutoUpdateService
             return $messages;
         }
         $messages->add('AU_DELETE', 'AU_OK');
+        $this->container->get(Journal::class)->audit('package.delete', $packageName);
 
         return $messages;
     }
@@ -164,6 +166,7 @@ class AutoUpdateService
             return $messages;
         }
         $messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
+        $this->container->get(Journal::class)->audit('package.upgrade', $packageName, ['release' => (string)$package->release]);
 
         if ($package instanceof PackageCore) {
             if (!$package->upgradeDefaultTheme()) {

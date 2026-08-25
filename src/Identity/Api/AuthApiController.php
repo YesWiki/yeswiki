@@ -30,16 +30,23 @@ class AuthApiController extends YesWikiController
             $user = $userManager->getOneByEmail($username);
         }
 
+        $authenticationService = $this->getService(AuthenticationService::class);
+
         if (!$user) {
+            $authenticationService->recordFailedLogin($username, 'unknown-user');
+
             return new ApiResponse(['error' => _t('LOGIN_WRONG_USER')], Response::HTTP_UNAUTHORIZED);
         }
 
-        $authenticationService = $this->getService(AuthenticationService::class);
         if (!$authenticationService->checkPassword(strval($post->get('password')), $user)) {
+            $obsolete = $authenticationService->requiresPasswordReset($user);
+            $authenticationService->recordFailedLogin(
+                (string)$user['name'],
+                $obsolete ? 'password-format-obsolete' : 'wrong-password'
+            );
+
             return new ApiResponse(
-                ['error' => _t($authenticationService->requiresPasswordReset($user)
-                    ? 'LOGIN_PASSWORD_FORMAT_OBSOLETE'
-                    : 'LOGIN_WRONG_PASSWORD')],
+                ['error' => _t($obsolete ? 'LOGIN_PASSWORD_FORMAT_OBSOLETE' : 'LOGIN_WRONG_PASSWORD')],
                 Response::HTTP_UNAUTHORIZED
             );
         }

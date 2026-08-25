@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
 
@@ -32,8 +31,7 @@ class ADarkBarMatchesItsDarkPage extends YesWikiMigration
         }
 
         if ($touched !== []) {
-            $this->getService(AdministrativeLogService::class)->log(
-                'migration',
+            $this->say(
                 'dark top bar aligned with the dark page in: ' . implode(', ', $touched)
                 . '. Presets whose bar has a colour of its own were left untouched.'
             );

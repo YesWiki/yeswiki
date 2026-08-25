@@ -37,7 +37,7 @@ class PageApiController extends YesWikiController
 
         $sql = <<<SQL
             SELECT * FROM {$dbService->prefixTable('pages')}
-            WHERE latest='Y' AND parent='' AND tag NOT LIKE 'LogDesActionsAdministratives%'
+            WHERE latest='Y' AND parent=''
             AND {$dbService->quoteIdentifier('type')} = '{$pageType}'
             ORDER BY tag ASC
         SQL;

@@ -11,6 +11,7 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -439,7 +440,14 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction, Provid
             }
         }
 
-        return $config->write();
+        $written = $config->write();
+        if ($written) {
+            // The act, not the values: a configuration file holds database credentials and mail
+            // passwords, so what is recorded is that it was written and by whom (ADR-0025).
+            $this->getService(Journal::class)->audit('config.write', basename(ConfigurationFileProvider::getConfigFileFromEnv()));
+        }
+
+        return $written;
     }
 
     /**

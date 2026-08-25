@@ -2,15 +2,14 @@
 
 namespace YesWiki\Identity\Action;
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Render\Service\Performer;
 
 class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
@@ -62,7 +61,7 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction, 
             if ($result) {
                 return $res . _t('ERROR_WHILE_SAVING_HANDLER_ACL') . ' ' . ucfirst($name) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')<br />';
             }
-            $this->getService(AdministrativeLogService::class)->log($this->getService(AuthenticationService::class)->getLoggedUserName(), _t('NEW_ACL_FOR_HANDLER') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
+            $this->getService(Journal::class)->audit('acl.change', $name, ['scope' => 'handler', 'acl' => strval($post->get('acl'))]);
 
             return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER') . ' ' . ucfirst($name) . '.<br />';
         } elseif (!empty($this->getRequest()->query->get('handlername')) && in_array($name = $this->getRequest()->query->get('handlername'), $list)) {

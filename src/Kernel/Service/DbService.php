@@ -75,6 +75,16 @@ class DbService
 
             $this->initDriverSpecific();
         } catch (\Throwable $th) {
+            // The one error the Journal can never record, since the Journal is a table in the
+            // database that just refused. Written straight to the stream instead, which is the
+            // half of ADR-0025 that exists for exactly this case.
+            Journal::toStderr($this->stringParam('base_url'), [
+                'channel' => 'diagnostic',
+                'level' => 'critical',
+                'action' => 'database.unreachable',
+                'message' => $th->getMessage(),
+            ]);
+
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
                 throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             }

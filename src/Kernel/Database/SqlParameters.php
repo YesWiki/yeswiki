@@ -96,6 +96,12 @@ final class SqlParameters
         return '%' . self::likeWildcardsEscaped($term) . '%';
     }
 
+    /** The `term%` body for a prefix LIKE, wildcards defused. */
+    public static function likeStartsWith(string $term): string
+    {
+        return self::likeWildcardsEscaped($term) . '%';
+    }
+
     /** The clause that makes an escaped LIKE pattern mean what it says, on every driver. */
     public const LIKE_CLAUSE_SUFFIX = " ESCAPE '" . self::LIKE_ESCAPE . "'";
 

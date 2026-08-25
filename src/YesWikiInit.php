@@ -190,6 +190,10 @@ class YesWikiInit
             'meta_description' => '',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'pages_purge_time' => 365,
+            // ADR-0025: the Journal's two halves have different memories -- an act is a fact
+            // worth a year, a fortnight of diagnostics is all anybody reads.
+            'journal_audit_purge_time' => 365,
+            'journal_diagnostic_purge_time' => 14,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',

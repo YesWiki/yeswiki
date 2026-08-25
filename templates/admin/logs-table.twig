@@ -1,0 +1,80 @@
+{% set offset = (currentPage - 1) * perpage %}
+{% set rangeEnd = (offset + perpage < total) ? (offset + perpage) : total %}
+
+{% macro pager(currentPage, totalPages) %}
+  {% if totalPages > 1 %}
+    <ul class="yw-pagination">
+      {% for target in [currentPage - 1, currentPage, currentPage + 1] %}
+        {% if target >= 1 and target <= totalPages %}
+          <li class="yw-pagination__item{{ target == currentPage ? ' yw-pagination__item--active' : '' }}">
+            <a class="yw-pagination__link" href="#" onclick="ywLogsGoTo({{ target }}); return false;">{{ target }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if currentPage < totalPages %}
+        <li class="yw-pagination__item">
+          <a class="yw-pagination__link" href="#" onclick="ywLogsGoTo({{ totalPages }}); return false;">{{ totalPages }}</a>
+        </li>
+      {% endif %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+<p class="yw-logs__range" role="status">
+  {% if total > 0 %}
+    {{ _t('ADMIN_LOGS_RANGE')|replace({'%{start}': offset + 1, '%{end}': rangeEnd, '%{total}': total}) }}
+  {% else %}
+    {{ _t('ADMIN_LOGS_NONE') }}
+  {% endif %}
+</p>
+
+{% if total > 0 %}
+  <div class="yw-logs__scroll">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-logs__table"
+           data-yw-datatable data-yw-no-search data-yw-no-paginate>
+      <thead>
+        <tr>
+          <th>{{ _t('ADMIN_LOGS_AT') }}</th>
+          <th>{{ _t('ADMIN_LOGS_CHANNEL') }}</th>
+          <th>{{ _t('ADMIN_LOGS_ACTOR') }}</th>
+          <th>{{ _t('ADMIN_LOGS_ACTION') }}</th>
+          <th>{{ _t('ADMIN_LOGS_TARGET') }}</th>
+          <th>{{ _t('ADMIN_LOGS_DETAIL') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr class="yw-logs__row yw-logs__row--{{ entry.channel }}">
+            <td>
+              {{ entry.at }}
+              {% if entry.repeat > 1 %}
+                <br><small class="yw-text-muted">
+                  {{ _t('ADMIN_LOGS_REPEAT')|replace({'%{count}': entry.repeat, '%{last}': entry.last_at}) }}
+                </small>
+              {% endif %}
+            </td>
+            <td>
+              {{ entry.channel == 'audit' ? _t('ADMIN_LOGS_CHANNEL_AUDIT') : _t('ADMIN_LOGS_CHANNEL_DIAGNOSTIC') }}
+              {% if entry.channel != 'audit' %}<br><small class="yw-text-muted">{{ entry.level }}</small>{% endif %}
+            </td>
+            <td>{{ entry.actor }}</td>
+            <td>{{ entry.phrase }}</td>
+            <td>{{ entry.target }}</td>
+            <td>
+              {{ entry.message }}
+              {% if entry.frames is not empty %}
+                <details class="yw-logs__frames">
+                  <summary>{{ entry.frames|length }}</summary>
+                  <pre>{% for frame in entry.frames %}{{ frame }}
+{% endfor %}</pre>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ _self.pager(currentPage, totalPages) }}
+{% endif %}

@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
@@ -31,8 +30,7 @@ class BackupsHaveOnePlace extends YesWikiMigration
         $elsewhere = $was !== '' && rtrim($was, '/') !== ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP;
         $storage = $this->getService(Storage::class);
 
-        $this->getService(AdministrativeLogService::class)->log(
-            'migration',
+        $this->say(
             $elsewhere
                 ? "archive[privatePath] was '{$was}' and is no longer a setting: new backups go to "
                     . ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP . ', which is also what a bucket receives when'

@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Render\Service\PresetService;
@@ -23,7 +22,6 @@ class PresetsBecomeTokenSets extends YesWikiMigration
 
     public function run()
     {
-        $log = $this->getService(AdministrativeLogService::class);
         $presets = $this->getService(PresetService::class);
 
         $migrated = [];
@@ -46,8 +44,7 @@ class PresetsBecomeTokenSets extends YesWikiMigration
         }
 
         if ($migrated !== []) {
-            $log->log(
-                'migration',
+            $this->say(
                 'presets carried over to the --yw-* design tokens (ADR-0020): ' . implode(', ', $migrated)
                 . '. Each is INCOMPLETE until the missing tokens are set -- the wiki renders'
                 . ' with core\'s own values for those. Finish them on /admin/preset.'

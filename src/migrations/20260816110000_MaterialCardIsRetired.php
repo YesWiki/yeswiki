@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -20,7 +19,6 @@ class MaterialCardIsRetired extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $rows = $db->loadAll(
@@ -58,8 +56,7 @@ class MaterialCardIsRetired extends YesWikiMigration
         $configured = $this->rewriteDefaultTemplateSetting();
 
         if ($rewritten !== [] || $configured) {
-            $log->log(
-                'migration',
+            $this->say(
                 'ADR-0020: the material-card entry-list template was deleted -- its stylesheet'
                 . ' carried a colour set no Preset or Colour scheme could reach. Lists asking'
                 . ' for it now use the card presentation'

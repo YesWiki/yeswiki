@@ -585,6 +585,53 @@ class Storage
     }
 
     /**
+     * How much room the Runtime tier has left, in bytes, or null when the answer is not a number.
+     *
+     * Free space is tier-shaped, not universal (ADR-0026). Runtime is local by necessity and is
+     * what fills first -- SQLite, the search index, `cache/container/`, an archive being built --
+     * so there is a real number here. Public and Protected may be a bucket, which has no free
+     * space at all; what those answer is `remoteReachable()`.
+     */
+    public function runtimeFreeSpace(): ?float
+    {
+        $free = disk_free_space($this->root);
+
+        return $free === false ? null : $free;
+    }
+
+    /**
+     * Whether the bucket the Data tiers live in answers at all, or null when this wiki has none.
+     *
+     * *Reachable* is deliberately not *working*: a bucket that does not exist answers "no" rather
+     * than "boom", which is the state ADR-0022's amendment made distinct, and the state a wiki
+     * can carry on booting through.
+     */
+    public function remoteReachable(): ?bool
+    {
+        if ($this->remote === null) {
+            return null;
+        }
+
+        try {
+            $this->bucketHolds();
+
+            return true;
+        } catch (\Throwable $unreachable) {
+            return false;
+        }
+    }
+
+    /**
+     * Which tiers this wiki keeps in a bucket, empty when it keeps none there.
+     *
+     * @return list<string>
+     */
+    public function remoteTiers(): array
+    {
+        return $this->remote === null ? [] : $this->remote->tiers;
+    }
+
+    /**
      * The other buckets these credentials can see, which a key scoped to one bucket cannot.
      *
      * @return list<string>

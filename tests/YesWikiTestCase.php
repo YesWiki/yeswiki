@@ -9,7 +9,10 @@ use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\Journal;
+use YesWiki\Kernel\Service\JournalSchema;
 use YesWiki\Search\Service\SearchIndexer;
 
 class YesWikiTestCase extends TestCase
@@ -33,8 +36,23 @@ class YesWikiTestCase extends TestCase
         $wiki = YesWikiLoader::getWiki(true);
         self::registerLeakSweep($wiki);
         self::pinExperimentalSwitches($wiki);
+        self::keepTheLogOffTheSuitesOwnStream($wiki);
 
         return $wiki;
+    }
+
+    /**
+     * The Journal writes every event to stderr, unconditionally, which is the half of ADR-0025 that survives a database being down -- and `phpunit --stderr` reports on the same stream, so a run of the suite would be one line of its own per hundred of the wiki's.
+     *
+     * The stream is a seam, not a switch: this points it at memory rather than turning it off,
+     * and a test that wants to read the log back points it at its own.
+     */
+    private static function keepTheLogOffTheSuitesOwnStream(YesWikiRuntime $wiki): void
+    {
+        $sink = fopen('php://memory', 'w+b');
+        if ($sink !== false) {
+            $wiki->services->get(Journal::class)->writeTo($sink);
+        }
     }
 
     /**
@@ -56,6 +74,7 @@ class YesWikiTestCase extends TestCase
         self::$groupsBeforeRun = $wiki->services->get(GroupManager::class)->getall();
 
         register_shutdown_function(static function () use ($wiki): void {
+            $swept = [];
             $userManager = $wiki->services->get(UserManager::class);
             foreach ($userManager->getAll() as $user) {
                 if (!self::isLeakedTestUser($user)) {
@@ -63,6 +82,7 @@ class YesWikiTestCase extends TestCase
                 }
                 try {
                     $userManager->delete($user);
+                    $swept[] = (string)$user['name'];
                 } catch (\Throwable $t) {
                 }
             }
@@ -76,7 +96,54 @@ class YesWikiTestCase extends TestCase
             }
 
             self::sweepComments($wiki);
+            self::sweepJournal($wiki, $swept);
         });
+    }
+
+    /**
+     * Every Journal entry the run wrote.
+     *
+     * The suite creates and deletes real Content, so the Journal records real acts -- roughly a
+     * thousand of them per run, in the developer's own wiki, where the point of an audit trail is
+     * that it is worth reading.
+     *
+     * Narrowed to two kinds of actor: none at all, which is what a CLI process writes, and the
+     * fixture accounts this sweep has just deleted, whose acts were about accounts that no longer
+     * exist. Anything the developer did in a browser while the suite ran carries their own name
+     * and is left alone.
+     *
+     * @param list<string> $sweptUsers the fixture accounts this run created and this sweep removed
+     */
+    private static function sweepJournal(YesWikiRuntime $wiki, array $sweptUsers): void
+    {
+        try {
+            $dbService = $wiki->services->get(DbService::class);
+            $table = $dbService->quoteIdentifier($wiki->services->get(JournalSchema::class)->table());
+            $actor = $dbService->quoteIdentifier('actor');
+            $at = $dbService->quoteIdentifier('at');
+
+            $actors = ['', ...$sweptUsers];
+            $placeholders = SqlParameters::placeholders(count($actors));
+
+            $dbService->query(
+                "DELETE FROM {$table} WHERE {$actor} IN ({$placeholders}) AND {$at} >= ?",
+                [...$actors, self::$runStartedAt]
+            );
+
+            // And the acts the suite performed as the developer's own admin account, which is who
+            // most of its fixtures sign in as. Narrowed to Content that is no longer there: the
+            // suite deletes everything it makes, so a page still standing was somebody's real
+            // work. A real deletion made in a browser *while the suite ran* is swept with the
+            // rest, which is the one case this cannot tell apart and is a dev wiki's to lose.
+            $dbService->query(
+                "DELETE FROM {$table} WHERE {$at} >= ?"
+                . ' AND ' . $dbService->quoteIdentifier('action') . " LIKE 'content.%'"
+                . " AND {$dbService->quoteIdentifier('target')} NOT IN ("
+                . "SELECT tag FROM {$dbService->prefixTable('pages')})",
+                [self::$runStartedAt]
+            );
+        } catch (\Throwable $t) {
+        }
     }
 
     /** Every comment the run wrote, index rows included. */

@@ -98,3 +98,32 @@ event.
   goes stale; an immutable record is the wrong home, which is why "your themes still call retired
   actions" could sit in a wiki page for years after someone fixed it. Those checks become
   re-derivable Health checks — see ADR-0026.
+
+## Amendments
+
+**The Journal's DDL lives on `SqlDialect`, not in the installation template (2026-08-26, ticket
+51).** The plan said `installation-create-tables.sql.twig`, and that would have meant the table's
+shape existing twice: the installer renders the twig, and a migration cannot. `SearchIndexSchema`
+had already settled this for the search index — one `journalDdl()` per dialect, called by
+`InstallationService` on a fresh wiki and by `JournalSchema::create()` on an upgrade — and
+`JournalSchema` is its twin.
+
+**Diagnostics are pruned on `last_at`, audit on `at` (2026-08-26, ticket 51).** Retention was
+stated once, for both halves, over the same column. But a diagnostic row is not a fact about the
+past: `at` is when a fault was *first* seen, and a fault first seen thirteen months ago and still
+firing this morning is the one an operator most wants on the screen. Pruning it on `at` would
+delete exactly that, and the next occurrence would recreate it with a fresh `at` — losing the only
+thing the pair of timestamps exists to say. Audit entries, which are facts about the past and never
+collapse, are pruned on `at` as planned.
+
+**There is no `message` column; the message is a key in `context` (2026-08-26, ticket 51).** The
+column table never had one, and "store the latest message" reads like it did. Keeping the message
+inside the JSON is what lets a legacy import carry a French sentence verbatim under the same key an
+exception's text uses, with no column that is empty for every audit row.
+
+**The per-day ceiling counts fingerprints, not writes (2026-08-26, ticket 51).** Counting writes
+would have made a storm of *one* fault trip its own ceiling and stop incrementing its own counter —
+turning the acceptance criterion ("5,000 throws produce one row with `repeat = 5000`") into a row
+stuck at 500. A fingerprint already stored today always goes through; only a *new* one counts
+against the ceiling, which is what "dedup bounds repeats, not distinct fingerprints" actually
+requires.

@@ -112,6 +112,56 @@ class MySqlDialect implements SqlDialect
         return true;
     }
 
+    public function journalDdl(string $table): array
+    {
+        $json = $this->jsonColumnType();
+
+        return [
+            "CREATE TABLE IF NOT EXISTS `{$table}` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `at` DATETIME NOT NULL,
+                `last_at` DATETIME NOT NULL,
+                `repeat` INT UNSIGNED NOT NULL DEFAULT 1,
+                `channel` VARCHAR(16) NOT NULL,
+                `level` VARCHAR(16) NOT NULL,
+                `actor` VARCHAR(191) NOT NULL DEFAULT '',
+                `action` VARCHAR(191) NOT NULL,
+                `target` VARCHAR(191) NOT NULL DEFAULT '',
+                `fingerprint` CHAR(32) DEFAULT NULL,
+                `day` CHAR(10) DEFAULT NULL,
+                `context` {$json} DEFAULT NULL,
+                PRIMARY KEY (`id`),
+                KEY `idx_at` (`at`),
+                KEY `idx_channel_at` (`channel`, `at`),
+                KEY `idx_actor_at` (`actor`, `at`),
+                UNIQUE KEY `uniq_fingerprint_day` (`fingerprint`, `day`)
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB",
+        ];
+    }
+
+    public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS `{$table}`"];
+    }
+
+    /** `VALUES()` rather than the 8.0.20 row alias, which MariaDB does not have. */
+    public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
+    {
+        $sets = [];
+        foreach ($assignments as $column => $expression) {
+            $sets[] = $this->quoteIdentifier($column) . ' = ' . preg_replace_callback(
+                '/:new\.([a-z_]+)/i',
+                fn (array $m): string => 'VALUES(' . $this->quoteIdentifier($m[1]) . ')',
+                $expression
+            );
+        }
+
+        return 'INSERT INTO ' . $this->quoteIdentifier($table)
+            . ' (' . implode(', ', array_map([$this, 'quoteIdentifier'], array_keys($values))) . ')'
+            . ' VALUES (' . implode(', ', array_values($values)) . ')'
+            . ' ON DUPLICATE KEY UPDATE ' . implode(', ', $sets);
+    }
+
     /** InnoDB FULLTEXT. */
     public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {

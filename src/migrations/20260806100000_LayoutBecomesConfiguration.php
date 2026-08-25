@@ -1,10 +1,8 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LayoutService;
 
 /** Ticket 30: `PageTitre`, `PageMenuHaut` and `PageRapideHaut` become `layout_*` config. */
@@ -21,7 +19,6 @@ class LayoutBecomesConfiguration extends YesWikiMigration
     {
         $layout = $this->getService(LayoutService::class);
         $pageManager = $this->getService(PageManager::class);
-        $log = $this->getService(AdministrativeLogService::class);
 
         if ($layout->navbar() !== [] || $layout->quickMenu() !== [] || $layout->hasOwnTitle()) {
             return;
@@ -54,8 +51,7 @@ class LayoutBecomesConfiguration extends YesWikiMigration
             $quickMenu
         );
 
-        $log->log(
-            'migration',
+        $this->say(
             'ticket 30: the wiki chrome moved from PageTitre/PageMenuHaut/PageRapideHaut into the '
             . 'configuration, and is edited on /admin/layout now. Carried across: '
             . count($navbar) . ' navbar entries and ' . count($quickMenu) . ' quick-access buttons'
@@ -64,8 +60,10 @@ class LayoutBecomesConfiguration extends YesWikiMigration
             . '. The three pages were left in place, untouched.'
         );
 
-        $this->reportLeftovers($log, $leftovers);
-        $this->reportRetiredOverrides($log);
+        // What this run could not carry is part of what it did, so it is said here. What pages
+        // still override is a claim about the present, so it is Render's check (ticket 53).
+        $this->sayWhatWasLeftBehind($leftovers);
+        $this->reportCheck('pages-override-retired-chrome');
     }
 
     /**
@@ -261,55 +259,16 @@ class LayoutBecomesConfiguration extends YesWikiMigration
      *
      * @param array<string, list<string>> $leftovers
      */
-    private function reportLeftovers(AdministrativeLogService $log, array $leftovers): void
+    private function sayWhatWasLeftBehind(array $leftovers): void
     {
         foreach ($leftovers as $tag => $lines) {
             if ($lines === []) {
                 continue;
             }
-            $log->log(
-                'migration',
+            $this->say(
                 "these lines of '{$tag}' could not be turned into " . self::SOURCES[$tag]
                 . ' and were NOT carried into the configuration (ticket 30). They are still on the page,'
                 . ' which is still there: ' . implode(' / ', array_map('trim', $lines))
-            );
-        }
-    }
-
-    /** Pages that named a different title bar, top menu or quick menu for themselves. */
-    private function reportRetiredOverrides(AdministrativeLogService $log): void
-    {
-        $db = $this->getService(DbService::class);
-        $pages = $db->prefixTable('pages');
-        $metadata = $db->quoteIdentifier('metadata');
-        $metadataAsText = $db->jsonAsText('metadata');
-
-        $rows = $db->loadAll(
-            "SELECT tag, {$metadata} FROM {$pages} WHERE latest = 'Y'"
-            . " AND ({$metadataAsText} LIKE '%PageTitre%' OR {$metadataAsText} LIKE '%PageMenuHaut%'"
-            . " OR {$metadataAsText} LIKE '%PageRapideHaut%')"
-        );
-
-        $affected = [];
-        foreach ($rows as $row) {
-            $decoded = json_decode((string)$row['metadata'], true);
-            if (!is_array($decoded)) {
-                continue;
-            }
-            foreach (array_keys(self::SOURCES) as $role) {
-                if (!empty($decoded[$role]) && $decoded[$role] !== $role) {
-                    $affected[] = "{$row['tag']} ({$role} = {$decoded[$role]})";
-                }
-            }
-        }
-
-        if ($affected !== []) {
-            $log->log(
-                'migration',
-                'these pages named their own title bar / top menu / quick menu, which is no longer '
-                . 'possible now that those three are wiki-wide configuration (ticket 30). They wear the '
-                . "wiki's layout from now on; the banner, side menu and footer can still be overridden "
-                . 'per page: ' . implode(', ', $affected)
             );
         }
     }

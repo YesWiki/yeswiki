@@ -109,6 +109,40 @@ class SqliteDialect implements SqlDialect
         return true;
     }
 
+    public function journalDdl(string $table): array
+    {
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" INTEGER PRIMARY KEY AUTOINCREMENT,
+                \"at\" TEXT NOT NULL,
+                \"last_at\" TEXT NOT NULL,
+                \"repeat\" INTEGER NOT NULL DEFAULT 1,
+                \"channel\" TEXT NOT NULL,
+                \"level\" TEXT NOT NULL,
+                \"actor\" TEXT NOT NULL DEFAULT '',
+                \"action\" TEXT NOT NULL,
+                \"target\" TEXT NOT NULL DEFAULT '',
+                \"fingerprint\" TEXT DEFAULT NULL,
+                \"day\" TEXT DEFAULT NULL,
+                \"context\" TEXT DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_at\" ON \"{$table}\" (\"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_at\" ON \"{$table}\" (\"channel\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_actor_at\" ON \"{$table}\" (\"actor\", \"at\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_fingerprint_day\" ON \"{$table}\" (\"fingerprint\", \"day\")",
+        ];
+    }
+
+    public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS \"{$table}\""];
+    }
+
+    public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
+    {
+        return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);
+    }
+
     /** An ordinary table plus an FTS5 **external-content** table over it, kept in sync by triggers. */
     public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {

@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Service\DbService;
@@ -58,8 +57,7 @@ class PageContentFieldHasNoLabel extends YesWikiMigration
         }
 
         foreach (array_keys($fixed) as $tag) {
-            $this->getService(AdministrativeLogService::class)->log(
-                'migration',
+            $this->say(
                 "the form '{$tag}' captioned every page's prose with the word "
                 . self::SEEDED_LABEL . ', which the install seeded by mistake -- the caption is '
                 . 'removed. Give the content field a label again on the form designer if you '

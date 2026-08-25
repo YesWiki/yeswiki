@@ -4,7 +4,6 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\ReservedTagException;
@@ -16,6 +15,7 @@ use YesWiki\Kernel\Routing\ReservedTags;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\TripleStore;
 use YesWiki\Search\Service\SearchIndexer;
 use YesWiki\Search\Service\TagsManager;
@@ -47,7 +47,7 @@ class PageManager
      */
     private array $rawPageCache = [];
     /**
-     * lazily fetches AdministrativeLogService: it depends on PageManager, so injecting it directly would be a constructor cycle.
+     * lazily fetches the Journal, which reaches back to PageManager through the ActorSource: injecting it directly would be a constructor cycle.
      */
     protected ContainerInterface $container;
 
@@ -535,6 +535,10 @@ class PageManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        // Read before the caches are dropped and the row is gone: asking afterwards would answer
+        // from a cache this method just refilled, and leave it holding a type for a tag with no row.
+        $type = $this->typeOf($tag);
+
         unset($this->ownersCache[$tag]);
 
         unset($this->pageCache[$tag]);
@@ -545,6 +549,10 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag = ? OR parent = ?", [$tag, $tag]);
         $this->tripleStore->deleteAll($tag, '');
         $this->tagsManager->deleteAll($tag);
+
+        // Every deletion, whatever asked for it: this is where the row actually goes, and a
+        // deletion leaves no revision behind to be the record of itself.
+        $this->journal()->audit('content.delete', $tag, $type === null ? [] : ['type' => $type]);
 
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
             'id' => $tag,
@@ -641,6 +649,11 @@ class PageManager
             unset($this->typeCache[$tag]);
             $this->aclService->forget($tag);
             $this->ownersCache[$tag] = $owner;
+
+            // The act, never the content: the revision that was just written *is* the content, and
+            // a second copy of it under a different retention would disagree with the first the
+            // moment one was pruned (ADR-0025).
+            $this->journal()->audit(empty($oldPage) ? 'content.create' : 'content.update', $tag, ['type' => $type]);
 
             $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [
                 'id' => $tag,
@@ -940,8 +953,13 @@ class PageManager
     public function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->container->get(AdministrativeLogService::class)->log($this->authenticationService->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+        $this->journal()->audit('content.duplicate', $destinationTag, ['from' => $sourceTag]);
 
         return $result;
+    }
+
+    private function journal(): Journal
+    {
+        return $this->container->get(Journal::class);
     }
 }

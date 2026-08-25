@@ -45,12 +45,14 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Journal;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RequestScope;
 use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
+use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Search\Service\SearchIndexer;
@@ -105,6 +107,9 @@ class YesWikiRuntime
     /** @var HttpKernel|null built on the first routed request, then reused */
     private $httpKernel;
 
+    /** Whether boot() has run: until it has, $services is not a container and nothing may ask it for one. */
+    private bool $booted = false;
+
     /**
      * Constructor.
      *
@@ -124,7 +129,80 @@ class YesWikiRuntime
             : ($this->getConfigValue('debug') ? 'dev' : 'prod');
         $this->request = Request::createFromGlobals();
 
+        $this->installExceptionHandler();
         $this->loadExtensions();
+    }
+
+    /**
+     * Nothing had one: an uncaught exception on a production wiki went wherever the host happened to point PHP, and the webmaster saw a blank page (ADR-0025).
+     *
+     * Installed before the container is built, so the exceptions thrown while building it are
+     * covered too -- which is why it degrades to the static stderr sink rather than asking for a
+     * service that may be what failed.
+     */
+    private function installExceptionHandler(): void
+    {
+        // Not under the suite, which installs its own and reports a run that replaced it as risky.
+        if (defined('PHPUNIT_COMPOSER_INSTALL')) {
+            return;
+        }
+
+        set_exception_handler(function (\Throwable $throwable): void {
+            if ($this->exitExceptionIn($throwable) !== null) {
+                return;
+            }
+
+            $this->report($throwable);
+
+            if (YesWikiKernel::isCli()) {
+                return;
+            }
+
+            if (!headers_sent()) {
+                http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            echo $this->failurePage($throwable);
+        });
+    }
+
+    /**
+     * What a visitor sees instead of a blank page. The detail is debug-only: the trail a webmaster needs is on stderr and in the Journal, and a production wiki does not put it on the screen.
+     */
+    private function failurePage(\Throwable $throwable): string
+    {
+        $page = '<h1>' . htmlspecialchars(_t('ERROR')) . '</h1>';
+
+        if (!empty($this->config['debug']) && $this->containerIsBuilt()) {
+            $page .= '<p>' . $this->service(ThrowableFormatter::class)->dump($throwable) . '</p>';
+        }
+
+        return $page;
+    }
+
+    /**
+     * One diagnostic in the Journal and on stderr, however little of the wiki is standing.
+     *
+     * @return void
+     */
+    public function report(\Throwable $throwable)
+    {
+        if ($this->containerIsBuilt()) {
+            try {
+                $this->service(Journal::class)->error($throwable->getMessage(), ['exception' => $throwable]);
+
+                return;
+            } catch (\Throwable $noJournal) {
+            }
+        }
+
+        Journal::toStderr((string)($this->config['base_url'] ?? ''), [
+            'channel' => 'diagnostic',
+            'level' => 'error',
+            'action' => $throwable::class,
+            'message' => $throwable->getMessage(),
+            'file' => $throwable->getFile(),
+            'line' => $throwable->getLine(),
+        ]);
     }
 
     public function getEnvironment(): string
@@ -222,6 +300,7 @@ class YesWikiRuntime
         $this->service(EventDispatcher::class)->yesWikiDispatch('maintenance.before', $context);
 
         $this->purgePages();
+        $this->pruneJournal();
         $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
         $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
         $this->drainSearchIndexQueue();
@@ -230,6 +309,15 @@ class YesWikiRuntime
             'maintenance.after',
             $context + ['duration' => microtime(true) - $began]
         );
+    }
+
+    /** The Journal's retention, beside the one that has always run here (ticket 51). */
+    protected function pruneJournal(): void
+    {
+        try {
+            $this->service(Journal::class)->prune();
+        } catch (\Throwable $failed) {
+        }
     }
 
     /** The search index's fallback drain. */
@@ -524,22 +612,26 @@ class YesWikiRuntime
         if ($exit !== null) {
             $event->setResponse($this->exitToResponse($exit));
         } elseif ($th instanceof HttpException) {
+            if ($th->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
+                $this->report($th);
+            }
             $event->setResponse(new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders()));
         } else {
+            $this->report($th);
             $event->setResponse(new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
+    }
+
+    /** Whether boot() has got as far as assigning the container this all hangs off. */
+    private function containerIsBuilt(): bool
+    {
+        return $this->booted;
     }
 
     /** The ExitException in a throwable, however deeply it was wrapped -- or null. */
     private function exitExceptionIn(\Throwable $th): ?ExitException
     {
-        for ($candidate = $th; $candidate !== null; $candidate = $candidate->getPrevious()) {
-            if ($candidate instanceof ExitException) {
-                return $candidate;
-            }
-        }
-
-        return null;
+        return ExitException::in($th);
     }
 
     /** `Redirector::redirect()`/`terminate()` unwinding out of a *routed* controller. */
@@ -686,6 +778,7 @@ class YesWikiRuntime
         $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
         $this->service(PageContext::class)->setTag($this->initialTag);
         $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
+        $this->booted = true;
     }
 
     /**

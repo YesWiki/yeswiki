@@ -116,6 +116,20 @@ jobs:
     name: ${{ matrix.driver }} / ${{ matrix.runtime }}
     runs-on: ubuntu-26.04
 
+    # On the job rather than on the step that installs the wiki, because the specs reset between
+    # themselves: `resetEnv()` runs the same `reset.sh` from inside the browser suite, in a step
+    # that had none of this set -- so a mid-suite reset fell back to the compose defaults and went
+    # looking for a host called `yeswiki-db`.
+    env:
+      YESWIKI_TEST_DRIVER: ${{ matrix.driver }}
+      YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
+      YESWIKI_TEST_DB_HOST: 127.0.0.1
+      YESWIKI_TEST_DB_USER: ${{ matrix.driver == 'pgsql' && 'yeswiki' || 'root' }}
+      YESWIKI_TEST_DB_PASSWORD: ${{ matrix.driver == 'pgsql' && 'password' || 'root' }}
+      YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
+      YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081/?' || 'http://127.0.0.1:8080/?' }}
+      YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081' || 'http://127.0.0.1:8080' }}
+
     strategy:
       # Which combination a change breaks is the information this matrix exists to produce, and
       # fail-fast throws most of it away.
@@ -220,28 +234,16 @@ jobs:
 
       - name: Install a fresh wiki
         if: steps.covered.outputs.run == 'true'
-        env:
-          YESWIKI_TEST_DRIVER: ${{ matrix.driver }}
-          YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
-          YESWIKI_TEST_DB_HOST: 127.0.0.1
-          YESWIKI_TEST_DB_USER: ${{ matrix.driver == 'pgsql' && 'yeswiki' || 'root' }}
-          YESWIKI_TEST_DB_PASSWORD: ${{ matrix.driver == 'pgsql' && 'password' || 'root' }}
-          YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
-          YESWIKI_TEST_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081/?' || 'http://127.0.0.1:8080/?' }}
         run: bash tests/e2e/reset.sh
 
       - name: Start the runtime under test
         if: steps.covered.outputs.run == 'true'
         env:
-          YESWIKI_TEST_RUNTIME: ${{ matrix.runtime }}
-          YESWIKI_TEST_BINARY: ${{ github.workspace }}/binary/dist/yeswiki-linux-x86_64
           YESWIKI_TEST_URL: http://127.0.0.1:8080/?PagePrincipale
         run: bash tests/e2e/runtime.sh start
 
       - name: Run the browser suite
         if: steps.covered.outputs.run == 'true'
-        env:
-          YESWIKI_BASE_URL: ${{ matrix.runtime == 'binary' && 'http://127.0.0.1:8081' || 'http://127.0.0.1:8080' }}
         run: yarn run test-e2e-all
 
       - name: Dump the runtime log

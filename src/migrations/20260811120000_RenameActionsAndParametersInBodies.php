@@ -1,10 +1,8 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\ActionCallRewriter;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
@@ -16,7 +14,6 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $rewriter = $this->getService(ActionCallRewriter::class);
         $pages = $db->prefixTable('pages');
 
@@ -44,8 +41,7 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
         if ($rewritten !== []) {
-            $log->log(
-                'migration',
+            $this->say(
                 'Ticket 33: renamed French action and parameter names in the stored bodies of '
                 . count($rewritten) . ' page(s), across all revisions: '
                 . implode(', ', array_keys($rewritten))
@@ -53,8 +49,11 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
             );
         }
 
-        $this->reportFilesStillUsingFrenchNames($log, $rewriter);
-        $this->reportLeftoverToolsDirectory($log);
+        // Ticket 53: both of these are claims about the present -- which files still name a
+        // renamed action, and which extensions are still sitting in `tools/`. They are checks the
+        // modules that own those subjects declare, run here and re-runnable from /admin/health.
+        $this->reportCheck('files-name-renamed-actions');
+        $this->reportCheck('leftover-tools-directory');
     }
 
     /** Narrow the sweep to rows that could possibly contain something to rewrite. */
@@ -69,73 +68,5 @@ class RenameActionsAndParametersInBodies extends YesWikiMigration
         );
 
         return SqlFragment::all(' OR ', ...$clauses)->wrappedIn('(', ')');
-    }
-
-    /** Templates and squelettes are files, not rows. */
-    private function reportFilesStillUsingFrenchNames(AdministrativeLogService $log, ActionCallRewriter $rewriter): void
-    {
-        $names = array_keys($rewriter->actionRenames());
-        if ($names === []) {
-            return;
-        }
-        $alternation = implode('|', array_map('preg_quote', $names));
-        $pattern = '/(\{\{\s*(' . $alternation . ')\b)|(\baction\s*\(\s*[\'"](' . $alternation . ')\b)/i';
-
-        $found = [];
-        // A one-shot diagnostic over the deployment as it stands on disk, so it reads the local
-        // filesystem rather than Storage: `themes/` and `extensions/` are the Program's, and the
-        // point is to tell the operator which files they still have to edit by hand. On a wiki
-        // whose `custom/` is in a bucket this sees the Program half only, which is a limit of the
-        // warning rather than of the migration.
-        $localFiles = $this->getService(LocalFiles::class);
-        foreach (['themes', 'custom', 'extensions'] as $dir) {
-            if (!$localFiles->isDirectory($dir)) {
-                continue;
-            }
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
-            foreach ($iterator as $file) {
-                if (!$file->isFile() || !in_array($file->getExtension(), ['twig', 'html', 'php'], true)) {
-                    continue;
-                }
-                if (preg_match($pattern, $localFiles->read($file->getPathname())) === 1) {
-                    $found[] = $file->getPathname();
-                }
-            }
-        }
-
-        if ($found !== []) {
-            $log->log(
-                'migration',
-                'Ticket 33: these files still name a renamed French action and were NOT rewritten '
-                . '-- files on disk are yours to edit, see docs/action-name-renames.json for the '
-                . 'mapping: ' . implode(', ', $found),
-                ''
-            );
-        }
-    }
-
-    /** The other silent upgrade failure: extensions left in `tools/`. */
-    private function reportLeftoverToolsDirectory(AdministrativeLogService $log): void
-    {
-        $localFiles = $this->getService(LocalFiles::class);
-        if (!$localFiles->isDirectory('tools')) {
-            return;
-        }
-        $entries = array_values(array_filter(
-            $localFiles->entriesIn('tools'),
-            fn ($entry) => $localFiles->isDirectory('tools/' . $entry)
-        ));
-        if ($entries === []) {
-            return;
-        }
-
-        $log->log(
-            'migration',
-            'Extensions are loaded from extensions/ and custom/extensions/ now; tools/ is not '
-            . 'scanned, so these are being silently ignored and their features no longer exist. '
-            . 'Move them to custom/extensions/ and check each is Ectoplasme-compatible: '
-            . implode(', ', $entries),
-            ''
-        );
     }
 }

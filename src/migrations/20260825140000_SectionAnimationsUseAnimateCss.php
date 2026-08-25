@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Kernel\Database\SqlParameters;
@@ -29,7 +28,6 @@ class SectionAnimationsUseAnimateCss extends YesWikiMigration
     public function run()
     {
         $db = $this->getService(DbService::class);
-        $log = $this->getService(AdministrativeLogService::class);
         $pages = $db->prefixTable('pages');
 
         $rows = $db->loadAll(
@@ -62,8 +60,7 @@ class SectionAnimationsUseAnimateCss extends YesWikiMigration
         $this->getService(SearchIndexer::class)->enqueue(array_keys($rewritten));
 
         if ($rewritten !== []) {
-            $log->log(
-                'migration',
+            $this->say(
                 'section animations were rewritten from the WOW.js class names to animate.css 4 in '
                 . count($rewritten) . ' page(s), across all revisions: '
                 . implode(', ', array_keys($rewritten))

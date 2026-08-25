@@ -17,6 +17,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\HealthService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -454,7 +455,34 @@ class TemplateEngine
             'entries' => $entries,
 
             'editChrome' => $this->renderChromeEditLink('navbar'),
+            'healthBadge' => $this->renderHealthBadge(),
             'account' => $chrome->accountButton,
+        ]);
+    }
+
+    /**
+     * What is broken, when there is something and the viewer can do something about it (ticket 52).
+     *
+     * Beside the pencil rather than attached to a configured quick-menu entry: those come from a
+     * Layout setting a webmaster may delete, and a wiki that cannot tell its webmaster it is
+     * broken is the thing this exists to fix. Silent when healthy, and never raised by something
+     * merely degraded (ADR-0026).
+     */
+    private function renderHealthBadge(): string
+    {
+        if (!$this->container->get(AclService::class)->isAdmin()) {
+            return '';
+        }
+
+        $count = $this->container->get(HealthService::class)->brokenCount();
+        if ($count === 0) {
+            return '';
+        }
+
+        return $this->render('@core/layout/health-badge.twig', [
+            'href' => $this->urlFormatter->href('', 'admin/health', null, false),
+            'label' => _t('ADMIN_HEALTH_BADGE', ['count' => $count]),
+            'count' => $count,
         ]);
     }
 

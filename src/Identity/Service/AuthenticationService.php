@@ -3,6 +3,7 @@
 namespace YesWiki\Identity\Service;
 
 use Psr\Container\ContainerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\YesWikiController;
@@ -12,9 +13,11 @@ use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
 use YesWiki\Identity\Security\LegacyPasswordHash;
 use YesWiki\Kernel\Entity\CookieData;
+use YesWiki\Kernel\Service\ActorSource;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Journal;
 
-class AuthenticationService extends YesWikiController
+class AuthenticationService extends YesWikiController implements ActorSource
 {
     use LimitationsTrait;
 
@@ -189,6 +192,24 @@ class AuthenticationService extends YesWikiController
     }
 
     /** The signed-in user's name, or -- for an anonymous visitor -- their IP address, by a convention as old as the wiki. */
+    /**
+     * A sign-in that did not work, recorded as an act (ticket 51).
+     *
+     * The actor is whoever tried, which for a visitor with no session is their address -- so a
+     * hundred failures from one place read as a hundred rows naming it, which is the whole reason
+     * audit entries never collapse.
+     */
+    public function recordFailedLogin(string $username, string $reason): void
+    {
+        $this->getService(Journal::class)->audit('login.failed', $username, ['reason' => $reason], null, LogLevel::WARNING);
+    }
+
+    /** ActorSource: the Journal names whoever acted, and off a request there is nobody to name. */
+    public function currentActor(): string
+    {
+        return $this->getLoggedUserName();
+    }
+
     public function getLoggedUserName(): string
     {
         if ($user = $this->getLoggedUser()) {

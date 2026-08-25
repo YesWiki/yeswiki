@@ -115,6 +115,42 @@ class PostgreSqlDialect implements SqlDialect
         return true;
     }
 
+    public function journalDdl(string $table): array
+    {
+        $json = $this->jsonColumnType();
+
+        return [
+            "CREATE TABLE IF NOT EXISTS \"{$table}\" (
+                \"id\" SERIAL PRIMARY KEY,
+                \"at\" TIMESTAMP NOT NULL,
+                \"last_at\" TIMESTAMP NOT NULL,
+                \"repeat\" INTEGER NOT NULL DEFAULT 1,
+                \"channel\" VARCHAR(16) NOT NULL,
+                \"level\" VARCHAR(16) NOT NULL,
+                \"actor\" VARCHAR(191) NOT NULL DEFAULT '',
+                \"action\" VARCHAR(191) NOT NULL,
+                \"target\" VARCHAR(191) NOT NULL DEFAULT '',
+                \"fingerprint\" CHAR(32) DEFAULT NULL,
+                \"day\" CHAR(10) DEFAULT NULL,
+                \"context\" {$json} DEFAULT NULL
+            )",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_at\" ON \"{$table}\" (\"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_channel_at\" ON \"{$table}\" (\"channel\", \"at\")",
+            "CREATE INDEX IF NOT EXISTS \"{$table}_idx_actor_at\" ON \"{$table}\" (\"actor\", \"at\")",
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"{$table}_uniq_fingerprint_day\" ON \"{$table}\" (\"fingerprint\", \"day\")",
+        ];
+    }
+
+    public function journalDropDdl(string $table): array
+    {
+        return ["DROP TABLE IF EXISTS \"{$table}\""];
+    }
+
+    public function upsert(string $table, array $values, array $conflictColumns, array $assignments): string
+    {
+        return SqlUpsert::onConflict($this, $table, $values, $conflictColumns, $assignments);
+    }
+
     /** A generated `tsvector` with a GIN index over it. */
     public function searchIndexDdl(string $table, string $queueTable, string $keywordsTable): array
     {
