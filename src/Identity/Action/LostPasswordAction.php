@@ -150,7 +150,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 if (empty($post->get('userID')) || empty($post->get('key'))) {
                     $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->params->get('root_page')));
                 }
-                $userName = $this->inputFilter->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
+                $userName = trim(strval($post->get('userID')));
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
                 $submittedPassword = $post->get('pw0');
@@ -165,12 +165,10 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 } else {
                     if (!empty($user)) {
                         try {
-                            $key = $this->inputFilter->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
-                            $pw0 = $this->inputFilter->filterInput(INPUT_POST, 'pw0', FILTER_DEFAULT, true);
                             $this->resetPassword(
                                 $user['name'],
-                                $key,
-                                $pw0
+                                trim(strval($post->get('key'))),
+                                strval($submittedPassword)
                             );
                         } catch (BadFormatPasswordException $ex) {
                             $this->errorType = $ex->getMessage();
