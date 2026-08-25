@@ -1358,6 +1358,14 @@ a.ical-export-button {
   align-items: center;
 }
 
+/** The grey square shown where an entry has no image. */
+.img-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: var(--yw-surface-sunken);
+  border-radius: var(--yw-radius-sm);
+}
+
 .icon-placeholder {
   position: absolute;
   width: 100%;

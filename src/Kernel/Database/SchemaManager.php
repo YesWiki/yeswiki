@@ -18,6 +18,37 @@ class SchemaManager
         return $this->columnInfo($table, $column) !== null;
     }
 
+    /** Whether $table already carries an index of this name. */
+    public function indexExists(string $table, string $index): bool
+    {
+        $prefixed = trim($this->dbService->prefixTable($table));
+
+        switch ($this->dbService->getDriver()) {
+            case 'pgsql':
+                $found = $this->dbService->loadAll(
+                    'SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?',
+                    [$prefixed, $index]
+                );
+                break;
+
+            case 'sqlite':
+                $found = $this->dbService->loadAll(
+                    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?",
+                    [$index]
+                );
+                break;
+
+            default:
+                $found = $this->dbService->loadAll(
+                    'SHOW INDEX FROM ' . $this->dbService->dialect()->quoteIdentifier($prefixed)
+                    . ' WHERE Key_name = ?',
+                    [$index]
+                );
+        }
+
+        return $found !== [];
+    }
+
     /**
      * Type, nullability and default of one column, or null if there is no such column.
      *

@@ -15,8 +15,7 @@ To be relevant for news, like displaying news that have a date before today -->
         {% if entry.imagebf_image is defined and entry.imagebf_image is not empty %}
           <img loading="lazy" class="img-responsive" alt="" src="{{ resizedImage(entry.imagebf_image, imgwidth, imgheight, 'crop') }}">
         {% else %}
-          <img loading="lazy" alt="" class="trombi-image img-placeholder"
-               src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <div class="trombi-image img-placeholder" aria-hidden="true"></div>
           <svg class="yw-icon trombi-image icon-placeholder" aria-hidden="true"><use href="src/assets/icons.svg#calendar"/></svg>
         {% endif %}
       </div>

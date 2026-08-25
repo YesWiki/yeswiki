@@ -27,11 +27,14 @@ class YesWikiKernel extends Kernel
 
     private YesWikiRuntime $runtime;
 
+    /** Computed once per process: the kernel asks for the cache directory many times. */
+    private ?string $fingerprint = null;
+
     public function __construct(YesWikiRuntime $runtime, string $environment)
     {
         $this->runtime = $runtime;
 
-        parent::__construct($environment, true);
+        parent::__construct($environment, false);
     }
 
     public function registerBundles(): iterable
@@ -50,7 +53,109 @@ class YesWikiKernel extends Kernel
 
     public function getCacheDir(): string
     {
-        return getcwd() . '/cache/container/' . $this->environment;
+        return getcwd() . '/cache/container/' . $this->environment . '/' . $this->fingerprint();
+    }
+
+    /** What this container was built from, as a short hash: change it and a new one is built. */
+    private function fingerprint(): string
+    {
+        if ($this->fingerprint !== null) {
+            return $this->fingerprint;
+        }
+
+        $parts = [
+            self::VERSION,
+            $this->hashOf(ConfigurationFileProvider::getConfigFileFromEnv()),
+            $this->hashOf(YESWIKI_INSTANCE_DIR . '/private/.env'),
+            $this->hashOf(__DIR__ . '/services.yaml'),
+            $this->hashOf($this->getProjectDir() . '/composer.lock'),
+        ];
+
+        foreach (array_merge(['YESWIKI_CONFIG_FILE'], array_keys(EnvironmentConfiguration::knownEnvNames())) as $name) {
+            $value = getenv($name);
+            $parts[] = $name . '=' . ($value === false ? '' : $value);
+        }
+
+        foreach (self::extensionDescriptors($this->getProjectDir()) as $descriptor) {
+            $parts[] = $descriptor . ':' . $this->hashOf($descriptor);
+        }
+
+        return $this->fingerprint = substr(sha1(implode("\n", $parts)), 0, 12);
+    }
+
+    private function hashOf(string $path): string
+    {
+        $contents = @file_get_contents($path);
+
+        return $contents === false ? '' : md5($contents);
+    }
+
+    /**
+     * Every extension descriptor and config, sorted, from both roots.
+     *
+     * @return list<string>
+     */
+    private static function extensionDescriptors(string $projectDir): array
+    {
+        $found = [];
+        foreach ([
+            $projectDir . '/extensions/*/desc.xml',
+            $projectDir . '/extensions/*/config.yaml',
+            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/desc.xml',
+            YESWIKI_INSTANCE_DIR . '/custom/extensions/*/config.yaml',
+        ] as $pattern) {
+            foreach (glob($pattern) ?: [] as $file) {
+                $found[] = $file;
+            }
+        }
+        sort($found);
+
+        return $found;
+    }
+
+    /** Remove containers built from configurations this wiki is no longer in, keeping one spare. */
+    private function pruneOldContainers(): void
+    {
+        $root = \dirname($this->getCacheDir());
+        $keep = basename($this->getCacheDir());
+
+        $entries = @scandir($root);
+        if ($entries === false) {
+            return;
+        }
+
+        $candidates = [];
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..' || $entry === $keep) {
+                continue;
+            }
+            $path = $root . '/' . $entry;
+            if (is_dir($path)) {
+                $candidates[$path] = (int)@filemtime($path);
+            }
+        }
+        if (\count($candidates) < 2) {
+            return;
+        }
+
+        asort($candidates);
+        array_pop($candidates);
+
+        foreach (array_keys($candidates) as $path) {
+            $this->removeTree($path);
+        }
+    }
+
+    private function removeTree(string $path): void
+    {
+        foreach ((array)@scandir($path) as $entry) {
+            if ($entry === '.' || $entry === '..' || !\is_string($entry)) {
+                continue;
+            }
+            $child = $path . '/' . $entry;
+            is_dir($child) ? $this->removeTree($child) : @unlink($child);
+        }
+        @rmdir($path);
     }
 
     public function getLogDir(): string
@@ -90,6 +195,8 @@ class YesWikiKernel extends Kernel
         }
 
         $this->addInvalidationResources($container);
+
+        $this->pruneOldContainers();
     }
 
     /**

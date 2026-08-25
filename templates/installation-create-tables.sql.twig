@@ -46,7 +46,9 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   KEY `idx_time` (`time`),
   KEY `idx_latest` (`latest`),
   KEY `idx_parent` (`parent`),
-  KEY `idx_type` (`type`)
+  KEY `idx_type` (`type`),
+  KEY `idx_latest_parent_tag` (`latest`, `parent`, `tag`),
+  KEY `idx_latest_time` (`latest`, `time`)
 <# ticket 18: `body` used to carry a FULLTEXT index for a search that read it directly.
    Search reads its own index table now (ADR-0015), and nothing ever queried this one with
    MATCH ... AGAINST even before that -- all it did was amplify writes on a LONGTEXT column,
@@ -60,6 +62,8 @@ CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_time" ON "{{prefix}}pages" ("tim
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_latest" ON "{{prefix}}pages" ("latest");
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_parent" ON "{{prefix}}pages" ("parent");
 CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_type" ON "{{prefix}}pages" ("type");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_latest_parent_tag" ON "{{prefix}}pages" ("latest", "parent", "tag");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_latest_time" ON "{{prefix}}pages" ("latest", "time");
 <% endif %>
 
 <# Table: triples #>

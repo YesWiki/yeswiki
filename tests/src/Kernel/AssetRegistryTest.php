@@ -117,7 +117,7 @@ class AssetRegistryTest extends YesWikiTestCase
         $registry = $this->registry();
         $registry->addCssFile('styles/yw-core.css');
         $registry->addCssFile('styles/yw-core.css');
-        $registry->addCssFile('styles/animate.css');
+        $registry->addCssFile('styles/vendor/animate/animate.min.css');
 
         $this->assertSame(2, $registry->drain()->count());
     }

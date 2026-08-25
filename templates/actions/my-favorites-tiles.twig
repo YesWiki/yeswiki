@@ -14,8 +14,7 @@
 		aria-label="{{ favoriteTitle }}"
                 id="favoriteTile{{favorite.resource}}">
                 <div class="image-container">
-                    <img loading="lazy" class="trombi-image img-placeholder" alt=""
-                    src="javascripts/vendor/placeholder.php?size=140x140&amp;bg=efefef&amp;text=">
+                    <div class="trombi-image img-placeholder" aria-hidden="true"></div>
                     {% if favorite.image is not empty %}
                         <img loading="lazy" class="trombi-image for-my-favorites" alt=""
                             src="{{ urlImage({fileName:"files/#{favorite.image}",width:140,height:140,mode:'fit'}) }}"

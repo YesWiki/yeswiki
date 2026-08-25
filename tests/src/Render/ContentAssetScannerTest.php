@@ -73,7 +73,7 @@ class ContentAssetScannerTest extends YesWikiTestCase
             $this->scanner(),
             '<div class="mermaid-diagram-wrapper">not mermaid</div>',
             '<p>the word mermaid in prose</p>',
-            '<div data-note="c4-izmir">not a class attribute</div>'
+            '<div data-note="mermaid">not a class attribute</div>'
         );
 
         $this->assertTrue(
@@ -95,6 +95,6 @@ class ContentAssetScannerTest extends YesWikiTestCase
 
     public function testKnownMarkersAreTheOnesTheOldHookHandled(): void
     {
-        $this->assertSame(['mermaid', 'c4-izmir'], ContentAssetScanner::markers());
+        $this->assertSame(['mermaid'], ContentAssetScanner::markers());
     }
 }

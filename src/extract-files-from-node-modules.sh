@@ -57,6 +57,10 @@ mkdir -p styles/vendor/vditor && copy_css node_modules/vditor/dist/index.css sty
 mkdir -p javascripts/vendor/vditor/dist/js/icons &&
 	copy_js node_modules/vditor/dist/js/icons/ant.js javascripts/vendor/vditor/dist/js/icons/ant.js
 mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
+	for locale in en_US es_ES fr_FR pt_BR; do
+		copy_js "node_modules/vditor/dist/js/i18n/${locale}.js" "javascripts/vendor/vditor/dist/js/i18n/${locale}.js"
+	done
+mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
 	for lang in en_US es_ES fr_FR pt_BR; do
 		copy_js "node_modules/vditor/dist/js/i18n/$lang.js" "javascripts/vendor/vditor/dist/js/i18n/$lang.js"
 	done
@@ -83,10 +87,6 @@ mkdir -p javascripts/vendor/fullcalendar &&
 	cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar &&
 	cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
 
-# Moment
-mkdir -p javascripts/vendor/moment &&
-	copy_js node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment/moment-with-locales.min.js &&
-	cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
 
 # Docsify
 mkdir -p javascripts/vendor/docsify && \
@@ -169,12 +169,29 @@ else
 	fi
 fi
 
+# animate.css
+mkdir -p styles/vendor/animate && copy_css node_modules/animate.css/animate.min.css styles/vendor/animate/animate.min.css
+
 # htmx
 mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.js javascripts/vendor/htmx/htmx.min.js
+
+# p5 (1.x: 2.x drops global mode)
+copy_js node_modules/p5/lib/p5.min.js javascripts/vendor/p5.min.js
+
+copy_js node_modules/html5-qrcode/html5-qrcode.min.js javascripts/vendor/html5-qrcode.min.js
+
+mkdir -p javascripts/vendor/leaflet-ajax &&
+	copy_js node_modules/leaflet-ajax/dist/leaflet.ajax.min.js javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js
+mkdir -p javascripts/vendor/leaflet-spiderfier &&
+	copy_js node_modules/overlapping-marker-spiderfier-leaflet/dist/oms.js javascripts/vendor/leaflet-spiderfier/oms.min.js
+
 
 # mermaid
 mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min &&
 	copy_js node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs
 for f in node_modules/mermaid/dist/chunks/mermaid.esm.min/*; do
+	case "$f" in
+		*.map) continue ;;
+	esac
 	copy_js "$f" "javascripts/vendor/mermaid/chunks/mermaid.esm.min/$(basename "$f")"
 done

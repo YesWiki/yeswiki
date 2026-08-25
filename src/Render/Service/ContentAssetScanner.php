@@ -32,9 +32,6 @@ class ContentAssetScanner
                     })
                     JS,
             ],
-            'c4-izmir' => [
-                'css' => ['styles/vendor/izmir/izmir.min.css'],
-            ],
         ];
     }
 

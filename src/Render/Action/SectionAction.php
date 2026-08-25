@@ -227,30 +227,34 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
         ];
     }
 
+    /** Where animate.css lives, once postinstall has copied it out of the package. */
+    public const ANIMATE_CSS = 'styles/vendor/animate/animate.min.css';
+
+    /** Held by yw-core.css until yw-core.js sees the section scroll into view. */
+    public const HOLD_CLASS = 'yw-animate';
+
     /**
-     * The animations `{{section}}` can carry, as `wow <name>` class pairs.
+     * The animations `{{section}}` can carry, as animate.css class pairs.
      *
      * @var array<string, string>
      */
     private const ANIMATION_LABELS = [
         '' => 'NO_ANIMATION',
-        'wow bounce' => 'AB_templates_section_animation_bounce',
-        'wow flash' => 'AB_templates_section_animation_flash',
-        'wow pulse' => 'AB_templates_section_animation_pulse',
-        'wow rubberBand' => 'AB_templates_section_animation_rubberband',
-        'wow shakeX' => 'AB_templates_section_animation_shakex',
-        'wow shakeY' => 'AB_templates_section_animation_shakey',
-        'wow headShake' => 'AB_templates_section_animation_headshaked',
-        'wow swing' => 'AB_templates_section_animation_swing',
-        'wow tada' => 'AB_templates_section_animation_tada',
-        'wow wobble' => 'AB_templates_section_animation_wobble',
-        'wow jello' => 'AB_templates_section_animation_jello',
-        'wow heartBeat' => 'AB_templates_section_animation_heartbat',
+        'animate__animated animate__bounce' => 'AB_templates_section_animation_bounce',
+        'animate__animated animate__flash' => 'AB_templates_section_animation_flash',
+        'animate__animated animate__pulse' => 'AB_templates_section_animation_pulse',
+        'animate__animated animate__rubberBand' => 'AB_templates_section_animation_rubberband',
+        'animate__animated animate__shakeX' => 'AB_templates_section_animation_shakex',
+        'animate__animated animate__shakeY' => 'AB_templates_section_animation_shakey',
+        'animate__animated animate__headShake' => 'AB_templates_section_animation_headshaked',
+        'animate__animated animate__swing' => 'AB_templates_section_animation_swing',
+        'animate__animated animate__tada' => 'AB_templates_section_animation_tada',
+        'animate__animated animate__wobble' => 'AB_templates_section_animation_wobble',
+        'animate__animated animate__jello' => 'AB_templates_section_animation_jello',
+        'animate__animated animate__heartBeat' => 'AB_templates_section_animation_heartbat',
     ];
 
-    /**
-     * The animation this section carries, as the class pair stored content already uses -- and the stylesheet that makes it move, declared only when there is one to run.
-     */
+    /** The animation this section carries, and the stylesheet that makes it move. */
     private function animationClass(): string
     {
         $animation = trim((string)($this->arguments['animation'] ?? ''));
@@ -258,9 +262,9 @@ class SectionAction extends YesWikiAction implements RegisteredAction, ProvidesC
             return '';
         }
 
-        $this->getService(AssetRegistry::class)->addCssFile('styles/animate.css');
+        $this->getService(AssetRegistry::class)->addCssFile(self::ANIMATE_CSS);
 
-        return ' ' . $animation;
+        return ' ' . self::HOLD_CLASS . ' ' . $animation;
     }
 
     /**

@@ -17,8 +17,7 @@
                     ? 'onerror=this.src=\'' ~ entry['external-data'].baseUrl ~ 'files/' ~ entry.imagebf_image ~ "\'"
                     : '' }} > 
             {% else %}
-              <img loading="lazy" class="trombi-image img-placeholder"
-                   src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+              <div class="trombi-image img-placeholder" aria-hidden="true"></div>
               <svg class="yw-icon trombi-image icon-placeholder" aria-hidden="true"><use href="src/assets/icons.svg#user-circle"/></svg>
             {% endif %}
           </div>

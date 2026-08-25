@@ -4091,3 +4091,19 @@ figcaption *:last-child {
       100% 100%;
   }
 }
+
+/** Holds a {{section}} animation until yw-core.js sees it scroll into view. */
+.yw-animate.animate__animated {
+  animation-play-state: paused;
+}
+
+.yw-animate.animate__animated.yw-animate--in {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yw-animate.animate__animated,
+  .yw-animate.animate__animated.yw-animate--in {
+    animation: none !important;
+  }
+}

@@ -171,19 +171,6 @@ class AttachAction extends YesWikiAction implements RegisteredAction, ProvidesCo
                         'file' => '\\.(png|jpg|jpeg|gif|svg|webp)$',
                     ])
                     ->checkedValues('zoom', ''),
-                    Setting::choice('izmir', [
-                        'c4-izmir' => _t('AB_attach_class_izmir_izmir'),
-                        'c4-izmir c4-border-cc-3' => _t('AB_attach_class_izmir_border'),
-                        'c4-izmir c4-image-zoom-in' => _t('AB_attach_class_izmir_zoom'),
-                        'c4-izmir c4-reveal-up' => _t('AB_attach_class_izmir_revealup'),
-                        'c4-izmir c4-gradient-top' => _t('AB_attach_class_izmir_gradiant'),
-                        'C4-izmir c4-layout-top-center' => _t('AB_attach_class_izmir_topcentertext'),
-                    ])
-                    ->label(_t('AB_attach_class_izmir_label'))
-                    ->hint(_t('AB_attach_class_izmir_hint'))
-                    ->showIf([
-                        'file' => '\\.(png|jpg|jpeg|gif)$',
-                    ]),
                 ),
         )->width('40%');
     }

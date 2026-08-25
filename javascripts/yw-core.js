@@ -425,6 +425,48 @@
   document.addEventListener('htmx:afterSettle', publishViewportWidth)
   new ResizeObserver(publishViewportWidth).observe(document.documentElement)
 
+  /** Reveal-on-scroll for `{{section animation="..."}}`. */
+  const revealOnScroll = () => {
+    const waiting = document.querySelectorAll(
+      '.yw-animate:not([data-yw-animate])',
+    )
+    if (!waiting.length) {
+      return
+    }
+
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
+    if (reduced || typeof IntersectionObserver === 'undefined') {
+      waiting.forEach((el) => {
+        el.setAttribute('data-yw-animate', 'shown')
+        el.classList.add('yw-animate--in')
+      })
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return
+          }
+          entry.target.classList.add('yw-animate--in')
+          observer.unobserve(entry.target)
+        })
+      },
+      { rootMargin: '0px 0px -10% 0px' },
+    )
+
+    waiting.forEach((el) => {
+      el.setAttribute('data-yw-animate', 'waiting')
+      observer.observe(el)
+    })
+  }
+
+  revealOnScroll()
+  document.addEventListener('htmx:afterSettle', revealOnScroll)
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const open = document.querySelectorAll('.yw-modal--open')

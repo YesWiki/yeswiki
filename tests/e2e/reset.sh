@@ -57,7 +57,7 @@ drop_and_create() {
   case "$DRIVER" in
     mysql)
       echo "DROP DATABASE IF EXISTS ${DB_NAME}; CREATE DATABASE ${DB_NAME};" \
-        | mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}" --skip-ssl
+        | mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}"
       ;;
     pgsql)
       export PGPASSWORD="${DB_PASSWORD}"
