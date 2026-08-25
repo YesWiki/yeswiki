@@ -73,6 +73,8 @@ class FormManager
     {
         $basePath = $this->attach->GetUploadPath();
 
+        $basePath = substr($basePath, -1) == '/' ? $basePath : $basePath.'/';
+
         return $basePath;
     }
 
@@ -116,6 +118,7 @@ class FormManager
                     } finally {
                         unlink($tempFile);
                     }
+                    dump(json_encode($image_comp));
                 } else {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
                     if (file_exists($default_image_filename)) {

@@ -137,8 +137,6 @@ if (!class_exists('attach')) {
                 }
             }
 
-            $path = substr($path, -1) == '/' ? $path : $path . '/';
-
             return $path;
         }
 
@@ -155,8 +153,6 @@ if (!class_exists('attach')) {
                     $this->mkdir_recursif($path);
                 }
             }
-
-            $path = substr($path, -1) == '/' ? $path : $path.'/';
 
             return $path;
         }
