@@ -30,11 +30,11 @@ class LabelField extends BazarField
         $this->name = null;
         $this->label = null;
         $this->propertyName = null;
-        $this->formText = $values[self::FIELD_FORM_TEXT];
-        $this->viewText = $values[self::FIELD_VIEW_TEXT];
+        $this->formText = $values[self::FIELD_FORM_TEXT] ?? '';
+        $this->viewText = $values[self::FIELD_VIEW_TEXT] ?? '';
         $this->useWikiSyntax = (
+            empty($values[self::FIELD_USE_WIKI_SYNTAX]) ||
             $values[self::FIELD_USE_WIKI_SYNTAX] === false
-            || empty($values[self::FIELD_USE_WIKI_SYNTAX])
             || in_array($values[self::FIELD_USE_WIKI_SYNTAX], [0, '0', 'no', 'non', 'false'])
         ) ? false : true;
     }
