@@ -182,6 +182,122 @@ class TransactionsTest extends YesWikiTestCase
     }
 
     /** Rolling back with nothing open is a no-op, so unwinding code cannot fail on it. */
+    /**
+     * A deadlock victim is replayed, because the engine has already undone it.
+     *
+     * MySQL reports `SQLSTATE[40001] ... 1213 Deadlock found when trying to get lock; try
+     * restarting transaction`, and `DbService::query()` rethrows it wrapped -- so the retry has to
+     * find the PDOException through `getPrevious()` rather than looking at what it caught.
+     */
+    public function testADeadlockVictimIsReplayed(): void
+    {
+        $attempts = 0;
+        $result = self::db()->transactional(function () use (&$attempts): string {
+            $attempts++;
+            if ($attempts === 1) {
+                throw self::wrappedDeadlock('40001');
+            }
+
+            return 'kept';
+        }, 3);
+
+        $this->assertSame('kept', $result);
+        $this->assertSame(2, $attempts, 'the first attempt was undone by the engine, the second stuck');
+    }
+
+    /** PostgreSQL raises its own code for a deadlock, and it is retryable too. */
+    public function testAPostgresDeadlockIsAlsoReplayed(): void
+    {
+        $attempts = 0;
+        self::db()->transactional(function () use (&$attempts): void {
+            $attempts++;
+            if ($attempts === 1) {
+                throw self::wrappedDeadlock('40P01');
+            }
+        }, 2);
+
+        $this->assertSame(2, $attempts);
+    }
+
+    /** Retrying stops at the budget rather than looping while the engine keeps refusing. */
+    public function testAPersistentDeadlockGivesUpAndThrows(): void
+    {
+        $attempts = 0;
+
+        $surfaced = '';
+
+        try {
+            self::db()->transactional(function () use (&$attempts): void {
+                $attempts++;
+
+                throw self::wrappedDeadlock('40001');
+            }, 3);
+        } catch (\Exception $failure) {
+            $surfaced = $failure->getMessage();
+        }
+
+        $this->assertStringContainsString('Deadlock', $surfaced, 'a deadlock that never clears must surface');
+        $this->assertSame(3, $attempts, 'exactly the budget, no more');
+    }
+
+    /** Anything that is not a serialization failure is the caller's problem, thrown at once. */
+    public function testAnOrdinaryFailureIsNotRetried(): void
+    {
+        $attempts = 0;
+
+        $surfaced = '';
+
+        try {
+            self::db()->transactional(function () use (&$attempts): void {
+                $attempts++;
+
+                throw new \Exception('a column is missing');
+            }, 3);
+        } catch (\Exception $failure) {
+            $surfaced = $failure->getMessage();
+        }
+
+        $this->assertSame('a column is missing', $surfaced, 'an ordinary failure must surface');
+        $this->assertSame(1, $attempts, 'no replay for a failure the engine did not ask us to replay');
+    }
+
+    /** Replaying an inner scope would replay it inside a transaction the deadlock already killed. */
+    public function testAnInnerScopeDoesNotRetryOnItsOwn(): void
+    {
+        $inner = 0;
+
+        $surfaced = '';
+
+        try {
+            self::db()->transactional(function () use (&$inner): void {
+                self::db()->transactional(function () use (&$inner): void {
+                    $inner++;
+
+                    throw self::wrappedDeadlock('40001');
+                }, 5);
+            });
+        } catch (\Exception $failure) {
+            $surfaced = $failure->getMessage();
+        }
+
+        $this->assertStringContainsString('Deadlock', $surfaced, 'the failure must reach the outer scope');
+        $this->assertSame(1, $inner, 'the inner scope ran once and handed the failure outwards');
+    }
+
+    /** What `DbService::query()` throws when PDO reports a deadlock. */
+    private static function wrappedDeadlock(string $sqlState): \Exception
+    {
+        $pdo = new \PDOException(
+            "SQLSTATE[{$sqlState}]: Serialization failure: 1213 Deadlock found when trying to get lock"
+        );
+        // PDO puts the SQLSTATE in `code` itself, from inside the class; a test has to reach for it
+        $code = new \ReflectionProperty(\Exception::class, 'code');
+        $code->setAccessible(true);
+        $code->setValue($pdo, $sqlState);
+
+        return new \Exception($pdo->getMessage() . ' -- while running: DELETE ...', 0, $pdo);
+    }
+
     public function testRollingBackWithNoScopeOpenIsHarmless(): void
     {
         $db = self::db();

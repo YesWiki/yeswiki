@@ -614,21 +614,51 @@ class DbService
      *
      * @throws \Throwable whatever $work threw, after rolling back
      */
-    public function transactional(callable $work): mixed
+    public function transactional(callable $work, int $attempts = 1): mixed
     {
-        $this->beginTransaction();
+        // An inner scope cannot retry: a deadlock takes the whole transaction down with it, so
+        // the outermost scope is the only one that still has anything to replay.
+        $attempts = $this->transactionDepth > 0 ? 1 : max(1, $attempts);
 
-        try {
-            $result = $work();
-        } catch (\Throwable $failure) {
-            $this->rollBack();
+        for ($attempt = 1;; $attempt++) {
+            $this->beginTransaction();
 
-            throw $failure;
+            try {
+                $result = $work();
+            } catch (\Throwable $failure) {
+                $this->rollBack();
+
+                if ($attempt >= $attempts || !self::isRetryableConflict($failure)) {
+                    throw $failure;
+                }
+
+                continue;
+            }
+
+            $this->commit();
+
+            return $result;
+        }
+    }
+
+    /**
+     * Whether the engine is telling us to run the whole transaction again.
+     *
+     * A deadlock is not a bug in the statement: two transactions wanted the same rows in an order
+     * the engine could not satisfy, so it picked one and undid it. It has already rolled that one
+     * back, which is what makes replaying safe -- and MySQL says so in as many words ("try
+     * restarting transaction"). `40001` is the SQL-standard serialization failure, which MySQL
+     * raises for 1213 and PostgreSQL for its own; `40P01` is PostgreSQL's separate deadlock code.
+     */
+    private static function isRetryableConflict(\Throwable $failure): bool
+    {
+        for ($cause = $failure; $cause !== null; $cause = $cause->getPrevious()) {
+            if ($cause instanceof \PDOException && in_array((string)$cause->getCode(), ['40001', '40P01'], true)) {
+                return true;
+            }
         }
 
-        $this->commit();
-
-        return $result;
+        return false;
     }
 
     /** Open a scope. */

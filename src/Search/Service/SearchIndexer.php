@@ -13,6 +13,17 @@ class SearchIndexer
     /** How many tags one statement handles. */
     private const INSERT_BATCH = 100;
 
+    /**
+     * How many times a rewrite of the index may be replayed after the engine picks it as a
+     * deadlock victim.
+     *
+     * Nothing stops two drains overlapping -- a visitor's maintenance sweep, `search:reindex` and
+     * the browser suite all reach for the same queue, and the chunk each takes is chosen before
+     * the transaction opens, so two of them can hold overlapping tag sets. The engine resolves
+     * that by undoing one, and the undone one is what this replays.
+     */
+    private const CONFLICT_ATTEMPTS = 3;
+
     private DbService $dbService;
     private SearchIndexSchema $schema;
     private SearchableTextExtractor $extractor;
@@ -50,7 +61,7 @@ class SearchIndexer
                 $this->write([$content]);
             }
             $this->dequeue([$tag]);
-        });
+        }, self::CONFLICT_ATTEMPTS);
     }
 
     /** Remove a Content from the index entirely -- it was deleted. */
@@ -232,7 +243,7 @@ class SearchIndexer
                 $this->dbService->query("DELETE FROM {$this->schema->keywordsTable()} WHERE tag IN ({$inList})", $tags);
                 $this->write($contents);
                 $this->dequeue($tags);
-            });
+            }, self::CONFLICT_ATTEMPTS);
 
             $done += count($tags);
 
