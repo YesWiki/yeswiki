@@ -73,8 +73,6 @@ class MigrationService
                 }
             }
         }
-
-        error_log(json_encode($vFiles));
         usort($vFiles, function ($a, $b) {
             return strcmp($a['file'], $b['file']);
         });
