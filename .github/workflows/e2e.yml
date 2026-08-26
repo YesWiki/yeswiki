@@ -89,7 +89,7 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build the static binary
         env:
@@ -191,7 +191,7 @@ jobs:
         if: steps.covered.outputs.run == 'true'
         with:
           php-version: '8.4'
-          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, xml, xmlreader, zip
+          extensions: ctype, curl, dom, fileinfo, filter, gd, iconv, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip
           tools: composer:v2
 
       - run: composer install --prefer-dist --no-progress

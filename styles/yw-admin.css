@@ -2471,3 +2471,145 @@ body > button.primary {
   font-family: var(--yw-font-mono);
   font-size: 0.85em;
 }
+
+/* `section > div` in yw-core pads a page-content section; the dashboard's own sections are
+   not that, and the padding pushed every card in from the canvas edge. */
+.yw-dash section > div {
+  padding: 0;
+}
+
+/* Sections need room between them, or a heading reads as one more row of the section above. */
+.yw-dash__section {
+  margin-bottom: calc(var(--yw-space-lg-y) * 2);
+  scroll-margin-top: var(--yw-space-lg-y);
+}
+
+.yw-dashboard__breadcrumb {
+  margin-bottom: var(--yw-space-md-y);
+}
+
+/* An activity row: a face, what happened, where. */
+.yw-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-feed__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) 0;
+  border-top: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-feed__item:first-child {
+  border-top: 0;
+}
+
+/* Who did it sits on the meta line, at the size of the text beside it. */
+.yw-feed__who {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.yw-feed__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yw-feed__title {
+  display: block;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.yw-feed__excerpt {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.yw-feed__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--yw-space-sm-x);
+  font-size: 0.85em;
+  color: var(--yw-text-muted);
+}
+
+.yw-feed__meta a {
+  color: inherit;
+}
+
+.yw-feed__aside {
+  flex: 0 0 auto;
+  color: var(--yw-text-muted);
+}
+
+.yw-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-keyword {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
+  padding: var(--yw-space-sm-y) var(--yw-space-sm-x);
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-md);
+  background: var(--yw-surface-sunken);
+  color: inherit;
+  text-decoration: none;
+}
+
+.yw-keyword:hover,
+.yw-keyword:focus-visible {
+  border-color: var(--yw-primary);
+  color: inherit;
+}
+
+.yw-keyword__count {
+  font-size: 0.8em;
+  color: var(--yw-text-muted);
+}
+
+.yw-index {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--yw-space-md-y) var(--yw-space-md-x);
+}
+
+.yw-index__group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yw-index__group li {
+  overflow-wrap: anywhere;
+}
+
+.yw-index__letter {
+  display: block;
+  margin-bottom: var(--yw-space-sm-y);
+  font-weight: bold;
+  color: var(--yw-primary);
+  border-bottom: var(--yw-border-width) solid var(--yw-border);
+}
+
+/* Three abreast on a wide screen, and never narrower than a name plus a date. */
+.yw-dashboard__grid--thirds {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .yw-dashboard__grid--thirds {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}

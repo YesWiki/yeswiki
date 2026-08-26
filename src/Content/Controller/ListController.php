@@ -3,13 +3,11 @@
 namespace YesWiki\Content\Controller;
 
 use YesWiki\Content\Action\BazarAction;
-use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\ContentNotifier;
-use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Content\Service\ListOverview;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -17,20 +15,17 @@ use YesWiki\Kernel\Service\UrlFormatter;
 class ListController extends YesWikiController
 {
     protected ListManager $listManager;
-    protected HibernationService $hibernationService;
     protected AclService $aclService;
-    protected FieldFactory $fieldFactory;
+    private ListOverview $listOverview;
 
     public function __construct(
         ListManager $listManager,
-        HibernationService $hibernationService,
         AclService $aclService,
-        FieldFactory $fieldFactory
+        ListOverview $listOverview
     ) {
         $this->listManager = $listManager;
-        $this->hibernationService = $hibernationService;
         $this->aclService = $aclService;
-        $this->fieldFactory = $fieldFactory;
+        $this->listOverview = $listOverview;
     }
 
     public function displayAll(): string
@@ -38,7 +33,7 @@ class ListController extends YesWikiController
         $post = $this->getRequest()->request;
         $refusal = '';
         if ($post->has('imported-list')) {
-            if ($this->mayCreate()) {
+            if ($this->listOverview->mayCreate()) {
                 foreach ($post->all('imported-list') as $listRaw) {
                     $list = is_string($listRaw) ? json_decode($listRaw, true) : null;
                     if (!is_array($list) || !isset($list['title'])) {
@@ -52,45 +47,7 @@ class ListController extends YesWikiController
             }
         }
 
-        $lists = array_filter(
-            $this->listManager->getAll(),
-            fn ($key) => $this->aclService->hasAccess('read', $key),
-            ARRAY_FILTER_USE_KEY
-        );
-
-        foreach ($lists as $key => $list) {
-            if ($list === null) {
-                unset($lists[$key]);
-                continue;
-            }
-            $lists[$key]['canEdit'] = $this->mayEdit((string)$key);
-            $lists[$key]['canDelete'] = $this->mayDelete((string)$key);
-
-            $field = $this->fieldFactory->create(['liste', $list['id'] ?? '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-            $lists[$key]['options'] = $field instanceof EnumField ? $field->getOptions() : [];
-        }
-
-        return $refusal . $this->render('@core/lists/list_table.twig', [
-            'lists' => $lists,
-            'canCreate' => $this->mayCreate(),
-        ]);
-    }
-
-    /** Who may change the lists: an admin, or -- for one list -- whoever owns it. */
-    private function mayCreate(): bool
-    {
-        return !$this->hibernationService->isWikiHibernated() && $this->aclService->isAdmin();
-    }
-
-    private function mayEdit(string $id): bool
-    {
-        return $this->mayDelete($id) && $this->aclService->hasAccess('write', $id);
-    }
-
-    private function mayDelete(string $id): bool
-    {
-        return !$this->hibernationService->isWikiHibernated()
-            && ($this->aclService->isAdmin() || $this->aclService->isOwner($id));
+        return $refusal . $this->render('@core/lists/list_table.twig', $this->listOverview->all());
     }
 
     /**
@@ -106,7 +63,7 @@ class ListController extends YesWikiController
 
     public function create(): string
     {
-        if (!$this->mayCreate()) {
+        if (!$this->listOverview->mayCreate()) {
             return $this->refusal();
         }
 
@@ -141,7 +98,7 @@ class ListController extends YesWikiController
      */
     public function update($id): string
     {
-        if (!$this->mayEdit((string)$id)) {
+        if (!$this->listOverview->mayEdit((string)$id)) {
             return $this->refusal();
         }
         $list = $this->listManager->getOne($id);
@@ -175,7 +132,7 @@ class ListController extends YesWikiController
      */
     public function delete($id): string
     {
-        if (!$this->mayDelete((string)$id)) {
+        if (!$this->listOverview->mayDelete((string)$id)) {
             return $this->refusal();
         }
         $this->listManager->delete($id);

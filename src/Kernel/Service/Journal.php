@@ -276,7 +276,7 @@ class Journal implements LoggerInterface
                 'level' => ':new.level',
                 'target' => ':new.target',
                 'context' => ':new.context',
-                'repeat' => $db->quoteIdentifier('repeat') . ' + 1',
+                'repeat' => ':old.repeat + 1',
             ]
         );
 

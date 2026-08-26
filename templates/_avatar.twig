@@ -1,9 +1,11 @@
-
-
-<span class="yw-avatar{{ class|default('') ? ' ' ~ class }}"
-      {% if not avatar.hasImage %}style="--yw-avatar-bg: {{ avatar.background }}; --yw-avatar-fg: {{ avatar.foreground }};"{% endif %}
+<span class="yw-avatar{{ avatar.isNobody ? ' yw-avatar--nobody' }}{{ class|default('') ? ' ' ~ class }}"
+      {% if not avatar.hasImage and not avatar.isNobody %}style="--yw-avatar-bg: {{ avatar.background }}; --yw-avatar-fg: {{ avatar.foreground }};"{% endif %}
       aria-hidden="true">
-  {%- if avatar.hasImage -%}
+  {%- if avatar.system -%}
+    {{ icon('yeswiki') }}
+  {%- elseif avatar.anonymous -%}
+    {{ icon('user') }}
+  {%- elseif avatar.hasImage -%}
     <img class="yw-avatar__image" src="{{ avatar.imageUrl }}" alt="" loading="lazy" />
   {%- else -%}
     <span class="yw-avatar__initials">{{ avatar.initials }}</span>

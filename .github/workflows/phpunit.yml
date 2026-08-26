@@ -126,7 +126,7 @@ jobs:
           # ExtensionManifestTest asserts this line and composer.json's `require` still agree:
           # the list drifted once already, which is how ext-openssl went four years undeclared
           # while every leg happened to have it (ticket 47).
-          extensions: ctype, curl, dom, fileinfo, filter, gd, hash, iconv, json, libxml, mbstring, openssl, pcre, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, xml, xmlreader, zip
+          extensions: ctype, curl, dom, fileinfo, filter, gd, hash, iconv, json, libxml, mbstring, openssl, pcre, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, session, simplexml, tokenizer, xml, xmlreader, zip
           tools: composer:v2
 
       - run: php -v

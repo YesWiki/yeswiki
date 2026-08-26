@@ -149,11 +149,12 @@ class MySqlDialect implements SqlDialect
     {
         $sets = [];
         foreach ($assignments as $column => $expression) {
-            $sets[] = $this->quoteIdentifier($column) . ' = ' . preg_replace_callback(
+            $expression = (string)preg_replace_callback(
                 '/:new\.([a-z_]+)/i',
                 fn (array $m): string => 'VALUES(' . $this->quoteIdentifier($m[1]) . ')',
                 $expression
             );
+            $sets[] = $this->quoteIdentifier($column) . ' = ' . SqlUpsert::oldRow($this, $expression, $table);
         }
 
         return 'INSERT INTO ' . $this->quoteIdentifier($table)

@@ -1,0 +1,13 @@
+{% if keywords is empty %}
+  <p class="yw-text-muted">{{ _t('DASHBOARD_KEYWORDS_NONE') }}</p>
+{% else %}
+  <ul class="yw-keywords">
+    {% for keyword in keywords %}
+      <li>
+        <a class="yw-keyword" href="{{ keyword.url }}">
+          {{ keyword.value }}<span class="yw-keyword__count">{{ keyword.total }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -1,6 +1,0 @@
-{% extends "@core/dashboard/layout.twig" %}
-
-{% block dashboard_content %}
-  <h1>{{ _t('DASHBOARD_ADMIN_LISTS') }}</h1>
-  {{ renderAction('bazar', { view: 'listes', showmenu: '0' })|raw }}
-{% endblock %}

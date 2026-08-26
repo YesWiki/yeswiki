@@ -181,6 +181,25 @@ class TagsManager
     }
 
     /**
+     * The keywords used most, with how many Contents carry each.
+     *
+     * @return list<array{value: string, total: int}>
+     */
+    public function mostUsed(int $limit = 30): array
+    {
+        $rows = $this->dbService->loadAll(
+            'SELECT value, COUNT(*) AS total FROM' . $this->dbService->prefixTable('triples')
+            . 'WHERE property = ? GROUP BY value ORDER BY total DESC, value ASC LIMIT ?',
+            [self::TAG_PROPERTY, max(1, $limit)]
+        );
+
+        return array_map(
+            fn (array $row): array => ['value' => (string)$row['value'], 'total' => (int)$row['total']],
+            $rows
+        );
+    }
+
+    /**
      * Live-search: distinct keywords matching $search (substring, case-insensitive), paginated.
      *
      * @return array{tags: string[], total: int}

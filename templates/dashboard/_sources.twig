@@ -1,0 +1,50 @@
+<p class="yw-dashboard__intro">{{ _t('DASHBOARD_SOURCES_INTRO') }}</p>
+
+{% if sources is empty %}
+  <div class="yw-alert yw-alert--info">{{ _t('DASHBOARD_SOURCES_NONE') }}</div>
+{% else %}
+  {% for source in sources %}
+    <section class="yw-dashboard__card yw-dashboard__card--wide yw-source">
+      <div class="yw-source__head">
+        <h3 class="yw-source__origin">
+          <a href="{{ source.origin }}" rel="noreferrer noopener">{{ icon('link') }} {{ source.origin }}</a>
+        </h3>
+        <span class="yw-source__count">
+          {{ _t('DASHBOARD_SOURCES_COUNT')|replace({'{count}': source.total}) }}
+        </span>
+      </div>
+
+      <p class="yw-source__last">
+        {{ _t('DASHBOARD_SOURCES_LAST')|replace({'{date}': source.lastImport}) }}
+      </p>
+
+      <details class="yw-source__entries">
+        <summary>{{ _t('DASHBOARD_SOURCES_SHOW_ENTRIES') }}</summary>
+        <div class="yw-table-scroll">
+          <table class="yw-table">
+            <thead>
+              <tr>
+                <th>{{ _t('DASHBOARD_SOURCES_LOCAL') }}</th>
+                <th>{{ _t('DASHBOARD_SOURCES_REMOTE') }}</th>
+                <th>{{ _t('DASHBOARD_SOURCES_UPDATED') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in source.entries %}
+                <tr>
+                  <td><a href="{{ url({ tag: entry.tag }) }}">{{ entry.tag }}</a></td>
+                  <td>
+                    <a href="{{ entry.source }}" rel="noreferrer noopener">
+                      <code>{{ entry.source }}</code>
+                    </a>
+                  </td>
+                  <td>{{ entry.time }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  {% endfor %}
+{% endif %}

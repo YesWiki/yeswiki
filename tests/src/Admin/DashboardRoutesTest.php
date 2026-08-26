@@ -5,6 +5,7 @@ namespace YesWiki\Test\Admin;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Admin\Api\DocumentationApiController;
 use YesWiki\Admin\Controller\AdminController;
+use YesWiki\Admin\Action\DashboardAction;
 use YesWiki\Admin\Controller\DashboardController;
 use YesWiki\Core\YesWikiRuntime;
 use YesWiki\Identity\Service\AclService;
@@ -77,25 +78,34 @@ class DashboardRoutesTest extends YesWikiTestCase
 
         try {
             $dashboard = $wiki->services->get(DashboardController::class);
+            $body = (string)$dashboard->index()->getContent();
+            $this->assertStringContainsString('yw-dashboard__sidebar', $body, '/dashboard renders the rail');
+
+            $sources = (string)$dashboard->sources()->getContent();
+            $this->assertStringContainsString('yw-dashboard__sidebar', $sources, '/dashboard/sources renders the rail');
+            $this->assertStringNotContainsString('yw-source', $body, 'the sources have a screen of their own');
+
             foreach ([
-                'index' => 'DASHBOARD_TITLE',
-                'forms' => 'DASHBOARD_FORMS',
-                'lists' => 'DASHBOARD_ADMIN_LISTS',
-                'sources' => 'DASHBOARD_SOURCES',
-            ] as $method => $key) {
-                $body = (string)$dashboard->{$method}()->getContent();
-                $this->assertStringContainsString('yw-dashboard__sidebar', $body, "/dashboard/{$method} renders the rail");
+                'DASHBOARD_TITLE', 'DASHBOARD_FORMS', 'DASHBOARD_ADMIN_LISTS', 'DASHBOARD_SOURCES',
+                'DASHBOARD_ACTIVITY_KEYWORDS', 'DASHBOARD_ACTIVITY_INDEX', 'DASHBOARD_EXPORT',
+            ] as $key) {
                 $this->assertStringNotContainsString($key, $body, 'every label is translated');
+            }
+
+            foreach (DashboardAction::SECTIONS as $section) {
+                $this->assertStringContainsString(
+                    'id="dashboard-' . $section . '"',
+                    $body,
+                    "the {$section} section is on the one dashboard"
+                );
             }
 
             $api = (string)$wiki->services->get(DocumentationApiController::class)->getDocumentation()->getContent();
             $this->assertStringContainsString('yw-dashboard__sidebar', $api, '/api renders the rail');
 
-            $forms = (string)$dashboard->forms()->getContent();
-            $this->assertStringContainsString('dashboard/forms&', $forms, 'BazaR links keep the whole route');
-            $this->assertStringNotContainsString('?dashboard&', $forms);
-
-            $this->assertStringNotContainsString('BAZ_menu', $forms);
+            $this->assertStringContainsString('?dashboard&', $body, 'a form card acts on the dashboard route');
+            $this->assertStringNotContainsString('dashboard/forms', $body, 'the sub-screens are folded in');
+            $this->assertStringNotContainsString('BAZ_menu', $body);
 
             $adminController = $wiki->services->get(AdminController::class);
             $screens = [

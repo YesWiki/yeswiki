@@ -14,7 +14,7 @@ use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/** The face of an account: its profile picture, or initials on a colour of its own. */
+/** The face of an account: its profile picture, or initials on a colour of its own -- and a mark when no account is behind the name at all. */
 class AvatarService
 {
     /** Rendered pixels of the square thumbnail. */
@@ -54,14 +54,18 @@ class AvatarService
     public function forName(string $name): Avatar
     {
         $name = trim($name);
+        $system = $name === '';
+        $anonymous = filter_var($name, FILTER_VALIDATE_IP) !== false;
         $background = $this->background($name);
 
         return new Avatar(
             $name,
-            $this->pictureUrl($name),
+            $system || $anonymous ? null : $this->pictureUrl($name),
             $this->initials($name),
             $background,
-            $this->readableOn($background)
+            $this->readableOn($background),
+            $anonymous,
+            $system
         );
     }
 

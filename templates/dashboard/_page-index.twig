@@ -1,0 +1,21 @@
+{% if pageIndex.letters is empty %}
+  <p class="yw-text-muted">{{ _t('NO_PAGE_FOUND') }}</p>
+{% else %}
+  <div class="yw-index">
+    {% for letter, pages in pageIndex.letters %}
+      <section class="yw-index__group">
+        <span class="yw-index__letter">{{ letter }}</span>
+        <ul>
+          {% for page in pages %}
+            <li><a href="{{ page.url }}">{{ page.tag }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+  </div>
+  {% if pageIndex.shown < pageIndex.total %}
+    <p class="yw-text-muted">
+      {{ _t('DASHBOARD_INDEX_CAPPED', { shown: pageIndex.shown, total: pageIndex.total }) }}
+    </p>
+  {% endif %}
+{% endif %}

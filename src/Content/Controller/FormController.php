@@ -7,12 +7,10 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
-use YesWiki\Content\Field\MapField;
-use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\EntryDisplay;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormOverview;
 use YesWiki\Content\Service\FormPropertiesService;
-use YesWiki\Content\Service\IcalFormatter;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Federation\Service\ActivityPubService;
 use YesWiki\Federation\Service\WebfingerService;
@@ -24,7 +22,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Search\Service\SearchIndexQuery;
 
 class FormController extends YesWikiController
 {
@@ -50,55 +47,9 @@ class FormController extends YesWikiController
      */
     public function displayAll($message)
     {
-        $values = [];
-        foreach ($this->formManager->getAll() as $form) {
-            $values[$form['id']]['title'] = $form['label'];
-            $values[$form['id']]['description'] = $form['description'];
-            $values[$form['id']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-            $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->getService(AclService::class)->isAdmin();
-            $values[$form['id']]['isSemantic'] = !empty($form['sem_template']);
-            $values[$form['id']]['isActivityPubEnabled'] = $form['activitypub_enable'] === '1';
-            $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
-                return $field instanceof MapField;
-            }));
-            $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
-            $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
-            $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
-            $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
-            $values[$form['id']]['contentType'] = $contentType;
-            $values[$form['id']]['canCreateContent'] = ContentCreator::supports($contentType);
-        }
-
-        $systemForms = array_filter($values, fn ($form) => $form['isSystem']);
-        $declaredOrder = array_flip(ContentTypeSchema::types());
-        uasort(
-            $systemForms,
-            fn ($a, $b) => ($declaredOrder[$a['contentType']] ?? PHP_INT_MAX) <=> ($declaredOrder[$b['contentType']] ?? PHP_INT_MAX)
-        );
-
-        $stats = $this->getService(SearchIndexQuery::class)->contentStats();
-        $withStats = function (array $forms) use ($stats): array {
-            foreach ($forms as $id => $form) {
-                $isSystem = (bool)($form['isSystem'] ?? false);
-                $found = $isSystem
-                    ? ($stats['byType'][(string)($form['contentType'] ?? '')] ?? null)
-                    : ($stats['byForm'][(string)$id] ?? null);
-                $forms[$id]['stats'] = $found ?? [
-                    'count' => $stats['total'] > 0 ? 0 : null,
-                    'last' => '',
-                ];
-            }
-
-            return $forms;
-        };
-
         return $this->render('@core/forms/forms_list.twig', [
             'message' => $message,
-            'systemForms' => $withStats($systemForms),
-            'forms' => $withStats(array_filter($values, fn ($form) => !$form['isSystem'])),
-            'userIsAdmin' => $this->getService(AclService::class)->isAdmin(),
-            'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
-        ]);
+        ] + $this->getService(FormOverview::class)->all());
     }
 
     /**

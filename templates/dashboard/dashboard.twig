@@ -1,0 +1,61 @@
+<div class="yw-dash">
+  <h1>{{ _t('DASHBOARD_TITLE') }}</h1>
+
+  {% if 'forms' in sections %}
+    <section id="dashboard-forms" class="yw-dash__section">
+      {{ include('@core/forms/forms_list.twig', formOverview|merge({ message: null })) }}
+    </section>
+  {% endif %}
+
+  {% if 'lists' in sections %}
+    <section id="dashboard-lists" class="yw-dash__section">
+      <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_ADMIN_LISTS') }}</h2>
+      {{ include('@core/lists/list_table.twig', listOverview) }}
+    </section>
+  {% endif %}
+
+  {% if 'activity' in sections %}
+    <section id="dashboard-activity" class="yw-dash__section">
+      <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_ACTIVITY') }}</h2>
+
+      <div class="yw-dashboard__grid yw-dashboard__grid--thirds">
+        <section class="yw-dashboard__card">
+          <h3>{{ _t('DASHBOARD_ACTIVITY_PAGES') }}</h3>
+          {{ include('@core/dashboard/_recent-pages.twig') }}
+        </section>
+
+        <section class="yw-dashboard__card">
+          <h3>{{ _t('DASHBOARD_ACTIVITY_USERS') }}</h3>
+          {{ include('@core/dashboard/_newest-accounts.twig') }}
+        </section>
+
+        <section class="yw-dashboard__card">
+          <h3>{{ _t('DASHBOARD_ACTIVITY_COMMENTS') }}</h3>
+          {{ include('@core/dashboard/_recent-comments.twig') }}
+        </section>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if 'keywords' in sections %}
+    <section id="dashboard-keywords" class="yw-dash__section">
+      <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_ACTIVITY_KEYWORDS') }}</h2>
+      {{ include('@core/dashboard/_keywords.twig') }}
+    </section>
+  {% endif %}
+
+  {% if 'index' in sections and pageIndex %}
+    <section id="dashboard-index" class="yw-dash__section">
+      <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_ACTIVITY_INDEX') }}</h2>
+      {{ include('@core/dashboard/_page-index.twig') }}
+    </section>
+  {% endif %}
+
+  {% if 'export' in sections %}
+    <section id="dashboard-export" class="yw-dash__section">
+      <h2 class="yw-dashboard__heading">{{ _t('DASHBOARD_EXPORT') }}</h2>
+      <p class="yw-dashboard__intro">{{ _t('DASHBOARD_EXPORT_INTRO') }}</p>
+      {{ include('@core/dashboard/_export.twig') }}
+    </section>
+  {% endif %}
+</div>

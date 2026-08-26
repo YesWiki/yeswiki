@@ -1,0 +1,21 @@
+{% if newestAccounts is empty %}
+  <p class="yw-text-muted">{{ _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD') }}</p>
+{% else %}
+  <ul class="yw-feed">
+    {% for account in newestAccounts %}
+      <li class="yw-feed__item">
+        <span class="yw-feed__body">
+          <a class="yw-feed__title yw-feed__who" href="{{ account.url }}">
+            {{ include('@core/_avatar.twig', { avatar: account.avatar, class: 'yw-avatar--xs' }) }}
+            {{ account.name }}
+          </a>
+          <span class="yw-feed__meta">
+            <time datetime="{{ account.signuptime }}">
+              {{ account.signuptime|date(_t('DASHBOARD_DATE_FORMAT')) }}
+            </time>
+          </span>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

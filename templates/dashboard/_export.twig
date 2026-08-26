@@ -1,0 +1,26 @@
+<div class="yw-dashboard__grid">
+  <section class="yw-dashboard__card">
+    <h3>{{ _t('DASHBOARD_EXPORT_FEEDS') }}</h3>
+    <ul class="yw-dashboard__links">
+      {% for feed in feeds %}
+        <li>
+          <a href="{{ feed.url }}">{{ icon('rss') }} {{ feed.label }}</a>
+          <code>{{ feed.url }}</code>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="yw-dashboard__card">
+    <h3>{{ _t('DASHBOARD_EXPORT_FILES') }}</h3>
+    <ul class="yw-dashboard__links">
+      {% for link in fileLinks %}
+        <li>
+          <a href="{{ link.url }}">{{ icon(link.icon) }} {{ link.label }}</a>
+          <code>{{ link.url }}</code>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+</div>

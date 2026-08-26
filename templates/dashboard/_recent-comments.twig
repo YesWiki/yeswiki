@@ -1,0 +1,26 @@
+{% if recentComments is empty %}
+  <p class="yw-text-muted">{{ _t('NO_RECENT_COMMENTS') }}</p>
+{% else %}
+  <ul class="yw-feed">
+    {% for comment in recentComments %}
+      <li class="yw-feed__item">
+        <span class="yw-feed__body">
+          <a class="yw-feed__title" href="{{ comment.url }}">{{ comment.parent }}</a>
+          {% if comment.excerpt %}<span class="yw-feed__excerpt">{{ comment.excerpt }}</span>{% endif %}
+          <span class="yw-feed__meta">
+            {% set who %}
+              {{ include('@core/_avatar.twig', { avatar: comment.avatar, class: 'yw-avatar--xs' }) }}
+              {{ comment.avatar.system ? _t('DASHBOARD_AUTHOR_SYSTEM') : comment.user }}
+            {% endset %}
+            {% if comment.avatar.isNobody %}
+              <span class="yw-feed__who"{% if comment.avatar.anonymous %} title="{{ _t('DASHBOARD_ANONYMOUS') }}"{% endif %}>{{ who }}</span>
+            {% else %}
+              <a class="yw-feed__who" href="{{ url({ tag: comment.user }) }}">{{ who }}</a>
+            {% endif %}
+            <time datetime="{{ comment.time }}">{{ comment.time|date(_t('DASHBOARD_DATE_FORMAT')) }}</time>
+          </span>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -2,6 +2,11 @@
 <article class="form-card" data-yw-card-filter-item="{{ (form.title ~ ' ' ~ (form.description ?? '') ~ ' ' ~ key)|lower }}">
   <header class="form-card__header">
     <h3 class="form-card__title">
+      {% if form.contentType %}
+        <span class="form-card__icon">{{ icon({
+          page: 'file', user: 'user', file: 'paperclip', entry: 'briefcase',
+        }[form.contentType]|default('briefcase')) }}</span>
+      {% endif %}
       {{ form.title }}
       <span class="form-card__id" title="{{ _t('BAZ_ID') }}">#{{ key }}</span>
     </h3>

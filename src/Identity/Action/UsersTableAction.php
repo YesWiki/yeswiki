@@ -8,6 +8,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
@@ -112,7 +113,13 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction, Provid
         $connectedUser = $this->authenticationService->getLoggedUser();
         $connectedUserName = is_array($connectedUser) ? strval($connectedUser['name'] ?? '') : '';
 
+        $avatarService = $this->getService(AvatarService::class);
+
         return $this->render('@core/users-table.twig', [
+            'avatars' => array_combine(
+                array_map(fn ($user) => (string)$user['name'], $users),
+                array_map(fn ($user) => $avatarService->forName((string)$user['name']), $users)
+            ),
             'connectedUserName' => $connectedUserName,
             'isAdmin' => $isAdmin,
             'postActionMessages' => $postActionMessages,

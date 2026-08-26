@@ -3,7 +3,9 @@
 namespace YesWiki\Identity\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AvatarService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
@@ -114,8 +116,28 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction, Provid
 
         return $this->render(
             '@core/actions/edit-group-action.twig',
-            ['error_message' => $error_message, 'list' => $list, 'groups' => $groups, 'selectedGroupName' => $selectedGroupName, 'field' => $field, 'options' => $merged_list, 'selectedOptionsId' => $currentGroupAcl, 'formName' => _t('USERS_GROUPS_LIST'), 'name' => _t('GROUP_SELECTION')]
+            ['error_message' => $error_message, 'list' => $list, 'groups' => $groups, 'selectedGroupName' => $selectedGroupName, 'field' => $field, 'options' => $merged_list, 'selectedOptionsId' => $currentGroupAcl, 'avatars' => $this->avatarsFor($merged_list), 'formName' => _t('USERS_GROUPS_LIST'), 'name' => _t('GROUP_SELECTION')]
         );
+    }
+
+    /**
+     * A face for every member that is an account. A `@group` is not one, and gets none.
+     *
+     * @param array<int|string, string> $members
+     *
+     * @return array<string, Avatar>
+     */
+    private function avatarsFor(array $members): array
+    {
+        $avatarService = $this->getService(AvatarService::class);
+        $avatars = [];
+        foreach ($members as $member) {
+            if (!str_starts_with($member, '@')) {
+                $avatars[$member] = $avatarService->forName($member);
+            }
+        }
+
+        return $avatars;
     }
 
     protected function confirmToken(): void

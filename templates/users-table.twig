@@ -53,7 +53,12 @@
                   not(isAdmin and not userIsTheOneConnected),
                   'users') }}
           {% endif %}
-          <td>{{ user.name }}</td>
+          <td data-yw-sort="{{ user.name }}">
+            <span class="yw-who">
+              {{ include('@core/_avatar.twig', { avatar: avatars[user.name], class: 'yw-avatar--xs' }) }}
+              {{ user.name }}
+            </span>
+          </td>
           <td class="users-table-break-word">{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
           {% if isAdmin %} 
             <td>{{ user.email }}</td>

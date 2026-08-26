@@ -1,0 +1,26 @@
+{% if recentPages is empty %}
+  <p class="yw-text-muted">{{ _t('DASHBOARD_ACTIVITY_NONE') }}</p>
+{% else %}
+  <ul class="yw-feed">
+    {% for page in recentPages %}
+      <li class="yw-feed__item">
+        <span class="yw-feed__body">
+          <a class="yw-feed__title" href="{{ page.url }}">{{ page.tag }}</a>
+          <span class="yw-feed__meta">
+            {% set who %}
+              {{ include('@core/_avatar.twig', { avatar: page.avatar, class: 'yw-avatar--xs' }) }}
+              {{ page.avatar.system ? _t('DASHBOARD_AUTHOR_SYSTEM') : page.user }}
+            {% endset %}
+            {% if page.avatar.isNobody %}
+              <span class="yw-feed__who"{% if page.avatar.anonymous %} title="{{ _t('DASHBOARD_ANONYMOUS') }}"{% endif %}>{{ who }}</span>
+            {% else %}
+              <a class="yw-feed__who" href="{{ url({ tag: page.user }) }}">{{ who }}</a>
+            {% endif %}
+            <time datetime="{{ page.time }}">{{ page.time|date(_t('DASHBOARD_DATE_FORMAT')) }}</time>
+          </span>
+        </span>
+        <a class="yw-feed__aside" href="{{ page.history }}" title="{{ _t('HISTORY') }}">{{ icon('history') }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

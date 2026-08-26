@@ -968,6 +968,29 @@ input[type='url'] {
   transform: translateY(0.03em);
 }
 
+/* No account behind the name, so there is nothing to colour and no initials to show. */
+.yw-avatar--nobody {
+  background: var(--yw-surface-sunken);
+  color: var(--yw-text-muted);
+  border: var(--yw-border-width) solid var(--yw-border);
+}
+
+.yw-avatar--nobody .yw-icon {
+  width: 62%;
+  height: 62%;
+}
+
+/* A person and their face on one line: a table cell, a member list, an activity row. */
+.yw-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.yw-who .yw-avatar--xs {
+  --yw-avatar-size: 1.15rem;
+}
+
 .account-link {
   line-height: 1;
 }
@@ -1702,6 +1725,10 @@ td.users-table-break-word {
 }
 
 .yw-searchbox {
+  /* The input's left padding is derived from these, so the text starts after the icon
+     rather than under it. */
+  --yw-searchbox-icon-inset: 1rem;
+  --yw-searchbox-icon-size: 1.25rem;
   position: relative;
   display: flex;
   align-items: center;
@@ -1724,15 +1751,15 @@ td.users-table-break-word {
 
 .yw-searchbox__icon {
   position: absolute;
-  left: 1rem;
+  left: var(--yw-searchbox-icon-inset);
   display: flex;
   align-items: center;
   pointer-events: none;
   color: var(--yw-text-muted);
 }
 .yw-searchbox__icon .yw-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--yw-searchbox-icon-size);
+  height: var(--yw-searchbox-icon-size);
 }
 .yw-searchbox__input.yw-input,
 .yw-searchbox__input {
@@ -1742,7 +1769,10 @@ td.users-table-break-word {
   max-width: none;
   margin: 0;
   padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
-    var(--yw-space-lg-x);
+    calc(
+      var(--yw-searchbox-icon-inset) + var(--yw-searchbox-icon-size) +
+        var(--yw-space-sm-x)
+    );
   font-size: 1.05rem;
   line-height: 1.4;
   color: var(--yw-text);
@@ -1790,20 +1820,13 @@ td.users-table-break-word {
 }
 
 .yw-searchbox--inline {
+  --yw-searchbox-icon-inset: 0.75rem;
+  --yw-searchbox-icon-size: 1rem;
   max-width: 24rem;
   margin: 0;
 }
 .yw-searchbox--inline .yw-searchbox__input {
-  padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
-    var(--yw-space-lg-x);
   font-size: 0.95rem;
-}
-.yw-searchbox--inline .yw-searchbox__icon {
-  left: 0.75rem;
-}
-.yw-searchbox--inline .yw-searchbox__icon .yw-icon {
-  width: 1rem;
-  height: 1rem;
 }
 .yw-searchbox--inline .yw-searchbox__button {
   margin: var(--yw-space-sm-y) var(--yw-space-sm-x);
@@ -2576,8 +2599,20 @@ blockquote > cite {
 }
 
 .form-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--yw-space-sm-x);
   margin: 0;
   font-size: 1.05rem !important;
+}
+
+.form-card__icon {
+  display: inline-flex;
+  color: var(--yw-primary);
+}
+
+.form-card__id {
+  margin-left: auto;
 }
 
 .form-card__id {

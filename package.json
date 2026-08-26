@@ -52,7 +52,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
-    "@playwright/test": "^1.62",
+    "@playwright/test": "1.59.1",
     "@types/node": "^22.13.12",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.8",

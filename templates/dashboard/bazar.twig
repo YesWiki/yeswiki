@@ -1,0 +1,8 @@
+{% extends "@core/dashboard/layout.twig" %}
+
+{% block dashboard_content %}
+  <p class="yw-dashboard__breadcrumb">
+    <a href="{{ url({ tag: 'dashboard' }) }}">{{ icon('arrow-left') }} {{ _t('DASHBOARD_TITLE') }}</a>
+  </p>
+  {{ renderAction('bazar', { showmenu: '0' })|raw }}
+{% endblock %}

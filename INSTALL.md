@@ -30,6 +30,7 @@ pcre
 pdo
 session
 simplexml
+tokenizer
 xml
 xmlreader
 zip
