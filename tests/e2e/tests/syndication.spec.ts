@@ -1,14 +1,15 @@
 import { test, expect } from '@playwright/test'
 import { writeFileSync, rmSync } from 'fs'
 import { resetEnv } from '../helpers/db'
+import { instancePath, instanceUrl } from '../helpers/instance'
 import { attachConsole, watchConsole } from '../helpers/console'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 import { setPageContent } from '../helpers/page'
 
 /** A feed, rendered as cards. */
 
-const FIXTURE = '/var/www/html/files/yw-test-feed.xml'
-const FEED_URL = 'http://yeswiki-web/files/yw-test-feed.xml'
+const FIXTURE = instancePath('files/yw-test-feed.xml')
+const FEED_URL = instanceUrl('files/yw-test-feed.xml')
 
 const FEED = `<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0"><channel>

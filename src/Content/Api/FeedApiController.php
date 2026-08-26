@@ -27,7 +27,7 @@ class FeedApiController extends YesWikiController
     private const XML_HEADERS = ['Content-Type' => 'text/xml; charset=UTF-8'];
 
     /** The RSS 2.0 feed of a bazar list. */
-    #[Route('/api/entries/rss', methods: ['GET'], options: ['acl' => ['public']])]
+    #[Route('/api/entries/rss', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
     public function entriesFeed(Request $request): Response
     {
         try {

@@ -42,6 +42,10 @@ class EntryApiController extends YesWikiController
             $vFormID = $formId;
         }
 
+        if (!$this->getService(BazarListService::class)->isValidID($vFormID)) {
+            throw new NotFoundHttpException();
+        }
+
         $vSearchManager = $this->getService(SearchManager::class);
         $get = $this->getRequest()->query;
 
@@ -198,7 +202,7 @@ class EntryApiController extends YesWikiController
     /**
      * @param string $sourceUrl url-encoded
      */
-    #[Route('/api/entries/url/{sourceUrl}')]
+    #[Route('/api/entries/url/{sourceUrl}', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
     public function getEntryUrl($sourceUrl): ApiResponse
     {
         $triples = $this->getService(TripleStore::class)->getMatching(

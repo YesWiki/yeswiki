@@ -53,6 +53,16 @@ class PresetServiceTest extends YesWikiTestCase
         $this->assertFalse($default['custom'], 'themes/ is code -- nothing here may write to it');
     }
 
+    /** The address the try button loads, which an absolute filesystem path is not. */
+    public function testAShippedPresetIsServedFromAnAddress(): void
+    {
+        $fun = $this->service()->find('fun.css');
+
+        $this->assertNotNull($fun);
+        $this->assertNotSame('', $fun['href'], 'a preset nothing can fetch cannot be tried on');
+        $this->assertStringEndsWith('themes/yeswiki/presets/fun.css', explode('?', $fun['href'])[0]);
+    }
+
     /** The shipped presets are complete, which is the property every other one is judged by. */
     public function testTheShippedPresetsAreComplete(): void
     {

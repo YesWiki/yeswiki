@@ -1080,7 +1080,7 @@ class PresetService
             'missing' => $missing,
             'path' => $path,
 
-            'href' => (string)$this->assets->urlFor($path),
+            'href' => (string)$this->assets->urlFor($this->servedPath($path)),
 
             'values' => $this->withDefaults($values),
         ];
@@ -1219,6 +1219,14 @@ class PresetService
         }
 
         return $this->programFiles->read(substr($path, \strlen(YESWIKI_PROGRAM_DIR) + 1));
+    }
+
+    /** The same stylesheet as the asset registry names it: relative to the Program tree, or to the instance. */
+    private function servedPath(string $path): string
+    {
+        return $this->isSourcePath($path)
+            ? substr($path, \strlen(YESWIKI_PROGRAM_DIR) + 1)
+            : $path;
     }
 
     private function isSourcePath(string $path): bool

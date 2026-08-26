@@ -34,7 +34,7 @@
                 {% endif %}
               </td>
               <td class="yw-api__acl">
-                <code>{{ route.acl }}</code>
+                <code>{{ route.acl ?: '—' }}</code>
               </td>
             </tr>
           {% endfor %}

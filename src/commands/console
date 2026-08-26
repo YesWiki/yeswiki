@@ -59,7 +59,13 @@ if ($insideAnInstance) {
     // fake wiki page
     $_GET['wiki'] = $yeswikiConfig['root_page'] ?? '';
 
-    $wiki = YesWikiLoader::getWiki();
+    try {
+        $wiki = YesWikiLoader::getWiki();
+    } catch (\Throwable $bootFailure) {
+        fwrite(STDERR, "\e[31m" . basename($configFile) . ' configures a wiki in ' . YESWIKI_INSTANCE_DIR
+            . ", but it does not boot:\e[0m\n" . $bootFailure->getMessage() . "\n");
+        exit(1);
+    }
     $services = $wiki->services;
 }
 

@@ -85,6 +85,34 @@ class ConsoleWithoutAWikiTest extends YesWikiTestCase
         }
     }
 
+    /** A config whose database is gone says so and exits non-zero, rather than exiting 0 having run nothing. */
+    public function testAWikiThatDoesNotBootIsAnError(): void
+    {
+        $folder = sys_get_temp_dir() . '/yeswiki-console-unbootable-' . getmypid();
+        if (!is_dir($folder) && !mkdir($folder, 0755, true)) {
+            $this->markTestSkipped('could not make a folder to run the console in');
+        }
+
+        $config = [
+            'db_driver' => 'sqlite',
+            'db_database' => 'not-a-database.sqlite',
+            'table_prefix' => 'yeswiki_',
+            'base_url' => 'http://console.test/?',
+            'root_page' => 'PagePrincipale',
+        ];
+        file_put_contents($folder . '/yeswiki.config.php', "<?php\n\n\$yeswikiConfig = " . var_export($config, true) . ";\n");
+        file_put_contents($folder . '/not-a-database.sqlite', "not a database\n");
+
+        try {
+            [$output, $status] = $this->console($folder, 'list');
+
+            $this->assertNotSame(0, $status, 'a console that could not boot the wiki reported success: ' . $output);
+            $this->assertStringContainsString('does not boot', $output);
+        } finally {
+            exec('rm -rf ' . escapeshellarg($folder));
+        }
+    }
+
     /**
      * ...and what it offers there actually works: a wiki gets made, with a console of its own pointing back at this source.
      */

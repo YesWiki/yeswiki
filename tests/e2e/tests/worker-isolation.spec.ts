@@ -41,6 +41,7 @@ const fetchTimes = async (
 const withoutTheExpectedNoise = (html: string) =>
   html
     .replace(/name="_?csrf[^"]*"\s+value="[^"]*"/gi, 'csrf')
+    .replace(/"antiCsrfToken":"[^"]*"/g, 'csrf')
     .replace(/nonce="[^"]*"/gi, 'nonce')
     .replace(/\?v=[0-9a-f.]+/gi, '?v')
     .replace(
@@ -57,7 +58,11 @@ test.describe('a worker serves request two the way it served request one', () =>
     page,
     request,
   }) => {
-    await setPageContent(page, 'TestWorkerContact', '{{contact}}')
+    await setPageContent(
+      page,
+      'TestWorkerContact',
+      '{{contact mail="test@example.com"}}',
+    )
 
     const bodies = await fetchTimes(request, '/?TestWorkerContact')
     const counters = bodies.map(

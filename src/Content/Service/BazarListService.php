@@ -578,7 +578,8 @@ class BazarListService
         ];
     }
 
-    protected function isValidID(mixed $pID): bool
+    /** A form id the parser accepts: the decimal string of a non-negative integer. */
+    public function isValidID(mixed $pID): bool
     {
         if (!is_string($pID)) {
             return false;

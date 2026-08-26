@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Api;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Route as SymfonyRoute;
+use YesWiki\Core\ApiResponse;
 use YesWiki\Core\DashboardShell;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\LocalFiles;
@@ -12,7 +13,7 @@ use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\TemplateEngine;
 
-/** The /api discovery page. */
+/** The /api discovery page, and the route table behind it. */
 class DocumentationApiController extends YesWikiController
 {
     use DashboardShell;
@@ -23,8 +24,10 @@ class DocumentationApiController extends YesWikiController
         $baseUrl = (string)$this->getService(RuntimeConfig::class)['base_url'];
 
         $groups = [];
+        $order = 0;
         foreach ($this->getService(RouteProvider::class)->get() as $route) {
             $path = $route->getPath();
+            ++$order;
             if ($path !== '/api' && !str_starts_with($path, '/api/')) {
                 continue;
             }
@@ -33,8 +36,9 @@ class DocumentationApiController extends YesWikiController
                 'path' => $path,
                 'url' => $baseUrl . ltrim($path, '/'),
                 'methods' => $route->getMethods() ?: ['GET'],
-                'acl' => implode(', ', (array)($route->getOption('acl') ?? ['public'])),
+                'acl' => implode(', ', (array)($route->getOption('acl') ?? [])),
                 'params' => $this->parametersOf($route),
+                'order' => $order,
             ];
         }
         ksort($groups);
@@ -42,6 +46,10 @@ class DocumentationApiController extends YesWikiController
             usort($routes, fn ($a, $b) => [$a['path'], $a['methods']] <=> [$b['path'], $b['methods']]);
         }
         unset($routes);
+
+        if ($this->getRequest()->query->get('output') === 'json') {
+            return new ApiResponse(['routes' => array_merge([], ...array_values($groups))]);
+        }
 
         $output = '';
 

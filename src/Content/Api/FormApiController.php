@@ -98,7 +98,13 @@ class FormApiController extends YesWikiController
             $vFormID = $formId;
         }
 
-        $vForm = $this->getService(BazarListService::class)->getForms(['id' => $vFormID])[$vFormID];
+        $bazarListService = $this->getService(BazarListService::class);
+
+        if (!$bazarListService->isValidID($vFormID)) {
+            throw new NotFoundHttpException();
+        }
+
+        $vForm = $bazarListService->getForms(['id' => $vFormID])[$vFormID] ?? null;
 
         if (!$vForm || !isset($vForm['id'])) {
             throw new NotFoundHttpException();

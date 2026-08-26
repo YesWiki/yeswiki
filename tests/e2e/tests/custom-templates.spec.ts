@@ -1,14 +1,14 @@
-import { execSync } from 'child_process'
+import { rmSync } from 'fs'
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
+import { instancePath } from '../helpers/instance'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
 
 const PROBES = ['core/admin/keywords.twig', 'core/admin/custom-templates.twig']
 const clearProbes = () => {
-  const paths = PROBES.map((p) => `/var/www/html/custom/templates/${p}`).join(
-    ' ',
+  PROBES.forEach((probe) =>
+    rmSync(instancePath(`custom/templates/${probe}`), { force: true }),
   )
-  execSync(`rm -f ${paths}`)
 }
 
 test.beforeEach(async () => {
