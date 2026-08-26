@@ -61,17 +61,11 @@ drop_and_create() {
       ;;
     pgsql)
       export PGPASSWORD="${DB_PASSWORD}"
-      # Connected to `template1`, not to the database being dropped -- psql has to be attached
-      # to something else to drop it. WITH (FORCE) terminates whatever connection php-fpm is
-      # still holding; without it a reset between specs fails with "database is being accessed
-      # by other users", which MySQL never does.
       psql -h "${DB_HOST}" -U "${DB_USER}" -d template1 -q \
         -c "DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE);" \
         -c "CREATE DATABASE ${DB_NAME};"
       ;;
     sqlite)
-      # The installer puts the file at a fixed private/yeswiki.db, and a stale one is a wiki
-      # that is already installed.
       rm -f "${INSTANCE}/private/yeswiki.db"
       ;;
   esac
@@ -107,6 +101,7 @@ case "$RUNTIME" in
     BASE_URL="${YESWIKI_TEST_BASE_URL:-http://yeswiki-web/?}"
 
     rm -f "${INSTANCE}/test.config.php" "${INSTANCE}/${YESWIKI_CONFIG_FILE:-yeswiki.config.php}"
+    rm -rf "${INSTANCE}/cache/"* 2>/dev/null || true
     drop_and_create
 
     mapfile -t arguments < <(installer_arguments)
@@ -124,8 +119,6 @@ case "$RUNTIME" in
       exit 1
     fi
 
-    # The Program root goes with the Instance, so a reset leaves nothing of the last run behind
-    # and `setup` writes the Program fresh out of the executable being tested.
     export YESWIKI_PROGRAM_ROOT="${YESWIKI_TEST_PROGRAM_ROOT:-${INSTANCE}-program}"
     rm -rf "${INSTANCE}" "${YESWIKI_PROGRAM_ROOT}"
     mkdir -p "${INSTANCE}/private"
