@@ -48,10 +48,10 @@ class MigrationService
         // Get all Php files in migrations folder (in root or in any tools)
         // Run the file if it was not already run in the past
         $folders = array_merge(['includes/'], $this->wiki->extensions); // root folder + extensions folders
+        $vFiles = [];
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
-                $vFiles = [];
 
                 while (($file = readdir($dh)) !== false) {
                     if ($file == '0000000000000_DemoMigration.php') {
@@ -65,39 +65,40 @@ class MigrationService
                             continue;
                         }
 
-                        $vFiles[] = $matches[1];
+                        $vFiles[] = [
+                            'folder' => $folder,
+                            'file' => $fileName,
+                        ];
                     }
                 }
+            }
+        }
 
-                sort($vFiles);
-
-                foreach ($vFiles as $vFile) {
-                    $vFilename = $vFile . '.php';
-
-                    $filePath = $folder . $vFilename; // tools/publication/2024040500000_TestMigration.php
-                    require_once $filePath;
-
-                    preg_match("/^([\d]*)/", $vFile, $vMatches);
-                    $vDate = $vMatches[1] ?? 'unknow date';
-
-                    $className = preg_replace('/^[\d_]*/', '', $vFile); // TestMigration
-                    if (!class_exists($className)) {
-                        throw new Exception("Error while loading $filePath. The class inside should be $className");
-                    }
-
-                    // Run Migration
-                    try {
-                        $instance = new $className();
-                        $instance->setWiki($this->wiki);
-                        $instance->setDbService($this->dbService);
-                        $instance->setParams($this->params);
-                        $instance->run();
-                        $messages->add("Migration $className ($vDate)", 'AU_OK');
-                        $tripleStore->create($vFile, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
-                    } catch (Exception $e) {
-                        $messages->add("Migration $className ($vDate) failed with error {$e->getMessage()}", 'AU_ERROR');
-                    }
-                }
+        error_log(json_encode($vFiles));
+        usort($vFiles, function ($a, $b) {
+            return strcmp($a['file'], $b['file']);
+        });
+        foreach ($vFiles as $vFile) {
+            $vFilename = $vFile['file'] . '.php';
+            $filePath = $vFile['folder'] . $vFilename; // tools/publication/2024040500000_TestMigration.php
+            require_once $filePath;
+            preg_match("/^([\d]*)/", $vFile['file'], $vMatches);
+            $vDate = $vMatches[1] ?? 'unknow date';
+            $className = preg_replace('/^[\d_]*/', '', $vFile['file']); // TestMigration
+            if (!class_exists($className)) {
+                throw new Exception("Error while loading $filePath. The class inside should be $className");
+            }
+            // Run Migration
+            try {
+                $instance = new $className();
+                $instance->setWiki($this->wiki);
+                $instance->setDbService($this->dbService);
+                $instance->setParams($this->params);
+                $instance->run();
+                $messages->add("Migration $className ($vDate)", 'AU_OK');
+                $tripleStore->create($vFile['file'], TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
+            } catch (Exception $e) {
+                $messages->add("Migration $className ($vDate) failed with error {$e->getMessage()}", 'AU_ERROR');
             }
         }
 

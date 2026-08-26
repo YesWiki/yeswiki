@@ -63,15 +63,21 @@ class ConvertTableNature2Pages extends YesWikiMigration
         switch ($field['field_type']) {
             case 'SelectEntryField':
                 $key = 'listefiche'.$field['linkedObjectName'];
+                $secondkey = $key.($field['propertyname'] ?? $field['id']);
                 if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
+                } else if (in_array($secondkey, $existing_keys)) {
+                    $field['id'] = $field['name'] = $secondkey;
                 }
 
                 break;
             case 'SelectListField':
                 $key = 'liste'.$field['linkedObjectName'];
+                $secondkey = $key.($field['propertyname'] ?? $field['id']);
                 if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
+                } else if (in_array($secondkey, $existing_keys)) {
+                    $field['id'] =  $field['name'] = $secondkey;
                 }
 
                 break;
@@ -105,7 +111,7 @@ class ConvertTableNature2Pages extends YesWikiMigration
                 break;
             case 'MapField':
                 if ($field['name'] == 'bf_latitude') {
-                    $field['name'] = $field['id'] = $field['propertyname'] = 'bf_geolocation';
+                    $field['name'] = $field['id'] = $field['propertyname'] = 'geolocation';
                 }
                 if ($field['label'] == 'bf_longitude') {
                     $field['label'] = _t('BAZ_FORM_EDIT_GEO_LABEL');
