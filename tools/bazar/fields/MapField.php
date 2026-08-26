@@ -276,7 +276,7 @@ class MapField extends BazarField
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $fieldProps['autocompleteFieldnames']['postalCode'];
         $new[self::FIELD_AUTOCOMPLETE_TOWN] = $fieldProps['autocompleteFieldnames']['town'];
-        $autocomplete_other = array_slice($fieldProps['autocompleteFieldnames'], 2);
+        $autocomplete_other = array_slice($fieldProps['autocompleteFieldnames'], 3);
         array_unshift($autocomplete_other, $fieldProps['geolocate']);
         $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $autocomplete_other);
         $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'] ? 1 : ' ';
