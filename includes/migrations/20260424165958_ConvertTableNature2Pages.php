@@ -51,6 +51,15 @@ class MigrationFormManager extends FormManager
 
 class ConvertTableNature2Pages extends YesWikiMigration
 {
+    /**
+     * replace all occurence of $oldkey with $newkey in pages
+     */
+    private function updateFieldInPages($oldkey, $newkey): void
+    {
+        error_log("update from {$oldkey} to {$newkey}");
+        $sql = "update {$this->dbService->prefixTable('pages')} set body = regexp_replace(body, '{$oldkey}', '{$newkey}')";
+        $result = $this->dbService->query($sql);
+    }
 
     public function convertfield($element, $index, $existing_keys )
     {
@@ -64,47 +73,66 @@ class ConvertTableNature2Pages extends YesWikiMigration
             case 'SelectEntryField':
                 $key = 'listefiche'.$field['linkedObjectName'];
                 $secondkey = $key.($field['propertyname'] ?? $field['id']);
-                if (in_array($key, $existing_keys)) {
-                    $field['name'] = $key;
-                } else if (in_array($secondkey, $existing_keys)) {
-                    $field['id'] = $field['name'] = $secondkey;
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($secondkey, $field['propertyname']);
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                } else {
+                    if (in_array($key, $existing_keys)) {
+                        $field['name'] = $key;
+                    } else if (in_array($secondkey, $existing_keys)) {
+                        $field['id'] = $field['name'] = $secondkey;
+                    }
+
                 }
 
                 break;
             case 'SelectListField':
                 $key = 'liste'.$field['linkedObjectName'];
                 $secondkey = $key.($field['propertyname'] ?? $field['id']);
-                if (in_array($key, $existing_keys)) {
-                    $field['name'] = $key;
-                } else if (in_array($secondkey, $existing_keys)) {
-                    $field['id'] =  $field['name'] = $secondkey;
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($secondkey, $field['propertyname']);
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                }  else {
+                    if (in_array($key, $existing_keys)) {
+                        $field['name'] = $key;
+                    } else if (in_array($secondkey, $existing_keys)) {
+                        $field['id'] =  $field['name'] = $secondkey;
+                    }
                 }
 
                 break;
             case 'CheckboxListField':
                 $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
-                if (in_array($key, $existing_keys)) {
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                } else if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
                 }
 
                 break;
             case 'CheckboxEntryField':
                 $key = 'checkbox'.$field['linkedObjectName'].$field['id'];
-                if (in_array($key, $existing_keys)) {
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                } else if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
                 }
 
                 break;
             case 'RadioListField':
                 $key = 'radio'.$field['linkedObjectName'].$field['id'];
-                if (in_array($key, $existing_keys)) {
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                } else if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
                 }
 
                 break;
             case 'RadioEntryField':
                 $key = 'radio'.$field['linkedObjectName'].$field['id'];
-                if (in_array($key, $existing_keys)) {
+                if (!empty($field['propertyname'])) {
+                    $this->updateFieldInPages($key, $field['propertyname']);
+                } else if (in_array($key, $existing_keys)) {
                     $field['name'] = $key;
                 }
 
@@ -112,8 +140,11 @@ class ConvertTableNature2Pages extends YesWikiMigration
             case 'MapField':
                 if ($field['name'] == 'bf_latitude') {
                     $field['name'] = $field['id'] = $field['propertyname'] = 'geolocation';
+                    $this->updateFieldInPages('bf_latitude', 'latitude');
+                    $this->updateFieldInPages('"geolocation"', '"bf_geolocation"');
                 }
                 if ($field['label'] == 'bf_longitude') {
+                    $this->updateFieldInPages('bf_longitude', 'longitude');
                     $field['label'] = _t('BAZ_FORM_EDIT_GEO_LABEL');
                 }
         }
