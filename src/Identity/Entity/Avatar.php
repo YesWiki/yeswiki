@@ -20,10 +20,10 @@ class Avatar
     /** `#000000` or `#ffffff`, whichever the background reads better under. */
     public readonly string $foreground;
 
-    /** A signed-out visitor: the name is a client IP, and an IP has no initials worth showing. */
+    /** A signed-out visitor: the name is a client IP. */
     public readonly bool $anonymous;
 
-    /** Nobody at all: the console wrote this, so there is not even an address to show. */
+    /** Nobody at all: the console wrote this. */
     public readonly bool $system;
 
     public function __construct(
@@ -49,7 +49,7 @@ class Avatar
         return $this->imageUrl !== null && $this->imageUrl !== '';
     }
 
-    /** No account stands behind this face, so it gets a mark rather than a name's initials. */
+    /** No account stands behind this face. */
     public function isNobody(): bool
     {
         return $this->anonymous || $this->system;

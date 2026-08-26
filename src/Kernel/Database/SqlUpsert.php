@@ -8,7 +8,7 @@ final class SqlUpsert
     /**
      * @param array<string, string> $values
      * @param list<string>          $conflictColumns
-     * @param array<string, string> $assignments  `:new.x` is the row being inserted, `:old.x` the one already there
+     * @param array<string, string> $assignments
      */
     public static function onConflict(SqlDialect $dialect, string $table, array $values, array $conflictColumns, array $assignments): string
     {
@@ -29,13 +29,7 @@ final class SqlUpsert
             . ' DO UPDATE SET ' . implode(', ', $sets);
     }
 
-    /**
-     * `:old.x` as the row already in the table, qualified by its name.
-     *
-     * Qualifying is what makes it work rather than what makes it tidy: PostgreSQL has both the
-     * target table and `excluded` in scope inside `DO UPDATE SET`, so a bare `repeat` there is
-     * an ambiguous column reference, not a default to the target.
-     */
+    /** `:old.x` as the row already in the table, qualified by its name. */
     public static function oldRow(SqlDialect $dialect, string $expression, string $table): string
     {
         return (string)preg_replace_callback(

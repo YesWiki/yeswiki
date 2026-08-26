@@ -77,11 +77,7 @@ class GroupManager
         return explode("\n", $members);
     }
 
-    /**
-     * The wiki's first administrator -- the account its installer created, unless somebody has
-     * since removed it from `admins`. Whatever the system creates with nobody signed in belongs
-     * to them rather than to no one.
-     */
+    /** The wiki's first administrator: the first real account in `admins`. */
     public function firstAdmin(): ?string
     {
         foreach ($this->getMembers('admins') as $member) {

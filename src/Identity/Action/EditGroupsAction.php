@@ -121,7 +121,7 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction, Provid
     }
 
     /**
-     * A face for every member that is an account. A `@group` is not one, and gets none.
+     * A face for every member that is an account.
      *
      * @param array<int|string, string> $members
      *

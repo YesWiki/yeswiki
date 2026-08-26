@@ -12,10 +12,10 @@ use YesWiki\Kernel\Component\ProvidesComponents;
 use YesWiki\Kernel\Component\Setting;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
-/** `{{dashboard}}` -- what the wiki holds and what it has been up to, on one screen. */
+/** `{{dashboard}}` -- what the wiki holds and what it has been up to. */
 class DashboardAction extends YesWikiAction implements RegisteredAction, ProvidesComponents
 {
-    /** Every section, in the order they are drawn when none are asked for by name. */
+    /** Every section, in the order they are drawn. */
     public const SECTIONS = ['forms', 'lists', 'activity', 'keywords', 'index', 'export'];
 
     private const DEFAULT_MAX = 12;

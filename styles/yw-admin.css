@@ -2472,13 +2472,10 @@ body > button.primary {
   font-size: 0.85em;
 }
 
-/* `section > div` in yw-core pads a page-content section; the dashboard's own sections are
-   not that, and the padding pushed every card in from the canvas edge. */
 .yw-dash section > div {
   padding: 0;
 }
 
-/* Sections need room between them, or a heading reads as one more row of the section above. */
 .yw-dash__section {
   margin-bottom: calc(var(--yw-space-lg-y) * 2);
   scroll-margin-top: var(--yw-space-lg-y);
@@ -2488,7 +2485,6 @@ body > button.primary {
   margin-bottom: var(--yw-space-md-y);
 }
 
-/* An activity row: a face, what happened, where. */
 .yw-feed {
   list-style: none;
   margin: 0;
@@ -2507,7 +2503,6 @@ body > button.primary {
   border-top: 0;
 }
 
-/* Who did it sits on the meta line, at the size of the text beside it. */
 .yw-feed__who {
   display: inline-flex;
   align-items: center;
@@ -2603,7 +2598,6 @@ body > button.primary {
   border-bottom: var(--yw-border-width) solid var(--yw-border);
 }
 
-/* Three abreast on a wide screen, and never narrower than a name plus a date. */
 .yw-dashboard__grid--thirds {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

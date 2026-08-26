@@ -14,7 +14,7 @@ use YesWiki\Identity\Entity\Avatar;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-/** The face of an account: its profile picture, or initials on a colour of its own -- and a mark when no account is behind the name at all. */
+/** The face of an account: its profile picture, its initials, or a mark when there is no account. */
 class AvatarService
 {
     /** Rendered pixels of the square thumbnail. */

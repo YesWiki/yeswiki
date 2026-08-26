@@ -19,8 +19,6 @@
     return options.sort((a, b) => a - b)
   }
 
-  // A cell that holds more than its value -- an avatar's initials beside a name -- says what
-  // to sort and filter on, or textContent stands in as it always did.
   function cellText(cell) {
     const declared = cell.getAttribute('data-yw-sort')
     return (declared !== null ? declared : cell.textContent || '').trim()

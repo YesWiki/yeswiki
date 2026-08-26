@@ -968,7 +968,6 @@ input[type='url'] {
   transform: translateY(0.03em);
 }
 
-/* No account behind the name, so there is nothing to colour and no initials to show. */
 .yw-avatar--nobody {
   background: var(--yw-surface-sunken);
   color: var(--yw-text-muted);
@@ -980,7 +979,6 @@ input[type='url'] {
   height: 62%;
 }
 
-/* A person and their face on one line: a table cell, a member list, an activity row. */
 .yw-who {
   display: inline-flex;
   align-items: center;
@@ -1725,8 +1723,6 @@ td.users-table-break-word {
 }
 
 .yw-searchbox {
-  /* The input's left padding is derived from these, so the text starts after the icon
-     rather than under it. */
   --yw-searchbox-icon-inset: 1rem;
   --yw-searchbox-icon-size: 1.25rem;
   position: relative;

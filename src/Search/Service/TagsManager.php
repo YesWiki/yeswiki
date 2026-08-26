@@ -181,7 +181,7 @@ class TagsManager
     }
 
     /**
-     * The keywords used most, with how many Contents carry each.
+     * The keywords used most.
      *
      * @return list<array{value: string, total: int}>
      */

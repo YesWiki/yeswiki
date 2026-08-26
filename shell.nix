@@ -1,6 +1,14 @@
 { pkgs ? import <nixpkgs> { } }:
 
 let
+  playwrightPkgs = import
+    (builtins.fetchTarball {
+      url = "https://github.com/NixOS/nixpkgs/archive/56c02bc00adcf003215cc4bd996d6efaf4cff188.tar.gz";
+      sha256 = "0zfgqzy62ry88bs1fc3wq2827skva6fzhwzv6f6zzaxcvd6xabzn";
+    })
+    { inherit (pkgs) system; };
+
+  playwright = playwrightPkgs.playwright-driver;
   manifest = builtins.fromJSON (builtins.readFile ./composer.json);
 
   named = set:
@@ -28,20 +36,16 @@ pkgs.mkShell {
     pkgs.yarn
     pkgs.git
     pkgs.gnumake
-    pkgs.playwright-driver
-    pkgs.playwright-driver.browsers
+    playwright
+    playwright.browsers
   ];
 
   shellHook = ''
-    export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
+    export PLAYWRIGHT_BROWSERS_PATH="${playwright.browsers}"
     export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-    # `npx playwright install` cannot work here: it downloads browsers linked against an FHS
-    # that NixOS does not have. Nix supplies them instead, which is why the two versions below
-    # have to agree -- Playwright looks for a browser build number belonging to its own release,
-    # and a mismatch reads as "Executable doesn't exist at .../chromium_headless_shell-<n>".
     export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
 
-    ywPlaywrightNix="${pkgs.playwright-driver.version}"
+    ywPlaywrightNix="${playwright.version}"
     ywPlaywrightNpm="$(node -p "require('@playwright/test/package.json').version" 2>/dev/null || echo none)"
     if [ "$ywPlaywrightNpm" != none ] && [ "$ywPlaywrightNpm" != "$ywPlaywrightNix" ]; then
       echo "playwright mismatch: package.json has $ywPlaywrightNpm, nix browsers are $ywPlaywrightNix"

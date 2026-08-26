@@ -6,7 +6,7 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HibernationService;
 
-/** Every list a reader may see, with its options and what that reader may do to it. */
+/** Every list a reader may see, with its options and rights. */
 class ListOverview
 {
     public function __construct(

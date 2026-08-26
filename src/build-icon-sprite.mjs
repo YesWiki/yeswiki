@@ -74,8 +74,6 @@ const symbols = names.map((ref) => {
   return `  <symbol id="${id}" viewBox="0 0 24 24" ${paint}>${inner}</symbol>`
 })
 
-// Not every mark is Tabler's. A brand one is drawn once and lives beside the sprite it joins,
-// so `icon('yeswiki')` reads like any other name.
 const LOCAL = { yeswiki: 'yeswiki-mark.svg' }
 
 const localSymbols = Object.entries(LOCAL).map(([id, file]) => {

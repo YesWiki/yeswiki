@@ -9,7 +9,7 @@ use YesWiki\Identity\Service\Guard;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\SearchIndexQuery;
 
-/** Every form with what a card says about it: its entry count, its formats, what the reader may do to it. */
+/** Every form with what a card says about it. */
 class FormOverview
 {
     public function __construct(

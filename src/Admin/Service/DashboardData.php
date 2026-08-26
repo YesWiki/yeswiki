@@ -15,13 +15,13 @@ use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Social\Service\CommentService;
 
-/** What the dashboard shows, gathered from the wiki rather than from other actions. */
+/** What the dashboard shows. */
 class DashboardData
 {
     /** Pages listed in the A-Z index before it says how many it left out. */
     private const INDEX_CAP = 500;
 
-    /** Rows read per row shown, so a list still fills up after the unreadable ones are dropped. */
+    /** Rows read per row shown, so a list still fills after the unreadable ones are dropped. */
     private const ACL_OVERFETCH = 4;
 
     public function __construct(
@@ -58,7 +58,7 @@ class DashboardData
     }
 
     /**
-     * The newest accounts. Every account is read to find them: signup time lives in a body, not in a column.
+     * The newest accounts.
      *
      * @return list<array{name: string, signuptime: string, avatar: Avatar, url: string}>
      */
@@ -111,7 +111,7 @@ class DashboardData
     }
 
     /**
-     * Every page by first letter, capped -- a wiki with thousands of them would otherwise be the whole screen.
+     * Every page by first letter, capped.
      *
      * @return array{letters: array<string, list<array{tag: string, url: string}>>, total: int, shown: int}
      */
@@ -142,11 +142,6 @@ class DashboardData
 
     /**
      * The remote wikis this one has imported Content from, grouped by origin.
-     *
-     * A source_url is stored per imported Content and points at the remote page it came from, so
-     * the distinct values are one per entry -- 1,939 of them on a real wiki, all from one place.
-     * What a reader wants is the place, so the origin is what this groups by and the entries are
-     * what it counts.
      *
      * @return list<array{origin: string, total: int, lastImport: string, entries: list<array{tag: string, source: string, time: string}>}>
      */
@@ -189,7 +184,7 @@ class DashboardData
     }
 
     /**
-     * The feeds and API links the dashboard offers. Per-form exports are on the form cards.
+     * The feeds and API links the dashboard offers.
      *
      * @return array<string, mixed>
      */

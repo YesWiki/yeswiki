@@ -16,12 +16,7 @@ class DashboardController extends YesWikiController
 {
     use DashboardShell;
 
-    /**
-     * The dashboard, or the bazar screen a form or list card sent the reader to.
-     *
-     * The cards' own buttons -- edit, clone, empty, delete, the form designer -- have to land
-     * somewhere, and where they land is here, carrying the `view`/`action` pair they always did.
-     */
+    /** The dashboard, or the bazar screen a form or list card sent the reader to. */
     #[Route('/dashboard', options: ['acl' => ['public']])]
     public function index(): Response
     {
