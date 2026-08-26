@@ -103,6 +103,13 @@ class ConvertTableNature2Pages extends YesWikiMigration
                 }
 
                 break;
+            case 'MapField':
+                if ($field['name'] == 'bf_latitude') {
+                    $field['name'] = $field['id'] = $field['propertyname'] = 'bf_geolocation';
+                }
+                if ($field['label'] == 'bf_longitude') {
+                    $field['label'] = _t('BAZ_FORM_EDIT_GEO_LABEL');
+                }
         }
         $field['name'] = empty($field['name']) ? $field['type'].'__'.$index : $field['name'];
         $field['id'] = empty($field['id']) ? $field['name'] : $field['id'];
