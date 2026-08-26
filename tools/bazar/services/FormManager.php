@@ -398,7 +398,8 @@ class FormManager
             }
             $fieldExploded = explode('\\', $classType);
             $field['field_type'] = array_pop($fieldExploded);
-            $form_array[$field['id']] = $field;
+            $id = $field['id'] ?? $field['name'];
+            $form_array[$id] = $field;
         }
         $newform = [
             'id' => $form['id'] ?? $form['bn_id_nature'],
@@ -426,7 +427,9 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $template = $this->convertWithSpecialParameters($data['bn_template'], $data['id']);
+        $id = $data['id'] ?? $data['bn_id_nature'];
+
+        $template = $this->convertWithSpecialParameters($data['bn_template'], $id);
 
         // reset cache
         $this->cacheValidatedForAll = false;
@@ -441,16 +444,14 @@ class FormManager
 
         if ($translating) {
             return $this->pageManager->save($tag, json_encode($data, JSON_FORCE_OBJECT), '', true);
-        } else {
-            $form = $this->getFromRawData($data);
-            $previous = $this->getOne($tag, 'all');
-
-            $form['extralang'] = $previous['extralang'] ?? '';
-
-
-          return $this->__createOrUpdate($form, $tag);
         }
 
+        $form = $this->getFromRawData($data);
+        $previous = $this->getOne($tag, 'all');
+        $form['extralang'] = $previous['extralang'] ?? '';
+        dump($form);
+
+        return $this->__createOrUpdate($form, $tag);
     }
 
     public function clone($id)
