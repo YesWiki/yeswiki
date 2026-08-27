@@ -69,6 +69,7 @@ class GroupController extends YesWikiController
             throw new GroupNameAlreadyUsedException(_t('GROUP_NAME_ALREADY_USED'));
         }
         if ($this->isNameValid($name)) {
+            $members = $this->groupManager->cleanMembers($members ?? []);
             foreach ($members as $member) {
                 // plus nécessaire à la création du groupe ?
                 switch ($this->checkMemberValidity($name, $member)) {
@@ -247,6 +248,7 @@ class GroupController extends YesWikiController
         if (!$this->groupManager->groupExists($groupName)) {
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
+        $members = $this->groupManager->cleanMembers($members);
         foreach ($members as $member) {
             switch ($this->checkMemberValidity($groupName, $member)) {
                 case 0:
@@ -279,7 +281,7 @@ class GroupController extends YesWikiController
     {
         if ($groupName == ADMIN_GROUP) {
             $currentUser = $this->authController->getLoggedUser()['name'];
-            if (!in_array($currentUser, $members)) {
+            if (!in_array($currentUser, $this->groupManager->cleanMembers($members))) {
                 throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
             }
         }
