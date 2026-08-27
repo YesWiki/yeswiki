@@ -78,15 +78,12 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
         }
 
         $collapseId = 'toc-menu' . $tag;
-        $expanded = ($closed == 1) ? 'false' : 'true';
 
         echo '<div id="toc' . $tag . '" class="yw-toc' . (!empty($class) ? ' ' . $class : '') . "\">\n";
 
-        echo '<div class="yw-toc__title yw-collapse-toggle" data-yw-collapse-toggle="#' . $collapseId . '"'
-            . ' aria-expanded="' . $expanded . '" aria-controls="' . $collapseId . '">'
-            . '<span class="yw-dropdown__caret yw-collapse-toggle__caret"></span>&nbsp;<strong>' . $title . "</strong>
-        </div><!-- /.yw-toc__title -->\n
-        <div id=\"$collapseId\" class=\"yw-toc__menu yw-collapse" . ($closed == 1 ? '' : ' yw-collapse--open') . "\">\n";
+        echo '<details class="yw-accordion__item"' . ($closed == 1 ? '' : ' open') . ">\n"
+            . '<summary class="yw-accordion__summary yw-toc__title"><strong>' . $title . "</strong></summary>\n"
+            . "<div id=\"$collapseId\" class=\"yw-accordion__body yw-toc__menu\">\n";
 
         $tocList = '';
         foreach ($this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->headings($toc_body) as $heading) {
@@ -97,7 +94,7 @@ class TocAction extends YesWikiAction implements RegisteredAction, ProvidesCompo
             echo "<ul class=\"yw-list-unstyled\">\n" . $tocList . "</ul>\n";
         }
 
-        echo "</div><!-- /#$collapseId -->\n
-            </div><!-- /#toc" . $tag . " -->\n";
+        echo "</div><!-- /#$collapseId -->\n</details>\n"
+            . '</div><!-- /#toc' . $tag . " -->\n";
     }
 }

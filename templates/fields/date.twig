@@ -3,9 +3,9 @@
 {% block value_container %}
   {{ parent() }}
   {% if recurrenceBaseId is not empty %}
-  <span class="BAZ_texte">
+  <div class="BAZ_texte">
     <small><i>{{ _t('EVENT_IS_LINKED_TO_RECURRENT',{link:"<a class=\"newtab\" href=\"#{url({tag:recurrenceBaseId})}\">#{recurrenceBaseId}</a>"})|raw }}</i></small>
-  </span>
+  </div>
   {% elseif data is not empty and data.isRecurrent %}
     {% set monthT = {
         jan: 'BAZ_JANVIER',
@@ -37,7 +37,7 @@
         forthOfMonth: 'EVENT_FORTH_Y_OF_MONTH',
         lastOfMonth: 'EVENT_LAST_Y_OF_MONTH'
       } %}
-    <span class="BAZ_texte">
+    <div class="BAZ_texte">
 
       {% set repetitionTextNthOfMonthForYear = _t('EVENT_REPETITION_NTH_OF_MONTH',{
             nth: data.nth ?? '?',
@@ -104,6 +104,6 @@
           {{ date }}
         {%- endfor -%}
       {% endif %}</i></small>
-    </span>
+    </div>
   {% endif %}
 {% endblock %}

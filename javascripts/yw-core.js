@@ -410,10 +410,20 @@
   })
 
   let publishedViewportWidth = null
+
+  /** How wide a full-bleed section may be: the window, less whatever the chrome reserves. */
   function publishViewportWidth() {
-    const width = document.documentElement.clientWidth
+    const container = document.getElementById('yw-container')
+    const chrome = container ? getComputedStyle(container) : null
+    const reserved = chrome
+      ? (parseFloat(chrome.paddingLeft) || 0) +
+        (parseFloat(chrome.paddingRight) || 0)
+      : 0
+    const full = document.documentElement.clientWidth
+    const width = full - reserved
     if (width === publishedViewportWidth) return
     publishedViewportWidth = width
+    document.documentElement.style.setProperty('--yw-window-width', full + 'px')
     document.documentElement.style.setProperty(
       '--yw-viewport-width',
       width + 'px',
@@ -424,6 +434,24 @@
   window.addEventListener('resize', publishViewportWidth)
   document.addEventListener('htmx:afterSettle', publishViewportWidth)
   new ResizeObserver(publishViewportWidth).observe(document.documentElement)
+
+  /** How far down the window the banner still reaches, so what docks below it knows where to start. */
+  function publishHeaderBottom() {
+    const header = document.getElementById('yw-header')
+    const bottom = header
+      ? Math.max(0, header.getBoundingClientRect().bottom)
+      : 0
+    document.documentElement.style.setProperty(
+      '--yw-header-bottom',
+      `${Math.round(bottom)}px`,
+    )
+  }
+
+  publishHeaderBottom()
+  window.addEventListener('scroll', publishHeaderBottom, { passive: true })
+  window.addEventListener('resize', publishHeaderBottom)
+  document.addEventListener('htmx:afterSettle', publishHeaderBottom)
+  document.addEventListener('yw:assets-ready', publishHeaderBottom)
 
   /** Reveal-on-scroll for `{{section animation="..."}}`. */
   const revealOnScroll = () => {

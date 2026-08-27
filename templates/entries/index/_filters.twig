@@ -74,17 +74,18 @@
             </div>
           </div>
         {% else %}
-          <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
-            <button type="button" class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="{{ filter.collapsed ? 'false' : 'true' }}">
+          <details class="filter-box yw-accordion__item {{ key }}" data-id="{{ key }}"
+                   {{- filter.collapsed ? '' : ' open' }}>
+            <summary class="panel-heading yw-accordion__summary">
               {{ filter.icon|raw }}
               {{ filter.title }}
-            </button>
-            <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
+            </summary>
+            <div class="panel-collapse yw-accordion__body" id="collapse{{ listId }}_{{ key }}">
               {% for filterNode in offered %}
                 {{ include('@core/entries/index/_filter-checkbox.twig') }}
               {% endfor %}
             </div>
-          </div>
+          </details>
         {% endif %}
       {% endfor %}
     </div>

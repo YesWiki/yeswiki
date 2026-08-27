@@ -21,16 +21,11 @@
 
     {% if mode == 'edit' %}
 
-    <div>
-        <a 
-            title="{{ _t('SEE_THE_ADVANCED_PARAMETERS') }}" 
-            href="#avanced-page-settings" 
-            data-toggle="collapse" 
-            class="btn btn-default">
+    <details id="avanced-page-settings" class="yw-accordion__item">
+        <summary class="yw-accordion__summary" title="{{ _t('SEE_THE_ADVANCED_PARAMETERS') }}">
             {{ _t('ADVANCED_PARAMETERS') }}
-        </a>
-    </div>
-    <div id="avanced-page-settings" class="collapse">
+        </summary>
+        <div class="yw-accordion__body">
         <hr>
         <div class="yw-form-group">
         <label class="yw-form-label">{{ _t('PAGE_LANGUAGE') }}</label>
@@ -51,7 +46,6 @@
             {% for tag,t in {
                 PageHeader: 'HEADER_PAGE',
                 PageFooter: 'FOOTER_PAGE',
-                PageMenu: 'VERTICAL_MENU_PAGE',
             } %}
                 <div class="yw-form-group">
                     <label class="yw-form-label">{{ _t(t) }}</label>
@@ -69,6 +63,7 @@
                 </div>
             {% endfor %}
         </fieldset>
-    </div> <!-- /#avanced-page-settings -->
+        </div>
+    </details>
     {% endif %}
 </form>

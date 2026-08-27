@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { resetEnv } from '../helpers/db'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../helpers/login'
+import { editorReady } from '../helpers/editor'
 
 test.beforeEach(async () => {
   resetEnv()
@@ -242,17 +243,100 @@ test('saving clears the guard, so leaving afterwards asks nothing', async ({
   expect(asked, 'nothing is unsaved once it is saved').toBe(0)
 })
 
-test('the three chrome pages that are still pages are linked, not replaced', async ({
+/** The two chrome pages left are written here, and nothing links out to a third. */
+test('the banner and the footer are the whole of the chrome pages', async ({
   page,
 }) => {
   await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
   await page.goto('/?admin/layout')
 
-  for (const tag of ['PageHeader', 'PageMenu', 'PageFooter']) {
-    await expect(
-      page.locator(`.yw-dashboard__links a[href*="${tag}"]`).first(),
-    ).toBeVisible()
+  for (const tag of ['PageHeader', 'PageFooter']) {
+    await expect(page.locator(`input[name="tag"][value="${tag}"]`)).toHaveCount(
+      1,
+    )
+    await editorReady(page, `content_${tag}`)
   }
+
+  await expect(page.locator('input[name="tag"]')).toHaveCount(2)
+  await expect(
+    page.locator('a[href*="PageMenu"]'),
+    'the side menu is retired: nothing on this screen offers it',
+  ).toHaveCount(0)
+})
+
+/** What is typed into the banner here is what every page shows. */
+test('the banner written on the Layout screen lands on every page', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?admin/layout')
+
+  await editorReady(page, 'content_PageHeader')
+  await page.evaluate(() => {
+    window['ywEditors']['content_PageHeader'].setValue('=== Le bandeau ===')
+  })
+  await page
+    .locator(
+      'form:has(input[name="tag"][value="PageHeader"]) button[type="submit"]',
+    )
+    .click()
+  await expect(page.locator(FLASH)).toContainText(/enregistr/i)
+
+  await page.goto('/?PagePrincipale')
+  await expect(page.locator('#yw-header')).toContainText('Le bandeau')
+})
+
+/** Two structural choices: which side the menu is on, and which side of it the banner is. */
+test('the menu can become a side column, and the banner can lead it', async ({
+  page,
+}) => {
+  await login(page, ADMIN_USERNAME, ADMIN_PASSWORD)
+  await page.goto('/?admin/layout')
+
+  await editorReady(page, 'content_PageHeader')
+  await page.evaluate(() => {
+    window['ywEditors']['content_PageHeader'].setValue('=== Le bandeau ===')
+  })
+  await page
+    .locator(
+      'form:has(input[name="tag"][value="PageHeader"]) button[type="submit"]',
+    )
+    .click()
+  await expect(page.locator(FLASH)).toContainText(/enregistr/i)
+
+  await page
+    .locator('input[name="layout_navbar_position"][value="left"]')
+    .check()
+  await expect(page.locator('html')).toHaveAttribute('data-yw-navbar', 'left')
+
+  await page
+    .locator('input[name="layout_header_position"][value="before"]')
+    .check()
+  await page.locator('.yw-layout__save button[type="submit"]').click()
+  await expect(page.locator(FLASH)).toContainText(/enregistr/i)
+
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/?PagePrincipale')
+
+  await expect(page.locator('html')).toHaveAttribute('data-yw-navbar', 'left')
+
+  const column = await page.locator('#yw-topnav').boundingBox()
+  expect(
+    Math.round(column.x),
+    'the menu is a column against the left edge',
+  ).toBe(0)
+  expect(column.width, 'and it is a column, not a bar').toBeLessThan(400)
+
+  const bannerFirst = await page.evaluate(
+    () =>
+      !!(
+        document
+          .querySelector('#yw-header')
+          .compareDocumentPosition(document.querySelector('#yw-topnav')) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+      ),
+  )
+  expect(bannerFirst, 'the banner comes before the menu').toBe(true)
 })
 
 /** The pencil on the navbar covers nothing on the navbar. */
@@ -278,12 +362,28 @@ test('the chrome pencils cover no control an admin needs', async ({ page }) => {
     return [
       hits('.yw-topnav-tools'),
       hits('.yw-topnav-fast-access .yw-avatar'),
-      hits('#yw-header .yw-chrome-editable > .yw-chrome-edit'),
       hits('.yw-page-actions'),
     ].filter(Boolean)
   })
 
   expect(covered, 'the navbar pencil is sitting on top of these').toEqual([])
+
+  await expect(
+    page.locator('#yw-header .yw-chrome-edit'),
+    'the banner is edited on the Layout screen, not through a pencil',
+  ).toHaveCount(0)
+
+  const edges = await page.evaluate(() => ({
+    pencil: document
+      .querySelector('#yw-topnav .yw-chrome-edit')
+      .getBoundingClientRect().right,
+    cluster: document.querySelector('.yw-page-actions').getBoundingClientRect()
+      .right,
+  }))
+  expect(
+    Math.round(edges.pencil),
+    'the pencil hangs on the right, on the cluster line',
+  ).toBe(Math.round(edges.cluster))
 
   await page.locator('#yw-topnav .yw-chrome-edit').click()
   await expect(page).toHaveURL(/admin\/layout/)

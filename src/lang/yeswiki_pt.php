@@ -1142,7 +1142,6 @@ return [
     'HEADER_PAGE' => 'o cabeçalho (banner)',
     'FOOTER_PAGE' => 'o rodapé',
     'FOR_2_OR_3_COLUMN_THEMES' => 'Para temas 2 ou 3 colunas',
-    'VERTICAL_MENU_PAGE' => 'o menu vertical',
     'RIGHT_COLUMN_PAGE' => 'coluna da direita',
     'RUNNING_WITH' => 'Galopa no',
     'TEMPLATE_NO_THEME_FILES' => 'Alguns (ou todos) arquivos do template desapareceram',

@@ -69,7 +69,8 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         } elseif (!empty($image) && in_array($image, ['lien', '1'], true)) {
             $regexp = '/<a data-id="' . $field . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
         } else {
-            $regexp = '/<div.*data-id="' . $field . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
+            $regexp = '/<div[^>]*data-id="' . $field . '"[^>]*>\s*(?:<span class="BAZ_label[^"]*">.*<\/span>\s*)?'
+                . '<(?:span|div) class="BAZ_texte[^"]*">\s*(.*)\s*<\/(?:span|div)>\s*<\/div>/Uis';
         }
 
         preg_match_all($regexp, $remotePage, $matches);

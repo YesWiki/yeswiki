@@ -1604,14 +1604,6 @@ div.tableau-thumbnail > img {
 .feed-item h3 {
   margin-bottom: var(--yw-space-sm-y);
 }
-.feed_syndication .bazar-entry:first-child .panel-heading.collapsed {
-  padding-top: 0;
-}
-.feed_syndication
-  .bazar-entry:first-child
-  .panel-heading.collapsed[data-toggle='collapse']::after {
-  top: 0.6rem;
-}
 .panel-heading .feed-img {
   margin: 0 var(--yw-space-sm-x) 0 0;
   width: calc(1.5em * 4 / 3);
@@ -2529,7 +2521,7 @@ input.yw-input.error {
   margin-top: var(--yw-space-md-y);
 }
 
-.facette-container[data-filter-align='top'] .filter-box .panel-collapse.in {
+.facette-container[data-filter-align='top'] .filter-box[open] .panel-collapse {
   display: flex;
   flex-wrap: wrap;
   column-gap: var(--yw-space-md-x);
@@ -2549,6 +2541,14 @@ input.yw-input.error {
 
 .facette-container .filter-box .panel-heading {
   cursor: pointer;
+}
+.filter-box.yw-accordion__item {
+  border-bottom: 0;
+}
+
+.yw-import-row {
+  border-bottom: var(--yw-border-width) solid var(--yw-border-subtle);
+  padding: var(--yw-space-sm-y) 0;
 }
 .filter-box .panel-body {
   overflow-x: hidden;

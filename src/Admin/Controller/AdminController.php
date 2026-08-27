@@ -97,7 +97,7 @@ class AdminController extends YesWikiController
             $pages[] = [
                 'tag' => $tag,
                 'label' => _t('ADMIN_LAYOUT_PAGE_' . strtoupper(substr($tag, 4))),
-                'exists' => $pageManager->getOne($tag) !== null,
+                'content' => $layout->pageContent($tag),
             ];
         }
 
@@ -121,9 +121,34 @@ class AdminController extends YesWikiController
             'navbarHeight' => $layout->navbarHeight(),
             'navbarHeightMin' => LayoutService::NAVBAR_HEIGHT_MIN,
             'navbarHeightMax' => LayoutService::NAVBAR_HEIGHT_MAX,
+            'navbarPositions' => LayoutService::NAVBAR_POSITIONS,
+            'navbarPosition' => $layout->navbarPosition(),
+            'headerPositions' => LayoutService::HEADER_POSITIONS,
+            'headerPosition' => $layout->headerPosition(),
             'pages' => $pages,
             'configWritable' => $layout->isConfigWritable(),
         ]);
+    }
+
+    /** One of the chrome pages that is still a page, written from the Layout screen. */
+    #[Route('/admin/layout/page', methods: ['POST'], options: ['acl' => self::ADMIN_ACL])]
+    public function layoutPage(): Response
+    {
+        $request = $this->getService(CurrentRequest::class)->get();
+
+        try {
+            $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+
+            $tag = (string)$request->request->get('tag', '');
+            $content = (string)$request->request->get('content_' . $tag, '');
+            $this->getService(LayoutService::class)->savePage($tag, $content);
+
+            Flash::success(_t('ADMIN_LAYOUT_SAVED'));
+        } catch (\Throwable $failed) {
+            Flash::error(_t('ADMIN_LAYOUT_NOT_SAVED') . ' ' . $failed->getMessage());
+        }
+
+        return new RedirectResponse($this->getService(UrlFormatter::class)->href('', 'admin/layout'));
     }
 
     /** The top bar as the form being filled in describes it -- previewed, not saved. */
@@ -177,6 +202,8 @@ class AdminController extends YesWikiController
             'brand' => (string)$request->request->get('layout_brand', 'text'),
             'account' => $request->request->has('layout_account_button'),
             'height' => $request->request->get('layout_navbar_height'),
+            'navbarPosition' => (string)$request->request->get('layout_navbar_position', ''),
+            'headerPosition' => (string)$request->request->get('layout_header_position', ''),
         ];
 
         return [$brand, $navbar, $quickMenu];

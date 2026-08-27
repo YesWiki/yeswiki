@@ -88,6 +88,11 @@
   --yw-navbar-height: 48px;
 
   --yw-sticky-toolbar-top: var(--yw-navbar-height, 48px);
+
+  --yw-docked-top: max(
+    var(--yw-sticky-toolbar-top),
+    var(--yw-header-bottom, 0px)
+  );
 }
 
 :root {
@@ -429,7 +434,8 @@ span.missingpage,
 
 .yw-page-actions {
   position: fixed;
-  top: calc(var(--yw-navbar-height) + 1.25rem);
+
+  top: calc(var(--yw-docked-top) + 1.25rem);
   right: 1rem;
   z-index: 90;
   display: flex;
@@ -439,15 +445,12 @@ span.missingpage,
   text-align: left;
 }
 
-body:has(#yw-header .yw-chrome-edit) .yw-page-actions {
-  top: calc(var(--yw-navbar-height) + 3.5rem);
-}
-
-body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
-  top: calc(var(--yw-sticky-toolbar-top) + 64px + 2.25rem);
-
-  max-height: none;
-  bottom: 1rem;
+/* Clearing whichever sits lower: the pencil hanging under the bar, or the banner. */
+body:has(#yw-topnav .yw-chrome-edit) .yw-page-actions {
+  top: max(
+    calc(var(--yw-sticky-toolbar-top) + 3.5rem),
+    calc(var(--yw-header-bottom, 0px) + 1.25rem)
+  );
 }
 
 .yw-page-actions .yw-btn,
@@ -495,15 +498,6 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 @media (hover: hover) and (min-width: 768px) {
   .yw-page-actions__more {
     display: none;
-  }
-
-  .yw-page-actions__edit span {
-    display: none;
-  }
-
-  .yw-page-actions:hover .yw-page-actions__edit span,
-  .yw-page-actions:focus-within .yw-page-actions__edit span {
-    display: inline;
   }
 
   .yw-page-actions:hover .yw-page-actions__more,
@@ -712,7 +706,7 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
   width: max-content;
 }
 
-#yw-topnav > .container > .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit) {
+#yw-topnav > .container > .yw-topnav-fast-access .yw-btn {
   border: none;
 }
 
@@ -891,6 +885,184 @@ body:has(#yw-header .yw-chrome-edit) .yw-designer__sidebar {
 #yw-topnav.fixable {
   position: sticky;
   top: 0;
+}
+
+/**
+ * The main menu as a column down one side, chosen on the Layout screen and stated by the
+ * squelette as `data-yw-navbar` on the root element. Narrow screens keep the bar: a fixed
+ * column would eat the width the content needs.
+ */
+:root[data-yw-navbar='left'],
+:root[data-yw-navbar='right'] {
+  --yw-navbar-width: 15rem;
+}
+
+@media (min-width: 768px) {
+  :root[data-yw-navbar='left'],
+  :root[data-yw-navbar='right'] {
+    --yw-sticky-toolbar-top: 0px;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav,
+  :root[data-yw-navbar='right'] #yw-topnav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--yw-navbar-width);
+    align-items: stretch;
+    overflow-y: auto;
+    border-bottom: 0;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav {
+    left: 0;
+    border-right: var(--yw-border-width) solid var(--yw-navbar-border);
+  }
+
+  :root[data-yw-navbar='right'] #yw-topnav {
+    right: 0;
+    border-left: var(--yw-border-width) solid var(--yw-navbar-border);
+  }
+
+  /**
+   * A banner asked for before the menu runs the whole width of the page: it steps back out of
+   * the room the container reserves for the column, and the column starts under it.
+   */
+  :root[data-yw-navbar='left'][data-yw-header='before'] #yw-header {
+    margin-left: calc(-1 * var(--yw-navbar-width));
+  }
+
+  :root[data-yw-navbar='right'][data-yw-header='before'] #yw-header {
+    margin-right: calc(-1 * var(--yw-navbar-width));
+  }
+
+  /* Having stepped out of that room, a full-bleed section inside it bleeds to the window. */
+  :root[data-yw-navbar='left'][data-yw-header='before'] #yw-header,
+  :root[data-yw-navbar='right'][data-yw-header='before'] #yw-header {
+    --yw-viewport-width: var(--yw-window-width, 100vw);
+  }
+
+  :root[data-yw-navbar='left'][data-yw-header='before'] #yw-topnav,
+  :root[data-yw-navbar='right'][data-yw-header='before'] #yw-topnav {
+    top: var(--yw-header-bottom, 0px);
+  }
+
+  :root[data-yw-navbar='left'] #yw-container {
+    padding-left: var(--yw-navbar-width);
+  }
+
+  :root[data-yw-navbar='right'] #yw-container {
+    padding-right: var(--yw-navbar-width);
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav > .container,
+  :root[data-yw-navbar='right'] #yw-topnav > .container {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav > .container > *,
+  :root[data-yw-navbar='right'] #yw-topnav > .container > * {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav .yw-nav,
+  :root[data-yw-navbar='right'] #yw-topnav .yw-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav .yw-dropdown__menu a,
+  :root[data-yw-navbar='right'] #yw-topnav .yw-dropdown__menu a {
+    white-space: normal;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav > .container > .navbar-header,
+  :root[data-yw-navbar='right'] #yw-topnav > .container > .navbar-header {
+    text-align: center;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav .yw-brand--logo-text,
+  :root[data-yw-navbar='right'] #yw-topnav .yw-brand--logo-text,
+  :root[data-yw-navbar='left'] #yw-topnav .yw-brand--logo-text-below,
+  :root[data-yw-navbar='right'] #yw-topnav .yw-brand--logo-text-below {
+    align-items: center;
+    justify-content: center;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav > .container > .yw-topnav-fast-access,
+  :root[data-yw-navbar='right']
+    #yw-topnav
+    > .container
+    > .yw-topnav-fast-access {
+    justify-content: center;
+    margin-left: 0;
+
+    margin-top: auto;
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav > .container > .yw-topnav-tools,
+  :root[data-yw-navbar='right'] #yw-topnav > .container > .yw-topnav-tools {
+    justify-content: center;
+    padding-left: 0;
+    padding-top: var(--yw-space-md-y);
+    margin-left: 0;
+    margin-right: 0;
+    border-left: 0;
+    border-top: var(--yw-border-width) solid var(--yw-border-subtle);
+  }
+
+  :root[data-yw-navbar='left'] #yw-topnav .yw-chrome-edit,
+  :root[data-yw-navbar='right'] #yw-topnav .yw-chrome-edit {
+    position: static;
+    transform: none;
+  }
+
+  :root[data-yw-navbar='right'] #yw-container .yw-page-actions {
+    right: calc(var(--yw-navbar-width) + 1rem);
+  }
+
+  :root[data-yw-navbar='right'] .yw-designer__sidebar {
+    right: var(--yw-navbar-width);
+  }
+
+  /* The screens that dock a rail of their own: it starts where the column ends. */
+  :root[data-yw-navbar='left'] .yw-dashboard__sidebar {
+    left: var(--yw-navbar-width);
+  }
+
+  :root[data-yw-navbar='left'] .admin-bulk-panel {
+    left: var(--yw-navbar-width);
+  }
+
+  :root[data-yw-navbar='right'] .admin-bulk-panel {
+    right: var(--yw-navbar-width);
+  }
+}
+
+/**
+ * The colour scheme and language panels sit at the foot of a column, so they open upwards --
+ * downwards puts them under the bottom of the window, where nobody can read them. The bridge
+ * that keeps the hover alive between the trigger and the panel turns over with them.
+ */
+@media (hover: hover) and (min-width: 768px) {
+  :root[data-yw-navbar='left'] .yw-topnav-tools__panel,
+  :root[data-yw-navbar='right'] .yw-topnav-tools__panel {
+    top: auto;
+    bottom: calc(100% + var(--yw-space-sm-y));
+  }
+
+  :root[data-yw-navbar='left'] .yw-topnav-tools__panel::before,
+  :root[data-yw-navbar='right'] .yw-topnav-tools__panel::before {
+    top: 100%;
+    bottom: auto;
+  }
 }
 
 input[type='url'] {
@@ -1946,6 +2118,10 @@ summary.yw-accordion__summary {
   padding: 0 0 var(--yw-space-md-y) var(--yw-space-lg-x);
 }
 
+.yw-accordion__item--danger > .yw-accordion__summary {
+  color: var(--yw-danger);
+}
+
 .yw-accordion__item:focus-within {
   outline: none;
 }
@@ -2944,15 +3120,6 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-collapse--open {
   display: block;
 }
-.yw-collapse-toggle {
-  cursor: pointer;
-}
-.yw-collapse-toggle__caret {
-  transition: transform 0.15s ease-in-out;
-}
-.yw-collapse-toggle[aria-expanded='true'] .yw-collapse-toggle__caret {
-  transform: rotate(180deg);
-}
 
 .yw-panel,
 .panel {
@@ -3101,6 +3268,18 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-label--info,
 .label-info {
   background: var(--yw-tertiary);
+}
+a.yw-label,
+a.label {
+  text-decoration: none;
+  color: var(--yw-text-inverse);
+}
+a.yw-label:hover,
+a.label:hover,
+a.yw-label:focus,
+a.label:focus {
+  color: var(--yw-text-inverse);
+  filter: brightness(1.15);
 }
 
 .yw-nav,
@@ -3359,6 +3538,17 @@ progress.yw-progressbar::-moz-progress-bar {
 }
 .text-center {
   text-align: center;
+}
+
+/**
+ * A heading states its own alignment, from its Preset, which would otherwise ignore the
+ * alignment the container asks for -- a centred section with left-aligned titles in it.
+ */
+.text-center :is(h1, h2, h3, h4, h5, h6),
+.text-left :is(h1, h2, h3, h4, h5, h6),
+.text-right :is(h1, h2, h3, h4, h5, h6),
+.text-justify :is(h1, h2, h3, h4, h5, h6) {
+  text-align: inherit;
 }
 
 .yw-btn--link,
@@ -3691,8 +3881,6 @@ progress.yw-progressbar::-moz-progress-bar {
 @media (min-width: 768px) {
   #yw-topnav .yw-chrome-edit {
     top: 100%;
-    right: auto;
-    left: 1rem;
     transform: none;
   }
 }
@@ -3738,7 +3926,18 @@ progress.yw-progressbar::-moz-progress-bar {
 }
 
 .tag-label {
-  margin-left: var(--yw-space-sm-x);
+  margin: 0 var(--yw-space-sm-x) var(--yw-space-sm-y) 0;
+}
+
+.page-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: var(--yw-space-md-y) 0 0;
+}
+.page-tags > .yw-icon {
+  margin-right: var(--yw-space-sm-x);
+  color: var(--yw-text-muted);
 }
 
 a.size6 {

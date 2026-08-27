@@ -350,6 +350,8 @@ class TemplateEngine
             'layout_page',
             fn (string $role) => $this->container->get(LayoutService::class)->pageFor($role)
         );
+
+        $this->addTwigHelper('layout_position', fn (string $part) => $this->layoutPosition($part));
     }
 
     /** The whole top bar: the menu toggle, the brand, the navbar and the quick menu. */
@@ -362,6 +364,7 @@ class TemplateEngine
             'navbar' => $this->renderLayout('navbar', $chrome),
             'quickMenu' => $this->renderLayout('quick-menu', $chrome),
             'tools' => $this->renderChromeTools(),
+            'editChrome' => $this->renderChromeEditLink('navbar'),
         ]);
     }
 
@@ -390,6 +393,14 @@ class TemplateEngine
             'languages' => $languages,
             'language' => $current,
         ]);
+    }
+
+    /** Where a squelette puts one of the two movable parts: the main menu, and the banner. */
+    private function layoutPosition(string $part): string
+    {
+        $layout = $this->container->get(LayoutService::class);
+
+        return $part === 'header' ? $layout->headerPosition() : $layout->navbarPosition();
     }
 
     /** The `style` attribute the document's root element wears. */
@@ -454,7 +465,6 @@ class TemplateEngine
         return $this->render('@core/layout/quick-menu.twig', [
             'entries' => $entries,
 
-            'editChrome' => $this->renderChromeEditLink('navbar'),
             'healthBadge' => $this->renderHealthBadge(),
             'account' => $chrome->accountButton,
         ]);
@@ -500,7 +510,7 @@ class TemplateEngine
             ]);
         }
 
-        $roles = ['header' => 'PageHeader', 'menu' => 'PageMenu', 'footer' => 'PageFooter'];
+        $roles = ['footer' => 'PageFooter'];
         if (!isset($roles[$part])) {
             return '';
         }
@@ -660,13 +670,13 @@ class TemplateEngine
     }
 
     /**
-     * Render a template as a complete page: the squelette around <div class="page">content.
+     * Render a template as a complete page: the squelette around the rendered template.
      *
      * @param array<string,mixed> $data
      */
     public function renderFullPage(string $templatePath, array $data = []): string
     {
-        return $this->renderPage('<div class="page">' . $this->render($templatePath, $data) . '</div>');
+        return $this->renderPage($this->render($templatePath, $data));
     }
 
     /** $content wrapped in the wiki's page skeleton. */

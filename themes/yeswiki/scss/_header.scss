@@ -18,10 +18,6 @@
   color: var(--yw-heading-1);
 }
 
-#yw-header:not(:has(.yw-headerpage *)):not(:has(.yw-chrome-edit)) {
-  display: none;
-}
-
 #yw-header:not(:has(.yw-headerpage *)) {
-  min-height: 2rem;
+  display: none;
 }

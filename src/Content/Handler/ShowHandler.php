@@ -12,7 +12,6 @@ use YesWiki\Content\Service\PageViewAppendices;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\InclusionStack;
@@ -122,11 +121,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         $missingTheme = $this->getService(ThemeResolutionError::class)->takeMissingTheme();
         if ($missingTheme !== null) {
-            $plugin_output_new = str_replace(
-                '<div class="page" >',
-                '<div class="page">' . "\n" . '<div class="yw-alert yw-alert--danger"><a href="#" data-yw-dismiss="alert" class="yw-close">&times;</a><strong>' . _t('TEMPLATE_NO_THEME_FILES') . ' :</strong><br />themes/' . $missingTheme['theme'] . '/squelettes/' . $missingTheme['squelette'] . '<br />themes/' . $missingTheme['theme'] . '/styles/' . $missingTheme['style'] . '<br><strong>' . _t('TEMPLATE_DEFAULT_THEME_USED') . '</strong>.</div>',
-                $plugin_output_new
-            );
+            $plugin_output_new = '<div class="yw-alert yw-alert--danger"><a href="#" data-yw-dismiss="alert" class="yw-close">&times;</a><strong>'
+                . _t('TEMPLATE_NO_THEME_FILES') . ' :</strong><br />themes/' . $missingTheme['theme'] . '/squelettes/' . $missingTheme['squelette']
+                . '<br />themes/' . $missingTheme['theme'] . '/styles/' . $missingTheme['style']
+                . '<br><strong>' . _t('TEMPLATE_DEFAULT_THEME_USED') . '</strong>.</div>' . "\n" . $plugin_output_new;
         }
 
         if (!$this->getService(AclService::class)->hasAccess('read')) {
@@ -183,9 +181,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
     {
         ob_start();
 
-        echo '<div class="page"';
-        echo (($user = $this->getService(AuthenticationService::class)->getLoggedUser()) && ($user['doubleclickedit'] == 'N') || !$this->getService(AclService::class)->hasAccess('write')) ? '' : ' ondblclick="doubleClickEdit(event);"';
-        echo '>' . "\n";
         if (!empty($_SESSION['redirects'])) {
             $trace = $_SESSION['redirects'];
             $tag = $trace[count($trace) - 1];
@@ -243,7 +238,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         }
         ?>
         <hr class="hr_clear" />
-        </div>
 
         <?php
 

@@ -173,8 +173,7 @@ class AdminAclsAction extends YesWikiAction implements RegisteredAction, Provide
                 $search = <<<SQL
                AND tag IN ('BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour','GererUtilisateurs',
                 'GererDroitsActions','GererDroitsHandlers','TableauDeBord',
-                'PageTitre','PageMenuHaut','PageRapideHaut','PageHeader','PageFooter','PageCSS','PageMenu',
-                'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
+                'PageHeader','PageFooter','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
                 $search = ' AND ' . $this->dbService->jsonExtract('body', '$.form_id') . ' = ?'

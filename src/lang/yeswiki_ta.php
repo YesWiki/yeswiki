@@ -1147,7 +1147,6 @@ return [
     'HEADER_PAGE' => 'l\'ent & ecirc; te (பாண்டே)',
     'FOOTER_PAGE' => 'லு பைட் டி பக்கம்',
     'FOR_2_OR_3_COLUMN_THEMES' => 'Les th & egrave; mes & agrave; 2 OU 3 கோர்ன்ச்',
-    'VERTICAL_MENU_PAGE' => 'LE பட்டியல் செங்குத்து',
     'RIGHT_COLUMN_PAGE' => 'லா கோலன் டி டிராயிட்',
     'RUNNING_WITH' => 'கலோப் ச ous ச்',
     'TEMPLATE_ACTION_SECTION' => 'செயல் {{section ...}}',

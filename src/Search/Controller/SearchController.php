@@ -17,7 +17,7 @@ class SearchController extends YesWikiController
         $content = $this->getService(ActionRunner::class)->action('search', ['autofocus' => '1']);
 
         return new Response(
-            $this->getService(TemplateEngine::class)->renderPage('<div class="page">' . $content . '</div>')
+            $this->getService(TemplateEngine::class)->renderPage((string)$content)
         );
     }
 }

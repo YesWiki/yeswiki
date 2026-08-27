@@ -55,6 +55,26 @@ test.describe('the edit bar', () => {
     expect((await cluster.boundingBox())?.y).toBe(before?.y)
   })
 
+  /** The button names itself without being hovered, and says where to come back to. */
+  test('the edit button keeps its label, and carries where it was clicked', async ({
+    page,
+  }) => {
+    await page.goto('/?PagePrincipale&probe=editbar')
+
+    const edit = page.locator('.yw-page-actions .yw-page-actions__edit')
+    await expect(
+      edit.locator('span'),
+      'the label is there before anyone hovers the cluster',
+    ).toBeVisible()
+    await expect(edit).toHaveAttribute('href', /incomingurl=/)
+
+    await edit.click()
+    await expect(
+      page.locator('.yw-page-actions--editing .link-cancel'),
+      'leaving the editor goes back to the page the button was clicked on',
+    ).toHaveAttribute('href', /probe=editbar/)
+  })
+
   test('editing replaces the reader actions with the editor ones', async ({
     page,
   }) => {

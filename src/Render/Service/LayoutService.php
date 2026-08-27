@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
@@ -21,6 +22,8 @@ class LayoutService
     public const QUICK_MENU = 'layout_quick_menu';
     public const ACCOUNT_BUTTON = 'layout_account_button';
     public const NAVBAR_HEIGHT = 'layout_navbar_height';
+    public const NAVBAR_POSITION = 'layout_navbar_position';
+    public const HEADER_POSITION = 'layout_header_position';
 
     /** How tall the top bar is, in pixels, and the bounds a slider offers. */
     public const NAVBAR_HEIGHT_DEFAULT = 48;
@@ -30,8 +33,14 @@ class LayoutService
     /** How the brand is drawn: the two things it can show, and where they go. */
     public const BRAND_MODES = ['text', 'logo', 'logo-text', 'logo-text-below'];
 
+    /** Where the main menu sits. The first value is what an unset wiki gets. */
+    public const NAVBAR_POSITIONS = ['top', 'left', 'right'];
+
+    /** Where the banner sits relative to the main menu. */
+    public const HEADER_POSITIONS = ['after', 'before'];
+
     /** The chrome that is still wiki content, in the order the page shows it. */
-    public const PAGES = ['PageHeader', 'PageMenu', 'PageFooter'];
+    public const PAGES = ['PageHeader', 'PageFooter'];
 
     public function __construct(
         protected ParameterBagInterface $params,
@@ -171,6 +180,44 @@ class LayoutService
         return max(self::NAVBAR_HEIGHT_MIN, min(self::NAVBAR_HEIGHT_MAX, (int)$value));
     }
 
+    /** Where the main menu sits: a top bar, or a column down one side. */
+    public function navbarPosition(): string
+    {
+        return $this->oneOf($this->string(self::NAVBAR_POSITION), self::NAVBAR_POSITIONS);
+    }
+
+    /** Whether the banner is drawn before the main menu or after it. */
+    public function headerPosition(): string
+    {
+        return $this->oneOf($this->string(self::HEADER_POSITION), self::HEADER_POSITIONS);
+    }
+
+    /** The wiki markup one of the chrome pages holds, empty when it has never been written. */
+    public function pageContent(string $tag): string
+    {
+        $this->assertChromePage($tag);
+        $page = $this->pageManager->getOne($tag);
+
+        return $page === null ? '' : PageBody::content($page['body'] ?? []);
+    }
+
+    /**
+     * Write one of the chrome pages, keeping whatever else its body carries.
+     *
+     * @throws \Exception when the wiki refuses the write
+     */
+    public function savePage(string $tag, string $content): void
+    {
+        $this->assertChromePage($tag);
+
+        $body = $this->pageManager->getOne($tag)['body'] ?? [];
+        $body[PageBody::CONTENT] = rtrim(str_replace("\r", '', $content));
+
+        if ($this->pageManager->save($tag, $body) !== 0) {
+            throw new \Exception(_t('EDIT_NO_WRITE_ACCESS'));
+        }
+    }
+
     /** The chrome this wiki is configured to wear. */
     public function current(): LayoutChrome
     {
@@ -188,9 +235,9 @@ class LayoutService
     /**
      * The chrome a posted form describes -- what Save would write, without writing it.
      *
-     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed}          $brand
-     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}> $navbar
-     * @param list<array{icon: string, label: string, link: string}>                                        $quickMenu
+     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string} $brand
+     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}>                                          $navbar
+     * @param list<array{icon: string, label: string, link: string}>                                                                                 $quickMenu
      */
     public function fromForm(array $brand, array $navbar, array $quickMenu): LayoutChrome
     {
@@ -218,9 +265,9 @@ class LayoutService
     /**
      * Write the whole of the layout, in one config write.
      *
-     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed}          $brand
-     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}> $navbar
-     * @param list<array{icon: string, label: string, link: string}>                                        $quickMenu
+     * @param array{title?: string, logo?: string, brand?: string, account?: bool, height?: mixed, navbarPosition?: string, headerPosition?: string} $brand
+     * @param list<array{label: string, link: string, children?: list<array{label: string, link: string}>}>                                          $navbar
+     * @param list<array{icon: string, label: string, link: string}>                                                                                 $quickMenu
      */
     public function save(array $brand, array $navbar, array $quickMenu): void
     {
@@ -234,6 +281,8 @@ class LayoutService
         $config[self::BRAND] = $chrome->brandMode;
         $config[self::ACCOUNT_BUTTON] = $chrome->accountButton;
         $config[self::NAVBAR_HEIGHT] = $chrome->navbarHeight;
+        $config[self::NAVBAR_POSITION] = $this->oneOf((string)($brand['navbarPosition'] ?? ''), self::NAVBAR_POSITIONS);
+        $config[self::HEADER_POSITION] = $this->oneOf((string)($brand['headerPosition'] ?? ''), self::HEADER_POSITIONS);
         $config[self::NAVBAR] = $chrome->navbar;
         $config[self::QUICK_MENU] = $chrome->quickMenu;
 
@@ -305,6 +354,21 @@ class LayoutService
     private function link(array $entry): string
     {
         return is_string($entry['link'] ?? null) ? trim($entry['link']) : '';
+    }
+
+    private function assertChromePage(string $tag): void
+    {
+        if (!in_array($tag, self::PAGES, true)) {
+            throw new \InvalidArgumentException("{$tag} is not one of this wiki's chrome pages");
+        }
+    }
+
+    /**
+     * @param list<string> $allowed
+     */
+    private function oneOf(string $value, array $allowed): string
+    {
+        return in_array($value, $allowed, true) ? $value : $allowed[0];
     }
 
     private function string(string $key): string

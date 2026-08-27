@@ -2,7 +2,9 @@
 {% block head %}
 <!doctype html>
 
-<html lang="{{ action('configuration param="lang"') }}" style="{{ layout_root_style() }}">
+<html lang="{{ action('configuration param="lang"') }}" style="{{ layout_root_style() }}"
+      data-yw-navbar="{{ layout_position('navbar') }}"
+      data-yw-header="{{ layout_position('header') }}">
 <head>
   <!-- HTML Metas -->
   <meta charset="{{ action('configuration param="charset"') }}">
@@ -35,21 +37,24 @@
       Aller au contenu principal
     </a>
 
+    {% set headerHtml %}
+      <header id="yw-header">
+        {{ action('include page="' ~ layout_page('PageHeader') ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
+      </header>
+    {% endset %}
+
+    {% if layout_position('header') == 'before' %}{{ headerHtml|raw }}{% endif %}
+
     <nav id="yw-topnav" class="fixable" role="navigation">
       <div class="container" id="yw-layout-chrome">
         {{ layout_chrome()|raw }}
       </div>
     </nav>
 
-    <header id="yw-header" class="yw-chrome-editable">
-      {{ layout_edit('header')|raw }}
-      {{ action('include page="' ~ layout_page('PageHeader') ~ '" class="yw-headerpage" doubleclick="1"')|raw }}
-    </header>
+    {% if layout_position('header') != 'before' %}{{ headerHtml|raw }}{% endif %}
 
-    <div id="yw-main" role="main" tabindex="-1" {{ action('doubleclick')|raw }}>
-      <div class="yw-main-content alone">
-        {{ page_content|raw }}
-      </div>
+    <div id="yw-main" class="page" role="main" tabindex="-1" {{ action('doubleclick')|raw }}>
+      {{ page_content|raw }}
 
       {{ action('editbar')|raw }}
     </div>

@@ -31,7 +31,6 @@ class ThemeManager implements EventSubscriberInterface
     public const SPECIAL_METADATA = [
         'PageFooter',
         'PageHeader',
-        'PageMenu',
         'favorite_preset',
     ];
     /** What Google is told we are, so it answers with woff2. */

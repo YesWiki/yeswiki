@@ -1,12 +1,12 @@
 {% extends "@core/layouts/field.twig" %}
 
 {% block value_container %}
-	<span class="BAZ_texte">
+	<div class="BAZ_texte">
 		<a href="{{ entryUrl|e ~ '/iframe' }}"
 			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
 			data-header="false" data-iframe="1"
 			title="{{ _t('BAZ_SEE_ENTRY') }} {{ label|striptags }}">
 				{{- label|raw -}}
 		</a>
-	</span>
+	</div>
 {% endblock %}

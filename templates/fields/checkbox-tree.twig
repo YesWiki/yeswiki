@@ -1,9 +1,9 @@
 {% extends "@core/layouts/field.twig" %}
 
 {% block value_container %}
-	<span class="BAZ_texte field-checkbox-tree">
+	<div class="BAZ_texte field-checkbox-tree">
 		{{ _self.renderNodes(treeValues) }}
-	</span>
+	</div>
 {% endblock %}
 
 {% macro renderNodes(nodes) %}

@@ -685,10 +685,8 @@ impossible de pouvoir modifier quoique ce soit !_
 1. Identifier la page spammée en ajoutant le handler /editiframe aux pages
    spéciales : "BazaR", "GererSite", "GererDroits", "GererThemes",
    "GererMisesAJour", "GererUtilisateurs", "GererDroitsActions",
-   "GererDroitsHandlers", "TableauDeBord", "PageTitre", "PageMenuHaut",
-   "PageRapideHaut", "PageHeader", "PageFooter", "PageCSS", "PageMenu",
-   "PageColonneDroite", "MotDePassePerdu", "ParametresUtilisateur",
-   "GererConfig", "ActuYeswiki", "LookWiki"
+   "GererDroitsHandlers", "TableauDeBord", "PageHeader", "PageFooter",
+   "MotDePassePerdu", "ParametresUtilisateur", "GererConfig", "ActuYeswiki"
 2. Dès que le code malicieux est repéré, supprimer ce code et sauvegarder la
    page.
 3. Revenir sur la liste des versions de cette page pour éditer la version avant

@@ -28,7 +28,7 @@
           {{ _t('BAZ_ECRITE') }}
           {{ owner|raw }}
           <span class="category"> ({{form.label ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.label:'') }})
-          {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
+          {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}</span>
           <br />
 
           {% if entry.created_at is not empty %}
@@ -73,7 +73,7 @@
             </a>
           {% endif %}
         {% if canDuplicate %}
-          <span class="dropup">
+          <div class="dropup">
             <a
               title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ entryId }}"
               class="dropdown-toggle btn btn-entry-action btn-sm btn-default"
@@ -103,6 +103,7 @@
                 </a>
               </li>
             </ul>
+          </div>
           {% endif %}
           {% if canDelete %}
             <a class="yw-btn yw-btn--sm yw-btn--danger btn-entry-action modalbox"

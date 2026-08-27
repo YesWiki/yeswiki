@@ -28,26 +28,17 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
             throw $t;
         }
 
-        return $this->emitAfter((string)ob_get_clean());
+        return (string)ob_get_clean();
     }
 
-    /** Ran as an after-callback until ticket 06 merged it in. */
-    private function emitAfter(string $plugin_output_new): string
+    /** The page's QR code, which the share screen shows beside its buttons. */
+    private function qrCode(): string
     {
-        ob_start();
-
         $url = $this->getService(UrlFormatter::class)->href();
         $cacheImage = 'cache/qrcode-' . $this->getService(PageContext::class)->getTag() . '-url.svg';
         $this->getService(QrCodeService::class)->generateToFile($url, $cacheImage);
-        $html = '<img class="right" src="' . $cacheImage . '" title="' . _t('QR_CODE_PAGE') . '" alt="' . $url . '" />' . "\n";
 
-        $plugin_output_new = preg_replace(
-            '/<div class="page">/',
-            '<div class="page">' . "\n" . $html . "\n",
-            $plugin_output_new
-        );
-
-        return $plugin_output_new . (string)ob_get_clean();
+        return '<img class="right" src="' . $cacheImage . '" title="' . _t('QR_CODE_PAGE') . '" alt="' . $url . '" />' . "\n";
     }
 
     private function emit(): void
@@ -66,7 +57,8 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
 
             ['href' => $this->getService(UrlFormatter::class)->href('sendmail'), 'icon' => 'mail', 'label' => _t('TEMPLATE_SHARE_MAIL')],
         ];
-        $html = '<div class="yw-share-buttons">' . "\n";
+        $html = $this->qrCode();
+        $html .= '<div class="yw-share-buttons">' . "\n";
         foreach ($targets as $target) {
             $external = str_starts_with($target['href'], 'https://');
             $html .= '<a href="' . htmlspecialchars($target['href'], ENT_QUOTES) . '"'
@@ -98,8 +90,8 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
             echo '<div class="page">' . "\n" . $html . "\n" . '</div>';
         } else {
             echo $this->getService(TemplateEngine::class)->renderPage(
-                "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
-                . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n"
+                '<h2>' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
+                . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n"
             );
         }
     }

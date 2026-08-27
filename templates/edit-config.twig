@@ -1,17 +1,16 @@
 <h3>{{ _t('EDIT_CONFIG_TITLE') }}</h3>
 
 <form action="" method="post" name="edit-config" id="edit-config" class="">
-  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="yw-accordion" id="accordion">
     {% for group, data in keysList %}
-      <div class="panel panel-{{ group == 'core' ? 'primary' : 'default' }}">
-        <button class="panel-heading collapsed" id="head_{{ group }}" data-parent="#accordion" data-toggle="collapse" href="#{{ group }}">
-          <h4 class="panel-title">
+      <details class="yw-accordion__item" id="{{ group }}" name="edit-config-group">
+        <summary class="yw-accordion__summary" id="head_{{ group }}">
+          <h4 class="yw-panel__title">
             {% set groupTitle = 'EDIT_CONFIG_GROUP_' ~ group|upper %}
             {{ (_t(groupTitle) == groupTitle) ? group|upper : _t(groupTitle) }}
           </h4>
-        </button>
-        <div id="{{ group }}" class="panel-collapse collapse">
-          <div class="panel-body">
+        </summary>
+        <div class="yw-accordion__body">
             {% for key,value in data %}
               <div class="field-container">
                 <label for="{{ key }}">{{ help[key] ?? key }}</label>
@@ -46,9 +45,8 @@
                 {% endif %}
               </div>
             {% endfor %}
-          </div>
         </div>
-      </div>      
+      </details>
     {% endfor %}
   </div>
 

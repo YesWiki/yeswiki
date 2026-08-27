@@ -75,6 +75,33 @@
     </section>
 
     <section class="yw-dashboard__card">
+      <h2>{{ _t('ADMIN_LAYOUT_PLACEMENT') }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_PLACEMENT_HINT') }}</p>
+
+      <fieldset class="yw-form-group yw-layout__modes">
+        <legend class="yw-form-label">{{ _t('ADMIN_LAYOUT_NAVBAR_POSITION') }}</legend>
+        {% for position in navbarPositions %}
+          <label class="yw-layout__mode">
+            <input type="radio" name="layout_navbar_position" value="{{ position }}"
+                   {{ position == navbarPosition ? 'checked' : '' }} data-yw-layout-navbar-position>
+            <span class="yw-layout__mode-label">{{ _t('ADMIN_LAYOUT_NAVBAR_POSITION_' ~ position|upper) }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+
+      <fieldset class="yw-form-group yw-layout__modes">
+        <legend class="yw-form-label">{{ _t('ADMIN_LAYOUT_HEADER_POSITION') }}</legend>
+        {% for position in headerPositions %}
+          <label class="yw-layout__mode">
+            <input type="radio" name="layout_header_position" value="{{ position }}"
+                   {{ position == headerPosition ? 'checked' : '' }}>
+            <span class="yw-layout__mode-label">{{ _t('ADMIN_LAYOUT_HEADER_POSITION_' ~ position|upper) }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+    </section>
+
+    <section class="yw-dashboard__card">
       <h2>{{ _t('ADMIN_LAYOUT_NAVBAR') }}</h2>
       <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_NAVBAR_HINT') }}</p>
 
@@ -126,22 +153,28 @@
     </div>
   </form>
 
-  <section class="yw-dashboard__card">
-    <h2>{{ _t('ADMIN_LAYOUT_PAGES') }}</h2>
-    <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_PAGES_HINT') }}</p>
+  {% for page in pages %}
+    <section class="yw-dashboard__card">
+      <h2>{{ page.label }}</h2>
+      <p class="yw-layout__hint">{{ _t('ADMIN_LAYOUT_PAGE_HINT_' ~ page.tag|upper) }}</p>
 
-    <ul class="yw-dashboard__links">
-      {% for page in pages %}
-        <li>
-          <a href="{{ url({ tag: page.tag, handler: 'edit' }) }}">{{ icon('pencil') }} {{ page.label }}</a>
+      <form method="post" action="{{ url({ tag: 'admin/layout/page' }) }}" hx-boost="false"
+            class="yw-layout__page" data-yw-unsaved-guard>
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false}) }}">
+        <input type="hidden" name="tag" value="{{ page.tag }}">
 
-          {% if not page.exists %}
-            <em class="yw-layout__missing">{{ _t('ADMIN_LAYOUT_PAGE_MISSING') }}</em>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  </section>
+        {{ renderAction('aceditor', {
+          name: 'content_' ~ page.tag,
+          value: page.content|escape('html'),
+          rows: 8
+        })|raw }}
+
+        <div class="yw-layout__page-save">
+          <button type="submit" class="yw-btn yw-btn--primary">{{ _t('SAVE') }}</button>
+        </div>
+      </form>
+    </section>
+  {% endfor %}
 
   {{ include('@core/aceditor-rails.twig') }}
 

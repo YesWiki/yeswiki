@@ -1,5 +1,5 @@
 
 <details class="yw-accordion__item {{ class|default('') }}"{{ open|default(false) ? ' open' : '' }} {{ attrs|default('')|raw }}>
-    <summary class="yw-accordion__summary">{{ summary|raw }}</summary>
-    <div class="yw-accordion__body">{{ body|raw }}</div>
+    <summary class="yw-accordion__summary">{% block summary %}{{ summary|default('')|raw }}{% endblock %}</summary>
+    <div class="yw-accordion__body">{% block body %}{{ body|default('')|raw }}{% endblock %}</div>
 </details>

@@ -1176,7 +1176,6 @@ return [
     'HEADER_PAGE' => 'la cabecera (bandera)',
     'FOOTER_PAGE' => 'el pie de página',
     'FOR_2_OR_3_COLUMN_THEMES' => 'Para los temas con 2 o 3 columnas',
-    'VERTICAL_MENU_PAGE' => 'el menú vertical',
     'RIGHT_COLUMN_PAGE' => 'la columna de derecha',
     'RUNNING_WITH' => 'Disfruta con',
     'TEMPLATE_NO_THEME_FILES' => 'Archivo de los temas que faltan',

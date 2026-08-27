@@ -9,8 +9,8 @@ use YesWiki\Kernel\Service\DbService;
 /** Pages still naming a piece of chrome that is wiki-wide configuration now (ticket 30, re-derived under ticket 53). */
 class LayoutHealthChecks implements ProvidesHealthChecks
 {
-    /** The three Metadata keys ticket 30 retired, and what each one used to override. */
-    private const RETIRED_OVERRIDES = ['PageTitre', 'PageMenuHaut', 'PageRapideHaut'];
+    /** The Metadata keys that used to override a piece of chrome, and no longer name one. */
+    private const RETIRED_OVERRIDES = ['PageTitre', 'PageMenuHaut', 'PageRapideHaut', 'PageMenu'];
 
     private DbService $dbService;
 

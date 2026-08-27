@@ -619,21 +619,28 @@ function paintInto(slot, tag, nested = false, content = null) {
   })
 }
 
-/** Whether this element has an appearance worth painting: a colour, an image, a border, a shadow. */
+/**
+ * Whether this element has an appearance worth painting: a colour, an image, a border, a
+ * shadow. Pseudo-elements count -- a section keeps its background image on its `::before`,
+ * so reading the element alone calls an image-only section blank and paints nothing.
+ */
 function paintsSomething(element) {
-  const style = getComputedStyle(element)
+  return [null, '::before', '::after'].some((pseudo) => {
+    const style = getComputedStyle(element, pseudo)
+    if (pseudo !== null && style.content === 'none') return false
 
-  return (
-    !isTransparent(style.backgroundColor) ||
-    style.backgroundImage !== 'none' ||
-    style.boxShadow !== 'none' ||
-    ['Top', 'Right', 'Bottom', 'Left'].some(
-      (side) =>
-        parseFloat(style[`border${side}Width`]) > 0 &&
-        style[`border${side}Style`] !== 'none' &&
-        !isTransparent(style[`border${side}Color`]),
+    return (
+      !isTransparent(style.backgroundColor) ||
+      style.backgroundImage !== 'none' ||
+      style.boxShadow !== 'none' ||
+      ['Top', 'Right', 'Bottom', 'Left'].some(
+        (side) =>
+          parseFloat(style[`border${side}Width`]) > 0 &&
+          style[`border${side}Style`] !== 'none' &&
+          !isTransparent(style[`border${side}Color`]),
+      )
     )
-  )
+  })
 }
 
 /** Whether a computed colour paints nothing at all -- which is to say, whether its ALPHA is zero. */

@@ -41,7 +41,6 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
     {
         ob_start();
         ?>
-        <div class="page">
           <?php
           if ($this->getService(PageContext::class)->getPage() && ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin())) {
               if ($_POST) {
@@ -126,7 +125,6 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
           }
 
         ?>
-        </div>
         <?php
 
         $content = ob_get_clean();

@@ -115,11 +115,9 @@
             <input type="text" name="attach_alt" value="" class="yw-input">
           </div>
 
-          <a href="#avanced-settings" class="yw-btn yw-collapse-toggle" data-yw-file-picker-wiki-only data-yw-collapse-toggle="#file-picker-advanced-settings" aria-expanded="false">
-            {{ _t('ADVANCED_PARAMETERS') }}
-            <span class="yw-collapse-toggle__caret"></span>
-          </a>
-          <div id="file-picker-advanced-settings" class="yw-collapse" data-yw-file-picker-wiki-only>
+          <details id="file-picker-advanced-settings" class="yw-accordion__item" data-yw-file-picker-wiki-only>
+            <summary class="yw-accordion__summary">{{ _t('ADVANCED_PARAMETERS') }}</summary>
+            <div class="yw-accordion__body">
             <hr>
             <div class="yw-form-group">
               <label for="file_picker_attach_link">{{ _t('ASSOCIATED_LINK') }}</label>
@@ -157,7 +155,8 @@
               <label for="file_picker_attach_caption">{{ _t('CAPTION') }}</label>
               <input type="text" id="file_picker_attach_caption" name="attach_caption" value="" class="yw-input">
             </div>
-          </div>
+            </div>
+          </details>
         </form>
   </div>
 

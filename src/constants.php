@@ -1,7 +1,7 @@
 <?php
 
-define('YESWIKI_VERSION', 'doryphore');
-define('YESWIKI_RELEASE', '2020-01-22-1');
+define('YESWIKI_VERSION', 'ectoplasme');
+define('YESWIKI_RELEASE', 'dev');
 define('T_START', microtime(true));
 
 define('WN_UPPER', '[A-Z]');

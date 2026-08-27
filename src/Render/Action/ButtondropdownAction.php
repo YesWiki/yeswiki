@@ -50,7 +50,7 @@ class ButtondropdownAction extends YesWikiAction implements RegisteredAction
         $encodedtitle = htmlentities($title, ENT_COMPAT, YW_CHARSET);
 
         return '<div class="yw-dropdown' . (!empty($class) ? ' ' . $class : '') . '"> <!-- start of buttondropdown -->
-            <button class="' . $btnclass . ' yw-collapse-toggle" data-yw-dropdown-toggle aria-label="' . $encodedtitle . '" title="' . $encodedtitle . '">
+            <button class="' . $btnclass . '" data-yw-dropdown-toggle aria-label="' . $encodedtitle . '" title="' . $encodedtitle . '">
             ' . $icon . $text . (($caret == '1') ? ' <span class="yw-dropdown__caret"></span>' : '') . '
             </button>' . "\n";
     }

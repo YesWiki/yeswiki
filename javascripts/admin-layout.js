@@ -207,3 +207,19 @@ ywInitEach('[data-yw-layout-height]', (height) => {
   apply()
   height.addEventListener('input', apply)
 })
+
+ywInitEach('[data-yw-layout-navbar-position]', (choice) => {
+  const apply = () => {
+    if (choice.checked) document.documentElement.dataset.ywNavbar = choice.value
+  }
+  apply()
+  choice.addEventListener('change', apply)
+})
+
+ywInitEach('input[name="layout_header_position"]', (choice) => {
+  const apply = () => {
+    if (choice.checked) document.documentElement.dataset.ywHeader = choice.value
+  }
+  apply()
+  choice.addEventListener('change', apply)
+})

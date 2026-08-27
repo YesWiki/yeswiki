@@ -18,6 +18,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Kernel\Service\WikiUrls;
 use YesWiki\Render\Service\TemplateEngine;
 
 /** `{{editbar}}` -- converted from the procedural actions/barreredaction.php by ticket 06. */
@@ -74,7 +75,12 @@ class EditBarAction extends YesWikiAction implements RegisteredAction
                 if ($this->getService(AclService::class)->hasAccess('write', $page)
                     && !$this->getService(HibernationService::class)->isWikiHibernated()
                     && !$this->isEditingThisPage($page)) {
-                    $options['linkedit'] = $this->getService(UrlFormatter::class)->href('edit', $page);
+                    $options['linkedit'] = $this->getService(UrlFormatter::class)->href(
+                        'edit',
+                        $page,
+                        ['incomingurl' => WikiUrls::absoluteUrl()],
+                        false
+                    );
                 }
 
                 if ($time) {

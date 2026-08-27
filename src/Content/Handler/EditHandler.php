@@ -146,14 +146,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $entryController = $this->getService(EntryController::class);
 
         if ($this->getService(AclService::class)->hasAccess('write') && $entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
-            $plugin_output_new = '<div class="page">';
+            $plugin_output_new = '';
             ob_start();
             $plugin_output_new .= $this->isWikiHibernated()
                 ? $this->getMessageWhenHibernated()
                 : $entryController->update($this->getService(PageContext::class)->getTag());
             $plugin_output_new .= ob_get_contents();
             ob_end_clean();
-            $plugin_output_new .= '</div>';
 
             $plugin_output_new = $this->getService(TemplateEngine::class)->renderPage($plugin_output_new);
 
@@ -389,7 +388,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
 
-            $cancelUrl = $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
+            $cancelUrl = $this->incomingUrl()
+                ?? $this->getService(UrlFormatter::class)->href(WikiUrls::iframeSuffixFor());
 
             $pageFields = $this->contentFormFields();
             $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
@@ -484,7 +484,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        $output = '<div class="page">' . "\n" . $output . "\n" . '<hr class="hr_clear" />' . "\n" . '</div>' . "\n";
+        $output = $output . "\n" . '<hr class="hr_clear" />' . "\n";
 
         if (!WikiUrls::iframeSuffixFor()) {
             echo $this->getService(TemplateEngine::class)->renderPage($output);

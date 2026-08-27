@@ -22,17 +22,11 @@
 
   <div class="row">
     <div class="col-md-4">
-      <h3>
-        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
-          {{ _t('MORE_INFOS') }}
-        </a>
-        {{ _t('GENERAL_CONFIGURATION') }}
-      </h3>
+      <h3>{{ _t('GENERAL_CONFIGURATION') }}</h3>
 
-      <div class="accordion" id="accordion1">
-        <div class="accordion-group">
-          <div id="collapseOne" class="accordion-body collapse">
-            <div class="accordion-inner">
+      <details class="yw-accordion__item">
+        <summary class="yw-accordion__summary">{{ _t('MORE_INFOS') }}</summary>
+        <div class="yw-accordion__body accordion-inner">
               <dl>
                 <dt>{{ _t('DEFAULT_LANGUAGE') }}</dt>
                 <dd>{{ _t('DEFAULT_LANGUAGE_INFOS') }}</dd>
@@ -53,10 +47,8 @@
                 <dt>{{ _t('HOMEPAGE') }}</dt>
                 <dd>{{ _t('HOMEPAGE_INFOS') }}</dd>
               </dl>
-            </div>
-          </div>
         </div>
-      </div>
+      </details>
 
       <div class="yw-form-group">
         <label class="yw-form-label">{{ _t('DEFAULT_LANGUAGE') }}</label>
@@ -120,17 +112,11 @@
     </div>
 
     <div class="col-md-4">
-      <h3>
-        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-          {{ _t('MORE_INFOS') }}
-        </a>
-        {{ _t('DATABASE_CONFIGURATION') }}
-      </h3>
+      <h3>{{ _t('DATABASE_CONFIGURATION') }}</h3>
 
-      <div class="accordion" id="accordion2">
-        <div class="accordion-group">
-          <div id="collapseTwo" class="accordion-body collapse">
-            <div class="accordion-inner">
+      <details class="yw-accordion__item">
+        <summary class="yw-accordion__summary">{{ _t('MORE_INFOS') }}</summary>
+        <div class="yw-accordion__body accordion-inner">
               <dl>
                 <dt>{{ _t('DATABASE_DRIVER') }}</dt>
                 <dd>{{ _t('DATABASE_DRIVER_INFOS') }}</dd>
@@ -151,10 +137,8 @@
                 <dt>{{ _t('TABLE_PREFIX') }}</dt>
                 <dd>{{ _t('TABLE_PREFIX_INFOS') }}</dd>
               </dl>
-            </div>
-          </div>
         </div>
-      </div>
+      </details>
 
       <div class="yw-form-group">
         <label class="yw-form-label">{{ _t('DATABASE_DRIVER') }}</label>
@@ -209,16 +193,11 @@
     </div>
 
     <div class="col-md-4">
-      <h3>
-        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree">
-          {{ _t('MORE_INFOS') }}
-        </a>
-        {{ _t('CREATION_OF_ADMIN_ACCOUNT') }}
-      </h3>
-      <div class="accordion" id="accordion3">
-        <div class="accordion-group">
-          <div id="collapseThree" class="accordion-body collapse">
-            <div class="accordion-inner">
+      <h3>{{ _t('CREATION_OF_ADMIN_ACCOUNT') }}</h3>
+
+      <details class="yw-accordion__item">
+        <summary class="yw-accordion__summary">{{ _t('MORE_INFOS') }}</summary>
+        <div class="yw-accordion__body accordion-inner">
               <dl>
                 <dt class="admin">{{ _t('ADMIN_ACCOUNT_CAN') }}</dt>
                 <dd class="droits-admin">
@@ -231,10 +210,8 @@
                 </dd>
               </dl>
               <p>{{ _t('ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE') }}</p>
-            </div>
-          </div>
         </div>
-      </div>
+      </details>
 
       {% if backupFound %}
         <div class="admin-message alert alert-info{% if contentSQL != backupSqlFile %} hide{% endif %}" style="margin-top:2em;">{{ _t('ADMIN_INFO_WHEN_BACKUP') }}.</div>
@@ -275,16 +252,11 @@
     </div>
   </div>
 
-  <div class="accordion-heading">
-    <h3>
-      <a data-toggle="collapse" data-parent="#accordion4" href="#collapseFour">{{ _t('ADVANCED_CONFIGURATION') }}</a>
-    </h3>
-  </div>
-
-  <div class="accordion" id="accordion4">
-    <div class="accordion-group">
-      <div id="collapseFour" class="accordion-body collapse">
-        <div class="accordion-inner">
+  <details class="yw-accordion__item">
+    <summary class="yw-accordion__summary">
+      <h3 class="accordion-heading">{{ _t('ADVANCED_CONFIGURATION') }}</h3>
+    </summary>
+    <div class="yw-accordion__body" id="collapseFour">
           <div class="yw-form-group">
             <label class="yw-form-label">{{ _t('BASE_URL') }}</label>
             <div class="col-sm-9">
@@ -317,10 +289,8 @@
             </label>
             <p class="help-block">{{ _t('INDEX_HELP_TEXT') }}.</p>
           </div>
-        </div>
-      </div>
     </div>
-  </div>
+  </details>
 
   <div class="yw-form-group">
     <div class="col-sm-offset-3 col-sm-9">

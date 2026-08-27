@@ -46,17 +46,17 @@
   gap: var(--yw-space-md-y) var(--yw-space-md-x);
 }
 
-#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit),
-#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit) {
+#yw-topnav .yw-topnav-fast-access .yw-btn,
+#yw-topnav .yw-topnav-fast-access .btn {
   background: transparent;
   border-color: transparent;
   color: var(--yw-navbar-text);
 }
 
-#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):hover,
-#yw-topnav .yw-topnav-fast-access .yw-btn:not(.yw-chrome-edit):focus,
-#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):hover,
-#yw-topnav .yw-topnav-fast-access .btn:not(.yw-chrome-edit):focus {
+#yw-topnav .yw-topnav-fast-access .yw-btn:hover,
+#yw-topnav .yw-topnav-fast-access .yw-btn:focus,
+#yw-topnav .yw-topnav-fast-access .btn:hover,
+#yw-topnav .yw-topnav-fast-access .btn:focus {
   color: var(--yw-navbar-active);
   filter: none;
 }

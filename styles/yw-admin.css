@@ -5,10 +5,11 @@
 .yw-dashboard__sidebar {
   position: fixed;
   left: 0;
-  top: var(--yw-sticky-toolbar-top);
+
+  top: var(--yw-docked-top, var(--yw-sticky-toolbar-top));
   z-index: 9;
   width: var(--yw-dashboard-rail-width);
-  max-height: calc(100vh - var(--yw-sticky-toolbar-top));
+  max-height: calc(100vh - var(--yw-docked-top, var(--yw-sticky-toolbar-top)));
   overflow-y: auto;
   padding: var(--yw-space-md-y) var(--yw-space-md-x) var(--yw-space-md-y)
     var(--yw-space-md-x);
@@ -635,7 +636,8 @@
   font-size: 0.85em;
 }
 
-.yw-layout__save {
+.yw-layout__save,
+.yw-layout__page-save {
   margin: var(--yw-space-md-y) 0 var(--yw-space-lg-y);
 }
 
@@ -1717,6 +1719,13 @@ body:has(#yw-fb-rail:not([hidden])) .yw-fb__rail-open {
   border: 0;
   border-top: var(--yw-border-width) solid var(--yw-border-subtle);
   margin: var(--yw-space-md-y) 0;
+}
+
+.yw-fb__options {
+  margin: var(--yw-space-lg-y) 0;
+  border: var(--yw-border-width) solid var(--yw-border);
+  border-radius: var(--yw-radius-sm);
+  padding: 0 var(--yw-space-md-x);
 }
 
 .yw-fb__advanced summary {

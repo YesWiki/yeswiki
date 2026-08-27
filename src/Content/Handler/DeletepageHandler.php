@@ -119,6 +119,6 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        echo $this->getService(TemplateEngine::class)->renderPage("<div class=\"page\">\n" . $msg . "</div>\n");
+        echo $this->getService(TemplateEngine::class)->renderPage($msg . "\n");
     }
 }

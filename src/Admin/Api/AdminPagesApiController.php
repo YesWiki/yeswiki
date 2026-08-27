@@ -27,9 +27,8 @@ class AdminPagesApiController extends YesWikiController
     private const SPECIAL_PAGES = [
         'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
         'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
-        'PageTitre', 'PageMenuHaut', 'PageRapideHaut', 'PageHeader', 'PageFooter',
-        'PageCSS', 'PageMenu', 'PageColonneDroite', 'MotDePassePerdu',
-        'ParametresUtilisateur', 'GererConfig', 'ActuYeswiki', 'LookWiki',
+        'PageHeader', 'PageFooter', 'MotDePassePerdu',
+        'ParametresUtilisateur', 'GererConfig', 'ActuYeswiki',
     ];
 
     #[Route('/api/admin/pages', methods: ['GET'], options: ['acl' => ['@admins']])]

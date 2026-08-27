@@ -57,10 +57,16 @@ const components = {
   AddonIcon,
 }
 
-const data =
-  typeof actionsBuilderData === 'object'
+/**
+ * What the page says it can build. Read when it is asked for, never snapshotted at import
+ * time: a boosted navigation evaluates this module once and swaps pages under it, so a
+ * snapshot taken on a page that carried no editor would stay empty for the whole session.
+ */
+function builderData() {
+  return typeof actionsBuilderData === 'object' && actionsBuilderData !== null
     ? actionsBuilderData
     : { forms: {}, palette: [], components: {} }
+}
 
 /** Each Component names its own icon now; one that names none still gets a card. */
 const componentIcon = (name) => legacyIconToSprite(name || 'stack-2') || ''
@@ -129,8 +135,9 @@ const tokensOf = (config) => {
   return []
 }
 
-if (data.extraComponents) {
-  Object.entries(data.extraComponents).forEach(async ([name, filepath]) => {
+const extraComponents = builderData().extraComponents
+if (extraComponents) {
+  Object.entries(extraComponents).forEach(async ([name, filepath]) => {
     const { default: tmp } = await import(filepath)
     components[name] = tmp
   })
@@ -147,6 +154,8 @@ export const appConfig = {
   components,
   mixins: [InputHelper],
   data() {
+    const data = builderData()
+
     return {
       components: data.components,
       palette: data.palette,
@@ -303,6 +312,7 @@ export const appConfig = {
   },
   methods: {
     open(editor, options) {
+      this.readPalette()
       this.editor = editor
       this.target = options.target || null
       this.insertAt = options.insertAt || null
@@ -320,6 +330,14 @@ export const appConfig = {
       this.paletteFilter = ''
       this.written = null
       setTimeout(() => this.initValues(), 0)
+    },
+    /** The page that is on screen now is the one whose components the rail offers. */
+    readPalette() {
+      const data = builderData()
+      if (data.palette === this.palette) return
+      this.components = data.components
+      this.palette = data.palette
+      this.formIds = data.forms
     },
     close() {
       if (!this.isOpen) return

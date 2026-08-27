@@ -47,16 +47,8 @@ legend {
   display: inline;
 }
 
-.accordion-group {
-  border: none;
-}
-
 .form-yeswiki-install .accordion-heading {
   display: inline-block;
-}
-
-.plusinfos {
-  margin-top: calc(-1 * var(--yw-space-sm));
 }
 
 .accordion-inner {

@@ -604,7 +604,7 @@ class EntryController extends YesWikiController
                     if ($titleFieldName !== null && $field->getName() === $titleFieldName) {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
                     } elseif (!empty($html[$id])) {
-                        preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);
+                        preg_match('/<(?:span|div) class="BAZ_texte">\s*(.*)\s*<\/(?:span|div)>.*$/is', $html[$id], $matches);
                     }
                     if (isset($matches[1]) && $matches[1] != '') {
                         $html[$id] = $matches[1];

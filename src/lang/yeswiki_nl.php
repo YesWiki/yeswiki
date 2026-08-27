@@ -804,7 +804,6 @@ return [
     'HEADER_PAGE' => 'de koptekst (band)',
     'FOOTER_PAGE' => 'de voettekst',
     'FOR_2_OR_3_COLUMN_THEMES' => 'Voor de thema’s met 2 of 3 kolommen',
-    'VERTICAL_MENU_PAGE' => 'het verticale menu',
     'RIGHT_COLUMN_PAGE' => 'de rechter kolom',
     'RUNNING_WITH' => 'Lopen met',
     'TEMPLATE_NO_THEME_FILES' => 'Sommige (of alle) bestanden van het sjabloon zijn verdwenen',
