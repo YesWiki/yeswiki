@@ -222,6 +222,7 @@ return [
     'BAZ_LIST_NAME' => 'Nom de la liste',
     'BAZ_SAVE' => 'Enregistrer',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Mauvaise extension pour l\'image (doit être .jpg ou .png ou .gif)',
+    'BAZ_UNKNOWN_OPTION' => 'Option inconnue, ignorée à l\'import',
     'BAZ_IMAGE_FILE_NOT_FOUND' => 'Fichier image non trouvé',
     'BAZAR_ACTION_VALEUR' => 'Action {{valeur...}}',
     'BAZAR_PARAM_URL_REQUIRED' => 'le paramètre "url" est obligatoire',

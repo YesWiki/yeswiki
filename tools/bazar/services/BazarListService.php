@@ -528,7 +528,7 @@ class BazarListService
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
 
-        $vLines = str_getcsv($pIDs, ',', '"', '\\');
+        $vLines = str_getcsv($pIDs, ',', '"', '');
 
         $vLines = array_filter($vLines, function ($vLine) {
             return !empty($vLine) && trim($vLine) != '';

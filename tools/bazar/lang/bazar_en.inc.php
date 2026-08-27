@@ -137,6 +137,7 @@ return [
     'BAZ_LIST_NAME' => 'Name of the list',
     'BAZ_SAVE' => 'Save',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Bad file extension for an image (should be .jpg or .png or .gif)',
+    'BAZ_UNKNOWN_OPTION' => 'Unknown option, skipped on import',
     'BAZ_IMAGE_FILE_NOT_FOUND' => 'Image file not found',
     'BAZAR_CHECKALL' => 'Check all',
     'BAZAR_FILTER' => 'Filter',
