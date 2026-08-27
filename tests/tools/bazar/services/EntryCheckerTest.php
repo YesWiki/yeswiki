@@ -15,6 +15,7 @@ use YesWiki\Bazar\Field\SelectListField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\TextField;
+use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryChecker;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
@@ -76,7 +77,7 @@ class EntryCheckerTest extends TestCase
             return array_intersect_key($this->probeResults, array_flip($urls));
         });
 
-        return new EntryChecker($this->entryManager, $this->formManager, $this->pageManager, $security, $urlReachability);
+        return new EntryChecker($this->entryManager, $this->formManager, $this->pageManager, $security, $urlReachability, new ConditionsChecker());
     }
 
     private function fileField(string $name): FileField

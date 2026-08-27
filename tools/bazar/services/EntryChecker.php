@@ -78,19 +78,22 @@ class EntryChecker
     protected $probedUrls;
     protected $textReplacement;
     protected $forcedValues;
+    protected $conditionsChecker;
 
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
         PageManager $pageManager,
         SecurityController $securityController,
-        UrlReachability $urlReachability
+        UrlReachability $urlReachability,
+        ConditionsChecker $conditionsChecker
     ) {
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
         $this->pageManager = $pageManager;
         $this->securityController = $securityController;
         $this->urlReachability = $urlReachability;
+        $this->conditionsChecker = $conditionsChecker;
         $this->entryTags = null;
         $this->probedUrls = [];
         $this->textReplacement = '';
@@ -121,8 +124,14 @@ class EntryChecker
         $this->probedUrls = $this->urlReachability->probe($this->remoteFileValues($fields, $entries));
         $problems = array_fill_keys(self::PROBLEMS, []);
 
+        $hasConditions = $this->conditionsChecker->hasConditions($form);
+
         foreach ($entries as $entry) {
+            $hidden = $hasConditions ? $this->conditionsChecker->hiddenPropertyNames($form, $entry) : [];
             foreach ($fields as $field) {
+                if (in_array($field->getPropertyName(), $hidden, true)) {
+                    continue;
+                }
                 foreach ($this->checkField($field, $entry) as $problem) {
                     $problems[$problem['code']][] = $problem;
                 }

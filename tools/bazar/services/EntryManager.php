@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
@@ -34,6 +35,7 @@ class EntryManager
     protected $activityPubService;
     protected $params;
     protected $searchManager;
+    protected $conditionsChecker;
 
     private $cachedEntriestags;
 
@@ -58,6 +60,7 @@ class EntryManager
         SearchManager $searchManager,
         SecurityController $securityController,
         ActivityPubService $activityPubService,
+        ConditionsChecker $conditionsChecker,
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -72,6 +75,7 @@ class EntryManager
         $this->searchManager = $searchManager;
         $this->securityController = $securityController;
         $this->activityPubService = $activityPubService;
+        $this->conditionsChecker = $conditionsChecker;
         $this->cachedEntriestags = [];
     }
 
@@ -695,6 +699,8 @@ class EntryManager
             }
         }
 
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
+
         // We can now build the field title if there is one
 
         if (is_array($form['prepared'])) {
@@ -792,14 +798,26 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
+        $data = $this->conditionsChecker->clearHiddenValues($form, $data);
+        $hidden = $this->conditionsChecker->hiddenPropertyNames($form, $data);
+        $missing = [];
+
         foreach ($form['prepared'] as $vBazarField) {
             if ($vBazarField instanceof BazarField) {
                 $vPropertyName = $vBazarField->getPropertyName();
 
-                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    throw new \Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
+                if (!empty($vPropertyName)
+                    && $vBazarField->isRequired()
+                    && !in_array($vPropertyName, $hidden, true)
+                    && $vBazarField->isEmpty($data[$vPropertyName] ?? null)
+                ) {
+                    $missing[$vPropertyName] = $vBazarField->getLabel() ?: $vPropertyName;
                 }
             }
+        }
+
+        if (!empty($missing)) {
+            throw new RequiredFieldsException($missing);
         }
 
         return $data;

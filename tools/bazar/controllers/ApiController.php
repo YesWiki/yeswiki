@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubService;
@@ -449,7 +450,7 @@ class ApiController extends YesWikiController
             } else {
                 $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
             }
-        } catch (TagAlreadyUsedException $e) {
+        } catch (RequiredFieldsException|TagAlreadyUsedException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
 

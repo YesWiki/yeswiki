@@ -66,9 +66,9 @@ class LabelField extends BazarField
         return $this->viewText;
     }
 
-    public function isConditionsCheckingClosingTag(): bool
+    public function getFormText(): ?string
     {
-        return is_string($this->formText) && strpos(ltrim($this->formText), '</div>') === 0;
+        return is_string($this->formText) ? $this->formText : null;
     }
 
     // Format input values before save

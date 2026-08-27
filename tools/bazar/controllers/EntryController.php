@@ -5,12 +5,13 @@ namespace YesWiki\Bazar\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Bazar\Exception\RequiredFieldsException;
 use YesWiki\Bazar\Exception\TagAlreadyUsedException;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ConditionsCheckingField;
-use YesWiki\Bazar\Field\LabelField;
 use YesWiki\Bazar\Field\UserField;
+use YesWiki\Bazar\Service\ConditionsChecker;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
@@ -155,26 +156,10 @@ class EntryController extends YesWikiController
             // if not found, use default template
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
-                    $fieldsByPropertyName = [];
-                    foreach ($pLocalForm['prepared'] as $field) {
-                        if ($field instanceof BazarField && !empty($field->getPropertyName())) {
-                            $fieldsByPropertyName[$field->getPropertyName()] = $field;
-                        }
-                    }
-                    $conditionsStack = [];
-                    foreach ($pLocalForm['prepared'] as $field) {
+                    $states = $this->getService(ConditionsChecker::class)->states($pLocalForm, $entry);
+                    foreach ($pLocalForm['prepared'] as $index => $field) {
                         if ($field instanceof BazarField) {
-                            if ($field instanceof ConditionsCheckingField) {
-                                $conditionsStack[] = $field->evaluate($entry, $fieldsByPropertyName);
-
-                                continue;
-                            }
-                            if ($field instanceof LabelField && !empty($conditionsStack) && $field->isConditionsCheckingClosingTag()) {
-                                array_pop($conditionsStack);
-
-                                continue;
-                            }
-                            if (in_array(false, $conditionsStack, true)) {
+                            if ($field instanceof ConditionsCheckingField || !($states[$index]['visible'] ?? true)) {
                                 continue;
                             }
                             // TODO handle html_outside_app mode for images
@@ -317,6 +302,12 @@ class EntryController extends YesWikiController
                     header('Location: ' . $redirectUrl);
                     $this->wiki->exit();
                 }
+            } catch (RequiredFieldsException $e) {
+                $error .= $this->render('@templates/alert-message.twig', [
+                    'type' => 'danger',
+                    'message' => $e->getMessage(),
+                ]);
+                $refusedData = $post->all();
             } catch (UserFieldException|TagAlreadyUsedException $e) {
                 $error .= $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
@@ -327,7 +318,7 @@ class EntryController extends YesWikiController
             $error = $results['error'];
         }
 
-        $renderedInputs = $this->getRenderedInputs($form);
+        $renderedInputs = $this->getRenderedInputs($form, $refusedData ?? null);
 
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
@@ -376,6 +367,12 @@ class EntryController extends YesWikiController
                 header('Location: ' . $redirectUrl);
                 $this->wiki->exit();
             }
+        } catch (RequiredFieldsException $e) {
+            $error .= $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => $e->getMessage(),
+            ]);
+            $entry = array_merge($entry, $post->all());
         } catch (UserFieldException $e) {
             $error .= $this->render('@templates/alert-message.twig', [
                 'type' => 'warning',
