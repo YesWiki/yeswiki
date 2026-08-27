@@ -153,6 +153,8 @@
                         {{ _t('BAZ_CHECKCONTENT_FIX_REMOVE') }}
                       {% elseif row.fix.set is empty %}
                         {{ _t('BAZ_CHECKCONTENT_FIX_CLEAR') }}
+                      {% elseif row.multiple %}
+                        {{ _t('BAZ_CHECKCONTENT_FIX_DROP') }}
                       {% else %}
                         {{ _t('BAZ_CHECKCONTENT_FIX_REPLACE', {value: row.fix.set}) }}
                       {% endif %}

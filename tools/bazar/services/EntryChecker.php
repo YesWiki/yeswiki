@@ -519,10 +519,14 @@ class EntryChecker
             return [];
         }
 
+        $multiple = $this->holdsSeveralValues($field);
         $kept = array_intersect($values, array_keys($options));
-        $fix = ['set' => $this->holdsSeveralValues($field) ? implode(',', $kept) : ''];
+        $fix = ['set' => $multiple ? implode(',', $kept) : ''];
 
-        return [$this->problem(self::UNKNOWN_OPTION, $entry, $field, implode(', ', $unknown), $fix)];
+        return [array_replace(
+            $this->problem(self::UNKNOWN_OPTION, $entry, $field, implode(', ', $unknown), $fix),
+            ['multiple' => $multiple]
+        )];
     }
 
     private function checkEntryReferences(EnumField $field, array $entry, $value): array
@@ -539,10 +543,14 @@ class EntryChecker
             return [];
         }
 
+        $multiple = $this->holdsSeveralValues($field);
         $kept = array_values(array_diff($values, $broken));
-        $fix = ['set' => $this->holdsSeveralValues($field) ? implode(',', $kept) : ''];
+        $fix = ['set' => $multiple ? implode(',', $kept) : ''];
 
-        return [$this->problem(self::BROKEN_ENTRY, $entry, $field, implode(', ', $broken), $fix)];
+        return [array_replace(
+            $this->problem(self::BROKEN_ENTRY, $entry, $field, implode(', ', $broken), $fix),
+            ['multiple' => $multiple]
+        )];
     }
 
     private function checkOrphans(array $entry, array $knownProperties): array

@@ -439,6 +439,7 @@ class EntryCheckerTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame('fuchsia', $rows[0]['detail']);
         $this->assertSame(['set' => 'rouge,vert'], $rows[0]['fix']);
+        $this->assertTrue($rows[0]['multiple']);
     }
 
     public function testUnknownSingleValueOptionIsCleared()
@@ -452,6 +453,7 @@ class EntryCheckerTest extends TestCase
         $rows = $this->checker()->check('1')['problems'][EntryChecker::UNKNOWN_OPTION];
 
         $this->assertSame(['set' => ''], $rows[0]['fix']);
+        $this->assertFalse($rows[0]['multiple']);
     }
 
     public function testMalformedEmailIsNormalisedWhenPossibleAndClearedOtherwise()

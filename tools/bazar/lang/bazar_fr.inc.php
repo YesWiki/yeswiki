@@ -418,6 +418,7 @@ return [
     'BAZ_CHECKCONTENT_FIX_REMOVE' => 'le champ est retiré de la fiche',
     'BAZ_CHECKCONTENT_FIX_CLEAR' => 'la valeur est vidée',
     'BAZ_CHECKCONTENT_FIX_REPLACE' => 'la valeur devient « %{value} »',
+    'BAZ_CHECKCONTENT_FIX_DROP' => 'ces valeurs sont retirées, les autres sont gardées',
     'BAZ_CHECKCONTENT_REQUIRED_EMPTY' => 'Champ obligatoire vide',
     'BAZ_CHECKCONTENT_REQUIRED_EMPTY_HINT' => 'Le formulaire rend ces champs obligatoires, mais la fiche ne contient aucune valeur. Choisissez la valeur à écrire, ou ouvrez la fiche et complétez-la.',
     'BAZ_CHECKCONTENT_UNKNOWN_OPTION' => 'Valeur hors liste',
