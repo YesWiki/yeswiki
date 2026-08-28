@@ -158,9 +158,19 @@ class ArchiveController extends YesWikiController
                         $post = $this->getRequest()->request;
                         $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
                         $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
-                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase);
+                        $rewriteUrls = !$post->has('rewriteUrls') || in_array($post->get('rewriteUrls'), [1, true, 'true', '1'], true);
+                        // detached like an archive, and followed the same way: the caller polls
+                        // api/archives/uidstatus/{uid} and may stop it through 'stopArchive'
+                        $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
+                        $uid = $this->archiveService->startRestore($id, $restoreFiles, $restoreDatabase, $rewriteUrls, $callAsync);
+                        if (empty($uid)) {
+                            return new ApiResponse(
+                                ['error' => 'no process created when starting restore action'],
+                                Response::HTTP_INTERNAL_SERVER_ERROR
+                            );
+                        }
 
-                        return new ApiResponse(['success' => true], Response::HTTP_OK);
+                        return new ApiResponse(['uid' => $uid], Response::HTTP_OK);
                     } catch (\Throwable $th) {
                         return new ApiResponse(
                             ['error' => 'Restore failed: ' . $this->getService(ThrowableFormatter::class)->dump($th)],

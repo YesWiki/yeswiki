@@ -28,18 +28,18 @@ class TripleApiController extends YesWikiController
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $filters = empty($username) ? [] : ['user' => $username];
         $triples = $this->getService(TripleStore::class)->getMatching(
             null,
             $property,
-            $value,
+            $this->userLikePattern($username),
             '=',
             '=',
             'LIKE'
         );
 
         return new ApiResponse(
-            $triples,
+            $this->triplesMatchingAllFilters($triples, $filters),
             Response::HTTP_OK
         );
     }
@@ -52,18 +52,18 @@ class TripleApiController extends YesWikiController
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $filters = empty($username) ? [] : ['user' => $username];
         $triples = $this->getService(TripleStore::class)->getMatching(
             $resource,
             $property,
-            $value,
+            $this->userLikePattern($username),
             '=',
             '=',
             'LIKE'
         );
 
         return new ApiResponse(
-            $triples,
+            $this->triplesMatchingAllFilters($triples, $filters),
             Response::HTTP_OK
         );
     }
@@ -142,34 +142,24 @@ class TripleApiController extends YesWikiController
             $rawFilters['user'] = $username;
         }
 
-        $triples = [];
-        if (!empty($rawFilters)) {
-            foreach ($rawFilters as $key => $rawValue) {
-                $value = empty($rawValue) ? null : "%\\\"{$key}\\\":\\\"{$rawValue}\\\"%";
-                $newTriples = $this->getService(TripleStore::class)->getMatching(
-                    $resource,
-                    $property,
-                    $value,
-                    '=',
-                    '=',
-                    'LIKE'
-                );
-                if (!empty($newTriples)) {
-                    $newTriples = array_filter($newTriples, function ($triple) use ($triples) {
-                        $sameTriples = array_filter($triples, function ($registeredTriple) use ($triple) {
-                            return $registeredTriple['resource'] == $triple['resource']
-                                && $registeredTriple['property'] == $triple['property']
-                                && $registeredTriple['value'] == $triple['value'];
-                        });
-
-                        return empty($sameTriples);
-                    });
-                    foreach ($newTriples as $triple) {
-                        $triples[] = $triple;
-                    }
-                }
-            }
+        if (empty($rawFilters)) {
+            return new ApiResponse(
+                [],
+                Response::HTTP_OK
+            );
         }
+
+        $triples = $this->triplesMatchingAllFilters(
+            $this->getService(TripleStore::class)->getMatching(
+                $resource,
+                $property,
+                $this->userLikePattern($username),
+                '=',
+                '=',
+                'LIKE'
+            ),
+            $rawFilters
+        );
 
         $allOk = true;
         $notDeletedTriples = [];
@@ -199,6 +189,45 @@ class TripleApiController extends YesWikiController
             ],
             Response::HTTP_INTERNAL_SERVER_ERROR
         );
+    }
+
+    /**
+     * A cheap sql pre-filter for the triples of one user; what it returns still has to be checked.
+     *
+     * The name comes from the caller and may hold LIKE wildcards, so this only ever widens the rows read: triplesMatchingAllFilters() is what decides which of them belong to the user.
+     */
+    private function userLikePattern(?string $username): ?string
+    {
+        return empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+    }
+
+    /**
+     * The triples whose value holds every one of the given keys with exactly the given value.
+     *
+     * @param array<int,array<string,string>> $triples
+     * @param array<string,scalar>            $filters
+     *
+     * @return array<int,array<string,string>>
+     */
+    private function triplesMatchingAllFilters(array $triples, array $filters): array
+    {
+        if (empty($filters)) {
+            return $triples;
+        }
+
+        return array_values(array_filter($triples, function ($triple) use ($filters) {
+            $value = json_decode($triple['value'] ?? '', true);
+            if (!is_array($value)) {
+                return false;
+            }
+            foreach ($filters as $key => $expected) {
+                if (!isset($value[$key]) || !is_scalar($value[$key]) || (string)$value[$key] !== (string)$expected) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
     }
 
     /**

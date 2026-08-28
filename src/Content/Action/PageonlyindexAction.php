@@ -4,9 +4,11 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -49,11 +51,13 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
     private function emit(): void
     {
         $db = $this->getService(DbService::class);
+        $readable = $this->readableFilter();
         $pages = $db->loadAll(
             'SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages'
             . " WHERE latest = 'Y' AND parent = '' AND " . $db->quoteIdentifier('type') . ' <> ?'
+            . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql)
             . ' ORDER BY tag',
-            [PageType::ENTRY]
+            [PageType::ENTRY, ...$readable->params]
         );
         if ($pages) {
             foreach ($pages as $page) {
@@ -75,5 +79,10 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction, Pro
         } else {
             echo '<i>' . _t('NO_PAGE_FOUND') . '.</i>';
         }
+    }
+
+    private function readableFilter(): SqlFragment
+    {
+        return $this->getService(AclService::class)->readableFilter();
     }
 }

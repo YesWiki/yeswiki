@@ -10,6 +10,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
+use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AccountJustCreated;
 use YesWiki\Identity\Service\AclService;
@@ -300,6 +301,8 @@ class EntryManager
             );
         }
 
+        $this->refuseTagOfAnExistingPage($data['tag'] ?? null);
+
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
@@ -311,6 +314,8 @@ class EntryManager
         $data = $this->assignRestrictedFields($data, [], $form);
 
         $data = $this->formatDataBeforeSave($data);
+
+        $this->refuseTagOfAnExistingPage($data['tag'] ?? null);
 
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
@@ -379,6 +384,14 @@ class EntryManager
         $this->announce('entry.created', $form, $data, (bool)$sourceUrl);
 
         return $data;
+    }
+
+    /** Creating Content never writes over a page that is already there, whoever asks. */
+    private function refuseTagOfAnExistingPage(?string $tag): void
+    {
+        if (!empty($tag) && $this->pageManager->getOne($tag, null, true, true)) {
+            throw new TagAlreadyUsedException(_t('BAZ_ENTRY_TAG_ALREADY_USED', ['tag' => $tag]));
+        }
     }
 
     /**

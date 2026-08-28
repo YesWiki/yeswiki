@@ -6,6 +6,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Exception\StopArchiveException;
 use YesWiki\Files\Service\LocalFiles;
+use YesWiki\Kernel\Database\DumpRewriter;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -65,6 +66,7 @@ class ArchiveService
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = '_archive_only_db';
     public const PRIVATE_FOLDER_NAME_IN_ZIP = 'private/backups';
     public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = 'content.sql';
+    public const INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = DumpRewriter::INFO_FILENAME;
     public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n" .
         "This folder is **reserved to backups**.\n\n" .
         "It **MUST NOT** be accessible from the internet.\n\n" .
@@ -581,20 +583,104 @@ class ArchiveService
      *
      * @throws \Exception
      */
-    public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true): void
+    public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true, bool $rewriteUrls = true, string $uid = ''): void
     {
+        $outputFile = $this->outputFileFor($uid);
+        $output = '';
+        if ($outputFile !== '') {
+            $this->storage->write($outputFile, '');
+        }
+
         $filePath = $this->getFilePath($filename);
         if (empty($filePath)) {
+            $this->writeOutput($output, "Archive not found: $filename", true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $outputFile);
+
             throw new \Exception("Archive not found: $filename");
         }
 
-        $this->storage->withLocalCopy($filePath, function (string $local) use ($filename, $restoreFiles, $restoreDatabase): void {
-            $this->restoreFromLocalArchive($local, $filename, $restoreFiles, $restoreDatabase);
-        });
+        $this->writeOutput($output, "=== Restoring $filename ===", true, $outputFile);
+        try {
+            $this->storage->withLocalCopy($filePath, function (string $local) use ($filename, $restoreFiles, $restoreDatabase, $rewriteUrls, &$output, $outputFile): void {
+                $this->restoreFromLocalArchive($local, $filename, $restoreFiles, $restoreDatabase, $rewriteUrls, $output, $outputFile);
+            });
+        } catch (\Throwable $th) {
+            $this->writeOutput($output, '! ' . $th->getMessage(), true, $outputFile);
+            $this->writeOutput($output, 'STOP', true, $outputFile);
+
+            throw $th;
+        }
+        $this->writeOutput($output, 'Restore finished successfully', true, $outputFile);
+        $this->writeOutput($output, 'END', true, $outputFile);
+    }
+
+    /**
+     * Start a restore, in a process of its own unless told otherwise, and say which uid to follow it by.
+     *
+     * A restore replays a whole database and unpacks a whole zip; on any wiki worth backing up that outlasts a request, so it runs the way an archive does -- detached, reporting into the same progress files getUIDStatus() reads and stopArchive() interrupts.
+     *
+     * @return string the uid to poll, empty when no process could be started
+     */
+    public function startRestore(
+        string $filename,
+        bool $restoreFiles = true,
+        bool $restoreDatabase = true,
+        bool $rewriteUrls = true,
+        bool $callAsync = true
+    ): string {
+        if ($this->getFilePath($filename) === '') {
+            throw new \Exception("Archive not found: $filename");
+        }
+
+        $uidData = $this->getUID();
+
+        if ($callAsync) {
+            $args = ['-a', $filename, '-u', $uidData['uid']];
+            if (!$restoreFiles) {
+                $args[] = '-d';
+            }
+            if (!$restoreDatabase) {
+                $args[] = '-f';
+            }
+            if (!$rewriteUrls) {
+                $args[] = '-k';
+            }
+            $process = $this->consoleService->startConsoleAsync('core:restore', $args);
+            if (!empty($process)) {
+                $this->updatePIDForUID((string)$process->getPid(), $uidData['uid']);
+
+                return $uidData['uid'];
+            }
+            $this->cleanUID($uidData['uid']);
+
+            return '';
+        }
+
+        try {
+            $this->restoreArchive($filename, $restoreFiles, $restoreDatabase, $rewriteUrls, $uidData['uid']);
+        } catch (\Throwable $th) {
+            $this->cleanUID($uidData['uid']);
+
+            throw $th;
+        }
+
+        return $uidData['uid'];
+    }
+
+    /** Where a run reports its progress, empty when it was not given a uid to report under. */
+    private function outputFileFor(string $uid): string
+    {
+        if ($uid === '') {
+            return '';
+        }
+        $info = $this->getInfoFromFile();
+
+        return isset($info[$uid]) ? (string)$info[$uid]['output'] : '';
     }
 
     /** ZipArchive cannot be handed anything but a real path, so this is what a lease exists for. */
-    private function restoreFromLocalArchive(string $filePath, string $filename, bool $restoreFiles, bool $restoreDatabase): void
+    /** @param string|OutputInterface &$output */
+    private function restoreFromLocalArchive(string $filePath, string $filename, bool $restoreFiles, bool $restoreDatabase, bool $rewriteUrls, &$output, string $outputFile): void
     {
         $zip = new \ZipArchive();
         if ($zip->open($filePath) !== true) {
@@ -606,19 +692,84 @@ class ArchiveService
             $onlyDb = str_ends_with($filename, '_archive_only_db.zip');
 
             if ($restoreDatabase && !$onlyFiles) {
+                $this->writeOutput($output, '=== Reading the database backup ===', true, $outputFile);
                 $sqlContent = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
                 if ($sqlContent === false) {
                     throw new \Exception('SQL file not found in archive');
                 }
+                if ($rewriteUrls) {
+                    $substitutions = $this->urlSubstitutionsFor($zip);
+                    if (!empty($substitutions)) {
+                        $this->writeOutput($output, 'Pointing the stored addresses at this wiki', true, $outputFile);
+                        $sqlContent = DumpRewriter::rewriteUrls($sqlContent, $substitutions);
+                    }
+                }
+                $this->writeOutput($output, '=== Restoring the database ===', true, $outputFile);
                 $this->restoreDatabase($sqlContent);
             }
 
             if ($restoreFiles && !$onlyDb) {
+                $this->writeOutput($output, '=== Restoring the files ===', true, $outputFile);
                 $this->restoreFilesFromZip($zip);
             }
         } finally {
             $zip->close();
         }
+    }
+
+    /**
+     * How to point the addresses a backup carries at this wiki.
+     *
+     * A backup restored where it was taken needs none of this; one restored anywhere else -- a clone, a staging copy, a wiki that moved domain -- carries the source's address in every stored link, and leaves them pointing at the wiki it came from unless they are rewritten here.
+     *
+     * @return array<string, string> empty when the source is unknown, unchanged, or unsafe to write into the dump
+     */
+    private function urlSubstitutionsFor(\ZipArchive $zip): array
+    {
+        return DumpRewriter::substitutions(
+            (string)($this->archiveInfo($zip)['base_url'] ?? ''),
+            $this->configString('base_url')
+        );
+    }
+
+    /**
+     * What the archive records about the wiki it was taken from.
+     *
+     * A backup written before this file existed simply has none, and is restored as it always was.
+     *
+     * @return array<string, mixed>
+     */
+    private function archiveInfo(\ZipArchive $zip): array
+    {
+        $raw = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        if ($raw === false) {
+            return [];
+        }
+        $info = json_decode($raw, true);
+
+        return is_array($info) ? $info : [];
+    }
+
+    /** The address of the wiki a stored backup was taken from, empty when it does not say. */
+    public function getArchiveSourceBaseUrl(string $filename): string
+    {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            return '';
+        }
+
+        return (string)$this->storage->withLocalCopy($filePath, function (string $local): string {
+            $zip = new \ZipArchive();
+            if ($zip->open($local) !== true) {
+                return '';
+            }
+
+            try {
+                return (string)($this->archiveInfo($zip)['base_url'] ?? '');
+            } finally {
+                $zip->close();
+            }
+        });
     }
 
     /** Drop the wiki's tables and replay the dump into them (ticket 17: DbService owns the replay). */
@@ -970,6 +1121,18 @@ class ArchiveService
                 self::PRIVATE_FOLDER_NAME_IN_ZIP . '/README.md',
                 self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
             );
+
+            // where this backup came from, so a restore on another address can point the stored
+            // links at the wiki putting it back rather than at the one it was taken from
+            $this->writeOutput($output, 'Adding ' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP, true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::INFO_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                (string)json_encode([
+                    'base_url' => $this->configString('base_url'),
+                    'table_prefix' => $this->configString('table_prefix'),
+                    'archived_at' => date('Y-m-d H:i:s'),
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            );
         }
 
         $vClosed = false;
@@ -1057,7 +1220,7 @@ class ArchiveService
     }
 
     /** Where a wiki's archives are, which is not a setting: one place, Protected, and in the bucket when there is one. */
-    private function getPrivateFolder(): string
+    public function getPrivateFolder(): string
     {
         return self::PRIVATE_FOLDER_NAME_IN_ZIP;
     }

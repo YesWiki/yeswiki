@@ -1,0 +1,178 @@
+{{ include_javascript('javascripts/checkcontent.js') }}
+<div class="checkcontent">
+  {% if not (forms|length > 0) %}
+    <div class="yw-alert yw-alert--danger">{{ _t('BAZ_PAS_DE_FORMULAIRES_TROUVES') }}</div>
+  {% else %}
+    <form method="post" action="{{ url({params: params}) }}">
+      <input type="hidden" name="checkcontent-complete" value="1">
+      <div class="yw-form-group">
+        <label class="yw-label" for="checkcontent-form-id">{{ _t('BAZ_CHECKCONTENT_FORM_LABEL') }} :</label>
+        <select class="yw-input" id="checkcontent-form-id" name="form_id" onchange="javascript:this.form.submit();">
+          {% if not id %}
+            <option value="" selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
+          {% endif %}
+          {% for form in forms %}
+            <option value="{{ form.id }}"{% if id == form.id %} selected{% endif %}>
+              {{ form.label }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if truncated %}
+    <div class="yw-alert yw-alert--danger">{{ _t('BAZ_CHECKCONTENT_TOO_MANY_SELECTED') }}</div>
+  {% endif %}
+
+  {% if repairResult %}
+    <div class="yw-alert yw-alert--success">
+      {{ _t('BAZ_CHECKCONTENT_REPAIRED', {count: repairResult.repaired, entries: repairResult.entries}) }}
+    </div>
+    {% if repairResult.failed|length > 0 %}
+      <div class="yw-alert yw-alert--danger">
+        <strong>{{ _t('BAZ_CHECKCONTENT_REPAIR_FAILED') }}</strong>
+        <ul>
+          {% for entryId, message in repairResult.failed %}
+            <li>{{ entryId }} : {{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if id %}
+    {% for reason, fields in unchecked %}
+      <div class="yw-panel yw-panel--primary">
+        <h3 class="yw-panel__title">
+          {{ _t('BAZ_CHECKCONTENT_' ~ reason|upper) }}
+          <span>({{ fields|length }})</span>
+        </h3>
+        <p class="yw-text-muted">{{ _t('BAZ_CHECKCONTENT_' ~ reason|upper ~ '_HINT') }}</p>
+        <div class="yw-table-scroll">
+          <table class="yw-table yw-table--condensed">
+            <thead>
+              <tr>
+                <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIELD') }}</th>
+                <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_TYPE') }}</th>
+                <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_SOURCE') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for field in fields %}
+                <tr>
+                  <td>
+                    {{ field.fieldLabel }}
+                    {% if field.propertyName != field.source %}
+                      <small class="yw-text-muted">{{ field.propertyName }}</small>
+                    {% endif %}
+                  </td>
+                  <td><code>{{ field.type }}</code></td>
+                  <td><code>{{ field.source }}</code></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endfor %}
+
+    {% if problemsCount == 0 %}
+      <div class="yw-alert yw-alert--success">
+        {{ _t('BAZ_CHECKCONTENT_NO_PROBLEM', {entries: entriesCount}) }}
+      </div>
+    {% else %}
+      <div class="yw-alert yw-alert--info">
+        {{ _t('BAZ_CHECKCONTENT_SUMMARY', {problems: problemsCount, entries: entriesCount}) }}
+      </div>
+
+      <form method="post" action="{{ url({params: params|merge({'form_id': id})}) }}"
+        class="checkcontent-repair-form" data-confirm="{{ _t('BAZ_CHECKCONTENT_CONFIRM') }}">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
+        {% for code, rows in problems %}
+          {% set selectable = rows|filter(row => row.fix or row.options is not empty or row.freeText)|length %}
+          <div class="yw-panel yw-panel--warning">
+            <h3 class="yw-panel__title">
+              {{ _t('BAZ_CHECKCONTENT_' ~ code|upper) }}
+              <span>({{ rows|length }})</span>
+            </h3>
+            <p class="yw-text-muted">{{ _t('BAZ_CHECKCONTENT_' ~ code|upper ~ '_HINT') }}</p>
+            <div class="yw-table-scroll">
+              <table class="yw-table yw-table--condensed yw-table--striped">
+                <thead>
+                  <tr>
+                    <th>
+                      {% if selectable %}
+                        <label class="check-all-container" title="{{ _t('BAZ_SELECT_ALL') }}">
+                          <input type="checkbox" class="checkcontent-selectall">
+                          <span></span>
+                        </label>
+                      {% endif %}
+                    </th>
+                    <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_ENTRY') }}</th>
+                    <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIELD') }}</th>
+                    <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_VALUE') }}</th>
+                    <th>{{ _t('BAZ_CHECKCONTENT_COLUMN_FIX') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in rows %}
+                    <tr>
+                      <td>
+                        {% if row.fix or row.options is not empty or row.freeText %}
+                          <label title="{{ row.entryTitle }}">
+                            <input type="checkbox" name="checkcontent-repair[]" value="{{ row.key }}"{% if row.forced %} checked{% endif %}>
+                            <span></span>
+                          </label>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{{ url({tag: row.entryId, handler: 'edit'}) }}" target="_blank">{{ row.entryTitle }}</a>
+                      </td>
+                      <td>
+                        {{ row.fieldLabel }}
+                        <small class="yw-text-muted">{{ row.propertyName }}</small>
+                      </td>
+                      <td><code>{{ row.detail|slice(0, 120) }}{{ row.detail|length > 120 ? '…' }}</code></td>
+                      <td>
+                        {% if row.fix is null and row.options is not empty %}
+                          <select class="yw-input" name="checkcontent-value[{{ row.key }}]{% if row.multiple %}[]{% endif %}"{% if row.multiple %} multiple size="4"{% endif %}>
+                            {% if not row.multiple %}
+                              <option value="">{{ _t('BAZ_CHOISIR') }}</option>
+                            {% endif %}
+                            {% set chosen = row.multiple ? row.suggested|split(',') : [row.suggested] %}
+                            {% for value, label in row.options %}
+                              <option value="{{ value }}"{% if value in chosen %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                          </select>
+                        {% elseif row.fix is null and row.freeText %}
+                          <input type="text" class="yw-input"
+                            name="checkcontent-value[{{ row.key }}]" value="{{ row.suggested }}">
+                        {% elseif row.fix is null %}
+                          <em>{{ _t(row.fixLabel) }}</em>
+                        {% elseif row.fix.unset is defined %}
+                          {{ _t('BAZ_CHECKCONTENT_FIX_REMOVE') }}
+                        {% elseif row.fix.set is empty %}
+                          {{ _t('BAZ_CHECKCONTENT_FIX_CLEAR') }}
+                        {% elseif row.multiple %}
+                          {{ _t('BAZ_CHECKCONTENT_FIX_DROP') }}
+                        {% else %}
+                          {{ _t('BAZ_CHECKCONTENT_FIX_REPLACE', {value: row.fix.set}) }}
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endfor %}
+
+        <button class="yw-btn yw-btn--primary" type="submit">
+          {{ _t('BAZ_CHECKCONTENT_REPAIR') }}
+        </button>
+        <input type="hidden" name="checkcontent-complete" value="1">
+      </form>
+    {% endif %}
+  {% endif %}
+</div>

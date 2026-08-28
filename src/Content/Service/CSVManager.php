@@ -111,7 +111,7 @@ class CSVManager
             }
 
             foreach ($data as $line) {
-                fputcsv($csvResource, $line, ',', '"', '\\');
+                fputcsv($csvResource, $line, ',', '"', '');
             }
             rewind($csvResource);
 
@@ -290,7 +290,7 @@ class CSVManager
             $values = array_map(function ($tag) use ($options) {
                 return $options[$tag] ?? $tag;
             }, explode(',', $value));
-            $newValue = trim($this->arrayToCSV([$values]));
+            $newValue = rtrim($this->arrayToCSV([$values]), "\n");
         }
 
         return $newValue ?? null;
@@ -313,27 +313,27 @@ class CSVManager
                 $options = $header['field']->getOptions();
                 $nb = min(3, count($options));
                 if (!empty($options)) {
-                    $line[] = trim($this->arrayToCSV([
+                    $line[] = rtrim($this->arrayToCSV([
                         array_map(function ($index) use ($options) {
                             return $options[array_keys($options)[$index]];
                         }, range(0, $nb - 1)),
-                    ]));
+                    ]), "\n");
                 } else {
                     $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
                 }
             } elseif ($header['field'] instanceof TagsField) {
-                $line[] = '"' . implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
+                $line[] = implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
                     return 'ligne ' . $lineNumber . ' - champ ' . $columnNumber . ' - tag ' . $index;
-                }, [1, 2, 3])) . '"';
+                }, [1, 2, 3]));
             } elseif ($header['field'] instanceof EnumField) {
                 $options = $header['field']->getOptions();
                 $index = rand(1, count($options)) - 1;
-                $line[] = trim($this->arrayToCSV([
+                $line[] = rtrim($this->arrayToCSV([
                     [
                         'ligne ' . $lineNumber . ' - champ ' . $columnNumber .
                             (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]]),
                     ],
-                ]));
+                ]), "\n");
             } else {
                 $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
             }
@@ -403,12 +403,12 @@ class CSVManager
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
                     $handle = $this->storage->readForeignStream($filesData['tmp_name']);
-                    if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
+                    if (($firstLine = fgetcsv($handle, 0, ',', '"', '')) !== false) {
                         if ($columnIndexesForPropertyNames
                             = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                         ) {
                             $extracted = [];
-                            while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
+                            while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) {
                                 $this->errormsg = [];
                                 $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
                                 $extracted[] = [
@@ -727,11 +727,11 @@ class CSVManager
     }
 
     /**
-     * extractValueFromEnumFieldData.
+     * Convert a CSV list of labels or of keys into the comma separated list of keys stored in an entry.
      *
-     * @param string $value, CSV saved in value
+     * @param string $value CSV list read from one cell
      *
-     * @return string $newValue
+     * @return string comma separated keys
      */
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
@@ -746,22 +746,22 @@ class CSVManager
             }
         }
 
-        if (preg_match('/"[^"]+"/', $value)) {
-            $values = str_getcsv($value, ',', '"', '\\');
-        } else {
-            $values = [$value];
-        }
+        $values = str_getcsv($value, ',', '"', '');
 
-        $indexes = array_map(function ($option) use ($options, $flippedOptions) {
+        $indexes = [];
+        foreach ($values as $option) {
             $option = trim((string)$option);
-            if (isset($flippedOptions[$option])) {
-                return $flippedOptions[$option];
-            } elseif (isset($options[$option])) {
-                return $option;
+            if ($option === '') {
+                continue;
             }
-
-            return null;
-        }, $values);
+            if (isset($flippedOptions[$option])) {
+                $indexes[] = $flippedOptions[$option];
+            } elseif (isset($options[$option])) {
+                $indexes[] = $option;
+            } else {
+                $this->errormsg[] = _t('BAZ_UNKNOWN_OPTION') . ' : ' . $field->getPropertyName() . ' = ' . $option;
+            }
+        }
 
         return implode(',', $indexes);
     }

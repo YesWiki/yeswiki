@@ -5,10 +5,14 @@ namespace YesWiki\Import\Service;
 use YesWiki\Files\Service\LocalFiles;
 use YesWiki\Files\Service\Storage;
 use YesWiki\Kernel\Exception\CurlTimeoutException;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class ImportService
 {
-    public function __construct(private readonly Storage $storage, private readonly LocalFiles $localFiles)
+    public const SCHEMES = ['http', 'https'];
+    private const MAX_REDIRECTS = 5;
+
+    public function __construct(private readonly Storage $storage, private readonly LocalFiles $localFiles, private readonly SsrfUrlValidator $ssrfUrlValidator)
     {
     }
 
@@ -83,29 +87,51 @@ class ImportService
      */
     private function retrieveUrlAfterRedirect(string $inputUrl): string
     {
-        try {
-            $headers = $this->getHeaders($inputUrl);
-        } catch (CurlTimeoutException $th) {
-            return $inputUrl;
-        }
+        // each hop is followed here rather than by curl, so that every address is checked in turn
         $outputUrl = $inputUrl;
-        $location = !empty($headers['Location'])
-            ? $headers['Location']
-            : (
-                !empty($headers['location'])
-                ? $headers['location']
-                : ''
-            );
-
-        if (!empty($location)) {
-            if (is_array($location)) {
-                $outputUrl = $location[count($location) - 1];
-            } elseif (is_string($location)) {
-                $outputUrl = $location;
+        for ($hop = 0; $hop < self::MAX_REDIRECTS; ++$hop) {
+            try {
+                $headers = $this->getHeaders($outputUrl);
+            } catch (CurlTimeoutException $th) {
+                return $outputUrl;
             }
+            $location = !empty($headers['Location'])
+                ? $headers['Location']
+                : (
+                    !empty($headers['location'])
+                    ? $headers['location']
+                    : ''
+                );
+
+            if (empty($location)) {
+                return $outputUrl;
+            }
+            $outputUrl = $this->absoluteUrl(
+                $outputUrl,
+                is_array($location) ? $location[count($location) - 1] : $location
+            );
         }
 
         return $outputUrl;
+    }
+
+    /** A Location header may be relative to the address it came from. */
+    private function absoluteUrl(string $currentUrl, string $location): string
+    {
+        if (parse_url($location, PHP_URL_SCHEME) !== null) {
+            return $location;
+        }
+        $parts = parse_url($currentUrl);
+        if (empty($parts['scheme']) || empty($parts['host'])) {
+            return $location;
+        }
+        $root = $parts['scheme'] . '://' . $parts['host'] . (empty($parts['port']) ? '' : ':' . $parts['port']);
+        if (strpos($location, '/') === 0) {
+            return $root . $location;
+        }
+        $path = empty($parts['path']) ? '/' : $parts['path'];
+
+        return $root . substr($path, 0, (int)strrpos($path, '/') + 1) . $location;
     }
 
     /**
@@ -122,7 +148,8 @@ class ImportService
         // Two scratch files, and neither ever becomes the wiki's: curl writes the body into one
         // and the headers into the other, and only the headers are read back. Storage owns the
         // making and the removing, including when this throws part-way through.
-        [$error, $content] = $this->storage->withTemporaryFile('body', fn (string $bodyPath) => $this->storage->withTemporaryFile('headers', function (string $headerPath) use ($url, $bodyPath) {
+        $pin = $this->ssrfUrlValidator->curlPin($url, self::SCHEMES);
+        [$error, $content] = $this->storage->withTemporaryFile('body', fn (string $bodyPath) => $this->storage->withTemporaryFile('headers', function (string $headerPath) use ($url, $bodyPath, $pin) {
             $body = $this->localFiles->openForWriting($bodyPath);
             $headers = $this->localFiles->openForWriting($headerPath);
             if ($body === null || $headers === null) {
@@ -130,10 +157,14 @@ class ImportService
             }
 
             $ch = curl_init($url);
+            foreach ($pin as $option => $optionValue) {
+                curl_setopt($ch, $option, $optionValue);
+            }
             curl_setopt($ch, CURLOPT_FILE, $body);
             curl_setopt($ch, CURLOPT_WRITEHEADER, $headers);
             curl_setopt($ch, CURLOPT_HEADER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            // a redirect is followed by the caller, which checks the new address first
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
             curl_setopt($ch, CURLOPT_TIMEOUT, 6);
             curl_exec($ch);

@@ -82,6 +82,10 @@ class CommentService implements EventSubscriberInterface
     }
 
     /**
+     * Post a comment, or rewrite one that is already there.
+     *
+     * An edit is authorized against the comment being rewritten, and its parent is read back from it, so no other page can be reached through the parent named in the request.
+     *
      * @param array<string, mixed> $content
      *
      * @return array<string, mixed>
@@ -93,6 +97,23 @@ class CommentService implements EventSubscriberInterface
                 'code' => 401,
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
+        }
+        $content['pagetag'] = $content['pagetag'] ?? '';
+        if (!empty($idComment)) {
+            $edited = $this->pageManager->getOne($idComment, null, true, true);
+            if (empty($edited) || empty($edited['parent'])) {
+                return [
+                    'code' => 404,
+                    'error' => _t('COMMENT_NOT_FOUND'),
+                ];
+            }
+            if (!$this->aclService->hasAccess('write', $idComment)) {
+                return [
+                    'code' => 403,
+                    'error' => _t('NOT_AUTORIZED_TO_EDIT_COMMENT'),
+                ];
+            }
+            $content['pagetag'] = $edited['parent'];
         }
         if ($this->aclService->hasAccess('comment', $content['pagetag']) && $this->pageManager->getOne($content['pagetag'])) {
             if (!$this->container->get(HashCashService::class)->checkHashcash()) {

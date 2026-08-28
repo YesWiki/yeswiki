@@ -40,13 +40,20 @@
           {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
 
-         <a :href="restoreUrl" class="btn btn-success btn-restore"
-            :class="{ disabled: isLastRevision }">
-          <span v-if="isLastRevision">{{ _t('CURRENT_VERSION') }}</span>
-          <span v-else>{{ _t('RESTORE_REVISION') }}</span>
-        </a>
-        <a v-if="!isLastRevision" :href="fullRestoreUrl" class="btn btn-link btn-restore-full"
-           title="{{ _t('RESTORE_REVISION_FULL') }}">{{ _t('RESTORE_REVISION_FULL') }}</a>
+        <form method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+          <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
+          <button type="submit" class="btn btn-success btn-restore" :disabled="isLastRevision || null">
+            <span v-if="isLastRevision">{{ _t('CURRENT_VERSION') }}</span>
+            <span v-else>{{ _t('RESTORE_REVISION') }}</span>
+          </button>
+        </form>
+        <form v-if="!isLastRevision" method="post" action="{{ url({handler:'revisions'}) }}" style="display: inline">
+          <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+          <input type="hidden" name="restoreRevisionId" :value="selectedRevision.id">
+          <input type="hidden" name="fullRevert" value="1">
+          <button type="submit" class="btn btn-link btn-restore-full" title="{{ _t('RESTORE_REVISION_FULL') }}">{{ _t('RESTORE_REVISION_FULL') }}</button>
+        </form>
       </div>
       <svg class="yw-icon yw-icon--2x" aria-hidden="true" @click="moveRevision(false)" :disabled="isLastRevision || null"><use href="src/assets/icons.svg#chevron-right"/></svg>
     </div>

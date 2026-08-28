@@ -34,12 +34,11 @@
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     {% if canTriggerExtensionUpdate %}
-                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="yw-btn yw-btn--sm yw-btn--primary"
-                            title="{{ _t('AU_UPDATE') }}"
-                        >
-                            {{ _t('AU_UPDATE') }}
-                        </a>
+                        {% include '@core/update-action-button.twig' with {
+                            params: {action: 'upgrade', package: ext.updateLink},
+                            buttonClass: 'yw-btn yw-btn--sm yw-btn--primary',
+                            label: _t('AU_UPDATE')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--primary"
@@ -56,12 +55,11 @@
             <td>
                 {% if isAdmin and not ext.installed %}
                     {% if canTriggerExtensionUpdate %}
-                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="yw-btn yw-btn--sm yw-btn--primary"
-                            title="{{ _t('AU_INSTALL') }}"
-                        >
-                            {{ _t('AU_INSTALL') }}
-                        </a>
+                        {% include '@core/update-action-button.twig' with {
+                            params: {action: 'upgrade', package: ext.updateLink},
+                            buttonClass: 'yw-btn yw-btn--sm yw-btn--primary',
+                            label: _t('AU_INSTALL')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--primary"
@@ -76,12 +74,11 @@
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     {% if canTriggerExtensionUpdate %}
-                        <a  href="{{ url({params:{ action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
-                            class="yw-btn yw-btn--sm yw-btn--danger"
-                            title="{{ _t('AU_DELETE_EXT') }}"
-                        >
-                            {{ _t('AU_DELETE_EXT') }}
-                        </a>
+                        {% include '@core/update-action-button.twig' with {
+                            params: {action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first},
+                            buttonClass: 'yw-btn yw-btn--sm yw-btn--danger',
+                            label: _t('AU_DELETE_EXT')
+                        } only %}
                     {% else %}
                         <button disabled
                             class="yw-btn yw-btn--sm yw-btn--danger"

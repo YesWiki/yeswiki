@@ -52,21 +52,24 @@
           <td class="fmfileactions">
             {% if trash %}
 
-              <a
-                class="yw-btn yw-btn--sm yw-btn--primary"
-                href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
-                title="{{ _t('ATTACH_RESTORE') }}"
-              >
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>&nbsp;{{ _t('ATTACH_RESTORE') }}
-              </a>
+              <form method="post" action="{{ url({tag:tag,handler:method}) }}" style="display: inline">
+                <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+                <input type="hidden" name="do" value="restore">
+                <input type="hidden" name="file" value="{{ file.realname }}">
+                <button type="submit" class="yw-btn yw-btn--sm yw-btn--primary" title="{{ _t('ATTACH_RESTORE') }}">
+                  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>&nbsp;{{ _t('ATTACH_RESTORE') }}
+                </button>
+              </form>
             {% endif %}
 
-            <a
-              class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
-              href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"
-              title="{{ _t('DELETE') }}">
-              {{ trash ? icon('x') : icon('trash') }}
-            </a>
+            <form method="post" action="{{ url({tag:tag,handler:method}) }}" style="display: inline">
+              <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+              <input type="hidden" name="do" value="{{ trash ? 'erase' : 'del' }}">
+              <input type="hidden" name="file" value="{{ file.realname }}">
+              <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger btn-icon" title="{{ _t('DELETE') }}">
+                {{ trash ? icon('x') : icon('trash') }}
+              </button>
+            </form>
           </td>
         </tr>
       {% endfor %}
@@ -74,11 +77,13 @@
   </table>
   {% if trash %}
     <div class="yw-alert yw-alert--danger">
-      <a
-        href="{{ url({tag:tag,handler:method,params:{do:'emptytrash'}}) }}"
-        class="yw-btn yw-btn--danger pull-right">
-        <svg class="yw-icon icon-remove icon-white" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
-      </a>
+      <form method="post" action="{{ url({tag:tag,handler:method}) }}" class="pull-right">
+        <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+        <input type="hidden" name="do" value="emptytrash">
+        <button type="submit" class="yw-btn yw-btn--danger">
+          <svg class="yw-icon icon-remove icon-white" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
+        </button>
+      </form>
       <strong>{{ _t('CAUTION') }} :</strong> {{ _t('ATTACH_EMPTY_TRASH_NOTICE') }}
       <div class="clearfix"></div>
     </div>

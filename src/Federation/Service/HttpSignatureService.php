@@ -79,7 +79,14 @@ class HttpSignatureService
         ];
     }
 
-    public function verifySignature(Request $request): void
+    /**
+     * Check the request really was signed by the key it names, and say whose key it was.
+     *
+     * A valid signature only answers "was this signed"; the caller still has to ask "by whom", so the owner of the key is returned for it to bind the activity to.
+     *
+     * @return string the actor the verified key belongs to
+     */
+    public function verifySignature(Request $request): string
     {
         $signatureHeader = $request->headers->get('Signature');
         if ($signatureHeader === null || $signatureHeader === '') {
@@ -138,5 +145,43 @@ class HttpSignatureService
         if ($request->headers->get('Digest') !== $this->getDigest($request->getContent())) {
             throw new \Exception('Digest mismatch');
         }
+
+        return $this->keyOwner($sigConf['keyId'], $actor);
+    }
+
+    /**
+     * Who the key belongs to, taken from the document the keyId was fetched from.
+     *
+     * A document is free to claim any owner, so a key only ever speaks for an actor served by the same host: without that, anyone could publish a key document naming someone else.
+     *
+     * @param array<string,mixed> $actor
+     */
+    protected function keyOwner(string $keyId, array $actor): string
+    {
+        $owner = $actor['publicKey']['owner'] ?? ($actor['id'] ?? null);
+        if (empty($owner) || !is_string($owner)) {
+            throw new \Exception('The signing key names no owner');
+        }
+        if (isset($actor['id'], $actor['publicKey']['owner']) && $actor['id'] !== $actor['publicKey']['owner']) {
+            throw new \Exception('The actor and its key disagree on who owns the key');
+        }
+        if (!$this->sameHost($keyId, $owner)) {
+            throw new \Exception('The signing key and the actor it claims are not on the same host');
+        }
+
+        return $owner;
+    }
+
+    public function sameHost(string $first, string $second): bool
+    {
+        $firstParts = parse_url($first);
+        $secondParts = parse_url($second);
+        if (empty($firstParts['host']) || empty($secondParts['host'])) {
+            return false;
+        }
+
+        return strtolower($firstParts['host']) === strtolower($secondParts['host'])
+            && strtolower($firstParts['scheme'] ?? '') === strtolower($secondParts['scheme'] ?? '')
+            && ($firstParts['port'] ?? null) === ($secondParts['port'] ?? null);
     }
 }

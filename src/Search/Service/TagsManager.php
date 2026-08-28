@@ -7,6 +7,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Entity\PageType;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Database\SqlParameters;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -35,6 +37,11 @@ class TagsManager
         $this->params = $params;
         $this->hibernationService = $hibernationService;
         $this->container = $container;
+    }
+
+    private function readableFilter(): SqlFragment
+    {
+        return $this->container->get(AclService::class)->readableFilter();
     }
 
     /**
@@ -233,9 +240,14 @@ class TagsManager
      */
     public function getAllTriples(): array
     {
+        $readable = $this->container->get(AclService::class)->readableResourceFilter();
+
         return $this->dbService->loadAll(
             'SELECT id, value, resource FROM ' . $this->dbService->prefixTable('triples')
-            . " WHERE property='" . self::TAG_PROPERTY . "' ORDER BY value ASC, resource ASC"
+            . " WHERE property='" . self::TAG_PROPERTY . "'"
+            . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql)
+            . ' ORDER BY value ASC, resource ASC',
+            $readable->params
         );
     }
 
@@ -309,15 +321,22 @@ class TagsManager
                 $req .= ' ORDER BY ' . $this->dbService->quoteIdentifier('time') . ' DESC ';
             }
 
-            $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and parent = '' " . $req;
+            $readable = $this->readableFilter();
+            $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and parent = '' "
+                . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql) . $req;
 
-            return $this->dbService->loadAll($requete, $params);
+            return $this->dbService->loadAll($requete, [...$readable->params, ...$params]);
         }
 
+        $readable = $this->readableFilter();
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
         $sql .= " WHERE latest='Y' AND parent='' ";
 
         $params = [];
+        if (!$readable->isEmpty()) {
+            $sql .= ' AND ' . $readable->sql . ' ';
+            $params = $readable->params;
+        }
         if ($type == 'wiki') {
             $sql .= ' AND ' . $this->dbService->quoteIdentifier('type') . ' = ? ';
             $params[] = PageType::PAGE;

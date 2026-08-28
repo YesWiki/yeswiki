@@ -30,6 +30,10 @@ class FileField extends BazarField
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
 
+    public const FILE_PRESENT = 'present';
+    public const FILE_MISSING = 'missing';
+    public const FILE_REMOTE = 'remote';
+
     /** @var int the largest upload this field accepts, in bytes */
     protected $maxSize;
     /** @var array<int, string> the extensions this field accepts, each with its leading dot */
@@ -319,6 +323,37 @@ class FileField extends BazarField
     protected function sanitizeFilename(string $filename): string
     {
         return $this->getService(FileManager::class)->sanitizeFilename($filename);
+    }
+
+    /**
+     * Tell where the value stored on an entry points: a remote URL, a file the wiki holds, or nothing at all.
+     *
+     * Storage answers whether a file is there, not whether the process may read it, so there is no unreadable case to report -- a file the backend will not give up reads as missing.
+     *
+     * @param array<string, mixed> $entry
+     */
+    public function locateFile(array $entry, ?string $value): string
+    {
+        if (empty($value)) {
+            return self::FILE_MISSING;
+        }
+        if ($this->isUrl($value)) {
+            return self::FILE_REMOTE;
+        }
+
+        return $this->storage()->exists($this->uploadDirectory($entry) . $value)
+            ? self::FILE_PRESENT
+            : self::FILE_MISSING;
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function uploadDirectory(array $entry): string
+    {
+        $basePath = $this->getBasePath();
+
+        return $this->paths()->isSafeMode()
+            ? $basePath . ($entry['tag'] ?? '') . '/'
+            : $basePath;
     }
 
     protected function getBasePath(): string

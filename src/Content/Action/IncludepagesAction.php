@@ -6,6 +6,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageSummary;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\StringUtilService;
@@ -50,11 +51,12 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
                 $template = 'pages_list.twig';
             }
 
+            $aclService = $this->getService(AclService::class);
             $resultat = explode(',', $pages);
             $element = [];
             foreach ($resultat as $page) {
                 $page = $this->getService(PageManager::class)->getOne(trim($page));
-                if (!is_array($page)) {
+                if (!is_array($page) || !$aclService->hasAccess('read', $page['tag'])) {
                     continue;
                 }
                 $body = PageBody::content($page['body']);

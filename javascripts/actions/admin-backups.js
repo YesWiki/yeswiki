@@ -21,6 +21,7 @@ const app = createApp({
       savefiles: true,
       savedatabase: true,
       currentArchiveUid: '',
+      restoreUid: '',
       archiveMessage: '',
       archiveMessageClass: {
         alert: true,
@@ -30,6 +31,7 @@ const app = createApp({
       canForceDelete: false,
       askConfirmationToDelete: false,
       packageName: '',
+      csrfToken: '',
       showReturn: true,
       warnIfNotStarted: true,
       callAsync: true,
@@ -224,33 +226,65 @@ const app = createApp({
         filename: archive.filename,
       })
       this.messageClass = { alert: true, 'alert-info': true }
+      // the restore runs in a process of its own, so what comes back is a uid to follow, not
+      // a finished restore
       return await this.fetchPost(
         wiki.url(`?api/archives/${archive.filename}`),
         { action: 'restore' },
       )
-        .then(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
-            filename: archive.filename,
-          })
-          this.messageClass = { alert: true, 'alert-success': true }
-          toastMessage(
-            _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
+        .then((data) => {
+          this.restoreUid = (data && data.uid) || ''
+          if (this.restoreUid.length === 0) {
+            return this.failRestore(archive)
+          }
+          return this.followRestore(archive)
+        })
+        .catch(() => this.failRestore(archive))
+    },
+    failRestore(archive) {
+      this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', {
+        filename: archive.filename,
+      })
+      this.messageClass = { alert: true, 'alert-danger': true }
+      this.updating = false
+      this.restoreUid = ''
+    },
+    async followRestore(archive) {
+      if (this.restoreUid.length === 0) {
+        return
+      }
+      return await this.fetch(
+        wiki.url(`?api/archives/uidstatus/${this.restoreUid}`),
+      )
+        .then((data) => {
+          const tail = (data.output || '').split('\n').slice(-5).join('<br>')
+          if (data.finished) {
+            this.restoreUid = ''
+            this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
               filename: archive.filename,
-            }),
-            3000,
-            'alert alert-success',
-          )
-          setTimeout(() => {
-            window.location.href = wiki.url(wiki.pageTag)
-          }, 2000)
-        })
-        .catch(() => {
-          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', {
+            })
+            this.messageClass = { alert: true, 'alert-success': true }
+            toastMessage(
+              _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', {
+                filename: archive.filename,
+              }),
+              3000,
+              'alert alert-success',
+            )
+            setTimeout(() => {
+              window.location.href = wiki.url(wiki.pageTag)
+            }, 2000)
+            return
+          }
+          if (data.stopped) {
+            return this.failRestore(archive)
+          }
+          this.message = `${_t('ADMIN_BACKUPS_RESTORE_ARCHIVE', {
             filename: archive.filename,
-          })
-          this.messageClass = { alert: true, 'alert-danger': true }
-          this.updating = false
+          })}<pre>${tail}</pre>`
+          setTimeout(() => this.followRestore(archive), 1000)
         })
+        .catch(() => this.failRestore(archive))
     },
     async startArchive() {
       this.updating = true
@@ -658,6 +692,18 @@ const app = createApp({
         this.savedatabase = false
       }
     },
+    postTo(url) {
+      const form = document.createElement('form')
+      form.method = 'post'
+      form.action = url
+      const token = document.createElement('input')
+      token.type = 'hidden'
+      token.name = 'csrf-token'
+      token.value = this.csrfToken
+      form.appendChild(token)
+      document.body.appendChild(form)
+      form.submit()
+    },
     async forceUpdate() {
       return await this.fetch(wiki.url('?api/archives/forcedUpdateToken'))
         .then(
@@ -675,11 +721,13 @@ const app = createApp({
               )
               this.canForceUpdate = false
             } else {
-              window.location = wiki.url(wiki.pageTag, {
-                action: 'upgrade',
-                package: this.packageName,
-                forcedUpdateToken: data.token,
-              })
+              this.postTo(
+                wiki.url(wiki.pageTag, {
+                  action: 'upgrade',
+                  package: this.packageName,
+                  forcedUpdateToken: data.token,
+                }),
+              )
             }
           },
           (pError) => {
@@ -717,6 +765,7 @@ const app = createApp({
     )
     if (this.isPreupdate) {
       this.packageName = container.dataset.package || ''
+      this.csrfToken = container.dataset.csrfToken || ''
     }
     container.addEventListener('dblclick', () => false)
     if (this.isPreupdate) {

@@ -15,6 +15,7 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Files\Service\ProgramFiles;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -39,12 +40,17 @@ class ContactApiController extends YesWikiController
 
         $field = (string)$request->request->get('field', '');
         $infomsg = '';
-        $hasReadAccess = true;
+        $hasReadAccess = $aclService->hasAccess('read', $pageTag);
+        // naming the receiver in the request is reserved to logged in users, like the form below
+        $canChooseReceiver = !empty($this->getService(AuthenticationService::class)->getLoggedUser());
+        $postedMail = trim((string)$request->request->get('mail', ''));
+        $isAllowed = $hasReadAccess
+            && ($canChooseReceiver || $postedMail === '' || !empty($field));
+        $mailReceiver = false;
 
         if (!empty($field)) {
-            $hasReadAccess = $aclService->hasAccess('read', $pageTag);
             $mailReceiver = [];
-            if ($hasReadAccess) {
+            if ($isAllowed) {
                 $val = $entryManager->getOne($pageTag);
                 if (is_array($val) && isset($val[$field])) {
                     $mailReceiver[] = $val[$field];
@@ -57,15 +63,14 @@ class ContactApiController extends YesWikiController
                     ($mailSenderForMsg ? _t('CONTACT_REPLY') . ' <strong>' . $mailSenderForMsg . '</strong> '
                         . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
             }
-        } else {
-            $mailReceiver = trim((string)$request->request->get('mail', '')) ?: false;
+        } elseif ($canChooseReceiver) {
+            $mailReceiver = $postedMail ?: false;
         }
 
         $page = $pageManager->getOne($pageTag, null, true, true);
 
         if (!$mailReceiver) {
-            $hasReadAccess = $aclService->hasAccess('read', $pageTag);
-            if ($hasReadAccess) {
+            if ($isAllowed) {
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
 
@@ -95,8 +100,7 @@ class ContactApiController extends YesWikiController
         $messageHtml = '';
 
         if ($type == 'mail') {
-            $hasReadAccess = $aclService->hasAccess('read', $pageTag);
-            if ($hasReadAccess) {
+            if ($isAllowed) {
                 $subject = (string)$request->request->get('subject', '');
                 if ($entryManager->isEntry($pageTag)) {
                     $renderedPage = $this->getService(EntryController::class)->view($pageTag);
@@ -116,7 +120,7 @@ class ContactApiController extends YesWikiController
             $messageHtml = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($rawMessage, ENT_COMPAT, YW_CHARSET))));
         }
 
-        if ($hasReadAccess) {
+        if ($isAllowed) {
             $message = $this->getService(MailForm::class)->problemsWith($type, $mailSender, $nameSender, $mailReceiver, $subject, $messageTxt);
             if ($type != 'subscribe' && $type != 'unsubscribe' && !empty($infomsg)) {
                 $messageTxt = strip_tags($infomsg) . '\n\n' . $messageTxt;

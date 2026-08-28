@@ -310,6 +310,7 @@ class GroupOperationsService extends YesWikiController
      */
     public function update(string $groupName, array $members): void
     {
+        $members = $this->groupManager->cleanMembers($members);
         if ($groupName == ADMIN_GROUP) {
             $currentUser = $this->loggedUserName();
             if ($currentUser === null || !in_array($currentUser, $members, true)) {

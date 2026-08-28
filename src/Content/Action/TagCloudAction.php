@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -73,7 +74,9 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction, Provides
         $tablePrefix = $this->getService(RuntimeConfig::class)['table_prefix'];
 
         $tagProperty = SqlFragment::of('property = ?', [self::TAG_PROPERTY]);
-        $filter = SqlFragment::all(' ', $tagProperty, $selectiontags);
+        // buildSelectionTagsClause() already carries its own leading AND, so the glue stays a space
+        $readable = $this->getService(AclService::class)->readableResourceFilter()->wrappedIn('AND ', '');
+        $filter = SqlFragment::all(' ', $tagProperty, $selectiontags, $readable);
 
         $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE ' . $filter->sql . ' GROUP BY value';
         $min_max = $this->getService(DbService::class)->loadAll($sql, $filter->params);

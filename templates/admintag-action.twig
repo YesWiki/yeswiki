@@ -18,11 +18,14 @@
           </td>
           {% if isAdmin %}
           <td class="delete_tag">
-            <a class="yw-btn yw-btn--sm yw-btn--danger" 
-              href="{{ url({params:{delete_tag:tag.id}}) }}">
-              <i class="icon icon-trash icon-white"></i>
-              {{- ' ' ~ _t('TAGS_DELETE_MINUSCULE') }} {{ _t('TAGS_FROM_THIS_PAGE') -}}
-            </a>
+            <form method="post" action="{{ url({}) }}" style="display: inline">
+              <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+              <input type="hidden" name="delete_tag" value="{{ tag.id }}">
+              <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">
+                <i class="icon icon-trash icon-white"></i>
+                {{- ' ' ~ _t('TAGS_DELETE_MINUSCULE') }} {{ _t('TAGS_FROM_THIS_PAGE') -}}
+              </button>
+            </form>
           </td>
           {% endif %}
 				</tr>
@@ -33,14 +36,17 @@
           <td></td>
           {% if isAdmin %}
           <td class="delete_all_tags">
-            <a class="yw-btn yw-btn--sm yw-btn--danger" 
-                href="{{ url({params:{delete_tag:tagsForName|map(tag => tag.id)|join(',')}}) }}">
-              <strong>
-                <i class="icon icon-trash icon-white"></i>
-                  {{- _t('TAGS_DELETE_MINUSCULE') }}&nbsp;<span class="tag-label label label-primary">{{ tagName }}</span>
-                  {{ ' ' ~ _t('TAGS_FROM_ALL_PAGES') -}}
-              </strong>
-            </a>
+            <form method="post" action="{{ url({}) }}" style="display: inline">
+              <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+              <input type="hidden" name="delete_tag" value="{{ tagsForName|map(tag => tag.id)|join(',') }}">
+              <button type="submit" class="yw-btn yw-btn--sm yw-btn--danger">
+                <strong>
+                  <i class="icon icon-trash icon-white"></i>
+                    {{- _t('TAGS_DELETE_MINUSCULE') }}&nbsp;<span class="tag-label label label-primary">{{ tagName }}</span>
+                    {{ ' ' ~ _t('TAGS_FROM_ALL_PAGES') -}}
+                </strong>
+              </button>
+            </form>
           </td>
           {% endif %}
         </tr>

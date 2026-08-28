@@ -5,7 +5,10 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
@@ -80,16 +83,19 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
                 $colors = 'green';
             }
         }
-        $colors = '["' . str_replace(',', '","', $colors) . '"]';
+        $colorsList = array_values(array_filter(array_map('trim', explode(',', (string)$colors))));
+        if (empty($colorsList)) {
+            $colorsList = ['green'];
+        }
 
         $labels = $this->getService(PerformableArguments::class)->get('label');
         if (empty($labels)) {
             $labels = _t('ATTACH_DEFAULT_MARKER');
         }
-        $labels = '["' . str_replace(',', '","', $labels) . '"]';
+        $labelsList = array_map('trim', explode(',', (string)$labels));
 
-        $point_size = $this->getService(PerformableArguments::class)->get('pointsize');
-        if (empty($point_size)) {
+        $point_size = (int)$this->getService(PerformableArguments::class)->get('pointsize');
+        if ($point_size <= 0) {
             $point_size = 10;
         }
 
@@ -100,22 +106,46 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
 
         $datapagetag = $this->getService(PageContext::class)->getTag() . 'PI' . $baseForPageTag;
 
-        if (isset($_POST['title']) && !empty($_POST['title'])
-            && isset($_POST['description']) && !empty($_POST['description'])
-            && isset($_POST['pagetag']) && !empty($_POST['pagetag'])
-            && isset($_POST['image_x']) && !empty($_POST['image_x'])
-            && isset($_POST['image_y']) && !empty($_POST['image_y'])
-            && isset($_POST['color']) && !empty($_POST['color'])) {
-            $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']);
-            $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
+        $postedpagetag = isset($_POST['pagetag']) && is_string($_POST['pagetag'])
+            ? preg_replace('/[?&].*$/', '', str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']))
+            : '';
+        if ($postedpagetag === $datapagetag
+            && !empty($_POST['title']) && is_string($_POST['title'])
+            && !empty($_POST['description']) && is_string($_POST['description'])
+            && !empty($_POST['image_x']) && is_string($_POST['image_x'])
+            && !empty($_POST['image_y']) && is_string($_POST['image_y'])
+            && !empty($_POST['color']) && is_string($_POST['color'])) {
+            if (!empty($readonly) && $readonly == 1) {
+                echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_POINTIMAGE') . '</strong> : ' . _t('ATTACH_MARKER_NOT_ALLOWED') . '</div>' . "\n";
+
+                return;
+            }
+            try {
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+            } catch (\Throwable $error) {
+                echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_POINTIMAGE') . '</strong> : ' . htmlspecialchars($error->getMessage(), ENT_QUOTES, YW_CHARSET) . '.</div>' . "\n";
+
+                return;
+            }
+            if (!$this->getService(AclService::class)->hasAccess('write', $datapagetag)) {
+                echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_POINTIMAGE') . '</strong> : ' . _t('ATTACH_MARKER_NOT_ALLOWED') . '</div>' . "\n";
+
+                return;
+            }
+            $marker_x = max(0, (int)$_POST['image_x']);
+            $marker_y = max(0, (int)$_POST['image_y']);
+            $marker_color = in_array($_POST['color'], $colorsList, true) ? $_POST['color'] : $colorsList[0];
+            $marker_title = str_replace(['~~', '<!--', '-->', "\r", "\n"], ' ', $_POST['title']);
+            $marker_desc = str_replace(['~~', '<!--', '-->'], ' ', $_POST['description']);
+            $chaine = "\n\n~~\"\"<!--" . $marker_x . '-' . $marker_y . '-' . $marker_color . '--><!--title-->' . $marker_title . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $marker_desc . "\"\"<!--/desc-->\n\"\"~~";
             $donneesbody = $this->getService(DbService::class)->loadSingle(
                 'SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = ? and latest = 'Y' limit 1",
-                [$pagetag]
+                [$datapagetag]
             );
 
             $markersBody = PageBody::decode($donneesbody['body'] ?? null);
             $markersBody[PageBody::CONTENT] = PageBody::content($markersBody) . $chaine;
-            $this->getService(PageManager::class)->save($pagetag, $markersBody, '', true);
+            $this->getService(PageManager::class)->save($datapagetag, $markersBody, '', true);
             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
         }
 
@@ -146,13 +176,13 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         $listofmarkers = '';
         if (count($markers) > 0) {
             foreach ($markers as $nb => $marker) {
-                $marker['title'] = htmlspecialchars(str_replace(["\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10) . chr(13)], '', $marker['title']), ENT_QUOTES, YW_CHARSET);
+                $marker['title'] = htmlspecialchars(htmlspecialchars(str_replace(["\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10) . chr(13)], '', $marker['title']), ENT_QUOTES, YW_CHARSET), ENT_QUOTES, YW_CHARSET);
                 $marker['description'] = htmlspecialchars(str_replace(["\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10) . chr(13)], '', $marker['description']), ENT_QUOTES, YW_CHARSET);
 
                 $listofmarkers .= '<a
             class="img-marker"
             style="height:' . $point_size . 'px;width:' . $point_size . 'px;left:' . ($marker['x'] - round($point_size / 2)) . 'px;
-            top:' . ($marker['y'] - round($point_size / 2)) . 'px;background:' . $marker['color'] . ';"
+            top:' . ($marker['y'] - round($point_size / 2)) . 'px;background:' . htmlspecialchars($marker['color'], ENT_QUOTES, YW_CHARSET) . ';"
             tabindex="0"
             data-yw-popover-title="' . $marker['title'] . '"
             data-yw-popover-content="' . $marker['description'] . '" href="#"></a>' . "\n";
@@ -168,6 +198,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         	        <button type="button" class="yw-close" data-yw-dismiss="modal" aria-hidden="true">&times;</button>
         	      </div>
         	      <form class="form-pointimage" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
+        	      <input type="hidden" name="csrf-token" value="' . htmlspecialchars($this->getService(CsrfTokenManager::class)->getToken('main')->getValue(), ENT_QUOTES, YW_CHARSET) . '" />
         	      <div class="yw-modal__body">
         	      	<div class="yw-form-group markers-choice"></div>
         	     	<div class="yw-form-group">
@@ -188,7 +219,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
 
         $this->getService(AssetRegistry::class)->addJsFile('javascripts/pointimage.js');
 
-        echo $modal . '<div class="pointimage-container no-dblclick" data-readonly="' . ((!empty($readonly) && $readonly == 1) ? 'true' : 'false') . '" data-markerscolor=\'' . $colors . '\' data-markerslabel=\'' . $labels . '\' data-markersize="' . $point_size . '" data-pagetag="' . $this->getService(UrlFormatter::class)->href('', $datapagetag) . '">' . "\n";
+        echo $modal . '<div class="pointimage-container no-dblclick" data-readonly="' . ((!empty($readonly) && $readonly == 1) ? 'true' : 'false') . '" data-markerscolor="' . htmlspecialchars((string)json_encode($colorsList), ENT_QUOTES, YW_CHARSET) . '" data-markerslabel="' . htmlspecialchars((string)json_encode($labelsList), ENT_QUOTES, YW_CHARSET) . '" data-markersize="' . $point_size . '" data-pagetag="' . $this->getService(UrlFormatter::class)->href('', $datapagetag) . '">' . "\n";
         if (isset($size)) {
             echo $this->getService(MarkdownFormatterService::class)->format('{{attach file="' . $file . '" desc="image ' . $file . '" size="original" class="pointimage-image" nofullimagelink="1"}}');
         } else {

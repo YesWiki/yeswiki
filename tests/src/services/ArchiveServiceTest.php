@@ -100,13 +100,13 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only root files with database' => [
                 true, true, [], $defaultFoldersToInclude,
                 'ARCHIVE_SUFFIX', -1,
-                ['yeswiki.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                ['yeswiki.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only database' => [
                 false, true, [], [],
-                'ARCHIVE_ONLY_DATABASE_SUFFIX', 5,
-                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                'ARCHIVE_ONLY_DATABASE_SUFFIX', 6,
+                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql', 'private/backups/restore.json'],
                 null,
             ],
         ];

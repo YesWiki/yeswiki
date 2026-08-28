@@ -2,6 +2,7 @@
 
 namespace YesWiki\Files\Service;
 
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\TemplateEngine;
@@ -17,6 +18,10 @@ class FileBrowser
     private TemplateEngine $templateEngine;
     private InputFilter $inputFilter;
     private Storage $storage;
+    private CsrfTokenChecker $csrfTokenChecker;
+
+    /** what removes or moves a file, and may only be asked for by a POST from this wiki's own pages */
+    public const WRITE_OPERATIONS = ['restore', 'erase', 'del', 'emptytrash'];
 
     public function __construct(
         AttachedFilePaths $paths,
@@ -24,7 +29,8 @@ class FileBrowser
         PageContext $pageContext,
         TemplateEngine $templateEngine,
         InputFilter $inputFilter,
-        Storage $storage
+        Storage $storage,
+        CsrfTokenChecker $csrfTokenChecker
     ) {
         $this->paths = $paths;
         $this->resizer = $resizer;
@@ -32,33 +38,49 @@ class FileBrowser
         $this->templateEngine = $templateEngine;
         $this->inputFilter = $inputFilter;
         $this->storage = $storage;
+        $this->csrfTokenChecker = $csrfTokenChecker;
     }
 
-    /** Apply the `?do=` operation, then render the resulting listing. */
+    /** Apply the requested operation, then render the resulting listing. */
     public function render(): string
     {
+        $notice = '';
         $do = (string)($_GET['do'] ?? '');
+        if (in_array($do, self::WRITE_OPERATIONS, true)) {
+            $do = '';
+        }
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+            && isset($_POST['do'])
+            && in_array($_POST['do'], self::WRITE_OPERATIONS, true)) {
+            try {
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
+                $do = $_POST['do'];
+            } catch (\Throwable $error) {
+                $notice = '<div class="yw-alert yw-alert--danger">' . htmlspecialchars($error->getMessage(), ENT_QUOTES) . '</div>' . "\n";
+                $do = in_array($_POST['do'], ['restore', 'erase', 'emptytrash'], true) ? 'trash' : '';
+            }
+        }
         switch ($do) {
             case 'restore':
                 $this->restore();
 
-                return $this->renderListing(true);
+                return $notice . $this->renderListing(true);
             case 'erase':
                 $this->erase();
 
-                return $this->renderListing(true);
+                return $notice . $this->renderListing(true);
             case 'del':
                 $this->moveToTrash();
 
-                return $this->renderListing(false);
+                return $notice . $this->renderListing(false);
             case 'trash':
-                return $this->renderListing(true);
+                return $notice . $this->renderListing(true);
             case 'emptytrash':
                 $this->emptyTrash();
 
                 // no break
             default:
-                return $this->renderListing(false);
+                return $notice . $this->renderListing(false);
         }
     }
 
@@ -106,7 +128,7 @@ class FileBrowser
         $path = $this->paths->uploadPath();
         $rawFileName = $rawFileName !== ''
             ? $rawFileName
-            : (string)$this->inputFilter->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
+            : (string)$this->inputFilter->filterInput(INPUT_POST, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
         if ($rawFileName === '') {
             return;
         }
@@ -160,7 +182,7 @@ class FileBrowser
     /** Delete one trashed file for good. */
     public function erase(): void
     {
-        $filename = $this->paths->uploadPath() . '/' . basename((string)($_GET['file'] ?? ''));
+        $filename = $this->paths->uploadPath() . '/' . basename($this->postedFileName());
 
         if (preg_match('/trash\d{14}$/', $filename) && $this->storage->exists($filename)) {
             $this->storage->delete($filename);
@@ -181,10 +203,16 @@ class FileBrowser
     /** Take a file back out of the trash. */
     public function restore(): void
     {
-        $filename = $this->paths->uploadPath() . '/' . basename((string)($_GET['file'] ?? ''));
+        $filename = $this->paths->uploadPath() . '/' . basename($this->postedFileName());
         if ($this->storage->exists($filename)) {
             $this->storage->move($filename, (string)preg_replace('`^(.*\..*)trash\d{14}$`', '$1', $filename));
         }
+    }
+
+    /** The file a file-manager operation names, which only ever arrives in the POST body. */
+    private function postedFileName(): string
+    {
+        return isset($_POST['file']) && is_string($_POST['file']) ? $_POST['file'] : '';
     }
 
     /**

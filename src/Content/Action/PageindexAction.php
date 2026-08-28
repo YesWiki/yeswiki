@@ -3,9 +3,11 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
+use YesWiki\Kernel\Database\SqlFragment;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -46,7 +48,11 @@ class PageindexAction extends YesWikiAction implements RegisteredAction, Provide
 
     private function emit(): void
     {
-        if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages WHERE latest = \'Y\' AND parent=\'\' ORDER BY tag')) {
+        $readable = $this->readableFilter();
+        $sql = 'SELECT tag FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE latest = 'Y' AND parent=''"
+            . ($readable->isEmpty() ? '' : ' AND ' . $readable->sql)
+            . ' ORDER BY tag';
+        if ($pages = $this->getService(DbService::class)->loadAll($sql, $readable->params)) {
             foreach ($pages as $page) {
                 $firstChar = strtoupper($page['tag'][0]);
                 if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {
@@ -66,5 +72,10 @@ class PageindexAction extends YesWikiAction implements RegisteredAction, Provide
         } else {
             echo '<i>' . _t('NO_PAGE_FOUND') . '.</i>';
         }
+    }
+
+    private function readableFilter(): SqlFragment
+    {
+        return $this->getService(AclService::class)->readableFilter();
     }
 }

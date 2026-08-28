@@ -23,6 +23,13 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         return 'lostpassword';
     }
 
+    /**
+     * How long an answer to a submitted address takes, whatever that address is.
+     *
+     * Sending the recovery mail is the slow part, so without this an account is told apart from an unknown address by the clock rather than by what the page says. It has to stay above the time a send actually takes, SMTP included.
+     */
+    public const ANSWER_DELAY = 3000000;
+
     protected AuthenticationService $authenticationService;
     protected ?string $errorType = null;
     protected string $typeOfRendering = 'emailForm';
@@ -135,14 +142,13 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                     $this->errorType = 'emptyEmail';
                     $this->typeOfRendering = 'emailForm';
                 } else {
+                    $startedAt = microtime(true);
                     $user = $this->userManager->getOneByEmail($email);
+                    $this->typeOfRendering = 'successPage';
                     if (!empty($user)) {
-                        $this->typeOfRendering = 'successPage';
                         $this->userManager->sendPasswordRecoveryEmail($user);
-                    } else {
-                        $this->errorType = 'userNotFound';
-                        $this->typeOfRendering = 'userNotFound';
                     }
+                    $this->answerAfterConstantTime($startedAt);
                 }
                 break;
             case 2:
@@ -189,6 +195,14 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
         }
 
         return $user ?? null;
+    }
+
+    private function answerAfterConstantTime(float $startedAt): void
+    {
+        $remaining = self::ANSWER_DELAY - (int)round((microtime(true) - $startedAt) * 1000000);
+        if ($remaining > 0) {
+            usleep($remaining);
+        }
     }
 
     /**

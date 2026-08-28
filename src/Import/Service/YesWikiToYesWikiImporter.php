@@ -132,6 +132,11 @@ class YesWikiToYesWikiImporter extends Importer
                     'url' => 'IMPORTER_FILESMODE_URL',
                 ],
             ],
+            'keepRemoteUpdateDate' => [
+                'type' => 'checkbox',
+                'required' => false,
+                'help' => 'IMPORTER_FIELD_KEEPREMOTEUPDATEDATE_HELP',
+            ],
             'noSSLCheck' => ['type' => 'checkbox', 'required' => false],
             'timeoutInSec' => ['type' => 'number', 'required' => false],
         ];
@@ -329,6 +334,8 @@ class YesWikiToYesWikiImporter extends Importer
             }
             $mappedEntry['_remote_url'] = $remoteEntry['url'];
 
+            // a source running 4.x still answers with the old names, so both are read
+            $mappedEntry['_remote_created_at'] = $remoteEntry['created_at'] ?? $remoteEntry['date_creation_fiche'] ?? null;
             $mappedEntry['_remote_updated_at'] = $remoteEntry['updated_at'] ?? $remoteEntry['date_maj_fiche'] ?? null;
             $mappedEntries[] = $mappedEntry;
         }
@@ -380,8 +387,9 @@ class YesWikiToYesWikiImporter extends Importer
         $unchangedCount = 0;
         foreach ($data as $mappedEntry) {
             $remoteUrl = $mappedEntry['_remote_url'];
+            $remoteCreatedAt = $mappedEntry['_remote_created_at'] ?? null;
             $remoteUpdatedAt = $mappedEntry['_remote_updated_at'] ?? null;
-            unset($mappedEntry['_remote_url'], $mappedEntry['_remote_updated_at']);
+            unset($mappedEntry['_remote_url'], $mappedEntry['_remote_created_at'], $mappedEntry['_remote_updated_at']);
             $title = $mappedEntry['title'] ?? $mappedEntry['bf_titre'] ?? $remoteUrl;
 
             $mappedEntry['antispam'] = 1;
@@ -395,7 +403,8 @@ class YesWikiToYesWikiImporter extends Importer
                 }
 
                 if (empty($localId)) {
-                    $created = $this->entryManager->create($this->config['formId'], $this->importEntryFiles($mappedEntry), false, $remoteUrl);
+                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
+                    $created = $this->entryManager->create($this->config['formId'], $newValues, false, $remoteUrl);
                     if (!empty($created['tag'])) {
                         $seenLocalIds[] = $created['tag'];
                         $this->markSynced($created['tag'], date('Y-m-d H:i:s'));
@@ -407,14 +416,11 @@ class YesWikiToYesWikiImporter extends Importer
                 $seenLocalIds[] = $localId;
 
                 if ($isSourceOfTruth) {
-                    $newValues = $this->importEntryFiles($mappedEntry);
+                    $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
                     $changed = $this->changedFields($localEntry, $newValues);
                     if (empty($changed)) {
                         $unchangedCount++;
                         continue;
-                    }
-                    if ($remoteUpdatedAt) {
-                        $newValues['updated_at'] = $remoteUpdatedAt;
                     }
                     $this->entryManager->update($localId, $newValues, false, true);
                     echo 'Entrée "' . $title . '" mise à jour (miroir) : ' . implode(', ', $changed) . '.' . "\n";
@@ -427,7 +433,7 @@ class YesWikiToYesWikiImporter extends Importer
                     echo 'Entrée "' . $title . '" modifiée localement, non synchronisée.' . "\n";
                     continue;
                 }
-                $newValues = $this->importEntryFiles($mappedEntry);
+                $newValues = $this->withRemoteDates($this->importEntryFiles($mappedEntry), $remoteCreatedAt, $remoteUpdatedAt);
                 $changed = $this->changedFields($localEntry, $newValues);
                 if (empty($changed)) {
                     $unchangedCount++;
@@ -666,6 +672,37 @@ class YesWikiToYesWikiImporter extends Importer
             $this->listManager->create($title, $mergedNodes, $localTag);
         }
         echo 'Liste "' . $localTag . '" fusionnée (total local : ' . count($mergedNodes) . ' valeur(s)).' . "\n";
+    }
+
+    /**
+     * The fields writing $newValues would actually change in the local entry (empty: nothing to do).
+     *
+     * @param array<string, mixed>|null $localEntry
+     * @param array<string, mixed>      $newValues
+     *
+     * @return list<string>
+     */
+    /**
+     * Stamp an entry about to be written with the dates it carries on the source wiki.
+     *
+     * The creation date is always the remote one. An imported entry that claims to have been created the day the import ran is simply wrong, and it shows the moment anything sorts or filters by creation date, which is most of what an entry list does.
+     *
+     * The modification date is only copied when the source asks for it ('keepRemoteUpdateDate'), because it is not only a date: in 'allow_local' mode it is also what tells an entry a human edited here from one this importer last wrote.
+     *
+     * @param array<string, mixed> $values
+     *
+     * @return array<string, mixed>
+     */
+    private function withRemoteDates(array $values, ?string $createdAt, ?string $updatedAt): array
+    {
+        if (!empty($createdAt)) {
+            $values['created_at'] = $createdAt;
+        }
+        if (!empty($updatedAt) && !empty($this->config['keepRemoteUpdateDate'])) {
+            $values['updated_at'] = $updatedAt;
+        }
+
+        return $values;
     }
 
     /**

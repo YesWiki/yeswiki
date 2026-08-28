@@ -7,6 +7,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
@@ -30,14 +31,23 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
         $pageManager = $this->getService(PageManager::class);
         $aclService = $this->getService(AclService::class);
 
-        if ($this->getRequest()->get('restoreRevisionId')) {
-            if ($aclService->hasAccess('write')) {
-                $tag = $this->getService(PageContext::class)->getTag();
-                $fullRevert = (bool)$this->getRequest()->get('fullRevert');
-                $pageManager->revertToRevision($tag, $this->getRequest()->get('restoreRevisionId'), $fullRevert);
-                Flash::success(_t($fullRevert ? 'SUCCESS_RESTORE_REVISION_FULL' : 'SUCCESS_RESTORE_REVISION'));
-            } else {
+        $restoreRevisionId = $this->getRequest()->isMethod('POST')
+            ? $this->getRequest()->request->getString('restoreRevisionId')
+            : '';
+
+        if ($restoreRevisionId !== '') {
+            if (!$aclService->hasAccess('write')) {
                 Flash::error(_t('DENY_WRITE'));
+            } else {
+                try {
+                    $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+                    $tag = $this->getService(PageContext::class)->getTag();
+                    $fullRevert = (bool)$this->getRequest()->request->get('fullRevert');
+                    $pageManager->revertToRevision($tag, $restoreRevisionId, $fullRevert);
+                    Flash::success(_t($fullRevert ? 'SUCCESS_RESTORE_REVISION_FULL' : 'SUCCESS_RESTORE_REVISION'));
+                } catch (\Throwable $error) {
+                    Flash::error($error->getMessage());
+                }
             }
 
             return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());

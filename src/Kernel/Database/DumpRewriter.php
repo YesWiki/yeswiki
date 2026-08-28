@@ -13,6 +13,9 @@ class DumpRewriter
 
     public const TABLES_THAT_MAKE_A_WIKI = 2;
 
+    /** What a backup records about the wiki it was taken from, so a restore knows what it is looking at. */
+    public const INFO_FILENAME = 'restore.json';
+
     public static function isPrefix(string $prefix): bool
     {
         return preg_match('/^[A-Za-z0-9_]+$/', $prefix) === 1;
@@ -108,5 +111,78 @@ class DumpRewriter
                 : $found[0],
             $statement
         );
+    }
+
+    /**
+     * Reduce a configured base_url to the site root every stored link starts with.
+     *
+     * A trailing '?' marks a query-style base, whose root is taken as written.
+     */
+    public static function root(string $baseUrl): string
+    {
+        $baseUrl = trim($baseUrl);
+        $root = (string)preg_replace('/\?+$/', '', $baseUrl);
+        if ($root === '' || str_ends_with($root, '/')) {
+            return $root;
+        }
+
+        return $root === $baseUrl ? "$root/" : $root;
+    }
+
+    /** A target containing a quote, a backslash or a control character would corrupt the dump. */
+    public static function isSafeTarget(string $baseUrl): bool
+    {
+        return $baseUrl !== '' && !preg_match('/[\'"\\\\\x00-\x1F]/', $baseUrl);
+    }
+
+    /**
+     * Ordered replacement map covering both the plain and the JSON-escaped form of the root.
+     *
+     * @return array<string, string>
+     */
+    public static function substitutions(string $fromBaseUrl, string $toBaseUrl): array
+    {
+        $from = self::root($fromBaseUrl);
+        $to = self::root($toBaseUrl);
+        if ($from === '' || $to === '' || $from === $to || !self::isSafeTarget($to)) {
+            return [];
+        }
+
+        $substitutions = [];
+        foreach (self::schemeVariants($from) as $variant) {
+            $substitutions[$variant] = $to;
+            $substitutions[self::escapeForDump($variant)] = self::escapeForDump($to);
+        }
+
+        return $substitutions;
+    }
+
+    /**
+     * Point every address the dump carries at this wiki instead of the one it came from.
+     *
+     * @param array<string, string> $substitutions
+     */
+    public static function rewriteUrls(string $sqlContent, array $substitutions): string
+    {
+        return empty($substitutions) ? $sqlContent : strtr($sqlContent, $substitutions);
+    }
+
+    /** An entry is json_encode'd into the page body, so slashes reach the dump escaped twice. */
+    private static function escapeForDump(string $url): string
+    {
+        return str_replace('/', '\\\\/', $url);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function schemeVariants(string $root): array
+    {
+        if (!preg_match('#^https?://#i', $root)) {
+            return [$root];
+        }
+        $withoutScheme = (string)preg_replace('#^https?://#i', '', $root);
+
+        return ["https://$withoutScheme", "http://$withoutScheme"];
     }
 }

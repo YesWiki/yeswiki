@@ -34,6 +34,7 @@ class GroupManager
      */
     public function create(string $group_name, array $members): int
     {
+        $members = $this->cleanMembers($members);
         $member_str = implode("\n", $members);
         $this->journal->audit('group.create', $group_name, ['members' => count($members)]);
 
@@ -74,7 +75,24 @@ class GroupManager
     {
         $members = $this->tripleStore->getOne($group_name, WIKINI_VOC_ACLS, GROUP_PREFIX) ?? '';
 
-        return explode("\n", $members);
+        return $this->cleanMembers(explode("\n", $members));
+    }
+
+    /**
+     * Trim members and drop the blank or duplicated ones.
+     *
+     * Members are stored one per line, so a blank one round-trips as an empty line and reads back as a member with no name -- which is how deleting a user used to leave a hole in every group they were in.
+     *
+     * @param string[] $members
+     *
+     * @return list<string>
+     */
+    public function cleanMembers(array $members): array
+    {
+        $members = array_map('trim', $members);
+        $members = array_filter($members, fn (string $member): bool => $member !== '');
+
+        return array_values(array_unique($members));
     }
 
     /** The wiki's first administrator: the first real account in `admins`. */
@@ -95,10 +113,7 @@ class GroupManager
     {
         $old_members = $this->getMembers($group_name);
         $stored_members = implode("\n", $old_members);
-        $new_members = array_merge($old_members, $members);
-        $new_members = array_unique($new_members);
-        $new_members = array_filter($new_members);
-        $new_members = implode("\n", $new_members);
+        $new_members = implode("\n", $this->cleanMembers(array_merge($old_members, $members)));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
@@ -111,9 +126,7 @@ class GroupManager
     {
         $old_members = $this->getMembers($group_name);
         $stored_members = implode("\n", $old_members);
-        $new_members = array_diff($old_members, $members);
-        $new_members = array_filter($new_members);
-        $new_members = implode("\n", $new_members);
+        $new_members = implode("\n", $this->cleanMembers(array_diff($old_members, $members)));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {
@@ -126,7 +139,7 @@ class GroupManager
     {
         $this->journal->audit('group.update', $group_name, ['members' => count($members)]);
         $stored_members = implode("\n", $this->getMembers($group_name));
-        $new_members = implode("\n", $members);
+        $new_members = implode("\n", $this->cleanMembers($members));
         if ($this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX)) {
             $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $new_members, GROUP_PREFIX);
         } else {

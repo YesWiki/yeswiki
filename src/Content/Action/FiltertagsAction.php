@@ -98,7 +98,13 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
             . ' FROM ' . $prefix . 'pages, ' . $prefix . 'triples tags'
             . " WHERE latest = 'Y' AND parent = '' AND " . $filter->sql
             . ' ORDER BY tag ASC';
-        $pages = $this->getService(DbService::class)->loadAll($req, $filter->params);
+        $aclService = $this->getService(AclService::class);
+        $pages = array_filter(
+            $this->getService(DbService::class)->loadAll($req, $filter->params),
+            function ($page) use ($aclService) {
+                return $aclService->hasAccess('read', $page['tag']);
+            }
+        );
 
         echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
         foreach ($params as $param) {
@@ -114,27 +120,24 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         }
         echo '</div>';
 
-        $aclService = $this->getService(AclService::class);
         $element = [];
 
         foreach ($pages as $page) {
-            if ($aclService->hasAccess('read', $page['tag'])) {
-                $page['body'] = PageBody::decode($page['body']);
-                $element[$page['tag']]['tagnames'] = '';
-                $element[$page['tag']]['tagbadges'] = '';
-                $element[$page['tag']]['body'] = PageBody::content($page['body']);
-                $element[$page['tag']]['owner'] = $page['owner'];
-                $element[$page['tag']]['user'] = $page['user'];
-                $element[$page['tag']]['time'] = $page['time'];
-                $element[$page['tag']]['title'] = $this->getService(PageSummary::class)->title($page);
-                $element[$page['tag']]['image'] = $this->getService(PageSummary::class)->image($page);
-                $this->getService(InclusionStack::class)->register($page['tag']);
-                $element[$page['tag']]['desc'] = StringUtilService::truncateOnWord(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
-                $this->getService(InclusionStack::class)->unregisterLast();
-                foreach (TagsManager::keywordsOf($page) as $keyword) {
-                    $element[$page['tag']]['tagnames'] .= StringUtilService::withoutAccents($keyword) . ' ';
-                    $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
-                }
+            $page['body'] = PageBody::decode($page['body']);
+            $element[$page['tag']]['tagnames'] = '';
+            $element[$page['tag']]['tagbadges'] = '';
+            $element[$page['tag']]['body'] = PageBody::content($page['body']);
+            $element[$page['tag']]['owner'] = $page['owner'];
+            $element[$page['tag']]['user'] = $page['user'];
+            $element[$page['tag']]['time'] = $page['time'];
+            $element[$page['tag']]['title'] = $this->getService(PageSummary::class)->title($page);
+            $element[$page['tag']]['image'] = $this->getService(PageSummary::class)->image($page);
+            $this->getService(InclusionStack::class)->register($page['tag']);
+            $element[$page['tag']]['desc'] = StringUtilService::truncateOnWord(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
+            $this->getService(InclusionStack::class)->unregisterLast();
+            foreach (TagsManager::keywordsOf($page) as $keyword) {
+                $element[$page['tag']]['tagnames'] .= StringUtilService::withoutAccents($keyword) . ' ';
+                $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
             }
         }
 

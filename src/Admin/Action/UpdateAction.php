@@ -2,12 +2,14 @@
 
 namespace YesWiki\Admin\Action;
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -24,6 +26,9 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
     {
         return 'update';
     }
+
+    /** what installs, replaces or removes code, and may only be asked for by this wiki's own pages */
+    public const CONFIRMED_ACTIONS = ['upgrade', 'delete', 'update_admin_pages'];
 
     public function formatArguments($arg)
     {
@@ -115,6 +120,9 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         }
 
         try {
+            if (in_array($vAction, self::CONFIRMED_ACTIONS, true)) {
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+            }
             switch ($vAction) {
                 case 'upgrade':
                     $vCanUpgrade = false;
@@ -173,6 +181,8 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                     $vMessages->add($vDeleteMessages);
                     break;
             }
+        } catch (TokenNotFoundException $pTokenNotFound) {
+            $vMessages->add($pTokenNotFound->getMessage(), 'AU_ERROR');
         } catch (\Throwable $pThrowable) {
             $vMessages->add(_t('PERFORMABLE_ERROR') . $this->getService(ThrowableFormatter::class)->dump($pThrowable), 'AU_ERROR');
         }

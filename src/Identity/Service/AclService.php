@@ -476,6 +476,37 @@ class AclService
     }
 
     /**
+     * The "may the current user read this row?" predicate, ready to paste after a WHERE.
+     *
+     * Empty for an admin, and for a wiki whose ACLs let everyone read everything -- a caller pastes it only when `isEmpty()` says there is something to paste. Every listing that selects pages straight from the table goes through this rather than repeating the isAdmin() check.
+     */
+    public function readableFilter(): SqlFragment
+    {
+        return $this->isAdmin() ? SqlFragment::empty() : $this->updateRequestWithACL();
+    }
+
+    /**
+     * The same read filter, for a query over a table that names pages rather than holding them -- the keyword index, say, whose `resource` is a page tag.
+     *
+     * A row naming no page at all is kept: an ACL says who may read a page, and there is no page here to say it about. Only rows naming a page the user may not read are dropped.
+     */
+    public function readableResourceFilter(string $column = 'resource'): SqlFragment
+    {
+        $readable = $this->readableFilter();
+        if ($readable->isEmpty()) {
+            return SqlFragment::empty();
+        }
+
+        $pages = $this->dbService->prefixTable('pages');
+
+        return SqlFragment::of(
+            "({$column} NOT IN (SELECT tag FROM {$pages} WHERE latest = 'Y')"
+            . " OR {$column} IN (SELECT tag FROM {$pages} WHERE latest = 'Y' AND " . $readable->sql . '))',
+            $readable->params
+        );
+    }
+
+    /**
      * create request for ACL.
      *
      * @return SqlFragment the predicate and the values it binds (ticket 31)

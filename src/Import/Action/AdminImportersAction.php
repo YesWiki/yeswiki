@@ -91,7 +91,7 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
             $this->getService(SyncScheduler::class)->recordRun($syncedSourceId, $syncOutput);
         } elseif (!empty($importer)) {
             $sourceOptions = $importerManager->collectSourceOptionsFromInput($importer, $importerFields, $request->request->all());
-            $id = (string)($request->request->get('id') ?: $this->generateId($importer, $sourceOptions));
+            $id = (string)($request->request->get('id') ?: $this->newSourceId($importer, $sourceOptions, $dataSources));
             $fieldsMapping = array_filter($request->request->all('fieldsMapping'));
             if (!empty($fieldsMapping)) {
                 $sourceOptions['fieldsMapping'] = $fieldsMapping;
@@ -156,6 +156,27 @@ class AdminImportersAction extends YesWikiAction implements RegisteredAction
         }
 
         return $editable;
+    }
+
+    /**
+     * The id of a source being created.
+     *
+     * generateId() derives an id from the importer and the url so that the same source keeps the same id, but two genuinely different sources can share both: the same remote form imported into two local forms, the same feed imported twice with different settings, the same wiki with two different &query= filters. Creating one of those used to land on the existing source's id and replace it, losing a configured source without saying so, so a created source now takes the next free id instead. Editing a source posts its id and never comes through here.
+     *
+     * @param array<string, mixed> $sourceOptions
+     * @param array<string, mixed> $dataSources
+     */
+    private function newSourceId(string $importer, array $sourceOptions, array $dataSources): string
+    {
+        $baseId = $this->generateId($importer, $sourceOptions);
+        $id = $baseId;
+        $suffix = 2;
+        while (isset($dataSources[$id])) {
+            $id = $baseId . '_' . $suffix;
+            ++$suffix;
+        }
+
+        return $id;
     }
 
     /**

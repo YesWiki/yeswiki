@@ -13,6 +13,7 @@ use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\EntryExtraFieldsService;
 use YesWiki\Content\Service\EntryFastAccessService;
+use YesWiki\Content\Exception\TagAlreadyUsedException;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\GeoJSONFormatter;
@@ -242,10 +243,14 @@ class EntryApiController extends YesWikiController
         }
         $postData['antispam'] = 1;
 
-        if (!isset($postData['tag']) || !$this->getService(EntryManager::class)->isEntry($postData['tag'])) {
-            $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
-        } else {
-            $entry = $this->getService(EntryManager::class)->update($postData['tag'], $postData, false, true);
+        try {
+            if (!isset($postData['tag']) || !$this->getService(EntryManager::class)->isEntry($postData['tag'])) {
+                $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
+            } else {
+                $entry = $this->getService(EntryManager::class)->update($postData['tag'], $postData, false, true);
+            }
+        } catch (TagAlreadyUsedException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
 
         if (!$entry) {

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Component\Category;
 use YesWiki\Kernel\Component\Component;
 use YesWiki\Kernel\Component\ProvidesComponents;
@@ -37,11 +38,17 @@ class AdminTagAction extends YesWikiAction implements RegisteredAction, Provides
         $isAdmin = $this->getService(AclService::class)->isAdmin();
         $tagsManager = $this->getService(TagsManager::class);
 
-        if ($isAdmin && $this->getRequest()->query->has('delete_tag')) {
+        $request = $this->getRequest();
+        if ($isAdmin && $request->isMethod('POST') && $request->request->getString('delete_tag') !== '') {
             if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                 throw new \Exception(_t('WIKI_IN_HIBERNATION'));
             }
-            $tagsManager->removeByIds(explode(',', $this->getRequest()->query->getString('delete_tag')));
+            try {
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
+                $tagsManager->removeByIds(explode(',', $request->request->getString('delete_tag')));
+            } catch (\Throwable $error) {
+                return '<div class="alert alert-danger">' . htmlspecialchars($error->getMessage(), ENT_QUOTES) . '</div>';
+            }
         }
 
         $rows = $tagsManager->getAllTriples();

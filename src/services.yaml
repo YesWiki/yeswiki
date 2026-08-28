@@ -128,6 +128,10 @@ services:
 
   YesWiki\Content\Service\:
     resource: 'Content/Service/*'
+    exclude:
+      # SimplePie constructs it, one instance per fetched url -- its constructor takes that
+      # url, so autowiring it fails
+      - 'Content/Service/SafeFile.php'
 
   YesWiki\Content\Controller\:
     resource: 'Content/Controller/*'
