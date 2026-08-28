@@ -4,6 +4,10 @@
 define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 
+// garde-fous reseau pour la copie d'un fichier distant
+define('COPY_URL_CONNECT_TIMEOUT', 10);
+define('COPY_URL_TIMEOUT', 30);
+
 // principales fonctions de bazar
 require_once BAZ_CHEMIN . 'libs/bazar.fonct.php';
 require_once BAZ_CHEMIN . 'libs/bazar.fonct.misc.php';

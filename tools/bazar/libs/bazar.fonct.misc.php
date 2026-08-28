@@ -71,23 +71,24 @@ function copyUrlToLocalFile($url, $localPath)
     } elseif ($ch = curl_init($url)) { // teste l'existance du fichier a distance
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, COPY_URL_CONNECT_TIMEOUT);
+        curl_setopt($ch, CURLOPT_TIMEOUT, COPY_URL_TIMEOUT);
         $imgcontent = curl_exec($ch);
         $error = curl_error($ch);
+        $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         if (PHP_VERSION_ID < 80500) {
             curl_close($ch);
+        }
+        if ($error || $status >= 400 || $imgcontent === false || $imgcontent === '') {
+            return false;
         }
         $file = fopen($localPath, 'w+');
         fputs($file, $imgcontent);
         fclose($file);
-        if ($error) {
-            echo $error;
-
-            return false;
-        }
 
         return true;
     }
-    echo _t('BAZ_IMAGE_FILE_NOT_FOUND') . ' : ' . $url;
 
     return false;
 }

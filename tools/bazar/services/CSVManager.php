@@ -11,6 +11,7 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
+use YesWiki\Core\Service\StringUtilService;
 use YesWiki\Wiki;
 
 class CSVManager
@@ -376,8 +377,11 @@ class CSVManager
             $GLOBALS['_BAZAR_']['provenance'] = 'import';
             $createdEntries = [];
             foreach ($importedEntries as $entry) {
-                $entry = unserialize(base64_decode($entry), ['allowed_classes' => false]);
-                $entry = array_map('strval', $entry);
+                $entry = json_decode($entry, true);
+                if (!is_array($entry)) {
+                    continue;
+                }
+                $entry = array_map(fn ($value) => is_array($value) ? $value : strval($value), $entry);
 
                 $entry['antispam'] = 1;
                 if (isset($entry['id_fiche'])) {
@@ -403,7 +407,7 @@ class CSVManager
      *
      * @return array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
      */
-    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
+    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null, bool $keepRemoteFilesAsUrl = false)
     {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
 
@@ -428,7 +432,7 @@ class CSVManager
                                 $extracted = [];
                                 while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) { // init errors
                                     $this->errormsg = [];
-                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id']);
+                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID['id'], $keepRemoteFilesAsUrl);
                                     $extracted[] = [
                                         'entry' => $extractedData,
                                         'errormsg' => $this->errormsg,
@@ -639,7 +643,7 @@ class CSVManager
      *
      * @return array|null entry
      */
-    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
+    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId, bool $keepRemoteFilesAsUrl = false): ?array
     {
         $entry = [];
         $skipFields = ['datetime_create', 'datetime_latest'];
@@ -662,12 +666,16 @@ class CSVManager
                         // for tags not needed to get keys because these are the same
                         // and do not filter on existing tags but allow alls tags
                         $value = $this->extractValueFromEnumFieldData($value, $field);
+                    } elseif ($field instanceof MapField) {
+                        $value = $this->extractValueFromMapFieldData($value, $field);
                     } elseif ($field instanceof ImageField) {
-                        // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromImageFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromImageFieldData($value, $field);
+                        }
                     } elseif ($field instanceof FileField) {
-                        // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromFileFieldData($value, $field);
+                        if (!($keepRemoteFilesAsUrl && StringUtilService::isWebAddress(trim($value)))) {
+                            $value = $this->extractValueFromFileFieldData($value, $field);
+                        }
                     } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
@@ -786,6 +794,29 @@ class CSVManager
         }
 
         return implode(',', $indexes);
+    }
+
+    /**
+     * turn the JSON cell written by the export back into the latitude/longitude/geometries structure.
+     *
+     * @return array|string the structure, or the raw cell when it cannot be read
+     */
+    private function extractValueFromMapFieldData(string $value, MapField $field)
+    {
+        $decoded = json_decode(trim($value), true);
+        if (!is_array($decoded)) {
+            $this->errormsg[] = _t('BAZ_UNREADABLE_MAP_VALUE') . ' : ' . $field->getPropertyName();
+
+            return $value;
+        }
+
+        $geometries = $decoded['geometries'] ?? '';
+
+        return [
+            'latitude' => (string)($decoded['latitude'] ?? $decoded['bf_latitude'] ?? ''),
+            'longitude' => (string)($decoded['longitude'] ?? $decoded['bf_longitude'] ?? ''),
+            'geometries' => is_string($geometries) ? $geometries : json_encode($geometries),
+        ];
     }
 
     /**

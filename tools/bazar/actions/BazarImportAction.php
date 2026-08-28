@@ -38,6 +38,7 @@ class BazarImportAction extends YesWikiAction
             'importentries' => $post->get('importfiche'),
             'filesData' => $_FILES['fileimport'] ?? null,
             'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-not-detect-columns-on-headers'),
+            'bazar-import-option-keep-remote-files-as-url' => $this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-keep-remote-files-as-url'),
             'params' => array_merge(
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
                 $request->query->has('debug') ? ['debug' => 'yes'] : []
@@ -92,7 +93,8 @@ class BazarImportAction extends YesWikiAction
                     $this->arguments['id'],
                     $this->arguments['filesData'],
                     $this->arguments['bazar-import-option-detect-columns-on-headers'],
-                    $vForm
+                    $vForm,
+                    $this->arguments['bazar-import-option-keep-remote-files-as-url']
                 )) {
                     // append displayData
                     $extracted = array_map(function ($extract) use ($vForm) {
@@ -147,6 +149,7 @@ class BazarImportAction extends YesWikiAction
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],
             'optionNotDetectColumnsOnHeadersChecked' => !$this->arguments['bazar-import-option-detect-columns-on-headers'],
+            'optionKeepRemoteFilesAsUrlChecked' => $this->arguments['bazar-import-option-keep-remote-files-as-url'],
             'debug' => $this->arguments['debug'],
         ]);
     }
